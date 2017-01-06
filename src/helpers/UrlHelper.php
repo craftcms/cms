@@ -31,7 +31,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     public static function isAbsoluteUrl($url)
     {
@@ -43,7 +43,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     public static function isProtocolRelativeUrl($url)
     {
@@ -55,7 +55,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     public static function isRootRelativeUrl($url)
     {
@@ -67,7 +67,7 @@ class UrlHelper
      *
      * @param string $url
      *
-     * @return boolean
+     * @return bool
      */
     public static function isFullUrl($url)
     {
@@ -153,7 +153,7 @@ class UrlHelper
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
-     * @param boolean           $mustShowScriptName
+     * @param bool              $mustShowScriptName
      *
      * @return string
      */
@@ -214,7 +214,7 @@ class UrlHelper
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
-     * @param integer|null      $siteId
+     * @param int|null          $siteId
      *
      * @return string
      * @throws Exception if $siteId is invalid
@@ -402,8 +402,8 @@ class UrlHelper
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
-     * @param boolean           $cpUrl
-     * @param boolean           $mustShowScriptName
+     * @param bool              $cpUrl
+     * @param bool              $mustShowScriptName
      *
      * @return string
      */

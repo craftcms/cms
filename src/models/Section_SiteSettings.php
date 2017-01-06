@@ -26,27 +26,27 @@ class Section_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Section ID
+     * @var int Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Site ID
+     * @var int Site ID
      */
     public $siteId;
 
     /**
-     * @var boolean Enabled by default
+     * @var bool Enabled by default
      */
     public $enabledByDefault = true;
 
     /**
-     * @var boolean Has URLs?
+     * @var bool Has URLs?
      */
     public $hasUrls;
 

@@ -31,22 +31,22 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private $_method;
 
     /**
-     * @var boolean Whether the tag supports a tag pair mode for capturing the JS/CSS
+     * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
      */
     private $_allowTagPair;
 
     /**
-     * @var boolean Whether the tag can specify the position of the resource
+     * @var bool Whether the tag can specify the position of the resource
      */
     private $_allowPosition;
 
     /**
-     * @var boolean Whether the tag can specify a runtime-based position (load/ready)
+     * @var bool Whether the tag can specify a runtime-based position (load/ready)
      */
     private $_allowRuntimePosition;
 
     /**
-     * @var boolean Whether the tag can specify additional options
+     * @var bool Whether the tag can specify additional options
      */
     private $_allowOptions;
 
@@ -61,10 +61,10 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     /**
      * @param string  $tag                  The tag name
      * @param string  $method               The View method the tag represents
-     * @param boolean $allowTagPair         Whether the tag supports a tag pair mode for capturing the JS/CSS
-     * @param boolean $allowPosition        Whether the tag can specify the position of the resource
-     * @param boolean $allowRuntimePosition Whether the tag can specify a runtime-based position (load/ready)
-     * @param boolean $allowOptions         Whether the tag can specify additional options
+     * @param bool $allowTagPair         Whether the tag supports a tag pair mode for capturing the JS/CSS
+     * @param bool $allowPosition        Whether the tag can specify the position of the resource
+     * @param bool $allowRuntimePosition Whether the tag can specify a runtime-based position (load/ready)
+     * @param bool $allowOptions         Whether the tag can specify additional options
      * @param string  $newCode              The new template code that should be used if this tag is deprecated
      *
      * @todo Remove the $newCode stuff in Craft 4
@@ -167,7 +167,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
     public function decideBlockEnd(\Twig_Token $token)
     {
@@ -182,7 +182,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @param \Twig_TokenStream $stream The Twig token stream
      *
-     * @return boolean
+     * @return bool
      */
     private function _testPositionParam(\Twig_TokenStream $stream)
     {
@@ -197,7 +197,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @param \Twig_TokenStream $stream The Twig token stream
      *
-     * @return boolean
+     * @return bool
      */
     private function _testOptionsParam(\Twig_TokenStream $stream)
     {
@@ -209,7 +209,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @param \Twig_TokenStream $stream The Twig token stream
      *
-     * @return boolean
+     * @return bool
      */
     private function _testFirstParam(\Twig_TokenStream $stream)
     {
@@ -221,7 +221,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @param \Twig_TokenStream $stream The Twig token stream
      *
-     * @return boolean
+     * @return bool
      */
     private function _getFirstValue(\Twig_TokenStream $stream)
     {

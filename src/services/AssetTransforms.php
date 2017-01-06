@@ -75,7 +75,7 @@ class AssetTransforms extends Component
     private $_transformsByHandle;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_fetchedAllTransforms = false;
 
@@ -153,7 +153,7 @@ class AssetTransforms extends Component
     /**
      * Returns an asset transform by its id.
      *
-     * @param integer $id
+     * @param int $id
      *
      * @return AssetTransform|null
      */
@@ -175,11 +175,11 @@ class AssetTransforms extends Component
      * Saves an asset transform.
      *
      * @param AssetTransform $transform     The transform to be saved
-     * @param boolean        $runValidation Whether the transform should be validated
+     * @param bool           $runValidation Whether the transform should be validated
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
      * @throws ValidationException     If the validation failed.
-     * @return boolean
+     * @return bool
      */
     public function saveTransform(AssetTransform $transform, $runValidation = true)
     {
@@ -246,9 +246,9 @@ class AssetTransforms extends Component
     /**
      * Deletes an asset transform by it's id.
      *
-     * @param integer $transformId
+     * @param int $transformId
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteTransform($transformId)
     {
@@ -705,7 +705,7 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param integer $transformId
+     * @param int $transformId
      *
      * @return AssetTransformIndex|null
      */
@@ -725,8 +725,8 @@ class AssetTransforms extends Component
     /**
      * Get a transform index model by a row id.
      *
-     * @param integer $assetId
-     * @param string  $transformHandle
+     * @param int    $assetId
+     * @param string $transformHandle
      *
      * @return AssetTransformIndex|null
      */
@@ -749,7 +749,7 @@ class AssetTransforms extends Component
     /**
      * Get URL for Transform by TransformIndexId.
      *
-     * @param integer $transformId
+     * @param int $transformId
      *
      * @return string
      */
@@ -784,7 +784,7 @@ class AssetTransforms extends Component
     /**
      * Delete transform records by an Asset id
      *
-     * @param integer $assetId
+     * @param int $assetId
      *
      * @return void
      */
@@ -798,7 +798,7 @@ class AssetTransforms extends Component
     /**
      * Delete a transform index by.
      *
-     * @param integer $indexId
+     * @param int $indexId
      *
      * @return void
      */
@@ -815,7 +815,7 @@ class AssetTransforms extends Component
      * @param Asset $asset
      * @param       $size
      *
-     * @return boolean|string
+     * @return bool|string
      */
     public function getResizedAssetServerPath(Asset $asset, $size)
     {
@@ -901,7 +901,7 @@ class AssetTransforms extends Component
     /**
      * Get the size of max cached cloud images dimension.
      *
-     * @return integer
+     * @return int
      */
     public function getCachedCloudImageSize()
     {

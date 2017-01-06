@@ -34,7 +34,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     public $options;
 
     /**
-     * @var boolean Whether the field should support multiple selections
+     * @var bool Whether the field should support multiple selections
      */
     protected $multi = false;
 

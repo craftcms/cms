@@ -41,17 +41,17 @@ class Date extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether a datepicker should be shown as part of the input
+     * @var bool Whether a datepicker should be shown as part of the input
      */
     public $showDate = true;
 
     /**
-     * @var boolean Whether a timepicker should be shown as part of the input
+     * @var bool Whether a timepicker should be shown as part of the input
      */
     public $showTime = false;
 
     /**
-     * @var integer The number of minutes that the timepicker options should increment by
+     * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
 

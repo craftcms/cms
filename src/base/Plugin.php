@@ -44,7 +44,7 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     /**
-     * @var Model|boolean The model used to store the plugin’s settings
+     * @var Model|bool The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
@@ -225,7 +225,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
     protected function beforeInstall()
     {
@@ -242,7 +242,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is updated.
      *
-     * @return boolean Whether the plugin should be updated
+     * @return bool Whether the plugin should be updated
      */
     protected function beforeUpdate()
     {
@@ -259,7 +259,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
     protected function beforeUninstall()
     {

@@ -232,7 +232,7 @@ class Table extends Field
      *
      * @param mixed                 $value
      * @param ElementInterface|null $element
-     * @param boolean               $static
+     * @param bool                  $static
      *
      * @return string
      */

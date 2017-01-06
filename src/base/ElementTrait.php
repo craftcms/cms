@@ -36,22 +36,22 @@ trait ElementTrait
     public $contentId;
 
     /**
-     * @var boolean Whether the element is enabled
+     * @var bool Whether the element is enabled
      */
     public $enabled = true;
 
     /**
-     * @var boolean Whether the element is archived
+     * @var bool Whether the element is archived
      */
     public $archived = false;
 
     /**
-     * @var integer The site ID the element is associated with
+     * @var int The site ID the element is associated with
      */
     public $siteId;
 
     /**
-     * @var boolean Whether the element is enabled for this site.
+     * @var bool Whether the element is enabled for this site.
      */
     public $enabledForSite = true;
 
@@ -106,7 +106,7 @@ trait ElementTrait
     public $searchScore;
 
     /**
-     * @var boolean Whether the element is still awaiting its custom field values
+     * @var bool Whether the element is still awaiting its custom field values
      */
     public $awaitingFieldValues = false;
 }

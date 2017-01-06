@@ -23,7 +23,7 @@ interface ElementActionInterface extends SavableComponentInterface
     /**
      * Returns whether this action is destructive in nature.
      *
-     * @return boolean Whether this action is destructive in nature.
+     * @return bool Whether this action is destructive in nature.
      */
     public static function isDestructive();
 
@@ -56,7 +56,7 @@ interface ElementActionInterface extends SavableComponentInterface
      *
      * @param ElementQueryInterface $query The element query defining which elements the action should affect.
      *
-     * @return boolean Whether the action was performed successfully.
+     * @return bool Whether the action was performed successfully.
      */
     public function performAction(ElementQueryInterface $query);
 

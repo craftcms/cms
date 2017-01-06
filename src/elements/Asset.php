@@ -42,7 +42,7 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property boolean $hasThumb Whether the file has a thumbnail
+ * @property bool $hasThumb Whether the file has a thumbnail
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -245,8 +245,8 @@ class Asset extends Element
     /**
      * Transforms an asset folder tree into a source list.
      *
-     * @param array   $folders
-     * @param boolean $includeNestedFolders
+     * @param array $folders
+     * @param bool  $includeNestedFolders
      *
      * @return array
      */
@@ -265,7 +265,7 @@ class Asset extends Element
      * Transforms an VolumeFolderModel into a source info array.
      *
      * @param VolumeFolder $folder
-     * @param boolean      $includeNestedFolders
+     * @param bool         $includeNestedFolders
      *
      * @return array
      */
@@ -295,12 +295,12 @@ class Asset extends Element
     // =========================================================================
 
     /**
-     * @var integer Source ID
+     * @var int Source ID
      */
     public $volumeId;
 
     /**
-     * @var integer Folder ID
+     * @var int Folder ID
      */
     public $folderId;
 
@@ -320,17 +320,17 @@ class Asset extends Element
     public $kind;
 
     /**
-     * @var integer Width
+     * @var int Width
      */
     public $width;
 
     /**
-     * @var integer Height
+     * @var int Height
      */
     public $height;
 
     /**
-     * @var integer Size
+     * @var int Size
      */
     public $size;
 
@@ -350,12 +350,12 @@ class Asset extends Element
     public $newFilePath;
 
     /**
-     * @var boolean Whether the associated file should be preserved if the asset record is deleted.
+     * @var bool Whether the associated file should be preserved if the asset record is deleted.
      */
     public $keepFileOnDelete = false;
 
     /**
-     * @var boolean Whether the file is currently being indexed
+     * @var bool Whether the file is currently being indexed
      */
     public $indexInProgress = false;
 
@@ -404,7 +404,7 @@ class Asset extends Element
      *
      * @param string $name The property name
      *
-     * @return boolean Whether the property is set
+     * @return bool Whether the property is set
      */
     public function __isset($name)
     {
@@ -666,7 +666,7 @@ class Asset extends Element
     /**
      * Returns whether the file has a thumbnail.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHasThumb()
     {
@@ -703,7 +703,7 @@ class Asset extends Element
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return boolean|float|mixed
+     * @return bool|float|mixed
      */
 
     public function getHeight($transform = null)
@@ -723,7 +723,7 @@ class Asset extends Element
      *
      * @param string|null $transform The optional transform handle for which to get thumbnail.
      *
-     * @return boolean|float|mixed
+     * @return bool|float|mixed
      */
     public function getWidth($transform = null)
     {
@@ -804,7 +804,7 @@ class Asset extends Element
     /**
      * Return whether the Asset has a URL.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHasUrls()
     {

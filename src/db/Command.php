@@ -26,9 +26,9 @@ class Command extends \yii\db\Command
     /**
      * @inheritdoc
      *
-     * @param string  $table               The table that new rows will be inserted into.
-     * @param array   $columns             The column data (name => value) to be inserted into the table.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param string $table               The table that new rows will be inserted into.
+     * @param array  $columns             The column data (name => value) to be inserted into the table.
+     * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
      * @return static the command object itself
      */
@@ -56,10 +56,10 @@ class Command extends \yii\db\Command
     /**
      * @inheritdoc
      *
-     * @param string  $table               The table that new rows will be inserted into.
-     * @param array   $columns             The column names.
-     * @param array   $rows                The rows to be batch inserted into the table.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param string $table               The table that new rows will be inserted into.
+     * @param array  $columns             The column names.
+     * @param array  $rows                The rows to be batch inserted into the table.
+     * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
      * @return static The command object itself.
      */
@@ -93,12 +93,12 @@ class Command extends \yii\db\Command
      * Creates a command that will insert some given data into a table, or update an existing row
      * in the event of a key constraint violation.
      *
-     * @param string  $table               The table that the row will be inserted into, or updated.
-     * @param array   $keyColumns          The key-constrained column data (name => value) to be inserted into the table
+     * @param string $table                The table that the row will be inserted into, or updated.
+     * @param array  $keyColumns           The key-constrained column data (name => value) to be inserted into the table
      *                                     in the event that a new row is getting created
-     * @param array   $updateColumns       The non-key-constrained column data (name => value) to be inserted into the table
+     * @param array  $updateColumns        The non-key-constrained column data (name => value) to be inserted into the table
      *                                     or updated in the existing row.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param bool   $includeAuditColumns  Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
      * @return Command The command object itself.
      */
@@ -125,7 +125,7 @@ class Command extends \yii\db\Command
      * @param string|array $condition           The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
-     * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+     * @param bool         $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      *
      * @return static The command object itself.
      */

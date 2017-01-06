@@ -55,12 +55,12 @@ class PluginUpdate extends Model
     public $displayName;
 
     /**
-     * @var boolean Critical update available
+     * @var bool Critical update available
      */
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var boolean Manual update required
+     * @var bool Manual update required
      */
     public $manualUpdateRequired = false;
 

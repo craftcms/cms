@@ -42,17 +42,17 @@ class AppNewRelease extends Model
     public $type;
 
     /**
-     * @var boolean Critical
+     * @var bool Critical
      */
     public $critical = false;
 
     /**
-     * @var boolean Manual
+     * @var bool Manual
      */
     public $manual = false;
 
     /**
-     * @var boolean Breakpoint
+     * @var bool Breakpoint
      */
     public $breakpoint = false;
 

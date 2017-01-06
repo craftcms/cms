@@ -264,10 +264,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * kebab-cases a string.
      *
-     * @param string  $string            The string
-     * @param string  $glue              The string used to glue the words together (default is a hyphen)
-     * @param boolean $lower             Whether the string should be lowercased (default is true)
-     * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+     * @param string $string            The string
+     * @param string $glue              The string used to glue the words together (default is a hyphen)
+     * @param bool   $lower             Whether the string should be lowercased (default is true)
+     * @param bool   $removePunctuation Whether punctuation marks should be removed (default is true)
      *
      * @return string The kebab-cased string
      */
@@ -410,7 +410,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param                   $date
      * @param null              $format
      * @param null              $timezone
-     * @param boolean           $translate Whether the formatted date string should be translated
+     * @param bool              $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
@@ -434,9 +434,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the Atom format.
      *
-     * @param \Twig_Environment                              $env
+     * @param \Twig_Environment                               $env
      * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
-     * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param DateTimeZone|string|null|false                  $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -448,9 +448,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the RSS format.
      *
-     * @param \Twig_Environment                              $env
+     * @param \Twig_Environment                               $env
      * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
-     * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param DateTimeZone|string|null|false                  $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -466,7 +466,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param                   $date
      * @param null              $format
      * @param null              $timezone
-     * @param boolean           $translate Whether the formatted date string should be translated
+     * @param bool              $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
@@ -494,7 +494,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param                   $date
      * @param null              $format
      * @param null              $timezone
-     * @param boolean           $translate Whether the formatted date string should be translated
+     * @param bool              $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
@@ -543,7 +543,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param mixed $haystack
      * @param mixed $needle
      *
-     * @return integer
+     * @return int
      */
     public function indexOfFilter($haystack, $needle)
     {
@@ -586,11 +586,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses text through Markdown.
      *
-     * @param string  $markdown   The markdown text to parse
-     * @param string  $flavor     The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
+     * @param string $markdown    The markdown text to parse
+     * @param string $flavor      The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
      *                            'gfm-comment' (GFM with newlines converted to `<br>`s),
      *                            or 'extra' (Markdown Extra). Default is 'original'.
-     * @param boolean $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
+     * @param bool   $inlineOnly  Whether to only parse inline elements, omitting any `<p>` tags.
      *
      * @return \Twig_Markup
      */
@@ -669,11 +669,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Rounds the given value.
      *
-     * @param integer|float $value
-     * @param integer       $precision
-     * @param integer       $mode
+     * @param int|float $value
+     * @param int       $precision
+     * @param int       $mode
      *
-     * @return integer|float
+     * @return int|float
      * @deprecated in 3.0. Use Twig's |round filter instead.
      */
     public function roundFunction($value, $precision = 0, $mode = PHP_ROUND_HALF_UP)

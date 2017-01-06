@@ -122,7 +122,7 @@ class Tags extends BaseRelationField
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return integer|false
+     * @return int|false
      */
     private function _getTagGroupId()
     {

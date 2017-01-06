@@ -357,8 +357,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element data to be returned to the client.
      *
-     * @param boolean $includeContainer Whether the element container should be included in the response data
-     * @param boolean $includeActions   Whether info about the available actions should be included in the response data
+     * @param bool $includeContainer Whether the element container should be included in the response data
+     * @param bool $includeActions   Whether info about the available actions should be included in the response data
      *
      * @return array
      */

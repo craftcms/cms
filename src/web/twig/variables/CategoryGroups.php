@@ -26,7 +26,7 @@ class CategoryGroups
     /**
      * Returns all of the group IDs.
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getAllGroupIds()
     {
@@ -38,7 +38,7 @@ class CategoryGroups
     /**
      * Returns all of the category group IDs that are editable by the current user.
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getEditableGroupIds()
     {
@@ -82,7 +82,7 @@ class CategoryGroups
     /**
      * Gets the total number of category groups.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalGroups()
     {

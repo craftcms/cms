@@ -13,10 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserGroup record.
  *
- * @property integer $id     ID
- * @property string  $name   Name
- * @property string  $handle Handle
- * @property User[]  $users  Users
+ * @property int    $id     ID
+ * @property string $name   Name
+ * @property string $handle Handle
+ * @property User[] $users  Users
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -106,7 +106,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to return each element as an array. If false (default), an object
+     * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      */
     public $asArray;
@@ -125,7 +125,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $uid;
 
     /**
-     * @var boolean Whether results should be returned in the order specified by [[id]].
+     * @var bool Whether results should be returned in the order specified by [[id]].
      */
     public $fixedOrder;
 
@@ -135,7 +135,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $status = 'enabled';
 
     /**
-     * @var boolean Whether to return only archived elements.
+     * @var bool Whether to return only archived elements.
      */
     public $archived;
 
@@ -150,17 +150,17 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $dateUpdated;
 
     /**
-     * @var integer The site ID that the elements should be returned in.
+     * @var int The site ID that the elements should be returned in.
      */
     public $siteId;
 
     /**
-     * @var boolean Whether the elements must be enabled for the chosen site.
+     * @var bool Whether the elements must be enabled for the chosen site.
      */
     public $enabledForSite = true;
 
     /**
-     * @var integer|array|ElementInterface The element relation criteria.
+     * @var int|array|ElementInterface The element relation criteria.
      */
     public $relatedTo;
 
@@ -204,57 +204,57 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|false The structure ID that should be used to join in the structureelements table.
+     * @var int|false The structure ID that should be used to join in the structureelements table.
      */
     public $structureId;
 
     /**
-     * @var integer The element’s level within the structure
+     * @var int The element’s level within the structure
      */
     public $level;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that results must be an ancestor of.
+     * @var int|ElementInterface The element (or its ID) that results must be an ancestor of.
      */
     public $ancestorOf;
 
     /**
-     * @var integer The maximum number of levels that results may be separated from [[ancestorOf]].
+     * @var int The maximum number of levels that results may be separated from [[ancestorOf]].
      */
     public $ancestorDist;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that results must be a descendant of.
+     * @var int|ElementInterface The element (or its ID) that results must be a descendant of.
      */
     public $descendantOf;
 
     /**
-     * @var integer The maximum number of levels that results may be separated from [[descendantOf]].
+     * @var int The maximum number of levels that results may be separated from [[descendantOf]].
      */
     public $descendantDist;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that the results must be a sibling of.
+     * @var int|ElementInterface The element (or its ID) that the results must be a sibling of.
      */
     public $siblingOf;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that the result must be the previous sibling of.
+     * @var int|ElementInterface The element (or its ID) that the result must be the previous sibling of.
      */
     public $prevSiblingOf;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that the result must be the next sibling of.
+     * @var int|ElementInterface The element (or its ID) that the result must be the next sibling of.
      */
     public $nextSiblingOf;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that the results must be positioned before.
+     * @var int|ElementInterface The element (or its ID) that the results must be positioned before.
      */
     public $positionedBefore;
 
     /**
-     * @var integer|ElementInterface The element (or its ID) that the results must be positioned after.
+     * @var int|ElementInterface The element (or its ID) that the results must be positioned after.
      */
     public $positionedAfter;
 
@@ -390,9 +390,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param integer|string $name The offset to check
+     * @param int|string $name The offset to check
      *
-     * @return boolean
+     * @return bool
      */
     public function offsetExists($name)
     {
@@ -418,7 +418,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param integer|string $name The offset to get
+     * @param int|string $name The offset to get
      *
      * @return mixed The element at the given offset
      */
@@ -1169,7 +1169,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param array|null $attributes
      *
-     * @return integer
+     * @return int
      * @deprecated in Craft 3.0. Use count() instead.
      */
     public function total($attributes = null)
@@ -1196,7 +1196,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * The role of the main query is to join in any tables that should be included in the results, and select
      * all of the columns that should be included in the results.
      *
-     * @return boolean Whether the query should be prepared and returned to the query builder.
+     * @return bool Whether the query should be prepared and returned to the query builder.
      * If false, the query will be cancelled and no results will be returned.
      * @see prepare()
      * @see afterPrepare()
@@ -1214,7 +1214,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * It is called at the beginning of [[prepare()]], right after [[query]] and [[subQuery]] have been created.
      *
-     * @return boolean Whether the query should be prepared and returned to the query builder.
+     * @return bool Whether the query should be prepared and returned to the query builder.
      * If false, the query will be cancelled and no results will be returned.
      * @see prepare()
      * @see beforePrepare()
@@ -1772,7 +1772,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param array $row
      *
-     * @return ElementInterface|boolean
+     * @return ElementInterface|bool
      */
     private function _createElement($row)
     {
@@ -1844,7 +1844,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param mixed $attributes
      *
-     * @return boolean Whether $attributes was an array
+     * @return bool Whether $attributes was an array
      * @todo Remove this in Craft 4, along with the methods that call it.
      */
     private function _setAttributes($attributes)

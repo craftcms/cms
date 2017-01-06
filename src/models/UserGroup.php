@@ -27,7 +27,7 @@ class UserGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -73,7 +73,7 @@ class UserGroup extends Model
      *
      * @param string $permission
      *
-     * @return boolean
+     * @return bool
      */
     public function can($permission)
     {

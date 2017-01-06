@@ -100,7 +100,7 @@ class SwitchTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
     public function decideIfFork($token)
     {
@@ -110,7 +110,7 @@ class SwitchTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
     public function decideIfEnd($token)
     {

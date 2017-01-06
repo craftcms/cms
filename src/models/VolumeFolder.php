@@ -23,17 +23,17 @@ class VolumeFolder extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer|string Parent ID
+     * @var int|string Parent ID
      */
     public $parentId;
 
     /**
-     * @var integer Volume ID
+     * @var int Volume ID
      */
     public $volumeId;
 

@@ -27,7 +27,7 @@ class VolumeEvent extends Event
     public $volume;
 
     /**
-     * @var boolean Whether the volume is brand new
+     * @var bool Whether the volume is brand new
      */
     public $isNew = false;
 }

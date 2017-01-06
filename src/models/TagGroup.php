@@ -33,7 +33,7 @@ class TagGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -48,7 +48,7 @@ class TagGroup extends Model
     public $handle;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 

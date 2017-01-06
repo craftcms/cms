@@ -8,9 +8,6 @@
 namespace craft\web\twig;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use yii\base\Object;
 
 /** @noinspection PhpInternalEntityUsedInspection */
 
@@ -20,7 +17,7 @@ use yii\base\Object;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  *
- * @method integer[] getDebugInfo()
+ * @method int[] getDebugInfo()
  */
 abstract class Template extends \Twig_Template
 {

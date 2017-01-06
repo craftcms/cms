@@ -109,7 +109,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return boolean
+     * @return bool
      */
     protected function runSubTask($task)
     {

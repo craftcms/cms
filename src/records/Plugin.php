@@ -14,10 +14,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Plugin record.
  *
- * @property integer     $id          ID
+ * @property int         $id          ID
  * @property string      $class       Class
  * @property string      $version     Version
- * @property boolean     $enabled     Enabled
+ * @property bool        $enabled     Enabled
  * @property array       $settings    Settings
  * @property \DateTime   $installDate Install date
  * @property Migration[] $migrations  Migrations

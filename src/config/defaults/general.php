@@ -220,7 +220,7 @@ return [
     /**
      * The default day that new users should have set as their “Week Start Day”.
      *
-     * This should be set to an integer from `0` to `6` where:
+     * This should be set to an int from `0` to `6` where:
      *
      * - `0` represents Sunday
      * - `1` represents Monday

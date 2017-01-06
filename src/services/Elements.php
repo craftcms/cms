@@ -135,9 +135,9 @@ class Elements extends Component
      *
      * The element’s status will not be a factor when using this method.
      *
-     * @param integer      $elementId   The element’s ID.
-     * @param string|null  $elementType The element class.
-     * @param integer|null $siteId      The site to fetch the element in.
+     * @param int         $elementId    The element’s ID.
+     * @param string|null $elementType  The element class.
+     * @param int|null    $siteId       The site to fetch the element in.
      *                                  Defaults to the current site.
      *
      * @return ElementInterface|null The matching element, or `null`.
@@ -171,10 +171,10 @@ class Elements extends Component
     /**
      * Returns an element by its URI.
      *
-     * @param string       $uri         The element’s URI.
-     * @param integer|null $siteId      The site to look for the URI in, and to return the element in.
+     * @param string   $uri             The element’s URI.
+     * @param int|null $siteId          The site to look for the URI in, and to return the element in.
      *                                  Defaults to the current site.
-     * @param boolean      $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
+     * @param bool     $enabledOnly     Whether to only look for an enabled element. Defaults to `false`.
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
@@ -225,7 +225,7 @@ class Elements extends Component
      *
      * If an array is passed in, then an array will be returned.
      *
-     * @param integer|array $elementId The element’s ID, or an array of element IDs.
+     * @param int|array $elementId The element’s ID, or an array of element IDs.
      *
      * @return ElementInterface|ElementInterface[]|Element|Element[]|false The element class(es).
      */
@@ -250,8 +250,8 @@ class Elements extends Component
     /**
      * Returns an element’s URI for a given site.
      *
-     * @param integer $elementId The element’s ID.
-     * @param integer $siteId    The site to search for the element’s URI in.
+     * @param int $elementId The element’s ID.
+     * @param int $siteId    The site to search for the element’s URI in.
      *
      * @return string|null The element’s URI, or `null`.
      */
@@ -267,9 +267,9 @@ class Elements extends Component
     /**
      * Returns the site IDs that a given element is enabled in.
      *
-     * @param integer $elementId The element’s ID.
+     * @param int $elementId The element’s ID.
      *
-     * @return integer[] The site IDs that the element is enabled in. If the element could not be found, an empty array
+     * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      *                   will be returned.
      */
     public function getEnabledSiteIdsForElement($elementId)
@@ -329,9 +329,9 @@ class Elements extends Component
      * ```
      *
      * @param ElementInterface $element       The element that is being saved
-     * @param boolean|null     $runValidation Whether the element should be validated
+     * @param bool|null        $runValidation Whether the element should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
@@ -644,9 +644,9 @@ class Elements extends Component
      * Updates an element’s slug and URI, along with any descendants.
      *
      * @param ElementInterface $element           The element to update.
-     * @param boolean          $updateOtherSites  Whether the element’s other sites should also be updated.
-     * @param boolean          $updateDescendants Whether the element’s descendants should also be updated.
-     * @param boolean          $asTask            Whether the element’s slug and URI should be updated via a background task.
+     * @param bool             $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param bool             $updateDescendants Whether the element’s descendants should also be updated.
+     * @param bool             $asTask            Whether the element’s slug and URI should be updated via a background task.
      *
      * @return void
      */
@@ -723,8 +723,8 @@ class Elements extends Component
      * Updates an element’s descendants’ slugs and URIs.
      *
      * @param ElementInterface $element          The element whose descendants should be updated.
-     * @param boolean          $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param boolean          $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param bool             $updateOtherSites Whether the element’s other sites should also be updated.
+     * @param bool             $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
      *
      * @return void
      */
@@ -770,10 +770,10 @@ class Elements extends Component
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param integer $mergedElementId     The ID of the element that is going away.
-     * @param integer $prevailingElementId The ID of the element that is sticking around.
+     * @param int $mergedElementId     The ID of the element that is going away.
+     * @param int $prevailingElementId The ID of the element that is sticking around.
      *
-     * @return boolean Whether the elements were merged successfully.
+     * @return bool Whether the elements were merged successfully.
      * @throws \Exception if reasons
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
@@ -887,12 +887,12 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param integer      $elementId   The element’s ID
-     * @param string|null  $elementType The element class.
-     * @param integer|null $siteId      The site to fetch the element in.
+     * @param int         $elementId    The element’s ID
+     * @param string|null $elementType  The element class.
+     * @param int|null    $siteId       The site to fetch the element in.
      *                                  Defaults to the current site.
      *
-     * @return boolean Whether the element was deleted successfully
+     * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
     public function deleteElementById($elementId, $elementType = null, $siteId = null)
@@ -933,7 +933,7 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to be deleted
      *
-     * @return boolean Whether the element was deleted successfully
+     * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
     public function deleteElement($element)
@@ -1227,8 +1227,8 @@ class Elements extends Component
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param integer $id     The element’s ID
-     * @param integer $siteId The element’s site ID
+     * @param int $id     The element’s ID
+     * @param int $siteId The element’s site ID
      *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()

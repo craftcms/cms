@@ -32,7 +32,7 @@ abstract class Controller extends \yii\web\Controller
     // =========================================================================
 
     /**
-     * @var boolean|string[] Whether this controller’s actions can be accessed anonymously
+     * @var bool|string[] Whether this controller’s actions can be accessed anonymously
      *
      * If set to false, you are required to be logged in to execute any of the given controller's actions.
      *

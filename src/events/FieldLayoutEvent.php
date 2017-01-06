@@ -27,7 +27,7 @@ class FieldLayoutEvent extends Event
     public $layout;
 
     /**
-     * @var boolean Whether the field is brand new
+     * @var bool Whether the field is brand new
      */
     public $isNew = false;
 }

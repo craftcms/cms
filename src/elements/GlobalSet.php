@@ -81,7 +81,7 @@ class GlobalSet extends Element
     public $handle;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 

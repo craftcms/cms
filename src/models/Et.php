@@ -45,7 +45,7 @@ class Et extends Model
     public $licensedDomain;
 
     /**
-     * @var boolean Edition testable domain
+     * @var bool Edition testable domain
      */
     public $editionTestableDomain = false;
 
@@ -100,7 +100,7 @@ class Et extends Model
     public $userEmail;
 
     /**
-     * @var boolean Show beta updates
+     * @var bool Show beta updates
      */
     public $showBeta = false;
 

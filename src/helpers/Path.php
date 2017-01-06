@@ -23,7 +23,7 @@ class Path
      *
      * @param string $path
      *
-     * @return boolean
+     * @return bool
      */
     public static function ensurePathIsContained($path)
     {

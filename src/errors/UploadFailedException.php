@@ -24,7 +24,7 @@ class UploadFailedException extends FileException
     /**
      * Constructor
      *
-     * @param integer $errorCode
+     * @param int $errorCode
      */
     public function __construct($errorCode)
     {

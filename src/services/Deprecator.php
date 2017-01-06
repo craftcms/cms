@@ -53,7 +53,7 @@ class Deprecator extends Component
      * @param string $key
      * @param string $message
      *
-     * @return boolean
+     * @return bool
      */
     public function log($key, $message)
     {
@@ -142,7 +142,7 @@ class Deprecator extends Component
     /**
      * Returns the total number of deprecation errors that have been logged.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalLogs()
     {
@@ -154,7 +154,7 @@ class Deprecator extends Component
     /**
      * Get 'em all.
      *
-     * @param integer $limit
+     * @param int $limit
      *
      * @return DeprecationError[]
      */
@@ -203,7 +203,7 @@ class Deprecator extends Component
      *
      * @param $id
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteLogById($id)
     {
@@ -217,7 +217,7 @@ class Deprecator extends Component
     /**
      * Deletes all logs.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteAllLogs()
     {

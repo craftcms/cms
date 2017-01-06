@@ -27,11 +27,11 @@ use yii\base\InvalidConfigException;
  *
  * An instance of the Sites service is globally accessible in Craft via [[Application::sites `Craft::$app->getSites()`]].
  *
- * @property integer[] $allSiteIds         All of the site IDs
- * @property integer[] $editableSiteIds    All of the site IDs that are editable by the current user
- * @property Site      $primarySite        The primary site
- * @property integer   $totalSites         The total number of sites
- * @property integer   $totalEditableSites The total number of sites that are editable by the current user
+ * @property int[] $allSiteIds         All of the site IDs
+ * @property int[] $editableSiteIds    All of the site IDs that are editable by the current user
+ * @property Site  $primarySite        The primary site
+ * @property int   $totalSites         The total number of sites
+ * @property int   $totalEditableSites The total number of sites that are editable by the current user
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -89,7 +89,7 @@ class Sites extends Component
     public $currentSite;
 
     /**
-     * @var integer[]
+     * @var int[]
      */
     private $_editableSiteIds;
 
@@ -109,7 +109,7 @@ class Sites extends Component
     private $_primarySite;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_fetchedAllSites = false;
 
@@ -184,7 +184,7 @@ class Sites extends Component
     /**
      * Returns all of the site IDs.
      *
-     * @return integer[] All the sites’ IDs
+     * @return int[] All the sites’ IDs
      */
     public function getAllSiteIds()
     {
@@ -267,7 +267,7 @@ class Sites extends Component
     /**
      * Gets the total number of sites.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalSites()
     {
@@ -277,7 +277,7 @@ class Sites extends Component
     /**
      * Gets the total number of sites that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalEditableSites()
     {
@@ -287,7 +287,7 @@ class Sites extends Component
     /**
      * Returns a site by its ID.
      *
-     * @param integer $siteId
+     * @param int $siteId
      *
      * @return Site|null
      */
@@ -355,10 +355,10 @@ class Sites extends Component
     /**
      * Saves a site.
      *
-     * @param Site    $site          The site to be saved
-     * @param boolean $runValidation Whether the site should be validated
+     * @param Site $site          The site to be saved
+     * @param bool $runValidation Whether the site should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws \Exception if reasons
      */
@@ -480,9 +480,9 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param integer[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      *
-     * @return boolean Whether the sites were reordered successfthe sites are reorderedy
+     * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Exception if reasons
      */
     public function reorderSites($siteIds)
@@ -528,10 +528,10 @@ class Sites extends Component
     /**
      * Deletes a site by its ID.
      *
-     * @param integer      $siteId            The site ID to be deleted
-     * @param integer|null $transferContentTo The site ID that should take over the deleted site’s contents
+     * @param int      $siteId            The site ID to be deleted
+     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
-     * @return boolean Whether the site was deleted successfully
+     * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteSiteById($siteId, $transferContentTo = null)
@@ -548,10 +548,10 @@ class Sites extends Component
     /**
      * Deletes a site.
      *
-     * @param Site         $site              The site to be deleted
-     * @param integer|null $transferContentTo The site ID that should take over the deleted site’s contents
+     * @param Site     $site              The site to be deleted
+     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
-     * @return boolean Whether the site was deleted successfully
+     * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteSite(Site $site, $transferContentTo = null)
@@ -843,8 +843,8 @@ class Sites extends Component
     /**
      * Handles things that happen when there's a new primary site
      *
-     * @param integer $oldPrimarySiteId
-     * @param integer $newPrimarySiteId
+     * @param int $oldPrimarySiteId
+     * @param int $newPrimarySiteId
      */
     private function _processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId)
     {

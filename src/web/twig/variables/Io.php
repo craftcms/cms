@@ -25,7 +25,7 @@ class Io
     /**
      * Return max upload size in bytes.
      *
-     * @return integer
+     * @return int
      */
     public function getMaxUploadSize()
     {

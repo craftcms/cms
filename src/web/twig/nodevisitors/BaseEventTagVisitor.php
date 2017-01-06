@@ -19,24 +19,24 @@ abstract class BaseEventTagVisitor implements \Twig_NodeVisitorInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the head() tag has been found/added
+     * @var bool Whether the head() tag has been found/added
      */
     protected static $foundHead = false;
 
     /**
-     * @var boolean Whether the beginBody() tag has been found/added
+     * @var bool Whether the beginBody() tag has been found/added
      */
     protected static $foundBeginBody = false;
 
     /**
-     * @var boolean Whether the endBody() tag has been found/added
+     * @var bool Whether the endBody() tag has been found/added
      */
     protected static $foundEndBody = false;
 
     /**
      * Returns whether all event tags have been found/added.
      *
-     * @return boolean
+     * @return bool
      */
     protected static function foundAllEventTags()
     {

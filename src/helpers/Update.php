@@ -95,7 +95,7 @@ class Update
      *
      * @param string $backupPath
      *
-     * @return boolean
+     * @return bool
      */
     public static function rollBackDatabaseChanges($backupPath)
     {
@@ -124,7 +124,7 @@ class Update
      * @param string $sourceTempFolder
      * @param string $handle
      *
-     * @return boolean
+     * @return bool
      */
     public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
     {
@@ -173,7 +173,7 @@ class Update
     /**
      * @param $line
      *
-     * @return boolean
+     * @return bool
      */
     public static function isManifestVersionInfoLine($line)
     {
@@ -203,7 +203,7 @@ class Update
      *
      * @param $line
      *
-     * @return boolean
+     * @return bool
      */
     public static function isManifestMigrationLine($line)
     {

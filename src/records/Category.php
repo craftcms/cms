@@ -13,8 +13,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * Category record.
  *
- * @property integer       $id      ID
- * @property integer       $groupId Group ID
+ * @property int           $id      ID
+ * @property int           $groupId Group ID
  * @property Element       $element Element
  * @property CategoryGroup $group   Group
  *

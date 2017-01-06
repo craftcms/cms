@@ -36,14 +36,14 @@ use yii\helpers\Markdown;
  *
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
- * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
- * @property boolean $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
- * @property boolean $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
- * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
- * @property boolean $isManualUpdateRequired    Whether a manual update is required
- * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
- * @property boolean $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
- * @property boolean $isUpdateInfoCached        Whether the update info is cached
+ * @property bool $hasCraftBuildChanged      Whether a different Craft build has been uploaded
+ * @property bool $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
+ * @property bool $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
+ * @property bool $isCriticalUpdateAvailable Whether a critical update is available
+ * @property bool $isManualUpdateRequired    Whether a manual update is required
+ * @property bool $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
+ * @property bool $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
+ * @property bool $isUpdateInfoCached        Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -77,7 +77,7 @@ class Updates extends Component
     private $_updateModel;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_isCraftDbMigrationNeeded;
 
@@ -87,7 +87,7 @@ class Updates extends Component
     /**
      * @param $craftReleases
      *
-     * @return boolean
+     * @return bool
      */
     public function criticalCraftUpdateAvailable($craftReleases)
     {
@@ -103,7 +103,7 @@ class Updates extends Component
     /**
      * @param $plugins
      *
-     * @return boolean
+     * @return bool
      */
     public function criticalPluginUpdateAvailable($plugins)
     {
@@ -123,7 +123,7 @@ class Updates extends Component
     /**
      * Returns whether the update info is cached.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsUpdateInfoCached()
     {
@@ -131,7 +131,7 @@ class Updates extends Component
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function getTotalAvailableUpdates()
     {
@@ -163,7 +163,7 @@ class Updates extends Component
     /**
      * Returns whether a critical update is available.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsCriticalUpdateAvailable()
     {
@@ -183,7 +183,7 @@ class Updates extends Component
     /**
      * Returns whether a manual update is required.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsManualUpdateRequired()
     {
@@ -191,7 +191,7 @@ class Updates extends Component
     }
 
     /**
-     * @param boolean $forceRefresh
+     * @param bool $forceRefresh
      *
      * @return Update|false
      */
@@ -237,7 +237,7 @@ class Updates extends Component
     /**
      * @param PluginInterface $plugin
      *
-     * @return boolean
+     * @return bool
      */
     public function setNewPluginInfo(PluginInterface $plugin)
     {
@@ -508,8 +508,8 @@ class Updates extends Component
     }
 
     /**
-     * @param boolean $manual
-     * @param string  $handle
+     * @param bool   $manual
+     * @param string $handle
      *
      * @return array
      */
@@ -731,9 +731,9 @@ class Updates extends Component
     }
 
     /**
-     * @param string|false   $uid
-     * @param string         $handle
-     * @param string|boolean $dbBackupPath
+     * @param string|false $uid
+     * @param string       $handle
+     * @param string|bool  $dbBackupPath
      *
      * @return array
      */
@@ -780,7 +780,7 @@ class Updates extends Component
     /**
      * Returns whether a plugin needs to run a database update.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsPluginDbUpdateNeeded()
     {
@@ -798,7 +798,7 @@ class Updates extends Component
     /**
      * Returns whether a different Craft version has been uploaded.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHasCraftVersionChanged()
     {
@@ -810,7 +810,7 @@ class Updates extends Component
      *
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsBreakpointUpdateNeeded()
     {
@@ -820,7 +820,7 @@ class Updates extends Component
     /**
      * Returns whether the uploaded DB schema is equal to or greater than the installed schema.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsSchemaVersionCompatible()
     {
@@ -832,7 +832,7 @@ class Updates extends Component
     /**
      * Returns whether Craft needs to run any database migrations.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsCraftDbMigrationNeeded()
     {
@@ -847,7 +847,7 @@ class Updates extends Component
     /**
      * Updates the Craft version info in the craft_info table.
      *
-     * @return boolean
+     * @return bool
      */
     public function updateCraftVersionInfo()
     {

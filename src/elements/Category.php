@@ -212,17 +212,17 @@ class Category extends Element
     // =========================================================================
 
     /**
-     * @var integer Group ID
+     * @var int Group ID
      */
     public $groupId;
 
     /**
-     * @var integer New parent ID
+     * @var int New parent ID
      */
     public $newParentId;
 
     /**
-     * @var boolean
+     * @var bool
      * @see _hasNewParent()
      */
     private $_hasNewParent;
@@ -506,7 +506,7 @@ class Category extends Element
     /**
      * Returns whether the category has been assigned a new parent entry.
      *
-     * @return boolean
+     * @return bool
      * @see beforeSave()
      * @see afterSave()
      */
@@ -522,7 +522,7 @@ class Category extends Element
     /**
      * Checks if an category was submitted with a new parent category selected.
      *
-     * @return boolean
+     * @return bool
      */
     private function _checkForNewParent()
     {

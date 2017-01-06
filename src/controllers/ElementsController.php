@@ -296,7 +296,7 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param boolean          $includeSites
+     * @param bool             $includeSites
      *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element

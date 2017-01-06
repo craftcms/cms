@@ -18,19 +18,19 @@ use yii\web\BadRequestHttpException;
 /**
  * @inheritdoc
  *
- * @property string  $fullPath               The full requested path, including the CP trigger and pagination info.
- * @property string  $path                   The requested path, sans CP trigger and pagination info.
- * @property array   $segments               The segments of the requested path.
- * @property int     $pageNum                The requested page number.
- * @property string  $token                  The token submitted with the request, if there is one.
- * @property boolean $isCpRequest            Whether the Control Panel was requested.
- * @property boolean $isSiteRequest          Whether the front end site was requested.
- * @property boolean $isResourceRequest      Whether a resource was requested.
- * @property boolean $isActionRequest        Whether a specific controller action was requested.
- * @property array   $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
- * @property boolean $isLivePreview          Whether this is a Live Preview request.
- * @property string  $hostName               The host name from the current request URL.
- * @property string  $queryStringWithoutPath The request’s query string, without the path parameter.
+ * @property string $fullPath               The full requested path, including the CP trigger and pagination info.
+ * @property string $path                   The requested path, sans CP trigger and pagination info.
+ * @property array  $segments               The segments of the requested path.
+ * @property int    $pageNum                The requested page number.
+ * @property string $token                  The token submitted with the request, if there is one.
+ * @property bool   $isCpRequest            Whether the Control Panel was requested.
+ * @property bool   $isSiteRequest          Whether the front end site was requested.
+ * @property bool   $isResourceRequest      Whether a resource was requested.
+ * @property bool   $isActionRequest        Whether a specific controller action was requested.
+ * @property array  $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
+ * @property bool   $isLivePreview          Whether this is a Live Preview request.
+ * @property string $hostName               The host name from the current request URL.
+ * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -91,12 +91,12 @@ class Request extends \yii\web\Request
     private $_actionSegments;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_isMobileBrowser;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_isMobileOrTabletBrowser;
 
@@ -111,12 +111,12 @@ class Request extends \yii\web\Request
     private $_craftCsrfToken;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_encodedQueryParams = false;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_encodedBodyParams = false;
 
@@ -252,7 +252,7 @@ class Request extends \yii\web\Request
      *
      * If $returnRealPathInfo is returned, then [[parent::getPathInfo()]] will be returned.
      *
-     * @param boolean $returnRealPathInfo Whether the real path info should be returned instead.
+     * @param bool $returnRealPathInfo Whether the real path info should be returned instead.
      *
      * @see \yii\web\UrlManager::processRequest()
      * @see \yii\web\UrlRule::processRequest()
@@ -285,7 +285,7 @@ class Request extends \yii\web\Request
     /**
      * Returns a specific segment from the Craft path.
      *
-     * @param integer $num Which segment to return (1-indexed).
+     * @param int $num Which segment to return (1-indexed).
      *
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
@@ -309,7 +309,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the requested page number.
      *
-     * @return integer The requested page number.
+     * @return int The requested page number.
      */
     public function getPageNum()
     {
@@ -335,7 +335,7 @@ class Request extends \yii\web\Request
      * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
      * It could instead route to a resource, for example.
      *
-     * @return boolean Whether the current request should be routed to the Control Panel.
+     * @return bool Whether the current request should be routed to the Control Panel.
      */
     public function getIsCpRequest()
     {
@@ -347,7 +347,7 @@ class Request extends \yii\web\Request
      *
      * The result will always just be the opposite of whatever [[getIsCpRequest()]] returns.
      *
-     * @return boolean Whether the current request should be routed to the front-end site.
+     * @return bool Whether the current request should be routed to the front-end site.
      */
     public function getIsSiteRequest()
     {
@@ -360,7 +360,7 @@ class Request extends \yii\web\Request
      * The result depends on whether the first segment in the Craft path matches the
      * [resource trigger](http://craftcms.com/docs/config-settings#resourceTrigger).
      *
-     * @return boolean Whether the current request should be routed to a resource.
+     * @return bool Whether the current request should be routed to a resource.
      */
     public function getIsResourceRequest()
     {
@@ -379,7 +379,7 @@ class Request extends \yii\web\Request
      * - If there is an 'action' param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
-     * @return boolean Whether the current request should be routed to a controller action.
+     * @return bool Whether the current request should be routed to a controller action.
      */
     public function getIsActionRequest()
     {
@@ -403,7 +403,7 @@ class Request extends \yii\web\Request
     /**
      * Returns whether this is a Live Preview request.
      *
-     * @return boolean Whether this is a Live Preview request.
+     * @return bool Whether this is a Live Preview request.
      */
     public function getIsLivePreview()
     {
@@ -419,9 +419,9 @@ class Request extends \yii\web\Request
      *
      * The detection script is provided by http://detectmobilebrowsers.com. It was last updated on 2014-11-24.
      *
-     * @param boolean $detectTablets Whether tablets should be considered “mobile”.
+     * @param bool $detectTablets Whether tablets should be considered “mobile”.
      *
-     * @return boolean Whether the request is coming from a mobile browser.
+     * @return bool Whether the request is coming from a mobile browser.
      */
     public function isMobileBrowser($detectTablets = false)
     {
@@ -769,7 +769,7 @@ class Request extends \yii\web\Request
      * This token may be passed along via a hidden field of an HTML form or an HTTP header value
      * to support CSRF validation.
      *
-     * @param boolean $regenerate whether to regenerate CSRF token. When this parameter is true, each time
+     * @param bool $regenerate    whether to regenerate CSRF token. When this parameter is true, each time
      *                            this method is called, a new CSRF token will be generated and persisted (in session or cookie).
      *
      * @return string the token used to perform CSRF validation.
@@ -868,7 +868,7 @@ class Request extends \yii\web\Request
      *
      * @param string $token
      *
-     * @return boolean
+     * @return bool
      */
     protected function csrfTokenValidForCurrentUser($token)
     {
@@ -1051,7 +1051,7 @@ class Request extends \yii\web\Request
     /**
      * @param string $ip
      *
-     * @return boolean
+     * @return bool
      */
     private function _validateIp($ip)
     {

@@ -106,32 +106,32 @@ class MatrixBlock extends Element
     // =========================================================================
 
     /**
-     * @var integer Field ID
+     * @var int Field ID
      */
     public $fieldId;
 
     /**
-     * @var integer Owner ID
+     * @var int Owner ID
      */
     public $ownerId;
 
     /**
-     * @var integer Owner site ID
+     * @var int Owner site ID
      */
     public $ownerSiteId;
 
     /**
-     * @var integer Type ID
+     * @var int Type ID
      */
     public $typeId;
 
     /**
-     * @var integer Sort order
+     * @var int Sort order
      */
     public $sortOrder;
 
     /**
-     * @var boolean Collapsed
+     * @var bool Collapsed
      */
     public $collapsed = false;
 

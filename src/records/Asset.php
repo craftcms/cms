@@ -15,14 +15,14 @@ use yii\db\ActiveQueryInterface;
  *
  * @todo   Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
- * @property integer      $id           ID
- * @property integer      $volumeId     Volume ID
- * @property integer      $folderId     Folder ID
+ * @property int          $id           ID
+ * @property int          $volumeId     Volume ID
+ * @property int          $folderId     Folder ID
  * @property string       $filename     Filename
  * @property string       $kind         Kind
- * @property integer      $width        Width
- * @property integer      $height       Height
- * @property integer      $size         Size
+ * @property int          $width        Width
+ * @property int          $height       Height
+ * @property int          $size         Size
  * @property \DateTime    $dateModified Date modified
  * @property Element      $element      Element
  * @property Volume       $volume       Volume

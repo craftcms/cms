@@ -26,7 +26,7 @@ class DeleteUsers extends ElementAction
     // =========================================================================
 
     /**
-     * @var integer The user ID that the deleted user’s content should be transferred to
+     * @var int The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
 

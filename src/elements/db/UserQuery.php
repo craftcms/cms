@@ -35,22 +35,22 @@ class UserQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return users that are admins.
+     * @var bool Whether to only return users that are admins.
      */
     public $admin;
 
     /**
-     * @var boolean Whether to only return the client user.
+     * @var bool Whether to only return the client user.
      */
     public $client;
 
     /**
-     * @var string|integer The permission that the resulting users must have.
+     * @var string|int The permission that the resulting users must have.
      */
     public $can;
 
     /**
-     * @var integer|integer[] The tag group ID(s) that the resulting users must be in.
+     * @var int|int[] The tag group ID(s) that the resulting users must be in.
      */
     public $groupId;
 
@@ -80,7 +80,7 @@ class UserQuery extends ElementQuery
     public $lastLoginDate;
 
     /**
-     * @var boolean Whether the users' passwords should be fetched.
+     * @var bool Whether the users' passwords should be fetched.
      */
     public $withPassword = false;
 
@@ -120,7 +120,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[admin]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -134,7 +134,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[client]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -148,7 +148,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[can]] property.
      *
-     * @param string|integer $value The property value
+     * @param string|int $value The property value
      *
      * @return static self reference
      */
@@ -185,7 +185,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -269,7 +269,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[withPassword]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */

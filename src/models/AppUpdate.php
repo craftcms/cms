@@ -52,17 +52,17 @@ class AppUpdate extends Model
     public $realLatestDate;
 
     /**
-     * @var boolean Critical update available
+     * @var bool Critical update available
      */
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var boolean Manual update required
+     * @var bool Manual update required
      */
     public $manualUpdateRequired = false;
 
     /**
-     * @var boolean Breakpoint release
+     * @var bool Breakpoint release
      */
     public $breakpointRelease = false;
 

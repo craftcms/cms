@@ -19,7 +19,7 @@ trait FieldTrait
     // =========================================================================
 
     /**
-     * @var integer The field’s group’s ID
+     * @var int The field’s group’s ID
      */
     public $groupId;
 
@@ -67,22 +67,22 @@ trait FieldTrait
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer The ID of the field layout that the field was fetched from
+     * @var int The ID of the field layout that the field was fetched from
      */
     public $layoutId;
 
     /**
-     * @var integer The tab ID of the field layout that the field was fetched from
+     * @var int The tab ID of the field layout that the field was fetched from
      */
     public $tabId;
 
     /**
-     * @var boolean Whether the field is required in the field layout it was fetched from
+     * @var bool Whether the field is required in the field layout it was fetched from
      */
     public $required;
 
     /**
-     * @var integer The field’s sort position in the field layout it was fetched from
+     * @var int The field’s sort position in the field layout it was fetched from
      */
     public $sortOrder;
 }

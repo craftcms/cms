@@ -41,22 +41,22 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|integer[] The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[] The field ID(s) that the resulting Matrix blocks must belong to.
      */
     public $fieldId;
 
     /**
-     * @var integer|integer[] The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[] The owner element ID(s) that the resulting Matrix blocks must belong to.
      */
     public $ownerId;
 
     /**
-     * @var integer The site ID that the resulting Matrix blocks must have been defined in.
+     * @var int The site ID that the resulting Matrix blocks must have been defined in.
      */
     public $ownerSiteId;
 
     /**
-     * @var integer|integer[] The block type ID(s) that the resulting Matrix blocks must have.
+     * @var int|int[] The block type ID(s) that the resulting Matrix blocks must have.
      */
     public $typeId;
 
@@ -100,7 +100,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[fieldId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -114,7 +114,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[ownerId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -128,7 +128,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[ownerSiteId]] and [[siteId]] properties.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -228,7 +228,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */

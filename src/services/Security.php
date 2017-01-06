@@ -46,7 +46,7 @@ class Security extends \yii\base\Security
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public function getMinimumPasswordLength()
     {
@@ -56,8 +56,8 @@ class Security extends \yii\base\Security
     /**
      * Hashes a given password with the bcrypt blowfish encryption algorithm.
      *
-     * @param string  $password     The string to hash
-     * @param boolean $validateHash If you want to validate the just generated hash. Will throw an exception if
+     * @param string $password      The string to hash
+     * @param bool   $validateHash  If you want to validate the just generated hash. Will throw an exception if
      *                              validation fails.
      *
      * @return string The hash.
@@ -112,7 +112,7 @@ class Security extends \yii\base\Security
      * @param string      $data    the data to be protected
      * @param string|null $key     the secret key to be used for generating hash. Should be a secure
      *                             cryptographic key.
-     * @param boolean     $rawHash whether the generated hash value is in raw binary format. If false, lowercase
+     * @param bool        $rawHash whether the generated hash value is in raw binary format. If false, lowercase
      *                             hex digits will be generated.
      *
      * @return string the data prefixed with the keyed hash
@@ -140,7 +140,7 @@ class Security extends \yii\base\Security
      * @param string|null $key     the secret key that was previously used to generate the hash for the data in [[hashData()]].
      *                             function to see the supported hashing algorithms on your system. This must be the same
      *                             as the value passed to [[hashData()]] when generating the hash for the data.
-     * @param boolean     $rawHash this should take the same value as when you generate the data using [[hashData()]].
+     * @param bool        $rawHash this should take the same value as when you generate the data using [[hashData()]].
      *                             It indicates whether the hash value in the data is in binary format. If false, it means the hash value consists
      *                             of lowercase hex digits only.
      *                             hex digits will be generated.

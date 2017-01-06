@@ -12,8 +12,8 @@ use craft\events\ModelEvent;
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
- * @property boolean $isNew    Whether the component is new (unsaved)
- * @property array   $settings The component’s settings
+ * @property bool  $isNew    Whether the component is new (unsaved)
+ * @property array $settings The component’s settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

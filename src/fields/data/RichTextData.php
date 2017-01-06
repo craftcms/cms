@@ -93,7 +93,7 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns a specific page.
      *
-     * @param integer $pageNumber
+     * @param int $pageNumber
      *
      * @return string|null
      */
@@ -111,7 +111,7 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns the total number of pages.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalPages()
     {

@@ -13,14 +13,14 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Widget record.
  *
- * @property integer $id        ID
- * @property integer $userId    User ID
- * @property string  $type      Type
- * @property string  $sortOrder Sort order
- * @property integer $colspan   Colspan
- * @property array   $settings  Settings
- * @property boolean $enabled   Enabled
- * @property User    $user      User
+ * @property int    $id        ID
+ * @property int    $userId    User ID
+ * @property string $type      Type
+ * @property string $sortOrder Sort order
+ * @property int    $colspan   Colspan
+ * @property array  $settings  Settings
+ * @property bool   $enabled   Enabled
+ * @property User   $user      User
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

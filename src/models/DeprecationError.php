@@ -24,7 +24,7 @@ class DeprecationError extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -49,7 +49,7 @@ class DeprecationError extends Model
     public $file;
 
     /**
-     * @var integer Line
+     * @var int Line
      */
     public $line;
 
@@ -69,7 +69,7 @@ class DeprecationError extends Model
     public $template;
 
     /**
-     * @var integer Template line
+     * @var int Template line
      */
     public $templateLine;
 

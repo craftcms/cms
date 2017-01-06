@@ -13,12 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Section record.
  *
- * @property integer                $id               ID
- * @property integer                $structureId      Structure ID
+ * @property int                    $id               ID
+ * @property int                    $structureId      Structure ID
  * @property string                 $name             Name
  * @property string                 $handle           Handle
  * @property string                 $type             Type
- * @property boolean                $enableVersioning Enable versioning
+ * @property bool                   $enableVersioning Enable versioning
  * @property Section_SiteSettings[] $siteSettings     Site settings
  * @property Structure              $structure        Structure
  *

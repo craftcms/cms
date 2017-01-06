@@ -44,7 +44,7 @@ class Feed extends Widget
     public $title;
 
     /**
-     * @var integer The maximum number of feed items to display
+     * @var int The maximum number of feed items to display
      */
     public $limit = 5;
 

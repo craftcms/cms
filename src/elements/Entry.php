@@ -453,17 +453,17 @@ class Entry extends Element
     // =========================================================================
 
     /**
-     * @var integer Section ID
+     * @var int Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Type ID
+     * @var int Type ID
      */
     public $typeId;
 
     /**
-     * @var integer Author ID
+     * @var int Author ID
      */
     public $authorId;
 
@@ -478,7 +478,7 @@ class Entry extends Element
     public $expiryDate;
 
     /**
-     * @var integer New parent ID
+     * @var int New parent ID
      */
     public $newParentId;
 
@@ -493,7 +493,7 @@ class Entry extends Element
     private $_author;
 
     /**
-     * @var boolean
+     * @var bool
      * @see _hasNewParent()
      */
     private $_hasNewParent;
@@ -994,7 +994,7 @@ EOD;
     /**
      * Returns whether the entry has been assigned a new parent entry.
      *
-     * @return boolean
+     * @return bool
      * @see beforeSave()
      * @see afterSave()
      */
@@ -1010,7 +1010,7 @@ EOD;
     /**
      * Checks if the entry has been assigned a new parent entry.
      *
-     * @return boolean
+     * @return bool
      * @see _hasNewParent()
      */
     private function _checkForNewParent()

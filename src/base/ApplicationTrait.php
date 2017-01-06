@@ -37,8 +37,8 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Assets          $assets             The assets service
  * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
  * @property \craft\services\AssetTransforms $assetTransforms    The asset transforms service
- * @property boolean                         $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
- * @property boolean                         $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
+ * @property bool                            $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
+ * @property bool                            $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\services\Categories      $categories         The categories service
  * @property \craft\services\Config          $config             The config service
  * @property \craft\services\Content         $content            The content service
@@ -56,14 +56,14 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Fields          $fields             The fields service
  * @property Formatter                       $formatter          The formatter component
  * @property \craft\services\Globals         $globals            The globals service
- * @property boolean                         $hasWrongEdition    Whether Craft is running with the wrong edition
+ * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
  * @property \craft\services\Images          $images             The images service
- * @property boolean                         $sInMaintenanceMode Whether the system is in maintenance mode
- * @property boolean                         $isInstalled        Whether Craft is installed
- * @property boolean                         $sMultiSite         Whether this site has multiple sites
- * @property boolean                         $isUpdating         Whether Craft is in the middle of updating itself
- * @property boolean                         $isSystemOn         Whether the front end is accepting HTTP requests
+ * @property bool                            $sInMaintenanceMode Whether the system is in maintenance mode
+ * @property bool                            $isInstalled        Whether Craft is installed
+ * @property bool                            $sMultiSite         Whether this site has multiple sites
+ * @property bool                            $isUpdating         Whether Craft is in the middle of updating itself
+ * @property bool                            $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\mail\Mailer              $mailer             The mailer component
  * @property \craft\services\Matrix          $matrix             The matrix service
@@ -167,7 +167,7 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param boolean $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool $useUserLanguage Whether the user's preferred language should be used.
      *
      * @return string|null
      */
@@ -243,7 +243,7 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is installed.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsInstalled()
     {
@@ -282,7 +282,7 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is in the middle of updating itself.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsUpdating()
     {
@@ -314,7 +314,7 @@ trait ApplicationTrait
     /**
      * Returns whether this Craft install has multiple sites.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsMultiSite()
     {
@@ -329,7 +329,7 @@ trait ApplicationTrait
     /**
      * Returns the Craft edition.
      *
-     * @return integer
+     * @return int
      */
     public function getEdition()
     {
@@ -351,7 +351,7 @@ trait ApplicationTrait
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getLicensedEdition()
     {
@@ -385,7 +385,7 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is running with the wrong edition.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHasWrongEdition()
     {
@@ -398,9 +398,9 @@ trait ApplicationTrait
     /**
      * Sets the Craft edition.
      *
-     * @param integer $edition The edition to set.
+     * @param int $edition The edition to set.
      *
-     * @return boolean
+     * @return bool
      */
     public function setEdition($edition)
     {
@@ -426,8 +426,8 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param integer $edition  The Craft edition to require.
-     * @param boolean $orBetter If true, makes $edition the minimum edition required.
+     * @param int  $edition  The Craft edition to require.
+     * @param bool $orBetter If true, makes $edition the minimum edition required.
      *
      * @return void
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
@@ -448,7 +448,7 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is eligible to be upgraded to a different edition.
      *
-     * @return boolean
+     * @return bool
      */
     public function getCanUpgradeEdition()
     {
@@ -471,7 +471,7 @@ trait ApplicationTrait
     /**
      * Returns whether Craft is running on a domain that is eligible to test out the editions.
      *
-     * @return boolean
+     * @return bool
      */
     public function getCanTestEditions()
     {
@@ -495,7 +495,7 @@ trait ApplicationTrait
     /**
      * Returns whether the front end is accepting HTTP requests.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsSystemOn()
     {
@@ -510,7 +510,7 @@ trait ApplicationTrait
     /**
      * Returns whether the system is in maintenance mode.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsInMaintenanceMode()
     {
@@ -521,7 +521,7 @@ trait ApplicationTrait
     /**
      * Enables Maintenance Mode.
      *
-     * @return boolean
+     * @return bool
      */
     public function enableMaintenanceMode()
     {
@@ -532,7 +532,7 @@ trait ApplicationTrait
     /**
      * Disables Maintenance Mode.
      *
-     * @return boolean
+     * @return bool
      */
     public function disableMaintenanceMode()
     {
@@ -595,7 +595,7 @@ trait ApplicationTrait
      *
      * @param Info $info
      *
-     * @return boolean
+     * @return bool
      */
     public function saveInfo(Info $info)
     {
@@ -654,7 +654,7 @@ trait ApplicationTrait
      * actually try to connect later on.
      *
      * @throws DbConnectException
-     * @return boolean Whether the config file is valid
+     * @return bool Whether the config file is valid
      */
     public function validateDbConfigFile()
     {
@@ -697,7 +697,7 @@ trait ApplicationTrait
     /**
      * Don't even think of moving this check into Connection->init().
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsDbConnectionValid()
     {
@@ -1278,9 +1278,9 @@ trait ApplicationTrait
     /**
      * Enables or disables Maintenance Mode
      *
-     * @param boolean $value
+     * @param bool $value
      *
-     * @return boolean
+     * @return bool
      */
     private function _setMaintenanceMode($value)
     {

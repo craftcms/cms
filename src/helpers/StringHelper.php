@@ -76,11 +76,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains $needle, false otherwise. By default, the comparison is case-sensitive, but
      * can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $haystack      The string being checked.
-     * @param string  $needle        The substring to look for.
-     * @param boolean $caseSensitive Whether or not to force case-sensitivity.
+     * @param string $haystack      The string being checked.
+     * @param string $needle        The substring to look for.
+     * @param bool   $caseSensitive Whether or not to force case-sensitivity.
      *
-     * @return boolean Whether or not $haystack contains $needle.
+     * @return bool Whether or not $haystack contains $needle.
      */
     public static function contains($haystack, $needle, $caseSensitive = true)
     {
@@ -91,11 +91,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains any $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $haystack      The string being checked.
-     * @param array   $needles       The substrings to look for.
-     * @param boolean $caseSensitive Whether or not to force case-sensitivity.
+     * @param string $haystack      The string being checked.
+     * @param array  $needles       The substrings to look for.
+     * @param bool   $caseSensitive Whether or not to force case-sensitivity.
      *
-     * @return boolean Whether or not $haystack contains any $needles.
+     * @return bool Whether or not $haystack contains any $needles.
      */
     public static function containsAny($haystack, $needles, $caseSensitive = true)
     {
@@ -106,11 +106,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string contains all $needles, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $haystack      The string being checked.
-     * @param array   $needles       The substrings to look for.
-     * @param boolean $caseSensitive Whether or not to force case-sensitivity.
+     * @param string $haystack      The string being checked.
+     * @param array  $needles       The substrings to look for.
+     * @param bool   $caseSensitive Whether or not to force case-sensitivity.
      *
-     * @return boolean Whether or not $haystack contains all $needles.
+     * @return bool Whether or not $haystack contains all $needles.
      */
     public static function containsAll($haystack, $needles, $caseSensitive = true)
     {
@@ -121,11 +121,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the number of occurrences of $substring in the given string. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $str           The string to search through.
-     * @param string  $substring     The substring to search for.
-     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity
+     * @param string $str           The string to search through.
+     * @param string $substring     The substring to search for.
+     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity
      *
-     * @return integer The number of $substring occurrences.
+     * @return int The number of $substring occurrences.
      */
     public static function countSubstrings($str, $substring, $caseSensitive = true)
     {
@@ -151,11 +151,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string ends with $substring, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $str           The string to check the end of.
-     * @param string  $substring     The substring to look for.
-     * @param boolean $caseSensitive Whether or not to force case-sensitivity.
+     * @param string $str           The string to check the end of.
+     * @param string $substring     The substring to look for.
+     * @param bool   $caseSensitive Whether or not to force case-sensitivity.
      *
-     * @return boolean Whether or not $str ends with $substring.
+     * @return bool Whether or not $str ends with $substring.
      */
     public static function endsWith($str, $substring, $caseSensitive = true)
     {
@@ -165,9 +165,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string ends with a given substring.
      *
-     * @param string  &$str          The string to amend
-     * @param string  $substring     The substring to look for
-     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
+     * @param string &$str          The string to amend
+     * @param string $substring     The substring to look for
+     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
      */
@@ -207,8 +207,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the first $n characters of the string.
      *
-     * @param string  $str    The string from which to get the substring.
-     * @param integer $number The Number of chars to retrieve from the start.
+     * @param string $str    The string from which to get the substring.
+     * @param int    $number The Number of chars to retrieve from the start.
      *
      * @return string The first $number characters.
      */
@@ -220,8 +220,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the character at a specific point in a potentially multibyte string.
      *
-     * @param string  $str The string to check.
-     * @param integer $i   The 0-offset position in the string to check.
+     * @param string $str The string to check.
+     * @param int    $i   The 0-offset position in the string to check.
      *
      * @return string
      */
@@ -235,7 +235,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean
+     * @return bool
      */
     public static function hasLowerCase($str)
     {
@@ -247,7 +247,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean
+     * @return bool
      */
     public static function hasUpperCase($str)
     {
@@ -288,9 +288,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Inserts $substring into the string at the $index provided.
      *
-     * @param string  $str       The string to insert into.
-     * @param string  $substring The string to be inserted.
-     * @param integer $index     The 0-based index at which to insert the substring.
+     * @param string $str       The string to insert into.
+     * @param string $substring The string to be inserted.
+     * @param int    $index     The 0-based index at which to insert the substring.
      *
      * @return string The resulting string after the insertion
      */
@@ -304,7 +304,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only alphabetic chars.
+     * @return bool Whether or not $str contains only alphabetic chars.
      */
     public static function isAlpha($str)
     {
@@ -316,7 +316,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only alphanumeric chars.
+     * @return bool Whether or not $str contains only alphanumeric chars.
      */
     public static function isAlphanumeric($str)
     {
@@ -328,7 +328,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only whitespace characters.
+     * @return bool Whether or not $str contains only whitespace characters.
      */
     public static function isWhitespace($str)
     {
@@ -340,7 +340,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only hexadecimal characters
+     * @return bool Whether or not $str contains only hexadecimal characters
      */
     public static function isHexadecimal($str)
     {
@@ -352,7 +352,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only lowercase characters.
+     * @return bool Whether or not $str contains only lowercase characters.
      */
     public static function isLowerCase($str)
     {
@@ -364,7 +364,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to check.
      *
-     * @return boolean Whether or not $str contains only uppercase characters.
+     * @return bool Whether or not $str contains only uppercase characters.
      */
     public static function isUpperCase($str)
     {
@@ -376,7 +376,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $uuid The string to check.
      *
-     * @return boolean Whether the string matches a v4 UUID pattern.
+     * @return bool Whether the string matches a v4 UUID pattern.
      */
     public static function isUUID($uuid)
     {
@@ -386,8 +386,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns the last $number characters of the string.
      *
-     * @param string  $str    The string from which to get the substring.
-     * @param integer $number The Number of chars to retrieve from the end.
+     * @param string $str    The string from which to get the substring.
+     * @param int    $number The Number of chars to retrieve from the end.
      *
      * @return string The last $number characters.
      */
@@ -401,7 +401,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to get the length of.
      *
-     * @return integer The number of characters in $str.
+     * @return int The number of characters in $str.
      */
     public static function length($str)
     {
@@ -442,10 +442,10 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * kebab-cases a string.
      *
-     * @param string  $string            The string
-     * @param string  $glue              The string used to glue the words together (default is a hyphen)
-     * @param boolean $lower             Whether the string should be lowercased (default is true)
-     * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+     * @param string $string            The string
+     * @param string $glue              The string used to glue the words together (default is a hyphen)
+     * @param bool   $lower             Whether the string should be lowercased (default is true)
+     * @param bool   $removePunctuation Whether punctuation marks should be removed (default is true)
      *
      * @return string The kebab-cased string
      *
@@ -572,9 +572,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string of a given length such that the beginning of the string is padded.
      *
-     * @param string  $str    The string to pad.
-     * @param integer $length The desired string length after padding.
-     * @param string  $padStr The string used to pad, defaults to space.
+     * @param string $str    The string to pad.
+     * @param int    $length The desired string length after padding.
+     * @param string $padStr The string used to pad, defaults to space.
      *
      * @return string The padded string.
      */
@@ -586,9 +586,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Returns a new string of a given length such that the end of the string is padded.
      *
-     * @param string  $str    The string to pad.
-     * @param integer $length The desired string length after padding.
-     * @param string  $padStr The string used to pad, defaults to space.
+     * @param string $str    The string to pad.
+     * @param int    $length The desired string length after padding.
+     * @param string $padStr The string used to pad, defaults to space.
      *
      * @return string The padded string.
      */
@@ -603,8 +603,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * cryptographically secure string. If you need a cryptographically secure string, see
      * [[Craft::$app->security->randomString]].
      *
-     * @param integer $length        The length of the random string. Defaults to 36.
-     * @param boolean $extendedChars Whether to include symbols in the random string.
+     * @param int  $length        The length of the random string. Defaults to 36.
+     * @param bool $extendedChars Whether to include symbols in the random string.
      *
      * @return string The randomly generated string.
      */
@@ -624,8 +624,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * cryptographically secure string. If you need a cryptographically secure string, see
      * [[Craft::$app->security->randomString]].
      *
-     * @param string  $validChars A string containing the valid characters
-     * @param integer $length     The length of the random string
+     * @param string $validChars A string containing the valid characters
+     * @param int    $length     The length of the random string
      *
      * @return string The randomly generated string.
      */
@@ -724,9 +724,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding t
      * he desired length.
      *
-     * @param string  $str       The string to truncate.
-     * @param integer $length    The desired length of the truncated string.
-     * @param string  $substring The substring to append if it can fit.
+     * @param string $str       The string to truncate.
+     * @param int    $length    The desired length of the truncated string.
+     * @param string $substring The substring to append if it can fit.
      *
      * @return string The resulting string after truncating.
      */
@@ -739,11 +739,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string begins with $substring, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string  $str           The string to check the start of.
-     * @param string  $substring     The substring to look for.
-     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
+     * @param string $str           The string to check the start of.
+     * @param string $substring     The substring to look for.
+     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity.
      *
-     * @return boolean Whether or not $str starts with $substring.
+     * @return bool Whether or not $str starts with $substring.
      */
     public static function startsWith($str, $substring, $caseSensitive = true)
     {
@@ -753,9 +753,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string starts with a given substring.
      *
-     * @param string  &$str          The string to amend
-     * @param string  $substring     The substring to look for
-     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
+     * @param string &$str          The string to amend
+     * @param string $substring     The substring to look for
+     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
      */
@@ -770,9 +770,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the substring beginning at $start with the specified $length. It differs from the mb_substr() function in
      * that providing a $length of null will return the rest of the string, rather than an empty string.
      *
-     * @param string  $str    The string to get the length of.
-     * @param integer $start  Position of the first character to use.
-     * @param integer $length Maximum number of characters used.
+     * @param string $str    The string to get the length of.
+     * @param int    $start  Position of the first character to use.
+     * @param int    $length Maximum number of characters used.
      *
      * @return string The substring of $str.
      */
@@ -993,7 +993,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $string The string to check.
      *
-     * @return boolean
+     * @return bool
      */
     public static function isUtf8($string)
     {
@@ -1046,9 +1046,9 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Prepares a string for casing routines.
      *
-     * @param string  $string            The string
-     * @param boolean $lower
-     * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+     * @param string $string            The string
+     * @param bool   $lower
+     * @param bool   $removePunctuation Whether punctuation marks should be removed (default is true)
      *
      * @return string[] The prepped words in the string
      *

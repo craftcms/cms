@@ -17,7 +17,7 @@ use craft\validators\UniqueValidator;
 /**
  * The AssetTransform model class.
  *
- * @property boolean $isNamedTransform Whether this is a named transform
+ * @property bool $isNamedTransform Whether this is a named transform
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -28,7 +28,7 @@ class AssetTransform extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -43,12 +43,12 @@ class AssetTransform extends Model
     public $handle;
 
     /**
-     * @var integer Width
+     * @var int Width
      */
     public $width;
 
     /**
-     * @var integer Height
+     * @var int Height
      */
     public $height;
 
@@ -73,7 +73,7 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
-     * @var integer Quality
+     * @var int Quality
      */
     public $quality;
 
@@ -147,7 +147,7 @@ class AssetTransform extends Model
     /**
      * Return whether this is a named transform
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsNamedTransform()
     {

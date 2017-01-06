@@ -27,7 +27,7 @@ class TagGroupEvent extends Event
     public $tagGroup;
 
     /**
-     * @var boolean Whether the tag group is brand new
+     * @var bool Whether the tag group is brand new
      */
     public $isNew = false;
 }

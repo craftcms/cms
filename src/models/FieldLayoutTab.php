@@ -25,12 +25,12 @@ class FieldLayoutTab extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Layout ID
+     * @var int Layout ID
      */
     public $layoutId;
 
@@ -40,7 +40,7 @@ class FieldLayoutTab extends Model
     public $name;
 
     /**
-     * @var integer Sort order
+     * @var int Sort order
      */
     public $sortOrder;
 

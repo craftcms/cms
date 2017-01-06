@@ -28,7 +28,7 @@ class NewChild extends ElementAction
     public $label;
 
     /**
-     * @var integer The maximum number of levels that the structure is allowed to have
+     * @var int The maximum number of levels that the structure is allowed to have
      */
     public $maxLevels;
 

@@ -13,7 +13,7 @@ use yii\db\ActiveQueryInterface;
 /**
  * Field layout record class.
  *
- * @property integer            $id     ID
+ * @property int                $id     ID
  * @property string             $type   Type
  * @property FieldLayoutTab[]   $tabs   Tabs
  * @property FieldLayoutField[] $fields Fields

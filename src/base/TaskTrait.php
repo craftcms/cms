@@ -19,7 +19,7 @@ trait TaskTrait
     // =========================================================================
 
     /**
-     * @var integer The task’s level within its structure
+     * @var int The task’s level within its structure
      */
     public $level;
 
@@ -29,17 +29,17 @@ trait TaskTrait
     public $description;
 
     /**
-     * @var integer The parent task’s ID
+     * @var int The parent task’s ID
      */
     public $parentId;
 
     /**
-     * @var integer The total number of steps the task will take
+     * @var int The total number of steps the task will take
      */
     public $totalSteps;
 
     /**
-     * @var integer The current step that the task is taking
+     * @var int The current step that the task is taking
      */
     public $currentStep;
 

@@ -13,13 +13,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Field record.
  *
- * @property integer    $id                   ID
- * @property integer    $groupId              Group ID
+ * @property int        $id                   ID
+ * @property int        $groupId              Group ID
  * @property string     $name                 Name
  * @property string     $handle               Handle
  * @property string     $context              Context
  * @property string     $instructions         Instructions
- * @property boolean    $translatable         Translatable
+ * @property bool       $translatable         Translatable
  * @property string     $translationMethod    Translation method
  * @property string     $translationKeyFormat Translation key format
  * @property string     $type                 Type

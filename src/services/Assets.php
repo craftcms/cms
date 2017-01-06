@@ -89,8 +89,8 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
-     * @param integer      $assetId
-     * @param integer|null $siteId
+     * @param int      $assetId
+     * @param int|null $siteId
      *
      * @return Asset|null
      */
@@ -107,7 +107,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return integer
+     * @return int
      */
     public function getTotalAssets($criteria = null)
     {
@@ -247,9 +247,9 @@ class Assets extends Component
     /**
      * Replaces an Asset with another.
      *
-     * @param Asset   $assetToReplace
-     * @param Asset   $assetToReplaceWith
-     * @param boolean $mergeRelationships should the relations be merged for the conflicting Assets
+     * @param Asset $assetToReplace
+     * @param Asset $assetToReplaceWith
+     * @param bool  $mergeRelationships should the relations be merged for the conflicting Assets
      *
      * @return void
      */
@@ -405,10 +405,10 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset        $asset         The asset whose file should be renamed
-     * @param boolean|null $runValidation Whether the filename should be validated
+     * @param Asset     $asset         The asset whose file should be renamed
+     * @param bool|null $runValidation Whether the filename should be validated
      *
-     * @return boolean Whether the asset was renamed successfully
+     * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
     public function renameFile(Asset $asset, $runValidation = true)
@@ -550,7 +550,7 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param boolean   $deleteFolder Should the folder be deleted along the record. Defaults to true.
+     * @param bool      $deleteFolder Should the folder be deleted along the record. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
@@ -628,7 +628,7 @@ class Assets extends Component
     /**
      * Returns a folder by its ID.
      *
-     * @param integer $folderId
+     * @param int $folderId
      *
      * @return VolumeFolder|null
      */
@@ -769,7 +769,7 @@ class Assets extends Component
     /**
      * Returns the root folder for a given volume ID.
      *
-     * @param integer $volumeId The volume ID
+     * @param int $volumeId The volume ID
      *
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
@@ -786,7 +786,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return integer
+     * @return int
      */
     public function getTotalFolders($criteria)
     {
@@ -857,8 +857,8 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string  $originalFilename the original filename for which to find a replacement.
-     * @param integer $folderId         THe folder in which to find the replacement
+     * @param string $originalFilename the original filename for which to find a replacement.
+     * @param int    $folderId         THe folder in which to find the replacement
      *
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
@@ -930,9 +930,9 @@ class Assets extends Component
     /**
      * Move an Asset.
      *
-     * @param Asset   $asset
-     * @param integer $folderId    Id of the folder of the destination
-     * @param string  $newFilename filename to use for the file at it's destination
+     * @param Asset  $asset
+     * @param int    $folderId    Id of the folder of the destination
+     * @param string $newFilename filename to use for the file at it's destination
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
      * @throws AssetConflictException            If there is a conflict.
@@ -982,10 +982,10 @@ class Assets extends Component
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
      *
-     * @param string  $fullPath The path to ensure the folder exists at.
-     * @param integer $volumeId
+     * @param string $fullPath The path to ensure the folder exists at.
+     * @param int    $volumeId
      *
-     * @return integer
+     * @return int
      */
     public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
     {

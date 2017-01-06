@@ -25,9 +25,9 @@ class InvalidLicenseKeyException extends Exception
     /**
      * Constructor.
      *
-     * @param string  $licenseKey The invalid license key
-     * @param string  $message    The error message
-     * @param integer $code       The error code
+     * @param string $licenseKey The invalid license key
+     * @param string $message    The error message
+     * @param int    $code       The error code
      */
     public function __construct($licenseKey, $message = null, $code = 0)
     {

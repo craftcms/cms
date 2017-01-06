@@ -27,7 +27,7 @@ class FieldEvent extends Event
     public $field;
 
     /**
-     * @var boolean Whether the field is brand new
+     * @var bool Whether the field is brand new
      */
     public $isNew = false;
 }

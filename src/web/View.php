@@ -184,7 +184,7 @@ class View extends \yii\web\View
     /**
      * Returns whether a template is currently being rendered.
      *
-     * @return boolean Whether a template is currently being rendered.
+     * @return bool Whether a template is currently being rendered.
      */
     public function getIsRenderingTemplate()
     {
@@ -373,7 +373,7 @@ class View extends \yii\web\View
      *
      * @param string $name The name of the template.
      *
-     * @return boolean Whether the template exists.
+     * @return bool Whether the template exists.
      */
     public function doesTemplateExist($name)
     {
@@ -620,7 +620,7 @@ class View extends \yii\web\View
     /**
      * Clears and ends a Javascript buffer, returning whatever Javascript code was included while the buffer was active.
      *
-     * @param boolean $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
+     * @param bool $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
      * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
@@ -661,7 +661,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_HEAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_HEAD]]
      *
-     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
+     * @param bool $clear Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
@@ -691,7 +691,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
+     * @param bool $clear Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
@@ -910,9 +910,9 @@ class View extends \yii\web\View
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string  $html            The template with the inputs.
-     * @param string  $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
-     * @param boolean $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
+     * @param string $html            The template with the inputs.
+     * @param string $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param bool   $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
      */

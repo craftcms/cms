@@ -14,14 +14,14 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class AssetIndexData record.
  *
- * @property integer   $id        ID
- * @property integer   $volumeId  Volume ID
+ * @property int       $id        ID
+ * @property int       $volumeId  Volume ID
  * @property string    $sessionId Session ID
- * @property integer   $offset    Offset
+ * @property int       $offset    Offset
  * @property string    $uri       URI
- * @property integer   $size      Size
+ * @property int       $size      Size
  * @property \DateTime $timestamp Timestamp
- * @property integer   $recordId  Record ID
+ * @property int       $recordId  Record ID
  * @property Volume    $volume    Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

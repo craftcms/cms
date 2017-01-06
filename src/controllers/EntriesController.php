@@ -53,12 +53,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string  $sectionHandle The section’s handle
-     * @param integer $entryId       The entry’s ID, if editing an existing entry.
-     * @param integer $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param integer $versionId     The entry version’s ID, if editing an existing version.
-     * @param integer $siteHandle    The site handle, if specified.
-     * @param Entry   $entry         The entry being edited, if there were any validation errors.
+     * @param string $sectionHandle The section’s handle
+     * @param int    $entryId       The entry’s ID, if editing an existing entry.
+     * @param int    $draftId       The entry draft’s ID, if editing an existing draft.
+     * @param int    $versionId     The entry version’s ID, if editing an existing version.
+     * @param int    $siteHandle    The site handle, if specified.
+     * @param Entry  $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
@@ -551,10 +551,10 @@ class EntriesController extends BaseEntriesController
     /**
      * Redirects the client to a URL for viewing an entry/draft/version on the front end.
      *
-     * @param integer $entryId
-     * @param integer $siteId
-     * @param integer $draftId
-     * @param integer $versionId
+     * @param int $entryId
+     * @param int $siteId
+     * @param int $draftId
+     * @param int $versionId
      *
      * @return Response
      * @throws Exception
@@ -617,10 +617,10 @@ class EntriesController extends BaseEntriesController
     /**
      * Shows an entry/draft/version based on a token.
      *
-     * @param integer $entryId
-     * @param integer $siteId
-     * @param integer $draftId
-     * @param integer $versionId
+     * @param int $entryId
+     * @param int $siteId
+     * @param int $draftId
+     * @param int $versionId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found

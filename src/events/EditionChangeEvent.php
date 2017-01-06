@@ -21,12 +21,12 @@ class EditionChangeEvent extends Event
     // =========================================================================
 
     /**
-     * @var integer The old edition
+     * @var int The old edition
      */
     public $oldEdition;
 
     /**
-     * @var integer The new edition
+     * @var int The new edition
      */
     public $newEdition;
 }

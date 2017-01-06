@@ -52,7 +52,7 @@ class Paginate
     /**
      * Returns the URL to a specific page
      *
-     * @param integer $page
+     * @param int $page
      *
      * @return string|null
      */
@@ -137,7 +137,7 @@ class Paginate
     /**
      * Returns previous page URLs up to a certain distance from the current page.
      *
-     * @param integer $dist
+     * @param int $dist
      *
      * @return array
      */
@@ -155,7 +155,7 @@ class Paginate
     /**
      * Returns next page URLs up to a certain distance from the current page.
      *
-     * @param integer $dist
+     * @param int $dist
      *
      * @return array
      */
@@ -173,8 +173,8 @@ class Paginate
     /**
      * Returns a range of page URLs.
      *
-     * @param integer $start
-     * @param integer $end
+     * @param int $start
+     * @param int $end
      *
      * @return array
      */

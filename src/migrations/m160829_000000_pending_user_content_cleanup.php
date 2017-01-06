@@ -13,7 +13,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return boolean
+     * @return bool
      */
     public function safeUp()
     {

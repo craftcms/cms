@@ -60,7 +60,7 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param integer|null         $volumeId The volume’s ID, if editing an existing volume.
+     * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
      * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result

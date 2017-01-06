@@ -26,7 +26,7 @@ class GlobalSetEvent extends CancelableEvent
     public $globalSet;
 
     /**
-     * @var boolean Whether the global set is brand new
+     * @var bool Whether the global set is brand new
      */
     public $isNew = false;
 }

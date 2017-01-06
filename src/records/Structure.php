@@ -13,8 +13,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Structure record.
  *
- * @property integer            $id        ID
- * @property integer            $maxLevels Max levels
+ * @property int                $id        ID
+ * @property int                $maxLevels Max levels
  * @property StructureElement[] $elements  Elements
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

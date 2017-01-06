@@ -453,8 +453,8 @@ class UsersController extends Controller
     /**
      * Edit a user account.
      *
-     * @param integer|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User|null           $user   The user being edited, if there were any validation errors.
+     * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
+     * @param User|null       $user   The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -1489,7 +1489,7 @@ class UsersController extends Controller
      * Redirects the user after a successful login attempt, or if they visited the Login page while they were already
      * logged in.
      *
-     * @param boolean $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
+     * @param bool $setNotice Whether a flash notice should be set, if this isn't an Ajax request.
      *
      * @return Response
      */
@@ -1575,7 +1575,7 @@ class UsersController extends Controller
     /**
      * Verifies that the user has an elevated session, or that their current password was submitted with the request.
      *
-     * @return boolean
+     * @return bool
      */
     private function _verifyElevatedSession()
     {
@@ -1585,7 +1585,7 @@ class UsersController extends Controller
     /**
      * Verifies that the current user's password was submitted with the request.
      *
-     * @return boolean
+     * @return bool
      */
     private function _verifyExistingPassword()
     {

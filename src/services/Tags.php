@@ -125,7 +125,7 @@ class Tags extends Component
     /**
      * Gets the total number of tag groups.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalTagGroups()
     {
@@ -135,7 +135,7 @@ class Tags extends Component
     /**
      * Returns a group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return TagGroup|null
      */
@@ -190,9 +190,9 @@ class Tags extends Component
      * Saves a tag group.
      *
      * @param TagGroup $tagGroup      The tag group to be saved
-     * @param boolean  $runValidation Whether the tag group should be validated
+     * @param bool     $runValidation Whether the tag group should be validated
      *
-     * @return boolean Whether the tag group was saved successfully
+     * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
@@ -282,9 +282,9 @@ class Tags extends Component
     /**
      * Deletes a tag group by its ID.
      *
-     * @param integer $tagGroupId
+     * @param int $tagGroupId
      *
-     * @return boolean Whether the tag group was deleted successfully
+     * @return bool Whether the tag group was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteTagGroupById($tagGroupId)
@@ -353,8 +353,8 @@ class Tags extends Component
     /**
      * Returns a tag by its ID.
      *
-     * @param integer      $tagId
-     * @param integer|null $siteId
+     * @param int      $tagId
+     * @param int|null $siteId
      *
      * @return Tag|null
      */

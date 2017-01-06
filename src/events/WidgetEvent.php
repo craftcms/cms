@@ -27,7 +27,7 @@ class WidgetEvent extends Event
     public $widget;
 
     /**
-     * @var boolean Whether the widget is brand new
+     * @var bool Whether the widget is brand new
      */
     public $isNew = false;
 }

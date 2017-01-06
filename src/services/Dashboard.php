@@ -143,7 +143,7 @@ class Dashboard extends Component
      *
      * @param string $type The widget type
      *
-     * @return boolean Whether the current user has a widget of the given type
+     * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget($type)
     {
@@ -159,7 +159,7 @@ class Dashboard extends Component
     /**
      * Returns a widget by its ID.
      *
-     * @param integer $id The widget’s ID
+     * @param int $id The widget’s ID
      *
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
@@ -188,9 +188,9 @@ class Dashboard extends Component
      * Saves a widget for the current user.
      *
      * @param WidgetInterface $widget        The widget to be saved
-     * @param boolean         $runValidation Whether the widget should be validated
+     * @param bool            $runValidation Whether the widget should be validated
      *
-     * @return boolean Whether the widget was saved successfully
+     * @return bool Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
     public function saveWidget(WidgetInterface $widget, $runValidation = true)
@@ -256,9 +256,9 @@ class Dashboard extends Component
     /**
      * Soft-deletes a widget by its ID.
      *
-     * @param integer $widgetId The widget’s ID
+     * @param int $widgetId The widget’s ID
      *
-     * @return boolean Whether the widget was deleted successfully
+     * @return bool Whether the widget was deleted successfully
      */
     public function deleteWidgetById($widgetId)
     {
@@ -276,7 +276,7 @@ class Dashboard extends Component
      *
      * @param WidgetInterface $widget The widget to be deleted
      *
-     * @return boolean Whether the widget was deleted successfully
+     * @return bool Whether the widget was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteWidget(WidgetInterface $widget)
@@ -319,9 +319,9 @@ class Dashboard extends Component
     /**
      * Reorders widgets.
      *
-     * @param integer[] $widgetIds The widget IDs
+     * @param int[] $widgetIds The widget IDs
      *
-     * @return boolean Whether the widgets were reordered successfully
+     * @return bool Whether the widgets were reordered successfully
      * @throws \Exception if reasons
      */
     public function reorderWidgets($widgetIds)
@@ -348,10 +348,10 @@ class Dashboard extends Component
     /**
      * Changes the colspan of a widget.
      *
-     * @param integer $widgetId
-     * @param integer $colspan
+     * @param int $widgetId
+     * @param int $colspan
      *
-     * @return boolean
+     * @return bool
      */
     public function changeWidgetColspan($widgetId, $colspan)
     {
@@ -396,7 +396,7 @@ class Dashboard extends Component
     /**
      * Gets a widget's record.
      *
-     * @param integer $widgetId
+     * @param int $widgetId
      *
      * @return WidgetRecord
      */
@@ -424,7 +424,7 @@ class Dashboard extends Component
     /**
      * Throws a "No widget exists" exception.
      *
-     * @param integer $widgetId
+     * @param int $widgetId
      *
      * @return void
      * @throws WidgetNotFoundException

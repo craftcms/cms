@@ -66,12 +66,12 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var boolean Whether related assets should be limited to a single folder
+     * @var bool Whether related assets should be limited to a single folder
      */
     public $useSingleFolder;
 
     /**
-     * @var integer The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var int The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
@@ -81,7 +81,7 @@ class Assets extends BaseRelationField
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var integer The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var int The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
@@ -91,7 +91,7 @@ class Assets extends BaseRelationField
     public $singleUploadLocationSubpath;
 
     /**
-     * @var boolean Whether the available assets should be restricted to [[allowedKinds]]
+     * @var bool Whether the available assets should be restricted to [[allowedKinds]]
      */
     public $restrictFiles;
 
@@ -279,7 +279,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface|null $element
      *
-     * @return integer
+     * @return int
      */
     public function resolveDynamicPathToFolderId($element)
     {
@@ -548,7 +548,7 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param integer          $volumeId
+     * @param int              $volumeId
      * @param string           $subpath
      * @param ElementInterface $element
      * @param bool             $createDynamicFolders whether missing folders should be created in the process
@@ -689,10 +689,10 @@ class Assets extends BaseRelationField
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
      * @param ElementInterface|null $element
-     * @param boolean               $createDynamicFolders whether missing folders should be created in the process
+     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @return integer
+     * @return int
      */
     private function _determineUploadFolderId($element, $createDynamicFolders = true)
     {

@@ -37,17 +37,17 @@ class Number extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var integer|float The minimum allowed number
+     * @var int|float The minimum allowed number
      */
     public $min = 0;
 
     /**
-     * @var integer|float The maximum allowed number
+     * @var int|float The maximum allowed number
      */
     public $max;
 
     /**
-     * @var integer The number of digits allowed after the decimal point
+     * @var int The number of digits allowed after the decimal point
      */
     public $decimals = 0;
 

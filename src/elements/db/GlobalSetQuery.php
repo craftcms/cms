@@ -31,7 +31,7 @@ class GlobalSetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return global sets that the user has permission to edit.
+     * @var bool Whether to only return global sets that the user has permission to edit.
      */
     public $editable;
 
@@ -59,7 +59,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */

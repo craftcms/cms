@@ -107,7 +107,7 @@ class Plugins extends Component
     private $_pluginsLoaded = false;
 
     /**
-     * @var boolean Whether plugins are in the middle of being loaded
+     * @var bool Whether plugins are in the middle of being loaded
      */
     private $_loadingPlugins = false;
 
@@ -216,7 +216,7 @@ class Plugins extends Component
     /**
      * Returns whether plugins have been loaded yet for this request.
      *
-     * @return boolean
+     * @return bool
      */
     public function arePluginsLoaded()
     {
@@ -279,7 +279,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was enabled successfully
+     * @return bool Whether the plugin was enabled successfully
      * @throws InvalidPluginException if the plugin isn't installed
      */
     public function enablePlugin($handle)
@@ -329,7 +329,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was disabled successfully
+     * @return bool Whether the plugin was disabled successfully
      * @throws InvalidPluginException if the plugin isn’t installed
      */
     public function disablePlugin($handle)
@@ -379,7 +379,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was installed successfully.
+     * @return bool Whether the plugin was installed successfully.
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
@@ -452,7 +452,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was uninstalled successfully
+     * @return bool Whether the plugin was uninstalled successfully
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
@@ -525,7 +525,7 @@ class Plugins extends Component
      * @param PluginInterface $plugin   The plugin
      * @param array           $settings The plugin’s new settings
      *
-     * @return boolean Whether the plugin’s settings were saved successfully
+     * @return bool Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, $settings)
     {
@@ -565,7 +565,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      *
-     * @return boolean Whether the plugin’s version number has changed from what we have recorded in the database
+     * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
      */
     public function hasPluginVersionNumberChanged(PluginInterface $plugin)
     {
@@ -587,7 +587,7 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      *
-     * @return boolean Whether the plugin’s local schema version is greater than the record we have in the database
+     * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
     {
@@ -719,7 +719,7 @@ class Plugins extends Component
      *
      * @param array &$config
      *
-     * @return boolean Whether the config validates.
+     * @return bool Whether the config validates.
      */
     public function validateConfig(&$config)
     {
@@ -843,7 +843,7 @@ class Plugins extends Component
      * @param string      $pluginHandle The plugin’s class handle
      * @param string|null $licenseKey   The plugin’s license key
      *
-     * @return boolean Whether the license key was updated successfully
+     * @return bool Whether the license key was updated successfully
      *
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
@@ -983,7 +983,7 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param integer         $id     The plugin’s ID
+     * @param int             $id     The plugin’s ID
      */
     private function _setPluginMigrator(PluginInterface $plugin, $id)
     {

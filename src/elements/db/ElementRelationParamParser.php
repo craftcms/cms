@@ -19,7 +19,7 @@ use craft\models\Site;
 /**
  * Parses a relatedTo param on an ElementQuery.
  *
- * @param boolean $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
+ * @param bool $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -136,7 +136,7 @@ class ElementRelationParamParser
     /**
      * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsRelationFieldQuery()
     {

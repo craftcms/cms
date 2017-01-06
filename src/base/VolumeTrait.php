@@ -29,7 +29,7 @@ trait VolumeTrait
     public $handle;
 
     /**
-     * @var boolean Whether the volume has a public URL
+     * @var bool Whether the volume has a public URL
      */
     public $hasUrls;
 
@@ -39,12 +39,12 @@ trait VolumeTrait
     public $url;
 
     /**
-     * @var integer Sort order
+     * @var int Sort order
      */
     public $sortOrder;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 }

@@ -13,15 +13,15 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class EntryType record.
  *
- * @property integer     $id            ID
- * @property integer     $sectionId     Section ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $sectionId     Section ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
- * @property boolean     $hasTitleField Has title field
+ * @property bool        $hasTitleField Has title field
  * @property string      $titleLabel    Title label
  * @property string      $titleFormat   Title format
- * @property integer     $sortOrder     Sort order
+ * @property int         $sortOrder     Sort order
  * @property Section     $section       Section
  * @property FieldLayout $fieldLayout   Field layout
  *

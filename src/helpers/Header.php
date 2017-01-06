@@ -60,7 +60,7 @@ class Header
      *
      * @param string $extension
      *
-     * @return boolean Whether setting the header was successful.
+     * @return bool Whether setting the header was successful.
      */
     public static function setContentTypeByExtension($extension)
     {
@@ -101,7 +101,7 @@ class Header
     /**
      * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
      *
-     * @param integer $seconds Time in seconds to hold in browser cache
+     * @param int $seconds Time in seconds to hold in browser cache
      *
      * @return void
      */
@@ -150,8 +150,8 @@ class Header
     /**
      * Forces a file download. Be sure to give the right extension.
      *
-     * @param string  $filename The name of the file when it's downloaded
-     * @param integer $fileSize The size in bytes.
+     * @param string $filename The name of the file when it's downloaded
+     * @param int    $fileSize The size in bytes.
      *
      * @return void
      */
@@ -178,7 +178,7 @@ class Header
      * Tells the browser the length of the following content. This mostly makes sense when using the download function
      * so the browser can calculate how many bytes are left during the process.
      *
-     * @param integer $sizeInBytes The content size in bytes
+     * @param int $sizeInBytes The content size in bytes
      *
      * @return void
      */
@@ -204,7 +204,7 @@ class Header
      *
      * @param string $name
      *
-     * @return boolean
+     * @return bool
      */
     public static function isHeaderSet($name)
     {
@@ -242,7 +242,7 @@ class Header
      *
      * @param array|string $header Use key => value
      *
-     * @return boolean
+     * @return bool
      */
     public static function setHeader($header)
     {

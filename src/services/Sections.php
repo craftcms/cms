@@ -117,7 +117,7 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
-     * @return integer[] All the sections’ IDs.
+     * @return int[] All the sections’ IDs.
      */
     public function getAllSectionIds()
     {
@@ -225,7 +225,7 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalSections()
     {
@@ -235,7 +235,7 @@ class Sections extends Component
     /**
      * Gets the total number of sections that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalEditableSections()
     {
@@ -245,7 +245,7 @@ class Sections extends Component
     /**
      * Returns a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return Section|null
      */
@@ -302,7 +302,7 @@ class Sections extends Component
     /**
      * Returns a section’s site-specific settings.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
@@ -335,9 +335,9 @@ class Sections extends Component
      * Saves a section.
      *
      * @param Section $section       The section to be saved
-     * @param boolean $runValidation Whether the section should be validated
+     * @param bool    $runValidation Whether the section should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
@@ -668,9 +668,9 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteSectionById($sectionId)
@@ -689,7 +689,7 @@ class Sections extends Component
      *
      * @param Section $section
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteSection(Section $section)
@@ -766,9 +766,9 @@ class Sections extends Component
      * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
-     * @param integer $siteId
+     * @param int     $siteId
      *
-     * @return boolean
+     * @return bool
      */
     public function isSectionTemplateValid(Section $section, $siteId)
     {
@@ -800,7 +800,7 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return EntryType[]
      */
@@ -830,7 +830,7 @@ class Sections extends Component
     /**
      * Returns an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
      * @return EntryType|null
      */
@@ -863,7 +863,7 @@ class Sections extends Component
     /**
      * Returns entry types that have a given handle.
      *
-     * @param integer $entryTypeHandle
+     * @param int $entryTypeHandle
      *
      * @return EntryType[]
      */
@@ -895,9 +895,9 @@ class Sections extends Component
      * Saves an entry type.
      *
      * @param EntryType $entryType     The entry type to be saved
-     * @param boolean   $runValidation Whether the entry type should be validated
+     * @param bool      $runValidation Whether the entry type should be validated
      *
-     * @return boolean Whether the entry type was saved successfully
+     * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
@@ -1006,7 +1006,7 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      *
-     * @return boolean Whether the entry types were reordered successfully
+     * @return bool Whether the entry types were reordered successfully
      * @throws \Exception if reasons
      */
     public function reorderEntryTypes($entryTypeIds)
@@ -1033,9 +1033,9 @@ class Sections extends Component
     /**
      * Deletes an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteEntryTypeById($entryTypeId)
@@ -1054,7 +1054,7 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteEntryType(EntryType $entryType)

@@ -75,7 +75,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $filename the filename to sanitize
      * @param array  $options  options for sanitization. Valid options are:
      *
-     * - asciiOnly: boolean, whether only ASCII characters should be allowed. Defaults to false.
+     * - asciiOnly: bool, whether only ASCII characters should be allowed. Defaults to false.
      * - separator: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
      *
      * @return string The cleansed filename
@@ -147,7 +147,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $dir the directory to be checked
      *
-     * @return boolean whether the directory is empty
+     * @return bool whether the directory is empty
      * @throws InvalidParamException if the dir is invalid
      * @throws ErrorException in case of failure
      */
@@ -185,7 +185,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $path the file/directory path to test
      *
-     * @return boolean whether the path is writable
+     * @return bool whether the path is writable
      * @throws ErrorException in case of failure
      */
     public static function isWritable($path)
@@ -219,11 +219,11 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array  $options  options for file write. Valid options are:
      *
-     * - createDirs: boolean, whether to create parent directories if they do
+     * - createDirs: bool, whether to create parent directories if they do
      *   not exist. Defaults to true.
-     * - append: boolean, whether the contents should be appended to the
+     * - append: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
-     * - lock: boolean, whether a file lock should be used. Defaults to the
+     * - lock: bool, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
      *
      * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
@@ -295,7 +295,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $dir     the directory to be deleted recursively.
      * @param array  $options options for directory remove. Valid options are:
      *
-     * - traverseSymlinks: boolean, whether symlinks to the directories should be traversed too.
+     * - traverseSymlinks: bool, whether symlinks to the directories should be traversed too.
      *   Defaults to `false`, meaning the content of the symlinked directory would not be deleted.
      *   Only symlink would be removed in that default case.
      *

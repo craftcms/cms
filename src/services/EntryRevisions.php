@@ -81,7 +81,7 @@ class EntryRevisions extends Component
     /**
      * Returns a draft by its ID.
      *
-     * @param integer $draftId
+     * @param int $draftId
      *
      * @return EntryDraft|null
      */
@@ -125,8 +125,8 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param integer $entryId
-     * @param integer $siteId
+     * @param int $entryId
+     * @param int $siteId
      *
      * @return EntryDraft[]
      */
@@ -172,8 +172,8 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param integer $entryId
-     * @param integer $siteId
+     * @param int $entryId
+     * @param int $siteId
      *
      * @return EntryDraft[]
      */
@@ -199,9 +199,9 @@ class EntryRevisions extends Component
      * Saves a draft.
      *
      * @param EntryDraft $draft         The draft to be saved
-     * @param boolean    $runValidation Whether to perform validation
+     * @param bool       $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
     public function saveDraft(EntryDraft $draft, $runValidation = true)
     {
@@ -254,9 +254,9 @@ class EntryRevisions extends Component
      * Publishes a draft.
      *
      * @param EntryDraft $draft         The draft to be published
-     * @param boolean    $runValidation Whether to perform validation
+     * @param bool       $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
     public function publishDraft(EntryDraft $draft, $runValidation = true)
     {
@@ -301,7 +301,7 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft The draft to be deleted
      *
-     * @return boolean Whether the draft was deleted successfully
+     * @return bool Whether the draft was deleted successfully
      */
     public function deleteDraft(EntryDraft $draft)
     {
@@ -324,7 +324,7 @@ class EntryRevisions extends Component
     /**
      * Returns a version by its ID.
      *
-     * @param integer $versionId
+     * @param int $versionId
      *
      * @return EntryVersion|null
      */
@@ -357,10 +357,10 @@ class EntryRevisions extends Component
     /**
      * Returns versions by an entry ID.
      *
-     * @param integer      $entryId        The entry ID to search for.
-     * @param integer      $siteId         The site ID to search for.
-     * @param integer|null $limit          The limit on the number of versions to retrieve.
-     * @param boolean      $includeCurrent Whether to include the current "top" version of the entry.
+     * @param int      $entryId        The entry ID to search for.
+     * @param int      $siteId         The site ID to search for.
+     * @param int|null $limit          The limit on the number of versions to retrieve.
+     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
      *
      * @return EntryVersion[]
      */
@@ -410,7 +410,7 @@ class EntryRevisions extends Component
      *
      * @param Entry $entry
      *
-     * @return boolean
+     * @return bool
      */
     public function saveVersion(Entry $entry)
     {
@@ -436,9 +436,9 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
-     * @param boolean      $runValidation Whether to perform validation
+     * @param bool         $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
     public function revertEntryToVersion(EntryVersion $version, $runValidation = true)
     {

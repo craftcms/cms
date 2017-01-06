@@ -59,7 +59,7 @@ class CategoriesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer|null       $groupId       The category group’s ID, if editing an existing group.
+     * @param int|null           $groupId       The category group’s ID, if editing an existing group.
      * @param CategoryGroup|null $categoryGroup The category group being edited, if there were any validation errors.
      *
      * @return string The rendering result
@@ -233,7 +233,7 @@ class CategoriesController extends Controller
      * Displays the category edit page.
      *
      * @param string   $groupHandle The category group’s handle.
-     * @param integer  $categoryId  The category’s ID, if editing an existing category.
+     * @param int      $categoryId  The category’s ID, if editing an existing category.
      * @param string   $siteHandle  The site handle, if specified.
      * @param Category $category    The category being edited, if there were any validation errors.
      *
@@ -510,8 +510,8 @@ class CategoriesController extends Controller
     /**
      * Redirects the client to a URL for viewing a disabled category on the front end.
      *
-     * @param integer $categoryId
-     * @param integer $siteId
+     * @param int $categoryId
+     * @param int $siteId
      *
      * @return Response
      * @throws Exception
@@ -555,8 +555,8 @@ class CategoriesController extends Controller
     /**
      * Shows an category/draft/version based on a token.
      *
-     * @param integer $categoryId
-     * @param integer $siteId
+     * @param int $categoryId
+     * @param int $siteId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found

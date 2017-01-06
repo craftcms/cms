@@ -18,7 +18,7 @@ class ServiceUnavailableHttpException extends HttpException
      * Constructor.
      *
      * @param string     $message  The error message.
-     * @param integer    $code     The error code.
+     * @param int        $code     The error code.
      * @param \Exception $previous The previous exception used for the exception chaining.
      */
     public function __construct($message = null, $code = 0, \Exception $previous = null)

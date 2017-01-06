@@ -47,12 +47,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     // =========================================================================
 
     /**
-     * @var integer Max blocks
+     * @var int Max blocks
      */
     public $maxBlocks;
 
     /**
-     * @var integer Whether each site should get its own unique set of blocks
+     * @var int Whether each site should get its own unique set of blocks
      */
     public $localizeBlocks = false;
 

@@ -26,7 +26,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns whether this field has a column in the content table.
      *
-     * @return boolean
+     * @return bool
      */
     public static function hasContentColumn();
 
@@ -181,7 +181,7 @@ interface FieldInterface extends SavableComponentInterface
      *     // skip the field attribute
      *     ['string', 'min' => 3, 'max' => 12],
      *     // you can only pass the validator class name/handle if not setting any params
-     *     'boolean',
+     *     'bool',
      * ];
      * ```
      *
@@ -247,7 +247,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Sets whether the field is fresh.
      *
-     * @param boolean|null $isFresh Whether the field is fresh.
+     * @param bool|null $isFresh Whether the field is fresh.
      */
     public function setIsFresh($isFresh);
 
@@ -265,9 +265,9 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions before an element is saved.
      *
      * @param ElementInterface $element The element that is about to be saved
-     * @param boolean          $isNew   Whether the element is brand new
+     * @param bool             $isNew   Whether the element is brand new
      *
-     * @return boolean Whether the element should be saved
+     * @return bool Whether the element should be saved
      */
     public function beforeElementSave(ElementInterface $element, $isNew);
 
@@ -275,7 +275,7 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been saved.
      *
      * @param ElementInterface $element The element that was just saved
-     * @param boolean          $isNew   Whether the element is brand new
+     * @param bool             $isNew   Whether the element is brand new
      *
      * @return void
      */
@@ -286,7 +286,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that is about to be deleted
      *
-     * @return boolean Whether the element should be deleted
+     * @return bool Whether the element should be deleted
      */
     public function beforeElementDelete(ElementInterface $element);
 

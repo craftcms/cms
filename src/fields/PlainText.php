@@ -41,17 +41,17 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $placeholder;
 
     /**
-     * @var boolean Whether the input should allow line breaks
+     * @var bool Whether the input should allow line breaks
      */
     public $multiline;
 
     /**
-     * @var integer The minimum number of rows the input should have, if multi-line
+     * @var int The minimum number of rows the input should have, if multi-line
      */
     public $initialRows = 4;
 
     /**
-     * @var integer The maximum number of characters allowed in the field
+     * @var int The maximum number of characters allowed in the field
      */
     public $maxLength;
 

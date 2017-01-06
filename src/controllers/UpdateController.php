@@ -697,9 +697,9 @@ EOD;
     }
 
     /**
-     * @param string         $handle
-     * @param string         $originalErrorMessage
-     * @param string|boolean $dbBackupPath
+     * @param string      $handle
+     * @param string      $originalErrorMessage
+     * @param string|bool $dbBackupPath
      *
      * @throws Exception
      */
@@ -723,7 +723,7 @@ EOD;
     /**
      * @param $data
      *
-     * @return boolean
+     * @return bool
      */
     private function _isManualUpdate($data)
     {
@@ -752,7 +752,7 @@ EOD;
     /**
      * Returns whether the DB should be backed up, per the config.
      *
-     * @return boolean
+     * @return bool
      */
     private function _shouldBackupDb()
     {

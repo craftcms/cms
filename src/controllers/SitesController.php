@@ -55,7 +55,7 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer   $siteId The site’s ID, if editing an existing site
+     * @param int       $siteId The site’s ID, if editing an existing site
      * @param Site|null $site   The site being edited, if there were any validation errors
      *
      * @return string The rendering result

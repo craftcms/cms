@@ -12,9 +12,9 @@ use craft\db\ActiveRecord;
 /**
  * Class SystemSettings record.
  *
- * @property integer $id       ID
- * @property string  $category Category
- * @property array   $settings Settings
+ * @property int    $id       ID
+ * @property string $category Category
+ * @property array  $settings Settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

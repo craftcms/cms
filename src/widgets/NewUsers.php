@@ -43,7 +43,7 @@ class NewUsers extends Widget
     // =========================================================================
 
     /**
-     * @var integer The ID of the user group
+     * @var int The ID of the user group
      */
     public $userGroupId;
 

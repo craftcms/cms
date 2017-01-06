@@ -47,7 +47,7 @@ class Fields
     /**
      * Returns a field group by its ID.
      *
-     * @param integer $groupId The field group’s ID
+     * @param int $groupId The field group’s ID
      *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
@@ -64,7 +64,7 @@ class Fields
     /**
      * Returns a field by its ID.
      *
-     * @param integer $fieldId The field’s ID
+     * @param int $fieldId The field’s ID
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -108,7 +108,7 @@ class Fields
     /**
      * Returns all the fields in a given group.
      *
-     * @param integer     $groupId The field group’s ID
+     * @param int     $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
      *
      * @return FieldInterface[] The fields
@@ -125,7 +125,7 @@ class Fields
     /**
      * Returns a field layout by its ID.
      *
-     * @param integer $layoutId The field layout’s ID
+     * @param int $layoutId The field layout’s ID
      *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */

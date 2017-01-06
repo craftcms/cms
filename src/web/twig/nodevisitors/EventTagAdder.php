@@ -19,7 +19,7 @@ class EventTagAdder extends BaseEventTagVisitor
     // =========================================================================
 
     /**
-     * @var boolean Whether we're in the middle of finding the `beginBody()` tag
+     * @var bool Whether we're in the middle of finding the `beginBody()` tag
      */
     private $_findingBeginBody = false;
 
@@ -123,7 +123,7 @@ class EventTagAdder extends BaseEventTagVisitor
      *
      * @param \Twig_Node_Text   $node
      * @param \Twig_Environment $env
-     * @param integer           $pos
+     * @param int           $pos
      * @param string            $functionName
      *
      * @return \Twig_Node

@@ -111,8 +111,8 @@ class TemplateCaches extends Component
     /**
      * Returns a cached template by its key.
      *
-     * @param string  $key    The template cache key
-     * @param boolean $global Whether the cache would have been stored globally.
+     * @param string $key    The template cache key
+     * @param bool   $global Whether the cache would have been stored globally.
      *
      * @return string|null
      */
@@ -227,7 +227,7 @@ class TemplateCaches extends Component
     /**
      * Includes an element in any active caches.
      *
-     * @param integer $elementId The element ID.
+     * @param int $elementId The element ID.
      *
      * @return void
      */
@@ -252,7 +252,7 @@ class TemplateCaches extends Component
      * Ends a template cache.
      *
      * @param string      $key        The template cache key.
-     * @param boolean     $global     Whether the cache should be stored globally.
+     * @param bool        $global     Whether the cache should be stored globally.
      * @param string|null $duration   How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
@@ -369,9 +369,9 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its ID(s).
      *
-     * @param integer|array $cacheId The cache ID.
+     * @param int|array $cacheId The cache ID.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCacheById($cacheId)
     {
@@ -391,7 +391,7 @@ class TemplateCaches extends Component
      *
      * @param string $elementType The element class.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCachesByElementType($elementType)
     {
@@ -423,7 +423,7 @@ class TemplateCaches extends Component
      *
      * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCachesByElement($elements)
     {
@@ -457,12 +457,12 @@ class TemplateCaches extends Component
     /**
      * Deletes caches that include an a given element ID(s).
      *
-     * @param integer|array $elementId         The ID of the element(s) whose caches should be cleared.
-     * @param boolean       $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any
+     * @param int|array $elementId             The ID of the element(s) whose caches should be cleared.
+     * @param bool      $deleteQueryCaches     Whether a DeleteStaleTemplateCaches task should be created, deleting any
      *                                         query caches that may now involve this element, but hadn't previously.
      *                                         (Defaults to `true`.)
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
     {
@@ -523,7 +523,7 @@ class TemplateCaches extends Component
      * @param ElementQuery $query The element query that should be used to find elements whose caches
      *                            should be deleted.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCachesByElementQuery(ElementQuery $query)
     {
@@ -542,9 +542,9 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its key(s).
      *
-     * @param integer|array $key The cache key(s) to delete.
+     * @param int|array $key The cache key(s) to delete.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteCachesByKey($key)
     {
@@ -562,7 +562,7 @@ class TemplateCaches extends Component
     /**
      * Deletes any expired caches.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteExpiredCaches()
     {
@@ -582,7 +582,7 @@ class TemplateCaches extends Component
     /**
      * Deletes any expired caches if we haven't already done that within the past 24 hours.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteExpiredCachesIfOverdue()
     {
@@ -608,7 +608,7 @@ class TemplateCaches extends Component
     /**
      * Deletes all the template caches.
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteAllCaches()
     {
@@ -631,7 +631,7 @@ class TemplateCaches extends Component
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
      *
-     * @return boolean Whether template caching is enabled
+     * @return bool Whether template caching is enabled
      */
     private function _isTemplateCachingEnabled()
     {

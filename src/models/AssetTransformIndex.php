@@ -22,17 +22,17 @@ class AssetTransformIndex extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer File ID
+     * @var int File ID
      */
     public $assetId;
 
     /**
-     * @var integer Volume ID
+     * @var int Volume ID
      */
     public $volumeId;
 
@@ -52,12 +52,12 @@ class AssetTransformIndex extends Model
     public $location;
 
     /**
-     * @var boolean File exists
+     * @var bool File exists
      */
     public $fileExists = false;
 
     /**
-     * @var boolean In progress
+     * @var bool In progress
      */
     public $inProgress = false;
 

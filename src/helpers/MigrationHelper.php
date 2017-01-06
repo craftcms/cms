@@ -27,7 +27,7 @@ class MigrationHelper
      * @param string       $tableName
      * @param string|array $columns
      *
-     * @return boolean
+     * @return bool
      */
     public static function doesForeignKeyExist($tableName, $columns)
     {
@@ -75,9 +75,9 @@ class MigrationHelper
      *
      * @param string       $tableName
      * @param string|array $columns
-     * @param boolean      $unique
+     * @param bool         $unique
      *
-     * @return boolean
+     * @return bool
      */
     public static function doesIndexExist($tableName, $columns, $unique = false)
     {
@@ -98,7 +98,7 @@ class MigrationHelper
      *
      * @param string       $tableName
      * @param string|array $columns
-     * @param boolean      $unique
+     * @param bool         $unique
      * @param Migration    $migration
      *
      * @return void

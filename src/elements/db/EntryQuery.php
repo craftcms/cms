@@ -43,27 +43,27 @@ class EntryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return entries that the user has permission to edit.
+     * @var bool Whether to only return entries that the user has permission to edit.
      */
     public $editable;
 
     /**
-     * @var integer|integer[] The section ID(s) that the resulting entries must be in.
+     * @var int|int[] The section ID(s) that the resulting entries must be in.
      */
     public $sectionId;
 
     /**
-     * @var integer|integer[] The entry type ID(s) that the resulting entries must have.
+     * @var int|int[] The entry type ID(s) that the resulting entries must have.
      */
     public $typeId;
 
     /**
-     * @var integer|integer[] The user ID(s) that the resulting entries’ authors must have.
+     * @var int|int[] The user ID(s) that the resulting entries’ authors must have.
      */
     public $authorId;
 
     /**
-     * @var integer|integer[] The user group ID(s) that the resulting entries’ authors must be in.
+     * @var int|int[] The user group ID(s) that the resulting entries’ authors must be in.
      */
     public $authorGroupId;
 
@@ -122,7 +122,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -160,7 +160,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -197,7 +197,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -211,7 +211,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -248,7 +248,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */

@@ -13,11 +13,11 @@ use craft\validators\DateTimeValidator;
 /**
  * Token record.
  *
- * @property integer   $id         ID
+ * @property int       $id         ID
  * @property string    $token      Token
  * @property array     $route      Route
- * @property integer   $usageLimit Usage limit
- * @property integer   $usageCount Usage count
+ * @property int       $usageLimit Usage limit
+ * @property int       $usageCount Usage count
  * @property \DateTime $expiryDate Expiry date
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

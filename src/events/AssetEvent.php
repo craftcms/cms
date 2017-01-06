@@ -26,7 +26,7 @@ class AssetEvent extends CancelableEvent
     public $asset;
 
     /**
-     * @var boolean Whether the asset is brand new
+     * @var bool Whether the asset is brand new
      */
     public $isNew = false;
 }

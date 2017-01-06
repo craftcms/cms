@@ -341,7 +341,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
      *
-     * @return boolean
+     * @return bool
      */
     private function _isPublicTemplatePath()
     {

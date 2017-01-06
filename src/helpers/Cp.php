@@ -33,7 +33,7 @@ class Cp
 
     /**
      * @param string|null $path
-     * @param boolean     $fetch
+     * @param bool        $fetch
      *
      * @return array
      */

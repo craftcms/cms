@@ -13,10 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Session record.
  *
- * @property integer $id     ID
- * @property integer $userId User ID
- * @property string  $token  Token
- * @property User    $user   User
+ * @property int    $id     ID
+ * @property int    $userId User ID
+ * @property string $token  Token
+ * @property User   $user   User
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

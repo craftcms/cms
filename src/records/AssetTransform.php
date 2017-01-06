@@ -12,15 +12,15 @@ use craft\db\ActiveRecord;
 /**
  * Class AssetTransform record.
  *
- * @property integer   $id                  ID
+ * @property int       $id                  ID
  * @property string    $name                Name
  * @property string    $handle              Handle
  * @property string    $mode                Mode
  * @property string    $position            Position
- * @property integer   $height              Height
- * @property integer   $width               Width
+ * @property int       $height              Height
+ * @property int       $width               Width
  * @property string    $format              Format
- * @property integer   $quality             Quality
+ * @property int       $quality             Quality
  * @property \DateTime $dimensionChangeTime Dimension change time
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

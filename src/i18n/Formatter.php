@@ -73,8 +73,8 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @inheritdoc
      *
-     * @param integer|string|DateTime $value
-     * @param string                  $format
+     * @param int|string|DateTime $value
+     * @param string              $format
      *
      * @return string
      * @throws InvalidParamException
@@ -100,8 +100,8 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @inheritdoc
      *
-     * @param integer|string|DateTime $value
-     * @param string                  $format
+     * @param int|string|DateTime $value
+     * @param string              $format
      *
      * @return string
      * @throws InvalidParamException
@@ -127,8 +127,8 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @inheritdoc
      *
-     * @param integer|string|DateTime $value
-     * @param string                  $format
+     * @param int|string|DateTime $value
+     * @param string              $format
      *
      * @return string
      * @throws InvalidParamException
@@ -158,15 +158,15 @@ class Formatter extends \yii\i18n\Formatter
      * - If $value is from yesterday, "Yesterday" will be returned
      * - If $value is within the past 7 days, the weekday will be returned
      *
-     * @param integer|string|DateTime $value  The value to be formatted. The following
+     * @param int|string|DateTime $value      The value to be formatted. The following
      *                                        types of value are supported:
      *
-     * - an integer representing a UNIX timestamp
+     * - an int representing a UNIX timestamp
      * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
      *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
      * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
      *
-     * @param string                  $format The format used to convert the value into a date string.
+     * @param string              $format     The format used to convert the value into a date string.
      *                                        If null, [[dateFormat]] will be used.
      *
      * This can be "short", "medium", "long", or "full", which represents a preset format of different lengths.
@@ -183,7 +183,7 @@ class Formatter extends \yii\i18n\Formatter
     public function asTimestamp($value, $format = null)
     {
         /** @var DateTime $timestamp */
-        /** @var boolean $hasTimeInfo */
+        /** @var bool $hasTimeInfo */
         list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
 
         // If it's today, just return the local time.
@@ -212,12 +212,12 @@ class Formatter extends \yii\i18n\Formatter
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
-     * @param mixed   $value       the value to be formatted.
-     * @param string  $currency    the 3-letter ISO 4217 currency code indicating the currency to use.
+     * @param mixed  $value        the value to be formatted.
+     * @param string $currency     the 3-letter ISO 4217 currency code indicating the currency to use.
      *                             If null, [[currencyCode]] will be used.
-     * @param array   $options     optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
-     * @param array   $textOptions optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
-     * @param boolean $stripZeros  Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
+     * @param array  $options      optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
+     * @param array  $textOptions  optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
+     * @param bool   $stripZeros   Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
      *
      * @return string the formatted result.
      * @throws InvalidParamException if the input value is not numeric.
@@ -270,16 +270,16 @@ class Formatter extends \yii\i18n\Formatter
      * Code mostly copied from [[parent::formatDateTimeValue()]], with the exception that translatable strings
      * in the date/time format will be returned in the correct locale.
      *
-     * @param integer|string|DateTime $value  The value to be formatted. The following
+     * @param int|string|DateTime $value      The value to be formatted. The following
      *                                        types of value are supported:
      *
-     * - an integer representing a UNIX timestamp
+     * - an int representing a UNIX timestamp
      * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
      *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
      * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
      *
-     * @param string                  $format The format used to convert the value into a date string.
-     * @param string                  $type   'date', 'time', or 'datetime'.
+     * @param string              $format     The format used to convert the value into a date string.
+     * @param string              $type       'date', 'time', or 'datetime'.
      *
      * @throws InvalidConfigException if the date format is invalid.
      * @return string the formatted result.

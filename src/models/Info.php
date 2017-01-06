@@ -21,7 +21,7 @@ class Info extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -36,7 +36,7 @@ class Info extends Model
     public $schemaVersion = '0';
 
     /**
-     * @var integer Edition
+     * @var int Edition
      */
     public $edition = \Craft::Personal;
 
@@ -46,12 +46,12 @@ class Info extends Model
     public $timezone = 'America/Los_Angeles';
 
     /**
-     * @var boolean On
+     * @var bool On
      */
     public $on = false;
 
     /**
-     * @var boolean Maintenance
+     * @var bool Maintenance
      */
     public $maintenance = false;
 
@@ -85,7 +85,7 @@ class Info extends Model
     {
         parent::init();
 
-        // Make sure $edition is going to be an integer
+        // Make sure $edition is going to be an int
         if (is_string($this->edition)) {
             $this->edition = (int)$this->edition;
         }

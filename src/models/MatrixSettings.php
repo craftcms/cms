@@ -23,7 +23,7 @@ class MatrixSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer Max blocks
+     * @var int Max blocks
      */
     public $maxBlocks;
 
@@ -110,9 +110,9 @@ class MatrixSettings extends Model
      * In addition, we validate the block type settings.
      *
      * @param array|null $attributes
-     * @param boolean    $clearErrors
+     * @param bool       $clearErrors
      *
-     * @return boolean
+     * @return bool
      */
     public function validate($attributes = null, $clearErrors = true)
     {

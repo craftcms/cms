@@ -66,7 +66,7 @@ class ElementIndexes extends Component
      * @param ElementInterface|string $elementType The element type class
      * @param array                   $newSettings The new index settings
      *
-     * @return boolean Whether the settings were saved successfully
+     * @return bool Whether the settings were saved successfully
      */
     public function saveSettings($elementType, $newSettings)
     {
@@ -201,7 +201,7 @@ class ElementIndexes extends Component
      * Returns all of the available attributes that can be shown for a given element type source.
      *
      * @param ElementInterface|string $elementType   The element type class
-     * @param boolean                 $includeFields Whether custom fields should be included in the list
+     * @param bool                    $includeFields Whether custom fields should be included in the list
      *
      * @return array
      */

@@ -37,7 +37,7 @@ class Tasks
     /**
      * Returns whether there is a task that is currently running.
      *
-     * @return boolean Whether there is a task that is currently running
+     * @return bool Whether there is a task that is currently running
      */
     public function isTaskRunning()
     {
@@ -51,7 +51,7 @@ class Tasks
      *
      * @param string|null $type The task type to check for, if any
      *
-     * @return boolean Whether there are any pending tasks
+     * @return bool Whether there are any pending tasks
      */
     public function areTasksPending($type = null)
     {
@@ -63,7 +63,7 @@ class Tasks
     /**
      * Returns whether any tasks that have failed.
      *
-     * @return boolean Whether any tasks have failed
+     * @return bool Whether any tasks have failed
      */
     public function haveTasksFailed()
     {
@@ -75,7 +75,7 @@ class Tasks
     /**
      * Returns the total number of active tasks.
      *
-     * @return integer The total number of active tasks
+     * @return int The total number of active tasks
      */
     public function getTotalTasks()
     {

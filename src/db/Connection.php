@@ -244,10 +244,10 @@ class Connection extends \yii\db\Connection
     /**
      * Returns whether a table exists.
      *
-     * @param string       $table
-     * @param boolean|null $refresh
+     * @param string    $table
+     * @param bool|null $refresh
      *
-     * @return boolean
+     * @return bool
      */
     public function tableExists($table, $refresh = null)
     {
@@ -266,9 +266,9 @@ class Connection extends \yii\db\Connection
      *
      * @param BaseTableSchema|string $table
      * @param string                 $column
-     * @param boolean|null           $refresh
+     * @param bool|null              $refresh
      *
-     * @return boolean
+     * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
     public function columnExists($table, $column, $refresh = null)
@@ -310,7 +310,7 @@ class Connection extends \yii\db\Connection
      *
      * @param string       $table
      * @param string|array $columns
-     * @param boolean      $unique
+     * @param bool         $unique
      *
      * @return string
      */

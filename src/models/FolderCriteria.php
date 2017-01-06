@@ -21,17 +21,17 @@ class FolderCriteria extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer|string|boolean Parent ID
+     * @var int|string|bool Parent ID
      */
     public $parentId = false;
 
     /**
-     * @var integer Source ID
+     * @var int Source ID
      */
     public $volumeId;
 
@@ -51,12 +51,12 @@ class FolderCriteria extends Model
     public $order = 'name asc';
 
     /**
-     * @var integer Offset
+     * @var int Offset
      */
     public $offset;
 
     /**
-     * @var integer Limit
+     * @var int Limit
      */
     public $limit;
 

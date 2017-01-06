@@ -36,7 +36,7 @@ class FindAndReplace extends Task
     public $replace;
 
     /**
-     * @var integer The Matrix field ID, if searching against a Matrix field’s content
+     * @var int The Matrix field ID, if searching against a Matrix field’s content
      */
     public $matrixFieldId;
 

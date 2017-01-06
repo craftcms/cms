@@ -33,7 +33,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|integer[] The tag group ID(s) that the resulting tags must be in.
+     * @var int|int[] The tag group ID(s) that the resulting tags must be in.
      */
     public $groupId;
 
@@ -91,7 +91,7 @@ class TagQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */

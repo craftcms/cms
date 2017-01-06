@@ -49,12 +49,12 @@ class Raster extends Image
     private $_extension;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_isAnimatedGif = false;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_quality = 0;
 
@@ -345,7 +345,7 @@ class Raster extends Image
     /**
      * Rotates the image by the given degrees.
      *
-     * @param integer $degrees
+     * @param int $degrees
      *
      * @return static Self reference
      */
@@ -359,7 +359,7 @@ class Raster extends Image
     /**
      * Sets the image quality.
      *
-     * @param integer $quality
+     * @param int $quality
      *
      * @return static Self reference
      */
@@ -462,9 +462,9 @@ class Raster extends Image
     /**
      * Sets properties for text drawing on the image.
      *
-     * @param string  $fontFile path to the font file on server
-     * @param integer $size     font size to use
-     * @param string  $color    font color to use in hex format
+     * @param string $fontFile path to the font file on server
+     * @param int    $size     font size to use
+     * @param string $color    font color to use in hex format
      *
      * @return void
      */
@@ -480,8 +480,8 @@ class Raster extends Image
     /**
      * Returns the bounding text box for a text string and an angle
      *
-     * @param string  $text
-     * @param integer $angle
+     * @param string $text
+     * @param int    $angle
      *
      * @return \Imagine\Image\BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
@@ -498,10 +498,10 @@ class Raster extends Image
     /**
      * Writes text on an image.
      *
-     * @param string  $text
-     * @param integer $x
-     * @param integer $y
-     * @param integer $angle
+     * @param string $text
+     * @param int    $x
+     * @param int    $y
+     * @param int    $angle
      *
      * @return void
      * @throws ImageException If attempting to create text box with no font properties et.
@@ -521,12 +521,12 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @param string  $tempFileName
-     * @param integer $originalSize
-     * @param string  $extension
-     * @param integer $minQuality
-     * @param integer $maxQuality
-     * @param integer $step
+     * @param string $tempFileName
+     * @param int    $originalSize
+     * @param string $extension
+     * @param int    $minQuality
+     * @param int    $maxQuality
+     * @param int    $step
      *
      * @return string the resulting file path
      */
@@ -586,8 +586,8 @@ class Raster extends Image
     /**
      * Returns save options.
      *
-     * @param integer|null $quality
-     * @param string       $extension
+     * @param int|null $quality
+     * @param string   $extension
      *
      * @return array
      */

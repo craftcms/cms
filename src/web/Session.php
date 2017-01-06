@@ -113,7 +113,7 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS resource flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS resource flashes.
      */
@@ -142,7 +142,7 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS flashes.
      */
@@ -194,7 +194,7 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return boolean
+     * @return bool
      */
     public function checkAuthorization($action)
     {

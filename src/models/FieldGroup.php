@@ -25,7 +25,7 @@ class FieldGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 

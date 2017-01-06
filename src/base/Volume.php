@@ -41,7 +41,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the Flysystem adapter expects folder names to have trailing slashes
+     * @var bool Whether the Flysystem adapter expects folder names to have trailing slashes
      */
     protected $foldersHaveTrailingSlashes = true;
 
@@ -61,7 +61,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Returns whether this volume stores files locally on the server.
      *
-     * @return boolean Whether files are stored locally.
+     * @return bool Whether files are stored locally.
      */
     public static function isLocal()
     {
@@ -370,7 +370,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @param string $path the path to invalidate
      *
-     * @return boolean
+     * @return bool
      */
     protected function invalidateCdnPath($path)
     {

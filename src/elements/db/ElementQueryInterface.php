@@ -25,7 +25,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[asArray]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -52,7 +52,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[fixedOrder]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -70,7 +70,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[archived]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -106,7 +106,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[siteId]] property.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -124,7 +124,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[relatedTo]] property.
      *
-     * @param integer|array|ElementInterface $value The property value
+     * @param int|array|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -187,7 +187,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[structureId]] property.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -196,7 +196,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[level]] property.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -205,7 +205,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[ancestorOf]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -214,7 +214,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[ancestorDist]] property.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -223,7 +223,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[descendantOf]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -232,7 +232,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[descendantDist]] property.
      *
-     * @param integer $value The property value
+     * @param int $value The property value
      *
      * @return static self reference
      */
@@ -241,7 +241,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[siblingOf]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -250,7 +250,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[prevSiblingOf]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -259,7 +259,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[nextSiblingOf]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -268,7 +268,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[positionedBefore]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -277,7 +277,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[positionedAfter]] property.
      *
-     * @param integer|ElementInterface $value The property value
+     * @param int|ElementInterface $value The property value
      *
      * @return static self reference
      */
@@ -316,7 +316,7 @@ interface ElementQueryInterface extends QueryInterface
      * @param Connection $db The database connection used to generate the SQL statement.
      *                       If this parameter is not given, the `db` application component will be used.
      *
-     * @return integer[] The resulting element IDs. An empty array is returned if no elements are found.
+     * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
     public function ids($db = null);
 }

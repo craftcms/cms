@@ -74,7 +74,7 @@ class Search extends Component
      *
      * @param ElementInterface $element
      *
-     * @return boolean Whether the indexing was a success.
+     * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element)
@@ -101,11 +101,11 @@ class Search extends Component
     /**
      * Indexes the field values for a given element and site.
      *
-     * @param integer $elementId The ID of the element getting indexed.
-     * @param integer $siteId    The site ID of the content getting indexed.
-     * @param array   $fields    The field values, indexed by field ID.
+     * @param int   $elementId The ID of the element getting indexed.
+     * @param int   $siteId    The site ID of the content getting indexed.
+     * @param array $fields    The field values, indexed by field ID.
      *
-     * @return boolean  Whether the indexing was a success.
+     * @return bool  Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementFields($elementId, $siteId, $fields)
@@ -120,11 +120,11 @@ class Search extends Component
     /**
      * Filters a list of element IDs by a given search query.
      *
-     * @param integer[]                $elementIds   The list of element IDs to filter by the search query.
+     * @param int[]                    $elementIds   The list of element IDs to filter by the search query.
      * @param string|array|SearchQuery $query        The search query (either a string or a SearchQuery instance)
-     * @param boolean                  $scoreResults Whether to order the results based on how closely they match the query.
-     * @param integer                  $siteId       The site ID to filter by.
-     * @param boolean                  $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
+     * @param bool                     $scoreResults Whether to order the results based on how closely they match the query.
+     * @param int                      $siteId       The site ID to filter by.
+     * @param bool                     $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.
      */
@@ -238,11 +238,11 @@ class Search extends Component
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param integer      $elementId
-     * @param string       $attribute
-     * @param string       $fieldId
-     * @param integer|null $siteId
-     * @param string       $dirtyKeywords
+     * @param int      $elementId
+     * @param string   $attribute
+     * @param string   $fieldId
+     * @param int|null $siteId
+     * @param string   $dirtyKeywords
      *
      * @return void
      * @throws \craft\errors\SiteNotFoundException
@@ -400,7 +400,7 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param integer|null $siteId The site ID to search within
+     * @param int|null $siteId The site ID to search within
      *
      * @return string|false
      */
@@ -437,9 +437,9 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array        $tokens
-     * @param boolean      $inclusive
-     * @param integer|null $siteId
+     * @param array    $tokens
+     * @param bool     $inclusive
+     * @param int|null $siteId
      *
      * @return string|false
      * @throws \Exception
@@ -501,7 +501,7 @@ class Search extends Component
      * or returns keywords to use in a full text search clause
      *
      * @param SearchQueryTerm $term
-     * @param integer|null    $siteId
+     * @param int|null        $siteId
      *
      * @return array
      * @throws Exception
@@ -632,7 +632,7 @@ class Search extends Component
      *
      * @param string $attribute
      *
-     * @return integer
+     * @return int
      */
     private function _getFieldIdFromAttribute($attribute)
     {
@@ -663,9 +663,9 @@ class Search extends Component
     /**
      * Get SQL necessary for a full text search.
      *
-     * @param mixed   $val   String or Array of keywords
-     * @param boolean $bool  Use In Boolean Mode or not
-     * @param string  $andOr If multiple values are passed in as an array, whether to AND or OR then.
+     * @param mixed  $val   String or Array of keywords
+     * @param bool   $bool  Use In Boolean Mode or not
+     * @param string $andOr If multiple values are passed in as an array, whether to AND or OR then.
      *
      * @return string
      * @throws Exception
@@ -704,8 +704,8 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string       $where
-     * @param integer|null $siteId
+     * @param string   $where
+     * @param int|null $siteId
      *
      * @return string|false
      */

@@ -14,9 +14,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class MatrixBlockType record.
  *
- * @property integer     $id            ID
- * @property integer     $fieldId       Field ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $fieldId       Field ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
  * @property string      $sortOrder     Sort order

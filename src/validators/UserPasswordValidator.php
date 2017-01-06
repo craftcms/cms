@@ -22,7 +22,7 @@ class UserPasswordValidator extends StringValidator
     // =========================================================================
 
     /**
-     * @var boolean Whether the password must be different from the existing password.
+     * @var bool Whether the password must be different from the existing password.
      */
     public $forceDifferent = false;
 

@@ -42,7 +42,7 @@ class Search
      *
      * @param string[]|string $str            The dirty keywords
      * @param array           $ignore         Ignore words to strip out
-     * @param boolean         $processCharMap Whether to remove punctuation and diacritics (default is true)
+     * @param bool            $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */
@@ -92,7 +92,7 @@ class Search
      * Returns the FULLTEXT minimum word length.
      *
      * @todo Get actual value from DB
-     * @return integer
+     * @return int
      */
     public static function minWordLength()
     {

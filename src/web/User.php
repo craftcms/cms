@@ -21,7 +21,7 @@ use yii\web\IdentityInterface;
  *
  * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
  *
- * @property boolean          $hasElevatedSession Whether the user currently has an elevated session
+ * @property bool             $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity           The logged-in user.
  *
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
@@ -86,13 +86,13 @@ class User extends \yii\web\User
     /**
      * Logs in a user by their ID
      *
-     * @param integer $userId   The user’s ID
-     * @param integer $duration The number of seconds that the user can remain in logged-in status.
+     * @param int $userId       The user’s ID
+     * @param int $duration     The number of seconds that the user can remain in logged-in status.
      *                          Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
      *                          If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
      *                          Note that if [[enableSession]] is false, this parameter will be ignored.
      *
-     * @return boolean Whether the user is logged in
+     * @return bool Whether the user is logged in
      */
     public function loginByUserId($userId, $duration = 0)
     {
@@ -174,7 +174,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return integer The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
+     * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
      */
     public function getRemainingSessionTime()
     {
@@ -202,7 +202,7 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user is an admin.
      *
-     * @return boolean Whether the current user is an admin.
+     * @return bool Whether the current user is an admin.
      */
     public function getIsAdmin()
     {
@@ -216,7 +216,7 @@ class User extends \yii\web\User
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return boolean Whether the current user has the permission.
+     * @return bool Whether the current user has the permission.
      */
     public function checkPermission($permissionName)
     {
@@ -228,7 +228,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return integer|boolean The number of seconds left in the current elevated user session
+     * @return int|bool The number of seconds left in the current elevated user session
      *                         or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
@@ -258,7 +258,7 @@ class User extends \yii\web\User
     /**
      * Returns whether the user currently has an elevated session.
      *
-     * @return boolean Whether the user currently has an elevated session
+     * @return bool Whether the user currently has an elevated session
      */
     public function getHasElevatedSession()
     {
@@ -275,7 +275,7 @@ class User extends \yii\web\User
      *
      * @param string $password the current user’s password
      *
-     * @return boolean Whether the password was valid, and the user session has been elevated
+     * @return bool Whether the password was valid, and the user session has been elevated
      */
     public function startElevatedSession($password)
     {
@@ -487,7 +487,7 @@ class User extends \yii\web\User
      * Validates that the request has a user agent and IP associated with it,
      * if the 'requireUserAgentAndIpForSession' config setting is enabled.
      *
-     * @return boolean
+     * @return bool
      */
     private function _validateUserAgentAndIp()
     {

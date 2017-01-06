@@ -21,8 +21,8 @@ use yii\base\Component;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
- * @property boolean $isGd      Whether image manipulations will be performed using GD or not
- * @property boolean $isImagick Whether image manipulations will be performed using Imagick or not
+ * @property bool $isGd      Whether image manipulations will be performed using GD or not
+ * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -77,7 +77,7 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return boolean|null
+     * @return bool|null
      */
     public function getIsGd()
     {
@@ -88,7 +88,7 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsImagick()
     {
@@ -100,7 +100,7 @@ class Images extends Component
      *
      * @param string $requiredVersion version string
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsImagickAtLeast($requiredVersion)
     {
@@ -125,9 +125,9 @@ class Images extends Component
     /**
      * Loads an image from a file system path.
      *
-     * @param string  $path
-     * @param boolean $rasterize Whether the image should be rasterized if it's an SVG
-     * @param integer $svgSize   The size SVG should be scaled up to, if rasterized
+     * @param string $path
+     * @param bool   $rasterize Whether the image should be rasterized if it's an SVG
+     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
      * @return Image
      */
@@ -159,10 +159,10 @@ class Images extends Component
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
      * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
-     * @param string  $filePath The path to the image file.
-     * @param boolean $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
+     * @param string $filePath The path to the image file.
+     * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
      *
-     * @return boolean
+     * @return bool
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
@@ -206,7 +206,7 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
     public function cleanImage($filePath)
     {
@@ -236,7 +236,7 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
     public function rotateImageByExifData($filePath)
     {
@@ -300,7 +300,7 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
     public function stripOrientationFromExifData($filePath)
     {

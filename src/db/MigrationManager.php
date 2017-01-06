@@ -42,7 +42,7 @@ class MigrationManager extends Component
     public $type;
 
     /**
-     * @var integer The plugin ID, if [[type]] is set to 'plugin'.
+     * @var int The plugin ID, if [[type]] is set to 'plugin'.
      */
     public $pluginId;
 
@@ -121,10 +121,10 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param integer|null $limit The number of new migrations to be applied. If 0 or null, it means
+     * @param int|null $limit     The number of new migrations to be applied. If 0 or null, it means
      *                            applying all available new migrations.
      *
-     * @return boolean Whether the migrations were applied successfully
+     * @return bool Whether the migrations were applied successfully
      */
     public function up($limit = 0)
     {
@@ -176,10 +176,10 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param integer|null $limit The number of migrations to be reverted. Defaults to 1,
+     * @param int|null $limit     The number of migrations to be reverted. Defaults to 1,
      *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
      *
-     * @return boolean Whether the migrations were reverted successfully
+     * @return bool Whether the migrations were reverted successfully
      */
     public function down($limit = 1)
     {
@@ -222,7 +222,7 @@ class MigrationManager extends Component
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
      *
-     * @return boolean Whether the migration was applied successfully
+     * @return bool Whether the migration was applied successfully
      * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateUp($migration)
@@ -274,7 +274,7 @@ class MigrationManager extends Component
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
      *
-     * @return boolean Whether the migration was reverted successfully
+     * @return bool Whether the migration was reverted successfully
      * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateDown($migration)
@@ -324,7 +324,7 @@ class MigrationManager extends Component
     /**
      * Returns the migration history.
      *
-     * @param integer $limit The maximum number of records in the history to be returned. `null` for "no limit".
+     * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
      *
      * @return array The migration history
      */
@@ -380,7 +380,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      *
-     * @return boolean Whether the migration has been applied
+     * @return bool Whether the migration has been applied
      */
     public function hasRun($name)
     {
@@ -430,7 +430,7 @@ class MigrationManager extends Component
     /**
      * Normalizes the $limit argument passed to [[up()]] and [[down()]]
      *
-     * @param integer|null &$limit
+     * @param int|null &$limit
      */
     private function _normalizeLimit(&$limit)
     {

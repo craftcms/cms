@@ -26,21 +26,21 @@ class DateTimeHelper
     /**
      * Number of seconds in a minute.
      *
-     * @var integer
+     * @var int
      */
     const SECONDS_MINUTE = 60;
 
     /**
      * Number of seconds in an hour.
      *
-     * @var integer
+     * @var int
      */
     const SECONDS_HOUR = 3600;
 
     /**
      * Number of seconds in a day.
      *
-     * @var integer
+     * @var int
      */
     const SECONDS_DAY = 86400;
 
@@ -49,7 +49,7 @@ class DateTimeHelper
      *
      * Based on a 30.4368 day month, with the product rounded.
      *
-     * @var integer
+     * @var int
      */
     const SECONDS_MONTH = 2629740;
 
@@ -58,7 +58,7 @@ class DateTimeHelper
      *
      * Based on a 365.2416 day year, with the product rounded.
      *
-     * @var integer
+     * @var int
      */
     const SECONDS_YEAR = 31556874;
 
@@ -84,9 +84,9 @@ class DateTimeHelper
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
      *
-     * @param mixed   $value                The value that should be converted to a DateTime object.
-     * @param boolean $assumeSystemTimeZone Whether it should be assumed that the value was set in the system time zone if the timezone was not specified. If this is false, UTC will be assumed. (Defaults to false.)
-     * @param boolean $setToSystemTimeZone  Whether to set the resulting DateTime object to the system time zone. (Defaults to true.)
+     * @param mixed $value                The value that should be converted to a DateTime object.
+     * @param bool  $assumeSystemTimeZone Whether it should be assumed that the value was set in the system time zone if the timezone was not specified. If this is false, UTC will be assumed. (Defaults to false.)
+     * @param bool  $setToSystemTimeZone  Whether to set the resulting DateTime object to the system time zone. (Defaults to true.)
      *
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
@@ -286,7 +286,7 @@ class DateTimeHelper
      *
      * @param mixed $value The timestamp to check
      *
-     * @return boolean Whether the value is an ISO-8601 date string
+     * @return bool Whether the value is an ISO-8601 date string
      */
     public static function isIso8601($value)
     {
@@ -320,7 +320,7 @@ class DateTimeHelper
     }
 
     /**
-     * @return integer
+     * @return int
      */
     public static function currentTimeStamp()
     {
@@ -354,8 +354,8 @@ class DateTimeHelper
     }
 
     /**
-     * @param integer $seconds     The number of seconds
-     * @param boolean $showSeconds Whether to output seconds or not
+     * @param int  $seconds     The number of seconds
+     * @param bool $showSeconds Whether to output seconds or not
      *
      * @return string
      */
@@ -411,7 +411,7 @@ class DateTimeHelper
     /**
      * @param $timestamp
      *
-     * @return boolean
+     * @return bool
      */
     public static function isValidTimeStamp($timestamp)
     {
@@ -423,7 +423,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is today, false otherwise.
+     * @return bool true if date is today, false otherwise.
      */
     public static function isToday($date)
     {
@@ -438,7 +438,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date was yesterday, false otherwise.
+     * @return bool true if date was yesterday, false otherwise.
      */
     public static function isYesterday($date)
     {
@@ -453,7 +453,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is in this year, false otherwise.
+     * @return bool true if date is in this year, false otherwise.
      */
     public static function isThisYear($date)
     {
@@ -468,7 +468,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is in this week, false otherwise.
+     * @return bool true if date is in this week, false otherwise.
      */
     public static function isThisWeek($date)
     {
@@ -483,7 +483,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean True if date is in this month, false otherwise.
+     * @return bool True if date is in this month, false otherwise.
      */
     public static function isThisMonth($date)
     {
@@ -500,7 +500,7 @@ class DateTimeHelper
      * @param mixed $timeInterval   The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
      *                              1 minute.
      *
-     * @return boolean Whether the $dateString was within the specified $timeInterval.
+     * @return bool Whether the $dateString was within the specified $timeInterval.
      */
     public static function isWithinLast($date, $timeInterval)
     {
@@ -526,7 +526,7 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if the specified date was in the past, false otherwise.
+     * @return bool true if the specified date was in the past, false otherwise.
      */
     public static function isInThePast($date)
     {
@@ -541,7 +541,7 @@ class DateTimeHelper
      *
      * @param $timeFormatString
      *
-     * @return integer|null
+     * @return int|null
      */
     public static function timeFormatToSeconds($timeFormatString)
     {
@@ -581,7 +581,7 @@ class DateTimeHelper
      *
      * @param $intervalString
      *
-     * @return boolean
+     * @return bool
      */
     public static function isValidIntervalString($intervalString)
     {
@@ -594,7 +594,7 @@ class DateTimeHelper
      * Returns the interval in a human-friendly string.
      *
      * @param \DateInterval $dateInterval
-     * @param boolean       $showSeconds
+     * @param bool          $showSeconds
      *
      * @return string
      */

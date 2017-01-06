@@ -28,8 +28,8 @@ use yii\base\InvalidParamException;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property boolean $omitScriptNameInUrls Whether generated URLs should omit “index.php”
- * @property boolean $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
+ * @property bool $omitScriptNameInUrls Whether generated URLs should omit “index.php”
+ * @property bool $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -51,22 +51,22 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * @var integer|null
+     * @var int|null
      */
     private $_cacheDuration;
 
     /**
-     * @var boolean|null
+     * @var bool|null
      */
     private $_omitScriptNameInUrls;
 
     /**
-     * @var boolean|null
+     * @var bool|null
      */
     private $_usePathInfo;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_useFileLocks;
 
@@ -221,7 +221,7 @@ class Config extends Component
      * @param string $item     The name of the config setting.
      * @param string $category The name of the config file (sans .php). Defaults to 'general'.
      *
-     * @return boolean Whether the config setting value exists.
+     * @return bool Whether the config setting value exists.
      */
     public function exists($item, $category = self::CATEGORY_GENERAL)
     {
@@ -260,7 +260,7 @@ class Config extends Component
      * Craft::$app->getConfig()->getCacheDuration();   // 86400
      * ```
      *
-     * @return integer The cacheDuration config setting value, in seconds.
+     * @return int The cacheDuration config setting value, in seconds.
      */
     public function getCacheDuration()
     {
@@ -300,7 +300,7 @@ class Config extends Component
      * Results of the redirect test request will be cached for the amount of time specified by the
      * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
-     * @return boolean Whether generated URLs should omit “index.php”.
+     * @return bool Whether generated URLs should omit “index.php”.
      */
     public function getOmitScriptNameInUrls()
     {
@@ -372,7 +372,7 @@ class Config extends Component
      * Results of the PATH_INFO test request will be cached for the amount of time specified by the
      * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
-     * @return boolean Whether generated URLs should be formatted using PATH_INFO
+     * @return bool Whether generated URLs should be formatted using PATH_INFO
      */
     public function getUsePathInfo()
     {
@@ -454,10 +454,10 @@ class Config extends Component
      * should be used with the $remembered param. If rememberedUserSessionDuration’s value is empty (disabling the
      * feature) then userSessionDuration will be used regardless of $remembered.
      *
-     * @param boolean $remembered Whether the rememberedUserSessionDuration config setting should be used if it’s set.
+     * @param bool $remembered    Whether the rememberedUserSessionDuration config setting should be used if it’s set.
      *                            Default is `false`.
      *
-     * @return integer|null The user session duration in seconds, or `null` if user sessions should expire along with the
+     * @return int|null The user session duration in seconds, or `null` if user sessions should expire along with the
      *                  HTTP session.
      */
     public function getUserSessionDuration($remembered = false)
@@ -482,7 +482,7 @@ class Config extends Component
     /**
      * Returns the configured elevated session duration in seconds.
      *
-     * @return integer|boolean The elevated session duration in seconds or false if it has been disabled.
+     * @return int|bool The elevated session duration in seconds or false if it has been disabled.
      */
     public function getElevatedSessionDuration()
     {
@@ -546,10 +546,10 @@ class Config extends Component
     /**
      * Returns a user’s Set Password path with a given activation code and user’s UID.
      *
-     * @param string  $code The activation code.
-     * @param string  $uid  The user’s UID.
-     * @param User    $user The user.
-     * @param boolean $full Whether a full URL should be returned. Defaults to `false`.
+     * @param string $code The activation code.
+     * @param string $uid  The user’s UID.
+     * @param User   $user The user.
+     * @param bool   $full Whether a full URL should be returned. Defaults to `false`.
      *
      * @return string The Set Password path.
      *
@@ -673,7 +673,7 @@ class Config extends Component
     /**
      * Returns whether the system is allowed to be auto-updated to the latest release.
      *
-     * @return boolean Whether the system is allowed to be auto-updated to the latest release.
+     * @return bool Whether the system is allowed to be auto-updated to the latest release.
      */
     public function allowAutoUpdates()
     {
@@ -705,7 +705,7 @@ class Config extends Component
     /**
      * Returns whether to use file locks when writing to files.
      *
-     * @return boolean
+     * @return bool
      */
     public function getUseFileLocks()
     {
@@ -776,7 +776,7 @@ class Config extends Component
      *
      * @param string $extension The extension in question
      *
-     * @return boolean Whether the extension is allowed
+     * @return bool Whether the extension is allowed
      */
     public function isExtensionAllowed($extension)
     {

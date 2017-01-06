@@ -87,7 +87,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * @var boolean|null Whether the field is fresh.
+     * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
@@ -398,7 +398,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed            $value   The field’s value
      * @param ElementInterface $element The element the field is associated with, if there is one
      *
-     * @return boolean Whether the value should be considered "empty"
+     * @return bool Whether the value should be considered "empty"
      */
     protected function isValueEmpty($value, $element)
     {
@@ -455,7 +455,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @param ElementInterface|null $element
      *
-     * @return boolean
+     * @return bool
      */
     protected function isFresh($element)
     {

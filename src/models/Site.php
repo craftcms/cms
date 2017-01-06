@@ -26,7 +26,7 @@ class Site extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
@@ -46,7 +46,7 @@ class Site extends Model
     public $language;
 
     /**
-     * @var boolean Has URLs
+     * @var bool Has URLs
      */
     public $hasUrls = true;
 

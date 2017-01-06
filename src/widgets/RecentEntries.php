@@ -36,7 +36,7 @@ class RecentEntries extends Widget
     // =========================================================================
 
     /**
-     * @var string|integer[] The section IDs that the widget should pull entries from
+     * @var string|int[] The section IDs that the widget should pull entries from
      */
     public $section = '*';
 
@@ -46,7 +46,7 @@ class RecentEntries extends Widget
     public $siteId;
 
     /**
-     * integer The total number of entries that the widget should show
+     * int The total number of entries that the widget should show
      */
     public $limit = 10;
 

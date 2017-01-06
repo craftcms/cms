@@ -37,7 +37,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * Returns whether the widget can be selected more than once.
      *
-     * @return boolean Whether the widget can be selected more than once
+     * @return bool Whether the widget can be selected more than once
      */
     protected static function allowMultipleInstances()
     {

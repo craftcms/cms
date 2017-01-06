@@ -74,7 +74,7 @@ class Request
     /**
      * Returns whether this is an Ajax request.
      *
-     * @return boolean
+     * @return bool
      */
     public function isAjax()
     {
@@ -86,7 +86,7 @@ class Request
     /**
      * Returns whether this is a secure connection.
      *
-     * @return boolean
+     * @return bool
      */
     public function isSecure()
     {
@@ -98,7 +98,7 @@ class Request
     /**
      * Returns whether this is a Live Preview request.
      *
-     * @return boolean
+     * @return bool
      */
     public function isLivePreview()
     {
@@ -158,7 +158,7 @@ class Request
     /**
      * Returns a specific URI segment, or null if the segment doesn't exist.
      *
-     * @param integer $num
+     * @param int $num
      *
      * @return string|null
      */
@@ -253,9 +253,9 @@ class Request
     /**
      * Returns whether the request is coming from a mobile browser.
      *
-     * @param boolean $detectTablets
+     * @param bool $detectTablets
      *
-     * @return boolean
+     * @return bool
      */
     public function isMobileBrowser($detectTablets = false)
     {
@@ -267,7 +267,7 @@ class Request
     /**
      * Returns the page number if this is a paginated request.
      *
-     * @return integer
+     * @return int
      */
     public function getPageNum()
     {
@@ -330,7 +330,7 @@ class Request
     /**
      * Returns the server port number.
      *
-     * @return integer
+     * @return int
      */
     public function getServerPort()
     {
@@ -379,7 +379,7 @@ class Request
      * Returns the port to use for insecure requests. Defaults to 80, or the port specified by the server if the current
      * request is insecure.
      *
-     * @return integer
+     * @return int
      */
     public function getPort()
     {

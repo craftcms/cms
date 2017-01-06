@@ -14,8 +14,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Migration record.
  *
- * @property integer   $id        ID
- * @property integer   $pluginId  Plugin ID
+ * @property int       $id        ID
+ * @property int       $pluginId  Plugin ID
  * @property string    $version   Version
  * @property \DateTime $applyTime Apply time
  * @property Plugin    $plugin    Plugin

@@ -13,9 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CategoryGroup record.
  *
- * @property integer                      $id            ID
- * @property integer                      $structureId   Structure ID
- * @property integer                      $fieldLayoutId Field layout ID
+ * @property int                          $id            ID
+ * @property int                          $structureId   Structure ID
+ * @property int                          $fieldLayoutId Field layout ID
  * @property string                       $name          Name
  * @property string                       $handle        Handle
  * @property Structure                    $structure     Structure

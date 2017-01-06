@@ -21,17 +21,17 @@ class App
     // =========================================================================
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_isComposerInstall;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_isPhpDevServer;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_iconv;
 
@@ -41,7 +41,7 @@ class App
     /**
      * Returns whether Craft was installed via Composer.
      *
-     * @return boolean
+     * @return bool
      */
     public static function isComposerInstall()
     {
@@ -57,7 +57,7 @@ class App
     /**
      * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
      *
-     * @return boolean Whether Craft is running on the PHP Dev Server.
+     * @return bool Whether Craft is running on the PHP Dev Server.
      */
     public static function isPhpDevServer()
     {
@@ -85,7 +85,7 @@ class App
     /**
      * Returns the name of the given Craft edition.
      *
-     * @param integer $edition An edition’s ID.
+     * @param int $edition An edition’s ID.
      *
      * @return string The edition’s name.
      */
@@ -106,7 +106,7 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      *
-     * @return boolean Whether $edition is a valid edition ID.
+     * @return bool Whether $edition is a valid edition ID.
      */
     public static function isValidEdition($edition)
     {
@@ -114,11 +114,11 @@ class App
     }
 
     /**
-     * Retrieves a boolean PHP config setting and normalizes it to an actual bool.
+     * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return boolean Whether it is set to the php.ini equivelant of `true`.
+     * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
     public static function phpConfigValueAsBool($var)
     {
@@ -134,7 +134,7 @@ class App
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return integer The size in bytes.
+     * @return int The size in bytes.
      */
     public static function phpConfigValueInBytes($var)
     {
@@ -151,16 +151,16 @@ class App
         switch (strtolower($matches[2])) {
             case 't':
                 $value *= 1024;
-                // no break
+            // no break
             case 'g':
                 $value *= 1024;
-                // no break
+            // no break
             case 'm':
                 $value *= 1024;
-                // no break
+            // no break
             case 'k':
                 $value *= 1024;
-                // no break
+            // no break
         }
 
         return $value;
@@ -237,7 +237,7 @@ class App
     /**
      * Returns whether the server has a valid version of the iconv extension installed.
      *
-     * @return boolean
+     * @return bool
      */
     public static function checkForValidIconv()
     {

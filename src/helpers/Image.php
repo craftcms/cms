@@ -31,12 +31,12 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  integer $targetWidth
-     * @param  integer $targetHeight
-     * @param  integer $sourceWidth
-     * @param  integer $sourceHeight
+     * @param  int $targetWidth
+     * @param  int $targetHeight
+     * @param  int $sourceWidth
+     * @param  int $sourceHeight
      *
-     * @return integer[] Array of the width and height.
+     * @return int[] Array of the width and height.
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
     {
@@ -56,7 +56,7 @@ class Image
      *
      * @param $extension
      *
-     * @return boolean
+     * @return bool
      */
     public static function isImageManipulatable($extension)
     {
@@ -155,7 +155,7 @@ class Image
      *
      * @param string $filePath the file path to check.
      *
-     * @return boolean
+     * @return bool
      */
     public static function canHaveExifData($filePath)
     {
@@ -190,7 +190,7 @@ class Image
      *
      * @param string $filePath The path to the image
      *
-     * @return integer[]
+     * @return int[]
      */
     public static function imageSize($filePath)
     {

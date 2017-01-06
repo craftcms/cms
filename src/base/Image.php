@@ -15,7 +15,7 @@ use yii\base\Object;
 /**
  * Base Image class.
  *
- * @property boolean $isTransparent Whether the image is transparent
+ * @property bool $isTransparent Whether the image is transparent
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -25,14 +25,14 @@ abstract class Image extends Object
     /**
      * Returns the width of the image.
      *
-     * @return integer
+     * @return int
      */
     abstract public function getWidth();
 
     /**
      * Returns the height of the image.
      *
-     * @return integer
+     * @return int
      */
     abstract public function getHeight();
 
@@ -56,10 +56,10 @@ abstract class Image extends Object
     /**
      * Crops the image to the specified coordinates.
      *
-     * @param integer $x1
-     * @param integer $x2
-     * @param integer $y1
-     * @param integer $y2
+     * @param int $x1
+     * @param int $x2
+     * @param int $y1
+     * @param int $y2
      *
      * @return static Self reference
      */
@@ -68,9 +68,9 @@ abstract class Image extends Object
     /**
      * Scale the image to fit within the specified size.
      *
-     * @param integer      $targetWidth
-     * @param integer|null $targetHeight
-     * @param boolean      $scaleIfSmaller
+     * @param int      $targetWidth
+     * @param int|null $targetHeight
+     * @param bool     $scaleIfSmaller
      *
      * @return static Self reference
      */
@@ -79,10 +79,10 @@ abstract class Image extends Object
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param integer      $targetWidth
-     * @param integer|null $targetHeight
-     * @param boolean      $scaleIfSmaller
-     * @param string       $cropPositions
+     * @param int      $targetWidth
+     * @param int|null $targetHeight
+     * @param bool     $scaleIfSmaller
+     * @param string   $cropPositions
      *
      * @return static Self reference
      */
@@ -91,8 +91,8 @@ abstract class Image extends Object
     /**
      * Resizes the image.
      *
-     * @param integer      $targetWidth  The target width
-     * @param integer|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
+     * @param int      $targetWidth  The target width
+     * @param int|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
      *
      * @return static Self reference
      */
@@ -101,10 +101,10 @@ abstract class Image extends Object
     /**
      * Saves the image to the target path.
      *
-     * @param string  $targetPath
-     * @param boolean $autoQuality
+     * @param string $targetPath
+     * @param bool   $autoQuality
      *
-     * @return boolean
+     * @return bool
      * @throws ImageException if the image cannot be saved.
      */
     abstract public function saveAs($targetPath, $autoQuality = false);
@@ -112,7 +112,7 @@ abstract class Image extends Object
     /**
      * Returns whether the image is transparent.
      *
-     * @return boolean
+     * @return bool
      */
     abstract public function getIsTransparent();
 
@@ -122,8 +122,8 @@ abstract class Image extends Object
     /**
      * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
      *
-     * @param integer|string|null $width
-     * @param integer|string|null $height
+     * @param int|string|null $width
+     * @param int|string|null $height
      */
     protected function normalizeDimensions(&$width, &$height)
     {

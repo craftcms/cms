@@ -249,7 +249,7 @@ class Cp extends Component
     /**
      * Returns whether the CP alerts are cached.
      *
-     * @return boolean
+     * @return bool
      */
     public function areAlertsCached()
     {

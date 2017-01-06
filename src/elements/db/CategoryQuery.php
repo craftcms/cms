@@ -36,12 +36,12 @@ class CategoryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return categories that the user has permission to edit.
+     * @var bool Whether to only return categories that the user has permission to edit.
      */
     public $editable;
 
     /**
-     * @var integer|integer[] The category group ID(s) that the resulting categories must be in.
+     * @var int|int[] The category group ID(s) that the resulting categories must be in.
      */
     public $groupId;
 
@@ -63,7 +63,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
@@ -101,7 +101,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */

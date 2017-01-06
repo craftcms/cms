@@ -26,22 +26,22 @@ class UpgradePurchase extends Model
     public $ccTokenId;
 
     /**
-     * @var integer CC expiry month
+     * @var int CC expiry month
      */
     public $expMonth;
 
     /**
-     * @var integer CC expiry year
+     * @var int CC expiry year
      */
     public $expYear;
 
     /**
-     * @var integer Edition
+     * @var int Edition
      */
     public $edition;
 
     /**
-     * @var integer Expected price
+     * @var int Expected price
      */
     public $expectedPrice;
 
@@ -106,7 +106,7 @@ class UpgradePurchase extends Model
     public $couponCode;
 
     /**
-     * @var boolean Success
+     * @var bool Success
      */
     public $success = false;
 

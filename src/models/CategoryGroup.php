@@ -36,17 +36,17 @@ class CategoryGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Structure ID
+     * @var int Structure ID
      */
     public $structureId;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 
@@ -61,7 +61,7 @@ class CategoryGroup extends Model
     public $handle;
 
     /**
-     * @var integer Max levels
+     * @var int Max levels
      */
     public $maxLevels;
 

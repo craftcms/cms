@@ -23,7 +23,7 @@ class LocalizeRelations extends Task
     // =========================================================================
 
     /**
-     * @var integer The field ID whose data should be localized
+     * @var int The field ID whose data should be localized
      */
     public $fieldId;
 

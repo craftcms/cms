@@ -24,7 +24,7 @@ class ShellCommandException extends Exception
     public $command;
 
     /**
-     * @var integer The command’s exit code
+     * @var int The command’s exit code
      */
     public $exitCode;
 
@@ -54,11 +54,11 @@ class ShellCommandException extends Exception
     /**
      * Constructor.
      *
-     * @param string  $command  The command that was executed
-     * @param integer $exitCode The command’s exit code
-     * @param string  $error    The command’s error output
-     * @param string  $message  The error message
-     * @param integer $code     The error code
+     * @param string $command  The command that was executed
+     * @param int    $exitCode The command’s exit code
+     * @param string $error    The command’s error output
+     * @param string $message  The error message
+     * @param int    $code     The error code
      */
     public function __construct($command, $exitCode, $error = null, $message = null, $code = 0)
     {

@@ -224,7 +224,7 @@ class Updater
      * @param string|false $uid
      * @param string       $handle
      *
-     * @return boolean
+     * @return bool
      * @throws UserException
      */
     public function cleanUp($uid, $handle)
@@ -328,7 +328,7 @@ class Updater
      * @param string $downloadFilePath
      * @param string $sourceMD5
      *
-     * @return boolean
+     * @return bool
      */
     private function _validateUpdate($downloadFilePath, $sourceMD5)
     {
@@ -344,7 +344,7 @@ class Updater
      * @param string $downloadFilePath
      * @param string $unzipFolder
      *
-     * @return boolean
+     * @return bool
      */
     private function _unpackPackage($downloadFilePath, $unzipFolder)
     {
@@ -436,7 +436,7 @@ class Updater
      * @param string $unzipFolder
      * @param string $handle
      *
-     * @return boolean
+     * @return bool
      */
     private function _backupFiles($unzipFolder, $handle)
     {

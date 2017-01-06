@@ -24,7 +24,7 @@ class SiteEvent extends CancelableEvent
     public $site;
 
     /**
-     * @var boolean Whether the site is brand new
+     * @var bool Whether the site is brand new
      */
     public $isNew = false;
 }

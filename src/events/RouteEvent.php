@@ -32,12 +32,12 @@ class RouteEvent extends Event
     public $template;
 
     /**
-     * @var integer|null The site ID the route should be limited to, if any
+     * @var int|null The site ID the route should be limited to, if any
      */
     public $siteId;
 
     /**
-     * @var integer|null The route ID, if it has one yet
+     * @var int|null The route ID, if it has one yet
      */
     public $routeId;
 }

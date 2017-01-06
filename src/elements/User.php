@@ -35,7 +35,7 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property boolean     $isCurrent         Whether this is the current logged-in user
+ * @property bool        $isCurrent         Whether this is the current logged-in user
  * @property string      $name              The user's full name or username
  * @property string|null $preferredLanguage The user’s preferred language
  *
@@ -99,7 +99,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether this element type can have statuses.
      *
-     * @return boolean
+     * @return bool
      */
     public static function hasStatuses()
     {
@@ -382,7 +382,7 @@ class User extends Element implements IdentityInterface
     public $username;
 
     /**
-     * @var integer Photo asset id
+     * @var int Photo asset id
      */
     public $photoId;
 
@@ -407,27 +407,27 @@ class User extends Element implements IdentityInterface
     public $password;
 
     /**
-     * @var boolean Admin
+     * @var bool Admin
      */
     public $admin = false;
 
     /**
-     * @var boolean Client
+     * @var bool Client
      */
     public $client = false;
 
     /**
-     * @var boolean Locked
+     * @var bool Locked
      */
     public $locked = false;
 
     /**
-     * @var boolean Suspended
+     * @var bool Suspended
      */
     public $suspended = false;
 
     /**
-     * @var boolean Pending
+     * @var bool Pending
      */
     public $pending = false;
 
@@ -437,7 +437,7 @@ class User extends Element implements IdentityInterface
     public $lastLoginDate;
 
     /**
-     * @var integer Invalid login count
+     * @var int Invalid login count
      */
     public $invalidLoginCount;
 
@@ -452,7 +452,7 @@ class User extends Element implements IdentityInterface
     public $lockoutDate;
 
     /**
-     * @var boolean Password reset required
+     * @var bool Password reset required
      */
     public $passwordResetRequired = false;
 
@@ -671,7 +671,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $password The user's plain text passwerd.
      *
-     * @return boolean
+     * @return bool
      */
     public function authenticate($password)
     {
@@ -791,9 +791,9 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param UserGroup|integer|string $group The user group model, its handle, or ID.
+     * @param UserGroup|int|string $group The user group model, its handle, or ID.
      *
-     * @return boolean
+     * @return bool
      */
     public function isInGroup($group)
     {
@@ -953,7 +953,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether this is the current logged-in user.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsCurrent()
     {
@@ -973,7 +973,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $permission
      *
-     * @return boolean
+     * @return bool
      */
     public function can($permission)
     {
@@ -997,7 +997,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $message
      *
-     * @return boolean
+     * @return bool
      */
     public function hasShunned($message)
     {
@@ -1073,10 +1073,10 @@ class User extends Element implements IdentityInterface
      *
      * In addition, we check that the username does not have any whitespace in it.
      *
-     * @param null    $attributes
-     * @param boolean $clearErrors
+     * @param null $attributes
+     * @param bool $clearErrors
      *
-     * @return boolean|null
+     * @return bool|null
      */
     public function validate($attributes = null, $clearErrors = true)
     {
@@ -1404,7 +1404,7 @@ class User extends Element implements IdentityInterface
      *
      * @param string $userAgent
      *
-     * @return boolean
+     * @return bool
      */
     private function _validateUserAgent($userAgent)
     {

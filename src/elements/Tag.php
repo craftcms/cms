@@ -89,7 +89,7 @@ class Tag extends Element
     // =========================================================================
 
     /**
-     * @var integer Group ID
+     * @var int Group ID
      */
     public $groupId;
 

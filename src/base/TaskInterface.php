@@ -30,7 +30,7 @@ interface TaskInterface extends SavableComponentInterface
     /**
      * Returns the total number of steps for this task.
      *
-     * @return integer The total number of steps for this task
+     * @return int The total number of steps for this task
      */
     public function getTotalSteps();
 
@@ -44,9 +44,9 @@ interface TaskInterface extends SavableComponentInterface
     /**
      * Runs a task step.
      *
-     * @param integer $step The step to run
+     * @param int $step The step to run
      *
-     * @return boolean|string True if the step was successful, false or an error message if not
+     * @return bool|string True if the step was successful, false or an error message if not
      */
     public function runStep($step);
 }

@@ -17,13 +17,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class StructureElement record.
  *
- * @property integer   $id          ID
- * @property integer   $structureId Structure ID
- * @property integer   $elementId   Element ID
- * @property integer   $root        Root
- * @property integer   $lft         Lft
- * @property integer   $rgt         Rgt
- * @property integer   $level       Level
+ * @property int       $id          ID
+ * @property int       $structureId Structure ID
+ * @property int       $elementId   Element ID
+ * @property int       $root        Root
+ * @property int       $lft         Lft
+ * @property int       $rgt         Rgt
+ * @property int       $level       Level
  * @property Structure $structure   Structure
  * @property Element   $element     Element
  *

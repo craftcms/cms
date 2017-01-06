@@ -45,13 +45,13 @@ use yii\validators\Validator;
  *
  * @property FieldLayout|null      $fieldLayout           The field layout used by this element
  * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property integer[]             $supportedSiteIds      The site IDs this element is available in
+ * @property int[]                 $supportedSiteIds      The site IDs this element is available in
  * @property string|null           $uriFormat             The URI format used to generate this element’s URL
  * @property string|null           $url                   The element’s full URL
  * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
  * @property string|null           $ref                   The reference string to this element
  * @property string                $indexHtml             The element index HTML
- * @property boolean               $isEditable            Whether the current user can edit the element
+ * @property bool                  $isEditable            Whether the current user can edit the element
  * @property string|null           $cpEditUrl             The element’s CP edit URL
  * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
  * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
@@ -60,15 +60,15 @@ use yii\validators\Validator;
  * @property Element               $prev                  The previous element relative to this one, from a given set of criteria
  * @property Element               $parent                The element’s parent
  * @property mixed                 $route                 The route that should be used when the element’s URI is requested
- * @property integer|null          $structureId           The ID of the structure that the element is associated with, if any
+ * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors             The element’s ancestors
  * @property ElementQueryInterface $descendants           The element’s descendants
  * @property ElementQueryInterface $children              The element’s children
  * @property ElementQueryInterface $siblings              All of the element’s siblings
  * @property Element               $prevSibling           The element’s previous sibling
  * @property Element               $nextSibling           The element’s next sibling
- * @property boolean               $hasDescendants        Whether the element has descendants
- * @property integer               $totalDescendants      The total number of descendants that the element has
+ * @property bool                  $hasDescendants        Whether the element has descendants
+ * @property int                   $totalDescendants      The total number of descendants that the element has
  * @property string                $title                 The element’s title
  * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
@@ -566,7 +566,7 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
-     * @var boolean|null Whether custom fields rules should be included when validating the element.
+     * @var bool|null Whether custom fields rules should be included when validating the element.
      *
      * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
      */
@@ -598,7 +598,7 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var integer|false The structure ID that the element is associated with
+     * @var int|false The structure ID that the element is associated with
      * @see getStructureId()
      * @see setStructureId()
      */
@@ -648,7 +648,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $name The property name
      *
-     * @return boolean Whether the property is set
+     * @return bool Whether the property is set
      */
     public function __isset($name)
     {
@@ -1428,7 +1428,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $handle The handle of the eager-loaded elements
      *
-     * @return boolean Whether elements have been eager-loaded with the given handle
+     * @return bool Whether elements have been eager-loaded with the given handle
      */
     public function hasEagerLoadedElements($handle)
     {
@@ -1638,7 +1638,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns whether custom fields should be validated.
      *
-     * @return boolean
+     * @return bool
      */
     protected function validateCustomFields()
     {
@@ -1683,8 +1683,8 @@ abstract class Element extends Component implements ElementInterface
      *
      * This method is internally called by [[findOne()]] and [[findAll()]].
      *
-     * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
-     * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
+     * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
+     * @param bool  $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
      * @return static|static[]
      */
@@ -1771,7 +1771,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the ID of the structure that the element is inherently associated with, if any.
      *
-     * @return integer|null
+     * @return int|null
      * @see getStructureId()
      */
     protected function resolveStructureId()
@@ -1879,8 +1879,8 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
-     * @param mixed   $criteria
-     * @param integer $dir
+     * @param mixed $criteria
+     * @param int   $dir
      *
      * @return ElementInterface|null
      */

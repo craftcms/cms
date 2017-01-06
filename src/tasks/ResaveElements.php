@@ -36,12 +36,12 @@ class ResaveElements extends Task
     public $criteria;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_siteId;
 
     /**
-     * @var integer[]
+     * @var int[]
      */
     private $_elementIds;
 

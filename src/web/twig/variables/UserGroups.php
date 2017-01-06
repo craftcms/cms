@@ -44,7 +44,7 @@ class UserGroups
     /**
      * Gets a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return UserGroup|null
      */

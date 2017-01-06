@@ -45,9 +45,9 @@ class AssetIndexer extends Component
     /**
      * Gets the index list for a volume.
      *
-     * @param string  $sessionId
-     * @param integer $volumeId
-     * @param string  $directory
+     * @param string $sessionId
+     * @param int    $volumeId
+     * @param string $directory
      *
      * @return array
      */
@@ -272,8 +272,8 @@ class AssetIndexer extends Component
     }
 
     /**
-     * @param integer $entryId
-     * @param integer $recordId
+     * @param int $entryId
+     * @param int $recordId
      *
      * @return void
      */
@@ -335,10 +335,10 @@ class AssetIndexer extends Component
      *
      * @param VolumeInterface $volume
      * @param                 $path
-     * @param boolean         $checkIfExists
+     * @param bool            $checkIfExists
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
-     * @return boolean|Asset
+     * @return bool|Asset
      */
     public function indexFile(VolumeInterface $volume, $path, $checkIfExists = true)
     {

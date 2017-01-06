@@ -13,7 +13,7 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class FieldGroup record.
  *
- * @property integer $id     ID
+ * @property int     $id     ID
  * @property string  $name   Name
  * @property Field[] $fields Fields
  *

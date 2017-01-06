@@ -35,12 +35,12 @@ class Section extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Structure ID
+     * @var int Structure ID
      */
     public $structureId;
 
@@ -60,12 +60,12 @@ class Section extends Model
     public $type;
 
     /**
-     * @var integer Max levels
+     * @var int Max levels
      */
     public $maxLevels;
 
     /**
-     * @var boolean Enable versioning
+     * @var bool Enable versioning
      */
     public $enableVersioning = true;
 
@@ -165,8 +165,8 @@ class Section extends Model
     /**
      * Adds site-specific errors to the model.
      *
-     * @param array   $errors
-     * @param integer $siteId
+     * @param array $errors
+     * @param int   $siteId
      *
      * @return void
      */

@@ -27,7 +27,7 @@ class SystemSettings
      *
      * @param string $category
      *
-     * @return boolean
+     * @return bool
      */
     public function __isset($category)
     {

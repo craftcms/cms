@@ -190,7 +190,7 @@ class Volumes extends Component
     /**
      * Returns all volume IDs that have public URLs.
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getPublicVolumeIds()
     {
@@ -236,7 +236,7 @@ class Volumes extends Component
     /**
      * Returns the total number of volumes.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalVolumes()
     {
@@ -246,7 +246,7 @@ class Volumes extends Component
     /**
      * Returns the total number of volumes that are viewable by the current user.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalViewableVolumes()
     {
@@ -282,7 +282,7 @@ class Volumes extends Component
     /**
      * Returns a volume by its ID.
      *
-     * @param integer|null $volumeId
+     * @param int|null $volumeId
      *
      * @return VolumeInterface|null
      */
@@ -317,9 +317,9 @@ class Volumes extends Component
      * Saves an asset volume.
      *
      * @param VolumeInterface $volume        the volume to be saved.
-     * @param boolean         $runValidation Whether the volume should be validated
+     * @param bool            $runValidation Whether the volume should be validated
      *
-     * @return boolean Whether the field was saved successfully
+     * @return bool Whether the field was saved successfully
      * @throws \Exception
      */
 
@@ -438,7 +438,7 @@ class Volumes extends Component
      * @param array $volumeIds
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
     public function reorderVolumes($volumeIds)
     {
@@ -493,7 +493,7 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume
      *
-     * @return integer
+     * @return int
      */
     public function ensureTopFolder(VolumeInterface $volume)
     {
@@ -520,10 +520,10 @@ class Volumes extends Component
     /**
      * Deletes an asset volume by its ID.
      *
-     * @param integer $volumeId
+     * @param int $volumeId
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
     public function deleteVolumeById($volumeId)
     {
@@ -542,7 +542,7 @@ class Volumes extends Component
      * @param VolumeInterface $volume The volume to delete
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
     public function deleteVolume($volume)
     {
@@ -626,7 +626,7 @@ class Volumes extends Component
     /**
      * Gets a volume's record.
      *
-     * @param integer $volumeId
+     * @param int $volumeId
      *
      * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord

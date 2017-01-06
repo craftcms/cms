@@ -13,11 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class MatrixBlock record.
  *
- * @property integer         $id          ID
- * @property integer         $ownerId     Owner ID
- * @property integer         $ownerSiteId Owner site ID
- * @property integer         $fieldId     Field ID
- * @property integer         $typeId      Type ID
+ * @property int             $id          ID
+ * @property int             $ownerId     Owner ID
+ * @property int             $ownerSiteId Owner site ID
+ * @property int             $fieldId     Field ID
+ * @property int             $typeId      Type ID
  * @property string          $sortOrder   Sort order
  * @property Element         $element     Element
  * @property Element         $owner       Owner

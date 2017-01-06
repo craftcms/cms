@@ -78,7 +78,7 @@ class UserGroups extends Component
     /**
      * Gets a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return UserGroup
      */
@@ -100,7 +100,7 @@ class UserGroups extends Component
     /**
      * Gets a user group by its handle.
      *
-     * @param integer $groupHandle
+     * @param int $groupHandle
      *
      * @return UserGroup
      */
@@ -124,7 +124,7 @@ class UserGroups extends Component
     /**
      * Gets user groups by a user ID.
      *
-     * @param integer $userId
+     * @param int $userId
      *
      * @return UserGroup[]
      */
@@ -152,9 +152,9 @@ class UserGroups extends Component
      * Saves a user group.
      *
      * @param UserGroup $group         The user group to be saved
-     * @param boolean   $runValidation Whether the user group should be validated
+     * @param bool      $runValidation Whether the user group should be validated
      *
-     * @return boolean
+     * @return bool
      */
     public function saveGroup(UserGroup $group, $runValidation = true)
     {
@@ -196,9 +196,9 @@ class UserGroups extends Component
     /**
      * Deletes a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteGroupById($groupId)
     {
@@ -231,7 +231,7 @@ class UserGroups extends Component
     /**
      * Gets a group's record.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return UserGroupRecord
      */
@@ -253,7 +253,7 @@ class UserGroups extends Component
     /**
      * Throws a "No group exists" exception.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return void
      * @throws UserGroupNotFoundException

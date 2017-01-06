@@ -35,7 +35,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the lightswitch should be enabled by default
+     * @var bool Whether the lightswitch should be enabled by default
      */
     public $default = false;
 

@@ -25,22 +25,22 @@ class CategoryGroup_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Group ID
+     * @var int Group ID
      */
     public $groupId;
 
     /**
-     * @var integer Site ID
+     * @var int Site ID
      */
     public $siteId;
 
     /**
-     * @var boolean Has URLs?
+     * @var bool Has URLs?
      */
     public $hasUrls;
 

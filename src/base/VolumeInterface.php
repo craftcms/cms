@@ -33,8 +33,8 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * List files.
      *
-     * @param string  $directory The path of the directory to list files of.
-     * @param boolean $recursive whether to fetch file list recursively
+     * @param string $directory The path of the directory to list files of.
+     * @param bool   $recursive whether to fetch file list recursively
      *
      * @return array
      */
@@ -48,7 +48,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array    $config Additional config options to pass to the adapter.
      *
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function createFileByStream($path, $stream, array $config);
 
@@ -59,7 +59,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param resource $stream The new contents of the file as a stream.
      * @param array    $config Additional config options to pass to the adapter.
      *
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function updateFileByStream($path, $stream, array $config);
 
@@ -68,7 +68,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root.
      *
-     * @return boolean Whether the file exists.
+     * @return bool Whether the file exists.
      */
     public function fileExists($path);
 
@@ -77,7 +77,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function deleteFile($path);
 
@@ -89,7 +89,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @throws VolumeObjectExistsException if a file with such a name exists already.
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found.
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function renameFile($path, $newPath);
 
@@ -99,7 +99,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path    The path of the file, relative to the source’s root.
      * @param string $newPath The path of the new file, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function copyFile($path, $newPath);
 
@@ -110,7 +110,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root.
      *
      * @throws VolumeObjectExistsException if a directory with such name already exists.
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function createDir($path);
 
@@ -119,7 +119,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root.
      *
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function deleteDir($path);
 
@@ -131,7 +131,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @throws VolumeObjectExistsException if a directory with such name already exists.
      * @throws VolumeObjectNotFoundException if a directory with such name already exists.
-     * @return boolean Whether the operation was successful.
+     * @return bool Whether the operation was successful.
      */
     public function renameDir($path, $newName);
 
@@ -141,7 +141,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param $uriPath
      * @param $targetPath
      *
-     * @return integer amount of bytes copied
+     * @return int amount of bytes copied
      */
     public function saveFileLocally($uriPath, $targetPath);
 }

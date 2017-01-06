@@ -26,7 +26,7 @@ class SectionEvent extends Event
     public $section;
 
     /**
-     * @var boolean Whether the section is brand new
+     * @var bool Whether the section is brand new
      */
     public $isNew = false;
 }

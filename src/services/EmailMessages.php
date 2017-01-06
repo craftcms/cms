@@ -127,7 +127,7 @@ class EmailMessages extends Component
      *
      * @param RebrandEmail $message
      *
-     * @return boolean
+     * @return bool
      */
     public function saveMessage(RebrandEmail $message)
     {

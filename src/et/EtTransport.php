@@ -266,7 +266,7 @@ class EtTransport
     /**
      * @param $key
      *
-     * @return boolean
+     * @return bool
      * @throws Exception|EtException
      */
     private function _setLicenseKey($key)
@@ -295,7 +295,7 @@ class EtTransport
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     private function _isConfigFolderWritable()
     {

@@ -63,12 +63,12 @@ class RichText extends Field
     public $configFile;
 
     /**
-     * @var boolean Whether the HTML should be cleaned up on save
+     * @var bool Whether the HTML should be cleaned up on save
      */
     public $cleanupHtml = true;
 
     /**
-     * @var boolean Whether the HTML should be purified on save
+     * @var bool Whether the HTML should be purified on save
      */
     public $purifyHtml = true;
 
@@ -620,9 +620,9 @@ class RichText extends Field
     /**
      * Includes a plugin’s JS file, if it appears to be requested by the config file.
      *
-     * @param string  $configJs
-     * @param string  $plugin
-     * @param boolean $includeCss
+     * @param string $configJs
+     * @param string $plugin
+     * @param bool   $includeCss
      *
      * @return void
      */
@@ -647,7 +647,7 @@ class RichText extends Field
      *
      * @param string $lang
      *
-     * @return boolean
+     * @return bool
      */
     private function _includeRedactorLangFile($lang)
     {

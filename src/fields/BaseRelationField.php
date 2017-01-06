@@ -76,7 +76,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $source;
 
     /**
-     * @var integer The site that this field should relate elements from
+     * @var int The site that this field should relate elements from
      */
     public $targetSiteId;
 
@@ -86,7 +86,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $viewMode;
 
     /**
-     * @var integer The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
 
@@ -96,22 +96,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $selectionLabel;
 
     /**
-     * @var integer Whether each site should get its own unique set of relations
+     * @var int Whether each site should get its own unique set of relations
      */
     public $localizeRelations = false;
 
     /**
-     * @var boolean Whether to allow multiple source selection in the settings
+     * @var bool Whether to allow multiple source selection in the settings
      */
     protected $allowMultipleSources = true;
 
     /**
-     * @var boolean Whether to allow the Limit setting
+     * @var bool Whether to allow the Limit setting
      */
     protected $allowLimit = true;
 
     /**
-     * @var boolean Whether to allow the “Large Thumbnails” view mode
+     * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected $allowLargeThumbsView = false;
 
@@ -126,12 +126,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected $inputJsClass;
 
     /**
-     * @var boolean Whether the elements have a custom sort order
+     * @var bool Whether the elements have a custom sort order
      */
     protected $sortable = true;
 
     /**
-     * @var boolean Whether existing relations should be made translatable after the field is saved
+     * @var bool Whether existing relations should be made translatable after the field is saved
      */
     private $_makeExistingRelationsTranslatable = false;
 
@@ -514,7 +514,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface|null $element
      *
-     * @return integer
+     * @return int
      */
     protected function getTargetSiteId($element)
     {

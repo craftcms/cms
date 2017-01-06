@@ -519,10 +519,10 @@ class m160807_144858_sites extends Migration
     /**
      * Creates a new siteId column and migrates the locale data over
      *
-     * @param string  $table
-     * @param string  $column
-     * @param boolean $isNotNull
-     * @param string  $localeColumn
+     * @param string $table
+     * @param string $column
+     * @param bool   $isNotNull
+     * @param string $localeColumn
      */
     protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
     {

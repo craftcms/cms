@@ -41,12 +41,12 @@ class Svg extends Image
     private $_svgContent;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_height;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_width;
 

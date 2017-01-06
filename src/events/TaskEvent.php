@@ -27,7 +27,7 @@ class TaskEvent extends Event
     public $task;
 
     /**
-     * @var boolean Whether the task is brand new
+     * @var bool Whether the task is brand new
      */
     public $isNew = false;
 }

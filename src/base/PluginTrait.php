@@ -114,7 +114,7 @@ trait PluginTrait
     public $sourceLanguage = 'en-US';
 
     /**
-     * @var boolean Whether the plugin has settings
+     * @var bool Whether the plugin has settings
      */
     public $hasSettings = false;
 }

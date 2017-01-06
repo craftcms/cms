@@ -21,7 +21,7 @@ trait SavableComponentTrait
     // =========================================================================
 
     /**
-     * @var integer The component’s ID
+     * @var int The component’s ID
      */
     public $id;
 

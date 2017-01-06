@@ -170,7 +170,7 @@ class ElementHelper
      *
      * @param string $uriFormat
      *
-     * @return boolean
+     * @return bool
      */
     public static function doesUriFormatHaveSlugTag($uriFormat)
     {
@@ -215,7 +215,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public static function isElementEditable(ElementInterface $element)
     {

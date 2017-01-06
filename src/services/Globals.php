@@ -147,7 +147,7 @@ class Globals extends Component
     /**
      * Returns the total number of global sets.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalSets()
     {
@@ -157,7 +157,7 @@ class Globals extends Component
     /**
      * Returns the total number of global sets that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalEditableSets()
     {
@@ -167,8 +167,8 @@ class Globals extends Component
     /**
      * Returns a global set by its ID.
      *
-     * @param integer      $globalSetId
-     * @param integer|null $siteId
+     * @param int      $globalSetId
+     * @param int|null $siteId
      *
      * @return GlobalSet|null
      */
@@ -199,8 +199,8 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param integer      $globalSetHandle
-     * @param integer|null $siteId
+     * @param int      $globalSetHandle
+     * @param int|null $siteId
      *
      * @return GlobalSet|null
      */
@@ -235,7 +235,7 @@ class Globals extends Component
      *
      * @param GlobalSet $globalSet
      *
-     * @return boolean
+     * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Exception if reasons
      */

@@ -35,12 +35,12 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|integer[] The volume ID(s) that the resulting assets must be in.
+     * @var int|int[] The volume ID(s) that the resulting assets must be in.
      */
     public $volumeId;
 
     /**
-     * @var integer|integer[] The asset folder ID(s) that the resulting assets must be in.
+     * @var int|int[] The asset folder ID(s) that the resulting assets must be in.
      */
     public $folderId;
 
@@ -55,17 +55,17 @@ class AssetQuery extends ElementQuery
     public $kind;
 
     /**
-     * @var integer|string The width (in pixels) that the resulting assets must have.
+     * @var int|string The width (in pixels) that the resulting assets must have.
      */
     public $width;
 
     /**
-     * @var integer|string The height (in pixels) that the resulting assets must have.
+     * @var int|string The height (in pixels) that the resulting assets must have.
      */
     public $height;
 
     /**
-     * @var integer|string The size (in bytes) that the resulting assets must have.
+     * @var int|string The size (in bytes) that the resulting assets must have.
      */
     public $size;
 
@@ -75,7 +75,7 @@ class AssetQuery extends ElementQuery
     public $dateModified;
 
     /**
-     * @var boolean Whether the query should search the subfolders of [[folderId]].
+     * @var bool Whether the query should search the subfolders of [[folderId]].
      */
     public $includeSubfolders = false;
 
@@ -140,7 +140,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -154,7 +154,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
@@ -169,7 +169,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[folderId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
      * @return static self reference
      */
@@ -211,7 +211,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[width]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|string $value The property value
      *
      * @return static self reference
      */
@@ -225,7 +225,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[height]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|string $value The property value
      *
      * @return static self reference
      */
@@ -239,7 +239,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[size]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|string $value The property value
      *
      * @return static self reference
      */
@@ -267,7 +267,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[includeSubfolders]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */

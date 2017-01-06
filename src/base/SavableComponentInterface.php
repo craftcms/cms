@@ -23,7 +23,7 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Returns whether the component should be selectable in component Type selects.
      *
-     * @return boolean whether the component should be selectable in component Type selects.
+     * @return bool whether the component should be selectable in component Type selects.
      */
     public static function isSelectable();
 
@@ -33,19 +33,19 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Returns whether the component is new (unsaved).
      *
-     * @return boolean Whether the component is new
+     * @return bool Whether the component is new
      */
     public function getIsNew();
 
     /**
      * Validates the component.
      *
-     * @param array   $attributeNames List of attribute names that should be validated.
+     * @param array $attributeNames   List of attribute names that should be validated.
      *                                If this parameter is empty, it means any attribute listed in the applicable
      *                                validation rules should be validated.
-     * @param boolean $clearErrors    Whether existing errors should be cleared before performing validation
+     * @param bool  $clearErrors      Whether existing errors should be cleared before performing validation
      *
-     * @return boolean Whether the validation is successful without any error.
+     * @return bool Whether the validation is successful without any error.
      */
     public function validate($attributeNames = null, $clearErrors = true);
 
@@ -167,16 +167,16 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Performs actions before a component is saved.
      *
-     * @param boolean $isNew Whether the component is brand new
+     * @param bool $isNew Whether the component is brand new
      *
-     * @return boolean Whether the component should be saved
+     * @return bool Whether the component should be saved
      */
     public function beforeSave($isNew);
 
     /**
      * Performs actions after a component is saved.
      *
-     * @param boolean $isNew Whether the component is brand new
+     * @param bool $isNew Whether the component is brand new
      *
      * @return void
      */
@@ -185,7 +185,7 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Performs actions before a component is deleted.
      *
-     * @return boolean Whether the component should be deleted
+     * @return bool Whether the component should be deleted
      */
     public function beforeDelete();
 

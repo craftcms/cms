@@ -24,7 +24,7 @@ class UpdateElementSlugsAndUris extends Task
     // =========================================================================
 
     /**
-     * @var integer|integer[] The ID(s) of the element(s) to update
+     * @var int|int[] The ID(s) of the element(s) to update
      */
     public $elementId;
 
@@ -34,17 +34,17 @@ class UpdateElementSlugsAndUris extends Task
     public $elementType;
 
     /**
-     * @var integer The site ID of the elements to update.
+     * @var int The site ID of the elements to update.
      */
     public $siteId;
 
     /**
-     * @var boolean Whether the elements’ other sites should be updated as well.
+     * @var bool Whether the elements’ other sites should be updated as well.
      */
     public $updateOtherSites = true;
 
     /**
-     * @var boolean Whether the elements’ descendants should be updated as well.
+     * @var bool Whether the elements’ descendants should be updated as well.
      */
     public $updateDescendants = true;
 

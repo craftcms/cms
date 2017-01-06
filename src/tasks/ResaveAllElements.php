@@ -23,7 +23,7 @@ class ResaveAllElements extends Task
     // =========================================================================
 
     /**
-     * @var integer The site ID to fetch the elements in
+     * @var int The site ID to fetch the elements in
      */
     public $siteId;
 

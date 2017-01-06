@@ -58,12 +58,12 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * @var integer[]
+     * @var int[]
      */
     private $_allGroupIds;
 
     /**
-     * @var integer[]
+     * @var int[]
      */
     private $_editableGroupIds;
 
@@ -73,7 +73,7 @@ class Categories extends Component
     private $_categoryGroupsById;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_fetchedAllCategoryGroups = false;
 
@@ -86,7 +86,7 @@ class Categories extends Component
     /**
      * Returns all of the group IDs.
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getAllGroupIds()
     {
@@ -107,7 +107,7 @@ class Categories extends Component
     /**
      * Returns all of the category group IDs that are editable by the current user.
      *
-     * @return integer[]
+     * @return int[]
      */
     public function getEditableGroupIds()
     {
@@ -176,7 +176,7 @@ class Categories extends Component
     /**
      * Gets the total number of category groups.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalGroups()
     {
@@ -186,7 +186,7 @@ class Categories extends Component
     /**
      * Returns a group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return CategoryGroup|null
      */
@@ -239,7 +239,7 @@ class Categories extends Component
     /**
      * Returns a group's site settings.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return CategoryGroup_SiteSettings[]
      */
@@ -268,9 +268,9 @@ class Categories extends Component
      * Saves a category group.
      *
      * @param CategoryGroup $group         The category group to be saved
-     * @param boolean       $runValidation Whether the category group should be validated
+     * @param bool          $runValidation Whether the category group should be validated
      *
-     * @return boolean Whether the category group was saved successfully
+     * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
      * @throws \Exception if reasons
      */
@@ -497,9 +497,9 @@ class Categories extends Component
     /**
      * Deletes a category group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
-     * @return boolean Whether the category group was deleted successfully
+     * @return bool Whether the category group was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteGroupById($groupId)
@@ -568,9 +568,9 @@ class Categories extends Component
      * Returns whether a group’s categories have URLs for the given site ID, and if the group’s template path is valid.
      *
      * @param CategoryGroup $group
-     * @param integer       $siteId
+     * @param int           $siteId
      *
-     * @return boolean
+     * @return bool
      */
     public function isGroupTemplateValid(CategoryGroup $group, $siteId)
     {
@@ -602,8 +602,8 @@ class Categories extends Component
     /**
      * Returns a category by its ID.
      *
-     * @param integer      $categoryId
-     * @param integer|null $siteId
+     * @param int      $categoryId
+     * @param int|null $siteId
      *
      * @return Category|null
      */
@@ -639,9 +639,9 @@ class Categories extends Component
     /**
      * Updates a list of category IDs, filling in any gaps in the family tree.
      *
-     * @param integer[] $ids The original list of category IDs
+     * @param int[] $ids The original list of category IDs
      *
-     * @return integer[] The list of category IDs with all the gaps filled in.
+     * @return int[] The list of category IDs with all the gaps filled in.
      */
     public function fillGapsInCategoryIds($ids)
     {

@@ -79,10 +79,10 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     /**
      * Returns whether the cached template is still up-to-date with the latest template.
      *
-     * @param string  $name The template name
-     * @param integer $time The last modification time of the cached template
+     * @param string $name The template name
+     * @param int    $time The last modification time of the cached template
      *
-     * @return boolean
+     * @return bool
      * @throws TemplateLoaderException if the template doesn’t exist
      */
     public function isFresh($name, $time)

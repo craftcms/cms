@@ -27,7 +27,7 @@ use yii\web\Response;
  *
  * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
  *
- * @property boolean $isTaskRunning Whether there is a task that is currently running
+ * @property bool $isTaskRunning Whether there is a task that is currently running
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -139,9 +139,9 @@ class Tasks extends Component
      * Saves a task.
      *
      * @param TaskInterface $task          The task to be saved
-     * @param boolean       $runValidation Whether the task should be validated
+     * @param bool          $runValidation Whether the task should be validated
      *
-     * @return boolean Whether the task was saved successfully
+     * @return bool Whether the task was saved successfully
      * @throws \Exception
      */
     public function saveTask(TaskInterface $task, $runValidation = true)
@@ -238,7 +238,7 @@ class Tasks extends Component
     /**
      * Re-runs a task by a given ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task
      */
@@ -296,7 +296,7 @@ class Tasks extends Component
      *
      * @param TaskInterface $task
      *
-     * @return boolean
+     * @return bool
      */
     public function runTask(TaskInterface $task)
     {
@@ -394,7 +394,7 @@ class Tasks extends Component
     /**
      * Returns a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task, or null if it doesn’t exist
      */
@@ -461,7 +461,7 @@ class Tasks extends Component
     /**
      * Returns whether there is a task that is currently running.
      *
-     * @return boolean Whether there is a task that is currently running
+     * @return bool Whether there is a task that is currently running
      */
     public function getIsTaskRunning()
     {
@@ -480,7 +480,7 @@ class Tasks extends Component
      *
      * @param string|null $type The task type to check for, if any
      *
-     * @return boolean Whether there are any pending tasks
+     * @return bool Whether there are any pending tasks
      */
     public function areTasksPending($type = null)
     {
@@ -500,8 +500,8 @@ class Tasks extends Component
     /**
      * Returns any pending tasks, optionally by a given type.
      *
-     * @param string|null  $type  The task type to check for, if any
-     * @param integer|null $limit The maximum number of tasks to return
+     * @param string|null $type  The task type to check for, if any
+     * @param int|null    $limit The maximum number of tasks to return
      *
      * @return TaskInterface[] The pending tasks
      */
@@ -530,7 +530,7 @@ class Tasks extends Component
     /**
      * Returns whether any tasks that have failed.
      *
-     * @return boolean Whether any tasks have failed
+     * @return bool Whether any tasks have failed
      */
     public function getHaveTasksFailed()
     {
@@ -542,7 +542,7 @@ class Tasks extends Component
     /**
      * Returns the total number of active tasks.
      *
-     * @return integer The total number of active tasks
+     * @return int The total number of active tasks
      */
     public function getTotalTasks()
     {
@@ -612,9 +612,9 @@ class Tasks extends Component
     /**
      * Deletes a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      */
     public function deleteTaskById($taskId)
     {
@@ -632,7 +632,7 @@ class Tasks extends Component
      *
      * @param TaskInterface $task The task
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteTask(TaskInterface $task)
@@ -778,7 +778,7 @@ EOD;
     /**
      * Returns a TaskRecord by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskRecord|null The TaskRecord, or null if it doesn’t exist
      */

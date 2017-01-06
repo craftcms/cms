@@ -13,9 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserPermission_UserGroup record.
  *
- * @property integer        $id           ID
- * @property integer        $permissionId Permission ID
- * @property integer        $groupId      Group ID
+ * @property int            $id           ID
+ * @property int            $permissionId Permission ID
+ * @property int            $groupId      Group ID
  * @property UserPermission $permission   Permission
  * @property UserGroup      $group        Group
  *

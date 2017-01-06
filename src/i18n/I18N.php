@@ -24,7 +24,7 @@ class I18N extends \yii\i18n\I18N
     // =========================================================================
 
     /**
-     * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+     * @var bool Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
      */
     private $_intlLoaded = false;
 
@@ -40,7 +40,7 @@ class I18N extends \yii\i18n\I18N
     private $_appLocales;
 
     /**
-     * @var boolean Whether [[translate()]] should wrap translations with `@` characters
+     * @var bool Whether [[translate()]] should wrap translations with `@` characters
      */
     private $_translationDebugOutput;
 
@@ -60,7 +60,7 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
      *
-     * @return boolean Whether the Intl extension is loaded.
+     * @return bool Whether the Intl extension is loaded.
      */
     public function getIsIntlLoaded()
     {

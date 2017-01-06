@@ -27,14 +27,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
      *
-     * @return boolean Whether elements of this type will be storing any data in the `content` table.
+     * @return bool Whether elements of this type will be storing any data in the `content` table.
      */
     public static function hasContent();
 
     /**
      * Returns whether elements of this type have traditional titles.
      *
-     * @return boolean Whether elements of this type have traditional titles.
+     * @return bool Whether elements of this type have traditional titles.
      */
     public static function hasTitles();
 
@@ -44,7 +44,7 @@ interface ElementInterface extends ComponentInterface
      * If this returns `true`, the element’s [[getSupportedSites()]] method will
      * be responsible for defining which sites its content should be stored in.
      *
-     * @return boolean Whether elements of this type store data on a per-site basis.
+     * @return bool Whether elements of this type store data on a per-site basis.
      */
     public static function isLocalized();
 
@@ -56,7 +56,7 @@ interface ElementInterface extends ComponentInterface
      *
      * Use [[statuses()]] to customize which statuses the elements might have.
      *
-     * @return boolean Whether elements of this type have statuses.
+     * @return bool Whether elements of this type have statuses.
      * @see statuses()
      */
     public static function hasStatuses();
@@ -114,7 +114,7 @@ interface ElementInterface extends ComponentInterface
      *
      * The method accepts:
      *
-     *  - an integer: query by a single ID value and return the corresponding element (or null if not found).
+     *  - an int: query by a single ID value and return the corresponding element (or null if not found).
      *  - an array of name-value pairs: query by a set of parameter values and return the first element
      *    matching all of them (or null if not found).
      *
@@ -146,7 +146,7 @@ interface ElementInterface extends ComponentInterface
      *
      * The method accepts:
      *
-     *  - an integer: query by a single ID value and return an array containing the corresponding element
+     *  - an int: query by a single ID value and return an array containing the corresponding element
      *    (or an empty array if not found).
      *  - an array of integers: query by a list of ID values and return the corresponding elements (or an
      *    empty array if none was found).
@@ -218,7 +218,7 @@ interface ElementInterface extends ComponentInterface
      *   the attribute. (Optional)
      * - **`defaultSort`** – A string identifying the sort attribute that should be selected by default, or an array where
      *   the first value identifies the sort attribute, and the second determines which direction to sort by. (Optional)
-     * - **`hasThumbs`** – A boolean that defines whether this source supports Thumbs View. (Use your element’s
+     * - **`hasThumbs`** – A bool that defines whether this source supports Thumbs View. (Use your element’s
      *   [[getThumbUrl()]] method to define your elements’ thumb URL.) (Optional)
      * - **`structureId`** – The ID of the Structure that contains the elements in this source. If set, Structure View
      *   will be available to this source. (Optional)
@@ -274,12 +274,12 @@ interface ElementInterface extends ComponentInterface
      * Returns the element index HTML.
      *
      * @param ElementQueryInterface $elementQuery
-     * @param integer[]|null        $disabledElementIds
+     * @param int[]|null            $disabledElementIds
      * @param array                 $viewState
      * @param string|null           $sourceKey
      * @param string|null           $context
-     * @param boolean               $includeContainer
-     * @param boolean               $showCheckboxes
+     * @param bool                  $includeContainer
+     * @param bool                  $showCheckboxes
      *
      * @return string The element index HTML
      */
@@ -369,7 +369,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s ID.
      *
-     * @return integer|null
+     * @return int|null
      * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
      * go here rather than only in [[\craft\elements\User]].
      */
@@ -386,9 +386,9 @@ interface ElementInterface extends ComponentInterface
      * Returns the sites this element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,
-     * each with the keys 'siteId' (integer) and 'enabledByDefault' (boolean).
+     * each with the keys 'siteId' (int) and 'enabledByDefault' (bool).
      *
-     * @return integer[]|array
+     * @return int[]|array
      */
     public function getSupportedSites();
 
@@ -431,7 +431,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the current user can edit the element.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsEditable();
 
@@ -445,7 +445,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param integer $size
+     * @param int $size
      *
      * @return string|null
      */
@@ -513,21 +513,21 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the ID of the structure that the element is associated with, if any.
      *
-     * @return integer|null|false The ID of the structure, or null if there isn’t one
+     * @return int|null|false The ID of the structure, or null if there isn’t one
      */
     public function getStructureId();
 
     /**
      * Sets the ID of the structure that the element is associated with.
      *
-     * @param integer|null|false $structureId The ID of the structure, or null to remove the previous association.
+     * @param int|null|false $structureId The ID of the structure, or null to remove the previous association.
      */
     public function setStructureId($structureId);
 
     /**
      * Returns the element’s ancestors.
      *
-     * @param integer|null $dist
+     * @param int|null $dist
      *
      * @return ElementQueryInterface
      */
@@ -536,7 +536,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the element’s descendants.
      *
-     * @param integer|null $dist
+     * @param int|null $dist
      *
      * @return ElementQueryInterface
      */
@@ -573,14 +573,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the element has descendants.
      *
-     * @return boolean
+     * @return bool
      */
     public function getHasDescendants();
 
     /**
      * Returns the total number of descendants that the element has.
      *
-     * @return integer
+     * @return int
      */
     public function getTotalDescendants();
 
@@ -589,7 +589,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isAncestorOf(ElementInterface $element);
 
@@ -598,7 +598,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isDescendantOf(ElementInterface $element);
 
@@ -607,7 +607,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isParentOf(ElementInterface $element);
 
@@ -616,7 +616,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isChildOf(ElementInterface $element);
 
@@ -625,7 +625,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isSiblingOf(ElementInterface $element);
 
@@ -634,7 +634,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isPrevSiblingOf(ElementInterface $element);
 
@@ -643,16 +643,16 @@ interface ElementInterface extends ComponentInterface
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
     public function isNextSiblingOf(ElementInterface $element);
 
     /**
      * Treats custom fields as array offsets.
      *
-     * @param string|integer $offset
+     * @param string|int $offset
      *
-     * @return boolean
+     * @return bool
      */
     public function offsetExists($offset);
 
@@ -817,16 +817,16 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions before an element is saved.
      *
-     * @param boolean $isNew Whether the element is brand new
+     * @param bool $isNew Whether the element is brand new
      *
-     * @return boolean Whether the element should be saved
+     * @return bool Whether the element should be saved
      */
     public function beforeSave($isNew);
 
     /**
      * Performs actions after an element is saved.
      *
-     * @param boolean $isNew Whether the element is brand new
+     * @param bool $isNew Whether the element is brand new
      *
      * @return void
      */
@@ -835,7 +835,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions before an element is deleted.
      *
-     * @return boolean Whether the element should be deleted
+     * @return bool Whether the element should be deleted
      */
     public function beforeDelete();
 
@@ -849,16 +849,16 @@ interface ElementInterface extends ComponentInterface
     /**
      * Performs actions before an element is moved within a structure.
      *
-     * @param integer $structureId The structure ID
+     * @param int $structureId The structure ID
      *
-     * @return boolean Whether the element should be moved within the structure
+     * @return bool Whether the element should be moved within the structure
      */
     public function beforeMoveInStructure($structureId);
 
     /**
      * Performs actions after an element is moved within a structure.
      *
-     * @param integer $structureId The structure ID
+     * @param int $structureId The structure ID
      *
      * @return void
      */

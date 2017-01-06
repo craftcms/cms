@@ -13,11 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Stores entry drafts.
  *
- * @property integer $id        ID
- * @property integer $entryId   Entry ID
- * @property integer $sectionId Section ID
- * @property integer $creatorId Creator ID
- * @property integer $siteId    Site ID
+ * @property int     $id        ID
+ * @property int     $entryId   Entry ID
+ * @property int     $sectionId Section ID
+ * @property int     $creatorId Creator ID
+ * @property int     $siteId    Site ID
  * @property string  $name      Name
  * @property string  $notes     Notes
  * @property array   $data      Data

@@ -51,10 +51,10 @@ class Username extends Model
      *
      * In addition, we check that the username does not have any whitespace in it.
      *
-     * @param null    $attributes
-     * @param boolean $clearErrors
+     * @param null $attributes
+     * @param bool $clearErrors
      *
-     * @return boolean|null
+     * @return bool|null
      */
     public function validate($attributes = null, $clearErrors = true)
     {

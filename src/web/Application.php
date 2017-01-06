@@ -237,10 +237,10 @@ class Application extends \yii\web\Application
     /**
      * Formats a PHP error into JSON before returning it to the client.
      *
-     * @param integer $code    The error code.
-     * @param string  $message The error message.
-     * @param string  $file    The error file.
-     * @param string  $line    The error line.
+     * @param int    $code    The error code.
+     * @param string $message The error message.
+     * @param string $file    The error file.
+     * @param string $line    The error line.
      *
      * @return void
      */
@@ -475,7 +475,7 @@ class Application extends \yii\web\Application
     /**
      * @param Request $request
      *
-     * @return boolean
+     * @return bool
      */
     private function _isSpecialCaseActionRequest($request)
     {
@@ -623,7 +623,7 @@ class Application extends \yii\web\Application
     /**
      * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
      *
-     * @return boolean
+     * @return bool
      */
     private function _checkSystemStatusPermissions()
     {

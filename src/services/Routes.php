@@ -121,11 +121,11 @@ class Routes extends Component
     /**
      * Saves a new or existing route.
      *
-     * @param array        $uriParts The URI as defined by the user. This is an array where each element is either a
+     * @param array    $uriParts     The URI as defined by the user. This is an array where each element is either a
      *                               string or an array containing the name of a subpattern and the subpattern
-     * @param string       $template The template to route matching requests to
-     * @param integer|null $siteId   The site ID the route should be limited to, if any
-     * @param integer|null $routeId  The route ID, if editing an existing route
+     * @param string   $template     The template to route matching requests to
+     * @param int|null $siteId       The site ID the route should be limited to, if any
+     * @param int|null $routeId      The route ID, if editing an existing route
      *
      * @return RouteRecord
      * @throws RouteNotFoundException if $routeId is invalid
@@ -210,9 +210,9 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param integer $routeId
+     * @param int $routeId
      *
-     * @return boolean
+     * @return bool
      */
     public function deleteRouteById($routeId)
     {

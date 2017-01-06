@@ -46,7 +46,7 @@ interface WidgetInterface extends SavableComponentInterface
     /**
      * Returns the widget’s maximum colspan.
      *
-     * @return integer|null The widget’s maximum colspan, if it has one
+     * @return int|null The widget’s maximum colspan, if it has one
      */
     public function getMaxColspan();
 }

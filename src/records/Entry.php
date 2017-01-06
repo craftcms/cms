@@ -13,10 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Entry record.
  *
- * @property integer        $id         ID
- * @property integer        $sectionId  Section ID
- * @property integer        $typeId     Type ID
- * @property integer        $authorId   Author ID
+ * @property int            $id         ID
+ * @property int            $sectionId  Section ID
+ * @property int            $typeId     Type ID
+ * @property int            $authorId   Author ID
  * @property \DateTime      $postDate   Post date
  * @property \DateTime      $expiryDate Expiry date
  * @property Element        $element    Element

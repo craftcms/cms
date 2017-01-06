@@ -41,7 +41,7 @@ class Smtp extends BaseTransportAdapter
     public $port;
 
     /**
-     * @var boolean Whether to use authentication
+     * @var bool Whether to use authentication
      */
     public $useAuthentication;
 

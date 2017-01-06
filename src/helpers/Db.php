@@ -105,7 +105,7 @@ class Db
     /**
      * Integer column sizes.
      *
-     * @var integer[]
+     * @var int[]
      */
     private static $_intColumnSizes = [
         ColumnType::TinyInt => 128,
@@ -118,9 +118,9 @@ class Db
     /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
-     * @param integer|null $min
-     * @param integer|null $max
-     * @param integer|null $decimals
+     * @param int|null $min
+     * @param int|null $max
+     * @param int|null $decimals
      *
      * @return string
      */
@@ -176,7 +176,7 @@ class Db
      * @param string     $columnType The textual column type to check
      * @param Connection $db         The database connection
      *
-     * @return integer|null The storage capacity of the column type in bytes. If unlimited, null is returned.
+     * @return int|null The storage capacity of the column type in bytes. If unlimited, null is returned.
      * @throws Exception if given an unknown column type/database combination
      */
     public static function getTextualColumnStorageCapacity($columnType, $db = null)
@@ -213,7 +213,7 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param integer    $contentLength
+     * @param int        $contentLength
      * @param Connection $db The database connection
      *
      * @return string
@@ -413,7 +413,7 @@ class Db
      * @param string     $type
      * @param Connection $db
      *
-     * @return boolean
+     * @return bool
      */
     public static function isTypeSupported($type, $db = null)
     {

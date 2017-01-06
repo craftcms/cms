@@ -27,7 +27,7 @@ class UserGroupEvent extends Event
     public $userGroup;
 
     /**
-     * @var boolean Whether the user group is brand new
+     * @var bool Whether the user group is brand new
      */
     public $isNew = false;
 }

@@ -42,7 +42,7 @@ class PluginNewRelease extends Model
     public $notes;
 
     /**
-     * @var boolean Critical
+     * @var bool Critical
      */
     public $critical = false;
 

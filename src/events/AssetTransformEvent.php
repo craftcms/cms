@@ -27,7 +27,7 @@ class AssetTransformEvent extends Event
     public $assetTransform;
 
     /**
-     * @var boolean Whether the asset transform is brand new
+     * @var bool Whether the asset transform is brand new
      */
     public $isNew = false;
 }

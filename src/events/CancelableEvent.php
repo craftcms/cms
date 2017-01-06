@@ -21,7 +21,7 @@ class CancelableEvent extends Event
     // =========================================================================
 
     /**
-     * @var boolean Whether to continue performing the action that called this event
+     * @var bool Whether to continue performing the action that called this event
      */
     public $isValid = true;
 }

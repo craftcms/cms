@@ -52,7 +52,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
     /**
      * @param mixed $value
      *
-     * @return boolean
+     * @return bool
      */
     public function contains($value)
     {

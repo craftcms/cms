@@ -22,12 +22,12 @@ class AssetIndexData extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Volume ID
+     * @var int Volume ID
      */
     public $volumeId;
 
@@ -37,7 +37,7 @@ class AssetIndexData extends Model
     public $sessionId;
 
     /**
-     * @var integer Offset
+     * @var int Offset
      */
     public $offset;
 
@@ -47,12 +47,12 @@ class AssetIndexData extends Model
     public $uri;
 
     /**
-     * @var integer Size
+     * @var int Size
      */
     public $size;
 
     /**
-     * @var integer Record ID
+     * @var int Record ID
      */
     public $recordId;
 

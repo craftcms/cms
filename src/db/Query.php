@@ -26,7 +26,7 @@ class Query extends \yii\db\Query
      *
      * @param string $table
      *
-     * @return boolean
+     * @return bool
      */
     public function isJoined($table)
     {
@@ -135,11 +135,11 @@ class Query extends \yii\db\Query
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param integer            $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param \yii\db\Connection $db The database connection used to generate the SQL statement.
      *                               If this parameter is not given, the `db` application component will be used.
      *
-     * @return array|boolean The row (in terms of an array) of the query result. False is returned if the query
+     * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
     public function nth($n, $db = null)

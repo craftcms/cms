@@ -13,9 +13,9 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class UserGroup_User record.
  *
- * @property integer   $id      ID
- * @property integer   $groupId Group ID
- * @property integer   $userId  User ID
+ * @property int       $id      ID
+ * @property int       $groupId Group ID
+ * @property int       $userId  User ID
  * @property UserGroup $group   Group
  * @property User      $user    User
  *

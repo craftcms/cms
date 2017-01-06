@@ -16,7 +16,7 @@ use craft\elements\MatrixBlock;
 /**
  * MatrixBlockType model class.
  *
- * @property boolean $isNew Whether this is a new block type
+ * @property bool $isNew Whether this is a new block type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,17 +32,17 @@ class MatrixBlockType extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Field ID
+     * @var int Field ID
      */
     public $fieldId;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 
@@ -57,7 +57,7 @@ class MatrixBlockType extends Model
     public $handle;
 
     /**
-     * @var integer Sort order
+     * @var int Sort order
      */
     public $sortOrder;
 
@@ -105,7 +105,7 @@ class MatrixBlockType extends Model
     /**
      * Returns whether this is a new block type.
      *
-     * @return boolean
+     * @return bool
      */
     public function getIsNew()
     {

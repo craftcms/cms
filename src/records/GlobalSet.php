@@ -13,8 +13,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * Field group record class.
  *
- * @property integer     $id            ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
  * @property Element     $element       Element

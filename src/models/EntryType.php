@@ -34,17 +34,17 @@ class EntryType extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int ID
      */
     public $id;
 
     /**
-     * @var integer Section ID
+     * @var int Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Field layout ID
+     * @var int Field layout ID
      */
     public $fieldLayoutId;
 
@@ -59,7 +59,7 @@ class EntryType extends Model
     public $handle;
 
     /**
-     * @var boolean Has title field
+     * @var bool Has title field
      */
     public $hasTitleField = true;
 

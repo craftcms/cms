@@ -13,12 +13,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Volume record.
  *
- * @property integer     $id            ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
  * @property string      $type          Type
- * @property boolean     $hasUrls       Whether Volume has URLs
+ * @property bool        $hasUrls       Whether Volume has URLs
  * @property string      $url           URL
  * @property array       $settings      Settings
  * @property string      $sortOrder     Sort order

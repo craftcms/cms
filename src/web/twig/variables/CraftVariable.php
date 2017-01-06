@@ -181,7 +181,7 @@ class CraftVariable extends ServiceLocator
     /**
      * Returns whether this site has multiple locales.
      *
-     * @return boolean
+     * @return bool
      * @deprecated in 3.0. Use craft.app.isMultiSite instead
      */
     public function isLocalized()

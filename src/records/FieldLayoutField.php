@@ -13,11 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class FieldLayoutField record.
  *
- * @property integer        $id        ID
- * @property integer        $layoutId  Layout ID
- * @property integer        $tabId     Tab ID
- * @property integer        $fieldId   Field ID
- * @property boolean        $required  Required
+ * @property int            $id        ID
+ * @property int            $layoutId  Layout ID
+ * @property int            $tabId     Tab ID
+ * @property int            $fieldId   Field ID
+ * @property bool           $required  Required
  * @property string         $sortOrder Sort order
  * @property FieldLayout    $layout    Layout
  * @property FieldLayoutTab $tab       Tab

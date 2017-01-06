@@ -15,12 +15,12 @@ use yii\db\ActiveQueryInterface;
 /**
  * Element_SiteSettings record class.
  *
- * @property integer $id        ID
- * @property integer $elementId Element ID
- * @property integer $siteId    Site ID
+ * @property int     $id        ID
+ * @property int     $elementId Element ID
+ * @property int     $siteId    Site ID
  * @property string  $slug      Slug
  * @property string  $uri       URI
- * @property boolean $enabled   Enabled
+ * @property bool    $enabled   Enabled
  * @property Element $element   Element
  * @property Site    $site      Site
  *
