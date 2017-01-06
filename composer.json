@@ -47,5 +47,11 @@
     "psr-4": {
       "craft\\": "src/"
     }
-  }
+  },
+  "repositories": [
+        {
+        "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
 }
