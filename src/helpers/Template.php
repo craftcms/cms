@@ -50,14 +50,6 @@ class Template
             self::_includeElementInTemplateCaches($object);
         }
 
-        if (
-            $type !== \Twig_Template::METHOD_CALL &&
-            $object instanceof Object &&
-            $object->canGetProperty($item)
-        ) {
-            return $isDefinedTest ? true : $object->$item;
-        }
-
         // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
         foreach ($arguments as $key => $value) {
             if (is_object($value) && get_class($value) === \Twig_Markup::class) {
