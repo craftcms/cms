@@ -315,13 +315,12 @@
 		</header>
 
 		{# Is the template defining its own layout? #}
-		{% set main = block('main')|trim %}
-		{% set hasCustomLayout = (main is not empty) %}
+		{% set hasCustomLayout = block('main') is defined %}
 
 		<main id="main" role="main"{% if not hasCustomLayout %} class="single-pane"{% endif %}>
 			<div class="padded">
 				{% if hasCustomLayout %}
-					{{ main|raw }}
+					{% block main %}{% endblock %}
 				{% else %}
 					{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
 					{% set hasSidebar = (sidebar is not empty) %}
