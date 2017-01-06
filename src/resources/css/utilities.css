@@ -1,24 +1,35 @@
 /* Flexbox stuff */
 /* Other */
 /* RTL stuff */
-.toolhud .main { width: 200px; }
+/* Global */
+table.fixed-layout { table-layout: fixed; }
 
-.toolhud .main .form { display: block; position: relative; }
+/* Sidebar with badge */
+.sidebar nav li a { display: flex; }
+body.ltr .sidebar nav li a { padding-right: 7px; }
+body.rtl .sidebar nav li a { padding-left: 7px; }
 
-.toolhud .main .form .buttons { text-align: center; }
+.sidebar nav li a .icon { margin-right: 7px; }
 
-.toolhud .main .form .buttons .btn { float: none; display: inline-block; }
+.sidebar nav li a span.label { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; display: block; }
 
-.toolhud .main .progressbar { position: absolute; width: 132px; }
-body.ltr .toolhud .main .progressbar { left: 230px; }
-body.rtl .toolhud .main .progressbar { right: 230px; }
+.sidebar nav li a span.badge { margin-left: 5px; }
 
-.toolhud .main .alldone { position: absolute; width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
-body.ltr .toolhud .main .alldone { left: 230px; }
-body.rtl .toolhud .main .alldone { right: 230px; }
+.sidebar nav li a span.badge span.count { background: #da5a47; border-radius: 50px; border: 0px solid #fff; padding: 2px 7px; min-width: 7px; color: #fff; position: relative; }
 
+.sidebar nav li a.sel span.badge span.count { background: #fff; color: #737f8c; }
+
+/* Utilities */
+form.utility .utility-status { display: inline-block; position: relative; width: 60px; height: 40px; margin-left: 10px; }
+
+form.utility .utility-status .alldone { margin-top: 11px; opacity: 0; }
+
+form.utility .utility-status .progressbar { width: 100%; top: 14px; left: 0; opacity: 0; }
+
+/* Asset Index */
 .confirmmodal .body { max-height: 200px; overflow: auto; }
 
+/* PHP Info */
 .phpinfo-menu { max-width: 300px; padding: 24px; }
 
 .phpinfo-menu ul li { display: inline; }
@@ -30,29 +41,5 @@ body.rtl .toolhud .main .alldone { right: 230px; }
 .phpinfo-menu ul li:after { content: ' | '; }
 
 .phpinfo-section:not(:first-child) { padding-top: 100px; margin-top: -40px; }
-
-table.fixed-layout { table-layout: fixed; }
-
-ul.icons li a span.badge { background: #da5a47; border-radius: 50px; border: 2px solid #fff; padding: 3px 8px; min-width: 8px; color: #fff; position: absolute; top: 14px; right: 14px; }
-
-#sidebar ul li a { display: flex; }
-body.ltr #sidebar ul li a { padding-right: 7px; }
-body.rtl #sidebar ul li a { padding-left: 7px; }
-
-#sidebar ul li a .icon { margin-right: 7px; }
-
-#sidebar li a span.label { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; display: block; }
-
-#sidebar ul li a span.badge { margin-left: 5px; }
-
-#sidebar ul li a span.badge span.count { background: #da5a47; border-radius: 50px; border: 0px solid #fff; padding: 2px 7px; min-width: 7px; color: #fff; position: relative; }
-
-#sidebar ul li a.sel span.badge span.count { background: #fff; color: #737f8c; }
-
-form.utility .utility-status { display: inline-block; position: relative; width: 60px; height: 40px; margin-left: 10px; }
-
-form.utility .utility-status .alldone { margin-top: 11px; opacity: 0; }
-
-form.utility .utility-status .progressbar { width: 100%; top: 14px; left: 0; opacity: 0; }
 
 /*# sourceMappingURL=utilities.css.map */
