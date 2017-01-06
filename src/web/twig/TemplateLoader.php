@@ -68,29 +68,6 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     }
 
     /**
-     * Gets the source code of a template.
-     *
-     * @param  string $name The name of the template to load, or a StringTemplate object.
-     *
-     * @return string|StringTemplate The template source code.
-     * @throws TemplateLoaderException if the template doesn’t exist or isn’t readable
-     */
-    public function getSource($name)
-    {
-        if ($name instanceof StringTemplate) {
-            return $name->template;
-        }
-
-        $template = $this->_resolveTemplate($name);
-
-        if (!is_readable($template)) {
-            throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
-        }
-
-        return file_get_contents($template);
-    }
-
-    /**
      * Gets the cache key to use for the cache for a given template.
      *
      * @param StringTemplate|string $name The name of the template to load, or a StringTemplate object.
