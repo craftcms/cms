@@ -17,7 +17,6 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\web\assets\AppAsset;
-use craft\web\twig\Compiler;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\StringTemplate;
@@ -194,9 +193,6 @@ class View extends \yii\web\View
             $core = $twig->getExtension(\Twig_Extension_Core::class);
             $timezone = Craft::$app->getTimeZone();
             $core->setTimezone($timezone);
-
-            // Set our custom compiler
-            $twig->setCompiler(new Compiler($twig));
 
             $this->_twigs[$cacheKey] = $twig;
         }

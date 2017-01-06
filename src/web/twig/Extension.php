@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
+use craft\web\twig\nodevisitors\GetAttrAdjuster;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
@@ -84,6 +85,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getNodeVisitors()
     {
         return [
+            new GetAttrAdjuster(),
             new EventTagFinder(),
             new EventTagAdder(),
         ];
