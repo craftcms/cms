@@ -270,6 +270,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::onAfterMoveElementInStructure()` is no longer static, no longer has an `$element` argument, and has been renamed to `afterMoveInStructure()`.
 - `craft\services\AssetIndexer::getIndexEntry()` now returns `null` if the index doesn’t exist, instead of `false`.
 - `craft\services\Updates::getUnwritableFolders()` now returns folder paths without trailing slashes.
+- `craft\web\View::getTwig()` no longer has `$loaderClass` or `$options` arguments.
 - Renamed `craft.getAssets()` back to `craft.assets()`.
 - Renamed `craft.getCategories()` back to `craft.categories()`.
 - Renamed `craft.getEntries()` back to `craft.entries()`.

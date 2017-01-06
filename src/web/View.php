@@ -29,6 +29,8 @@ use yii\web\AssetBundle;
 /**
  * @inheritdoc
  *
+ * @property Environment $twig the Twig environment
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -56,9 +58,9 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
-     * @var
+     * @var Environment
      */
-    private $_twigs;
+    private $_twig;
 
     /**
      * @var
@@ -153,51 +155,31 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the Twig Environment instance for a given template loader class.
+     * Returns the Twig environment.
      *
-     * @param string|null $loaderClass The name of the class that should be initialized as the Twig instance’s template
-     *                                 loader. If no class is passed in, [[TemplateLoader]] will be used.
-     * @param array       $options     Options to instantiate Twig with
-     *
-     * @return Environment The Twig Environment instance.
+     * @return Environment
      */
-    public function getTwig($loaderClass = null, array $options = [])
+    public function getTwig()
     {
-        if ($loaderClass === null) {
-            $loaderClass = TemplateLoader::class;
+        if ($this->_twig !== null) {
+            return $this->_twig;
         }
 
-        $cacheKey = $loaderClass.':'.md5(serialize($options));
+        $this->_twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
-        if (!isset($this->_twigs[$cacheKey])) {
-            /** @var $loader TemplateLoader */
-            if ($loaderClass === TemplateLoader::class) {
-                $loader = new $loaderClass($this);
-            } else {
-                $loader = new $loaderClass();
-            }
+        $this->_twig->addExtension(new \Twig_Extension_StringLoader());
+        $this->_twig->addExtension(new Extension($this, $this->_twig));
 
-            $options = array_merge($this->_getTwigOptions(), $options);
-
-            $twig = new Environment($loader, $options);
-
-            $twig->addExtension(new \Twig_Extension_StringLoader());
-            $twig->addExtension(new Extension($this, $twig));
-
-            if (Craft::$app->getConfig()->get('devMode')) {
-                $twig->addExtension(new \Twig_Extension_Debug());
-            }
-
-            // Set our timezone
-            /** @var \Twig_Extension_Core $core */
-            $core = $twig->getExtension(\Twig_Extension_Core::class);
-            $timezone = Craft::$app->getTimeZone();
-            $core->setTimezone($timezone);
-
-            $this->_twigs[$cacheKey] = $twig;
+        if (Craft::$app->getConfig()->get('devMode')) {
+            $this->_twig->addExtension(new \Twig_Extension_Debug());
         }
 
-        return $this->_twigs[$cacheKey];
+        // Set our timezone
+        /** @var \Twig_Extension_Core $core */
+        $core = $this->_twig->getExtension(\Twig_Extension_Core::class);
+        $core->setTimezone(Craft::$app->getTimeZone());
+
+        return $this->_twig;
     }
 
     /**
@@ -348,15 +330,15 @@ class View extends \yii\web\View
             return $template;
         }
 
-        // Get a Twig instance with the String template loader
-        $twig = $this->getTwig('Twig_Loader_String');
+        $twig = $this->getTwig();
 
-        // Have we already parsed this template?
-        if (!isset($this->_objectTemplates[$template])) {
+        // Is this the first time we've parsed this template?
+        $cacheKey = md5($template);
+        if (!isset($this->_objectTemplates[$cacheKey])) {
             // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-            $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-            $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
-            $this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
+            $template = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+            $template = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $template);
+            $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
         }
 
         // Temporarily disable strict variables if it's enabled
