@@ -308,7 +308,7 @@ class View extends \yii\web\View
 
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        $output = call_user_func_array([$twigTemplate, 'get'.$macro], $args);
+        $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
         $this->_renderingTemplate = $renderingTemplate;
 
         return (string)$output;
