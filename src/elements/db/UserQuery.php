@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
+use yii\db\Connection;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
@@ -21,7 +22,7 @@ use craft\models\UserGroup;
  *
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, $db = null)
+ * @method User|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -305,11 +305,16 @@ interface ElementQueryInterface extends QueryInterface
     public function one($db = null);
 
     /**
-     * @inheritdoc
+     * Executes the query and returns a single row of result at a given offset.
      *
-     * @return ElementInterface|null The resulting element.
+     * @param int        $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param Connection $db The database connection used to generate the SQL statement.
+     *                       If this parameter is not given, the `db` application component will be used.
+     *
+     * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
+     * results in nothing.
      */
-    public function nth(int $n, $db = null);
+    public function nth(int $n, Connection $db = null);
 
     /**
      * Executes the query and returns the IDs of the resulting elements.

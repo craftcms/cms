@@ -18,6 +18,7 @@ use craft\helpers\Db;
 use craft\models\MatrixBlockType;
 use craft\models\Site;
 use yii\base\Exception;
+use yii\db\Connection;
 
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
@@ -27,7 +28,7 @@ use yii\base\Exception;
  *
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
- * @method MatrixBlock|array|null nth(int $n, $db = null)
+ * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

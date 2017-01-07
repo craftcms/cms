@@ -85,7 +85,7 @@ class Craft extends Yii
      *
      * @return array The cookie config array.
      */
-    public static function cookieConfig(array $config = [], $request = null)
+    public static function cookieConfig(array $config = [], Request $request = null)
     {
         if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();

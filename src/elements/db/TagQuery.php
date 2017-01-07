@@ -11,6 +11,7 @@ use craft\db\Query;
 use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\models\TagGroup;
+use yii\db\Connection;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
@@ -19,7 +20,7 @@ use craft\models\TagGroup;
  *
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
- * @method Tag|array|null nth(int $n, $db = null)
+ * @method Tag|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

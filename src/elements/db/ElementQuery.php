@@ -17,7 +17,6 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ElementQueryBehavior;
 use craft\behaviors\ElementQueryTrait;
-use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -34,7 +33,7 @@ use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
-use yii\db\Connection as YiiConnection;
+use yii\db\Connection;
 use yii\db\Expression;
 
 /**
@@ -45,7 +44,7 @@ use yii\db\Expression;
  *
  * @property string|Site $site The site or site handle that the elements should be returned in
  *
- * @method ElementInterface|array nth(int $n, $db = null)
+ * @method ElementInterface|array nth(int $n, Connection $db = null)
  */
 class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
 {
@@ -1027,7 +1026,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function ids(YiiConnection $db = null)
+    public function ids(Connection $db = null)
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes

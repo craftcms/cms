@@ -14,6 +14,7 @@ use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
+use yii\db\Connection;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -22,7 +23,7 @@ use craft\models\CategoryGroup;
  *
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, $db = null)
+ * @method Category|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

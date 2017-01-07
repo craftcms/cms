@@ -17,6 +17,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
 use DateTime;
+use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
@@ -29,7 +30,7 @@ use DateTime;
  *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, $db = null)
+ * @method Entry|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

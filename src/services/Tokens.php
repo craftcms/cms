@@ -50,7 +50,7 @@ class Tokens extends Component
      *
      * @return string|false             The generated token, or `false` if there was an error.
      */
-    public function createToken($route, int $usageLimit = null, $expiryDate = null)
+    public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {
         if (!$expiryDate) {
             $expiryDate = DateTimeHelper::currentUTCDateTime();

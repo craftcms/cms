@@ -50,7 +50,7 @@ class CategoryGroups
     /**
      * Returns all category groups.
      *
-     * @param null|string $indexBy
+     * @param string|null $indexBy
      *
      * @return CategoryGroup[]
      */
