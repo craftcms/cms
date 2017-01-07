@@ -209,7 +209,7 @@ class RichText extends Field
             $value = $value->getRawContent();
         }
 
-        if (StringHelper::contains($value, '{')) {
+        if ($value !== null && StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function($matches) {

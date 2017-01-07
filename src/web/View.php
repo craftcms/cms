@@ -791,11 +791,11 @@ class View extends \yii\web\View
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
-     * @param string $namespace The new namespace.
+     * @param string|null $namespace The new namespace. Set to null to remove the namespace.
      *
      * @return void
      */
-    public function setNamespace(string $namespace)
+    public function setNamespace(string $namespace = null)
     {
         $this->_namespace = $namespace;
     }
@@ -918,7 +918,7 @@ class View extends \yii\web\View
      */
     public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true)
     {
-        if (!is_string($html) || $html === '') {
+        if ($html === '') {
             return '';
         }
 
@@ -1178,9 +1178,11 @@ class View extends \yii\web\View
      * @param string $key
      * @param string $kind
      */
-    private function _registerResource(string $path, array $options, string $key, string $kind)
+    private function _registerResource(string $path, array $options, string $key = null, string $kind)
     {
-        $key = $key ?: 'resource:'.$path;
+        if ($key === null) {
+            $key = 'resource:'.$path;
+        }
 
         // Make AppAsset the default dependency
         $depends = (array)ArrayHelper::remove($options, 'depends', [

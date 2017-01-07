@@ -317,7 +317,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
      * encoding options on text/html/xml requests.
      *
-     * @param string   $value   The value to JSON encode.
+     * @param mixed    $value   The value to JSON encode.
      * @param null|int $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
      *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
      *                          JSON_FORCE_OBJECT
@@ -325,7 +325,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return mixed The JSON encoded value.
      */
-    public function jsonEncodeFilter(string $value, int $options = null, int $depth = 512)
+    public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
     {
         if ($options === null) {
             if (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {

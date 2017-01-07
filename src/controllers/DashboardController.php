@@ -64,16 +64,16 @@ class DashboardController extends Controller
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
-            $settingsJs = $view->clearJsBuffer(false);
+            $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+            $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
                 'maxColspan' => $widget->getMaxColspan(),
-                'settingsHtml' => (string)$settingsHtml,
-                'settingsJs' => (string)$settingsJs,
+                'settingsHtml' => $settingsHtml,
+                'settingsJs' => $settingsJs,
                 'selectable' => true,
             ];
         }
@@ -518,7 +518,7 @@ class DashboardController extends Controller
         // Get the settings HTML + JS
         $view->setNamespace('widget'.$widget->id.'-settings');
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
+        $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)

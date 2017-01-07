@@ -575,7 +575,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             Craft::$app->getView()->startJsBuffer();
             /** @var FieldInterface $field */
             $field = new $class();
-            $settingsBodyHtml = Craft::$app->getView()->namespaceInputs($field->getSettingsHtml());
+            $settingsBodyHtml = Craft::$app->getView()->namespaceInputs((string)$field->getSettingsHtml());
             $settingsFootHtml = Craft::$app->getView()->clearJsBuffer();
 
             $fieldTypes[] = [
