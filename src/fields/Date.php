@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -195,7 +196,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
             $formatter = Craft::$app->getFormatter();

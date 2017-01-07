@@ -830,7 +830,7 @@ class Users extends Component
      *
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, $expiryDate = null)
+    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(

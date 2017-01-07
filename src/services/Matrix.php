@@ -823,7 +823,7 @@ class Matrix extends Component
      *
      * @return void
      */
-    private function _applyFieldTranslationSetting($owner, $field, array $blocks)
+    private function _applyFieldTranslationSetting(ElementInterface $owner, MatrixField $field, array $blocks)
     {
         /** @var Element $owner */
         // Does it look like any work is needed here?

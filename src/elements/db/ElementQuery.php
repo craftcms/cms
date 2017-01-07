@@ -34,6 +34,7 @@ use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
+use yii\db\Connection as YiiConnection;
 use yii\db\Expression;
 
 /**
@@ -1026,7 +1027,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function ids($db = null)
+    public function ids(YiiConnection $db = null)
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes
@@ -1307,7 +1308,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @throws QueryAbortedException
      */
-    private function _joinContentTable($class)
+    private function _joinContentTable(Element $class)
     {
         // Join in the content table on both queries
         $this->subQuery->innerJoin($this->contentTable.' content', '[[content.elementId]] = [[elements.id]]');
@@ -1369,7 +1370,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return void
      * @throws QueryAbortedException
      */
-    private function _applyStatusParam($class)
+    private function _applyStatusParam(Element $class)
     {
         if (!$this->status || !$class::hasStatuses()) {
             return;
@@ -1429,7 +1430,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @throws QueryAbortedException
      */
-    private function _applyStructureParams($class)
+    private function _applyStructureParams(Element $class)
     {
         if ($this->structureId) {
             $this->query
@@ -1583,7 +1584,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @throws QueryAbortedException
      */
-    private function _applySearchParam($db)
+    private function _applySearchParam(Connection $db)
     {
         $this->_searchScores = null;
 
@@ -1637,7 +1638,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams($db)
+    private function _applyOrderByParams(Connection $db)
     {
         if ($this->orderBy === false) {
             return;

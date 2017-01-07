@@ -395,12 +395,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
     /**
      * @inheritdoc
-     *
-     * @param MatrixBlockQuery $value
-     *
-     * @return string
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element)
     {
         /** @var MatrixBlockQuery $value */
         /** @var MatrixBlock $block */
@@ -433,7 +429,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element)
     {
         if ($value) {
             $id = StringHelper::randomString();
@@ -542,7 +538,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element)
     {
         /** @var MatrixBlockQuery $value */
         return $value->count() === 0;
@@ -598,7 +594,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return array
      */
-    private function _getBlockTypeInfoForInput($element)
+    private function _getBlockTypeInfoForInput(ElementInterface $element)
     {
         /** @var Element $element */
         $blockTypes = [];

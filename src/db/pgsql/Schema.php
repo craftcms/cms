@@ -307,7 +307,7 @@ SQL;
      *
      * @return array Index and column names
      */
-    protected function getIndexInformation($table)
+    protected function getIndexInformation(TableSchema $table)
     {
         $sql = <<<SQL
 SELECT

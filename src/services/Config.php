@@ -562,7 +562,7 @@ class Config extends Component
      * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
      * time being, with deprecation logs.
      */
-    public function getSetPasswordPath(string $code, string $uid, $user, bool $full = false)
+    public function getSetPasswordPath(string $code, string $uid, User $user, bool $full = false)
     {
         if ($user->can('accessCp')) {
             $url = $this->getCpSetPasswordPath();

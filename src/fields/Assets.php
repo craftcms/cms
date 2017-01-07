@@ -557,7 +557,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, $element, bool $createDynamicFolders = true)
+    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element, bool $createDynamicFolders = true)
     {
         // Get the root folder in the source
         $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
@@ -644,7 +644,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeFolder The new subfolder
      */
-    private function _createSubfolder($currentFolder, string $folderName)
+    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName)
     {
         $newFolder = new VolumeFolder();
         $newFolder->parentId = $currentFolder->id;

@@ -283,7 +283,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The element index HTML
      */
-    public static function indexHtml($elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes);
+    public static function indexHtml(ElementQueryInterface $elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes);
 
     /**
      * Returns the attributes that elements can be sorted by.

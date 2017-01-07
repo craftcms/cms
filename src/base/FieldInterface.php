@@ -53,7 +53,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The translation key
      */
-    public function getTranslationKey($element);
+    public function getTranslationKey(ElementInterface $element);
 
     /**
      * Returns the field’s input HTML.
@@ -164,7 +164,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, $element);
+    public function getStaticHtml($value, ElementInterface $element);
 
     /**
      * Returns the validation rules for an element with this field.
@@ -200,7 +200,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, $element);
+    public function getSearchKeywords($value, ElementInterface $element);
 
     /**
      * Normalizes the field’s value for use.

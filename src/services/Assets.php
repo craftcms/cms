@@ -1239,7 +1239,7 @@ class Assets extends Component
      *
      * @return void
      */
-    private function _applyFolderConditions($query, FolderCriteria $criteria)
+    private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
     {
         if ($criteria->id) {
             $query->andWhere(Db::parseParam('id', $criteria->id));

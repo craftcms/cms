@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Html;
@@ -63,7 +64,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface$element)
     {
         if ($value) {
             return Html::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
@@ -78,7 +79,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value && $value !== '#000000') {
             return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.

@@ -271,7 +271,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element)
     {
         /** @var RichTextData|null $value */
         return '<div class="text">'.($value ?: '&nbsp;').'</div>';
@@ -353,7 +353,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element)
     {
         /** @var RichTextData|null $value */
         if ($value) {

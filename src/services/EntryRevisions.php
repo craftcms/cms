@@ -510,7 +510,7 @@ class EntryRevisions extends Component
      *
      * @return array
      */
-    private function _getRevisionData($revision)
+    private function _getRevisionData(Entry $revision)
     {
         $revisionData = [
             'typeId' => $revision->typeId,

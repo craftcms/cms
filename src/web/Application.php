@@ -407,7 +407,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processInstallRequest($request)
+    private function _processInstallRequest(Request $request)
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -454,7 +454,7 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws NotFoundHttpException if the requested action route is invalid
      */
-    private function _processActionRequest($request)
+    private function _processActionRequest(Request $request)
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -477,7 +477,7 @@ class Application extends \yii\web\Application
      *
      * @return bool
      */
-    private function _isSpecialCaseActionRequest($request)
+    private function _isSpecialCaseActionRequest(Request $request)
     {
         $segments = $request->getActionSegments();
 
@@ -535,7 +535,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processUpdateLogic($request)
+    private function _processUpdateLogic(Request $request)
     {
         $this->_unregisterDebugModule();
 
@@ -594,7 +594,7 @@ class Application extends \yii\web\Application
      * @return void
      * @throws ServiceUnavailableHttpException
      */
-    private function _enforceSystemStatusPermissions($request)
+    private function _enforceSystemStatusPermissions(Request $request)
     {
         if (!$this->_checkSystemStatusPermissions()) {
             $error = null;

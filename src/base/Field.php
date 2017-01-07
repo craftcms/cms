@@ -204,7 +204,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationKey($element)
+    public function getTranslationKey(ElementInterface $element)
     {
         /** @var Element $element */
         switch ($this->translationMethod) {
@@ -242,7 +242,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element)
     {
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
@@ -270,7 +270,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element)
     {
         return StringHelper::toString($value, ' ');
     }
@@ -283,7 +283,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         $value = (string)$value;
 
@@ -400,7 +400,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return bool Whether the value should be considered "empty"
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element)
     {
         return empty($value);
     }
@@ -412,7 +412,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The field’s param name on the request
      */
-    protected function getRequestParamName($element)
+    protected function getRequestParamName(ElementInterface $element)
     {
         if (!$element) {
             return null;

@@ -1613,7 +1613,7 @@ class UsersController extends Controller
      *
      * @return void
      */
-    private function _processUserPhoto($user)
+    private function _processUserPhoto(User $user)
     {
         // Delete their photo?
         $users = Craft::$app->getUsers();
@@ -1636,7 +1636,7 @@ class UsersController extends Controller
      *
      * @return void
      */
-    private function _processUserGroupsPermissions($user)
+    private function _processUserGroupsPermissions(User $user)
     {
         $request = Craft::$app->getRequest();
         $edition = Craft::$app->getEdition();
@@ -1750,7 +1750,7 @@ class UsersController extends Controller
      * @return Response|null
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken($user)
+    private function _processInvalidToken(User $user)
     {
         $url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
 

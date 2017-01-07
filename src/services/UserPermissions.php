@@ -379,7 +379,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getSingleEntryPermissions($section)
+    private function _getSingleEntryPermissions(Section $section)
     {
         $suffix = ':'.$section->id;
 
@@ -414,7 +414,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getEntryPermissions($section)
+    private function _getEntryPermissions(Section $section)
     {
         $suffix = ':'.$section->id;
 

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use yii\db\Schema;
@@ -90,7 +91,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
             return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
@@ -114,7 +115,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element)
     {
         // Lightswitch fields can never get required-field validation errors
         return false;

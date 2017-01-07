@@ -219,7 +219,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element)
     {
         return $this->_getInputHtml($value, $element, true);
     }

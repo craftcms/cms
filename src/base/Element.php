@@ -307,7 +307,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml($elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes)
+    public static function indexHtml(ElementQueryInterface $elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes)
     {
         $variables = [
             'viewMode' => $viewState['mode'],

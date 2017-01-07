@@ -936,7 +936,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElement($element)
+    public function deleteElement(ElementInterface $element)
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event

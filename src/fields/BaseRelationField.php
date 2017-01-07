@@ -279,7 +279,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element)
     {
         /** @var ElementQuery $value */
         $titles = [];
@@ -294,7 +294,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element)
     {
         /** @var ElementQuery $value */
         if (count($value)) {
@@ -318,7 +318,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value instanceof ElementQueryInterface) {
             $element = $value->first();
@@ -447,7 +447,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputTemplateVariables($selectedElementsQuery, $element)
+    protected function getInputTemplateVariables($selectedElementsQuery, ElementInterface $element)
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */

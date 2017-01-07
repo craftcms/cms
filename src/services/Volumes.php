@@ -544,7 +544,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function deleteVolume($volume)
+    public function deleteVolume(VolumeInterface $volume)
     {
         /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event

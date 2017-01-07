@@ -219,7 +219,7 @@ class Db
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength(int $contentLength, $db = null)
+    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null)
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -415,7 +415,7 @@ class Db
      *
      * @return bool
      */
-    public static function isTypeSupported(string $type, $db = null)
+    public static function isTypeSupported(string $type, Connection $db = null)
     {
         if ($db === null) {
             $db = Craft::$app->getDb();

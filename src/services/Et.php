@@ -89,7 +89,7 @@ class Et extends Component
      *
      * @return EtModel|null
      */
-    public function checkForUpdates($updateInfo)
+    public function checkForUpdates(Update $updateInfo)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_CHECK_FOR_UPDATES);
         $et->setData($updateInfo);

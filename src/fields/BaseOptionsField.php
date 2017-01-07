@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\fields\data\MultiOptionsFieldData;
@@ -203,7 +204,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */
@@ -298,7 +299,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element)
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */

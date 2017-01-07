@@ -102,7 +102,7 @@ class SwitchTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideIfFork($token)
+    public function decideIfFork(\Twig_Token $token)
     {
         return $token->test(['case', 'default', 'endswitch']);
     }
@@ -112,7 +112,7 @@ class SwitchTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideIfEnd($token)
+    public function decideIfEnd(\Twig_Token $token)
     {
         return $token->test(['endswitch']);
     }

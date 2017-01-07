@@ -321,7 +321,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedUrlRoute($request)
+    private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule UrlRule */
