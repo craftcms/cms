@@ -36,7 +36,7 @@ class Entries extends Component
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById($entryId, $siteId = null)
+    public function getEntryById(int $entryId, int $siteId = null)
     {
         if (!$entryId) {
             return null;

@@ -323,7 +323,7 @@ class Volumes extends Component
      * @throws \Exception
      */
 
-    public function saveVolume(VolumeInterface $volume, $runValidation = true)
+    public function saveVolume(VolumeInterface $volume, bool $runValidation = true)
     {
         /** @var Volume $volume */
         if ($runValidation && !$volume->validate()) {
@@ -440,7 +440,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function reorderVolumes($volumeIds)
+    public function reorderVolumes(array $volumeIds)
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -525,7 +525,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function deleteVolumeById($volumeId)
+    public function deleteVolumeById(int $volumeId)
     {
         $volume = $this->getVolumeById($volumeId);
 
@@ -631,7 +631,7 @@ class Volumes extends Component
      * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */
-    private function _getVolumeRecordById($volumeId = null)
+    private function _getVolumeRecordById(int $volumeId = null)
     {
         if ($volumeId !== null) {
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);

@@ -153,7 +153,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 
@@ -170,7 +170,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function addSiteSettingsErrors($errors, $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute.'-'.$siteId;

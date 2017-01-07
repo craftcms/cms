@@ -57,7 +57,7 @@ class Assets
      * @return string The temporary file path
      * @throws Exception in case of failure
      */
-    public static function tempFilePath($extension = 'tmp')
+    public static function tempFilePath(string $extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
@@ -118,7 +118,7 @@ class Assets
      *
      * @return mixed
      */
-    public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
@@ -206,7 +206,7 @@ class Assets
      *
      * @return array
      */
-    public static function fileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false)
     {
         $fileTransferList = [];
 
@@ -258,7 +258,7 @@ class Assets
      *
      * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(&$tree)
+    public static function sortFolderTree(array &$tree)
     {
         $sort = [];
 
@@ -290,7 +290,7 @@ class Assets
      *
      * @return string
      */
-    public static function getFileKindLabel($kind)
+    public static function getFileKindLabel(string $kind)
     {
         self::_buildFileKinds();
 

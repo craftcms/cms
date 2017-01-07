@@ -553,7 +553,7 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _includeFieldResources($configJs)
+    private function _includeFieldResources(string $configJs)
     {
         $view = Craft::$app->getView();
         $view->registerCssResource('lib/redactor/redactor.css');
@@ -626,7 +626,7 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+    private function _maybeIncludeRedactorPlugin(string $configJs, string $plugin, bool $includeCss)
     {
         if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
             if (($pipe = strpos($plugin, '|')) !== false) {
@@ -649,7 +649,7 @@ class RichText extends Field
      *
      * @return bool
      */
-    private function _includeRedactorLangFile($lang)
+    private function _includeRedactorLangFile(string $lang)
     {
         $resourcePath = "lib/redactor/lang/{$lang}.js";
         $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);

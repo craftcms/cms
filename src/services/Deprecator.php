@@ -55,7 +55,7 @@ class Deprecator extends Component
      *
      * @return bool
      */
-    public function log($key, $message)
+    public function log(string $key, string $message)
     {
         if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecationlog');
@@ -158,7 +158,7 @@ class Deprecator extends Component
      *
      * @return DeprecationError[]
      */
-    public function getLogs($limit = 100)
+    public function getLogs(int $limit = 100)
     {
         if ($this->_allLogs !== null) {
             return $this->_allLogs;

@@ -259,7 +259,7 @@ class Request extends \yii\web\Request
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
      */
-    public function getPathInfo($returnRealPathInfo = false)
+    public function getPathInfo(bool $returnRealPathInfo = false)
     {
         if ($returnRealPathInfo) {
             return parent::getPathInfo();
@@ -289,7 +289,7 @@ class Request extends \yii\web\Request
      *
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
-    public function getSegment($num)
+    public function getSegment(int $num)
     {
         if ($num > 0 && isset($this->_segments[$num - 1])) {
             return $this->_segments[$num - 1];
@@ -423,7 +423,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the request is coming from a mobile browser.
      */
-    public function isMobileBrowser($detectTablets = false)
+    public function isMobileBrowser(bool $detectTablets = false)
     {
         if ($detectTablets) {
             $property = &$this->_isMobileOrTabletBrowser;
@@ -519,7 +519,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
-    public function getRequiredBodyParam($name)
+    public function getRequiredBodyParam(string $name)
     {
         $value = $this->getBodyParam($name);
 
@@ -539,7 +539,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
-    public function getValidatedBodyParam($name)
+    public function getValidatedBodyParam(string $name)
     {
         $value = $this->getBodyParam($name);
 
@@ -604,7 +604,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
-    public function getRequiredQueryParam($name)
+    public function getRequiredQueryParam(string $name)
     {
         $value = $this->getQueryParam($name);
 
@@ -627,7 +627,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getParam($name, $defaultValue = null)
+    public function getParam(string $name, $defaultValue = null)
     {
         if (($value = $this->getQueryParam($name)) !== null) {
             return $value;
@@ -651,7 +651,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getRequiredParam($name)
+    public function getRequiredParam(string $name)
     {
         $value = $this->getParam($name);
 
@@ -870,7 +870,7 @@ class Request extends \yii\web\Request
      *
      * @return bool
      */
-    protected function csrfTokenValidForCurrentUser($token)
+    protected function csrfTokenValidForCurrentUser(string $token)
     {
         $currentUser = false;
 
@@ -1017,7 +1017,7 @@ class Request extends \yii\web\Request
      *
      * @return mixed
      */
-    private function _getParam($name, $defaultValue, $params)
+    private function _getParam($name, $defaultValue, array $params)
     {
         // Do they just want the whole array?
         if ($name === null) {
@@ -1053,7 +1053,7 @@ class Request extends \yii\web\Request
      *
      * @return bool
      */
-    private function _validateIp($ip)
+    private function _validateIp(string $ip)
     {
         return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
             filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
@@ -1068,7 +1068,7 @@ class Request extends \yii\web\Request
      *
      * @return string the XOR result
      */
-    private function _xorTokens($token1, $token2)
+    private function _xorTokens(string $token1, string $token2)
     {
         $n1 = StringHelper::byteLength($token1);
         $n2 = StringHelper::byteLength($token2);

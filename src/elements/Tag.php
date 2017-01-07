@@ -177,7 +177,7 @@ class Tag extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the tag record
         if (!$isNew) {

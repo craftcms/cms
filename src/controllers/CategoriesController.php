@@ -65,7 +65,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
-    public function actionEditCategoryGroup($groupId = null, CategoryGroup $categoryGroup = null)
+    public function actionEditCategoryGroup(int $groupId = null, CategoryGroup $categoryGroup = null)
     {
         $this->requireAdmin();
 
@@ -215,7 +215,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
-    public function actionCategoryIndex($groupHandle = null)
+    public function actionCategoryIndex(string $groupHandle = null)
     {
         $groups = Craft::$app->getCategories()->getEditableGroups();
 
@@ -240,7 +240,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCategory($groupHandle, $categoryId = null, $siteHandle = null, Category $category = null)
+    public function actionEditCategory(string $groupHandle, int $categoryId = null, string $siteHandle = null, Category $category = null)
     {
         $variables = [
             'groupHandle' => $groupHandle,
@@ -518,7 +518,7 @@ class CategoriesController extends Controller
      * @throws NotFoundHttpException if the requested category cannot be found
      * @throws ServerErrorHttpException if the category group is not configured properly
      */
-    public function actionShareCategory($categoryId, $siteId = null)
+    public function actionShareCategory(int $categoryId, int $siteId = null)
     {
         $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
@@ -561,7 +561,7 @@ class CategoriesController extends Controller
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedCategory($categoryId, $siteId = null)
+    public function actionViewSharedCategory(int $categoryId, int $siteId = null)
     {
         $this->requireToken();
 
@@ -586,7 +586,7 @@ class CategoriesController extends Controller
      * @throws NotFoundHttpException if the requested category group or category cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditCategoryVariables(&$variables)
+    private function _prepEditCategoryVariables(array &$variables)
     {
         // Get the category group
         // ---------------------------------------------------------------------

@@ -65,7 +65,7 @@ class I18N
      *
      * @return Locale
      */
-    public function getLocaleById($localeId)
+    public function getLocaleById(string $localeId)
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getLocaleById()', 'craft.i18n.getLocaleById() has been deprecated. Use craft.app.i18n.getLocaleById() instead.');
 
@@ -139,7 +139,7 @@ class I18N
      *
      * @return Locale
      */
-    public function getLocaleData($localeId = null)
+    public function getLocaleData(string $localeId = null)
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getLocaleData()', 'craft.i18n.getLocaleData() has been deprecated. Use craft.app.locale or craft.app.i18n.getLocaleById() instead.');
 

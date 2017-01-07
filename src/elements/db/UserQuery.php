@@ -21,7 +21,7 @@ use craft\models\UserGroup;
  *
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
- * @method User|array|null nth($n, $db = null)
+ * @method User|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -124,7 +124,7 @@ class UserQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function admin($value = true)
+    public function admin(bool $value = true)
     {
         $this->admin = $value;
 
@@ -138,7 +138,7 @@ class UserQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function client($value = true)
+    public function client(bool $value = true)
     {
         $this->client = $value;
 
@@ -273,7 +273,7 @@ class UserQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function withPassword($value = true)
+    public function withPassword(bool $value = true)
     {
         $this->withPassword = $value;
 
@@ -370,7 +370,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         switch ($status) {
             case User::STATUS_ACTIVE:

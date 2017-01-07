@@ -136,7 +136,7 @@ class FieldLayoutTab extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->_fields = $fields;
     }

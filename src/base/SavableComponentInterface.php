@@ -40,10 +40,10 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Validates the component.
      *
-     * @param array $attributeNames   List of attribute names that should be validated.
-     *                                If this parameter is empty, it means any attribute listed in the applicable
-     *                                validation rules should be validated.
-     * @param bool  $clearErrors      Whether existing errors should be cleared before performing validation
+     * @param string[]|null $attributeNames List of attribute names that should be validated.
+     *                                      If this parameter is empty, it means any attribute listed in the applicable
+     *                                      validation rules should be validated.
+     * @param bool          $clearErrors    Whether existing errors should be cleared before performing validation
      *
      * @return bool Whether the validation is successful without any error.
      */
@@ -171,7 +171,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component should be saved
      */
-    public function beforeSave($isNew);
+    public function beforeSave(bool $isNew);
 
     /**
      * Performs actions after a component is saved.
@@ -180,7 +180,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return void
      */
-    public function afterSave($isNew);
+    public function afterSave(bool $isNew);
 
     /**
      * Performs actions before a component is deleted.

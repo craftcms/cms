@@ -145,7 +145,7 @@ class Dashboard extends Component
      *
      * @return bool Whether the current user has a widget of the given type
      */
-    public function doesUserHaveWidget($type)
+    public function doesUserHaveWidget(string $type)
     {
         return WidgetRecord::find()
             ->where([
@@ -163,7 +163,7 @@ class Dashboard extends Component
      *
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
-    public function getWidgetById($id)
+    public function getWidgetById(int $id)
     {
         $widgetRecord = WidgetRecord::findOne([
             'id' => $id,
@@ -193,7 +193,7 @@ class Dashboard extends Component
      * @return bool Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveWidget(WidgetInterface $widget, $runValidation = true)
+    public function saveWidget(WidgetInterface $widget, bool $runValidation = true)
     {
         /** @var Widget $widget */
         if ($runValidation && !$widget->validate()) {
@@ -260,7 +260,7 @@ class Dashboard extends Component
      *
      * @return bool Whether the widget was deleted successfully
      */
-    public function deleteWidgetById($widgetId)
+    public function deleteWidgetById(int $widgetId)
     {
         $widget = $this->getWidgetById($widgetId);
 
@@ -324,7 +324,7 @@ class Dashboard extends Component
      * @return bool Whether the widgets were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderWidgets($widgetIds)
+    public function reorderWidgets(array $widgetIds)
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -353,7 +353,7 @@ class Dashboard extends Component
      *
      * @return bool
      */
-    public function changeWidgetColspan($widgetId, $colspan)
+    public function changeWidgetColspan(int $widgetId, int $colspan)
     {
         $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
         $widgetRecord->colspan = $colspan;
@@ -400,7 +400,7 @@ class Dashboard extends Component
      *
      * @return WidgetRecord
      */
-    private function _getUserWidgetRecordById($widgetId = null)
+    private function _getUserWidgetRecordById(int $widgetId = null)
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -429,7 +429,7 @@ class Dashboard extends Component
      * @return void
      * @throws WidgetNotFoundException
      */
-    private function _noWidgetExists($widgetId)
+    private function _noWidgetExists(int $widgetId)
     {
         throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
     }

@@ -454,7 +454,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap($sourceElements)
+    public function getEagerLoadingMap(array $sourceElements)
     {
         // Get the source element IDs
         $sourceElementIds = [];
@@ -487,7 +487,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         Craft::$app->getMatrix()->saveSettings($this, false);
         parent::afterSave($isNew);
@@ -506,7 +506,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         Craft::$app->getMatrix()->saveField($this, $element);
         parent::afterElementSave($element, $isNew);
@@ -661,7 +661,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData($value, $element)
+    private function _createBlocksFromSerializedData(array $value, $element)
     {
         /** @var Element $element */
         // Get the possible block types for this field

@@ -127,7 +127,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransform|null
      */
-    public function getTransformByHandle($handle)
+    public function getTransformByHandle(string $handle)
     {
         if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
             return $this->_transformsByHandle[$handle];
@@ -157,7 +157,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransform|null
      */
-    public function getTransformById($id)
+    public function getTransformById(int $id)
     {
         $result = $this->_createTransformQuery()
             ->where(['id' => $id])
@@ -181,7 +181,7 @@ class AssetTransforms extends Component
      * @throws ValidationException     If the validation failed.
      * @return bool
      */
-    public function saveTransform(AssetTransform $transform, $runValidation = true)
+    public function saveTransform(AssetTransform $transform, bool $runValidation = true)
     {
         if ($runValidation && !$transform->validate()) {
             Craft::info('Asset transform not saved due to validation error.', __METHOD__);
@@ -250,7 +250,7 @@ class AssetTransforms extends Component
      *
      * @return bool
      */
-    public function deleteTransform($transformId)
+    public function deleteTransform(int $transformId)
     {
         $transform = $this->getTransformById($transformId);
 
@@ -281,7 +281,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function eagerLoadTransforms($assets, $transforms)
+    public function eagerLoadTransforms(array $assets, array $transforms)
     {
         if (empty($assets) || empty($transforms)) {
             return;
@@ -444,7 +444,7 @@ class AssetTransforms extends Component
      *
      * @return bool Whether the index result is still valid
      */
-    public function validateTransformIndexResult($result, AssetTransform $transform, Asset $asset)
+    public function validateTransformIndexResult(array $result, AssetTransform $transform, Asset $asset)
     {
         $indexedAfterFileModified = $result['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
         $indexedAfterTransformParameterChange =
@@ -709,7 +709,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelById($transformId)
+    public function getTransformIndexModelById(int $transformId)
     {
         $entry = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
@@ -730,7 +730,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
+    public function getTransformIndexModelByAssetIdAndHandle(int $assetId, string $transformHandle)
     {
         $result = $this->_createTransformIndexQuery()
             ->where([
@@ -753,7 +753,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByIndexId($transformId)
+    public function getUrlForTransformByIndexId(int $transformId)
     {
         $transformIndexModel = $this->getTransformIndexModelById($transformId);
 
@@ -788,7 +788,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function deleteTransformIndexDataByAssetId($assetId)
+    public function deleteTransformIndexDataByAssetId(int $assetId)
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%assettransformindex}}', ['assetId' => $assetId])
@@ -802,7 +802,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function deleteTransformIndex($indexId)
+    public function deleteTransformIndex(int $indexId)
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%assettransformindex}}', ['id' => $indexId])

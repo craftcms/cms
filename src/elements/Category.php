@@ -201,7 +201,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source)
     {
         return [
             'link',
@@ -377,7 +377,7 @@ class Category extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
@@ -400,7 +400,7 @@ class Category extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         $group = $this->getGroup();
 
@@ -437,7 +437,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure($structureId)
+    public function afterMoveInStructure(int $structureId)
     {
         // Was the category moved within its group's structure?
         if ($this->getGroup()->structureId == $structureId) {

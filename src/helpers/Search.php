@@ -46,7 +46,7 @@ class Search
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], $processCharMap = true)
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true)
     {
         // Flatten
         if (is_array($str)) {

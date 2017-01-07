@@ -251,7 +251,7 @@ class Content extends Component
      *
      * @return array
      */
-    private function _removeColumnPrefixesFromRow($row)
+    private function _removeColumnPrefixesFromRow(array $row)
     {
         foreach ($row as $column => $value) {
             if (strpos($column, $this->fieldColumnPrefix) === 0) {

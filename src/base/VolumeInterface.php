@@ -38,7 +38,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return array
      */
-    public function getFileList($directory, $recursive);
+    public function getFileList(string $directory, bool $recursive);
 
     /**
      * Creates a file.
@@ -50,7 +50,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
      * @return bool Whether the operation was successful.
      */
-    public function createFileByStream($path, $stream, array $config);
+    public function createFileByStream(string $path, $stream, array $config);
 
     /**
      * Updates a file.
@@ -61,7 +61,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return bool Whether the operation was successful.
      */
-    public function updateFileByStream($path, $stream, array $config);
+    public function updateFileByStream(string $path, $stream, array $config);
 
     /**
      * Returns whether a file exists.
@@ -70,7 +70,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return bool Whether the file exists.
      */
-    public function fileExists($path);
+    public function fileExists(string $path);
 
     /**
      * Deletes a file.
@@ -79,7 +79,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return bool Whether the operation was successful.
      */
-    public function deleteFile($path);
+    public function deleteFile(string $path);
 
     /**
      * Renames a file.
@@ -91,7 +91,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found.
      * @return bool Whether the operation was successful.
      */
-    public function renameFile($path, $newPath);
+    public function renameFile(string $path, string $newPath);
 
     /**
      * Copies a file.
@@ -101,7 +101,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return bool Whether the operation was successful.
      */
-    public function copyFile($path, $newPath);
+    public function copyFile(string $path, string $newPath);
 
     /**
      * /**
@@ -112,7 +112,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a directory with such name already exists.
      * @return bool Whether the operation was successful.
      */
-    public function createDir($path);
+    public function createDir(string $path);
 
     /**
      * Deletes a directory.
@@ -121,7 +121,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return bool Whether the operation was successful.
      */
-    public function deleteDir($path);
+    public function deleteDir(string $path);
 
     /**
      * Renames a directory.
@@ -133,7 +133,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectNotFoundException if a directory with such name already exists.
      * @return bool Whether the operation was successful.
      */
-    public function renameDir($path, $newName);
+    public function renameDir(string $path, string $newName);
 
     /**
      * Save a file from the source's uriPath to a local target path.

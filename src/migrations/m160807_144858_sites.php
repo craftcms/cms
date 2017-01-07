@@ -486,7 +486,7 @@ class m160807_144858_sites extends Migration
      *
      * @return void
      */
-    public function updateRecentEntriesWidgets($siteIdsByLocale)
+    public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {
         // Fetch all the Recent Entries widgets that have a locale setting
         $widgetResults = (new Query())
@@ -524,7 +524,7 @@ class m160807_144858_sites extends Migration
      * @param bool   $isNotNull
      * @param string $localeColumn
      */
-    protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
+    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
     {
         // Ignore NOT NULL for now
         $type = $this->integer();
@@ -547,7 +547,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2handle($locale)
+    protected function locale2handle(string $locale)
     {
         // Make sure it's a valid handle
         if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
@@ -567,7 +567,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2language($locale)
+    protected function locale2language(string $locale)
     {
         $foundMatch = false;
 

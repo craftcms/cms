@@ -64,7 +64,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isImageUploaded($type)
+    public function isImageUploaded(string $type)
     {
         return in_array($type, ['logo', 'icon'], true) && ($this->_getImagePath($type) !== false);
     }
@@ -127,7 +127,7 @@ class Rebrand
      * @return string|false
      * @throws Exception in case of failure
      */
-    private function _getImagePath($type)
+    private function _getImagePath(string $type)
     {
         if (isset($this->_paths[$type])) {
             return $this->_paths[$type];

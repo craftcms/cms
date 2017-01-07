@@ -29,7 +29,7 @@ use DateTime;
  *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth($n, $db = null)
+ * @method Entry|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -126,7 +126,7 @@ class EntryQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -386,7 +386,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 

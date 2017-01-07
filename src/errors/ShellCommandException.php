@@ -60,7 +60,7 @@ class ShellCommandException extends Exception
      * @param string $message  The error message
      * @param int    $code     The error code
      */
-    public function __construct($command, $exitCode, $error = null, $message = null, $code = 0)
+    public function __construct(string $command, int $exitCode, string $error = null, string $message = null, int $code = 0)
     {
         $this->command = $command;
         $this->exitCode = $exitCode;

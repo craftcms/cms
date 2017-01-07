@@ -68,7 +68,7 @@ class ElementIndexes extends Component
      *
      * @return bool Whether the settings were saved successfully
      */
-    public function saveSettings($elementType, $newSettings)
+    public function saveSettings($elementType, array $newSettings)
     {
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
@@ -150,7 +150,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getSources($elementType, $context = 'index')
+    public function getSources($elementType, string $context = 'index')
     {
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources($context));
@@ -205,7 +205,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getAvailableTableAttributes($elementType, $includeFields = true)
+    public function getAvailableTableAttributes($elementType, bool $includeFields = true)
     {
         $attributes = $elementType::tableAttributes();
 
@@ -236,7 +236,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getTableAttributes($elementType, $sourceKey)
+    public function getTableAttributes($elementType, string $sourceKey)
     {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
@@ -307,7 +307,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _normalizeSources($sources)
+    private function _normalizeSources(array $sources)
     {
         if (!is_array($sources)) {
             return [];
@@ -346,7 +346,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _indexSourcesByKey($sources)
+    private function _indexSourcesByKey(array $sources)
     {
         $indexedSources = [];
 

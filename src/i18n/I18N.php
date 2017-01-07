@@ -74,7 +74,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return Locale
      */
-    public function getLocaleById($localeId)
+    public function getLocaleById(string $localeId)
     {
         return new Locale($localeId);
     }

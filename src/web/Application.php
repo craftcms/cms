@@ -66,7 +66,7 @@ class Application extends \yii\web\Application
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         Craft::$app = $this;
         parent::__construct($config);
@@ -215,7 +215,7 @@ class Application extends \yii\web\Application
      *
      * @return void
      */
-    public function returnAjaxException($data)
+    public function returnAjaxException(array $data)
     {
         $exceptionArr = [
             'error' => $data['message']
@@ -244,7 +244,7 @@ class Application extends \yii\web\Application
      *
      * @return void
      */
-    public function returnAjaxError($code, $message, $file, $line)
+    public function returnAjaxError(int $code, string $message, string $file, string $line)
     {
         if ($this->getConfig()->get('devMode')) {
             $outputTrace = '';

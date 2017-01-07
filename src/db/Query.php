@@ -28,7 +28,7 @@ class Query extends \yii\db\Query
      *
      * @return bool
      */
-    public function isJoined($table)
+    public function isJoined(string $table)
     {
         foreach ($this->join as $join) {
             if ($join[1] === $table || strpos($join[1], $table) === 0) {
@@ -142,7 +142,7 @@ class Query extends \yii\db\Query
      * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
-    public function nth($n, $db = null)
+    public function nth(int $n, $db = null)
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;

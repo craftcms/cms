@@ -19,7 +19,7 @@ use craft\models\TagGroup;
  *
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
- * @method Tag|array|null nth($n, $db = null)
+ * @method Tag|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

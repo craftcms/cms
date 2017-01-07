@@ -1425,7 +1425,7 @@ class UsersController extends Controller
      *
      * @return null|Response
      */
-    private function _handleLoginFailure($authError = null, User $user = null)
+    private function _handleLoginFailure(string $authError = null, User $user = null)
     {
         // Fire a 'loginFailure' event
         $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
@@ -1499,7 +1499,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    private function _handleSuccessfulLogin($setNotice)
+    private function _handleSuccessfulLogin(bool $setNotice)
     {
         // Get the current user
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -1545,7 +1545,7 @@ class UsersController extends Controller
      *
      * @return string
      */
-    private function _renderSetPasswordTemplate(User $user, $variables)
+    private function _renderSetPasswordTemplate(User $user, array $variables)
     {
         $configService = Craft::$app->getConfig();
         $view = Craft::$app->getView();
@@ -1830,7 +1830,7 @@ class UsersController extends Controller
      *
      * @return null|Response
      */
-    private function _handleSendPasswordResetError($errors, $loginName = null)
+    private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */

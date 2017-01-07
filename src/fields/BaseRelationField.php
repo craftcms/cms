@@ -338,7 +338,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap($sourceElements)
+    public function getEagerLoadingMap(array $sourceElements)
     {
         /** @var Element|null $firstElement */
         $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
@@ -387,7 +387,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         $this->_makeExistingRelationsTranslatable = false;
 
@@ -406,7 +406,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
             Craft::$app->getTasks()->queueTask([
@@ -421,7 +421,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $this->getElementValue($element);
 

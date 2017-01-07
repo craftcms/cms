@@ -230,7 +230,7 @@ class Plugins extends Component
      *
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
-    public function getPlugin($handle)
+    public function getPlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -248,7 +248,7 @@ class Plugins extends Component
      *
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
-    public function getPluginByPackageName($packageName)
+    public function getPluginByPackageName(string $packageName)
     {
         $this->loadPlugins();
 
@@ -282,7 +282,7 @@ class Plugins extends Component
      * @return bool Whether the plugin was enabled successfully
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function enablePlugin($handle)
+    public function enablePlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -332,7 +332,7 @@ class Plugins extends Component
      * @return bool Whether the plugin was disabled successfully
      * @throws InvalidPluginException if the plugin isn’t installed
      */
-    public function disablePlugin($handle)
+    public function disablePlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -383,7 +383,7 @@ class Plugins extends Component
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function installPlugin($handle)
+    public function installPlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -456,7 +456,7 @@ class Plugins extends Component
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function uninstallPlugin($handle)
+    public function uninstallPlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -527,7 +527,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin’s settings were saved successfully
      */
-    public function savePluginSettings(PluginInterface $plugin, $settings)
+    public function savePluginSettings(PluginInterface $plugin, array $settings)
     {
         // Save the settings on the plugin
         $plugin->getSettings()->setAttributes($settings, false);
@@ -612,7 +612,7 @@ class Plugins extends Component
      *
      * @return array|null The stored info, if there is any
      */
-    public function getStoredPluginInfo($handle)
+    public function getStoredPluginInfo(string $handle)
     {
         $this->loadPlugins();
 
@@ -631,7 +631,7 @@ class Plugins extends Component
      *
      * @return PluginInterface|null
      */
-    public function createPlugin($handle, $row = null)
+    public function createPlugin(string $handle, array $row = null)
     {
         $config = $this->getConfig($handle);
 
@@ -695,7 +695,7 @@ class Plugins extends Component
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    public function getConfig($handle)
+    public function getConfig(string $handle)
     {
         // Was this plugin installed via Composer?
         if (isset($this->_composerPluginInfo[$handle])) {
@@ -721,7 +721,7 @@ class Plugins extends Component
      *
      * @return bool Whether the config validates.
      */
-    public function validateConfig(&$config)
+    public function validateConfig(array &$config)
     {
         // Make sure it has the essentials
         if (!is_array($config) || !isset($config['class'], $config['name'], $config['version'])) {
@@ -791,7 +791,7 @@ class Plugins extends Component
      * @return string The given plugin’s SVG icon
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginIconSvg($handle)
+    public function getPluginIconSvg(string $handle)
     {
         if (($plugin = $this->getPlugin($handle)) !== null) {
             /** @var Plugin $plugin */
@@ -820,7 +820,7 @@ class Plugins extends Component
      * @return string|null The plugin’s license key, or null if it isn’t known
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginLicenseKey($pluginHandle)
+    public function getPluginLicenseKey(string $pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -848,7 +848,7 @@ class Plugins extends Component
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
-    public function setPluginLicenseKey($pluginHandle, $licenseKey)
+    public function setPluginLicenseKey(string $pluginHandle, $licenseKey)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -901,7 +901,7 @@ class Plugins extends Component
      * @return string|false
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginLicenseKeyStatus($pluginHandle)
+    public function getPluginLicenseKeyStatus(string $pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -925,7 +925,7 @@ class Plugins extends Component
      * @return void
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus)
+    public function setPluginLicenseKeyStatus(string $pluginHandle, $licenseKeyStatus)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -960,7 +960,7 @@ class Plugins extends Component
      * @param string          $handle The plugin’s handle
      * @param PluginInterface $plugin The plugin
      */
-    private function _registerPlugin($handle, PluginInterface $plugin)
+    private function _registerPlugin(string $handle, PluginInterface $plugin)
     {
         /** @var Plugin $plugin */
         $plugin::setInstance($plugin);
@@ -973,7 +973,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      */
-    private function _unregisterPlugin($handle)
+    private function _unregisterPlugin(string $handle)
     {
         unset($this->_plugins[$handle]);
         Craft::$app->setModule($handle, null);
@@ -985,7 +985,7 @@ class Plugins extends Component
      * @param PluginInterface $plugin The plugin
      * @param int             $id     The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, $id)
+    private function _setPluginMigrator(PluginInterface $plugin, int $id)
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
@@ -1039,7 +1039,7 @@ class Plugins extends Component
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    private function _scrapeConfigFromComposerJson($handle)
+    private function _scrapeConfigFromComposerJson(string $handle)
     {
         // Make sure this plugin has a composer.json file
         $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
@@ -1167,7 +1167,7 @@ class Plugins extends Component
      *
      * @return array|null
      */
-    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class, &$basePath)
+    private function _generateDefaultAliasesFromComposer(string $handle, array $composer, &$class, &$basePath)
     {
         if (empty($composer['autoload']['psr-4'])) {
             return null;
@@ -1220,7 +1220,7 @@ class Plugins extends Component
      *
      * @return string|null
      */
-    private function _getAuthorPropertyFromComposer(array $composer, $property)
+    private function _getAuthorPropertyFromComposer(array $composer, string $property)
     {
         if (empty($composer['authors'])) {
             return null;

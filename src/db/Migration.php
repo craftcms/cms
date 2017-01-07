@@ -76,7 +76,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function enum($columnName, $values)
+    public function enum(string $columnName, array $values)
     {
         if (Db::isTypeSupported('enum', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
@@ -154,7 +154,7 @@ abstract class Migration extends \yii\db\Migration
      *                                     or updated in the existing row.
      * @param bool   $includeAuditColumns  Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function upsert($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, bool $includeAuditColumns = true)
     {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
@@ -195,7 +195,7 @@ abstract class Migration extends \yii\db\Migration
      *                                refer to [[Query::where()]] on how to specify condition.
      * @param array        $params    The parameters to be bound to the command.
      */
-    public function replace($table, $column, $find, $replace, $condition = '', array $params = [])
+    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [])
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
@@ -213,7 +213,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table)
     {
         echo "    > dropping $table if it exists ...";
         $time = microtime(true);

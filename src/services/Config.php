@@ -110,7 +110,7 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function get($item, $category = self::CATEGORY_GENERAL)
+    public function get(string $item, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -145,7 +145,7 @@ class Config extends Component
      *
      * @return void
      */
-    public function set($item, $value, $category = self::CATEGORY_GENERAL)
+    public function set(string $item, $value, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
         $this->_configSettings[$category][$item] = $value;
@@ -173,7 +173,7 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized($item, $siteHandle = null, $category = self::CATEGORY_GENERAL)
+    public function getLocalized(string $item, string $siteHandle = null, string $category = self::CATEGORY_GENERAL)
     {
         $value = $this->get($item, $category);
 
@@ -223,7 +223,7 @@ class Config extends Component
      *
      * @return bool Whether the config setting value exists.
      */
-    public function exists($item, $category = self::CATEGORY_GENERAL)
+    public function exists(string $item, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -241,7 +241,7 @@ class Config extends Component
      *
      * @return array The config settings.
      */
-    public function getConfigSettings($category)
+    public function getConfigSettings(string $category)
     {
         $this->_loadConfigSettings($category);
 
@@ -460,7 +460,7 @@ class Config extends Component
      * @return int|null The user session duration in seconds, or `null` if user sessions should expire along with the
      *                  HTTP session.
      */
-    public function getUserSessionDuration($remembered = false)
+    public function getUserSessionDuration(bool $remembered = false)
     {
         if ($remembered) {
             $duration = $this->get('rememberedUserSessionDuration');
@@ -562,7 +562,7 @@ class Config extends Component
      * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
      * time being, with deprecation logs.
      */
-    public function getSetPasswordPath($code, $uid, $user, $full = false)
+    public function getSetPasswordPath(string $code, string $uid, $user, bool $full = false)
     {
         if ($user->can('accessCp')) {
             $url = $this->getCpSetPasswordPath();
@@ -642,7 +642,7 @@ class Config extends Component
      *
      * @return string The parsed string.
      */
-    public function parseEnvironmentString($str)
+    public function parseEnvironmentString(string $str)
     {
         foreach ($this->get('environmentVariables') as $key => $value) {
             $str = str_replace('{'.$key.'}', $value, $str);
@@ -778,7 +778,7 @@ class Config extends Component
      *
      * @return bool Whether the extension is allowed
      */
-    public function isExtensionAllowed($extension)
+    public function isExtensionAllowed(string $extension)
     {
         return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
     }
@@ -841,7 +841,7 @@ class Config extends Component
      *
      * @throws InvalidParamException if $category is not supported
      */
-    private function _loadConfigSettings($category)
+    private function _loadConfigSettings(string $category)
     {
         // Have we already loaded this category?
         if (isset($this->_configSettings[$category])) {
@@ -922,7 +922,7 @@ class Config extends Component
      *
      * @return void
      */
-    private function _mergeConfigs(&$baseConfig, $customConfig)
+    private function _mergeConfigs(array &$baseConfig, array $customConfig)
     {
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {

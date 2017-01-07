@@ -172,7 +172,7 @@ class Globals extends Component
      *
      * @return GlobalSet|null
      */
-    public function getSetById($globalSetId, $siteId = null)
+    public function getSetById(int $globalSetId, int $siteId = null)
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
@@ -204,7 +204,7 @@ class Globals extends Component
      *
      * @return GlobalSet|null
      */
-    public function getSetByHandle($globalSetHandle, $siteId = null)
+    public function getSetByHandle(int $globalSetHandle, int $siteId = null)
     {
         $currentSiteId = Craft::$app->getSites()->currentSite->id;
 

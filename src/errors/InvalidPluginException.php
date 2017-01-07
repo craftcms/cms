@@ -33,7 +33,7 @@ class InvalidPluginException extends Exception
      * @param string $message The error message
      * @param int    $code    The error code
      */
-    public function __construct($handle, $message = null, $code = 0)
+    public function __construct($handle, string $message = null, int $code = 0)
     {
         $this->handle = $handle;
 

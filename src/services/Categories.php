@@ -190,7 +190,7 @@ class Categories extends Component
      *
      * @return CategoryGroup|null
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         if ($this->_categoryGroupsById !== null && array_key_exists($groupId, $this->_categoryGroupsById)) {
             return $this->_categoryGroupsById[$groupId];
@@ -220,7 +220,7 @@ class Categories extends Component
      *
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(string $groupHandle)
     {
         $groupRecord = CategoryGroupRecord::findOne([
             'handle' => $groupHandle
@@ -243,7 +243,7 @@ class Categories extends Component
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings($groupId)
+    public function getGroupSiteSettings(int $groupId)
     {
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
@@ -274,7 +274,7 @@ class Categories extends Component
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
      * @throws \Exception if reasons
      */
-    public function saveGroup(CategoryGroup $group, $runValidation = true)
+    public function saveGroup(CategoryGroup $group, bool $runValidation = true)
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('Category group not saved due to validation error.', __METHOD__);
@@ -502,7 +502,7 @@ class Categories extends Component
      * @return bool Whether the category group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId)
     {
         if (!$groupId) {
             return false;
@@ -572,7 +572,7 @@ class Categories extends Component
      *
      * @return bool
      */
-    public function isGroupTemplateValid(CategoryGroup $group, $siteId)
+    public function isGroupTemplateValid(CategoryGroup $group, int $siteId)
     {
         $categoryGroupSiteSettings = $group->getSiteSettings();
 
@@ -607,7 +607,7 @@ class Categories extends Component
      *
      * @return Category|null
      */
-    public function getCategoryById($categoryId, $siteId = null)
+    public function getCategoryById(int $categoryId, int $siteId = null)
     {
         if (!$categoryId) {
             return null;
@@ -643,7 +643,7 @@ class Categories extends Component
      *
      * @return int[] The list of category IDs with all the gaps filled in.
      */
-    public function fillGapsInCategoryIds($ids)
+    public function fillGapsInCategoryIds(array $ids)
     {
         $completeIds = [];
 

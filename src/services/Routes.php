@@ -130,7 +130,7 @@ class Routes extends Component
      * @return RouteRecord
      * @throws RouteNotFoundException if $routeId is invalid
      */
-    public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
+    public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null)
     {
         // Fire a 'beforeSaveRoute' event
         $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
@@ -214,7 +214,7 @@ class Routes extends Component
      *
      * @return bool
      */
-    public function deleteRouteById($routeId)
+    public function deleteRouteById(int $routeId)
     {
         $routeRecord = RouteRecord::findOne($routeId);
 
@@ -256,7 +256,7 @@ class Routes extends Component
      *
      * @return void
      */
-    public function updateRouteOrder($routeIds)
+    public function updateRouteOrder(array $routeIds)
     {
         $db = Craft::$app->getDb();
 

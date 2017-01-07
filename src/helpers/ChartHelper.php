@@ -48,7 +48,7 @@ class ChartHelper
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, array $options = [])
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, array $options = [])
     {
         // Setup
         $options = array_merge([

@@ -387,7 +387,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source)
     {
         $attributes = [];
 
@@ -409,7 +409,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'author') {
             // Get the source element IDs
@@ -437,7 +437,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
         /** @var ElementQuery $elementQuery */
         if ($attribute === 'author') {
@@ -770,7 +770,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {
             $author = isset($elements[0]) ? $elements[0] : null;
@@ -786,7 +786,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute)
     {
         switch ($attribute) {
             case 'author':
@@ -868,7 +868,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         $section = $this->getSection();
         $entryType = $this->getType();
@@ -917,7 +917,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         $section = $this->getSection();
 
@@ -965,7 +965,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure($structureId)
+    public function afterMoveInStructure(int $structureId)
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();

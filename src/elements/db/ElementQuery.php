@@ -28,6 +28,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use craft\search\SearchQuery;
 use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
@@ -43,7 +44,7 @@ use yii\db\Expression;
  *
  * @property string|Site $site The site or site handle that the elements should be returned in
  *
- * @method ElementInterface|array nth($n, $db = null)
+ * @method ElementInterface|array nth(int $n, $db = null)
  */
 class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
 {
@@ -165,22 +166,22 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $relatedTo;
 
     /**
-     * @var string The title that resulting elements must have.
+     * @var string|string[] The title that resulting elements must have.
      */
     public $title;
 
     /**
-     * @var string The slug that resulting elements must have.
+     * @var string|string[] The slug that resulting elements must have.
      */
     public $slug;
 
     /**
-     * @var string The URI that the resulting element must have.
+     * @var string|string[] The URI that the resulting element must have.
      */
     public $uri;
 
     /**
-     * @var string The search term to filter the resulting elements by.
+     * @var string|array|SearchQuery The search term to filter the resulting elements by.
      */
     public $search;
 
@@ -287,7 +288,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @param string $elementType The element type class associated with this query
      * @param array  $config      Configurations to be applied to the newly created query object
      */
-    public function __construct($elementType, $config = [])
+    public function __construct(string $elementType, array $config = [])
     {
         $this->elementType = $elementType;
         parent::__construct($config);
@@ -485,7 +486,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function asArray($value = true)
+    public function asArray(bool $value = true)
     {
         $this->asArray = $value;
 
@@ -515,7 +516,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function fixedOrder($value = true)
+    public function fixedOrder(bool $value = true)
     {
         $this->fixedOrder = $value;
 
@@ -535,7 +536,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function archived($value = true)
+    public function archived(bool $value = true)
     {
         $this->archived = $value;
 
@@ -586,7 +587,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function siteId($value)
+    public function siteId(int $value)
     {
         $this->siteId = $value;
 
@@ -601,7 +602,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return static self reference
      * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
      */
-    public function locale($value)
+    public function locale(string $value)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
@@ -708,7 +709,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function structureId($value)
+    public function structureId(int $value)
     {
         $this->structureId = $value;
 
@@ -718,7 +719,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function level($value)
+    public function level(int $value)
     {
         $this->level = $value;
 
@@ -738,7 +739,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function ancestorDist($value)
+    public function ancestorDist(int $value)
     {
         $this->ancestorDist = $value;
 
@@ -758,7 +759,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function descendantDist($value)
+    public function descendantDist(int $value)
     {
         $this->descendantDist = $value;
 
@@ -1069,7 +1070,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @see getCachedResult()
      */
-    public function setCachedResult($elements)
+    public function setCachedResult(array $elements)
     {
         $this->_result = $elements;
         $this->_resultCriteria = $this->toArray([], [], false);
@@ -1104,7 +1105,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return static self reference
      * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
      */
-    public function order($value)
+    public function order(string $value)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
@@ -1119,7 +1120,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return ElementInterface[] The matched elements.
      * @deprecated in Craft 3.0. Use all() instead.
      */
-    public function find($attributes = null)
+    public function find(array $attributes = null)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The find() function used to query for elements is now deprecated. Use all() instead.');
         $this->_setAttributes($attributes);
@@ -1135,7 +1136,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return ElementInterface|null
      * @deprecated in Craft 3.0. Use one() instead.
      */
-    public function first($attributes = null)
+    public function first(array $attributes = null)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
         $this->_setAttributes($attributes);
@@ -1151,7 +1152,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return ElementInterface|null
      * @deprecated in Craft 3.0. Use nth() instead.
      */
-    public function last($attributes = null)
+    public function last(array $attributes = null)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use nth() instead.');
         $this->_setAttributes($attributes);
@@ -1172,7 +1173,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return int
      * @deprecated in Craft 3.0. Use count() instead.
      */
-    public function total($attributes = null)
+    public function total(array $attributes = null)
     {
         Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The total() function used to query for elements is now deprecated. Use count() instead.');
         $this->_setAttributes($attributes);
@@ -1272,7 +1273,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return string|array|Expression|false The status condition, or false if $status is an unsupported status
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         switch ($status) {
             case Element::STATUS_ENABLED:
@@ -1289,7 +1290,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
      */
-    protected function joinElementTable($table)
+    protected function joinElementTable(string $table)
     {
         $joinTable = "{{%{$table}}} {$table}";
         $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
@@ -1556,7 +1557,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @throws QueryAbortedException if the element can't be found
      */
-    private function _normalizeStructureParamValue($property, $class)
+    private function _normalizeStructureParamValue(string $property, string $class)
     {
         /** @var Element $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
@@ -1715,7 +1716,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return array|Element[]
      */
-    private function _createElements($rows)
+    private function _createElements(array $rows)
     {
         $elements = [];
 
@@ -1774,7 +1775,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return ElementInterface|bool
      */
-    private function _createElement($row)
+    private function _createElement(array $row)
     {
         // Do we have a placeholder for this element?
         $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId);

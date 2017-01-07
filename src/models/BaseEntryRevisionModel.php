@@ -50,7 +50,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return void
      */
-    public function setContentFromRevision($content)
+    public function setContentFromRevision(array $content)
     {
         // Swap the field IDs with handles
         $contentByFieldHandles = [];

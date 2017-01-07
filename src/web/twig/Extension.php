@@ -212,7 +212,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter($message, $category = null, $params = null, $language = null)
+    public function translateFilter(string $message, string $category = null, array $params = null, string $language = null)
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -244,7 +244,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The string with the first character converted to upercase.
      */
-    public function ucfirstFilter($string)
+    public function ucfirstFilter(string $string)
     {
         return StringHelper::upperCaseFirst($string);
     }
@@ -256,7 +256,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The string with the first character converted to lowercase.
      */
-    public function lcfirstFilter($string)
+    public function lcfirstFilter(string $string)
     {
         return StringHelper::lowercaseFirst($string);
     }
@@ -271,7 +271,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The kebab-cased string
      */
-    public function kebabFilter($string, $glue = '-', $lower = true, $removePunctuation = true)
+    public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true)
     {
         return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
     }
@@ -283,7 +283,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function camelFilter($string)
+    public function camelFilter(string $string)
     {
         return StringHelper::toCamelCase($string);
     }
@@ -295,7 +295,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function pascalFilter($string)
+    public function pascalFilter(string $string)
     {
         return StringHelper::toPascalCase($string);
     }
@@ -307,7 +307,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function snakeFilter($string)
+    public function snakeFilter(string $string)
     {
         return StringHelper::toSnakeCase($string);
     }
@@ -325,7 +325,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return mixed The JSON encoded value.
      */
-    public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
+    public function jsonEncodeFilter(string $value, int $options = null, int $depth = 512)
     {
         if ($options === null) {
             if (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {
@@ -346,7 +346,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array
      */
-    public function withoutFilter($arr, $exclude)
+    public function withoutFilter(array $arr, $exclude)
     {
         $filteredArray = [];
 
@@ -370,7 +370,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function parseRefsFilter($str)
+    public function parseRefsFilter(string $str)
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
@@ -414,7 +414,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
+    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
     {
         // Should we be using the app's formatter?
         if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
@@ -470,7 +470,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
+    public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -498,7 +498,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
+    public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -523,7 +523,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array
      */
-    public function groupFilter($arr, $item)
+    public function groupFilter(array $arr, string $item)
     {
         $groups = [];
 
@@ -578,7 +578,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The escaped param value.
      */
-    public function literalFilter($value)
+    public function literalFilter(string $value)
     {
         return Db::escapeParam($value);
     }
@@ -594,7 +594,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function markdownFilter($markdown, $flavor = null, $inlineOnly = false)
+    public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false)
     {
         if ($inlineOnly) {
             $html = Markdown::processParagraph($markdown, $flavor);
@@ -661,7 +661,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function redirectInputFunction($url)
+    public function redirectInputFunction(string $url)
     {
         return Template::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
     }
@@ -676,7 +676,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @return int|float
      * @deprecated in 3.0. Use Twig's |round filter instead.
      */
-    public function roundFunction($value, $precision = 0, $mode = PHP_ROUND_HALF_UP)
+    public function roundFunction($value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP)
     {
         Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
 

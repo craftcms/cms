@@ -278,7 +278,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered macro output.
      */
-    public function renderTemplateMacro($template, $macro, array $args = [])
+    public function renderTemplateMacro(string $template, string $macro, array $args = [])
     {
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
@@ -321,7 +321,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderObjectTemplate($template, $object)
+    public function renderObjectTemplate(string $template, $object)
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -375,7 +375,7 @@ class View extends \yii\web\View
      *
      * @return bool Whether the template exists.
      */
-    public function doesTemplateExist($name)
+    public function doesTemplateExist(string $name)
     {
         try {
             return ($this->resolveTemplate($name) !== false);
@@ -459,7 +459,7 @@ class View extends \yii\web\View
      *
      * @return string|false The path to the template if it exists, or `false`.
      */
-    public function resolveTemplate($name)
+    public function resolveTemplate(string $name)
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
@@ -535,7 +535,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two CSS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerCssResource($path, array $options = [], $key = null)
+    public function registerCssResource(string $path, array $options = [], string $key = null)
     {
         $this->_registerResource($path, $options, $key, 'css');
     }
@@ -559,7 +559,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two JS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerJsResource($path, array $options = [], $key = null)
+    public function registerJsResource(string $path, array $options = [], string $key = null)
     {
         $this->_registerResource($path, $options, $key, 'js');
     }
@@ -575,7 +575,7 @@ class View extends \yii\web\View
      *
      * @deprecated in 3.0. Use [[registerCss()]] and type your own media selector.
      */
-    public function registerHiResCss($css, array $options = [], $key = null)
+    public function registerHiResCss(string $css, array $options = [], string $key = null)
     {
         Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
 
@@ -624,7 +624,7 @@ class View extends \yii\web\View
      *
      * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer($scriptTag = true)
+    public function clearJsBuffer(bool $scriptTag = true)
     {
         if (empty($this->_jsBuffers)) {
             return false;
@@ -665,7 +665,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getHeadHtml($clear = true)
+    public function getHeadHtml(bool $clear = true)
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -695,7 +695,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getBodyHtml($clear = true)
+    public function getBodyHtml(bool $clear = true)
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -740,7 +740,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function registerTranslations($category, $messages)
+    public function registerTranslations(string $category, array $messages)
     {
         foreach ($messages as $message) {
             if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
@@ -795,7 +795,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function setNamespace($namespace)
+    public function setNamespace(string $namespace)
     {
         $this->_namespace = $namespace;
     }
@@ -824,7 +824,7 @@ class View extends \yii\web\View
      * @return void
      * @throws Exception if $templateMode is invalid
      */
-    public function setTemplateMode($templateMode)
+    public function setTemplateMode(string $templateMode)
     {
         // Validate
         if (!in_array($templateMode, [
@@ -868,7 +868,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function setTemplatesPath($templatesPath)
+    public function setTemplatesPath(string $templatesPath)
     {
         $this->_templatesPath = rtrim($templatesPath, '/\\');
     }
@@ -916,7 +916,7 @@ class View extends \yii\web\View
      *
      * @return string The HTML with namespaced input names.
      */
-    public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
+    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true)
     {
         if (!is_string($html) || $html === '') {
             return '';
@@ -959,7 +959,7 @@ class View extends \yii\web\View
      *
      * @return string The namespaced input name.
      */
-    public function namespaceInputName($inputName, $namespace = null)
+    public function namespaceInputName(string $inputName, string $namespace = null)
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -983,7 +983,7 @@ class View extends \yii\web\View
      *
      * @return string The namespaced input ID.
      */
-    public function namespaceInputId($inputId, $namespace = null)
+    public function namespaceInputId(string $inputId, string $namespace = null)
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -1013,7 +1013,7 @@ class View extends \yii\web\View
      *
      * @return string The input ID.
      */
-    public function formatInputId($inputName)
+    public function formatInputId(string $inputName)
     {
         return rtrim(preg_replace('/[\[\]\\\]+/', '-', $inputName), '-');
     }
@@ -1048,7 +1048,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function hook($hook, $method)
+    public function hook(string $hook, $method)
     {
         $this->_hooks[$hook][] = $method;
     }
@@ -1063,7 +1063,7 @@ class View extends \yii\web\View
      *
      * @return string Whatever the hooks returned.
      */
-    public function invokeHook($hook, &$context)
+    public function invokeHook(string $hook, array &$context)
     {
         $return = '';
 
@@ -1087,7 +1087,7 @@ class View extends \yii\web\View
      *
      * @throws \Twig_Error_Loader
      */
-    private function _validateTemplateName($name)
+    private function _validateTemplateName(string $name)
     {
         if (StringHelper::contains($name, "\0")) {
             throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
@@ -1106,7 +1106,7 @@ class View extends \yii\web\View
      *
      * @return string|null The matching file path, or `null`.
      */
-    private function _resolveTemplate($basePath, $name)
+    private function _resolveTemplate(string $basePath, string $name)
     {
         // Normalize the path and name
         $basePath = FileHelper::normalizePath($basePath);
@@ -1178,7 +1178,7 @@ class View extends \yii\web\View
      * @param string $key
      * @param string $kind
      */
-    private function _registerResource($path, $options, $key, $kind)
+    private function _registerResource(string $path, array $options, string $key, string $kind)
     {
         $key = $key ?: 'resource:'.$path;
 
@@ -1237,7 +1237,7 @@ class View extends \yii\web\View
      *
      * @return string
      */
-    private function _createTextareaMarker($matches)
+    private function _createTextareaMarker(array $matches)
     {
         $marker = '{marker:'.StringHelper::randomString().'}';
         $this->_textareaMarkers[$marker] = $matches[2];
@@ -1252,7 +1252,7 @@ class View extends \yii\web\View
      *
      * @return string|null
      */
-    private function _getCpElementHtml(&$context)
+    private function _getCpElementHtml(array &$context)
     {
         if (!isset($context['element'])) {
             return null;

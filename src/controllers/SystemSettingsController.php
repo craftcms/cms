@@ -331,7 +331,7 @@ class SystemSettingsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
+    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null)
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

@@ -275,7 +275,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source)
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
@@ -289,7 +289,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'photo') {
             // Get the source element IDs
@@ -362,7 +362,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array|null The authentication data, or `null` if it was invalid.
      */
-    public static function authData($authKey)
+    public static function authData(string $authKey)
     {
         $data = json_decode($authKey, true);
 
@@ -673,7 +673,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function authenticate($password)
+    public function authenticate(string $password)
     {
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED:
@@ -781,7 +781,7 @@ class User extends Element implements IdentityInterface
      *
      * @return void
      */
-    public function setGroups($groups)
+    public function setGroups(array $groups)
     {
         if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
@@ -908,7 +908,7 @@ class User extends Element implements IdentityInterface
      * @return string|null
      * @deprecated in 3.0. Use getPhoto().getUrl() instead.
      */
-    public function getPhotoUrl($size = 100)
+    public function getPhotoUrl(int $size = 100)
     {
         Craft::$app->getDeprecator()->log('User::getPhotoUrl()', 'User::getPhotoUrl() has been deprecated. Use getPhoto() to access the photo asset (if there is one), and call its getUrl() method to access the photo URL.');
         $photo = $this->getPhoto();
@@ -926,7 +926,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size)
+    public function getThumbUrl(int $size)
     {
         $photo = $this->getPhoto();
 
@@ -975,7 +975,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function can($permission)
+    public function can(string $permission)
     {
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->admin) {
@@ -999,7 +999,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function hasShunned($message)
+    public function hasShunned(string $message)
     {
         if ($this->id) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
@@ -1110,7 +1110,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array The user’s preferences.
      */
-    public function getPreference($key, $default = null)
+    public function getPreference(string $key, $default = null)
     {
         $preferences = $this->getPreferences();
 
@@ -1141,7 +1141,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array The user’s new preferences.
      */
-    public function mergePreferences($preferences)
+    public function mergePreferences(array $preferences)
     {
         $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
@@ -1151,7 +1151,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'photo') {
             $photo = isset($elements[0]) ? $elements[0] : null;
@@ -1200,7 +1200,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute)
     {
         switch ($attribute) {
             case 'email':
@@ -1238,7 +1238,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the user record
         if (!$isNew) {
@@ -1372,7 +1372,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string The new session row's UID.
      */
-    private function _storeSessionToken($sessionToken)
+    private function _storeSessionToken(string $sessionToken)
     {
         $sessionRecord = new SessionRecord();
         $sessionRecord->userId = $this->id;
@@ -1389,7 +1389,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null The session token, or `null` if it could not be found.
      */
-    private function _findSessionTokenByUid($uid)
+    private function _findSessionTokenByUid(string $uid)
     {
         return (new Query())
             ->select(['token'])
@@ -1406,7 +1406,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    private function _validateUserAgent($userAgent)
+    private function _validateUserAgent(string $userAgent)
     {
         if (Craft::$app->getConfig()->get('requireMatchingUserAgentForSession')) {
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();

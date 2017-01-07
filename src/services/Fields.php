@@ -223,7 +223,7 @@ class Fields extends Component
      *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
             return $this->_groupsById[$groupId];
@@ -252,7 +252,7 @@ class Fields extends Component
      *
      * @return bool Whether the field group was saved successfully
      */
-    public function saveGroup(FieldGroup $group, $runValidation = true)
+    public function saveGroup(FieldGroup $group, bool $runValidation = true)
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('Field group not saved due to validation error.', __METHOD__);
@@ -293,7 +293,7 @@ class Fields extends Component
      *
      * @return bool Whether the field group was deleted successfully
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId)
     {
         $group = $this->getGroupById($groupId);
 
@@ -518,7 +518,7 @@ class Fields extends Component
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldById($fieldId)
+    public function getFieldById(int $fieldId)
     {
         if ($this->_fieldsById !== null && array_key_exists($fieldId, $this->_fieldsById)) {
             return $this->_fieldsById[$fieldId];
@@ -547,7 +547,7 @@ class Fields extends Component
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle($handle)
+    public function getFieldByHandle(string $handle)
     {
         $context = Craft::$app->getContent()->fieldContext;
 
@@ -583,7 +583,7 @@ class Fields extends Component
      *
      * @return bool Whether a field with that handle exists
      */
-    public function doesFieldWithHandleExist($handle, $context = null)
+    public function doesFieldWithHandleExist(string $handle, string $context = null)
     {
         if ($context === null) {
             $context = Craft::$app->getContent()->fieldContext;
@@ -612,7 +612,7 @@ class Fields extends Component
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByGroupId($groupId)
+    public function getFieldsByGroupId(int $groupId)
     {
         $results = $this->_createFieldQuery()
             ->where(['fields.groupId' => $groupId])
@@ -660,7 +660,7 @@ class Fields extends Component
      * @return bool Whether the field was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveField(FieldInterface $field, $runValidation = true)
+    public function saveField(FieldInterface $field, bool $runValidation = true)
     {
         /** @var Field $field */
         // Set the field context if it's not set
@@ -811,7 +811,7 @@ class Fields extends Component
      *
      * @return bool Whether the field was deleted successfully
      */
-    public function deleteFieldById($fieldId)
+    public function deleteFieldById(int $fieldId)
     {
         $field = $this->getFieldById($fieldId);
 
@@ -892,7 +892,7 @@ class Fields extends Component
      *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById($layoutId)
+    public function getLayoutById(int $layoutId)
     {
         if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];
@@ -916,7 +916,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function getLayoutByType($type)
+    public function getLayoutByType(string $type)
     {
         if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
             return $this->_layoutsByType[$type];
@@ -945,7 +945,7 @@ class Fields extends Component
      *
      * @return FieldLayoutTab[] The field layout’s tabs
      */
-    public function getLayoutTabsById($layoutId)
+    public function getLayoutTabsById(int $layoutId)
     {
         $tabs = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
@@ -965,7 +965,7 @@ class Fields extends Component
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByLayoutId($layoutId)
+    public function getFieldsByLayoutId(int $layoutId)
     {
         $fields = [];
 
@@ -996,7 +996,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayoutFromPost($namespace = null)
+    public function assembleLayoutFromPost(string $namespace = null)
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
         $postedFieldLayout = Craft::$app->getRequest()->getBodyParam($paramPrefix.'fieldLayout', []);
@@ -1013,7 +1013,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayout($postedFieldLayout, array $requiredFields = [])
+    public function assembleLayout(array $postedFieldLayout, array $requiredFields = [])
     {
         $tabs = [];
         $fields = [];
@@ -1081,7 +1081,7 @@ class Fields extends Component
      *
      * @return bool Whether the field layout was saved successfully
      */
-    public function saveLayout(FieldLayout $layout, $runValidation = true)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true)
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);
@@ -1191,7 +1191,7 @@ class Fields extends Component
      *
      * @return bool Whether the field layouts were deleted successfully
      */
-    public function deleteLayoutsByType($type)
+    public function deleteLayoutsByType(string $type)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete('{{%fieldlayouts}}', ['type' => $type])

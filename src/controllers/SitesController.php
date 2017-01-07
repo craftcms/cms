@@ -61,7 +61,7 @@ class SitesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site cannot be found
      */
-    public function actionEditSite($siteId = null, Site $site = null)
+    public function actionEditSite(int $siteId = null, Site $site = null)
     {
         $variables = [];
 

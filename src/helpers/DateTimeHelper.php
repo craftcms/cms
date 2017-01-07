@@ -90,7 +90,7 @@ class DateTimeHelper
      *
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
-    public static function toDateTime($value, $assumeSystemTimeZone = false, $setToSystemTimeZone = true)
+    public static function toDateTime($value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true)
     {
         if ($value instanceof \DateTime) {
             // Make sure it's a Craft DateTime object
@@ -252,7 +252,7 @@ class DateTimeHelper
      *
      * @return string|false The PHP time zone identifier, or `false` if it could not be determined
      */
-    public static function normalizeTimeZone($timeZone)
+    public static function normalizeTimeZone(string $timeZone)
     {
         // Is it already a PHP time zone identifier?
         if (in_array($timeZone, timezone_identifiers_list(), true)) {
@@ -338,7 +338,7 @@ class DateTimeHelper
      *
      * @return string The translated date string
      */
-    public static function translateDate($str, $language = null)
+    public static function translateDate(string $str, string $language = null)
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -359,7 +359,7 @@ class DateTimeHelper
      *
      * @return string
      */
-    public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
+    public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true)
     {
         $secondsInWeek = 604800;
         $secondsInDay = 86400;
@@ -598,7 +598,7 @@ class DateTimeHelper
      *
      * @return string
      */
-    public static function humanDurationFromInterval(\DateInterval $dateInterval, $showSeconds = true)
+    public static function humanDurationFromInterval(\DateInterval $dateInterval, bool $showSeconds = true)
     {
         $timeComponents = [];
 
@@ -649,7 +649,7 @@ class DateTimeHelper
      *
      * @return array The translation pairs
      */
-    private static function _getDateTranslations($language)
+    private static function _getDateTranslations(string $language)
     {
         if (!isset(self::$_translationPairs[$language])) {
             if (strpos(Craft::$app->language, 'en') === 0) {

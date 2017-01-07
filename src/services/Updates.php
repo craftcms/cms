@@ -195,7 +195,7 @@ class Updates extends Component
      *
      * @return Update|false
      */
-    public function getUpdates($forceRefresh = false)
+    public function getUpdates(bool $forceRefresh = false)
     {
         if ($this->_updateModel !== null && !$forceRefresh) {
             return $this->_updateModel;
@@ -513,7 +513,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function prepareUpdate($manual, $handle)
+    public function prepareUpdate(bool $manual, string $handle)
     {
         Craft::info('Preparing to update '.$handle.'.', __METHOD__);
 
@@ -566,7 +566,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function processUpdateDownload($md5, $handle)
+    public function processUpdateDownload(string $md5, string $handle)
     {
         Craft::info('Starting to process the update download.', __METHOD__);
 
@@ -598,7 +598,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function backupFiles($uid, $handle)
+    public function backupFiles(string $uid, string $handle)
     {
         Craft::info('Starting to backup files that need to be updated.', __METHOD__);
 
@@ -620,7 +620,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function updateFiles($uid, $handle)
+    public function updateFiles(string $uid, string $handle)
     {
         Craft::info('Starting to update files.', __METHOD__);
 
@@ -667,7 +667,7 @@ class Updates extends Component
      * @throws Exception
      * @return array
      */
-    public function updateDatabase($handle)
+    public function updateDatabase(string $handle)
     {
         Craft::info('Starting to update the database.', __METHOD__);
 
@@ -707,7 +707,7 @@ class Updates extends Component
      *
      * @return void
      */
-    public function updateCleanUp($uid, $handle)
+    public function updateCleanUp($uid, string $handle)
     {
         Craft::info('Starting to clean up after the update.', __METHOD__);
 
@@ -737,7 +737,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function rollbackUpdate($uid, $handle, $dbBackupPath = false)
+    public function rollbackUpdate($uid, string $handle, $dbBackupPath = false)
     {
         try {
             // Fire an 'updateFailure' event

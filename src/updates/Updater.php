@@ -54,7 +54,7 @@ class Updater
      * @return array
      * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      */
-    public function getUpdateFileInfo($handle)
+    public function getUpdateFileInfo(string $handle)
     {
         if ($handle !== 'craft') {
             // Get the plugin's package name for ET
@@ -81,7 +81,7 @@ class Updater
      * @throws UnpackPackageException
      * @throws ValidatePackageException
      */
-    public function processDownload($md5, $handle)
+    public function processDownload(string $md5, string $handle)
     {
         Craft::info('Starting to process the update download.', __METHOD__);
         $tempPath = Craft::$app->getPath()->getTempPath();
@@ -138,7 +138,7 @@ class Updater
      *
      * @throws FileException
      */
-    public function backupFiles($uid, $handle)
+    public function backupFiles(string $uid, string $handle)
     {
         $unzipFolder = Update::getUnzipFolderFromUID($uid);
 
@@ -156,7 +156,7 @@ class Updater
      * @throws Exception
      * @return void
      */
-    public function updateFiles($uid, $handle)
+    public function updateFiles(string $uid, string $handle)
     {
         $unzipFolder = Update::getUnzipFolderFromUID($uid);
 
@@ -227,7 +227,7 @@ class Updater
      * @return bool
      * @throws UserException
      */
-    public function cleanUp($uid, $handle)
+    public function cleanUp($uid, string $handle)
     {
         // Clear the update info cache
         Craft::info('Flushing update info from cache.', __METHOD__);
@@ -271,7 +271,7 @@ class Updater
      *
      * @return void
      */
-    private function _cleanTempFiles($unzipFolder, $handle)
+    private function _cleanTempFiles(string $unzipFolder, string $handle)
     {
         $basePath = Update::getBasePath($handle);
         $manifestData = Update::getManifestData($unzipFolder, $handle);
@@ -330,7 +330,7 @@ class Updater
      *
      * @return bool
      */
-    private function _validateUpdate($downloadFilePath, $sourceMD5)
+    private function _validateUpdate(string $downloadFilePath, string $sourceMD5)
     {
         Craft::info('Validating MD5 for '.$downloadFilePath, __METHOD__);
         $localMD5 = md5_file($downloadFilePath);
@@ -346,7 +346,7 @@ class Updater
      *
      * @return bool
      */
-    private function _unpackPackage($downloadFilePath, $unzipFolder)
+    private function _unpackPackage(string $downloadFilePath, string $unzipFolder)
     {
         Craft::info('Unzipping package to '.$unzipFolder, __METHOD__);
 
@@ -391,7 +391,7 @@ class Updater
      *
      * @return array
      */
-    private function _validateManifestPathsWritable($unzipFolder, $handle)
+    private function _validateManifestPathsWritable(string $unzipFolder, string $handle)
     {
         $manifestData = Update::getManifestData($unzipFolder, $handle);
         $basePath = Update::getBasePath($handle);
@@ -438,7 +438,7 @@ class Updater
      *
      * @return bool
      */
-    private function _backupFiles($unzipFolder, $handle)
+    private function _backupFiles(string $unzipFolder, string $handle)
     {
         $manifestData = Update::getManifestData($unzipFolder, $handle);
 
@@ -477,7 +477,7 @@ class Updater
      * @throws Exception
      * @return array
      */
-    private function _validateNewRequirements($unzipFolder)
+    private function _validateNewRequirements(string $unzipFolder)
     {
         $requirementsFolderPath = FileHelper::normalizePath($unzipFolder.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'requirements');
         $requirementsFile = FileHelper::normalizePath($requirementsFolderPath.DIRECTORY_SEPARATOR.'requirements.php');
@@ -529,7 +529,7 @@ class Updater
      *
      * @return string
      */
-    private function _markdownList($messages)
+    private function _markdownList(array $messages)
     {
         $list = '';
 

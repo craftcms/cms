@@ -362,7 +362,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getElementResponseData($includeContainer, $includeActions)
+    private function _getElementResponseData(bool $includeContainer, bool $includeActions)
     {
         $responseData = [];
 

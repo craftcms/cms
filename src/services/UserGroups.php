@@ -82,7 +82,7 @@ class UserGroups extends Component
      *
      * @return UserGroup
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         $groupRecord = UserGroupRecord::findOne($groupId);
 
@@ -104,7 +104,7 @@ class UserGroups extends Component
      *
      * @return UserGroup
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(int $groupHandle)
     {
         $groupRecord = UserGroupRecord::findOne([
             'handle' => $groupHandle
@@ -128,7 +128,7 @@ class UserGroups extends Component
      *
      * @return UserGroup[]
      */
-    public function getGroupsByUserId($userId)
+    public function getGroupsByUserId(int $userId)
     {
         $groups = (new Query())
             ->select([
@@ -156,7 +156,7 @@ class UserGroups extends Component
      *
      * @return bool
      */
-    public function saveGroup(UserGroup $group, $runValidation = true)
+    public function saveGroup(UserGroup $group, bool $runValidation = true)
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('User group not saved due to validation error.', __METHOD__);
@@ -200,7 +200,7 @@ class UserGroups extends Component
      *
      * @return bool
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId)
     {
         $group = $this->getGroupById($groupId);
 
@@ -235,7 +235,7 @@ class UserGroups extends Component
      *
      * @return UserGroupRecord
      */
-    private function _getGroupRecordById($groupId = null)
+    private function _getGroupRecordById(int $groupId = null)
     {
         if ($groupId !== null) {
             $groupRecord = UserGroupRecord::findOne($groupId);
@@ -258,7 +258,7 @@ class UserGroups extends Component
      * @return void
      * @throws UserGroupNotFoundException
      */
-    private function _noGroupExists($groupId)
+    private function _noGroupExists(int $groupId)
     {
         throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
     }

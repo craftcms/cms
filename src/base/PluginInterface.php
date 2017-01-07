@@ -53,7 +53,7 @@ interface PluginInterface
      * @return void|false Return `false` to indicate the update failed.
      * All other return values mean the update was successful.
      */
-    public function update($fromVersion);
+    public function update(string $fromVersion);
 
     /**
      * Uninstalls the plugin.

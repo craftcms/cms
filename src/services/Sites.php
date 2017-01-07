@@ -291,7 +291,7 @@ class Sites extends Component
      *
      * @return Site|null
      */
-    public function getSiteById($siteId)
+    public function getSiteById(int $siteId)
     {
         if (!$siteId) {
             return null;
@@ -327,7 +327,7 @@ class Sites extends Component
      *
      * @return Site|null
      */
-    public function getSiteByHandle($siteHandle)
+    public function getSiteByHandle(string $siteHandle)
     {
         // If we've already fetched all sites we can save ourselves a trip to the DB for site handles that don't exist
         if (!$this->_fetchedAllSites && !array_key_exists($siteHandle, $this->_sitesByHandle)) {
@@ -362,7 +362,7 @@ class Sites extends Component
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSite(Site $site, $runValidation = true)
+    public function saveSite(Site $site, bool $runValidation = true)
     {
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
@@ -485,7 +485,7 @@ class Sites extends Component
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Exception if reasons
      */
-    public function reorderSites($siteIds)
+    public function reorderSites(array $siteIds)
     {
         // Fire a 'beforeSaveSite' event
         $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
@@ -534,7 +534,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSiteById($siteId, $transferContentTo = null)
+    public function deleteSiteById(int $siteId, int $transferContentTo = null)
     {
         $site = $this->getSiteById($siteId);
 
@@ -554,7 +554,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSite(Site $site, $transferContentTo = null)
+    public function deleteSite(Site $site, int $transferContentTo = null)
     {
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
@@ -846,7 +846,7 @@ class Sites extends Component
      * @param int $oldPrimarySiteId
      * @param int $newPrimarySiteId
      */
-    private function _processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId)
+    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
     {
         // Set the new primary site
         $this->_primarySite = $this->getSiteById($newPrimarySiteId);

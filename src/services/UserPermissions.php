@@ -202,7 +202,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    public function getPermissionsByGroupId($groupId)
+    public function getPermissionsByGroupId(int $groupId)
     {
         if (!isset($this->_permissionsByUserId[$groupId])) {
             $groupPermissions = (new Query())
@@ -225,7 +225,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    public function getGroupPermissionsByUserId($userId)
+    public function getGroupPermissionsByUserId(int $userId)
     {
         return (new Query())
             ->select(['p.name'])
@@ -244,7 +244,7 @@ class UserPermissions extends Component
      *
      * @return bool
      */
-    public function doesGroupHavePermission($groupId, $checkPermission)
+    public function doesGroupHavePermission(int $groupId, string $checkPermission)
     {
         $allPermissions = $this->getPermissionsByGroupId($groupId);
         $checkPermission = strtolower($checkPermission);
@@ -260,7 +260,7 @@ class UserPermissions extends Component
      *
      * @return bool
      */
-    public function saveGroupPermissions($groupId, $permissions)
+    public function saveGroupPermissions(int $groupId, array $permissions)
     {
         // Delete any existing group permissions
         Craft::$app->getDb()->createCommand()
@@ -296,7 +296,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    public function getPermissionsByUserId($userId)
+    public function getPermissionsByUserId(int $userId)
     {
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -322,7 +322,7 @@ class UserPermissions extends Component
      *
      * @return bool
      */
-    public function doesUserHavePermission($userId, $checkPermission)
+    public function doesUserHavePermission(int $userId, string $checkPermission)
     {
         $allPermissions = $this->getPermissionsByUserId($userId);
         $checkPermission = strtolower($checkPermission);
@@ -338,7 +338,7 @@ class UserPermissions extends Component
      *
      * @return bool
      */
-    public function saveUserPermissions($userId, $permissions)
+    public function saveUserPermissions(int $userId, array $permissions)
     {
         // Delete any existing user permissions
         Craft::$app->getDb()->createCommand()
@@ -465,7 +465,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getGlobalSetPermissions($globalSets)
+    private function _getGlobalSetPermissions(array $globalSets)
     {
         $permissions = [];
 
@@ -486,7 +486,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getCategoryGroupPermissions($groups)
+    private function _getCategoryGroupPermissions(array $groups)
     {
         $permissions = [];
 
@@ -507,7 +507,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getVolumePermissions($sourceId)
+    private function _getVolumePermissions(int $sourceId)
     {
         $suffix = ':'.$sourceId;
 
@@ -538,7 +538,7 @@ class UserPermissions extends Component
      *
      * @return array The permissions we'll actually let them save.
      */
-    private function _filterOrphanedPermissions($postedPermissions, array $groupPermissions = [])
+    private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = [])
     {
         $filteredPermissions = [];
 
@@ -561,7 +561,7 @@ class UserPermissions extends Component
      *
      * @return bool Whether any permissions were added to $filteredPermissions
      */
-    private function _findSelectedPermissions($permissionsGroup, $postedPermissions, $groupPermissions, &$filteredPermissions)
+    private function _findSelectedPermissions(array $permissionsGroup, array $postedPermissions, array $groupPermissions, array &$filteredPermissions)
     {
         $hasAssignedPermissions = false;
 
@@ -594,7 +594,7 @@ class UserPermissions extends Component
      *
      * @return UserPermissionRecord
      */
-    private function _getPermissionRecordByName($permissionName)
+    private function _getPermissionRecordByName(string $permissionName)
     {
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);

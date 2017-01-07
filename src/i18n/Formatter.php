@@ -284,7 +284,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @return string the formatted result.
      */
-    private function _formatDateTimeValue($value, $format, $type)
+    private function _formatDateTimeValue($value, string $format, string $type)
     {
         $timeZone = $this->timeZone;
 

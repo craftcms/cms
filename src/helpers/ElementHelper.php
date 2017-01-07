@@ -59,7 +59,7 @@ class ElementHelper
      *
      * @return string
      */
-    public static function createSlug($str)
+    public static function createSlug(string $str)
     {
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
@@ -172,7 +172,7 @@ class ElementHelper
      *
      * @return bool
      */
-    public static function doesUriFormatHaveSlugTag($uriFormat)
+    public static function doesUriFormatHaveSlugTag(string $uriFormat)
     {
         $element = (object)['slug' => StringHelper::randomString()];
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
@@ -268,7 +268,7 @@ class ElementHelper
      *
      * @return void
      */
-    public static function setNextPrevOnElements($elements)
+    public static function setNextPrevOnElements(array $elements)
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
@@ -298,7 +298,7 @@ class ElementHelper
      *
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource($elementType, $sourceKey, $context = null)
+    public static function findSource($elementType, $sourceKey, string $context = null)
     {
         /** @var ElementInterface $elementType */
         $path = explode('/', $sourceKey);

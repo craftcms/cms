@@ -44,7 +44,7 @@ class EmailMessages
      *
      * @return RebrandEmail|null
      */
-    public function getMessage($key, $language = null)
+    public function getMessage(string $key, string $language = null)
     {
         Craft::$app->getDeprecator()->log('craft.emailMessages.getMessage()', 'craft.emailMessages.getMessage() has been deprecated. Use craft.app.emailMessages.getMessage() instead.');
 

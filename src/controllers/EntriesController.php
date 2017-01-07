@@ -63,7 +63,7 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $siteHandle = null, Entry $entry = null)
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null)
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
@@ -625,7 +625,7 @@ class EntriesController extends BaseEntriesController
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
+    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null)
     {
         $this->requireToken();
 
@@ -656,7 +656,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditEntryVariables(&$variables)
+    private function _prepEditEntryVariables(array &$variables)
     {
         // Get the section
         // ---------------------------------------------------------------------

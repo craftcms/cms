@@ -171,7 +171,7 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getTargetLanguage($useUserLanguage = true)
+    public function getTargetLanguage(bool $useUserLanguage = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->getIsInstalled()) {
@@ -402,7 +402,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function setEdition($edition)
+    public function setEdition(int $edition)
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
@@ -432,7 +432,7 @@ trait ApplicationTrait
      * @return void
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition($edition, $orBetter = true)
+    public function requireEdition(int $edition, bool $orBetter = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->getIsInstalled()) {
@@ -1282,7 +1282,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    private function _setMaintenanceMode($value)
+    private function _setMaintenanceMode(bool $value)
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();

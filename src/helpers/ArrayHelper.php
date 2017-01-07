@@ -95,7 +95,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param bool  $prepend
      */
-    public static function prependOrAppend(&$arr, $value, $prepend)
+    public static function prependOrAppend(array &$arr, $value, bool $prepend)
     {
         if ($prepend) {
             array_unshift($arr, $value);
@@ -111,7 +111,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return array
      */
-    public static function filterEmptyStringsFromArray($arr)
+    public static function filterEmptyStringsFromArray(array $arr)
     {
         return array_filter($arr,
             ['\craft\helpers\ArrayHelper', '_isNotAnEmptyString']);
@@ -124,7 +124,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
      */
-    public static function firstKey($arr)
+    public static function firstKey(array $arr)
     {
         if (is_array($arr)) {
             /** @noinspection LoopWhichDoesNotLoopInspection */
@@ -143,7 +143,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return mixed|null
      */
-    public static function firstValue($arr)
+    public static function firstValue(array $arr)
     {
         if (is_array($arr)) {
             /** @noinspection LoopWhichDoesNotLoopInspection */
@@ -166,7 +166,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return void
      */
-    public static function rename(&$array, $oldKey, $newKey, $default = null)
+    public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
     {
         if (is_array($array) && (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array))) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
@@ -183,7 +183,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return bool
      */
-    private static function _isNotAnEmptyString($val)
+    private static function _isNotAnEmptyString(string $val)
     {
         return (mb_strlen($val) !== 0);
     }

@@ -17,7 +17,7 @@ use craft\helpers\Db;
  *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
- * @method GlobalSet|array|null nth($n, $db = null)
+ * @method GlobalSet|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -63,7 +63,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 

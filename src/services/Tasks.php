@@ -144,7 +144,7 @@ class Tasks extends Component
      * @return bool Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, $runValidation = true)
+    public function saveTask(TaskInterface $task, bool $runValidation = true)
     {
         /** @var Task $task */
         if ($runValidation && !$task->validate()) {
@@ -242,7 +242,7 @@ class Tasks extends Component
      *
      * @return TaskInterface|null The task
      */
-    public function rerunTaskById($taskId)
+    public function rerunTaskById(int $taskId)
     {
         /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
@@ -365,7 +365,7 @@ class Tasks extends Component
      *
      * @return void
      */
-    public function fail(TaskInterface $task, $error = null)
+    public function fail(TaskInterface $task, string $error = null)
     {
         /** @var Task $task */
         $task->status = Task::STATUS_ERROR;
@@ -398,7 +398,7 @@ class Tasks extends Component
      *
      * @return TaskInterface|null The task, or null if it doesn’t exist
      */
-    public function getTaskById($taskId)
+    public function getTaskById(int $taskId)
     {
         $result = $this->_createTaskQuery()
             ->where(['id' => $taskId])
@@ -482,7 +482,7 @@ class Tasks extends Component
      *
      * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending($type = null)
+    public function areTasksPending(string $type = null)
     {
         $query = $this->_createTaskQuery()
             ->where([
@@ -505,7 +505,7 @@ class Tasks extends Component
      *
      * @return TaskInterface[] The pending tasks
      */
-    public function getPendingTasks($type = null, $limit = null)
+    public function getPendingTasks(string $type = null, int $limit = null)
     {
         $query = $this->_createTaskQuery()
             ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
@@ -562,7 +562,7 @@ class Tasks extends Component
      *
      * @return TaskInterface|null The next pending task, if any
      */
-    public function getNextPendingTask($type = null)
+    public function getNextPendingTask(string $type = null)
     {
         // If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
         if ($type !== null) {
@@ -616,7 +616,7 @@ class Tasks extends Component
      *
      * @return bool Whether the task was deleted successfully
      */
-    public function deleteTaskById($taskId)
+    public function deleteTaskById(int $taskId)
     {
         $task = $this->getTaskById($taskId);
 
@@ -782,7 +782,7 @@ EOD;
      *
      * @return TaskRecord|null The TaskRecord, or null if it doesn’t exist
      */
-    private function _getTaskRecordById($taskId)
+    private function _getTaskRecordById(int $taskId)
     {
         if (!isset($this->_taskRecordsById[$taskId])) {
             $this->_taskRecordsById[$taskId] = TaskRecord::findOne($taskId);

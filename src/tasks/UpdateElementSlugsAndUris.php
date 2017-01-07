@@ -75,7 +75,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         if ($this->_skipRemainingEntries) {
             return true;

@@ -30,7 +30,7 @@ class Config
      *
      * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name)
     {
         return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
     }
@@ -43,7 +43,7 @@ class Config
      *
      * @return string
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
 
@@ -58,7 +58,7 @@ class Config
      *
      * @return mixed
      */
-    public function get($name, $file = 'general')
+    public function get(string $name, string $file = 'general')
     {
         Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.get() instead.');
 

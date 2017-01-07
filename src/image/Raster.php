@@ -138,7 +138,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage($path)
+    public function loadImage(string $path)
     {
         $imageService = Craft::$app->getImages();
 
@@ -192,7 +192,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function crop($x1, $x2, $y1, $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2)
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -226,7 +226,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -241,7 +241,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -307,7 +307,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize($targetWidth, $targetHeight = null)
+    public function resize(int $targetWidth, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -349,7 +349,7 @@ class Raster extends Image
      *
      * @return static Self reference
      */
-    public function rotate($degrees)
+    public function rotate(int $degrees)
     {
         $this->_image->rotate($degrees);
 
@@ -363,7 +363,7 @@ class Raster extends Image
      *
      * @return static Self reference
      */
-    public function setQuality($quality)
+    public function setQuality(int $quality)
     {
         $this->_quality = $quality;
 
@@ -373,7 +373,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function saveAs($targetPath, $autoQuality = false)
+    public function saveAs(string $targetPath, bool $autoQuality = false)
     {
         $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
@@ -408,7 +408,7 @@ class Raster extends Image
      * @return static Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
-    public function loadFromSVG($svgContent)
+    public function loadFromSVG(string $svgContent)
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
@@ -444,7 +444,7 @@ class Raster extends Image
      *
      * @return array
      */
-    public function getExifMetadata($filePath)
+    public function getExifMetadata(string $filePath)
     {
         try {
             $exifReader = new ExifMetadataReader();
@@ -468,7 +468,7 @@ class Raster extends Image
      *
      * @return void
      */
-    public function setFontProperties($fontFile, $size, $color)
+    public function setFontProperties(string $fontFile, int $size, string $color)
     {
         if ($this->_palette === null) {
             $this->_palette = new RGB();
@@ -486,7 +486,7 @@ class Raster extends Image
      * @return \Imagine\Image\BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
      */
-    public function getTextBox($text, $angle = 0)
+    public function getTextBox(string $text, int $angle = 0)
     {
         if ($this->_font === null) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
@@ -506,7 +506,7 @@ class Raster extends Image
      * @return void
      * @throws ImageException If attempting to create text box with no font properties et.
      */
-    public function writeText($text, $x, $y, $angle = 0)
+    public function writeText(string $text, int $x, int $y, int $angle = 0)
     {
 
         if ($this->_font === null) {
@@ -530,7 +530,7 @@ class Raster extends Image
      *
      * @return string the resulting file path
      */
-    private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
+    private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0)
     {
         // Give ourselves some extra time.
         @set_time_limit(30);
@@ -591,7 +591,7 @@ class Raster extends Image
      *
      * @return array
      */
-    private function _getSaveOptions($quality = null, $extension = null)
+    private function _getSaveOptions(int $quality = null, string $extension = null)
     {
         // Because it's possible for someone to set the quality to 0.
         $quality = ($quality === null || $quality === false ? $this->_quality : $quality);

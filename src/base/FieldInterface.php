@@ -269,7 +269,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool Whether the element should be saved
      */
-    public function beforeElementSave(ElementInterface $element, $isNew);
+    public function beforeElementSave(ElementInterface $element, bool $isNew);
 
     /**
      * Performs actions after the element has been saved.
@@ -279,7 +279,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return void
      */
-    public function afterElementSave(ElementInterface $element, $isNew);
+    public function afterElementSave(ElementInterface $element, bool $isNew);
 
     /**
      * Performs actions before an element is deleted.

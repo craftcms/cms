@@ -44,7 +44,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
      *
      * @param array $options
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->_options = $options;
     }

@@ -139,7 +139,7 @@ class Tags extends Component
      *
      * @return TagGroup|null
      */
-    public function getTagGroupById($groupId)
+    public function getTagGroupById(int $groupId)
     {
         if ($this->_tagGroupsById !== null && array_key_exists($groupId, $this->_tagGroupsById)) {
             return $this->_tagGroupsById;
@@ -168,7 +168,7 @@ class Tags extends Component
      *
      * @return TagGroup|null
      */
-    public function getTagGroupByHandle($groupHandle)
+    public function getTagGroupByHandle(string $groupHandle)
     {
         $groupRecord = TagGroupRecord::findOne([
             'handle' => $groupHandle
@@ -196,7 +196,7 @@ class Tags extends Component
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTagGroup(TagGroup $tagGroup, $runValidation = true)
+    public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true)
     {
         if ($runValidation && !$tagGroup->validate()) {
             Craft::info('Tag group not saved due to validation error.', __METHOD__);
@@ -287,7 +287,7 @@ class Tags extends Component
      * @return bool Whether the tag group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTagGroupById($tagGroupId)
+    public function deleteTagGroupById(int $tagGroupId)
     {
         if (!$tagGroupId) {
             return false;
@@ -358,7 +358,7 @@ class Tags extends Component
      *
      * @return Tag|null
      */
-    public function getTagById($tagId, $siteId)
+    public function getTagById(int $tagId, $siteId)
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);

@@ -65,7 +65,7 @@ class User extends Component
      *
      * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName)
     {
         $user = $this->getIdentity();
 

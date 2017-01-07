@@ -75,7 +75,7 @@ class UserGroup extends Model
      *
      * @return bool
      */
-    public function can($permission)
+    public function can(string $permission)
     {
         if ($this->id) {
             return Craft::$app->getUserPermissions()->doesGroupHavePermission($this->id, $permission);

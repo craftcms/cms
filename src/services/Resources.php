@@ -54,7 +54,7 @@ class Resources extends Component
      *
      * @return string|null
      */
-    public function getCachedResourcePath($uri)
+    public function getCachedResourcePath(string $uri)
     {
         $path = Craft::$app->getCache()->get('resourcePath:'.$uri);
 
@@ -73,7 +73,7 @@ class Resources extends Component
      *
      * @return void
      */
-    public function cacheResourcePath($uri, $path)
+    public function cacheResourcePath(string $uri, $path)
     {
         if ($path === false) {
             $path = ':(';
@@ -91,7 +91,7 @@ class Resources extends Component
      * @throws NotFoundHttpException if the requested image transform cannot be found
      * @throws ServerErrorHttpException if reasons
      */
-    public function resolveResourcePath($uri)
+    public function resolveResourcePath(string $uri)
     {
         $segs = explode('/', $uri);
 
@@ -201,7 +201,7 @@ class Resources extends Component
      * @throws ForbiddenHttpException if the requested resource URI is not contained within the allowed directories
      * @throws NotFoundHttpException if the requested resource cannot be found
      */
-    public function sendResource($uri)
+    public function sendResource(string $uri)
     {
         if (PathHelper::ensurePathIsContained($uri) === false) {
             throw new ForbiddenHttpException(Craft::t('app', 'Resource path not contained within allowed directories'));

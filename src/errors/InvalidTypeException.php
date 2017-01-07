@@ -39,7 +39,7 @@ class InvalidTypeException extends Exception
      * @param string $message      The error message
      * @param int    $code         The error code
      */
-    public function __construct($handle, $requiredType, $message = null, $code = 0)
+    public function __construct($handle, string $requiredType, string $message = null, int $code = 0)
     {
         $this->class = $handle;
         $this->requiredType = $requiredType;

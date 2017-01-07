@@ -38,7 +38,7 @@ class RichTextData extends \Twig_Markup
      *
      * @param string $content
      */
-    public function __construct($content)
+    public function __construct(string $content)
     {
         // Save the raw content in case we need it later
         $this->_rawContent = $content;
@@ -97,7 +97,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return string|null
      */
-    public function getPage($pageNumber)
+    public function getPage(int $pageNumber)
     {
         $pages = $this->getPages();
 

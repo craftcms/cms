@@ -221,7 +221,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return void
      */
-    private function _setUserphotoVolume($volumeId)
+    private function _setUserphotoVolume(int $volumeId)
     {
         $systemSettings = Craft::$app->getSystemSettings();
         $settings = $systemSettings->getSettings('users');
@@ -238,7 +238,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return array $userList
      */
-    private function _convertPhotosToAssets($volumeId, $userList)
+    private function _convertPhotosToAssets(int $volumeId, array $userList)
     {
         $db = Craft::$app->getDb();
 
@@ -335,7 +335,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return void
      */
-    private function _setPhotoIdValues($userlist)
+    private function _setPhotoIdValues(array $userlist)
     {
         if (is_array($userlist)) {
             $db = Craft::$app->getDb();

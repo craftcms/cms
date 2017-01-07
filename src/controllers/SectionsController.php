@@ -66,7 +66,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection($sectionId = null, Section $section = null)
+    public function actionEditSection(int $sectionId = null, Section $section = null)
     {
         $variables = [
             'sectionId' => $sectionId,
@@ -237,7 +237,7 @@ class SectionsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section cannot be found
      */
-    public function actionEntryTypesIndex($sectionId)
+    public function actionEntryTypesIndex(int $sectionId)
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 

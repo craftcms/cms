@@ -31,7 +31,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
     /**
      * @param string $type Either 'handle' or 'name'
      */
-    private function _handleDupes($type)
+    private function _handleDupes(string $type)
     {
         echo '    > looking for duplicate user group '.$type.'s ...';
         // Get any duplicates.

@@ -61,7 +61,7 @@ class Structures extends Component
      *
      * @return Structure|null
      */
-    public function getStructureById($structureId)
+    public function getStructureById(int $structureId)
     {
         $structureRecord = StructureRecord::findOne($structureId);
 
@@ -115,7 +115,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function deleteStructureById($structureId)
+    public function deleteStructureById(int $structureId)
     {
         if (!$structureId) {
             return false;
@@ -140,7 +140,7 @@ class Structures extends Component
      *
      * @return int
      */
-    public function getElementLevelDelta($structureId, ElementInterface $element)
+    public function getElementLevelDelta(int $structureId, ElementInterface $element)
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
         /** @var StructureElement $deepestDescendant */
@@ -169,7 +169,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function prepend($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
+    public function prepend(int $structureId, ElementInterface $element, ElementInterface $parentElement, string $mode = 'auto')
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -186,7 +186,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function append($structureId, ElementInterface $element, ElementInterface $parentElement, $mode = 'auto')
+    public function append(int $structureId, ElementInterface $element, ElementInterface $parentElement, string $mode = 'auto')
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -202,7 +202,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function prependToRoot($structureId, ElementInterface $element, $mode = 'auto')
+    public function prependToRoot(int $structureId, ElementInterface $element, string $mode = 'auto')
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -218,7 +218,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function appendToRoot($structureId, ElementInterface $element, $mode = 'auto')
+    public function appendToRoot(int $structureId, ElementInterface $element, string $mode = 'auto')
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -235,7 +235,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function moveBefore($structureId, ElementInterface $element, ElementInterface $nextElement, $mode = 'auto')
+    public function moveBefore(int $structureId, ElementInterface $element, ElementInterface $nextElement, string $mode = 'auto')
     {
         $nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
@@ -252,7 +252,7 @@ class Structures extends Component
      *
      * @return bool
      */
-    public function moveAfter($structureId, ElementInterface $element, ElementInterface $prevElement, $mode = 'auto')
+    public function moveAfter(int $structureId, ElementInterface $element, ElementInterface $prevElement, string $mode = 'auto')
     {
         $prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
@@ -270,7 +270,7 @@ class Structures extends Component
      *
      * @return StructureElement|null
      */
-    private function _getElementRecord($structureId, ElementInterface $element)
+    private function _getElementRecord(int $structureId, ElementInterface $element)
     {
         /** @var Element $element */
         $elementId = $element->id;
@@ -292,7 +292,7 @@ class Structures extends Component
      *
      * @return StructureElement
      */
-    private function _getRootElementRecord($structureId)
+    private function _getRootElementRecord(int $structureId)
     {
         if (!isset($this->_rootElementRecordsByStructureId[$structureId])) {
             $elementRecord = StructureElement::find()

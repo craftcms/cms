@@ -36,7 +36,7 @@ class EntryRevisions
      * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
      */
-    public function getDraftsByEntryId($entryId, $siteHandle = null)
+    public function getDraftsByEntryId(int $entryId, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
 
@@ -64,7 +64,7 @@ class EntryRevisions
      * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
      */
-    public function getEditableDraftsByEntryId($entryId, $siteHandle = null)
+    public function getEditableDraftsByEntryId(int $entryId, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
 
@@ -90,7 +90,7 @@ class EntryRevisions
      *
      * @return EntryDraft|null
      */
-    public function getDraftById($draftId)
+    public function getDraftById(int $draftId)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftById()', 'craft.entryRevisions.getDraftById() has been deprecated. Use craft.app.entryRevisions.getDraftById() instead.');
 
@@ -109,7 +109,7 @@ class EntryRevisions
      * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
-    public function getVersionsByEntryId($entryId, $siteHandle)
+    public function getVersionsByEntryId(int $entryId, string $siteHandle)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
 
@@ -135,7 +135,7 @@ class EntryRevisions
      *
      * @return EntryVersion|null
      */
-    public function getVersionById($versionId)
+    public function getVersionById(int $versionId)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionById()', 'craft.entryRevisions.getVersionById() has been deprecated. Use craft.app.entryRevisions.getVersionById() instead.');
 

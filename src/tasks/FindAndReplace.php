@@ -105,7 +105,7 @@ class FindAndReplace extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         // If replace is null, there is invalid settings JSON in the database. Guard against it so we don't
         // inadvertently nuke textual content in the database.
@@ -171,7 +171,7 @@ class FindAndReplace extends Task
      *
      * @return void
      */
-    private function _checkField(FieldInterface $field, $fieldColumnPrefix)
+    private function _checkField(FieldInterface $field, string $fieldColumnPrefix)
     {
         /** @var Field $field */
         if ($field instanceof Matrix) {

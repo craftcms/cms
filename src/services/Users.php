@@ -143,7 +143,7 @@ class Users extends Component
      *
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
-    public function getUserById($userId)
+    public function getUserById(int $userId)
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
@@ -184,7 +184,7 @@ class Users extends Component
      *
      * @return User|null The user with the given email, or `null` if a user could not be found.
      */
-    public function getUserByEmail($email)
+    public function getUserByEmail(string $email)
     {
         return User::find()
             ->email($email)
@@ -203,7 +203,7 @@ class Users extends Component
      *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
-    public function getUserByUid($uid)
+    public function getUserByUid(int $uid)
     {
         return User::find()
             ->uid($uid)
@@ -224,7 +224,7 @@ class Users extends Component
      *
      * @return bool Whether the code is still valid.
      */
-    public function isVerificationCodeValidForUser(User $user, $code)
+    public function isVerificationCodeValidForUser(User $user, string $code)
     {
         $valid = false;
         $userRecord = $this->_getUserRecordById($user->id);
@@ -289,7 +289,7 @@ class Users extends Component
      *
      * @return array The user’s preferences
      */
-    public function getUserPreferences($userId)
+    public function getUserPreferences(int $userId)
     {
         // TODO: Remove try/catch after next breakpoint
         try {
@@ -311,7 +311,7 @@ class Users extends Component
      * @param User  $user        The user
      * @param array $preferences The user’s new preferences
      */
-    public function saveUserPreferences(User $user, $preferences)
+    public function saveUserPreferences(User $user, array $preferences)
     {
         $preferences = $user->mergePreferences($preferences);
 
@@ -461,7 +461,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto($fileLocation, User $user, $filename = '')
+    public function saveUserPhoto(string $fileLocation, User $user, string $filename = '')
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
@@ -830,7 +830,7 @@ class Users extends Component
      *
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser($userId, $message, $expiryDate = null)
+    public function shunMessageForUser(int $userId, string $message, $expiryDate = null)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
@@ -855,7 +855,7 @@ class Users extends Component
      *
      * @return bool Whether the message was un-shunned successfully.
      */
-    public function unshunMessageForUser($userId, $message)
+    public function unshunMessageForUser(int $userId, string $message)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
@@ -877,7 +877,7 @@ class Users extends Component
      *
      * @return bool Whether the user has shunned the message.
      */
-    public function hasUserShunnedMessage($userId, $message)
+    public function hasUserShunnedMessage(int $userId, string $message)
     {
         return (new Query())
             ->from(['{{%shunnedmessages}}'])
@@ -957,7 +957,7 @@ class Users extends Component
      *
      * @return bool Whether the users were successfully assigned to the groups.
      */
-    public function assignUserToGroups($userId, $groupIds = null)
+    public function assignUserToGroups(int $userId, $groupIds = null)
     {
         // Make sure $groupIds is an array
         if (!is_array($groupIds)) {
@@ -1073,7 +1073,7 @@ class Users extends Component
      * @return UserRecord
      * @throws UserNotFoundException if $userId is invalid
      */
-    private function _getUserRecordById($userId)
+    private function _getUserRecordById(int $userId)
     {
         $userRecord = UserRecord::findOne($userId);
 

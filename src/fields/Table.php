@@ -236,7 +236,7 @@ class Table extends Field
      *
      * @return string
      */
-    private function _getInputHtml($value, $element, $static)
+    private function _getInputHtml($value, $element, bool $static)
     {
         $columns = $this->columns;
 

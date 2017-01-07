@@ -21,7 +21,7 @@ use craft\helpers\Db;
  *
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth($n, $db = null)
+ * @method Asset|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -271,7 +271,7 @@ class AssetQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function includeSubfolders($value = true)
+    public function includeSubfolders(bool $value = true)
     {
         $this->includeSubfolders = $value;
 
@@ -285,7 +285,7 @@ class AssetQuery extends ElementQuery
      *
      * @return self The query object itself
      */
-    public function withTransforms($value)
+    public function withTransforms(array $value)
     {
         $this->withTransforms = $value;
 

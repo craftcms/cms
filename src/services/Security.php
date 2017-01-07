@@ -62,7 +62,7 @@ class Security extends \yii\base\Security
      *
      * @return string The hash.
      */
-    public function hashPassword($password, $validateHash = false)
+    public function hashPassword(string $password, bool $validateHash = false)
     {
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 

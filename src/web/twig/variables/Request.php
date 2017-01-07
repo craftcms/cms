@@ -162,7 +162,7 @@ class Request
      *
      * @return string|null
      */
-    public function getSegment($num)
+    public function getSegment(int $num)
     {
         Craft::$app->getDeprecator()->log('craft.request.getSegment()', 'craft.request.getSegment() has been deprecated. Use craft.app.request.getSegment() instead.');
 
@@ -201,7 +201,7 @@ class Request
      *
      * @return mixed
      */
-    public function getParam($name, $default = null)
+    public function getParam(string $name, string $default = null)
     {
         Craft::$app->getDeprecator()->log('craft.request.getParam()', 'craft.request.getParam() has been deprecated. Use craft.app.request.getParam() instead.');
 
@@ -257,7 +257,7 @@ class Request
      *
      * @return bool
      */
-    public function isMobileBrowser($detectTablets = false)
+    public function isMobileBrowser(bool $detectTablets = false)
     {
         Craft::$app->getDeprecator()->log('craft.request.isMobileBrowser()', 'craft.request.isMobileBrowser() has been deprecated. Use craft.app.request.isMobileBrowser() instead.');
 
@@ -434,7 +434,7 @@ class Request
      *
      * @return mixed
      */
-    public function getQuery($name = null, $default = null)
+    public function getQuery(string $name = null, string $default = null)
     {
         Craft::$app->getDeprecator()->log('craft.request.getQuery()', 'craft.request.getQuery() has been deprecated. Use craft.app.request.getQueryParam() instead.');
 
@@ -449,7 +449,7 @@ class Request
      *
      * @return mixed
      */
-    public function getPost($name = null, $default = null)
+    public function getPost(string $name = null, string $default = null)
     {
         Craft::$app->getDeprecator()->log('craft.request.getPost()', 'craft.request.getPost() has been deprecated. Use craft.app.request.getBodyParam() instead.');
 

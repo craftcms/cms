@@ -53,7 +53,7 @@ class Tasks
      *
      * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending($type = null)
+    public function areTasksPending(string $type = null)
     {
         Craft::$app->getDeprecator()->log('craft.tasks.areTasksPending()', 'craft.tasks.areTasksPending() has been deprecated. Use craft.app.tasks.areTasksPending() instead.');
 

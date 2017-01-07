@@ -94,7 +94,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the user is logged in
      */
-    public function loginByUserId($userId, $duration = 0)
+    public function loginByUserId(int $userId, int $duration = 0)
     {
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -218,7 +218,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName)
     {
         $user = $this->getIdentity();
 
@@ -277,7 +277,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the password was valid, and the user session has been elevated
      */
-    public function startElevatedSession($password)
+    public function startElevatedSession(string $password)
     {
         // Get the current user
         $user = $this->getIdentity();

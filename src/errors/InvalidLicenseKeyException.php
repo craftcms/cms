@@ -29,7 +29,7 @@ class InvalidLicenseKeyException extends Exception
      * @param string $message    The error message
      * @param int    $code       The error code
      */
-    public function __construct($licenseKey, $message = null, $code = 0)
+    public function __construct(string $licenseKey, string $message = null, int $code = 0)
     {
         $this->licenseKey = $licenseKey;
 

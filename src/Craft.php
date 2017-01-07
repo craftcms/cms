@@ -56,7 +56,7 @@ class Craft extends Yii
      *
      * @return void
      */
-    public static function dump($var, $depth = 10, $highlight = true)
+    public static function dump($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
     }
@@ -71,7 +71,7 @@ class Craft extends Yii
      * @return void
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, $depth = 10, $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
         static::$app->end();
@@ -248,7 +248,7 @@ EOD;
      *
      * @return bool
      */
-    private static function _isFieldAttributesFileValid($path, $storedFieldVersion)
+    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion)
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date
@@ -276,7 +276,7 @@ EOD;
      * @param string[] $replace
      * @param string   $destinationPath
      */
-    private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
+    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);

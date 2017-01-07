@@ -129,7 +129,7 @@ class MatrixBlockType extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->getFieldLayout()->setFields($fields);
     }

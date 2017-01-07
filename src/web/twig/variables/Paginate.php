@@ -56,7 +56,7 @@ class Paginate
      *
      * @return string|null
      */
-    public function getPageUrl($page)
+    public function getPageUrl(int $page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
             $path = Craft::$app->getRequest()->getPathInfo();
@@ -141,7 +141,7 @@ class Paginate
      *
      * @return array
      */
-    public function getPrevUrls($dist = null)
+    public function getPrevUrls(int $dist = null)
     {
         if ($dist !== null) {
             $start = $this->currentPage - $dist;
@@ -159,7 +159,7 @@ class Paginate
      *
      * @return array
      */
-    public function getNextUrls($dist = null)
+    public function getNextUrls(int $dist = null)
     {
         if ($dist !== null) {
             $end = $this->currentPage + $dist;
@@ -178,7 +178,7 @@ class Paginate
      *
      * @return array
      */
-    public function getRangeUrls($start, $end)
+    public function getRangeUrls(int $start, int $end)
     {
         if ($start < 1) {
             $start = 1;

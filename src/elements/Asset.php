@@ -233,7 +233,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source)
     {
         return [
             'filename',
@@ -250,7 +250,7 @@ class Asset extends Element
      *
      * @return array
      */
-    private static function _assembleSourceList($folders, $includeNestedFolders = true)
+    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true)
     {
         $sources = [];
 
@@ -269,7 +269,7 @@ class Asset extends Element
      *
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true)
     {
         $source = [
             'key' => 'folder:'.$folder->id,
@@ -649,7 +649,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size)
+    public function getThumbUrl(int $size)
     {
         if ($this->getHasThumb()) {
             return UrlHelper::resourceUrl(
@@ -725,7 +725,7 @@ class Asset extends Element
      *
      * @return bool|float|mixed
      */
-    public function getWidth($transform = null)
+    public function getWidth(string $transform = null)
     {
         if ($transform !== null && !Image::isImageManipulatable(
                 $this->getExtension()
@@ -754,7 +754,7 @@ class Asset extends Element
      *
      * @param string $uri
      */
-    public function setTransformSource($uri)
+    public function setTransformSource(string $uri)
     {
         $this->_transformSource = $uri;
     }
@@ -766,7 +766,7 @@ class Asset extends Element
      *
      * @return string
      */
-    public function getUri($filename = null)
+    public function getUri(string $filename = null)
     {
         return $this->folderPath.($filename ?: $this->filename);
     }
@@ -820,7 +820,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute)
     {
         switch ($attribute) {
             case 'filename':
@@ -890,7 +890,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         if ($isNew && !$this->title) {
             // Give it a default title based on the file name
@@ -904,7 +904,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the asset record
         if (!$isNew) {
@@ -967,7 +967,7 @@ class Asset extends Element
      *
      * @return null|float|mixed
      */
-    private function _getDimension($dimension, $transform)
+    private function _getDimension(string $dimension, $transform)
     {
         if ($this->kind !== 'image') {
             return null;

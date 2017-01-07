@@ -89,7 +89,7 @@ class App
      *
      * @return string The edition’s name.
      */
-    public static function editionName($edition)
+    public static function editionName(int $edition)
     {
         switch ($edition) {
             case Craft::Client:
@@ -120,7 +120,7 @@ class App
      *
      * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function phpConfigValueAsBool($var)
+    public static function phpConfigValueAsBool(string $var)
     {
         $value = ini_get($var);
 
@@ -136,7 +136,7 @@ class App
      *
      * @return int The size in bytes.
      */
-    public static function phpConfigValueInBytes($var)
+    public static function phpConfigValueInBytes(string $var)
     {
         $value = ini_get($var);
 
@@ -173,7 +173,7 @@ class App
      *
      * @return string The normalized version number
      */
-    public static function normalizeVersionNumber($version)
+    public static function normalizeVersionNumber(string $version)
     {
         // Periods before/after non-numeric sequences
         $version = preg_replace('/\D+/', '.$0.', $version);
@@ -194,7 +194,7 @@ class App
      *
      * @return string|null The major version
      */
-    public static function majorVersion($version)
+    public static function majorVersion(string $version)
     {
         $version = static::normalizeVersionNumber($version);
         $parts = explode('.', $version, 2);
@@ -213,7 +213,7 @@ class App
      *
      * @return string The X.Y parts of the version number
      */
-    public static function majorMinorVersion($version)
+    public static function majorMinorVersion(string $version)
     {
         preg_match('/^\d+\.\d+/', $version, $matches);
 
@@ -227,7 +227,7 @@ class App
      *
      * @return string The download URL
      */
-    public static function craftDownloadUrl($version)
+    public static function craftDownloadUrl(string $version)
     {
         $xy = self::majorMinorVersion($version);
 

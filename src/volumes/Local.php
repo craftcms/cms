@@ -109,7 +109,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir($path, $newName)
+    public function renameDir(string $path, string $newName)
     {
         $parentDir = dirname($path);
         $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;

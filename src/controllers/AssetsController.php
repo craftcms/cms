@@ -625,7 +625,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByAsset($permissionName, Asset $asset)
+    private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
         $this->_requirePermissionByVolumeId($permissionName, $asset->volumeId);
     }
@@ -638,7 +638,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByFolder($permissionName, VolumeFolder $folder)
+    private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
         $this->_requirePermissionByVolumeId($permissionName, $folder->volumeId);
     }
@@ -651,7 +651,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByVolumeId($permissionName, $volumeId)
+    private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {
         $this->requirePermission($permissionName.':'.$volumeId);
     }

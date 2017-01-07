@@ -81,7 +81,7 @@ class UserSession
      *
      * @return string The return URL, or $defaultUrl.
      */
-    public function getReturnUrl($defaultUrl = null)
+    public function getReturnUrl(string $defaultUrl = null)
     {
         Craft::$app->getDeprecator()->log('craft.session.getReturnUrl()', 'craft.session.getReturnUrl() has been deprecated. Use craft.app.user.getReturnUrl() instead.');
 
@@ -95,7 +95,7 @@ class UserSession
      *
      * @return array
      */
-    public function getFlashes($delete = true)
+    public function getFlashes(bool $delete = true)
     {
         Craft::$app->getDeprecator()->log('craft.session.getFlashes()', 'craft.session.getFlashes() has been deprecated. Use craft.app.session.getAllFlashes() instead.');
 
@@ -111,7 +111,7 @@ class UserSession
      *
      * @return mixed
      */
-    public function getFlash($key, $defaultValue = null, $delete = true)
+    public function getFlash(string $key, $defaultValue = null, bool $delete = true)
     {
         Craft::$app->getDeprecator()->log('craft.session.getFlash()', 'craft.session.getFlash() has been deprecated. Use craft.app.session.getFlash() instead.');
 
@@ -125,7 +125,7 @@ class UserSession
      *
      * @return mixed
      */
-    public function hasFlash($key)
+    public function hasFlash(string $key)
     {
         Craft::$app->getDeprecator()->log('craft.session.hasFlash()', 'craft.session.hasFlash() has been deprecated. Use craft.app.session.hasFlash() instead.');
 

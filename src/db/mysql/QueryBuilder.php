@@ -53,7 +53,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for dropping a DB table.
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table)
     {
         return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
     }
@@ -72,7 +72,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function upsert($table, $keyColumns, $updateColumns, &$params)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, array &$params)
     {
         $schema = $this->db->getSchema();
 
@@ -131,7 +131,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace($table, $column, $find, $replace, $condition, &$params)
+    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params)
     {
         $column = $this->db->quoteColumnName($column);
 
@@ -155,7 +155,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL expression.
      */
-    public function fixedOrder($column, $values)
+    public function fixedOrder(string $column, array $values)
     {
         $sql = 'FIELD('.$this->db->quoteColumnName($column);
         foreach ($values as $value) {

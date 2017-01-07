@@ -119,7 +119,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         // Trigger a 'beforeSave' event
         $event = new ModelEvent([
@@ -133,7 +133,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Trigger an 'afterSave' event
         $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([

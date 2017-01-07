@@ -45,7 +45,7 @@ class SystemSettings extends Component
      *
      * @return array
      */
-    public function getSettings($category)
+    public function getSettings(string $category)
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -70,7 +70,7 @@ class SystemSettings extends Component
      *
      * @return mixed
      */
-    public function getSetting($category, $key)
+    public function getSetting(string $category, string $key)
     {
         $settings = $this->getSettings($category);
 
@@ -89,7 +89,7 @@ class SystemSettings extends Component
      *
      * @return bool Whether the new settings saved
      */
-    public function saveSettings($category, $settings = null)
+    public function saveSettings(string $category, array $settings = null)
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -139,7 +139,7 @@ class SystemSettings extends Component
      *
      * @return SystemSettingsRecord|null The SystemSettings record or null
      */
-    private function _getSettingsRecord($category)
+    private function _getSettingsRecord(string $category)
     {
         if (!isset($this->_settingsRecords[$category])) {
             $record = SystemSettingsRecord::findOne([

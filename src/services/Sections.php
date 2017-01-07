@@ -209,7 +209,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections of the given type.
      */
-    public function getSectionsByType($type)
+    public function getSectionsByType(string $type)
     {
         $sections = [];
 
@@ -249,7 +249,7 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionById($sectionId)
+    public function getSectionById(int $sectionId)
     {
         if (!$sectionId) {
             return null;
@@ -283,7 +283,7 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionByHandle($sectionHandle)
+    public function getSectionByHandle(string $sectionHandle)
     {
         $result = $this->_createSectionQuery()
             ->where(['sections.handle' => $sectionHandle])
@@ -306,7 +306,7 @@ class Sections extends Component
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId)
+    public function getSectionSiteSettings(int $sectionId)
     {
         $siteSettings = (new Query())
             ->select([
@@ -341,7 +341,7 @@ class Sections extends Component
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSection(Section $section, $runValidation = true)
+    public function saveSection(Section $section, bool $runValidation = true)
     {
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
@@ -673,7 +673,7 @@ class Sections extends Component
      * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSectionById($sectionId)
+    public function deleteSectionById(int $sectionId)
     {
         $section = $this->getSectionById($sectionId);
 
@@ -770,7 +770,7 @@ class Sections extends Component
      *
      * @return bool
      */
-    public function isSectionTemplateValid(Section $section, $siteId)
+    public function isSectionTemplateValid(Section $section, int $siteId)
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
@@ -804,7 +804,7 @@ class Sections extends Component
      *
      * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId)
+    public function getEntryTypesBySectionId(int $sectionId)
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
@@ -834,7 +834,7 @@ class Sections extends Component
      *
      * @return EntryType|null
      */
-    public function getEntryTypeById($entryTypeId)
+    public function getEntryTypeById(int $entryTypeId)
     {
         if (!$entryTypeId) {
             return null;
@@ -867,7 +867,7 @@ class Sections extends Component
      *
      * @return EntryType[]
      */
-    public function getEntryTypesByHandle($entryTypeHandle)
+    public function getEntryTypesByHandle(int $entryTypeHandle)
     {
         $entryTypes = [];
 
@@ -901,7 +901,7 @@ class Sections extends Component
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType, $runValidation = true)
+    public function saveEntryType(EntryType $entryType, bool $runValidation = true)
     {
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -1009,7 +1009,7 @@ class Sections extends Component
      * @return bool Whether the entry types were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderEntryTypes($entryTypeIds)
+    public function reorderEntryTypes(array $entryTypeIds)
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1038,7 +1038,7 @@ class Sections extends Component
      * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryTypeById($entryTypeId)
+    public function deleteEntryTypeById(int $entryTypeId)
     {
         $entryType = $this->getEntryTypeById($entryTypeId);
 

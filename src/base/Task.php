@@ -86,7 +86,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         return true;
     }

@@ -35,7 +35,7 @@ class Fields
      *
      * @return FieldGroup[] The field groups
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(string $indexBy = null)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.allGroups instead.');
 
@@ -51,7 +51,7 @@ class Fields
      *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getGroupById()', 'craft.fields.getGroupById() has been deprecated. Use craft.app.fields.getGroupById() instead.');
 
@@ -68,7 +68,7 @@ class Fields
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldById($fieldId)
+    public function getFieldById(int $fieldId)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getFieldById()', 'craft.fields.getFieldById() has been deprecated. Use craft.app.fields.getFieldById() instead.');
 
@@ -82,7 +82,7 @@ class Fields
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle($handle)
+    public function getFieldByHandle(string $handle)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getFieldByHandle()', 'craft.fields.getFieldByHandle() has been deprecated. Use craft.app.fields.getFieldByHandle() instead.');
 
@@ -96,7 +96,7 @@ class Fields
      *
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($indexBy = null)
+    public function getAllFields(string $indexBy = null)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.allFields instead.');
 
@@ -113,7 +113,7 @@ class Fields
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByGroupId($groupId, $indexBy = null)
+    public function getFieldsByGroupId(int $groupId, string $indexBy = null)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getFieldsByGroupId()', 'craft.fields.getFieldsByGroupId() has been deprecated. Use craft.app.fields.getFieldsByGroupId() instead.');
 
@@ -129,7 +129,7 @@ class Fields
      *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById($layoutId)
+    public function getLayoutById(int $layoutId)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getLayoutById()', 'craft.fields.getLayoutById() has been deprecated. Use craft.app.fields.getLayoutById() instead.');
 
@@ -143,7 +143,7 @@ class Fields
      *
      * @return FieldLayout The field layout
      */
-    public function getLayoutByType($type)
+    public function getLayoutByType(string $type)
     {
         Craft::$app->getDeprecator()->log('craft.fields.getLayoutByType()', 'craft.fields.getLayoutByType() has been deprecated. Use craft.app.fields.getLayoutByType() instead.');
 

@@ -29,7 +29,7 @@ class MigrationHelper
      *
      * @return bool
      */
-    public static function doesForeignKeyExist($tableName, $columns)
+    public static function doesForeignKeyExist(string $tableName, $columns)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $columns = ArrayHelper::toArray($columns);
@@ -63,7 +63,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
+    public static function dropForeignKeyIfExists(string $tableName, $columns, Migration $migration = null)
     {
         if (static::doesForeignKeyExist($tableName, $columns)) {
             static::dropForeignKey($tableName, $columns, $migration);
@@ -79,7 +79,7 @@ class MigrationHelper
      *
      * @return bool
      */
-    public static function doesIndexExist($tableName, $columns, $unique = false)
+    public static function doesIndexExist(string $tableName, $columns, bool $unique = false)
     {
         $columns = ArrayHelper::toArray($columns);
 
@@ -103,7 +103,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
+    public static function dropIndexIfExists(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
         if (static::doesIndexExist($tableName, $columns, $unique)) {
             static::dropIndex($tableName, $columns, $unique, $migration);
@@ -119,7 +119,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function renameTable($oldName, $newName, Migration $migration = null)
+    public static function renameTable(string $oldName, string $newName, Migration $migration = null)
     {
         $rawOldName = Craft::$app->getDb()->getSchema()->getRawTableName($oldName);
         $rawNewName = Craft::$app->getDb()->getSchema()->getRawTableName($newName);
@@ -283,7 +283,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function renameColumn($tableName, $oldName, $newName, Migration $migration = null)
+    public static function renameColumn(string $tableName, string $oldName, string $newName, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($rawTableName);
@@ -492,7 +492,7 @@ class MigrationHelper
      * @param string    $tableName
      * @param Migration $migration
      */
-    public static function dropTable($tableName, Migration $migration = null)
+    public static function dropTable(string $tableName, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
 
@@ -519,7 +519,7 @@ class MigrationHelper
      *
      * @return array An array of the foreign keys that were just dropped.
      */
-    public static function dropAllForeignKeysOnTable($tableName, Migration $migration = null)
+    public static function dropAllForeignKeysOnTable(string $tableName, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($rawTableName);
@@ -549,7 +549,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllForeignKeysToTable($tableName, Migration $migration = null)
+    public static function dropAllForeignKeysToTable(string $tableName, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getTableSchema($rawTableName);
@@ -601,7 +601,7 @@ class MigrationHelper
      *
      * @return array An array of the indexes that were just dropped.
      */
-    public static function dropAllIndexesOnTable($tableName, Migration $migration = null)
+    public static function dropAllIndexesOnTable(string $tableName, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $indexes = [];
@@ -625,7 +625,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function dropAllUniqueIndexesOnTable($tableName, Migration $migration = null)
+    public static function dropAllUniqueIndexesOnTable(string $tableName, Migration $migration = null)
     {
         $allIndexes = Craft::$app->getDb()->getSchema()->findIndexes($tableName);
 
@@ -646,7 +646,7 @@ class MigrationHelper
      * @param bool            $unique
      * @param Migration       $migration
      */
-    public static function dropIndex($tableName, $columns, $unique = false, Migration $migration = null)
+    public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $indexName = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique);
@@ -668,7 +668,7 @@ class MigrationHelper
      * @param bool      $unique
      * @param Migration $migration
      */
-    public static function restoreIndex($tableName, $columns, $unique = false, Migration $migration = null)
+    public static function restoreIndex(string $tableName, array $columns, bool $unique = false, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);
@@ -694,7 +694,7 @@ class MigrationHelper
      * @param string    $onDelete
      * @param Migration $migration
      */
-    public static function restoreForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete, Migration $migration = null)
+    public static function restoreForeignKey(string $tableName, array $columns, string $refTable, array $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);

@@ -62,7 +62,7 @@ class Header
      *
      * @return bool Whether setting the header was successful.
      */
-    public static function setContentTypeByExtension($extension)
+    public static function setContentTypeByExtension(string $extension)
     {
         $mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 
@@ -105,7 +105,7 @@ class Header
      *
      * @return void
      */
-    public static function setExpires($seconds = 300)
+    public static function setExpires(int $seconds = 300)
     {
         static::setHeader(
             [
@@ -155,7 +155,7 @@ class Header
      *
      * @return void
      */
-    public static function setDownload($filename, $fileSize = null)
+    public static function setDownload(string $filename, int $fileSize = null)
     {
         static::setHeader(
             [
@@ -182,7 +182,7 @@ class Header
      *
      * @return void
      */
-    public static function setLength($sizeInBytes)
+    public static function setLength(int $sizeInBytes)
     {
         static::setHeader(['Content-Length' => (int)$sizeInBytes]);
     }
@@ -206,7 +206,7 @@ class Header
      *
      * @return bool
      */
-    public static function isHeaderSet($name)
+    public static function isHeaderSet(string $name)
     {
         return (static::getHeader($name) !== null);
     }
@@ -218,7 +218,7 @@ class Header
      *
      * @return string|null The value of the header, or `null` if it hasn’t been set.
      */
-    public static function getHeader($name)
+    public static function getHeader(string $name)
     {
         // Normalize to lowercase
         $name = strtolower($name);

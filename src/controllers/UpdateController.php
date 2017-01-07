@@ -108,7 +108,7 @@ EOD;
      *
      * @return string
      */
-    public function actionGo($handle)
+    public function actionGo(string $handle)
     {
         $this->getView()->registerCssResource('css/update.css');
         $this->getView()->registerJsResource('js/Updater.js');
@@ -703,7 +703,7 @@ EOD;
      *
      * @throws Exception
      */
-    private function _rollbackUpdate($handle, $originalErrorMessage, $dbBackupPath)
+    private function _rollbackUpdate(string $handle, string $originalErrorMessage, $dbBackupPath)
     {
         $rollbackReturn = Craft::$app->getUpdates()->rollbackUpdate(false, $handle, $dbBackupPath);
 
@@ -768,7 +768,7 @@ EOD;
      *
      * @return Response
      */
-    private function _getFirstDbUpdateResponse($data)
+    private function _getFirstDbUpdateResponse(array $data)
     {
         if ($this->_shouldBackupDb()) {
             $response = [

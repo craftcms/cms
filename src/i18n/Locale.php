@@ -259,7 +259,7 @@ class Locale extends Object
      *
      * @throws InvalidParamException If $id is an unsupported locale.
      */
-    public function __construct($id, $config = [])
+    public function __construct(string $id, array $config = [])
     {
         if (strpos($id, '_') !== false) {
             $id = str_replace('_', '-', $id);
@@ -357,7 +357,7 @@ class Locale extends Object
      *
      * @return string
      */
-    public function getDisplayName($inLocale = null)
+    public function getDisplayName(string $inLocale = null)
     {
         // If no target locale is specified, default to this locale
         if ($inLocale === null) {
@@ -477,7 +477,7 @@ class Locale extends Object
      *
      * @return string The localized ICU date format.
      */
-    public function getDateFormat($length = null, $format = self::FORMAT_ICU)
+    public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU)
     {
         return $this->_getDateTimeFormat($length, true, false, $format);
     }
@@ -490,7 +490,7 @@ class Locale extends Object
      *
      * @return string The localized ICU time format.
      */
-    public function getTimeFormat($length = null, $format = self::FORMAT_ICU)
+    public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU)
     {
         return $this->_getDateTimeFormat($length, false, true, $format);
     }
@@ -503,7 +503,7 @@ class Locale extends Object
      *
      * @return string The localized ICU date + time format.
      */
-    public function getDateTimeFormat($length = null, $format = self::FORMAT_ICU)
+    public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU)
     {
         return $this->_getDateTimeFormat($length, true, true, $format);
     }
@@ -517,7 +517,7 @@ class Locale extends Object
      *
      * @return string The localized month name.
      */
-    public function getMonthName($month, $length = null, $standAlone = true)
+    public function getMonthName(int $month, string $length = null, bool $standAlone = true)
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -566,7 +566,7 @@ class Locale extends Object
      *
      * @return array The localized month names.
      */
-    public function getMonthNames($length = null, $standAlone = true)
+    public function getMonthNames(string $length = null, bool $standAlone = true)
     {
         $monthNames = [];
 
@@ -586,7 +586,7 @@ class Locale extends Object
      *
      * @return string The localized day of the week name.
      */
-    public function getWeekDayName($day, $length = null, $standAlone = true)
+    public function getWeekDayName(int $day, string $length = null, bool $standAlone = true)
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -650,7 +650,7 @@ class Locale extends Object
      *
      * @return array The localized day of the week names.
      */
-    public function getWeekDayNames($length = null, $standAlone = true)
+    public function getWeekDayNames(string $length = null, bool $standAlone = true)
     {
         $weekDayNames = [];
 
@@ -699,7 +699,7 @@ class Locale extends Object
      *
      * @return string The attribute.
      */
-    public function getTextAttribute($attribute)
+    public function getTextAttribute(int $attribute)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -737,7 +737,7 @@ class Locale extends Object
      *
      * @return string The pattern
      */
-    public function getNumberPattern($style)
+    public function getNumberPattern(int $style)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, $style);
@@ -771,7 +771,7 @@ class Locale extends Object
      *
      * @return string The symbol.
      */
-    public function getNumberSymbol($symbol)
+    public function getNumberSymbol(int $symbol)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -828,7 +828,7 @@ class Locale extends Object
      *
      * @return string The currency symbol.
      */
-    public function getCurrencySymbol($currency)
+    public function getCurrencySymbol(string $currency)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             // see http://stackoverflow.com/a/28307228/1688568
@@ -872,7 +872,7 @@ class Locale extends Object
      * @return string|null
      * @deprecated in 3.0. Use getDisplayName() instead.
      */
-    public function getName($targetLocaleId = null)
+    public function getName(string $targetLocaleId = null)
     {
         Craft::$app->getDeprecator()->log('Locale::getName()', 'Locale::getName() has been deprecated. Use getDisplayName() instead.');
 

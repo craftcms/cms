@@ -27,7 +27,7 @@ use yii\base\Exception;
  *
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
- * @method MatrixBlock|array|null nth($n, $db = null)
+ * @method MatrixBlock|array|null nth(int $n, $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -132,7 +132,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function ownerSiteId($value)
+    public function ownerSiteId(int $value)
     {
         $this->ownerSiteId = $value;
 

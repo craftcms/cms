@@ -60,7 +60,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         $config['showScriptName'] = !Craft::$app->getConfig()->getOmitScriptNameInUrls();
         $config['rules'] = $this->_getRules();
@@ -134,7 +134,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $params
      */
-    public function setRouteParams($params)
+    public function setRouteParams(array $params)
     {
         $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
     }
@@ -289,7 +289,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedElementRoute($path)
+    private function _getMatchedElementRoute(string $path)
     {
         if ($this->_matchedElementRoute !== null) {
             return $this->_matchedElementRoute;

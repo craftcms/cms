@@ -39,7 +39,7 @@ class Update
      *
      * @return string
      */
-    public static function getBasePath($handle)
+    public static function getBasePath(string $handle)
     {
         if ($handle === 'craft') {
             return Craft::$app->getPath()->getAppPath();
@@ -56,7 +56,7 @@ class Update
      *
      * @return array
      */
-    public static function parseManifestLine($line)
+    public static function parseManifestLine(string $line)
     {
         return array_map('trim', explode(';', $line, 2));
     }
@@ -67,7 +67,7 @@ class Update
      *
      * @return void
      */
-    public static function rollBackFileChanges($manifestData, $handle)
+    public static function rollBackFileChanges(array $manifestData, string $handle)
     {
         foreach ($manifestData as $line) {
             if (static::isManifestVersionInfoLine($line)) {
@@ -97,7 +97,7 @@ class Update
      *
      * @return bool
      */
-    public static function rollBackDatabaseChanges($backupPath)
+    public static function rollBackDatabaseChanges(string $backupPath)
     {
         $fileName = $backupPath.'.sql';
         $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().DIRECTORY_SEPARATOR.$fileName;
@@ -126,7 +126,7 @@ class Update
      *
      * @return bool
      */
-    public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
+    public static function doFileUpdate(array $manifestData, string $sourceTempFolder, string $handle)
     {
         $destDirectory = static::getBasePath($handle);
 
@@ -224,7 +224,7 @@ class Update
      * @throws Exception if there was a problem reading the update manifest data
      * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      */
-    public static function getManifestData($manifestDataPath, $handle)
+    public static function getManifestData(string $manifestDataPath, string $handle)
     {
         if (self::$_manifestData !== null) {
             return self::$_manifestData ?: null;
@@ -287,7 +287,7 @@ class Update
      *
      * @return string
      */
-    public static function getUnzipFolderFromUID($uid)
+    public static function getUnzipFolderFromUID(string $uid)
     {
         return Craft::$app->getPath()->getTempPath().'/'.$uid;
     }

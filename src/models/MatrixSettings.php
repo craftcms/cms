@@ -98,7 +98,7 @@ class MatrixSettings extends Model
      *
      * @return void
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes(array $blockTypes)
     {
         $this->_blockTypes = $blockTypes;
     }

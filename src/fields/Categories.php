@@ -85,7 +85,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $this->getElementValue($element);
 

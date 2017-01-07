@@ -142,7 +142,7 @@ class Elements extends Component
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById($elementId, $elementType = null, $siteId = null)
+    public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
     {
         if (!$elementId) {
             return null;
@@ -178,7 +178,7 @@ class Elements extends Component
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementByUri($uri, $siteId = null, $enabledOnly = false)
+    public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
     {
         if ($uri === '') {
             $uri = '__home__';
@@ -255,7 +255,7 @@ class Elements extends Component
      *
      * @return string|null The element’s URI, or `null`.
      */
-    public function getElementUriForSite($elementId, $siteId)
+    public function getElementUriForSite(int $elementId, int $siteId)
     {
         return (new Query())
             ->select(['uri'])
@@ -272,7 +272,7 @@ class Elements extends Component
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      *                   will be returned.
      */
-    public function getEnabledSiteIdsForElement($elementId)
+    public function getEnabledSiteIdsForElement(int $elementId)
     {
         return (new Query())
             ->select(['siteId'])
@@ -650,7 +650,7 @@ class Elements extends Component
      *
      * @return void
      */
-    public function updateElementSlugAndUri(ElementInterface $element, $updateOtherSites = true, $updateDescendants = true, $asTask = false)
+    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $asTask = false)
     {
         /** @var Element $element */
         if ($asTask) {
@@ -728,7 +728,7 @@ class Elements extends Component
      *
      * @return void
      */
-    public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherSites = true, $asTask = false)
+    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $asTask = false)
     {
         /** @var Element $element */
         /** @var ElementQuery $query */
@@ -776,7 +776,7 @@ class Elements extends Component
      * @return bool Whether the elements were merged successfully.
      * @throws \Exception if reasons
      */
-    public function mergeElementsByIds($mergedElementId, $prevailingElementId)
+    public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId)
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -895,7 +895,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($elementId, $elementType = null, $siteId = null)
+    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null)
     {
         if ($elementType === null) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -1060,7 +1060,7 @@ class Elements extends Component
      *
      * @return string|null The element class, or null if it could not be found
      */
-    public function getElementTypeByHandle($handle)
+    public function getElementTypeByHandle(string $handle)
     {
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|Element $class */
@@ -1079,7 +1079,7 @@ class Elements extends Component
      *
      * @return string The parsed string.
      */
-    public function parseRefs($str)
+    public function parseRefs(string $str)
     {
         if (StringHelper::contains($str, '{')) {
             global $refTagsByElementHandle;
@@ -1233,7 +1233,7 @@ class Elements extends Component
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
-    public function getPlaceholderElement($id, $siteId)
+    public function getPlaceholderElement(int $id, int $siteId)
     {
         if (isset($this->_placeholderElements[$id][$siteId])) {
             return $this->_placeholderElements[$id][$siteId];
@@ -1251,7 +1251,7 @@ class Elements extends Component
      *
      * @return void
      */
-    public function eagerLoadElements($elementType, $elements, $with)
+    public function eagerLoadElements(string $elementType, array $elements, $with)
     {
         // Bail if there aren't even any elements
         if (empty($elements)) {

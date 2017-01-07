@@ -57,7 +57,7 @@ class TagsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
+    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null)
     {
         $this->requireAdmin();
 

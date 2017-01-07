@@ -88,7 +88,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      *
      * @return void
      */
-    protected function setMessage($message)
+    protected function setMessage(string $message)
     {
         $this->_message = $message;
     }

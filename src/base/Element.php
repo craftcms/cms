@@ -253,7 +253,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function actions($source)
+    public static function actions(string $source)
     {
         $actions = static::defineActions($source);
 
@@ -307,7 +307,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+    public static function indexHtml($elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes)
     {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -408,7 +408,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source)
     {
         $availableTableAttributes = static::tableAttributes();
 
@@ -450,7 +450,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         // Eager-loading descendants or direct children?
         if ($handle === 'descendants' || $handle === 'children') {
@@ -543,7 +543,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
         /** @var ElementQuery $elementQuery */
         // Is this a custom field?
@@ -828,7 +828,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    public function validateCustomFieldAttribute($attribute, $params)
+    public function validateCustomFieldAttribute(string $attribute, $params)
     {
         /** @var Field $field */
         /** @var array|null $params */
@@ -948,7 +948,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size)
+    public function getThumbUrl(int $size)
     {
         return null;
     }
@@ -1083,7 +1083,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementQueryInterface
      */
-    public function getAncestors($dist = null)
+    public function getAncestors(int $dist = null)
     {
         return static::find()
             ->structureId($this->getStructureId())
@@ -1097,7 +1097,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementInterface[]|ElementQueryInterface|null
      */
-    public function getDescendants($dist = null)
+    public function getDescendants(int $dist = null)
     {
         // Eager-loaded?
         if ($this->hasEagerLoadedElements('descendants')) {
@@ -1295,7 +1295,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValues($fieldHandles = null)
+    public function getFieldValues(array $fieldHandles = null)
     {
         $values = [];
 
@@ -1311,7 +1311,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSerializedFieldValues($fieldHandles = null)
+    public function getSerializedFieldValues(array $fieldHandles = null)
     {
         $serializedValues = [];
 
@@ -1328,7 +1328,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValues($values)
+    public function setFieldValues(array $values)
     {
         foreach ($values as $fieldHandle => $value) {
             $this->setFieldValue($fieldHandle, $value);
@@ -1338,7 +1338,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValue($fieldHandle)
+    public function getFieldValue(string $fieldHandle)
     {
         // Is this the first time this field value has been accessed?
         if (!isset($this->_normalizedFieldValues[$fieldHandle])) {
@@ -1351,7 +1351,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValue($fieldHandle, $value)
+    public function setFieldValue(string $fieldHandle, $value)
     {
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $value;
@@ -1363,7 +1363,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValuesFromRequest($paramNamespace = '')
+    public function setFieldValuesFromRequest(string $paramNamespace = '')
     {
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
@@ -1394,7 +1394,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldParamNamespace($namespace)
+    public function setFieldParamNamespace(string $namespace)
     {
         $this->_fieldParamNamePrefix = $namespace;
     }
@@ -1430,7 +1430,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return bool Whether elements have been eager-loaded with the given handle
      */
-    public function hasEagerLoadedElements($handle)
+    public function hasEagerLoadedElements(string $handle)
     {
         return isset($this->_eagerLoadedElements[$handle]);
     }
@@ -1442,7 +1442,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementInterface[]|null The eager-loaded elements, or null
      */
-    public function getEagerLoadedElements($handle)
+    public function getEagerLoadedElements(string $handle)
     {
         if (isset($this->_eagerLoadedElements[$handle])) {
 
@@ -1462,7 +1462,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         $this->_eagerLoadedElements[$handle] = $elements;
     }
@@ -1481,7 +1481,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getHtmlAttributes($context)
+    public function getHtmlAttributes(string $context)
     {
         return [];
     }
@@ -1489,7 +1489,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    public function getTableAttributeHtml(string $attribute)
     {
         // Give plugins a chance to set this
         $event = new SetElementTableAttributeHtmlEvent([
@@ -1540,7 +1540,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
@@ -1561,7 +1561,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
@@ -1610,7 +1610,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeMoveInStructure($structureId)
+    public function beforeMoveInStructure(int $structureId)
     {
         // Trigger a 'beforeMoveInStructure' event
         $event = new ElementStructureEvent([
@@ -1624,7 +1624,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure($structureId)
+    public function afterMoveInStructure(int $structureId)
     {
         // Trigger an 'afterMoveInStructure' event
         $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
@@ -1665,7 +1665,7 @@ abstract class Element extends Component implements ElementInterface
      * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
-    protected function normalizeFieldValue($fieldHandle)
+    protected function normalizeFieldValue(string $fieldHandle)
     {
         $field = $this->getFieldByHandle($fieldHandle);
 
@@ -1688,7 +1688,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return static|static[]
      */
-    protected static function findByCondition($criteria, $one)
+    protected static function findByCondition($criteria, bool $one)
     {
         /** @var ElementQueryInterface $query */
         $query = static::find();
@@ -1718,7 +1718,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return Field|null
      */
-    protected function getFieldByHandle($handle)
+    protected function getFieldByHandle(string $handle)
     {
         if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];
@@ -1787,7 +1787,7 @@ abstract class Element extends Component implements ElementInterface
      * @return string The HTML that should be shown for a given attribute in Table View.
      * @see getTableAttributeHtml()
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute)
     {
         switch ($attribute) {
             case 'link':
@@ -1884,7 +1884,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementInterface|null
      */
-    private function _getRelativeElement($criteria, $dir)
+    private function _getRelativeElement($criteria, int $dir)
     {
         if ($this->id) {
             if ($criteria instanceof ElementQueryInterface) {

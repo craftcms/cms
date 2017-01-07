@@ -43,7 +43,7 @@ class GeneratePendingTransforms extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         // Don't let an exception stop us from processing the rest
         try {

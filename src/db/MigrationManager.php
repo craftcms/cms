@@ -105,7 +105,7 @@ class MigrationManager extends Component
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
-    public function createMigration($name)
+    public function createMigration(string $name)
     {
         if (!is_dir($this->migrationPath)) {
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
@@ -328,7 +328,7 @@ class MigrationManager extends Component
      *
      * @return array The migration history
      */
-    public function getMigrationHistory($limit = null)
+    public function getMigrationHistory(int $limit = null)
     {
         $history = $this->_createMigrationQuery()
             ->limit($limit)
@@ -343,7 +343,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function addMigrationHistory($name)
+    public function addMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->insert(
@@ -362,7 +362,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function removeMigrationHistory($name)
+    public function removeMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -382,7 +382,7 @@ class MigrationManager extends Component
      *
      * @return bool Whether the migration has been applied
      */
-    public function hasRun($name)
+    public function hasRun(string $name)
     {
         return $this->_createMigrationQuery()
             ->andWhere(['name' => $name])

@@ -78,7 +78,7 @@ abstract class Controller extends \yii\web\Controller
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate($template, array $variables = [])
+    public function renderTemplate(string $template, array $variables = [])
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
@@ -140,7 +140,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
-    public function requirePermission($permissionName)
+    public function requirePermission(string $permissionName)
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
@@ -155,7 +155,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
-    public function requireAuthorization($action)
+    public function requireAuthorization(string $action)
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
@@ -224,7 +224,7 @@ abstract class Controller extends \yii\web\Controller
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, $default = null)
+    public function redirectToPostedUrl($object = null, string $default = null)
     {
         $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
@@ -318,7 +318,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function asErrorJson($error)
+    public function asErrorJson(string $error)
     {
         return $this->asJson(['error' => $error]);
     }

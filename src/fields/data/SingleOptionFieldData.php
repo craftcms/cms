@@ -43,7 +43,7 @@ class SingleOptionFieldData extends OptionData
      *
      * @return void
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->_options = $options;
     }

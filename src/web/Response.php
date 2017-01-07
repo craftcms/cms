@@ -46,7 +46,7 @@ class Response extends \yii\web\Response
      *
      * @return static self reference
      */
-    public function setLastModifiedHeader($path)
+    public function setLastModifiedHeader(string $path)
     {
         $modifiedTime = filemtime($path);
 

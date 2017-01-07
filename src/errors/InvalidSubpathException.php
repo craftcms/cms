@@ -33,7 +33,7 @@ class InvalidSubpathException extends Exception
      * @param string $message The error message
      * @param int    $code    The error code
      */
-    public function __construct($subpath, $message = null, $code = 0)
+    public function __construct(string $subpath, string $message = null, int $code = 0)
     {
         $this->subpath = $subpath;
 

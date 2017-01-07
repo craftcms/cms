@@ -33,7 +33,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isAbsoluteUrl($url)
+    public static function isAbsoluteUrl(string $url)
     {
         return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
     }
@@ -45,7 +45,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isProtocolRelativeUrl($url)
+    public static function isProtocolRelativeUrl(string $url)
     {
         return (strpos($url, '//') === 0);
     }
@@ -57,7 +57,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isRootRelativeUrl($url)
+    public static function isRootRelativeUrl(string $url)
     {
         return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
     }
@@ -69,7 +69,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isFullUrl($url)
+    public static function isFullUrl(string $url)
     {
         return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url) || static::isProtocolRelativeUrl($url));
     }
@@ -82,7 +82,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithParams($url, $params)
+    public static function urlWithParams(string $url, $params)
     {
         $params = self::_normalizeParams($params, $anchor);
 
@@ -111,7 +111,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithToken($url, $token)
+    public static function urlWithToken(string $url, string $token)
     {
         $protocol = static::getProtocolForTokenizedUrl();
         $url = static::urlWithProtocol($url, $protocol);
@@ -129,7 +129,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithProtocol($url, $protocol)
+    public static function urlWithProtocol(string $url, string $protocol)
     {
         if (!$url || !$protocol) {
             return $url;
@@ -157,7 +157,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function url($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
+    public static function url(string $path = '', $params = null, string $protocol = null, bool $mustShowScriptName = false)
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -200,7 +200,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function cpUrl($path = '', $params = null, $protocol = null)
+    public static function cpUrl(string $path = '', $params = null, string $protocol = null)
     {
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
@@ -219,7 +219,7 @@ class UrlHelper
      * @return string
      * @throws Exception if $siteId is invalid
      */
-    public static function siteUrl($path = '', $params = null, $protocol = null, $siteId = null)
+    public static function siteUrl(string $path = '', $params = null, string $protocol = null, int $siteId = null)
     {
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
@@ -259,7 +259,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function resourceUrl($uri = '', $params = null, $protocol = null)
+    public static function resourceUrl(string $uri = '', $params = null, string $protocol = null)
     {
         $uri = trim($uri, '/');
 
@@ -304,7 +304,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function actionUrl($path = '', $params = null, $protocol = null)
+    public static function actionUrl(string $path = '', $params = null, string $protocol = null)
     {
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
 
@@ -318,7 +318,7 @@ class UrlHelper
      *
      * @return string The URL without a query string.
      */
-    public static function stripQueryString($url)
+    public static function stripQueryString(string $url)
     {
         if (($qIndex = mb_strpos($url, '?')) !== false) {
             $url = mb_substr($url, 0, $qIndex);
@@ -407,7 +407,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
+    private static function _createUrl(string $path, $params, $protocol, bool $cpUrl, bool $mustShowScriptName)
     {
         // Normalize the params
         $params = self::_normalizeParams($params, $anchor);

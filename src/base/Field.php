@@ -340,7 +340,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew)
     {
         // Trigger a 'beforeElementSave' event
         $event = new FieldElementEvent([
@@ -355,7 +355,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Trigger an 'afterElementSave' event
         $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([

@@ -68,7 +68,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -282,7 +282,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function hasEagerLoadedElements($handle)
+    public function hasEagerLoadedElements(string $handle)
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle.':'.$handle;
@@ -297,7 +297,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements($handle)
+    public function getEagerLoadedElements(string $handle)
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle.':'.$handle;
@@ -312,7 +312,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle.':';
@@ -341,7 +341,7 @@ class MatrixBlock extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the block record
         if (!$isNew) {

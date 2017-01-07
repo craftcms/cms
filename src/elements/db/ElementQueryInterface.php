@@ -9,6 +9,7 @@ namespace craft\elements\db;
 
 use craft\base\ElementInterface;
 use craft\models\Site;
+use craft\search\SearchQuery;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 
@@ -29,7 +30,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function asArray($value = true);
+    public function asArray(bool $value = true);
 
     /**
      * Sets the [[id]] property.
@@ -56,7 +57,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function fixedOrder($value = true);
+    public function fixedOrder(bool $value = true);
 
     /**
      * Sets the [[status]] property.
@@ -74,7 +75,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function archived($value = true);
+    public function archived(bool $value = true);
 
     /**
      * Sets the [[dateCreated]] property.
@@ -110,7 +111,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function siteId($value);
+    public function siteId(int $value);
 
     /**
      * Sets the [[enabledForSite]] property.
@@ -133,7 +134,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[title]] property.
      *
-     * @param string $value The property value
+     * @param string|string[] $value The property value
      *
      * @return static self reference
      */
@@ -142,7 +143,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[slug]] property.
      *
-     * @param string $value The property value
+     * @param string|string[] $value The property value
      *
      * @return static self reference
      */
@@ -151,7 +152,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[uri]] property.
      *
-     * @param string $value The property value
+     * @param string|string[] $value The property value
      *
      * @return static self reference
      */
@@ -160,7 +161,7 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Sets the [[search]] property.
      *
-     * @param string $value The property value
+     * @param string|array|SearchQuery $value The property value
      *
      * @return static self reference
      */
@@ -191,7 +192,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function structureId($value);
+    public function structureId(int $value);
 
     /**
      * Sets the [[level]] property.
@@ -200,7 +201,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function level($value);
+    public function level(int $value);
 
     /**
      * Sets the [[ancestorOf]] property.
@@ -218,7 +219,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function ancestorDist($value);
+    public function ancestorDist(int $value);
 
     /**
      * Sets the [[descendantOf]] property.
@@ -236,7 +237,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return static self reference
      */
-    public function descendantDist($value);
+    public function descendantDist(int $value);
 
     /**
      * Sets the [[siblingOf]] property.
@@ -308,7 +309,7 @@ interface ElementQueryInterface extends QueryInterface
      *
      * @return ElementInterface|null The resulting element.
      */
-    public function nth($n, $db = null);
+    public function nth(int $n, $db = null);
 
     /**
      * Executes the query and returns the IDs of the resulting elements.
