@@ -37,6 +37,7 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
@@ -406,15 +407,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Extending Twig's |date filter so we can run any translations on the output.
      *
-     * @param \Twig_Environment $env
-     * @param                   $date
-     * @param null              $format
-     * @param null              $timezone
-     * @param bool              $translate Whether the formatted date string should be translated
+     * @param \Twig_Environment                     $env
+     * @param DateTimeInterface|DateInterval|string $date      A date
+     * @param string|null                           $format    The target format, null to use the default
+     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
-    public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
+    public function dateFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
     {
         // Should we be using the app's formatter?
         if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
@@ -462,15 +463,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a time.
      *
-     * @param \Twig_Environment $env
-     * @param                   $date
-     * @param null              $format
-     * @param null              $timezone
-     * @param bool              $translate Whether the formatted date string should be translated
+     * @param \Twig_Environment                     $env
+     * @param DateTimeInterface|DateInterval|string $date      A date
+     * @param string|null                           $format    The target format, null to use the default
+     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
-    public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
+    public function timeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
@@ -490,15 +491,15 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a date+time.
      *
-     * @param \Twig_Environment $env
-     * @param                   $date
-     * @param null              $format
-     * @param null              $timezone
-     * @param bool              $translate Whether the formatted date string should be translated
+     * @param \Twig_Environment                     $env
+     * @param DateTimeInterface|DateInterval|string $date      A date
+     * @param string|null                           $format    The target format, null to use the default
+     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
-    public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, bool $translate = true)
+    public function datetimeFilter(\Twig_Environment $env, $date, string $format = null, $timezone = null, bool $translate = true)
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
