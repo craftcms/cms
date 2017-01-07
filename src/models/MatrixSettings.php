@@ -109,15 +109,15 @@ class MatrixSettings extends Model
      *
      * In addition, we validate the block type settings.
      *
-     * @param array|null $attributes
+     * @param array|null $attributeNames
      * @param bool       $clearErrors
      *
      * @return bool
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true)
     {
         // Enforce $clearErrors without copying code if we don't have to
-        $validates = parent::validate($attributes, $clearErrors);
+        $validates = parent::validate($attributeNames, $clearErrors);
 
         if (!Craft::$app->getMatrix()->validateFieldSettings($this->getField())) {
             $validates = false;

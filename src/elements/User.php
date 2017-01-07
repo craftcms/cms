@@ -1073,19 +1073,19 @@ class User extends Element implements IdentityInterface
      *
      * In addition, we check that the username does not have any whitespace in it.
      *
-     * @param null $attributes
-     * @param bool $clearErrors
+     * @param array|null $attributeNames
+     * @param bool       $clearErrors
      *
      * @return bool|null
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true)
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
             $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
-        return parent::validate($attributes, false);
+        return parent::validate($attributeNames, false);
     }
 
     /**
