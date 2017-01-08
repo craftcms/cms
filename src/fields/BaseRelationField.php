@@ -443,11 +443,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|null $selectedElementsQuery
-     * @param ElementInterface           $element
+     * @param ElementInterface|null      $element
      *
      * @return array
      */
-    protected function getInputTemplateVariables($selectedElementsQuery, ElementInterface $element): array
+    protected function getInputTemplateVariables($selectedElementsQuery, ElementInterface $element = null): array
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */

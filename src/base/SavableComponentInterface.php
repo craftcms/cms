@@ -47,7 +47,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the validation is successful without any error.
      */
-    public function validate($attributeNames = null, $clearErrors = true): bool;
+    public function validate($attributeNames = null, $clearErrors = true);
 
     /**
      * Returns the list of settings attribute names.

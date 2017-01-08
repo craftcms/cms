@@ -590,11 +590,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * Returns info about each block type and their field types for the Matrix field input.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|null $element
      *
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element): array
+    private function _getBlockTypeInfoForInput(ElementInterface $element = null): array
     {
         /** @var Element $element */
         $blockTypes = [];

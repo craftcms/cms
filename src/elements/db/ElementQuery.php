@@ -1271,7 +1271,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $status The status
      *
-     * @return string|array|Expression|false The status condition, or false if $status is an unsupported status
+     * @return string|array|Expression|false|null The status condition, or false if $status is an unsupported status
      */
     protected function statusCondition(string $status)
     {
@@ -1303,11 +1303,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Joins the content table into the query being prepared.
      *
-     * @param Element $class
+     * @param string $class
      *
      * @throws QueryAbortedException
      */
-    private function _joinContentTable(Element $class)
+    private function _joinContentTable(string $class)
     {
         // Join in the content table on both queries
         $this->subQuery->innerJoin($this->contentTable.' content', '[[content.elementId]] = [[elements.id]]');
@@ -1364,13 +1364,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Applies the 'status' param to the query being prepared.
      *
-     * @param Element $class
+     * @param string $class
      *
      * @return void
      * @throws QueryAbortedException
      */
-    private function _applyStatusParam(Element $class)
+    private function _applyStatusParam(string $class)
     {
+        /** @var ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
@@ -1386,7 +1387,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 throw new QueryAbortedException('Unsupported status: '.$status);
             }
 
-            if (!empty($statusCondition)) {
+            if ($statusCondition !== null) {
                 $condition[] = $statusCondition;
             }
         }
@@ -1425,11 +1426,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Applies the structure params to the query being prepared.
      *
-     * @param Element $class
+     * @param string $class
      *
+     * @return void
      * @throws QueryAbortedException
      */
-    private function _applyStructureParams(Element $class)
+    private function _applyStructureParams(string $class)
     {
         if ($this->structureId) {
             $this->query

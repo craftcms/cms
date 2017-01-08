@@ -778,9 +778,9 @@ class View extends \yii\web\View
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
-     * @return string The namespace.
+     * @return string|null The namespace.
      */
-    public function getNamespace(): string
+    public function getNamespace()
     {
         return $this->_namespace;
     }

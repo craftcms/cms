@@ -548,16 +548,16 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param int              $volumeId
-     * @param string           $subpath
-     * @param ElementInterface $element
-     * @param bool             $createDynamicFolders whether missing folders should be created in the process
+     * @param int                   $volumeId
+     * @param string                $subpath
+     * @param ElementInterface|null $element
+     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element, bool $createDynamicFolders = true): int
+    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         // Get the root folder in the source
         $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);

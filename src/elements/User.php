@@ -1105,9 +1105,9 @@ class User extends Element implements IdentityInterface
      * @param string $key     The preference’s key
      * @param mixed  $default The default value, if the preference hasn’t been set
      *
-     * @return array The user’s preferences.
+     * @return mixed The user’s preference
      */
-    public function getPreference(string $key, $default = null): array
+    public function getPreference(string $key, $default = null)
     {
         $preferences = $this->getPreferences();
 
