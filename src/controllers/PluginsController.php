@@ -41,7 +41,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionInstallPlugin()
+    public function actionInstallPlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -60,7 +60,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionUninstallPlugin()
+    public function actionUninstallPlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -79,7 +79,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionEnablePlugin()
+    public function actionEnablePlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -98,7 +98,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionDisablePlugin()
+    public function actionDisablePlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -121,7 +121,7 @@ class PluginsController extends Controller
      * @return string The plugin page HTML
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $pluginHandle, PluginInterface $plugin = null)
+    public function actionEditPluginSettings(string $pluginHandle, PluginInterface $plugin = null): string
     {
         if ($plugin === null) {
             $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);

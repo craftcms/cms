@@ -57,7 +57,7 @@ class SearchQuery
      *
      * @return array
      */
-    public function getTokens()
+    public function getTokens(): array
     {
         return $this->_tokens;
     }
@@ -67,7 +67,7 @@ class SearchQuery
      *
      * @return string
      */
-    public function getQuery()
+    public function getQuery(): string
     {
         return $this->_query;
     }

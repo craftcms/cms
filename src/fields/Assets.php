@@ -41,7 +41,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Assets');
     }
@@ -49,7 +49,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Asset::class;
     }
@@ -57,7 +57,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an asset');
     }
@@ -178,7 +178,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         try {
             return parent::getInputHtml($value, $element);
@@ -202,7 +202,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateFileType';
@@ -281,7 +281,7 @@ class Assets extends BaseRelationField
      *
      * @return int
      */
-    public function resolveDynamicPathToFolderId($element)
+    public function resolveDynamicPathToFolderId($element): int
     {
         return $this->_determineUploadFolderId($element, true);
     }
@@ -294,7 +294,7 @@ class Assets extends BaseRelationField
      *
      * @todo All of the validation stuff here should be moved to an actual validation function
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         /** @var Element $element */
         $incomingFiles = [];
@@ -535,7 +535,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSelectionCriteria()
+    protected function getInputSelectionCriteria(): array
     {
         return [
             'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
@@ -557,7 +557,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element, bool $createDynamicFolders = true)
+    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element, bool $createDynamicFolders = true): int
     {
         // Get the root folder in the source
         $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
@@ -644,7 +644,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeFolder The new subfolder
      */
-    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName)
+    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName): VolumeFolder
     {
         $newFolder = new VolumeFolder();
         $newFolder->parentId = $currentFolder->id;
@@ -667,7 +667,7 @@ class Assets extends BaseRelationField
      *
      * @return array
      */
-    private function _getAllowedExtensions()
+    private function _getAllowedExtensions(): array
     {
         if (!is_array($this->allowedKinds)) {
             return [];
@@ -694,7 +694,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @return int
      */
-    private function _determineUploadFolderId($element, bool $createDynamicFolders = true)
+    private function _determineUploadFolderId($element, bool $createDynamicFolders = true): int
     {
         if ($this->useSingleFolder) {
             $volumeId = $this->singleUploadLocationSource;

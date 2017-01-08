@@ -149,7 +149,7 @@ class Path extends Component
      *
      * @return string
      */
-    public function getRebrandPath()
+    public function getRebrandPath(): string
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'rebrand';
         FileHelper::createDirectory($path);
@@ -443,7 +443,7 @@ class Path extends Component
      *
      * @return string The path to the file cache folder.
      */
-    public function getCachePath()
+    public function getCachePath(): string
     {
         $path = Craft::$app->getConfig()->get('cachePath', Config::CATEGORY_FILECACHE);
         $path = FileHelper::normalizePath(Craft::getAlias($path));

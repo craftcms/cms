@@ -63,7 +63,7 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null)
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null): string
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
@@ -354,7 +354,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      */
-    public function actionSwitchEntryType()
+    public function actionSwitchEntryType(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -389,7 +389,7 @@ class EntriesController extends BaseEntriesController
      * @return string
      * @throws NotFoundHttpException if the requested entry version cannot be found
      */
-    public function actionPreviewEntry()
+    public function actionPreviewEntry(): string
     {
         $this->requirePostRequest();
 
@@ -625,7 +625,7 @@ class EntriesController extends BaseEntriesController
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null)
+    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): string
     {
         $this->requireToken();
 
@@ -804,7 +804,7 @@ class EntriesController extends BaseEntriesController
      * @return Entry
      * @throws NotFoundHttpException if the requested entry cannot be found
      */
-    private function _getEntryModel()
+    private function _getEntryModel(): Entry
     {
         $entryId = Craft::$app->getRequest()->getBodyParam('entryId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
@@ -883,7 +883,7 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */
-    private function _showEntry(Entry $entry)
+    private function _showEntry(Entry $entry): string
     {
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 

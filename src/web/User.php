@@ -94,7 +94,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the user is logged in
      */
-    public function loginByUserId(int $userId, int $duration = 0)
+    public function loginByUserId(int $userId, int $duration = 0): bool
     {
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -176,7 +176,7 @@ class User extends \yii\web\User
      *
      * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
      */
-    public function getRemainingSessionTime()
+    public function getRemainingSessionTime(): int
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
@@ -204,7 +204,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the current user is an admin.
      */
-    public function getIsAdmin()
+    public function getIsAdmin(): bool
     {
         $user = $this->getIdentity();
 
@@ -218,7 +218,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the current user has the permission.
      */
-    public function checkPermission(string $permissionName)
+    public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
 
@@ -260,7 +260,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the user currently has an elevated session
      */
-    public function getHasElevatedSession()
+    public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
         if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
@@ -277,7 +277,7 @@ class User extends \yii\web\User
      *
      * @return bool Whether the password was valid, and the user session has been elevated
      */
-    public function startElevatedSession(string $password)
+    public function startElevatedSession(string $password): bool
     {
         // Get the current user
         $user = $this->getIdentity();
@@ -489,7 +489,7 @@ class User extends \yii\web\User
      *
      * @return bool
      */
-    private function _validateUserAgentAndIp()
+    private function _validateUserAgentAndIp(): bool
     {
         if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession')) {
             $request = Craft::$app->getRequest();

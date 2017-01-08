@@ -281,7 +281,7 @@ class Resources extends Component
      *
      * @return string
      */
-    private function _normalizeCssUrl($match)
+    private function _normalizeCssUrl($match): string
     {
         // Ignore root-relative, absolute, and data: URLs
         if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3])) {
@@ -324,7 +324,7 @@ class Resources extends Component
      *
      * @return string
      */
-    private function _getIconPath($ext)
+    private function _getIconPath($ext): string
     {
         $pathService = Craft::$app->getPath();
         $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
@@ -364,7 +364,7 @@ class Resources extends Component
      *
      * @return string
      */
-    private function _getBrokenImageThumbPath()
+    private function _getBrokenImageThumbPath(): string
     {
         //http_response_code(404);
         return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';

@@ -36,7 +36,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%sections_i18n}}';
     }
@@ -46,7 +46,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -56,7 +56,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

@@ -141,7 +141,7 @@ class Paginate
      *
      * @return array
      */
-    public function getPrevUrls(int $dist = null)
+    public function getPrevUrls(int $dist = null): array
     {
         if ($dist !== null) {
             $start = $this->currentPage - $dist;
@@ -159,7 +159,7 @@ class Paginate
      *
      * @return array
      */
-    public function getNextUrls(int $dist = null)
+    public function getNextUrls(int $dist = null): array
     {
         if ($dist !== null) {
             $end = $this->currentPage + $dist;
@@ -178,7 +178,7 @@ class Paginate
      *
      * @return array
      */
-    public function getRangeUrls(int $start, int $end)
+    public function getRangeUrls(int $start, int $end): array
     {
         if ($start < 1) {
             $start = 1;

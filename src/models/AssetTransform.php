@@ -139,7 +139,7 @@ class AssetTransform extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -149,7 +149,7 @@ class AssetTransform extends Model
      *
      * @return bool
      */
-    public function getIsNamedTransform()
+    public function getIsNamedTransform(): bool
     {
         return !empty($this->name);
     }
@@ -159,7 +159,7 @@ class AssetTransform extends Model
      *
      * @return array
      */
-    public static function modes()
+    public static function modes(): array
     {
         return [
             'crop' => Craft::t('app', 'Scale and crop'),
@@ -171,7 +171,7 @@ class AssetTransform extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'dimensionChangeTime';

@@ -78,7 +78,7 @@ class Tags extends Component
      *
      * @return array
      */
-    public function getAllTagGroupIds()
+    public function getAllTagGroupIds(): array
     {
         if ($this->_allTagGroupIds !== null) {
             return $this->_allTagGroupIds;
@@ -99,7 +99,7 @@ class Tags extends Component
      *
      * @return TagGroup[]
      */
-    public function getAllTagGroups()
+    public function getAllTagGroups(): array
     {
         if (!$this->_fetchedAllTagGroups) {
             $this->_tagGroupsById = TagGroupRecord::find()
@@ -127,7 +127,7 @@ class Tags extends Component
      *
      * @return int
      */
-    public function getTotalTagGroups()
+    public function getTotalTagGroups(): int
     {
         return count($this->getAllTagGroupIds());
     }
@@ -196,7 +196,7 @@ class Tags extends Component
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true)
+    public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
         if ($runValidation && !$tagGroup->validate()) {
             Craft::info('Tag group not saved due to validation error.', __METHOD__);
@@ -287,7 +287,7 @@ class Tags extends Component
      * @return bool Whether the tag group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTagGroupById(int $tagGroupId)
+    public function deleteTagGroupById(int $tagGroupId): bool
     {
         if (!$tagGroupId) {
             return false;

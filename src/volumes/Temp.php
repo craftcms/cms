@@ -23,7 +23,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Temp Folder');
     }
@@ -64,7 +64,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
         return $this->path;
     }

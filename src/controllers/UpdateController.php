@@ -63,7 +63,7 @@ class UpdateController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $view = $this->getView();
         $view->registerCssResource('css/updates.css');
@@ -108,7 +108,7 @@ EOD;
      *
      * @return string
      */
-    public function actionGo(string $handle)
+    public function actionGo(string $handle): string
     {
         $this->getView()->registerCssResource('css/update.css');
         $this->getView()->registerJsResource('js/Updater.js');
@@ -147,7 +147,7 @@ EOD;
      *
      * @return Response
      */
-    public function actionGetAvailableUpdates()
+    public function actionGetAvailableUpdates(): Response
     {
         $this->requirePermission('performUpdates');
 
@@ -177,7 +177,7 @@ EOD;
      *
      * @return Response
      */
-    public function actionGetUpdates()
+    public function actionGetUpdates(): Response
     {
         $this->requirePermission('performUpdates');
 
@@ -245,7 +245,7 @@ EOD;
      *
      * @return Response
      */
-    public function actionPrepare()
+    public function actionPrepare(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -297,7 +297,7 @@ EOD;
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionProcessDownload()
+    public function actionProcessDownload(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -348,7 +348,7 @@ EOD;
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionBackupFiles()
+    public function actionBackupFiles(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -394,7 +394,7 @@ EOD;
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionUpdateFiles()
+    public function actionUpdateFiles(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -436,7 +436,7 @@ EOD;
      *
      * @return Response
      */
-    public function actionBackupDatabase()
+    public function actionBackupDatabase(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -492,7 +492,7 @@ EOD;
      *
      * @return Response
      */
-    public function actionUpdateDatabase()
+    public function actionUpdateDatabase(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -526,7 +526,7 @@ EOD;
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionCleanUp()
+    public function actionCleanUp(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -576,7 +576,7 @@ EOD;
      * @throws ServerErrorHttpException if reasons
      * @throws UpdateValidationException
      */
-    public function actionRollback()
+    public function actionRollback(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -725,7 +725,7 @@ EOD;
      *
      * @return bool
      */
-    private function _isManualUpdate($data)
+    private function _isManualUpdate($data): bool
     {
         return isset($data['manualUpdate']) && $data['manualUpdate'] == 1;
     }
@@ -736,7 +736,7 @@ EOD;
      * @return string
      * @throws UpdateValidationException
      */
-    private function _getFixedHandle($data)
+    private function _getFixedHandle($data): string
     {
         if (!isset($data['handle'])) {
             return 'craft';
@@ -754,7 +754,7 @@ EOD;
      *
      * @return bool
      */
-    private function _shouldBackupDb()
+    private function _shouldBackupDb(): bool
     {
         $config = Craft::$app->getConfig();
 
@@ -768,7 +768,7 @@ EOD;
      *
      * @return Response
      */
-    private function _getFirstDbUpdateResponse(array $data)
+    private function _getFirstDbUpdateResponse(array $data): Response
     {
         if ($this->_shouldBackupDb()) {
             $response = [

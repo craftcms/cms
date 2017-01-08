@@ -165,7 +165,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionGetRemainingSessionTime()
+    public function actionGetRemainingSessionTime(): Response
     {
         $this->requireAcceptsJson();
 
@@ -183,7 +183,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionGetElevatedSessionTimeout()
+    public function actionGetElevatedSessionTimeout(): Response
     {
         $timeout = Craft::$app->getUser()->getElevatedSessionTimeout();
 
@@ -210,7 +210,7 @@ class UsersController extends Controller
     /**
      * @return Response
      */
-    public function actionLogout()
+    public function actionLogout(): Response
     {
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
@@ -321,7 +321,7 @@ class UsersController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionSetPassword()
+    public function actionSetPassword(): string
     {
         // Have they just submitted a password, or are we just displaying the page?
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -429,7 +429,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionActivateUser()
+    public function actionActivateUser(): Response
     {
         $this->requireAdmin();
         $this->requirePostRequest();
@@ -460,7 +460,7 @@ class UsersController extends Controller
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null)
+    public function actionEditUser($userId = null, User $user = null): string
     {
         // Determine which user account we're editing
         // ---------------------------------------------------------------------
@@ -1144,7 +1144,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteUserPhoto()
+    public function actionDeleteUserPhoto(): Response
     {
         $this->requireAcceptsJson();
         $this->requireLogin();
@@ -1178,7 +1178,7 @@ class UsersController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the user is not pending
      */
-    public function actionSendActivationEmail()
+    public function actionSendActivationEmail(): Response
     {
         $this->requirePostRequest();
 
@@ -1217,7 +1217,7 @@ class UsersController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if a non-admin is attempting to unlock an admin
      */
-    public function actionUnlockUser()
+    public function actionUnlockUser(): Response
     {
         $this->requirePostRequest();
         $this->requireLogin();
@@ -1403,7 +1403,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    public function actionVerifyPassword()
+    public function actionVerifyPassword(): Response
     {
         $this->requireAcceptsJson();
 
@@ -1499,7 +1499,7 @@ class UsersController extends Controller
      *
      * @return Response
      */
-    private function _handleSuccessfulLogin(bool $setNotice)
+    private function _handleSuccessfulLogin(bool $setNotice): Response
     {
         // Get the current user
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -1545,7 +1545,7 @@ class UsersController extends Controller
      *
      * @return string
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables)
+    private function _renderSetPasswordTemplate(User $user, array $variables): string
     {
         $configService = Craft::$app->getConfig();
         $view = Craft::$app->getView();
@@ -1583,7 +1583,7 @@ class UsersController extends Controller
      *
      * @return bool
      */
-    private function _verifyElevatedSession()
+    private function _verifyElevatedSession(): bool
     {
         return (Craft::$app->getUser()->getHasElevatedSession() || $this->_verifyExistingPassword());
     }
@@ -1593,7 +1593,7 @@ class UsersController extends Controller
      *
      * @return bool
      */
-    private function _verifyExistingPassword()
+    private function _verifyExistingPassword(): bool
     {
         $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -1700,7 +1700,7 @@ class UsersController extends Controller
     /**
      * @return array
      */
-    private function _processTokenRequest()
+    private function _processTokenRequest(): array
     {
         if (!Craft::$app->getUser()->getIsGuest()) {
             Craft::$app->getUser()->logout();
@@ -1792,7 +1792,7 @@ class UsersController extends Controller
      *
      * @return bool Whether the user was just logged in
      */
-    private function _maybeLoginUserAfterAccountActivation(User $user)
+    private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
         if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
             return Craft::$app->getUser()->login($user);

@@ -109,7 +109,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function getTotalAssets($criteria = null)
+    public function getTotalAssets($criteria = null): int
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -411,7 +411,7 @@ class Assets extends Component
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameFile(Asset $asset, $runValidation = true)
+    public function renameFile(Asset $asset, $runValidation = true): bool
     {
         if ($runValidation && !$asset->validate(['newFilename'])) {
             Craft::info('Asset file not renamed due to validation error.', __METHOD__);
@@ -498,7 +498,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
      * @return string The new folder name after cleaning it.
      */
-    public function renameFolderById($folderId, $newName)
+    public function renameFolderById($folderId, $newName): string
     {
         $newName = AssetsHelper::prepareAssetName($newName, false);
         $folder = $this->getFolderById($folderId);
@@ -579,7 +579,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = [])
+    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = []): array
     {
         static $volumeFolders = [];
 
@@ -616,7 +616,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getFolderTreeByFolderId($folderId)
+    public function getFolderTreeByFolderId($folderId): array
     {
         if (($folder = $this->getFolderById($folderId)) === null) {
             return [];
@@ -656,7 +656,7 @@ class Assets extends Component
      *
      * @return VolumeFolder[]
      */
-    public function findFolders($criteria = null)
+    public function findFolders($criteria = null): array
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -706,7 +706,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path')
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /**
          * @var $query Query
@@ -788,7 +788,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function getTotalFolders($criteria)
+    public function getTotalFolders($criteria): int
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -814,7 +814,7 @@ class Assets extends Component
      *
      * @return string
      */
-    public function getUrlForAsset(Asset $asset, string $transform = null)
+    public function getUrlForAsset(Asset $asset, string $transform = null): string
     {
         if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
@@ -863,7 +863,7 @@ class Assets extends Component
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
-    public function getNameReplacementInFolder(string $originalFilename, int $folderId)
+    public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
         if (!$folder) {
@@ -987,7 +987,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId)
+    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId): int
     {
         $parameters = new FolderCriteria([
             'path' => $fullPath,
@@ -1195,7 +1195,7 @@ class Assets extends Component
      *
      * @return Query
      */
-    private function _createFolderQuery()
+    private function _createFolderQuery(): Query
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
@@ -1209,7 +1209,7 @@ class Assets extends Component
      *
      * @return array
      */
-    private function _getFolderTreeByFolders(array $folders)
+    private function _getFolderTreeByFolders(array $folders): array
     {
         $tree = [];
         $referenceStore = [];

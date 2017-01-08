@@ -71,7 +71,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function getCacheKey($name)
+    public function getCacheKey($name): string
     {
         return $this->_resolveTemplate($name);
     }
@@ -85,7 +85,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      * @return bool
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function isFresh($name, $time)
+    public function isFresh($name, $time): bool
     {
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
@@ -114,7 +114,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      * @return string
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    private function _resolveTemplate($name)
+    private function _resolveTemplate($name): string
     {
         $template = $this->view->resolveTemplate($name);
 

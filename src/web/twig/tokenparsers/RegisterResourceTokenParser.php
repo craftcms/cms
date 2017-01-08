@@ -169,7 +169,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideBlockEnd(\Twig_Token $token)
+    public function decideBlockEnd(\Twig_Token $token): bool
     {
         return $token->test('end'.strtolower($this->_tag));
     }
@@ -184,7 +184,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    private function _testPositionParam(\Twig_TokenStream $stream)
+    private function _testPositionParam(\Twig_TokenStream $stream): bool
     {
         return (
             ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) ||
@@ -199,7 +199,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    private function _testOptionsParam(\Twig_TokenStream $stream)
+    private function _testOptionsParam(\Twig_TokenStream $stream): bool
     {
         return ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with'));
     }
@@ -211,7 +211,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    private function _testFirstParam(\Twig_TokenStream $stream)
+    private function _testFirstParam(\Twig_TokenStream $stream): bool
     {
         return ($this->_newCode !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
     }
@@ -223,7 +223,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    private function _getFirstValue(\Twig_TokenStream $stream)
+    private function _getFirstValue(\Twig_TokenStream $stream): bool
     {
         if ($this->_testFirstParam($stream)) {
             $stream->next();

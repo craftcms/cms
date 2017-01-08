@@ -31,7 +31,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string the SQL statement for creating a new DB table.
      */
-    public function createTable($table, $columns, $options = null)
+    public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
         if ($options === null || strpos($options, 'ENGINE=') === false) {
@@ -53,7 +53,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for dropping a DB table.
      */
-    public function dropTableIfExists(string $table)
+    public function dropTableIfExists(string $table): string
     {
         return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
     }
@@ -72,7 +72,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function upsert(string $table, array $keyColumns, array $updateColumns, array &$params)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, array &$params): string
     {
         $schema = $this->db->getSchema();
 
@@ -131,7 +131,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params)
+    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
     {
         $column = $this->db->quoteColumnName($column);
 
@@ -155,7 +155,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL expression.
      */
-    public function fixedOrder(string $column, array $values)
+    public function fixedOrder(string $column, array $values): string
     {
         $sql = 'FIELD('.$this->db->quoteColumnName($column);
         foreach ($values as $value) {

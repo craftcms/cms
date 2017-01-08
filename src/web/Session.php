@@ -117,7 +117,7 @@ class Session extends \yii\web\Session
      *
      * @return array The stored JS resource flashes.
      */
-    public function getJsResourceFlashes(bool $delete = true)
+    public function getJsResourceFlashes(bool $delete = true): array
     {
         return $this->getFlash('jsResources', [], $delete);
     }
@@ -146,7 +146,7 @@ class Session extends \yii\web\Session
      *
      * @return array The stored JS flashes.
      */
-    public function getJsFlashes(bool $delete = true)
+    public function getJsFlashes(bool $delete = true): array
     {
         return $this->getFlash('js', [], $delete);
     }
@@ -196,7 +196,7 @@ class Session extends \yii\web\Session
      *
      * @return bool
      */
-    public function checkAuthorization(string $action)
+    public function checkAuthorization(string $action): bool
     {
         $access = $this->get($this->authAccessParam, []);
 

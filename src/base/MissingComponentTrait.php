@@ -46,7 +46,7 @@ trait MissingComponentTrait
      *
      * @return ComponentInterface
      */
-    public function createFallback(string $type)
+    public function createFallback(string $type): ComponentInterface
     {
         /** @var Arrayable $this */
         $config = $this->toArray();

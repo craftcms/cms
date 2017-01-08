@@ -67,7 +67,7 @@ class EventTagAdder extends BaseEventTagVisitor
      *
      * @return \Twig_Node
      */
-    private function _processTextNode(\Twig_Node_Text $node, \Twig_Environment $env)
+    private function _processTextNode(\Twig_Node_Text $node, \Twig_Environment $env): \Twig_Node
     {
         $data = $node->getAttribute('data');
 
@@ -128,7 +128,7 @@ class EventTagAdder extends BaseEventTagVisitor
      *
      * @return \Twig_Node
      */
-    private function _insertEventNode(\Twig_Node_Text $node, \Twig_Environment $env, int $pos, string $functionName)
+    private function _insertEventNode(\Twig_Node_Text $node, \Twig_Environment $env, int $pos, string $functionName): \Twig_Node
     {
         $data = $node->getAttribute('data');
         $preSplitHtml = substr($data, 0, $pos);

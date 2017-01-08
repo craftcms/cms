@@ -81,7 +81,7 @@ abstract class Model extends \yii\base\Model
      *
      * @return string[]
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = [];
 
@@ -141,7 +141,7 @@ abstract class Model extends \yii\base\Model
      *
      * @deprecated in 3.0. Use [[getFirstError()]] instead.
      */
-    public function getError(string $attribute)
+    public function getError(string $attribute): string
     {
         Craft::$app->getDeprecator()->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
 

@@ -50,7 +50,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -82,7 +82,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -274,7 +274,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteField()
+    public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

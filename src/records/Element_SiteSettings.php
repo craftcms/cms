@@ -51,7 +51,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%elements_i18n}}';
     }
@@ -61,7 +61,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
@@ -71,7 +71,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

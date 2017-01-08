@@ -38,7 +38,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Matrix');
     }
@@ -80,7 +80,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return MatrixBlockType[]
      */
-    public function getBlockTypes()
+    public function getBlockTypes(): array
     {
         if ($this->_blockTypes !== null) {
             return $this->_blockTypes;
@@ -152,7 +152,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         // Run basic model validation first
         $validates = parent::validate($attributeNames, $clearErrors);
@@ -168,7 +168,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -302,7 +302,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
@@ -351,7 +351,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         // Don't call parent::getElementValidationRules() here - we'll do our own required validation
         return [
@@ -396,7 +396,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
         /** @var MatrixBlock $block */
@@ -429,7 +429,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         if ($value) {
             $id = StringHelper::randomString();
@@ -492,7 +492,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeDelete()
+    public function beforeDelete(): bool
     {
         Craft::$app->getMatrix()->deleteMatrixField($this);
 
@@ -511,7 +511,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementDelete(ElementInterface $element)
+    public function beforeElementDelete(ElementInterface $element): bool
     {
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -538,7 +538,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, ElementInterface $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var MatrixBlockQuery $value */
         return $value->count() === 0;
@@ -552,7 +552,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return array
      */
-    private function _getFieldOptionsForConfigurator()
+    private function _getFieldOptionsForConfigurator(): array
     {
         $fieldTypes = [];
 
@@ -594,7 +594,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element)
+    private function _getBlockTypeInfoForInput(ElementInterface $element): array
     {
         /** @var Element $element */
         $blockTypes = [];
@@ -657,7 +657,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, $element)
+    private function _createBlocksFromSerializedData(array $value, $element): array
     {
         /** @var Element $element */
         // Get the possible block types for this field

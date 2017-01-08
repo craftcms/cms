@@ -46,7 +46,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description ?: $this->getDefaultDescription();
     }
@@ -54,7 +54,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         return 0;
     }
@@ -62,7 +62,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function getProgress()
+    public function getProgress(): float
     {
         if ($this->totalSteps !== null && $this->currentStep !== null) {
             return $this->currentStep / $this->totalSteps;
@@ -99,7 +99,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @return string The default task description
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         return static::displayName();
     }
@@ -111,7 +111,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @return bool
      */
-    protected function runSubTask($task)
+    protected function runSubTask($task): bool
     {
         $tasksService = Craft::$app->getTasks();
 

@@ -71,7 +71,7 @@ class VolumeFolder extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -99,7 +99,7 @@ class VolumeFolder extends Model
      *
      * @return VolumeFolder[]
      */
-    public function getChildren()
+    public function getChildren(): array
     {
         if ($this->_children !== null) {
             return $this->_children;

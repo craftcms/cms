@@ -158,7 +158,7 @@ class View extends \yii\web\View
      *
      * @return Environment
      */
-    public function getTwig()
+    public function getTwig(): Environment
     {
         if ($this->_twig !== null) {
             return $this->_twig;
@@ -186,7 +186,7 @@ class View extends \yii\web\View
      *
      * @return bool Whether a template is currently being rendered.
      */
-    public function getIsRenderingTemplate()
+    public function getIsRenderingTemplate(): bool
     {
         return $this->_renderingTemplate !== null;
     }
@@ -229,7 +229,7 @@ class View extends \yii\web\View
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, array $variables = [])
+    public function renderTemplate($template, array $variables = []): string
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -252,7 +252,7 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      */
-    public function renderPageTemplate($template, array $variables = [])
+    public function renderPageTemplate($template, array $variables = []): string
     {
         ob_start();
         ob_implicit_flush(false);
@@ -278,7 +278,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered macro output.
      */
-    public function renderTemplateMacro(string $template, string $macro, array $args = [])
+    public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
@@ -299,7 +299,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderString(string $template, array $variables = [])
+    public function renderString(string $template, array $variables = []): string
     {
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
@@ -321,7 +321,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderObjectTemplate(string $template, $object)
+    public function renderObjectTemplate(string $template, $object): string
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -375,7 +375,7 @@ class View extends \yii\web\View
      *
      * @return bool Whether the template exists.
      */
-    public function doesTemplateExist(string $name)
+    public function doesTemplateExist(string $name): bool
     {
         try {
             return ($this->resolveTemplate($name) !== false);
@@ -665,7 +665,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getHeadHtml(bool $clear = true)
+    public function getHeadHtml(bool $clear = true): string
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -695,7 +695,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getBodyHtml(bool $clear = true)
+    public function getBodyHtml(bool $clear = true): string
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -780,7 +780,7 @@ class View extends \yii\web\View
      *
      * @return string The namespace.
      */
-    public function getNamespace()
+    public function getNamespace(): string
     {
         return $this->_namespace;
     }
@@ -805,7 +805,7 @@ class View extends \yii\web\View
      *
      * @return string Either 'site' or 'cp'.
      */
-    public function getTemplateMode()
+    public function getTemplateMode(): string
     {
         return $this->_templateMode;
     }
@@ -856,7 +856,7 @@ class View extends \yii\web\View
      *
      * @return string
      */
-    public function getTemplatesPath()
+    public function getTemplatesPath(): string
     {
         return $this->_templatesPath;
     }
@@ -916,7 +916,7 @@ class View extends \yii\web\View
      *
      * @return string The HTML with namespaced input names.
      */
-    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true)
+    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true): string
     {
         if ($html === '') {
             return '';
@@ -959,7 +959,7 @@ class View extends \yii\web\View
      *
      * @return string The namespaced input name.
      */
-    public function namespaceInputName(string $inputName, string $namespace = null)
+    public function namespaceInputName(string $inputName, string $namespace = null): string
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -983,7 +983,7 @@ class View extends \yii\web\View
      *
      * @return string The namespaced input ID.
      */
-    public function namespaceInputId(string $inputId, string $namespace = null)
+    public function namespaceInputId(string $inputId, string $namespace = null): string
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -1013,7 +1013,7 @@ class View extends \yii\web\View
      *
      * @return string The input ID.
      */
-    public function formatInputId(string $inputName)
+    public function formatInputId(string $inputName): string
     {
         return rtrim(preg_replace('/[\[\]\\\]+/', '-', $inputName), '-');
     }
@@ -1063,7 +1063,7 @@ class View extends \yii\web\View
      *
      * @return string Whatever the hooks returned.
      */
-    public function invokeHook(string $hook, array &$context)
+    public function invokeHook(string $hook, array &$context): string
     {
         $return = '';
 
@@ -1148,7 +1148,7 @@ class View extends \yii\web\View
      *
      * @return array
      */
-    private function _getTwigOptions()
+    private function _getTwigOptions(): array
     {
         if ($this->_twigOptions !== null) {
             return $this->_twigOptions;
@@ -1239,7 +1239,7 @@ class View extends \yii\web\View
      *
      * @return string
      */
-    private function _createTextareaMarker(array $matches)
+    private function _createTextareaMarker(array $matches): string
     {
         $marker = '{marker:'.StringHelper::randomString().'}';
         $this->_textareaMarkers[$marker] = $matches[2];

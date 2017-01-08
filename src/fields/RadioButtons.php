@@ -23,7 +23,7 @@ class RadioButtons extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Radio Buttons');
     }
@@ -34,7 +34,7 @@ class RadioButtons extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         $options = $this->getTranslatedOptions();
 
@@ -57,7 +57,7 @@ class RadioButtons extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function getOptionsSettingsLabel()
+    protected function getOptionsSettingsLabel(): string
     {
         return Craft::t('app', 'Radio Button Options');
     }

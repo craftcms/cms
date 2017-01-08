@@ -62,7 +62,7 @@ class FieldLayout extends Model
      *
      * @return FieldLayoutTab[] The layout’s tabs.
      */
-    public function getTabs()
+    public function getTabs(): array
     {
         if ($this->_tabs !== null) {
             return $this->_tabs;
@@ -80,7 +80,7 @@ class FieldLayout extends Model
      *
      * @return FieldInterface[] The layout’s fields.
      */
-    public function getFields()
+    public function getFields(): array
     {
         if ($this->_fields !== null) {
             return $this->_fields;
@@ -98,7 +98,7 @@ class FieldLayout extends Model
      *
      * @return array The layout’s fields’ IDs.
      */
-    public function getFieldIds()
+    public function getFieldIds(): array
     {
         $ids = [];
 

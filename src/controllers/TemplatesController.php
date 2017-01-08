@@ -49,7 +49,7 @@ class TemplatesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested template cannot be found
      */
-    public function actionRender($template, array $variables = [])
+    public function actionRender($template, array $variables = []): string
     {
         // Does that template exist?
         if (Craft::$app->getView()->doesTemplateExist($template)) {
@@ -64,7 +64,7 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionOffline()
+    public function actionOffline(): string
     {
         // If this is a site request, make sure the offline template exists
         $view = Craft::$app->getView();
@@ -81,7 +81,7 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionManualUpdateNotification()
+    public function actionManualUpdateNotification(): string
     {
         return $this->renderTemplate('_special/dbupdate');
     }
@@ -90,7 +90,7 @@ class TemplatesController extends Controller
      * @return string The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
-    public function actionRequirementsCheck()
+    public function actionRequirementsCheck(): string
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -126,7 +126,7 @@ class TemplatesController extends Controller
      *
      * @return string
      */
-    public function actionRenderError()
+    public function actionRenderError(): string
     {
         /** @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();

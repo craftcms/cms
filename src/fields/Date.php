@@ -33,7 +33,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Date/Time');
     }
@@ -115,7 +115,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_DATETIME;
     }
@@ -163,7 +163,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         $variables = [
             'id' => Craft::$app->getView()->formatInputId($this->handle),

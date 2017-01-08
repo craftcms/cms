@@ -56,7 +56,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->_width;
     }
@@ -64,7 +64,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->_height;
     }
@@ -72,7 +72,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return 'svg';
     }
@@ -233,7 +233,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function saveAs(string $targetPath, bool $autoQuality = false)
+    public function saveAs(string $targetPath, bool $autoQuality = false): bool
     {
         if (pathinfo($targetPath, PATHINFO_EXTENSION) === 'svg') {
             FileHelper::writeToFile($targetPath, $this->_svgContent);
@@ -250,7 +250,7 @@ class Svg extends Image
      *
      * @return string
      */
-    public function getSvgString()
+    public function getSvgString(): string
     {
         return $this->_svgContent;
     }
@@ -258,7 +258,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getIsTransparent()
+    public function getIsTransparent(): bool
     {
         return true;
     }

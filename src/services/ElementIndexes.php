@@ -68,7 +68,7 @@ class ElementIndexes extends Component
      *
      * @return bool Whether the settings were saved successfully
      */
-    public function saveSettings($elementType, array $newSettings)
+    public function saveSettings($elementType, array $newSettings): bool
     {
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
@@ -150,7 +150,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getSources($elementType, string $context = 'index')
+    public function getSources($elementType, string $context = 'index'): array
     {
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources($context));
@@ -205,7 +205,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getAvailableTableAttributes($elementType, bool $includeFields = true)
+    public function getAvailableTableAttributes($elementType, bool $includeFields = true): array
     {
         $attributes = $elementType::tableAttributes();
 
@@ -236,7 +236,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    public function getTableAttributes($elementType, string $sourceKey)
+    public function getTableAttributes($elementType, string $sourceKey): array
     {
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
@@ -281,7 +281,7 @@ class ElementIndexes extends Component
      *
      * @return FieldInterface[]
      */
-    public function getAvailableTableFields($elementType)
+    public function getAvailableTableFields($elementType): array
     {
         $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
         $availableFields = [];
@@ -307,7 +307,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _normalizeSources(array $sources)
+    private function _normalizeSources(array $sources): array
     {
         if (!is_array($sources)) {
             return [];
@@ -346,7 +346,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _indexSourcesByKey(array $sources)
+    private function _indexSourcesByKey(array $sources): array
     {
         $indexedSources = [];
 

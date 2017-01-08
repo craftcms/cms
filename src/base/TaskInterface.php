@@ -25,21 +25,21 @@ interface TaskInterface extends SavableComponentInterface
      *
      * @return string The task’s description
      */
-    public function getDescription();
+    public function getDescription(): string;
 
     /**
      * Returns the total number of steps for this task.
      *
      * @return int The total number of steps for this task
      */
-    public function getTotalSteps();
+    public function getTotalSteps(): int;
 
     /**
      * Returns the task’s current progress as a number between 0 and 1.
      *
      * @return float The task’s current progress
      */
-    public function getProgress();
+    public function getProgress(): float;
 
     /**
      * Runs a task step.

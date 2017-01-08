@@ -80,7 +80,7 @@ class Matrix extends Component
      *
      * @return MatrixBlockType[] An array of block types.
      */
-    public function getBlockTypesByFieldId(int $fieldId)
+    public function getBlockTypesByFieldId(int $fieldId): array
     {
         if (!empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
             return $this->_blockTypesByFieldId[$fieldId];
@@ -138,7 +138,7 @@ class Matrix extends Component
      *
      * @return bool Whether the block type validated.
      */
-    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true)
+    public function validateBlockType(MatrixBlockType $blockType, bool $validateUniques = true): bool
     {
         $validates = true;
 
@@ -220,7 +220,7 @@ class Matrix extends Component
      * @throws Exception if an error occurs when saving the block type
      * @throws \Exception if reasons
      */
-    public function saveBlockType(MatrixBlockType $blockType, bool $validate = true)
+    public function saveBlockType(MatrixBlockType $blockType, bool $validate = true): bool
     {
         if (!$validate || $this->validateBlockType($blockType)) {
             $transaction = Craft::$app->getDb()->beginTransaction();
@@ -366,7 +366,7 @@ class Matrix extends Component
      * @return bool Whether the block type was deleted successfully.
      * @throws \Exception if reasons
      */
-    public function deleteBlockType(MatrixBlockType $blockType)
+    public function deleteBlockType(MatrixBlockType $blockType): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -431,7 +431,7 @@ class Matrix extends Component
      *
      * @return bool Whether the settings validated.
      */
-    public function validateFieldSettings(MatrixField $matrixField)
+    public function validateFieldSettings(MatrixField $matrixField): bool
     {
         $validates = true;
 
@@ -478,7 +478,7 @@ class Matrix extends Component
      * @return bool Whether the settings saved successfully.
      * @throws \Exception if reasons
      */
-    public function saveSettings(MatrixField $matrixField, bool $validate = true)
+    public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
         if (!$validate || $this->validateFieldSettings($matrixField)) {
             $transaction = Craft::$app->getDb()->beginTransaction();
@@ -557,7 +557,7 @@ class Matrix extends Component
      * @return bool Whether the field was deleted successfully.
      * @throws \Exception
      */
-    public function deleteMatrixField(MatrixField $matrixField)
+    public function deleteMatrixField(MatrixField $matrixField): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -650,7 +650,7 @@ class Matrix extends Component
      * @return bool Whether the field was saved successfully.
      * @throws \Exception if reasons
      */
-    public function saveField(MatrixField $field, ElementInterface $owner)
+    public function saveField(MatrixField $field, ElementInterface $owner): bool
     {
         /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
@@ -756,7 +756,7 @@ class Matrix extends Component
      *
      * @return Query
      */
-    private function _createBlockTypeQuery()
+    private function _createBlockTypeQuery(): Query
     {
         return (new Query())
             ->select([
@@ -779,7 +779,7 @@ class Matrix extends Component
      * @return MatrixBlockTypeRecord
      * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord(MatrixBlockType $blockType)
+    private function _getBlockTypeRecord(MatrixBlockType $blockType): MatrixBlockTypeRecord
     {
         if ($blockType->getIsNew()) {
             return new MatrixBlockTypeRecord();

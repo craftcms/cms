@@ -25,7 +25,7 @@ class Path
      *
      * @return bool
      */
-    public static function ensurePathIsContained(string $path)
+    public static function ensurePathIsContained(string $path): bool
     {
         // Sanitize
         $path = StringHelper::convertToUtf8($path);

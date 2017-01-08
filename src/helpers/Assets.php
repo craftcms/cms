@@ -57,7 +57,7 @@ class Assets
      * @return string The temporary file path
      * @throws Exception in case of failure
      */
-    public static function tempFilePath(string $extension = 'tmp')
+    public static function tempFilePath(string $extension = 'tmp'): string
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
@@ -78,7 +78,7 @@ class Assets
      *
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $file)
+    public static function generateUrl(VolumeInterface $volume, Asset $file): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
@@ -96,7 +96,7 @@ class Assets
      *
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file)
+    public static function urlAppendix(VolumeInterface $volume, Asset $file): string
     {
         $appendix = '';
 
@@ -164,7 +164,7 @@ class Assets
      *
      * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = [])
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
@@ -206,7 +206,7 @@ class Assets
      *
      * @return array
      */
-    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false)
+    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false): array
     {
         $fileTransferList = [];
 
@@ -241,7 +241,7 @@ class Assets
      *
      * @return array
      */
-    public static function periodList()
+    public static function periodList(): array
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
@@ -276,7 +276,7 @@ class Assets
      *
      * @return array The supported file kinds
      */
-    public static function getFileKinds()
+    public static function getFileKinds(): array
     {
         self::_buildFileKinds();
 
@@ -290,7 +290,7 @@ class Assets
      *
      * @return string
      */
-    public static function getFileKindLabel(string $kind)
+    public static function getFileKindLabel(string $kind): string
     {
         self::_buildFileKinds();
 
@@ -308,7 +308,7 @@ class Assets
      *
      * @return string The file kind, or "unknown" if unknown.
      */
-    public static function getFileKindByExtension($file)
+    public static function getFileKindByExtension($file): string
     {
         if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
             $ext = strtolower($ext);

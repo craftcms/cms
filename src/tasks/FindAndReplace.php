@@ -62,7 +62,7 @@ class FindAndReplace extends Task
      * @inheritdoc
      * @throws Exception
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_textColumns = [];
         $this->_matrixFieldIds = [];
@@ -152,7 +152,7 @@ class FindAndReplace extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,

@@ -32,7 +32,7 @@ class UserGroups
      *
      * @return array
      */
-    public function getAllGroups(string $indexBy = null)
+    public function getAllGroups(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.allGroups instead.');
 

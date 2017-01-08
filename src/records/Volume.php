@@ -37,7 +37,7 @@ class Volume extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%volumes}}';
     }
@@ -47,7 +47,7 @@ class Volume extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

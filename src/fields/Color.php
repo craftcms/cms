@@ -28,7 +28,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Color');
     }
@@ -39,7 +39,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING.'(7)';
     }
@@ -47,7 +47,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         // Default to black, so the JS-based color picker is consistent with Chrome
         if (!$value) {
@@ -64,7 +64,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         if ($value) {
             return Html::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',

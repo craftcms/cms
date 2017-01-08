@@ -65,7 +65,7 @@ class FieldLayoutBehavior extends Behavior
      *
      * @return FieldLayout
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): FieldLayout
     {
         if ($this->_fieldLayout === null) {
             if ($id = $this->owner->{$this->idAttribute}) {

@@ -101,7 +101,7 @@ class UserSettingsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

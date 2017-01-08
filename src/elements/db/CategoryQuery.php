@@ -119,7 +119,7 @@ class CategoryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {

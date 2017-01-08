@@ -106,7 +106,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionUpdateDraftMeta()
+    public function actionUpdateDraftMeta(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -141,7 +141,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionDeleteDraft()
+    public function actionDeleteDraft(): Response
     {
         $this->requirePostRequest();
 

@@ -31,7 +31,7 @@ class UserGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%usergroups}}';
     }
@@ -41,7 +41,7 @@ class UserGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface
      */
-    public function getUsers()
+    public function getUsers(): ActiveQueryInterface
     {
         return $this->hasMany(User::class, ['id' => 'userId'])
             ->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);

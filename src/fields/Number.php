@@ -28,7 +28,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Number');
     }
@@ -90,7 +90,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
@@ -118,7 +118,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         if ($this->isFresh($element) && ($value < $this->min || $value > $this->max)) {
             $value = $this->min;

@@ -27,21 +27,21 @@ abstract class Image extends Object
      *
      * @return int
      */
-    abstract public function getWidth();
+    abstract public function getWidth(): int;
 
     /**
      * Returns the height of the image.
      *
      * @return int
      */
-    abstract public function getHeight();
+    abstract public function getHeight(): int;
 
     /**
      * Returns the file extension.
      *
      * @return string
      */
-    abstract public function getExtension();
+    abstract public function getExtension(): string;
 
     /**
      * Loads an image from a file system path.
@@ -107,14 +107,14 @@ abstract class Image extends Object
      * @return bool
      * @throws ImageException if the image cannot be saved.
      */
-    abstract public function saveAs(string $targetPath, bool $autoQuality = false);
+    abstract public function saveAs(string $targetPath, bool $autoQuality = false): bool;
 
     /**
      * Returns whether the image is transparent.
      *
      * @return bool
      */
-    abstract public function getIsTransparent();
+    abstract public function getIsTransparent(): bool;
 
     // Protected Methods
     // =========================================================================

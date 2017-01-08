@@ -124,7 +124,7 @@ class Connection extends \yii\db\Connection
      * @throws Exception if the backupCommand config setting is false
      * @throws ShellCommandException in case of failure
      */
-    public function backup()
+    public function backup(): string
     {
         // Determine the backup file path
         $currentVersion = 'v'.Craft::$app->version;
@@ -236,7 +236,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName($name): string
     {
         return $this->getSchema()->quoteTableName($name);
     }
@@ -249,7 +249,7 @@ class Connection extends \yii\db\Connection
      *
      * @return bool
      */
-    public function tableExists(string $table, bool $refresh = null)
+    public function tableExists(string $table, bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -271,7 +271,7 @@ class Connection extends \yii\db\Connection
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
-    public function columnExists($table, string $column, bool $refresh = null)
+    public function columnExists($table, string $column, bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
@@ -295,7 +295,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    public function getForeignKeyName(string $table, $columns)
+    public function getForeignKeyName(string $table, $columns): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         $columns = ArrayHelper::toArray($columns);
@@ -314,7 +314,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    public function getIndexName(string $table, $columns, bool $unique = false)
+    public function getIndexName(string $table, $columns, bool $unique = false): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         $columns = ArrayHelper::toArray($columns);
@@ -331,7 +331,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    public function getPrimaryKeyName(string $table, $columns)
+    public function getPrimaryKeyName(string $table, $columns): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         $columns = ArrayHelper::toArray($columns);
@@ -347,7 +347,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    public function trimObjectName(string $name)
+    public function trimObjectName(string $name): string
     {
         $schema = $this->getSchema();
 
@@ -393,7 +393,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    private function _getTableNameWithoutPrefix(string $table)
+    private function _getTableNameWithoutPrefix(string $table): string
     {
         $table = $this->getSchema()->getRawTableName($table);
 
@@ -414,7 +414,7 @@ class Connection extends \yii\db\Connection
      *
      * @return ShellCommand
      */
-    private function _createShellCommand(string $command, string $file)
+    private function _createShellCommand(string $command, string $file): ShellCommand
     {
         // Swap out any tokens in the command
         $config = Craft::$app->getConfig();
@@ -445,7 +445,7 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    private function _getFixedSiteName()
+    private function _getFixedSiteName(): string
     {
         try {
             return (new Query())

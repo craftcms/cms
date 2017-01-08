@@ -68,7 +68,7 @@ class CategoryGroup_SiteSettings extends Model
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): CategoryGroup
     {
         if ($this->_group !== null) {
             return $this->_group;

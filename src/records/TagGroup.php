@@ -33,7 +33,7 @@ class TagGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%taggroups}}';
     }
@@ -43,7 +43,7 @@ class TagGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
@@ -54,7 +54,7 @@ class TagGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getTags()
+    public function getTags(): ActiveQueryInterface
     {
         return $this->hasMany(Tag::class, ['groupId' => 'id']);
     }

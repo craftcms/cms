@@ -28,7 +28,7 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCustomizeSourcesModalData()
+    public function actionGetCustomizeSourcesModalData(): Response
     {
         $this->requireAdmin();
 
@@ -76,7 +76,7 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionSaveCustomizeSourcesModalSettings()
+    public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $this->requireAdmin();
 

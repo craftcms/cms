@@ -55,7 +55,7 @@ class Image
      *
      * @return array
      */
-    public function getSize()
+    public function getSize(): array
     {
         if ($this->size !== null) {
             return $this->size;
@@ -69,7 +69,7 @@ class Image
      *
      * @return int
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         $size = $this->getSize();
 
@@ -81,7 +81,7 @@ class Image
      *
      * @return int
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         $size = $this->getSize();
 
@@ -93,7 +93,7 @@ class Image
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }

@@ -57,7 +57,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return array The array representation of the given object.
      */
-    public static function toArray($object, $properties = [], $recursive = true)
+    public static function toArray($object, $properties = [], $recursive = true): array
     {
         if ($object === null) {
             return [];
@@ -111,7 +111,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return array
      */
-    public static function filterEmptyStringsFromArray(array $arr)
+    public static function filterEmptyStringsFromArray(array $arr): array
     {
         return array_filter($arr,
             ['\craft\helpers\ArrayHelper', '_isNotAnEmptyString']);
@@ -183,7 +183,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return bool
      */
-    private static function _isNotAnEmptyString(string $val)
+    private static function _isNotAnEmptyString(string $val): bool
     {
         return (mb_strlen($val) !== 0);
     }

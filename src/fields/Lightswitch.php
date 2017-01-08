@@ -27,7 +27,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Lightswitch');
     }
@@ -46,7 +46,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_BOOLEAN;
     }
@@ -70,7 +70,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         // If this is a new entry, look for a default option
         if ($this->isFresh($element)) {
@@ -115,7 +115,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, ElementInterface $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         // Lightswitch fields can never get required-field validation errors
         return false;

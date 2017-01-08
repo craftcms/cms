@@ -23,7 +23,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return false;
     }
@@ -42,7 +42,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return static::displayName();
     }
@@ -65,7 +65,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $criteria)
+    public function performAction(ElementQueryInterface $criteria): bool
     {
         return true;
     }

@@ -83,7 +83,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      * @return array
      * @throws Exception in case of failure
      */
-    private function _moveUserphotos()
+    private function _moveUserphotos(): array
     {
         $handle = opendir($this->_basePath);
         if ($handle === false) {
@@ -150,7 +150,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return int volume id
      */
-    private function _createUserphotoVolume()
+    private function _createUserphotoVolume(): int
     {
         // Safety first!
         $handle = 'userPhotos';
@@ -238,7 +238,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return array $userList
      */
-    private function _convertPhotosToAssets(int $volumeId, array $userList)
+    private function _convertPhotosToAssets(int $volumeId, array $userList): array
     {
         $db = Craft::$app->getDb();
 

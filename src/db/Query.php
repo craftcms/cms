@@ -29,7 +29,7 @@ class Query extends \yii\db\Query
      *
      * @return bool
      */
-    public function isJoined(string $table)
+    public function isJoined(string $table): bool
     {
         foreach ($this->join as $join) {
             if ($join[1] === $table || strpos($join[1], $table) === 0) {
@@ -88,7 +88,7 @@ class Query extends \yii\db\Query
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
-    public function pairs(YiiConnection $db = null)
+    public function pairs(YiiConnection $db = null): array
     {
         try {
             $rows = $this->createCommand($db)->queryAll();

@@ -30,7 +30,7 @@ class Config
      *
      * @return bool
      */
-    public function __isset(string $name)
+    public function __isset(string $name): bool
     {
         return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
     }
@@ -43,7 +43,7 @@ class Config
      *
      * @return string
      */
-    public function __get(string $name)
+    public function __get(string $name): string
     {
         Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
 
@@ -70,7 +70,7 @@ class Config
      *
      * @return bool
      */
-    public function usePathInfo()
+    public function usePathInfo(): bool
     {
         Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo instead.');
 
@@ -82,7 +82,7 @@ class Config
      *
      * @return bool
      */
-    public function omitScriptNameInUrls()
+    public function omitScriptNameInUrls(): bool
     {
         Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls instead.');
 
@@ -94,7 +94,7 @@ class Config
      *
      * @return string
      */
-    public function getResourceTrigger()
+    public function getResourceTrigger(): string
     {
         Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.resourceTrigger instead.');
 

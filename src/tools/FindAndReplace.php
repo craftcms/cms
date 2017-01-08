@@ -25,7 +25,7 @@ class FindAndReplace extends Tool
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Find and Replace');
     }
@@ -33,7 +33,7 @@ class FindAndReplace extends Tool
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'wand';
     }
@@ -41,7 +41,7 @@ class FindAndReplace extends Tool
     /**
      * @inheritdoc
      */
-    public static function optionsHtml()
+    public static function optionsHtml(): string
     {
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
                 [
@@ -65,7 +65,7 @@ class FindAndReplace extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         if (!empty($params['find']) && !empty($params['replace'])) {
             Craft::$app->getTasks()->queueTask([
@@ -74,5 +74,7 @@ class FindAndReplace extends Tool
                 'replace' => $params['replace']
             ]);
         }
+
+        return [];
     }
 }

@@ -30,7 +30,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -41,7 +41,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         return '<p class="error">'.$this->errorMessage.'</p>';
     }

@@ -46,7 +46,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fieldlayoutfields}}';
     }
@@ -56,7 +56,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLayout()
+    public function getLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'layoutId']);
     }
@@ -66,7 +66,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getTab()
+    public function getTab(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayoutTab::class, ['id' => 'tabId']);
     }
@@ -76,7 +76,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField()
+    public function getField(): ActiveQueryInterface
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }

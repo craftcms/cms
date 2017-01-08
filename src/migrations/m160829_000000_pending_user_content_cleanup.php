@@ -15,7 +15,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
      *
      * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Find any orphaned entries.
         $ids = (new Query())

@@ -25,7 +25,7 @@ interface PluginInterface
      *
      * @return bool Whether the plugin has its own section in the CP.
      */
-    public static function hasCpSection();
+    public static function hasCpSection(): bool;
 
     // Public Methods
     // =========================================================================
@@ -35,7 +35,7 @@ interface PluginInterface
      *
      * @return string The plugin’s handle
      */
-    public function getHandle();
+    public function getHandle(): string;
 
     /**
      * Installs the plugin.

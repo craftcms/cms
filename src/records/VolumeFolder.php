@@ -45,7 +45,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%volumefolders}}';
     }
@@ -55,7 +55,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getParent()
+    public function getParent(): ActiveQueryInterface
     {
         return $this->hasOne(VolumeFolder::class, ['id' => 'parentId']);
     }
@@ -65,7 +65,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }

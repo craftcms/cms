@@ -101,7 +101,7 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'lastOccurrence';
@@ -125,7 +125,7 @@ class DeprecationError extends Model
      *
      * @return string
      */
-    public function getOrigin()
+    public function getOrigin(): string
     {
         if ($this->template) {
             $file = $this->template;

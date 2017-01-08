@@ -77,7 +77,7 @@ class Search extends Component
      * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element)
+    public function indexElementAttributes(ElementInterface $element): bool
     {
         /** @var Element $element */
         // Does it have any searchable attributes?
@@ -108,7 +108,7 @@ class Search extends Component
      * @return bool  Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
-    public function indexElementFields(int $elementId, int $siteId, array $fields)
+    public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
         foreach ($fields as $fieldId => $value) {
             $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
@@ -128,7 +128,7 @@ class Search extends Component
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false)
+    public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false): array
     {
         if (is_string($query)) {
             $query = new SearchQuery($query, Craft::$app->getConfig()->get('defaultSearchTermOptions'));
@@ -318,7 +318,7 @@ class Search extends Component
      *
      * @return float The total score for this row.
      */
-    private function _scoreRow(array $row)
+    private function _scoreRow(array $row): float
     {
         // Starting point
         $score = 0;
@@ -506,7 +506,7 @@ class Search extends Component
      * @return array
      * @throws Exception
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, int $siteId = null)
+    private function _getSqlFromTerm(SearchQueryTerm $term, int $siteId = null): array
     {
         // Initiate return value
         $sql = null;
@@ -616,7 +616,7 @@ class Search extends Component
      *
      * @return string
      */
-    private function _normalizeTerm(string $term)
+    private function _normalizeTerm(string $term): string
     {
         static $terms = [];
 
@@ -634,7 +634,7 @@ class Search extends Component
      *
      * @return int
      */
-    private function _getFieldIdFromAttribute(string $attribute)
+    private function _getFieldIdFromAttribute(string $attribute): int
     {
         // Get field id from service
         /** @var Field $field */
@@ -653,7 +653,7 @@ class Search extends Component
      *
      * @return string
      */
-    private function _sqlWhere(string $key, string $oper, string $val)
+    private function _sqlWhere(string $key, string $oper, string $val): string
     {
         $key = Craft::$app->getDb()->quoteColumnName($key);
 
@@ -670,7 +670,7 @@ class Search extends Component
      * @return string
      * @throws Exception
      */
-    private function _sqlFullText($val, bool $bool = true, string $andOr = ' AND ')
+    private function _sqlFullText($val, bool $bool = true, string $andOr = ' AND '): string
     {
         $driver = Craft::$app->getDb()->getDriverName();
         switch ($driver) {
@@ -737,7 +737,7 @@ class Search extends Component
      *
      * @return bool
      */
-    private function _doFullTextSearch(string $keywords, SearchQueryTerm $term)
+    private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
         return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
     }
@@ -750,7 +750,7 @@ class Search extends Component
      *
      * @return string The SQL to perform the search.
      */
-    private function _sqlPhraseExactMatch(string $val, bool $exact = false)
+    private function _sqlPhraseExactMatch(string $val, bool $exact = false): string
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);

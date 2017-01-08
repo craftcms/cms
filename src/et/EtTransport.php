@@ -250,7 +250,7 @@ class EtTransport
     /**
      * @return array
      */
-    private function _getPluginLicenseKeys()
+    private function _getPluginLicenseKeys(): array
     {
         $pluginLicenseKeys = [];
         $pluginsService = Craft::$app->getPlugins();
@@ -269,7 +269,7 @@ class EtTransport
      * @return bool
      * @throws Exception|EtException
      */
-    private function _setLicenseKey($key)
+    private function _setLicenseKey($key): bool
     {
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.
@@ -297,7 +297,7 @@ class EtTransport
     /**
      * @return bool
      */
-    private function _isConfigFolderWritable()
+    private function _isConfigFolderWritable(): bool
     {
         return FileHelper::isWritable(Craft::$app->getPath()->getConfigPath());
     }

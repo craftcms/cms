@@ -22,7 +22,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      *
      * @return string
      */
-    public static function cleanUtf8(string $string)
+    public static function cleanUtf8(string $string): string
     {
         return \HTMLPurifier_Encoder::cleanUTF8($string);
     }
@@ -33,7 +33,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      *
      * @return string
      */
-    public static function convertToUtf8(string $string, HTMLPurifier_Config $config)
+    public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string
     {
         return \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
     }

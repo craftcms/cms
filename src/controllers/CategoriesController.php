@@ -45,7 +45,7 @@ class CategoriesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionGroupIndex()
+    public function actionGroupIndex(): string
     {
         $this->requireAdmin();
 
@@ -65,7 +65,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested category group cannot be found
      */
-    public function actionEditCategoryGroup(int $groupId = null, CategoryGroup $categoryGroup = null)
+    public function actionEditCategoryGroup(int $groupId = null, CategoryGroup $categoryGroup = null): string
     {
         $this->requireAdmin();
 
@@ -191,7 +191,7 @@ class CategoriesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteCategoryGroup()
+    public function actionDeleteCategoryGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -215,7 +215,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
      */
-    public function actionCategoryIndex(string $groupHandle = null)
+    public function actionCategoryIndex(string $groupHandle = null): string
     {
         $groups = Craft::$app->getCategories()->getEditableGroups();
 
@@ -240,7 +240,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCategory(string $groupHandle, int $categoryId = null, string $siteHandle = null, Category $category = null)
+    public function actionEditCategory(string $groupHandle, int $categoryId = null, string $siteHandle = null, Category $category = null): string
     {
         $variables = [
             'groupHandle' => $groupHandle,
@@ -399,7 +399,7 @@ class CategoriesController extends Controller
      *
      * @return string
      */
-    public function actionPreviewCategory()
+    public function actionPreviewCategory(): string
     {
         $this->requirePostRequest();
 
@@ -518,7 +518,7 @@ class CategoriesController extends Controller
      * @throws NotFoundHttpException if the requested category cannot be found
      * @throws ServerErrorHttpException if the category group is not configured properly
      */
-    public function actionShareCategory(int $categoryId, int $siteId = null)
+    public function actionShareCategory(int $categoryId, int $siteId = null): Response
     {
         $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
@@ -561,7 +561,7 @@ class CategoriesController extends Controller
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedCategory(int $categoryId, int $siteId = null)
+    public function actionViewSharedCategory(int $categoryId, int $siteId = null): string
     {
         $this->requireToken();
 
@@ -678,7 +678,7 @@ class CategoriesController extends Controller
      * @return Category
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    private function _getCategoryModel()
+    private function _getCategoryModel(): Category
     {
         $categoryId = Craft::$app->getRequest()->getBodyParam('categoryId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
@@ -755,7 +755,7 @@ class CategoriesController extends Controller
      * @return string The rendering result
      * @throws ServerErrorHttpException if the category doesn't have a URL for the site it's configured with, or if the category's site ID is invalid
      */
-    private function _showCategory(Category $category)
+    private function _showCategory(Category $category): string
     {
         $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
 

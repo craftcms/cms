@@ -383,7 +383,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->all());
     }
@@ -395,7 +395,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return bool
      */
-    public function offsetExists($name)
+    public function offsetExists($name): bool
     {
         if (is_numeric($name)) {
             $offset = $this->offset;
@@ -1026,7 +1026,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function ids(Connection $db = null)
+    public function ids(Connection $db = null): array
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes
@@ -1120,7 +1120,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return ElementInterface[] The matched elements.
      * @deprecated in Craft 3.0. Use all() instead.
      */
-    public function find(array $attributes = null)
+    public function find(array $attributes = null): array
     {
         Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The find() function used to query for elements is now deprecated. Use all() instead.');
         $this->_setAttributes($attributes);
@@ -1173,7 +1173,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return int
      * @deprecated in Craft 3.0. Use count() instead.
      */
-    public function total(array $attributes = null)
+    public function total(array $attributes = null): int
     {
         Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The total() function used to query for elements is now deprecated. Use count() instead.');
         $this->_setAttributes($attributes);
@@ -1202,7 +1202,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @see prepare()
      * @see afterPrepare()
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         $event = new CancelableEvent();
         $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
@@ -1220,7 +1220,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @see prepare()
      * @see beforePrepare()
      */
-    protected function afterPrepare()
+    protected function afterPrepare(): bool
     {
         $event = new CancelableEvent();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
@@ -1241,7 +1241,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
      */
-    protected function customFields()
+    protected function customFields(): array
     {
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
@@ -1565,7 +1565,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return ElementInterface The normalized element
      * @throws QueryAbortedException if the element can't be found
      */
-    private function _normalizeStructureParamValue(string $property, string $class)
+    private function _normalizeStructureParamValue(string $property, string $class): ElementInterface
     {
         /** @var Element $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
@@ -1719,7 +1719,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @return string
      */
-    private function _getFieldContentColumnName(FieldInterface $field)
+    private function _getFieldContentColumnName(FieldInterface $field): string
     {
         /** @var Field $field */
         return ($field->columnPrefix ?: 'field_').$field->handle;
@@ -1864,7 +1864,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @return bool Whether $attributes was an array
      * @todo Remove this in Craft 4, along with the methods that call it.
      */
-    private function _setAttributes($attributes)
+    private function _setAttributes($attributes): bool
     {
         if (is_array($attributes) || $attributes instanceof \IteratorAggregate) {
             foreach ($attributes as $name => $value) {

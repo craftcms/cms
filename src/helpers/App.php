@@ -43,7 +43,7 @@ class App
      *
      * @return bool
      */
-    public static function isComposerInstall()
+    public static function isComposerInstall(): bool
     {
         if (self::$_isComposerInstall !== null) {
             return self::$_isComposerInstall;
@@ -59,7 +59,7 @@ class App
      *
      * @return bool Whether Craft is running on the PHP Dev Server.
      */
-    public static function isPhpDevServer()
+    public static function isPhpDevServer(): bool
     {
         if (self::$_isPhpDevServer !== null) {
             return self::$_isPhpDevServer;
@@ -77,7 +77,7 @@ class App
      *
      * @return array All the known Craft editions’ IDs.
      */
-    public static function editions()
+    public static function editions(): array
     {
         return [Craft::Personal, Craft::Client, Craft::Pro];
     }
@@ -89,7 +89,7 @@ class App
      *
      * @return string The edition’s name.
      */
-    public static function editionName(int $edition)
+    public static function editionName(int $edition): string
     {
         switch ($edition) {
             case Craft::Client:
@@ -108,7 +108,7 @@ class App
      *
      * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition)
+    public static function isValidEdition($edition): bool
     {
         return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
     }
@@ -120,7 +120,7 @@ class App
      *
      * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function phpConfigValueAsBool(string $var)
+    public static function phpConfigValueAsBool(string $var): bool
     {
         $value = ini_get($var);
 
@@ -136,7 +136,7 @@ class App
      *
      * @return int The size in bytes.
      */
-    public static function phpConfigValueInBytes(string $var)
+    public static function phpConfigValueInBytes(string $var): int
     {
         $value = ini_get($var);
 
@@ -173,7 +173,7 @@ class App
      *
      * @return string The normalized version number
      */
-    public static function normalizeVersionNumber(string $version)
+    public static function normalizeVersionNumber(string $version): string
     {
         // Periods before/after non-numeric sequences
         $version = preg_replace('/\D+/', '.$0.', $version);
@@ -213,7 +213,7 @@ class App
      *
      * @return string The X.Y parts of the version number
      */
-    public static function majorMinorVersion(string $version)
+    public static function majorMinorVersion(string $version): string
     {
         preg_match('/^\d+\.\d+/', $version, $matches);
 
@@ -227,7 +227,7 @@ class App
      *
      * @return string The download URL
      */
-    public static function craftDownloadUrl(string $version)
+    public static function craftDownloadUrl(string $version): string
     {
         $xy = self::majorMinorVersion($version);
 
@@ -239,7 +239,7 @@ class App
      *
      * @return bool
      */
-    public static function checkForValidIconv()
+    public static function checkForValidIconv(): bool
     {
         if (self::$_iconv !== null) {
             return self::$_iconv;

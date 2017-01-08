@@ -31,7 +31,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function tinyText()
+    public function tinyText(): ColumnSchemaBuilder
     {
         if (Db::isTypeSupported('tinytext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
@@ -45,7 +45,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function mediumText()
+    public function mediumText(): ColumnSchemaBuilder
     {
         if (Db::isTypeSupported('mediumtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
@@ -59,7 +59,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function longText()
+    public function longText(): ColumnSchemaBuilder
     {
         if (Db::isTypeSupported('longtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
@@ -76,7 +76,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function enum(string $columnName, array $values)
+    public function enum(string $columnName, array $values): ColumnSchemaBuilder
     {
         if (Db::isTypeSupported('enum', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
@@ -99,7 +99,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @return ColumnSchemaBuilder the column instance which can be further customized.
      */
-    public function uid()
+    public function uid(): ColumnSchemaBuilder
     {
         return $this->char(36)->notNull()->defaultValue('0');
     }

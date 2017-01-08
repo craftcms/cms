@@ -80,7 +80,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asDate($value, $format = null)
+    public function asDate($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->dateFormat;
@@ -107,7 +107,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asTime($value, $format = null)
+    public function asTime($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->timeFormat;
@@ -134,7 +134,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asDatetime($value, $format = null)
+    public function asDatetime($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->datetimeFormat;
@@ -180,7 +180,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, $format = null)
+    public function asTimestamp($value, $format = null): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
@@ -223,7 +223,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidParamException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false)
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false): string
     {
         $omitDecimals = ($stripZeros && (int)$value == $value);
 
@@ -284,7 +284,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @return string the formatted result.
      */
-    private function _formatDateTimeValue($value, string $format, string $type)
+    private function _formatDateTimeValue($value, string $format, string $type): string
     {
         $timeZone = $this->timeZone;
 

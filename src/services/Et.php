@@ -305,7 +305,7 @@ class Et extends Component
      *
      * @return bool
      */
-    public function purchaseUpgrade(UpgradePurchase $model)
+    public function purchaseUpgrade(UpgradePurchase $model): bool
     {
         if ($model->validate()) {
             $et = $this->_createEtTransport(self::ENDPOINT_PURCHASE_UPGRADE);
@@ -392,7 +392,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function registerPlugin(string $packageName)
+    public function registerPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
         $et->setData([
@@ -409,7 +409,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function transferPlugin(string $packageName)
+    public function transferPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
         $et->setData([
@@ -426,7 +426,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function unregisterPlugin(string $packageName)
+    public function unregisterPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
         $et->setData([
@@ -503,7 +503,7 @@ class Et extends Component
      *
      * @return EtTransport
      */
-    private function _createEtTransport(string $endpoint)
+    private function _createEtTransport(string $endpoint): EtTransport
     {
         $url = $this->elliottBaseUrl.'/actions/elliott/'.$endpoint;
 

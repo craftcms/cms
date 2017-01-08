@@ -14,7 +14,7 @@ class m150724_140822_adjust_quality_settings extends Migration
      *
      * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $transforms = (new Query())
             ->select(['id', 'quality'])

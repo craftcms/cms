@@ -51,7 +51,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $class = $this->elementType;
 
@@ -115,7 +115,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         return Craft::t('app', 'Resaving {class} elements', [
             'class' => StringHelper::toLowerCase($this->elementType)

@@ -31,7 +31,7 @@ class Feeds
      *
      * @return array
      */
-    public function getFeedItems(string $url, int $limit = 0, int $offset = 0, string $cacheDuration = null)
+    public function getFeedItems(string $url, int $limit = 0, int $offset = 0, string $cacheDuration = null): array
     {
         Craft::$app->getDeprecator()->log('craft.feeds.getFeedItems()', 'craft.feeds.getFeedItems() has been deprecated. Use craft.app.feeds.getFeedItems() instead.');
 

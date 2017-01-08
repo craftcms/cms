@@ -41,7 +41,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Local Folder');
     }
@@ -49,7 +49,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public static function isLocal()
+    public static function isLocal(): bool
     {
         return true;
     }
@@ -93,7 +93,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
         return Craft::$app->getConfig()->parseEnvironmentString($this->path);
     }
@@ -109,7 +109,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function renameDir(string $path, string $newName): bool
     {
         $parentDir = dirname($path);
         $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
@@ -131,7 +131,7 @@ class Local extends Volume implements LocalVolumeInterface
      *
      * @return LocalAdapter
      */
-    protected function createAdapter()
+    protected function createAdapter(): LocalAdapter
     {
         return new LocalAdapter($this->getRootPath());
     }

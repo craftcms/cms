@@ -45,7 +45,7 @@ class ValidationException extends Exception
      *
      * @return Model
      */
-    public function getModel()
+    public function getModel(): Model
     {
         return $this->_model;
     }

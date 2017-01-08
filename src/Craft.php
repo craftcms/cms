@@ -85,7 +85,7 @@ class Craft extends Yii
      *
      * @return array The cookie config array.
      */
-    public static function cookieConfig(array $config = [], Request $request = null)
+    public static function cookieConfig(array $config = [], Request $request = null): array
     {
         if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
@@ -217,7 +217,7 @@ EOD;
      *
      * @return Client
      */
-    public static function createGuzzleClient(array $config = [])
+    public static function createGuzzleClient(array $config = []): Client
     {
         // Set the Craft header by default.
         $defaultConfig = [
@@ -248,7 +248,7 @@ EOD;
      *
      * @return bool
      */
-    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion)
+    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion): bool
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date

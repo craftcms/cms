@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
@@ -28,7 +29,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tag');
     }
@@ -36,7 +37,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -44,7 +45,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -52,7 +53,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -62,7 +63,7 @@ class Tag extends Element
      *
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new TagQuery(get_called_class());
     }
@@ -70,7 +71,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources($context): array
     {
         $sources = [];
 
@@ -110,7 +111,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return true;
     }
@@ -149,7 +150,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [

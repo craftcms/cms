@@ -47,7 +47,7 @@ class Route extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%routes}}';
     }
@@ -57,7 +57,7 @@ class Route extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

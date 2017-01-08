@@ -23,5 +23,5 @@ interface LocalVolumeInterface
      *
      * @return string The root path for the volume
      */
-    public function getRootPath();
+    public function getRootPath(): string;
 }

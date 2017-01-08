@@ -110,7 +110,7 @@ class InfoPanel extends Panel
      *
      * @return array
      */
-    private function _getPhpInfo()
+    private function _getPhpInfo(): array
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 

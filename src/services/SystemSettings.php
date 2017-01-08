@@ -45,7 +45,7 @@ class SystemSettings extends Component
      *
      * @return array
      */
-    public function getSettings(string $category)
+    public function getSettings(string $category): array
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -89,7 +89,7 @@ class SystemSettings extends Component
      *
      * @return bool Whether the new settings saved
      */
-    public function saveSettings(string $category, array $settings = null)
+    public function saveSettings(string $category, array $settings = null): bool
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -122,7 +122,7 @@ class SystemSettings extends Component
      *
      * @return MailSettings
      */
-    public function getEmailSettings()
+    public function getEmailSettings(): MailSettings
     {
         $settings = $this->getSettings('email');
 

@@ -66,7 +66,7 @@ class Template
      *
      * @return array
      */
-    public static function paginateCriteria(ElementQueryInterface $query)
+    public static function paginateCriteria(ElementQueryInterface $query): array
     {
         /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
@@ -124,7 +124,7 @@ class Template
      *
      * @return \Twig_Markup
      */
-    public static function raw($value)
+    public static function raw($value): \Twig_Markup
     {
         return new \Twig_Markup($value, Craft::$app->charset);
     }

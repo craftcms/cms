@@ -114,7 +114,7 @@ class Elements extends Component
      *
      * @return ElementInterface The element
      */
-    public function createElement($config)
+    public function createElement($config): ElementInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -272,7 +272,7 @@ class Elements extends Component
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      *                   will be returned.
      */
-    public function getEnabledSiteIdsForElement(int $elementId)
+    public function getEnabledSiteIdsForElement(int $elementId): array
     {
         return (new Query())
             ->select(['siteId'])
@@ -336,7 +336,7 @@ class Elements extends Component
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, $runValidation = true)
+    public function saveElement(ElementInterface $element, $runValidation = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
@@ -776,7 +776,7 @@ class Elements extends Component
      * @return bool Whether the elements were merged successfully.
      * @throws \Exception if reasons
      */
-    public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId)
+    public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -895,7 +895,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null)
+    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
         if ($elementType === null) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -936,7 +936,7 @@ class Elements extends Component
      * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElement(ElementInterface $element)
+    public function deleteElement(ElementInterface $element): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
@@ -1012,7 +1012,7 @@ class Elements extends Component
      *
      * @return string[] The available element classes.
      */
-    public function getAllElementTypes()
+    public function getAllElementTypes(): array
     {
         $elementTypes = [
             Asset::class,
@@ -1042,7 +1042,7 @@ class Elements extends Component
      *
      * @return ElementActionInterface The element action
      */
-    public function createAction($config)
+    public function createAction($config): ElementActionInterface
     {
         /** @var ElementAction $action */
         $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
@@ -1079,7 +1079,7 @@ class Elements extends Component
      *
      * @return string The parsed string.
      */
-    public function parseRefs(string $str)
+    public function parseRefs(string $str): string
     {
         if (StringHelper::contains($str, '{')) {
             global $refTagsByElementHandle;

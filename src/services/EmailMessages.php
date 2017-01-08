@@ -52,7 +52,7 @@ class EmailMessages extends Component
      *
      * @return RebrandEmail[]
      */
-    public function getAllMessages(string $language = null)
+    public function getAllMessages(string $language = null): array
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -104,7 +104,7 @@ class EmailMessages extends Component
      *
      * @return RebrandEmail
      */
-    public function getMessage(string $key, string $language = null)
+    public function getMessage(string $key, string $language = null): RebrandEmail
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -129,7 +129,7 @@ class EmailMessages extends Component
      *
      * @return bool
      */
-    public function saveMessage(RebrandEmail $message)
+    public function saveMessage(RebrandEmail $message): bool
     {
         $record = $this->_getMessageRecord($message->key, $message->language);
 
@@ -153,7 +153,7 @@ class EmailMessages extends Component
      *
      * @return array
      */
-    private function _getAllMessageKeys()
+    private function _getAllMessageKeys(): array
     {
         $this->_setAllMessageInfo();
 
@@ -257,7 +257,7 @@ class EmailMessages extends Component
      *
      * @return EmailMessageRecord
      */
-    private function _getMessageRecord(string $key, string $language = null)
+    private function _getMessageRecord(string $key, string $language = null): EmailMessageRecord
     {
         if ($language === null) {
             $language = Craft::$app->language;

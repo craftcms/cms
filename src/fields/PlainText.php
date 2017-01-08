@@ -27,7 +27,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Plain Text');
     }
@@ -83,7 +83,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         if (!$this->maxLength) {
             return Schema::TYPE_TEXT;
@@ -95,7 +95,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
             [

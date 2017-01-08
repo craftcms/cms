@@ -316,7 +316,7 @@ class AssetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'source' was set to an invalid handle
         if ($this->volumeId === []) {

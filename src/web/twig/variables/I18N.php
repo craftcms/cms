@@ -27,7 +27,7 @@ class I18N
      *
      * @return Locale[]
      */
-    public function getAllLocales()
+    public function getAllLocales(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getAllLocales()', 'craft.i18n.getAllLocales() has been deprecated. Use craft.app.i18n.allLocales instead.');
 
@@ -39,7 +39,7 @@ class I18N
      *
      * @return Locale[]
      */
-    public function getAppLocales()
+    public function getAppLocales(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getAppLocales()', 'craft.i18n.getAppLocales() has been deprecated. Use craft.app.i18n.appLocales instead.');
 
@@ -51,7 +51,7 @@ class I18N
      *
      * @return Locale
      */
-    public function getCurrentLocale()
+    public function getCurrentLocale(): Locale
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getCurrentLocale()', 'craft.i18n.getCurrentLocale() has been deprecated. Use craft.app.locale instead.');
 
@@ -65,7 +65,7 @@ class I18N
      *
      * @return Locale
      */
-    public function getLocaleById(string $localeId)
+    public function getLocaleById(string $localeId): Locale
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getLocaleById()', 'craft.i18n.getLocaleById() has been deprecated. Use craft.app.i18n.getLocaleById() instead.');
 
@@ -77,7 +77,7 @@ class I18N
      *
      * @return Locale[]
      */
-    public function getSiteLocales()
+    public function getSiteLocales(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getSiteLocales()', 'craft.i18n.getSiteLocales() has been deprecated. Use craft.app.i18n.siteLocales instead.');
 
@@ -89,7 +89,7 @@ class I18N
      *
      * @return array
      */
-    public function getSiteLocaleIds()
+    public function getSiteLocaleIds(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getSiteLocaleIds()', 'craft.i18n.getSiteLocaleIds() has been deprecated. Use craft.app.i18n.siteLocaleIds instead.');
 
@@ -101,7 +101,7 @@ class I18N
      *
      * @return string
      */
-    public function getPrimarySiteLocale()
+    public function getPrimarySiteLocale(): string
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getPrimarySiteLocale()', 'craft.i18n.getPrimarySiteLocale() has been deprecated. Use craft.app.i18n.primarySiteLocale instead.');
 
@@ -113,7 +113,7 @@ class I18N
      *
      * @return Locale[]
      */
-    public function getEditableLocales()
+    public function getEditableLocales(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getEditableLocales()', 'craft.i18n.getEditableLocales() has been deprecated. Use craft.app.i18n.editableLocales instead.');
 
@@ -125,7 +125,7 @@ class I18N
      *
      * @return array
      */
-    public function getEditableLocaleIds()
+    public function getEditableLocaleIds(): array
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getEditableLocaleIds()', 'craft.i18n.getEditableLocaleIds() has been deprecated. Use craft.app.i18n.editableLocaleIds instead.');
 
@@ -139,7 +139,7 @@ class I18N
      *
      * @return Locale
      */
-    public function getLocaleData(string $localeId = null)
+    public function getLocaleData(string $localeId = null): Locale
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getLocaleData()', 'craft.i18n.getLocaleData() has been deprecated. Use craft.app.locale or craft.app.i18n.getLocaleById() instead.');
 
@@ -156,7 +156,7 @@ class I18N
      *
      * @return string
      */
-    public function getDatepickerJsFormat()
+    public function getDatepickerJsFormat(): string
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getDatepickerJsFormat()', 'craft.i18n.getDatepickerJsFormat() has been deprecated. Use craft.app.locale.getDateFormat(\'short\', \'jui\') instead.');
 
@@ -168,7 +168,7 @@ class I18N
      *
      * @return string
      */
-    public function getTimepickerJsFormat()
+    public function getTimepickerJsFormat(): string
     {
         Craft::$app->getDeprecator()->log('craft.i18n.getTimepickerJsFormat()', 'craft.i18n.getTimepickerJsFormat() has been deprecated. Use craft.app.locale.getTimeFormat(\'short\', \'php\') instead.');
 

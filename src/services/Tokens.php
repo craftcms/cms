@@ -125,7 +125,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function incrementTokenUsageCountById(int $tokenId)
+    public function incrementTokenUsageCountById(int $tokenId): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
@@ -148,7 +148,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function deleteTokenById(int $tokenId)
+    public function deleteTokenById(int $tokenId): bool
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%tokens}}', ['id' => $tokenId])
@@ -162,7 +162,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function deleteExpiredTokens()
+    public function deleteExpiredTokens(): bool
     {
         // Ignore if we've already done this once during the request
         if ($this->_deletedExpiredTokens) {

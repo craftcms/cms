@@ -246,7 +246,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         $this->joinElementTable('matrixblocks');
 
@@ -300,7 +300,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function customFields()
+    protected function customFields(): array
     {
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
 

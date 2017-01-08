@@ -40,7 +40,7 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetModalBody()
+    public function actionGetModalBody(): Response
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
         $elementType = $this->getElementType();
@@ -91,7 +91,7 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionGetEditorHtml()
+    public function actionGetEditorHtml(): Response
     {
         $element = $this->_getEditorElement();
         $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
@@ -106,7 +106,7 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionSaveElement()
+    public function actionSaveElement(): Response
     {
         /** @var Element $element */
         $element = $this->_getEditorElement();
@@ -160,7 +160,7 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCategoriesInputHtml()
+    public function actionGetCategoriesInputHtml(): Response
     {
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
@@ -204,7 +204,7 @@ class ElementsController extends BaseElementsController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _getEditorElement()
+    private function _getEditorElement(): ElementInterface
     {
         $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
@@ -301,7 +301,7 @@ class ElementsController extends BaseElementsController
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites)
+    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
         /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);

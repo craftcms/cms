@@ -96,7 +96,7 @@ class Application extends \yii\web\Application
      * @throws ForbiddenHttpException
      * @throws \yii\web\NotFoundHttpException
      */
-    public function handleRequest($request)
+    public function handleRequest($request): Response
     {
         // If this is a resource request, we should respond with the resource ASAP
         $this->_processResourceRequest();
@@ -477,7 +477,7 @@ class Application extends \yii\web\Application
      *
      * @return bool
      */
-    private function _isSpecialCaseActionRequest(Request $request)
+    private function _isSpecialCaseActionRequest(Request $request): bool
     {
         $segments = $request->getActionSegments();
 
@@ -625,7 +625,7 @@ class Application extends \yii\web\Application
      *
      * @return bool
      */
-    private function _checkSystemStatusPermissions()
+    private function _checkSystemStatusPermissions(): bool
     {
         if ($this->getIsSystemOn()) {
             return true;

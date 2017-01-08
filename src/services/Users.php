@@ -224,7 +224,7 @@ class Users extends Component
      *
      * @return bool Whether the code is still valid.
      */
-    public function isVerificationCodeValidForUser(User $user, string $code)
+    public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
         $valid = false;
         $userRecord = $this->_getUserRecordById($user->id);
@@ -289,7 +289,7 @@ class Users extends Component
      *
      * @return array The user’s preferences
      */
-    public function getUserPreferences(int $userId)
+    public function getUserPreferences(int $userId): array
     {
         // TODO: Remove try/catch after next breakpoint
         try {
@@ -333,7 +333,7 @@ class Users extends Component
      *
      * @return bool Whether the email was sent successfully.
      */
-    public function sendActivationEmail(User $user)
+    public function sendActivationEmail(User $user): bool
     {
         // If the user doesn't have a password yet, use a Password Reset URL
         if (!$user->password) {
@@ -357,7 +357,7 @@ class Users extends Component
      *
      * @return bool Whether the email was sent successfully.
      */
-    public function sendNewEmailVerifyEmail(User $user)
+    public function sendNewEmailVerifyEmail(User $user): bool
     {
         $url = $this->getEmailVerifyUrl($user);
 
@@ -376,7 +376,7 @@ class Users extends Component
      *
      * @return bool Whether the email was sent successfully.
      */
-    public function sendPasswordResetEmail(User $user)
+    public function sendPasswordResetEmail(User $user): bool
     {
         $url = $this->getPasswordResetUrl($user);
 
@@ -393,7 +393,7 @@ class Users extends Component
      *
      * @return string The new Email Verification URL.
      */
-    public function getEmailVerifyUrl(User $user)
+    public function getEmailVerifyUrl(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -427,7 +427,7 @@ class Users extends Component
      *
      * @return string The new Password Reset URL.
      */
-    public function getPasswordResetUrl(User $user)
+    public function getPasswordResetUrl(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -461,7 +461,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = '')
+    public function saveUserPhoto(string $fileLocation, User $user, string $filename = ''): bool
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
@@ -523,7 +523,7 @@ class Users extends Component
      *
      * @return bool
      */
-    public function updateUserLoginInfo(User $user)
+    public function updateUserLoginInfo(User $user): bool
     {
         $userRecord = $this->_getUserRecordById($user->id);
 
@@ -544,7 +544,7 @@ class Users extends Component
      *
      * @return bool Whether the user’s record was updated successfully.
      */
-    public function handleInvalidLogin(User $user)
+    public function handleInvalidLogin(User $user): bool
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $currentTime = DateTimeHelper::currentUTCDateTime();
@@ -587,7 +587,7 @@ class Users extends Component
      * @return bool Whether the user was activated successfully.
      * @throws \Exception if reasons
      */
-    public function activateUser(User $user)
+    public function activateUser(User $user): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -669,7 +669,7 @@ class Users extends Component
      * @return bool Whether the user was unlocked successfully.
      * @throws \Exception if reasons
      */
-    public function unlockUser(User $user)
+    public function unlockUser(User $user): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -725,7 +725,7 @@ class Users extends Component
      * @return bool Whether the user was suspended successfully.
      * @throws \Exception if reasons
      */
-    public function suspendUser(User $user)
+    public function suspendUser(User $user): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -777,7 +777,7 @@ class Users extends Component
      * @return bool Whether the user was unsuspended successfully.
      * @throws \Exception if reasons
      */
-    public function unsuspendUser(User $user)
+    public function unsuspendUser(User $user): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -830,7 +830,7 @@ class Users extends Component
      *
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null)
+    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->upsert(
@@ -855,7 +855,7 @@ class Users extends Component
      *
      * @return bool Whether the message was un-shunned successfully.
      */
-    public function unshunMessageForUser(int $userId, string $message)
+    public function unshunMessageForUser(int $userId, string $message): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
@@ -877,7 +877,7 @@ class Users extends Component
      *
      * @return bool Whether the user has shunned the message.
      */
-    public function hasUserShunnedMessage(int $userId, string $message)
+    public function hasUserShunnedMessage(int $userId, string $message): bool
     {
         return (new Query())
             ->from(['{{%shunnedmessages}}'])
@@ -903,7 +903,7 @@ class Users extends Component
      *
      * @return string The user’s brand new verification code.
      */
-    public function setVerificationCodeOnUser(User $user)
+    public function setVerificationCodeOnUser(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
@@ -957,7 +957,7 @@ class Users extends Component
      *
      * @return bool Whether the users were successfully assigned to the groups.
      */
-    public function assignUserToGroups(int $userId, $groupIds = null)
+    public function assignUserToGroups(int $userId, $groupIds = null): bool
     {
         // Make sure $groupIds is an array
         if (!is_array($groupIds)) {
@@ -1031,7 +1031,7 @@ class Users extends Component
      *
      * @return bool Whether the user was assigned to the default group.
      */
-    public function assignUserToDefaultGroup(User $user)
+    public function assignUserToDefaultGroup(User $user): bool
     {
         $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
 
@@ -1073,7 +1073,7 @@ class Users extends Component
      * @return UserRecord
      * @throws UserNotFoundException if $userId is invalid
      */
-    private function _getUserRecordById(int $userId)
+    private function _getUserRecordById(int $userId): UserRecord
     {
         $userRecord = UserRecord::findOne($userId);
 
@@ -1091,7 +1091,7 @@ class Users extends Component
      *
      * @return string
      */
-    private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
+    private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
     {
         $securityService = Craft::$app->getSecurity();
         $unhashedCode = $securityService->generateRandomString(32);
@@ -1109,7 +1109,7 @@ class Users extends Component
      *
      * @return bool
      */
-    private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord)
+    private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
     {
         if ($userRecord->invalidLoginWindowStart) {
             $duration = new \DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));

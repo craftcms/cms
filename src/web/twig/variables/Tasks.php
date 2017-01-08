@@ -39,7 +39,7 @@ class Tasks
      *
      * @return bool Whether there is a task that is currently running
      */
-    public function isTaskRunning()
+    public function isTaskRunning(): bool
     {
         Craft::$app->getDeprecator()->log('craft.tasks.isTaskRunning()', 'craft.tasks.isTaskRunning() has been deprecated. Use craft.app.tasks.isTaskRunning instead.');
 
@@ -53,7 +53,7 @@ class Tasks
      *
      * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending(string $type = null)
+    public function areTasksPending(string $type = null): bool
     {
         Craft::$app->getDeprecator()->log('craft.tasks.areTasksPending()', 'craft.tasks.areTasksPending() has been deprecated. Use craft.app.tasks.areTasksPending() instead.');
 
@@ -65,7 +65,7 @@ class Tasks
      *
      * @return bool Whether any tasks have failed
      */
-    public function haveTasksFailed()
+    public function haveTasksFailed(): bool
     {
         Craft::$app->getDeprecator()->log('craft.tasks.haveTasksFailed()', 'craft.tasks.haveTasksFailed() has been deprecated. Use craft.app.tasks.haveTasksFailed instead.');
 
@@ -77,7 +77,7 @@ class Tasks
      *
      * @return int The total number of active tasks
      */
-    public function getTotalTasks()
+    public function getTotalTasks(): int
     {
         Craft::$app->getDeprecator()->log('craft.tasks.getTotalTasks()', 'craft.tasks.getTotalTasks() has been deprecated. Use craft.app.tasks.totalTasks instead.');
 

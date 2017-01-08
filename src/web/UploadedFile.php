@@ -48,7 +48,7 @@ class UploadedFile extends \yii\web\UploadedFile
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true)
+    public static function getInstancesByName($name, $lookForSingleInstance = true): array
     {
         $name = self::_normalizeName($name);
         $instances = static::getInstancesByName($name);
@@ -101,7 +101,7 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @return string
      */
-    private static function _normalizeName(string $name)
+    private static function _normalizeName(string $name): string
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]

@@ -78,7 +78,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return true;
     }
@@ -196,7 +196,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;
     }
@@ -204,7 +204,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationKey(ElementInterface $element)
+    public function getTranslationKey(ElementInterface $element): string
     {
         /** @var Element $element */
         switch ($this->translationMethod) {
@@ -230,7 +230,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
             [
@@ -242,7 +242,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
@@ -256,7 +256,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = [];
 
@@ -270,7 +270,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
     }
@@ -340,7 +340,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Trigger a 'beforeElementSave' event
         $event = new FieldElementEvent([
@@ -367,7 +367,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementDelete(ElementInterface $element)
+    public function beforeElementDelete(ElementInterface $element): bool
     {
         // Trigger a 'beforeElementDelete' event
         $event = new FieldElementEvent([
@@ -400,7 +400,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return bool Whether the value should be considered "empty"
      */
-    protected function isValueEmpty($value, ElementInterface $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         return empty($value);
     }
@@ -457,7 +457,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return bool
      */
-    protected function isFresh($element)
+    protected function isFresh($element): bool
     {
         if ($this->_isFresh !== null) {
             return $this->_isFresh;

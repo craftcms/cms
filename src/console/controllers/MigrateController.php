@@ -170,7 +170,7 @@ class MigrateController extends BaseMigrateController
      *
      * @return MigrationManager
      */
-    protected function getMigrator()
+    protected function getMigrator(): MigrationManager
     {
         if ($this->_migrator === null) {
             switch ($this->type) {

@@ -35,7 +35,7 @@ class Header
      *
      * @return string
      */
-    public static function getMimeType()
+    public static function getMimeType(): string
     {
         if (self::$_mimeType !== null) {
             return self::$_mimeType;
@@ -62,7 +62,7 @@ class Header
      *
      * @return bool Whether setting the header was successful.
      */
-    public static function setContentTypeByExtension(string $extension)
+    public static function setContentTypeByExtension(string $extension): bool
     {
         $mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 
@@ -206,7 +206,7 @@ class Header
      *
      * @return bool
      */
-    public static function isHeaderSet(string $name)
+    public static function isHeaderSet(string $name): bool
     {
         return (static::getHeader($name) !== null);
     }
@@ -244,7 +244,7 @@ class Header
      *
      * @return bool
      */
-    public static function setHeader($header)
+    public static function setHeader($header): bool
     {
         // Don't try to set headers when it's already too late
         if (headers_sent()) {

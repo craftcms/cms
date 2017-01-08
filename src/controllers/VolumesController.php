@@ -49,7 +49,7 @@ class VolumesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionVolumeIndex()
+    public function actionVolumeIndex(): string
     {
         $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
@@ -67,7 +67,7 @@ class VolumesController extends Controller
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null)
+    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): string
     {
         $this->requireAdmin();
 
@@ -175,7 +175,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): Response
     {
         $this->requirePostRequest();
 
@@ -227,7 +227,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderVolumes()
+    public function actionReorderVolumes(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -243,7 +243,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteVolume()
+    public function actionDeleteVolume(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -262,7 +262,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionLoadVolumeTypeData()
+    public function actionLoadVolumeTypeData(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

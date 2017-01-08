@@ -63,7 +63,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return bool Whether files are stored locally.
      */
-    public static function isLocal()
+    public static function isLocal(): bool
     {
         return false;
     }
@@ -132,7 +132,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory, bool $recursive)
+    public function getFileList(string $directory, bool $recursive): array
     {
         return $this->getFilesystem()->listContents($directory, $recursive);
     }
@@ -140,7 +140,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream(string $path, $stream, array $config)
+    public function createFileByStream(string $path, $stream, array $config): bool
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -154,7 +154,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function updateFileByStream(string $path, $stream, array $config)
+    public function updateFileByStream(string $path, $stream, array $config): bool
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -168,7 +168,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function fileExists(string $path)
+    public function fileExists(string $path): bool
     {
         return $this->getFilesystem()->has($path);
     }
@@ -188,7 +188,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function deleteFile(string $path)
+    public function deleteFile(string $path): bool
     {
         try {
             $result = $this->getFilesystem()->delete($path);
@@ -208,7 +208,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath)
+    public function renameFile(string $path, string $newPath): bool
     {
         try {
             return $this->getFilesystem()->rename($path, $newPath);
@@ -224,7 +224,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath)
+    public function copyFile(string $path, string $newPath): bool
     {
         return $this->getFilesystem()->copy($path, $newPath);
     }
@@ -232,7 +232,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createDir(string $path)
+    public function createDir(string $path): bool
     {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException(Craft::t('app',
@@ -246,7 +246,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function deleteDir(string $path)
+    public function deleteDir(string $path): bool
     {
         try {
             return $this->getFilesystem()->deleteDir($path);
@@ -259,7 +259,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function renameDir(string $path, string $newName): bool
     {
         if (!$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
@@ -299,7 +299,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function saveFileLocally($uriPath, $targetPath)
+    public function saveFileLocally($uriPath, $targetPath): int
     {
         $stream = $this->getFilesystem()->readStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
@@ -357,7 +357,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return array
      */
-    protected function addFileMetadataToConfig(array $config)
+    protected function addFileMetadataToConfig(array $config): array
     {
         $config = array_merge($config,
             ['visibility' => $this->getVisibilitySetting()]);
@@ -372,7 +372,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return bool
      */
-    protected function invalidateCdnPath(string $path)
+    protected function invalidateCdnPath(string $path): bool
     {
         return true;
     }
@@ -382,7 +382,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return string
      */
-    protected function getVisibilitySetting()
+    protected function getVisibilitySetting(): string
     {
         return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }

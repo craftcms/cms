@@ -52,7 +52,7 @@ class AssetIndexData extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%assetindexdata}}';
     }
@@ -62,7 +62,7 @@ class AssetIndexData extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }

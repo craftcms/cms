@@ -26,7 +26,7 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Unsuspend');
     }
@@ -34,7 +34,7 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         // Get the users that are suspended
         $query->status(User::STATUS_SUSPENDED);

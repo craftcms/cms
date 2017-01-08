@@ -33,7 +33,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isAbsoluteUrl(string $url)
+    public static function isAbsoluteUrl(string $url): bool
     {
         return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
     }
@@ -45,7 +45,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isProtocolRelativeUrl(string $url)
+    public static function isProtocolRelativeUrl(string $url): bool
     {
         return (strpos($url, '//') === 0);
     }
@@ -57,7 +57,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isRootRelativeUrl(string $url)
+    public static function isRootRelativeUrl(string $url): bool
     {
         return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
     }
@@ -69,7 +69,7 @@ class UrlHelper
      *
      * @return bool
      */
-    public static function isFullUrl(string $url)
+    public static function isFullUrl(string $url): bool
     {
         return (static::isAbsoluteUrl($url) || static::isRootRelativeUrl($url) || static::isProtocolRelativeUrl($url));
     }
@@ -82,7 +82,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithParams(string $url, $params)
+    public static function urlWithParams(string $url, $params): string
     {
         $params = self::_normalizeParams($params, $anchor);
 
@@ -111,7 +111,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithToken(string $url, string $token)
+    public static function urlWithToken(string $url, string $token): string
     {
         $protocol = static::getProtocolForTokenizedUrl();
         $url = static::urlWithProtocol($url, $protocol);
@@ -129,7 +129,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function urlWithProtocol(string $url, string $protocol)
+    public static function urlWithProtocol(string $url, string $protocol): string
     {
         if (!$url || !$protocol) {
             return $url;
@@ -157,7 +157,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function url(string $path = '', $params = null, string $protocol = null, bool $mustShowScriptName = false)
+    public static function url(string $path = '', $params = null, string $protocol = null, bool $mustShowScriptName = false): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -200,7 +200,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function cpUrl(string $path = '', $params = null, string $protocol = null)
+    public static function cpUrl(string $path = '', $params = null, string $protocol = null): string
     {
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
@@ -219,7 +219,7 @@ class UrlHelper
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
-    public static function siteUrl(string $path = '', $params = null, string $protocol = null, int $siteId = null)
+    public static function siteUrl(string $path = '', $params = null, string $protocol = null, int $siteId = null): string
     {
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();
@@ -259,7 +259,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function resourceUrl(string $uri = '', $params = null, string $protocol = null)
+    public static function resourceUrl(string $uri = '', $params = null, string $protocol = null): string
     {
         $uri = trim($uri, '/');
 
@@ -304,7 +304,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, string $protocol = null)
+    public static function actionUrl(string $path = '', $params = null, string $protocol = null): string
     {
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
 
@@ -318,7 +318,7 @@ class UrlHelper
      *
      * @return string The URL without a query string.
      */
-    public static function stripQueryString(string $url)
+    public static function stripQueryString(string $url): string
     {
         if (($qIndex = mb_strpos($url, '?')) !== false) {
             $url = mb_substr($url, 0, $qIndex);
@@ -339,7 +339,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getProtocolForTokenizedUrl()
+    public static function getProtocolForTokenizedUrl(): string
     {
         $useSslOnTokenizedUrls = Craft::$app->getConfig()->get('useSslOnTokenizedUrls');
 
@@ -372,7 +372,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function baseUrl()
+    public static function baseUrl(): string
     {
         $currentSite = false;
 
@@ -407,7 +407,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _createUrl(string $path, $params, $protocol, bool $cpUrl, bool $mustShowScriptName)
+    private static function _createUrl(string $path, $params, $protocol, bool $cpUrl, bool $mustShowScriptName): string
     {
         // Normalize the params
         $params = self::_normalizeParams($params, $anchor);
@@ -500,7 +500,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _normalizeParams($params, &$anchor)
+    private static function _normalizeParams($params, &$anchor): string
     {
         if (is_array($params)) {
             // See if there's an anchor

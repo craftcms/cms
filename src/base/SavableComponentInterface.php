@@ -25,7 +25,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool whether the component should be selectable in component Type selects.
      */
-    public static function isSelectable();
+    public static function isSelectable(): bool;
 
     // Public Methods
     // =========================================================================
@@ -35,7 +35,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component is new
      */
-    public function getIsNew();
+    public function getIsNew(): bool;
 
     /**
      * Validates the component.
@@ -47,7 +47,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the validation is successful without any error.
      */
-    public function validate($attributeNames = null, $clearErrors = true);
+    public function validate($attributeNames = null, $clearErrors = true): bool;
 
     /**
      * Returns the list of settings attribute names.
@@ -58,14 +58,14 @@ interface SavableComponentInterface extends ComponentInterface
      * @return array The list of settings attribute names
      * @see getSettings()
      */
-    public function settingsAttributes();
+    public function settingsAttributes(): array;
 
     /**
      * Returns an array of the component’s settings.
      *
      * @return array The component’s settings.
      */
-    public function getSettings();
+    public function getSettings(): array;
 
     /**
      * Returns the component’s settings HTML.
@@ -171,7 +171,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component should be saved
      */
-    public function beforeSave(bool $isNew);
+    public function beforeSave(bool $isNew): bool;
 
     /**
      * Performs actions after a component is saved.
@@ -187,7 +187,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component should be deleted
      */
-    public function beforeDelete();
+    public function beforeDelete(): bool;
 
     /**
      * Performs actions after a component is deleted.

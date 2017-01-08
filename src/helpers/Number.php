@@ -27,7 +27,7 @@ class Number
      *
      * @return string The number word, or the original number if it's >= 10
      */
-    public static function word(int $num)
+    public static function word(int $num): string
     {
         $numberWordMap = [
             1 => Craft::t('app', 'one'),
@@ -56,7 +56,7 @@ class Number
      *
      * @return string The alphabetic version of the number
      */
-    public static function upperAlpha(int $num)
+    public static function upperAlpha(int $num): string
     {
         $num--;
         $alpha = '';
@@ -78,7 +78,7 @@ class Number
      *
      * @return string The alphabetic version of the number
      */
-    public static function lowerAlpha(int $num)
+    public static function lowerAlpha(int $num): string
     {
         $alpha = static::upperAlpha($num);
 
@@ -92,7 +92,7 @@ class Number
      *
      * @return string The roman numeral version of the number
      */
-    public static function upperRoman(int $num)
+    public static function upperRoman(int $num): string
     {
         $roman = '';
 
@@ -129,7 +129,7 @@ class Number
      *
      * @return string The roman numeral version of the number
      */
-    public static function lowerRoman(int $num)
+    public static function lowerRoman(int $num): string
     {
         $roman = static::upperRoman($num);
 

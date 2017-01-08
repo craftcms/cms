@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
@@ -34,7 +35,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Matrix Block');
     }
@@ -42,7 +43,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -50,7 +51,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -60,7 +61,7 @@ class MatrixBlock extends Element
      *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new MatrixBlockQuery(get_called_class());
     }
@@ -256,7 +257,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getContentTable()
+    public function getContentTable(): string
     {
         return Craft::$app->getMatrix()->getContentTableName($this->_getField());
     }
@@ -264,7 +265,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldColumnPrefix()
+    public function getFieldColumnPrefix(): string
     {
         return 'field_'.$this->getType()->handle.'_';
     }
@@ -274,7 +275,7 @@ class MatrixBlock extends Element
      *
      * @return string
      */
-    public function getFieldContext()
+    public function getFieldContext(): string
     {
         return 'matrixBlockType:'.$this->typeId;
     }
@@ -282,7 +283,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function hasEagerLoadedElements(string $handle)
+    public function hasEagerLoadedElements(string $handle): bool
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle.':'.$handle;
@@ -326,7 +327,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getHasFreshContent()
+    public function getHasFreshContent(): bool
     {
         // Defer to the owner element
         $owner = $this->getOwner();
@@ -388,7 +389,7 @@ class MatrixBlock extends Element
      *
      * @return Matrix
      */
-    private function _getField()
+    private function _getField(): Matrix
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);

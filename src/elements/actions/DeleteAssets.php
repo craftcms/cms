@@ -26,7 +26,7 @@ class DeleteAssets extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Delete…');
     }
@@ -34,7 +34,7 @@ class DeleteAssets extends ElementAction
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return true;
     }
@@ -50,7 +50,7 @@ class DeleteAssets extends ElementAction
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         try {
             foreach ($query->all() as $asset) {

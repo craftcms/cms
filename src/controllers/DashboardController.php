@@ -44,7 +44,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $dashboardService = Craft::$app->getDashboard();
         $view = Craft::$app->getView();
@@ -143,7 +143,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionCreateWidget()
+    public function actionCreateWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -175,7 +175,7 @@ class DashboardController extends Controller
      *
      * @throws BadRequestHttpException
      */
-    public function actionSaveWidgetSettings()
+    public function actionSaveWidgetSettings(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -212,7 +212,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteUserWidget()
+    public function actionDeleteUserWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -228,7 +228,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionChangeWidgetColspan()
+    public function actionChangeWidgetColspan(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -247,7 +247,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionReorderUserWidgets()
+    public function actionReorderUserWidgets(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -263,7 +263,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionGetFeedItems()
+    public function actionGetFeedItems(): Response
     {
         $this->requireAcceptsJson();
 
@@ -296,7 +296,7 @@ class DashboardController extends Controller
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\base\InvalidParamException
      */
-    public function actionSendSupportRequest()
+    public function actionSendSupportRequest(): string
     {
         $this->requirePostRequest();
 
@@ -549,7 +549,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getWidgetIconSvg(WidgetInterface $widget)
+    private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
         $iconPath = $widget->getIconPath();
 
@@ -579,7 +579,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getDefaultWidgetIconSvg(WidgetInterface $widget)
+    private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
@@ -593,7 +593,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    private function _saveAndReturnWidget(WidgetInterface $widget)
+    private function _saveAndReturnWidget(WidgetInterface $widget): Response
     {
         /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();

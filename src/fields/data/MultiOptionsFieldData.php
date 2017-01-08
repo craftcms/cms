@@ -54,7 +54,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
      *
      * @return bool
      */
-    public function contains($value)
+    public function contains($value): bool
     {
         $value = (string)$value;
 

@@ -29,7 +29,7 @@ class MigrationHelper
      *
      * @return bool
      */
-    public static function doesForeignKeyExist(string $tableName, $columns)
+    public static function doesForeignKeyExist(string $tableName, $columns): bool
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $columns = ArrayHelper::toArray($columns);
@@ -79,7 +79,7 @@ class MigrationHelper
      *
      * @return bool
      */
-    public static function doesIndexExist(string $tableName, $columns, bool $unique = false)
+    public static function doesIndexExist(string $tableName, $columns, bool $unique = false): bool
     {
         $columns = ArrayHelper::toArray($columns);
 
@@ -519,7 +519,7 @@ class MigrationHelper
      *
      * @return array An array of the foreign keys that were just dropped.
      */
-    public static function dropAllForeignKeysOnTable(string $tableName, Migration $migration = null)
+    public static function dropAllForeignKeysOnTable(string $tableName, Migration $migration = null): array
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($rawTableName);
@@ -601,7 +601,7 @@ class MigrationHelper
      *
      * @return array An array of the indexes that were just dropped.
      */
-    public static function dropAllIndexesOnTable(string $tableName, Migration $migration = null)
+    public static function dropAllIndexesOnTable(string $tableName, Migration $migration = null): array
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $indexes = [];
@@ -719,7 +719,7 @@ class MigrationHelper
      *
      * @return array
      */
-    private static function _getColumnsForFK($foreignKey)
+    private static function _getColumnsForFK($foreignKey): array
     {
         $columns = [];
 

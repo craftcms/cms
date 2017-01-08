@@ -43,7 +43,7 @@ class SitesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionSettingsIndex()
+    public function actionSettingsIndex(): string
     {
         $allSites = Craft::$app->getSites()->getAllSites();
 
@@ -61,7 +61,7 @@ class SitesController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site cannot be found
      */
-    public function actionEditSite(int $siteId = null, Site $site = null)
+    public function actionEditSite(int $siteId = null, Site $site = null): string
     {
         $variables = [];
 
@@ -158,7 +158,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderSites()
+    public function actionReorderSites(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +174,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSite()
+    public function actionDeleteSite(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

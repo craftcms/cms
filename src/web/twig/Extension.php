@@ -97,7 +97,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array An array of Twig_TokenParserInterface or Twig_TokenParserBrokerInterface instances
      */
-    public function getTokenParsers()
+    public function getTokenParsers(): array
     {
         return [
             new CacheTokenParser(),
@@ -140,7 +140,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_SimpleFilter[] An array of filters
      */
-    public function getFilters()
+    public function getFilters(): array
     {
         $formatter = Craft::$app->getFormatter();
         $security = Craft::$app->getSecurity();
@@ -213,7 +213,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter(string $message, string $category = null, array $params = null, string $language = null)
+    public function translateFilter(string $message, string $category = null, array $params = null, string $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -245,7 +245,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The string with the first character converted to upercase.
      */
-    public function ucfirstFilter(string $string)
+    public function ucfirstFilter(string $string): string
     {
         return StringHelper::upperCaseFirst($string);
     }
@@ -257,7 +257,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The string with the first character converted to lowercase.
      */
-    public function lcfirstFilter(string $string)
+    public function lcfirstFilter(string $string): string
     {
         return StringHelper::lowercaseFirst($string);
     }
@@ -272,7 +272,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The kebab-cased string
      */
-    public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true)
+    public function kebabFilter(string $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
     }
@@ -284,7 +284,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function camelFilter(string $string)
+    public function camelFilter(string $string): string
     {
         return StringHelper::toCamelCase($string);
     }
@@ -296,7 +296,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function pascalFilter(string $string)
+    public function pascalFilter(string $string): string
     {
         return StringHelper::toPascalCase($string);
     }
@@ -308,7 +308,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function snakeFilter(string $string)
+    public function snakeFilter(string $string): string
     {
         return StringHelper::toSnakeCase($string);
     }
@@ -347,7 +347,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array
      */
-    public function withoutFilter(array $arr, $exclude)
+    public function withoutFilter(array $arr, $exclude): array
     {
         $filteredArray = [];
 
@@ -371,7 +371,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function parseRefsFilter(string $str)
+    public function parseRefsFilter(string $str): \Twig_Markup
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
@@ -441,7 +441,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The formatted date
      */
-    public function atomFilter(\Twig_Environment $env, $date, $timezone = null)
+    public function atomFilter(\Twig_Environment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
     }
@@ -455,7 +455,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The formatted date
      */
-    public function rssFilter(\Twig_Environment $env, $date, $timezone = null)
+    public function rssFilter(\Twig_Environment $env, $date, $timezone = null): string
     {
         return \twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
     }
@@ -524,7 +524,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array
      */
-    public function groupFilter(array $arr, string $item)
+    public function groupFilter(array $arr, string $item): array
     {
         $groups = [];
 
@@ -546,7 +546,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return int
      */
-    public function indexOfFilter($haystack, $needle)
+    public function indexOfFilter($haystack, $needle): int
     {
         if (is_string($haystack)) {
             $index = strpos($haystack, $needle);
@@ -579,7 +579,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The escaped param value.
      */
-    public function literalFilter(string $value)
+    public function literalFilter(string $value): string
     {
         return Db::escapeParam($value);
     }
@@ -595,7 +595,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false)
+    public function markdownFilter(string $markdown, string $flavor = null, bool $inlineOnly = false): \Twig_Markup
     {
         if ($inlineOnly) {
             $html = Markdown::processParagraph($markdown, $flavor);
@@ -611,7 +611,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_SimpleFunction[] An array of functions
      */
-    public function getFunctions()
+    public function getFunctions(): array
     {
         return [
             new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
@@ -662,7 +662,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return \Twig_Markup
      */
-    public function redirectInputFunction(string $url)
+    public function redirectInputFunction(string $url): \Twig_Markup
     {
         return Template::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
     }
@@ -690,7 +690,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string
      */
-    public function renderObjectTemplate($template, $object)
+    public function renderObjectTemplate($template, $object): string
     {
         return Craft::$app->getView()->renderObjectTemplate($template, $object);
     }
@@ -720,7 +720,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return array An array of global variables
      */
-    public function getGlobals()
+    public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
         $request = Craft::$app->getRequest();
@@ -798,7 +798,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string The extension name
      */
-    public function getName()
+    public function getName(): string
     {
         return 'craft';
     }
@@ -821,7 +821,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @deprecated in Craft 3.0. Use head() instead.
      * @return \Twig_Markup
      */
-    public function getHeadHtml()
+    public function getHeadHtml(): \Twig_Markup
     {
         Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
 
@@ -836,7 +836,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @deprecated in Craft 3.0. Use endBody() instead.
      * @return \Twig_Markup
      */
-    public function getFootHtml()
+    public function getFootHtml(): \Twig_Markup
     {
         Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
 

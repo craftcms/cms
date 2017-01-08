@@ -22,7 +22,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return 'SMTP';
     }
@@ -117,7 +117,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getTransportConfig()
+    public function getTransportConfig(): array
     {
         $config = [
             'class' => 'Swift_SmtpTransport',

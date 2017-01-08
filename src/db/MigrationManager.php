@@ -126,7 +126,7 @@ class MigrationManager extends Component
      *
      * @return bool Whether the migrations were applied successfully
      */
-    public function up($limit = 0)
+    public function up($limit = 0): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
@@ -181,7 +181,7 @@ class MigrationManager extends Component
      *
      * @return bool Whether the migrations were reverted successfully
      */
-    public function down($limit = 1)
+    public function down($limit = 1): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
@@ -225,7 +225,7 @@ class MigrationManager extends Component
      * @return bool Whether the migration was applied successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateUp($migration)
+    public function migrateUp($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -277,7 +277,7 @@ class MigrationManager extends Component
      * @return bool Whether the migration was reverted successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateDown($migration)
+    public function migrateDown($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -328,7 +328,7 @@ class MigrationManager extends Component
      *
      * @return array The migration history
      */
-    public function getMigrationHistory(int $limit = null)
+    public function getMigrationHistory(int $limit = null): array
     {
         $history = $this->_createMigrationQuery()
             ->limit($limit)
@@ -382,7 +382,7 @@ class MigrationManager extends Component
      *
      * @return bool Whether the migration has been applied
      */
-    public function hasRun(string $name)
+    public function hasRun(string $name): bool
     {
         return $this->_createMigrationQuery()
             ->andWhere(['name' => $name])
@@ -394,7 +394,7 @@ class MigrationManager extends Component
      *
      * @return array The list of new migrations
      */
-    public function getNewMigrations()
+    public function getNewMigrations(): array
     {
         $migrations = [];
 
@@ -448,7 +448,7 @@ class MigrationManager extends Component
      *
      * @return array
      */
-    private function _normalizeMigration($migration)
+    private function _normalizeMigration($migration): array
     {
         if (is_string($migration)) {
             $migrationName = $migration;
@@ -466,7 +466,7 @@ class MigrationManager extends Component
      *
      * @return Query The query
      */
-    private function _createMigrationQuery()
+    private function _createMigrationQuery(): Query
     {
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {

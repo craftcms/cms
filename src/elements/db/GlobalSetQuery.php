@@ -91,7 +91,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         $this->joinElementTable('globalsets');
 

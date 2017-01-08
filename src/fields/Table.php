@@ -27,7 +27,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Table');
     }
@@ -51,7 +51,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_TEXT;
     }
@@ -154,7 +154,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, $element): string
     {
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
@@ -219,7 +219,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
@@ -236,7 +236,7 @@ class Table extends Field
      *
      * @return string
      */
-    private function _getInputHtml($value, $element, bool $static)
+    private function _getInputHtml($value, $element, bool $static): string
     {
         $columns = $this->columns;
 

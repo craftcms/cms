@@ -547,7 +547,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2handle(string $locale)
+    protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
         if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
@@ -567,7 +567,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2language(string $locale)
+    protected function locale2language(string $locale): string
     {
         $foundMatch = false;
 

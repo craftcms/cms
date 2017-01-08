@@ -54,7 +54,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getRawContent()
+    public function getRawContent(): string
     {
         return $this->_rawContent;
     }
@@ -64,7 +64,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getParsedContent()
+    public function getParsedContent(): string
     {
         return (string)$this;
     }
@@ -74,7 +74,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return \Twig_Markup[]
      */
-    public function getPages()
+    public function getPages(): array
     {
         if ($this->_pages !== null) {
             return $this->_pages;
@@ -113,7 +113,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return int
      */
-    public function getTotalPages()
+    public function getTotalPages(): int
     {
         return count($this->getPages());
     }

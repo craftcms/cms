@@ -81,7 +81,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateAccount()
+    public function actionValidateAccount(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -107,7 +107,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateSite()
+    public function actionValidateSite(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -134,7 +134,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionInstall()
+    public function actionInstall(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

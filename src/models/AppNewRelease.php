@@ -62,7 +62,7 @@ class AppNewRelease extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';

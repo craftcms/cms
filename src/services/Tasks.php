@@ -91,7 +91,7 @@ class Tasks extends Component
      * @throws \Exception
      * @return TaskInterface The task
      */
-    public function queueTask($task)
+    public function queueTask($task): TaskInterface
     {
         if (!$task instanceof TaskInterface) {
             $task = $this->createTask($task);
@@ -115,7 +115,7 @@ class Tasks extends Component
      *
      * @return TaskInterface The task
      */
-    public function createTask($config)
+    public function createTask($config): TaskInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -144,7 +144,7 @@ class Tasks extends Component
      * @return bool Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, bool $runValidation = true)
+    public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
         /** @var Task $task */
         if ($runValidation && !$task->validate()) {
@@ -298,7 +298,7 @@ class Tasks extends Component
      *
      * @return bool
      */
-    public function runTask(TaskInterface $task)
+    public function runTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -416,7 +416,7 @@ class Tasks extends Component
      *
      * @return TaskInterface[] All the tasks
      */
-    public function getAllTasks()
+    public function getAllTasks(): array
     {
         $tasks = $this->_createTaskQuery()
             ->all();
@@ -463,7 +463,7 @@ class Tasks extends Component
      *
      * @return bool Whether there is a task that is currently running
      */
-    public function getIsTaskRunning()
+    public function getIsTaskRunning(): bool
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
         return $this->_createTaskQuery()
@@ -482,7 +482,7 @@ class Tasks extends Component
      *
      * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending(string $type = null)
+    public function areTasksPending(string $type = null): bool
     {
         $query = $this->_createTaskQuery()
             ->where([
@@ -505,7 +505,7 @@ class Tasks extends Component
      *
      * @return TaskInterface[] The pending tasks
      */
-    public function getPendingTasks(string $type = null, int $limit = null)
+    public function getPendingTasks(string $type = null, int $limit = null): array
     {
         $query = $this->_createTaskQuery()
             ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
@@ -532,7 +532,7 @@ class Tasks extends Component
      *
      * @return bool Whether any tasks have failed
      */
-    public function getHaveTasksFailed()
+    public function getHaveTasksFailed(): bool
     {
         return $this->_createTaskQuery()
             ->where(['level' => 0, 'status' => Task::STATUS_ERROR])
@@ -544,7 +544,7 @@ class Tasks extends Component
      *
      * @return int The total number of active tasks
      */
-    public function getTotalTasks()
+    public function getTotalTasks(): int
     {
         return $this->_createTaskQuery()
             ->where([
@@ -616,7 +616,7 @@ class Tasks extends Component
      *
      * @return bool Whether the task was deleted successfully
      */
-    public function deleteTaskById(int $taskId)
+    public function deleteTaskById(int $taskId): bool
     {
         $task = $this->getTaskById($taskId);
 
@@ -635,7 +635,7 @@ class Tasks extends Component
      * @return bool Whether the task was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTask(TaskInterface $task)
+    public function deleteTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -756,7 +756,7 @@ EOD;
      *
      * @return Query
      */
-    private function _createTaskQuery()
+    private function _createTaskQuery(): Query
     {
         return (new Query())
             ->select([

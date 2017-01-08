@@ -283,7 +283,7 @@ class Locale extends Object
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string)$this->id;
     }
@@ -293,7 +293,7 @@ class Locale extends Object
      *
      * @return string This locale’s language ID.
      */
-    public function getLanguageID()
+    public function getLanguageID(): string
     {
         if (($pos = strpos($this->id, '-')) !== false) {
             return substr($this->id, 0, $pos);
@@ -357,7 +357,7 @@ class Locale extends Object
      *
      * @return string
      */
-    public function getDisplayName(string $inLocale = null)
+    public function getDisplayName(string $inLocale = null): string
     {
         // If no target locale is specified, default to this locale
         if ($inLocale === null) {
@@ -402,7 +402,7 @@ class Locale extends Object
      *
      * @return string The language’s orientation.
      */
-    public function getOrientation()
+    public function getOrientation(): string
     {
         if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
             return 'rtl';
@@ -416,7 +416,7 @@ class Locale extends Object
      *
      * @return Formatter A formatter for this locale.
      */
-    public function getFormatter()
+    public function getFormatter(): Formatter
     {
         if ($this->_formatter === null) {
             $config = [
@@ -477,7 +477,7 @@ class Locale extends Object
      *
      * @return string The localized ICU date format.
      */
-    public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU)
+    public function getDateFormat(string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, false, $format);
     }
@@ -490,7 +490,7 @@ class Locale extends Object
      *
      * @return string The localized ICU time format.
      */
-    public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU)
+    public function getTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, false, true, $format);
     }
@@ -503,7 +503,7 @@ class Locale extends Object
      *
      * @return string The localized ICU date + time format.
      */
-    public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU)
+    public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, true, $format);
     }
@@ -517,7 +517,7 @@ class Locale extends Object
      *
      * @return string The localized month name.
      */
-    public function getMonthName(int $month, string $length = null, bool $standAlone = true)
+    public function getMonthName(int $month, string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -566,7 +566,7 @@ class Locale extends Object
      *
      * @return array The localized month names.
      */
-    public function getMonthNames(string $length = null, bool $standAlone = true)
+    public function getMonthNames(string $length = null, bool $standAlone = true): array
     {
         $monthNames = [];
 
@@ -586,7 +586,7 @@ class Locale extends Object
      *
      * @return string The localized day of the week name.
      */
-    public function getWeekDayName(int $day, string $length = null, bool $standAlone = true)
+    public function getWeekDayName(int $day, string $length = null, bool $standAlone = true): string
     {
         if ($length === null) {
             $length = self::LENGTH_FULL;
@@ -650,7 +650,7 @@ class Locale extends Object
      *
      * @return array The localized day of the week names.
      */
-    public function getWeekDayNames(string $length = null, bool $standAlone = true)
+    public function getWeekDayNames(string $length = null, bool $standAlone = true): array
     {
         $weekDayNames = [];
 
@@ -666,7 +666,7 @@ class Locale extends Object
      *
      * @return string The "AM" name.
      */
-    public function getAMName()
+    public function getAMName(): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return $this->getFormatter()->asDate(new DateTime('00:00'), 'a');
@@ -680,7 +680,7 @@ class Locale extends Object
      *
      * @return string The "PM" name.
      */
-    public function getPMName()
+    public function getPMName(): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return $this->getFormatter()->asDate(new DateTime('12:00'), 'a');
@@ -699,7 +699,7 @@ class Locale extends Object
      *
      * @return string The attribute.
      */
-    public function getTextAttribute(int $attribute)
+    public function getTextAttribute(int $attribute): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -737,7 +737,7 @@ class Locale extends Object
      *
      * @return string The pattern
      */
-    public function getNumberPattern(int $style)
+    public function getNumberPattern(int $style): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, $style);
@@ -771,7 +771,7 @@ class Locale extends Object
      *
      * @return string The symbol.
      */
-    public function getNumberSymbol(int $symbol)
+    public function getNumberSymbol(int $symbol): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $formatter = new NumberFormatter($this->id, NumberFormatter::DECIMAL);
@@ -828,7 +828,7 @@ class Locale extends Object
      *
      * @return string The currency symbol.
      */
-    public function getCurrencySymbol(string $currency)
+    public function getCurrencySymbol(string $currency): string
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             // see http://stackoverflow.com/a/28307228/1688568
@@ -857,7 +857,7 @@ class Locale extends Object
      * @return string
      * @deprecated in 3.0. Use id instead.
      */
-    public function getId()
+    public function getId(): string
     {
         Craft::$app->getDeprecator()->log('Locale::getId()', 'Locale::getId() has been deprecated. Use the id property instead.');
 

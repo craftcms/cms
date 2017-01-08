@@ -55,7 +55,7 @@ class User extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%users}}';
     }
@@ -65,7 +65,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -75,7 +75,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSessions()
+    public function getSessions(): ActiveQueryInterface
     {
         return $this->hasMany(Session::class, ['userId' => 'id']);
     }
@@ -85,7 +85,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface
      */
-    public function getGroups()
+    public function getGroups(): ActiveQueryInterface
     {
         return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);

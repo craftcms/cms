@@ -78,7 +78,7 @@ class MatrixSettings extends Model
      *
      * @return MatrixBlockType[]
      */
-    public function getBlockTypes()
+    public function getBlockTypes(): array
     {
         if ($this->_blockTypes !== null) {
             return $this->_blockTypes;
@@ -114,7 +114,7 @@ class MatrixSettings extends Model
      *
      * @return bool
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         // Enforce $clearErrors without copying code if we don't have to
         $validates = parent::validate($attributeNames, $clearErrors);

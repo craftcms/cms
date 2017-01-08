@@ -40,7 +40,7 @@ class Db
      *
      * @return array The prepared values
      */
-    public static function prepareValuesForDb($values)
+    public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
         $values = ArrayHelper::toArray($values);
@@ -124,7 +124,7 @@ class Db
      *
      * @return string
      */
-    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null)
+    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
         // Normalize the arguments
         if (!is_numeric($min)) {
@@ -219,7 +219,7 @@ class Db
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null)
+    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -257,7 +257,7 @@ class Db
      *
      * @return string The escaped param value.
      */
-    public static function escapeParam(string $value)
+    public static function escapeParam(string $value): string
     {
         return str_replace([',', '*'], ['\,', '\*'], $value);
     }
@@ -415,7 +415,7 @@ class Db
      *
      * @return bool
      */
-    public static function isTypeSupported(string $type, Connection $db = null)
+    public static function isTypeSupported(string $type, Connection $db = null): bool
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -451,7 +451,7 @@ class Db
      *
      * @return string The operator.
      */
-    private static function _parseParamOperator(string &$value)
+    private static function _parseParamOperator(string &$value): string
     {
         foreach (self::$_operators as $testOperator) {
             // Does the value start with this operator?

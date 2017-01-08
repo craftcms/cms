@@ -51,7 +51,7 @@ class Structure extends Model
      *
      * @return bool
      */
-    public function getIsSortable()
+    public function getIsSortable(): bool
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:'.$this->id);
     }

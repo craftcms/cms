@@ -78,7 +78,7 @@ abstract class Controller extends \yii\web\Controller
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = [])
+    public function renderTemplate(string $template, array $variables = []): string
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
@@ -224,7 +224,7 @@ abstract class Controller extends \yii\web\Controller
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, string $default = null)
+    public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
     {
         $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
@@ -251,7 +251,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJson($var = [])
+    public function asJson($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -268,7 +268,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJsonP($var = [])
+    public function asJsonP($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -285,7 +285,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asRaw($var = [])
+    public function asRaw($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -302,7 +302,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asXml($var = [])
+    public function asXml($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -318,7 +318,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function asErrorJson(string $error)
+    public function asErrorJson(string $error): YiiResponse
     {
         return $this->asJson(['error' => $error]);
     }
@@ -328,7 +328,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function redirect($url, $statusCode = 302)
+    public function redirect($url, $statusCode = 302): YiiResponse
     {
         if (is_string($url)) {
             $url = UrlHelper::url($url);

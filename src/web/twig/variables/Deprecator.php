@@ -26,7 +26,7 @@ class Deprecator
      *
      * @return int
      */
-    public function getTotalLogs()
+    public function getTotalLogs(): int
     {
         Craft::$app->getDeprecator()->log('craft.deprecator.getTotalLogs()', 'craft.deprecator.getTotalLogs() has been deprecated. Use craft.app.deprecator.totalLogs instead.');
 

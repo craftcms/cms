@@ -42,7 +42,7 @@ class Session extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%sessions}}';
     }
@@ -52,7 +52,7 @@ class Session extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getUser()
+    public function getUser(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }

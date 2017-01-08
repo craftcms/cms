@@ -28,7 +28,7 @@ class DbBackup extends Tool
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Backup Database');
     }
@@ -36,7 +36,7 @@ class DbBackup extends Tool
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'database';
     }
@@ -44,7 +44,7 @@ class DbBackup extends Tool
     /**
      * @inheritdoc
      */
-    public static function optionsHtml()
+    public static function optionsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkbox',
             [
@@ -61,7 +61,7 @@ class DbBackup extends Tool
      * @inheritdoc
      * @throws Exception
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         try {
             $backupPath = Craft::$app->getDb()->backup();

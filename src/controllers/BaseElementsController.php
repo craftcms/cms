@@ -53,7 +53,7 @@ abstract class BaseElementsController extends Controller
      * @return ElementInterface
      * @throws BadRequestHttpException if the requested element type is invalid
      */
-    protected function getElementType()
+    protected function getElementType(): ElementInterface
     {
         $class = Craft::$app->getRequest()->getRequiredParam('elementType');
 
@@ -74,7 +74,7 @@ abstract class BaseElementsController extends Controller
      *
      * @return string
      */
-    protected function getContext()
+    protected function getContext(): string
     {
         return Craft::$app->getRequest()->getParam('context');
     }

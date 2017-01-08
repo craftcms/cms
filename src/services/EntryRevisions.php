@@ -130,7 +130,7 @@ class EntryRevisions extends Component
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId(int $entryId, int $siteId = null)
+    public function getDraftsByEntryId(int $entryId, int $siteId = null): array
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -177,7 +177,7 @@ class EntryRevisions extends Component
      *
      * @return EntryDraft[]
      */
-    public function getEditableDraftsByEntryId(int $entryId, int $siteId = null)
+    public function getEditableDraftsByEntryId(int $entryId, int $siteId = null): array
     {
         $editableDrafts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -203,7 +203,7 @@ class EntryRevisions extends Component
      *
      * @return bool
      */
-    public function saveDraft(EntryDraft $draft, bool $runValidation = true)
+    public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
         if ($runValidation && !$draft->validate()) {
             Craft::info('Draft not saved due to validation error.', __METHOD__);
@@ -258,7 +258,7 @@ class EntryRevisions extends Component
      *
      * @return bool
      */
-    public function publishDraft(EntryDraft $draft, bool $runValidation = true)
+    public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
@@ -303,7 +303,7 @@ class EntryRevisions extends Component
      *
      * @return bool Whether the draft was deleted successfully
      */
-    public function deleteDraft(EntryDraft $draft)
+    public function deleteDraft(EntryDraft $draft): bool
     {
         // Fire a 'beforeDeleteDraft' event
         $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
@@ -364,7 +364,7 @@ class EntryRevisions extends Component
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false)
+    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false): array
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -412,7 +412,7 @@ class EntryRevisions extends Component
      *
      * @return bool
      */
-    public function saveVersion(Entry $entry)
+    public function saveVersion(Entry $entry): bool
     {
         // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
@@ -440,7 +440,7 @@ class EntryRevisions extends Component
      *
      * @return bool
      */
-    public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true)
+    public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
@@ -484,7 +484,7 @@ class EntryRevisions extends Component
      * @return EntryDraftRecord
      * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
-    private function _getDraftRecord(EntryDraft $draft)
+    private function _getDraftRecord(EntryDraft $draft): EntryDraftRecord
     {
         if ($draft->draftId) {
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
@@ -510,7 +510,7 @@ class EntryRevisions extends Component
      *
      * @return array
      */
-    private function _getRevisionData(Entry $revision)
+    private function _getRevisionData(Entry $revision): array
     {
         $revisionData = [
             'typeId' => $revision->typeId,

@@ -31,7 +31,7 @@ class Category extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%categories}}';
     }
@@ -41,7 +41,7 @@ class Category extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -51,7 +51,7 @@ class Category extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(CategoryGroup::class, ['id' => 'groupId']);
     }

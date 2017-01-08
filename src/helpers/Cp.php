@@ -37,7 +37,7 @@ class Cp
      *
      * @return array
      */
-    public static function alerts(string $path = null, bool $fetch = false)
+    public static function alerts(string $path = null, bool $fetch = false): array
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();

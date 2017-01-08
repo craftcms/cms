@@ -88,7 +88,7 @@ class Categories extends Component
      *
      * @return int[]
      */
-    public function getAllGroupIds()
+    public function getAllGroupIds(): array
     {
         if ($this->_allGroupIds !== null) {
             return $this->_allGroupIds;
@@ -109,7 +109,7 @@ class Categories extends Component
      *
      * @return int[]
      */
-    public function getEditableGroupIds()
+    public function getEditableGroupIds(): array
     {
         if ($this->_editableGroupIds !== null) {
             return $this->_editableGroupIds;
@@ -131,7 +131,7 @@ class Categories extends Component
      *
      * @return CategoryGroup[]
      */
-    public function getAllGroups()
+    public function getAllGroups(): array
     {
         if ($this->_fetchedAllCategoryGroups) {
             return array_values($this->_categoryGroupsById);
@@ -159,7 +159,7 @@ class Categories extends Component
      *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups()
+    public function getEditableGroups(): array
     {
         $editableGroupIds = $this->getEditableGroupIds();
         $editableGroups = [];
@@ -178,7 +178,7 @@ class Categories extends Component
      *
      * @return int
      */
-    public function getTotalGroups()
+    public function getTotalGroups(): int
     {
         return count($this->getAllGroupIds());
     }
@@ -243,7 +243,7 @@ class Categories extends Component
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings(int $groupId)
+    public function getGroupSiteSettings(int $groupId): array
     {
         $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
@@ -274,7 +274,7 @@ class Categories extends Component
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
      * @throws \Exception if reasons
      */
-    public function saveGroup(CategoryGroup $group, bool $runValidation = true)
+    public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('Category group not saved due to validation error.', __METHOD__);
@@ -502,7 +502,7 @@ class Categories extends Component
      * @return bool Whether the category group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteGroupById(int $groupId)
+    public function deleteGroupById(int $groupId): bool
     {
         if (!$groupId) {
             return false;
@@ -572,7 +572,7 @@ class Categories extends Component
      *
      * @return bool
      */
-    public function isGroupTemplateValid(CategoryGroup $group, int $siteId)
+    public function isGroupTemplateValid(CategoryGroup $group, int $siteId): bool
     {
         $categoryGroupSiteSettings = $group->getSiteSettings();
 
@@ -643,7 +643,7 @@ class Categories extends Component
      *
      * @return int[] The list of category IDs with all the gaps filled in.
      */
-    public function fillGapsInCategoryIds(array $ids)
+    public function fillGapsInCategoryIds(array $ids): array
     {
         $completeIds = [];
 

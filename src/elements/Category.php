@@ -17,6 +17,7 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -37,7 +38,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Category');
     }
@@ -45,7 +46,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -53,7 +54,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -61,7 +62,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -69,7 +70,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -79,7 +80,7 @@ class Category extends Element
      *
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new CategoryQuery(get_called_class());
     }
@@ -87,7 +88,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources($context): array
     {
         $sources = [];
 
@@ -173,7 +174,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes()
+    protected static function defineSortableAttributes(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -186,7 +187,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineTableAttributes()
+    protected static function defineTableAttributes(): array
     {
         return [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -201,7 +202,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes(string $source)
+    public static function defaultTableAttributes(string $source): array
     {
         return [
             'link',
@@ -289,7 +290,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
     }
@@ -316,7 +317,7 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): CategoryGroup
     {
         if (!$this->groupId) {
             throw new InvalidConfigException('Category is missing its group ID');
@@ -337,7 +338,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
@@ -377,7 +378,7 @@ class Category extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave(bool $isNew)
+    public function beforeSave(bool $isNew): bool
     {
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
@@ -510,7 +511,7 @@ class Category extends Element
      * @see beforeSave()
      * @see afterSave()
      */
-    private function _hasNewParent()
+    private function _hasNewParent(): bool
     {
         if ($this->_hasNewParent !== null) {
             return $this->_hasNewParent;
@@ -524,7 +525,7 @@ class Category extends Element
      *
      * @return bool
      */
-    private function _checkForNewParent()
+    private function _checkForNewParent(): bool
     {
         // Is it a brand new category?
         if (!$this->id) {

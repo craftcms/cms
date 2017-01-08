@@ -186,7 +186,7 @@ class Sites extends Component
      *
      * @return int[] All the sites’ IDs
      */
-    public function getAllSiteIds()
+    public function getAllSiteIds(): array
     {
         $this->_loadAllSites();
 
@@ -200,7 +200,7 @@ class Sites extends Component
      * @return Site The primary site
      * @throws SiteNotFoundException if no sites exist
      */
-    public function getPrimarySite()
+    public function getPrimarySite(): Site
     {
         $this->_loadAllSites();
 
@@ -216,7 +216,7 @@ class Sites extends Component
      *
      * @return array All the editable sites’ IDs
      */
-    public function getEditableSiteIds()
+    public function getEditableSiteIds(): array
     {
         if ($this->_editableSiteIds !== null) {
             return $this->_editableSiteIds;
@@ -238,7 +238,7 @@ class Sites extends Component
      *
      * @return Site[] All the sites
      */
-    public function getAllSites()
+    public function getAllSites(): array
     {
         $this->_loadAllSites();
 
@@ -250,7 +250,7 @@ class Sites extends Component
      *
      * @return Site[] All the editable sites
      */
-    public function getEditableSites()
+    public function getEditableSites(): array
     {
         $editableSiteIds = $this->getEditableSiteIds();
         $editableSites = [];
@@ -269,7 +269,7 @@ class Sites extends Component
      *
      * @return int
      */
-    public function getTotalSites()
+    public function getTotalSites(): int
     {
         return count($this->getAllSites());
     }
@@ -279,7 +279,7 @@ class Sites extends Component
      *
      * @return int
      */
-    public function getTotalEditableSites()
+    public function getTotalEditableSites(): int
     {
         return count($this->getEditableSiteIds());
     }
@@ -362,7 +362,7 @@ class Sites extends Component
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSite(Site $site, bool $runValidation = true)
+    public function saveSite(Site $site, bool $runValidation = true): bool
     {
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
@@ -485,7 +485,7 @@ class Sites extends Component
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Exception if reasons
      */
-    public function reorderSites(array $siteIds)
+    public function reorderSites(array $siteIds): bool
     {
         // Fire a 'beforeSaveSite' event
         $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
@@ -534,7 +534,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSiteById(int $siteId, int $transferContentTo = null)
+    public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
     {
         $site = $this->getSiteById($siteId);
 
@@ -554,7 +554,7 @@ class Sites extends Component
      * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSite(Site $site, int $transferContentTo = null)
+    public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
@@ -832,7 +832,7 @@ class Sites extends Component
      *
      * @return Query
      */
-    private function _createSiteQuery()
+    private function _createSiteQuery(): Query
     {
         return (new Query())
             ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])

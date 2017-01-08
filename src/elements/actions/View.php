@@ -43,7 +43,7 @@ class View extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }

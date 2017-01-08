@@ -89,7 +89,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function criticalCraftUpdateAvailable($craftReleases)
+    public function criticalCraftUpdateAvailable($craftReleases): bool
     {
         foreach ($craftReleases as $craftRelease) {
             if ($craftRelease->critical) {
@@ -105,7 +105,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function criticalPluginUpdateAvailable($plugins)
+    public function criticalPluginUpdateAvailable($plugins): bool
     {
         foreach ($plugins as $plugin) {
             if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
@@ -125,7 +125,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsUpdateInfoCached()
+    public function getIsUpdateInfoCached(): bool
     {
         return ($this->_updateModel !== null || Craft::$app->getCache()->get('updateinfo') !== false);
     }
@@ -133,7 +133,7 @@ class Updates extends Component
     /**
      * @return int
      */
-    public function getTotalAvailableUpdates()
+    public function getTotalAvailableUpdates(): int
     {
         if (!$this->getIsUpdateInfoCached()) {
             return 0;
@@ -165,7 +165,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsCriticalUpdateAvailable()
+    public function getIsCriticalUpdateAvailable(): bool
     {
         if (!empty($this->_updateModel->app->criticalUpdateAvailable)) {
             return true;
@@ -185,7 +185,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsManualUpdateRequired()
+    public function getIsManualUpdateRequired(): bool
     {
         return (!empty($this->_updateModel->app->manualUpdateRequired));
     }
@@ -239,7 +239,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function setNewPluginInfo(PluginInterface $plugin)
+    public function setNewPluginInfo(PluginInterface $plugin): bool
     {
         /** @var Plugin $plugin */
         $affectedRows = Craft::$app->getDb()->createCommand()
@@ -258,7 +258,7 @@ class Updates extends Component
     /**
      * @return Et
      */
-    public function check()
+    public function check(): Et
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -513,7 +513,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function prepareUpdate(bool $manual, string $handle)
+    public function prepareUpdate(bool $manual, string $handle): array
     {
         Craft::info('Preparing to update '.$handle.'.', __METHOD__);
 
@@ -566,7 +566,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function processUpdateDownload(string $md5, string $handle)
+    public function processUpdateDownload(string $md5, string $handle): array
     {
         Craft::info('Starting to process the update download.', __METHOD__);
 
@@ -598,7 +598,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function backupFiles(string $uid, string $handle)
+    public function backupFiles(string $uid, string $handle): array
     {
         Craft::info('Starting to backup files that need to be updated.', __METHOD__);
 
@@ -620,7 +620,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function updateFiles(string $uid, string $handle)
+    public function updateFiles(string $uid, string $handle): array
     {
         Craft::info('Starting to update files.', __METHOD__);
 
@@ -639,7 +639,7 @@ class Updates extends Component
     /**
      * @return array
      */
-    public function backupDatabase()
+    public function backupDatabase(): array
     {
         Craft::info('Starting to backup database.', __METHOD__);
 
@@ -667,7 +667,7 @@ class Updates extends Component
      * @throws Exception
      * @return array
      */
-    public function updateDatabase(string $handle)
+    public function updateDatabase(string $handle): array
     {
         Craft::info('Starting to update the database.', __METHOD__);
 
@@ -737,7 +737,7 @@ class Updates extends Component
      *
      * @return array
      */
-    public function rollbackUpdate($uid, string $handle, $dbBackupPath = false)
+    public function rollbackUpdate($uid, string $handle, $dbBackupPath = false): array
     {
         try {
             // Fire an 'updateFailure' event
@@ -782,7 +782,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsPluginDbUpdateNeeded()
+    public function getIsPluginDbUpdateNeeded(): bool
     {
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
@@ -800,7 +800,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getHasCraftVersionChanged()
+    public function getHasCraftVersionChanged(): bool
     {
         return (Craft::$app->version != Craft::$app->getInfo()->version);
     }
@@ -812,7 +812,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsBreakpointUpdateNeeded()
+    public function getIsBreakpointUpdateNeeded(): bool
     {
         return version_compare(Craft::$app->minVersionRequired, Craft::$app->getInfo()->version, '>');
     }
@@ -822,7 +822,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsSchemaVersionCompatible()
+    public function getIsSchemaVersionCompatible(): bool
     {
         $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
 
@@ -834,7 +834,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsCraftDbMigrationNeeded()
+    public function getIsCraftDbMigrationNeeded(): bool
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
             $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
@@ -849,7 +849,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function updateCraftVersionInfo()
+    public function updateCraftVersionInfo(): bool
     {
         $info = Craft::$app->getInfo();
         $info->version = Craft::$app->version;

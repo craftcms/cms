@@ -58,7 +58,7 @@ class UserGroups extends Component
      *
      * @return UserGroup[]
      */
-    public function getAllGroups()
+    public function getAllGroups(): array
     {
         $groups = UserGroupRecord::find()
             ->orderBy(['name' => SORT_ASC])
@@ -82,7 +82,7 @@ class UserGroups extends Component
      *
      * @return UserGroup
      */
-    public function getGroupById(int $groupId)
+    public function getGroupById(int $groupId): UserGroup
     {
         $groupRecord = UserGroupRecord::findOne($groupId);
 
@@ -104,7 +104,7 @@ class UserGroups extends Component
      *
      * @return UserGroup
      */
-    public function getGroupByHandle(int $groupHandle)
+    public function getGroupByHandle(int $groupHandle): UserGroup
     {
         $groupRecord = UserGroupRecord::findOne([
             'handle' => $groupHandle
@@ -128,7 +128,7 @@ class UserGroups extends Component
      *
      * @return UserGroup[]
      */
-    public function getGroupsByUserId(int $userId)
+    public function getGroupsByUserId(int $userId): array
     {
         $groups = (new Query())
             ->select([
@@ -156,7 +156,7 @@ class UserGroups extends Component
      *
      * @return bool
      */
-    public function saveGroup(UserGroup $group, bool $runValidation = true)
+    public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('User group not saved due to validation error.', __METHOD__);
@@ -200,7 +200,7 @@ class UserGroups extends Component
      *
      * @return bool
      */
-    public function deleteGroupById(int $groupId)
+    public function deleteGroupById(int $groupId): bool
     {
         $group = $this->getGroupById($groupId);
 
@@ -235,7 +235,7 @@ class UserGroups extends Component
      *
      * @return UserGroupRecord
      */
-    private function _getGroupRecordById(int $groupId = null)
+    private function _getGroupRecordById(int $groupId = null): UserGroupRecord
     {
         if ($groupId !== null) {
             $groupRecord = UserGroupRecord::findOne($groupId);

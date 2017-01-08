@@ -36,7 +36,7 @@ class EntryRevisions
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
-    public function getDraftsByEntryId(int $entryId, string $siteHandle = null)
+    public function getDraftsByEntryId(int $entryId, string $siteHandle = null): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
 
@@ -64,7 +64,7 @@ class EntryRevisions
      * @return EntryDraft[]
      * @throws Exception if|null $siteHandle is invalid
      */
-    public function getEditableDraftsByEntryId(int $entryId, string $siteHandle = null)
+    public function getEditableDraftsByEntryId(int $entryId, string $siteHandle = null): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
 
@@ -109,7 +109,7 @@ class EntryRevisions
      * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
-    public function getVersionsByEntryId(int $entryId, string $siteHandle)
+    public function getVersionsByEntryId(int $entryId, string $siteHandle): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
 

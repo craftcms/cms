@@ -73,7 +73,7 @@ class Dashboard extends Component
      *
      * @return string[]
      */
-    public function getAllWidgetTypes()
+    public function getAllWidgetTypes(): array
     {
         $widgetTypes = [
             FeedWidget::class,
@@ -99,7 +99,7 @@ class Dashboard extends Component
      *
      * @return WidgetInterface
      */
-    public function createWidget($config)
+    public function createWidget($config): WidgetInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -124,7 +124,7 @@ class Dashboard extends Component
      *
      * @return WidgetInterface[] The widgets
      */
-    public function getAllWidgets()
+    public function getAllWidgets(): array
     {
         $widgets = $this->_getUserWidgets();
 
@@ -145,7 +145,7 @@ class Dashboard extends Component
      *
      * @return bool Whether the current user has a widget of the given type
      */
-    public function doesUserHaveWidget(string $type)
+    public function doesUserHaveWidget(string $type): bool
     {
         return WidgetRecord::find()
             ->where([
@@ -193,7 +193,7 @@ class Dashboard extends Component
      * @return bool Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveWidget(WidgetInterface $widget, bool $runValidation = true)
+    public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
         /** @var Widget $widget */
         if ($runValidation && !$widget->validate()) {
@@ -260,7 +260,7 @@ class Dashboard extends Component
      *
      * @return bool Whether the widget was deleted successfully
      */
-    public function deleteWidgetById(int $widgetId)
+    public function deleteWidgetById(int $widgetId): bool
     {
         $widget = $this->getWidgetById($widgetId);
 
@@ -279,7 +279,7 @@ class Dashboard extends Component
      * @return bool Whether the widget was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteWidget(WidgetInterface $widget)
+    public function deleteWidget(WidgetInterface $widget): bool
     {
         /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
@@ -324,7 +324,7 @@ class Dashboard extends Component
      * @return bool Whether the widgets were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderWidgets(array $widgetIds)
+    public function reorderWidgets(array $widgetIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -353,7 +353,7 @@ class Dashboard extends Component
      *
      * @return bool
      */
-    public function changeWidgetColspan(int $widgetId, int $colspan)
+    public function changeWidgetColspan(int $widgetId, int $colspan): bool
     {
         $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
         $widgetRecord->colspan = $colspan;
@@ -400,7 +400,7 @@ class Dashboard extends Component
      *
      * @return WidgetRecord
      */
-    private function _getUserWidgetRecordById(int $widgetId = null)
+    private function _getUserWidgetRecordById(int $widgetId = null): WidgetRecord
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -440,7 +440,7 @@ class Dashboard extends Component
      * @return WidgetInterface[]
      * @throws Exception if no user is logged-in
      */
-    private function _getUserWidgets()
+    private function _getUserWidgets(): array
     {
         $userId = Craft::$app->getUser()->getId();
 

@@ -23,7 +23,7 @@ abstract class Tool extends Component implements ToolInterface
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'tool';
     }
@@ -31,7 +31,7 @@ abstract class Tool extends Component implements ToolInterface
     /**
      * @inheritdoc
      */
-    public static function optionsHtml()
+    public static function optionsHtml(): string
     {
         return '';
     }
@@ -39,7 +39,7 @@ abstract class Tool extends Component implements ToolInterface
     /**
      * @inheritdoc
      */
-    public static function buttonLabel()
+    public static function buttonLabel(): string
     {
         return Craft::t('app', 'Go!');
     }
@@ -50,7 +50,7 @@ abstract class Tool extends Component implements ToolInterface
     /**
      * @inheritdoc
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         return ['complete' => true];
     }

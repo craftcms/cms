@@ -25,7 +25,7 @@ class Logging
      *
      * @return string
      */
-    public static function redact($log)
+    public static function redact($log): string
     {
         // Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
         $log = preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);

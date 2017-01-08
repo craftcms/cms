@@ -55,7 +55,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_elementType = [];
         $localizableOnly = $this->localizableOnly;
@@ -92,7 +92,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');

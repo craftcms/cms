@@ -57,7 +57,7 @@ class StructureElement extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%structureelements}}';
     }
@@ -67,7 +67,7 @@ class StructureElement extends ActiveRecord
      *
      * @return StructuredElementQuery
      */
-    public static function find()
+    public static function find(): StructuredElementQuery
     {
         /** @var StructuredElementQuery $query */
         $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
@@ -80,7 +80,7 @@ class StructureElement extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getStructure()
+    public function getStructure(): ActiveQueryInterface
     {
         return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
@@ -90,7 +90,7 @@ class StructureElement extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'elementId']);
     }

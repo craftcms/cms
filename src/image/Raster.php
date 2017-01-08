@@ -114,7 +114,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->_image->getSize()->getWidth();
     }
@@ -122,7 +122,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->_image->getSize()->getHeight();
     }
@@ -130,7 +130,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return $this->_extension;
     }
@@ -373,7 +373,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function saveAs(string $targetPath, bool $autoQuality = false)
+    public function saveAs(string $targetPath, bool $autoQuality = false): bool
     {
         $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
@@ -428,7 +428,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getIsTransparent()
+    public function getIsTransparent(): bool
     {
         if (Craft::$app->getImages()->getIsImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();
@@ -444,7 +444,7 @@ class Raster extends Image
      *
      * @return array
      */
-    public function getExifMetadata(string $filePath)
+    public function getExifMetadata(string $filePath): array
     {
         try {
             $exifReader = new ExifMetadataReader();
@@ -530,7 +530,7 @@ class Raster extends Image
      *
      * @return string the resulting file path
      */
-    private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0)
+    private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
         // Give ourselves some extra time.
         @set_time_limit(30);
@@ -591,7 +591,7 @@ class Raster extends Image
      *
      * @return array
      */
-    private function _getSaveOptions(int $quality = null, string $extension = null)
+    private function _getSaveOptions(int $quality = null, string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
         $quality = ($quality === null || $quality === false ? $this->_quality : $quality);

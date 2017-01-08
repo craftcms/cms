@@ -37,7 +37,7 @@ class TagsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $this->requireAdmin();
 
@@ -57,7 +57,7 @@ class TagsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null)
+    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): string
     {
         $this->requireAdmin();
 
@@ -156,7 +156,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTagGroup()
+    public function actionDeleteTagGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +174,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionSearchForTags()
+    public function actionSearchForTags(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -236,7 +236,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionCreateTag()
+    public function actionCreateTag(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();

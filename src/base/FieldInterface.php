@@ -28,7 +28,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool
      */
-    public static function hasContentColumn();
+    public static function hasContentColumn(): bool;
 
     // Public Methods
     // =========================================================================
@@ -44,7 +44,7 @@ interface FieldInterface extends SavableComponentInterface
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType();
+    public function getContentColumnType(): string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -53,7 +53,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The translation key
      */
-    public function getTranslationKey(ElementInterface $element);
+    public function getTranslationKey(ElementInterface $element): string;
 
     /**
      * Returns the field’s input HTML.
@@ -152,7 +152,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The input HTML.
      */
-    public function getInputHtml($value, $element);
+    public function getInputHtml($value, $element): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -164,7 +164,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, ElementInterface $element);
+    public function getStaticHtml($value, ElementInterface $element): string;
 
     /**
      * Returns the validation rules for an element with this field.
@@ -187,7 +187,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return array
      */
-    public function getElementValidationRules();
+    public function getElementValidationRules(): array;
 
     /**
      * Returns the search keywords that should be associated with this field.
@@ -200,7 +200,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, ElementInterface $element);
+    public function getSearchKeywords($value, ElementInterface $element): string;
 
     /**
      * Normalizes the field’s value for use.
@@ -269,7 +269,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool Whether the element should be saved
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew);
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool;
 
     /**
      * Performs actions after the element has been saved.
@@ -288,7 +288,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool Whether the element should be deleted
      */
-    public function beforeElementDelete(ElementInterface $element);
+    public function beforeElementDelete(ElementInterface $element): bool;
 
     /**
      * Performs actions after the element has been deleted.

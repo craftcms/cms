@@ -42,7 +42,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%usergroups_users}}';
     }
@@ -52,7 +52,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(UserGroup::class, ['id' => 'groupId']);
     }
@@ -62,7 +62,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getUser()
+    public function getUser(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }

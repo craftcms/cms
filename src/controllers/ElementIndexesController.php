@@ -103,7 +103,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    public function getElementQuery()
+    public function getElementQuery(): ElementQueryInterface
     {
         return $this->_elementQuery;
     }
@@ -113,7 +113,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetElements()
+    public function actionGetElements(): Response
     {
         $includeActions = ($this->_context === 'index');
         $responseData = $this->_getElementResponseData(true, $includeActions);
@@ -126,7 +126,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetMoreElements()
+    public function actionGetMoreElements(): Response
     {
         $responseData = $this->_getElementResponseData(false, false);
 
@@ -139,7 +139,7 @@ class ElementIndexesController extends BaseElementsController
      * @return Response
      * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
-    public function actionPerformAction()
+    public function actionPerformAction(): Response
     {
         $this->requirePostRequest();
 
@@ -273,7 +273,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getViewState()
+    private function _getViewState(): array
     {
         $viewState = Craft::$app->getRequest()->getParam('viewState', []);
 
@@ -289,7 +289,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    private function _getElementQuery()
+    private function _getElementQuery(): ElementQueryInterface
     {
         $elementType = $this->_elementType;
         $query = $elementType::find();
@@ -362,7 +362,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getElementResponseData(bool $includeContainer, bool $includeActions)
+    private function _getElementResponseData(bool $includeContainer, bool $includeActions): array
     {
         $responseData = [];
 

@@ -30,7 +30,7 @@ class Sections
      *
      * @return array
      */
-    public function getAllSections(string $indexBy = null)
+    public function getAllSections(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.sections.getAllSections()', 'craft.sections.getAllSections() has been deprecated. Use craft.app.sections.allSections instead.');
 
@@ -46,7 +46,7 @@ class Sections
      *
      * @return array
      */
-    public function getEditableSections(string $indexBy = null)
+    public function getEditableSections(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.sections.getEditableSections()', 'craft.sections.getEditableSections() has been deprecated. Use craft.app.sections.editableSections instead.');
 
@@ -60,7 +60,7 @@ class Sections
      *
      * @return int
      */
-    public function getTotalSections()
+    public function getTotalSections(): int
     {
         Craft::$app->getDeprecator()->log('craft.sections.getTotalSections()', 'craft.sections.getTotalSections() has been deprecated. Use craft.app.sections.totalSections instead.');
 
@@ -72,7 +72,7 @@ class Sections
      *
      * @return int
      */
-    public function getTotalEditableSections()
+    public function getTotalEditableSections(): int
     {
         Craft::$app->getDeprecator()->log('craft.sections.getTotalEditableSections()', 'craft.sections.getTotalEditableSections() has been deprecated. Use craft.app.sections.totalEditableSections instead.');
 

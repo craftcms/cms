@@ -288,7 +288,7 @@ class DateTimeHelper
      *
      * @return bool Whether the value is an ISO-8601 date string
      */
-    public static function isIso8601($value)
+    public static function isIso8601($value): bool
     {
         return is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value);
     }
@@ -314,7 +314,7 @@ class DateTimeHelper
     /**
      * @return DateTime
      */
-    public static function currentUTCDateTime()
+    public static function currentUTCDateTime(): DateTime
     {
         return new DateTime(null, new \DateTimeZone('UTC'));
     }
@@ -322,7 +322,7 @@ class DateTimeHelper
     /**
      * @return int
      */
-    public static function currentTimeStamp()
+    public static function currentTimeStamp(): int
     {
         $date = static::currentUTCDateTime();
 
@@ -338,7 +338,7 @@ class DateTimeHelper
      *
      * @return string The translated date string
      */
-    public static function translateDate(string $str, string $language = null)
+    public static function translateDate(string $str, string $language = null): string
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -359,7 +359,7 @@ class DateTimeHelper
      *
      * @return string
      */
-    public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true)
+    public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true): string
     {
         $secondsInWeek = 604800;
         $secondsInDay = 86400;
@@ -413,7 +413,7 @@ class DateTimeHelper
      *
      * @return bool
      */
-    public static function isValidTimeStamp($timestamp)
+    public static function isValidTimeStamp($timestamp): bool
     {
         return (is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX));
     }
@@ -425,7 +425,7 @@ class DateTimeHelper
      *
      * @return bool true if date is today, false otherwise.
      */
-    public static function isToday($date)
+    public static function isToday($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -440,7 +440,7 @@ class DateTimeHelper
      *
      * @return bool true if date was yesterday, false otherwise.
      */
-    public static function isYesterday($date)
+    public static function isYesterday($date): bool
     {
         $date = self::toDateTime($date);
         $yesterday = new DateTime('@'.strtotime('yesterday'));
@@ -455,7 +455,7 @@ class DateTimeHelper
      *
      * @return bool true if date is in this year, false otherwise.
      */
-    public static function isThisYear($date)
+    public static function isThisYear($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -470,7 +470,7 @@ class DateTimeHelper
      *
      * @return bool true if date is in this week, false otherwise.
      */
-    public static function isThisWeek($date)
+    public static function isThisWeek($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -485,7 +485,7 @@ class DateTimeHelper
      *
      * @return bool True if date is in this month, false otherwise.
      */
-    public static function isThisMonth($date)
+    public static function isThisMonth($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -502,7 +502,7 @@ class DateTimeHelper
      *
      * @return bool Whether the $dateString was within the specified $timeInterval.
      */
-    public static function isWithinLast($date, $timeInterval)
+    public static function isWithinLast($date, $timeInterval): bool
     {
         if (is_numeric($timeInterval)) {
             $timeInterval .= ' days';
@@ -528,7 +528,7 @@ class DateTimeHelper
      *
      * @return bool true if the specified date was in the past, false otherwise.
      */
-    public static function isInThePast($date)
+    public static function isInThePast($date): bool
     {
         $date = self::toDateTime($date);
 
@@ -583,7 +583,7 @@ class DateTimeHelper
      *
      * @return bool
      */
-    public static function isValidIntervalString($intervalString)
+    public static function isValidIntervalString($intervalString): bool
     {
         $interval = \DateInterval::createFromDateString($intervalString);
 
@@ -598,7 +598,7 @@ class DateTimeHelper
      *
      * @return string
      */
-    public static function humanDurationFromInterval(\DateInterval $dateInterval, bool $showSeconds = true)
+    public static function humanDurationFromInterval(\DateInterval $dateInterval, bool $showSeconds = true): string
     {
         $timeComponents = [];
 
@@ -649,7 +649,7 @@ class DateTimeHelper
      *
      * @return array The translation pairs
      */
-    private static function _getDateTranslations(string $language)
+    private static function _getDateTranslations(string $language): array
     {
         if (!isset(self::$_translationPairs[$language])) {
             if (strpos(Craft::$app->language, 'en') === 0) {

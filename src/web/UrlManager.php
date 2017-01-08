@@ -343,7 +343,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return bool
      */
-    private function _isPublicTemplatePath()
+    private function _isPublicTemplatePath(): bool
     {
         $request = Craft::$app->getRequest();
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {

@@ -27,7 +27,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Update Asset Indexes');
     }
@@ -35,7 +35,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'assets';
     }
@@ -43,7 +43,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public static function optionsHtml()
+    public static function optionsHtml(): string
     {
         /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -69,7 +69,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         // Initial request
         if (!empty($params['start'])) {

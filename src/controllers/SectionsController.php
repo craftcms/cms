@@ -49,7 +49,7 @@ class SectionsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionIndex(array $variables = [])
+    public function actionIndex(array $variables = []): string
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
@@ -66,7 +66,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection(int $sectionId = null, Section $section = null)
+    public function actionEditSection(int $sectionId = null, Section $section = null): string
     {
         $variables = [
             'sectionId' => $sectionId,
@@ -215,7 +215,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSection()
+    public function actionDeleteSection(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -237,7 +237,7 @@ class SectionsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section cannot be found
      */
-    public function actionEntryTypesIndex(int $sectionId)
+    public function actionEntryTypesIndex(int $sectionId): string
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
@@ -400,7 +400,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionReorderEntryTypes()
+    public function actionReorderEntryTypes(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -416,7 +416,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteEntryType()
+    public function actionDeleteEntryType(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

@@ -41,7 +41,7 @@ class AppPathDependency extends Dependency
      *
      * @return string The data needed to determine if dependency has been changed.
      */
-    protected function generateDependencyData($cache)
+    protected function generateDependencyData($cache): string
     {
         return $this->appPath = Craft::$app->getBasePath();
     }

@@ -332,7 +332,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {

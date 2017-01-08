@@ -37,7 +37,7 @@ class AssetIndexer extends Component
      *
      * @return string
      */
-    public function getIndexingSessionId()
+    public function getIndexingSessionId(): string
     {
         return StringHelper::UUID();
     }
@@ -51,7 +51,7 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function prepareIndexList(string $sessionId, int $volumeId, string $directory = '')
+    public function prepareIndexList(string $sessionId, int $volumeId, string $directory = ''): array
     {
         try {
             /** @var Volume $volume */
@@ -296,7 +296,7 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function getMissingFiles($volumeIds, $sessionId)
+    public function getMissingFiles($volumeIds, $sessionId): array
     {
         $output = [];
 

@@ -218,7 +218,7 @@ class Plugins extends Component
      *
      * @return bool
      */
-    public function arePluginsLoaded()
+    public function arePluginsLoaded(): bool
     {
         return $this->_pluginsLoaded;
     }
@@ -267,7 +267,7 @@ class Plugins extends Component
      *
      * @return PluginInterface[]
      */
-    public function getAllPlugins()
+    public function getAllPlugins(): array
     {
         $this->loadPlugins();
 
@@ -282,7 +282,7 @@ class Plugins extends Component
      * @return bool Whether the plugin was enabled successfully
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function enablePlugin(string $handle)
+    public function enablePlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -332,7 +332,7 @@ class Plugins extends Component
      * @return bool Whether the plugin was disabled successfully
      * @throws InvalidPluginException if the plugin isn’t installed
      */
-    public function disablePlugin(string $handle)
+    public function disablePlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -383,7 +383,7 @@ class Plugins extends Component
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function installPlugin(string $handle)
+    public function installPlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -456,7 +456,7 @@ class Plugins extends Component
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function uninstallPlugin(string $handle)
+    public function uninstallPlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -527,7 +527,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin’s settings were saved successfully
      */
-    public function savePluginSettings(PluginInterface $plugin, array $settings)
+    public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
         // Save the settings on the plugin
         $plugin->getSettings()->setAttributes($settings, false);
@@ -567,7 +567,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
      */
-    public function hasPluginVersionNumberChanged(PluginInterface $plugin)
+    public function hasPluginVersionNumberChanged(PluginInterface $plugin): bool
     {
         /** @var Plugin $plugin */
         $this->loadPlugins();
@@ -589,7 +589,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
      */
-    public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
+    public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
     {
         /** @var Plugin $plugin */
         $this->loadPlugins();
@@ -721,7 +721,7 @@ class Plugins extends Component
      *
      * @return bool Whether the config validates.
      */
-    public function validateConfig(array &$config)
+    public function validateConfig(array &$config): bool
     {
         // Make sure it has the essentials
         if (!is_array($config) || !isset($config['class'], $config['name'], $config['version'])) {
@@ -791,7 +791,7 @@ class Plugins extends Component
      * @return string The given plugin’s SVG icon
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginIconSvg(string $handle)
+    public function getPluginIconSvg(string $handle): string
     {
         if (($plugin = $this->getPlugin($handle)) !== null) {
             /** @var Plugin $plugin */
@@ -848,7 +848,7 @@ class Plugins extends Component
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
-    public function setPluginLicenseKey(string $pluginHandle, $licenseKey)
+    public function setPluginLicenseKey(string $pluginHandle, $licenseKey): bool
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -1005,7 +1005,7 @@ class Plugins extends Component
      * @return string[]
      * @throws Exception in case of failure
      */
-    private function _getManualPluginHandles()
+    private function _getManualPluginHandles(): array
     {
         $dir = Craft::$app->getPath()->getPluginsPath();
         if (!is_dir($dir)) {

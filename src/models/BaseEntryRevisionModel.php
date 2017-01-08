@@ -83,7 +83,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         if ($this->uri === null) {
             ElementHelper::setUniqueUri($this);

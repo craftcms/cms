@@ -109,7 +109,7 @@ class FieldLayoutTab extends Model
      *
      * @return FieldInterface[] The tab’s fields.
      */
-    public function getFields()
+    public function getFields(): array
     {
         if ($this->_fields !== null) {
             return $this->_fields;
