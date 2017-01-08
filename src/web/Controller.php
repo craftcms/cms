@@ -217,9 +217,9 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed  $object  Object containing properties that should be parsed for in the URL.
-     * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
-     *                        null, then the current request’s path will be used.
+     * @param mixed       $object  Object containing properties that should be parsed for in the URL.
+     * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
+     *                             null, then the current request’s path will be used.
      *
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with

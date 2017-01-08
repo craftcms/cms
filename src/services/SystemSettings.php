@@ -84,8 +84,8 @@ class SystemSettings extends Component
     /**
      * Saves the system settings for a category.
      *
-     * @param string $category
-     * @param array  $settings
+     * @param string     $category
+     * @param array|null $settings
      *
      * @return bool Whether the new settings saved
      */

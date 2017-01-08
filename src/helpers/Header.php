@@ -150,8 +150,8 @@ class Header
     /**
      * Forces a file download. Be sure to give the right extension.
      *
-     * @param string $filename The name of the file when it's downloaded
-     * @param int    $fileSize The size in bytes.
+     * @param string   $filename The name of the file when it's downloaded
+     * @param int|null $fileSize The size in bytes.
      *
      * @return void
      */

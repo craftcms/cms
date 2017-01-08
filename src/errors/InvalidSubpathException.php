@@ -29,9 +29,9 @@ class InvalidSubpathException extends Exception
     /**
      * Constructor.
      *
-     * @param string $subpath The invalid subpath
-     * @param string $message The error message
-     * @param int    $code    The error code
+     * @param string      $subpath The invalid subpath
+     * @param string|null $message The error message
+     * @param int         $code    The error code
      */
     public function __construct(string $subpath, string $message = null, int $code = 0)
     {

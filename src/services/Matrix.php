@@ -628,8 +628,8 @@ class Matrix extends Component
     /**
      * Returns a block by its ID.
      *
-     * @param int $blockId The Matrix block’s ID.
-     * @param int $siteId  The site ID to return. Defaults to the current site.
+     * @param int      $blockId The Matrix block’s ID.
+     * @param int|null $siteId  The site ID to return. Defaults to the current site.
      *
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */

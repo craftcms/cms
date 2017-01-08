@@ -123,7 +123,7 @@ class Search extends Component
      * @param int[]                    $elementIds   The list of element IDs to filter by the search query.
      * @param string|array|SearchQuery $query        The search query (either a string or a SearchQuery instance)
      * @param bool                     $scoreResults Whether to order the results based on how closely they match the query.
-     * @param int                      $siteId       The site ID to filter by.
+     * @param int|null                 $siteId       The site ID to filter by.
      * @param bool                     $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.

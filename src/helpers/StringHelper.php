@@ -767,12 +767,12 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Returns the substring beginning at $start with the specified $length. It differs from the mb_substr() function in
-     * that providing a $length of null will return the rest of the string, rather than an empty string.
+     * Returns the substring beginning at $start with the specified|null $length. It differs from the mb_substr() function in
+     * that providing a|null $length of null will return the rest of the string, rather than an empty string.
      *
-     * @param string $str    The string to get the length of.
-     * @param int    $start  Position of the first character to use.
-     * @param int    $length Maximum number of characters used.
+     * @param string   $str    The string to get the length of.
+     * @param int      $start  Position of the first character to use.
+     * @param int|null $length Maximum number of characters used.
      *
      * @return string The substring of $str.
      */
@@ -797,8 +797,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns a trimmed string with the first letter of each word capitalized. Ignores the case of other letters,
      * preserving any acronyms. Also accepts an array, $ignore, allowing you to list words not to be capitalized.
      *
-     * @param string $str    The string to titleize.
-     * @param array  $ignore An array of words not to capitalize.
+     * @param string     $str    The string to titleize.
+     * @param array|null $ignore An array of words not to capitalize.
      *
      * @return string The titleized string.
      */

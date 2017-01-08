@@ -1115,7 +1115,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Returns all elements that match the criteria.
      *
-     * @param array $attributes Any last-minute parameters that should be added.
+     * @param array|null $attributes Any last-minute parameters that should be added.
      *
      * @return ElementInterface[] The matched elements.
      * @deprecated in Craft 3.0. Use all() instead.

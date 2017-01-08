@@ -125,8 +125,8 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param int $entryId
-     * @param int $siteId
+     * @param int      $entryId
+     * @param int|null $siteId
      *
      * @return EntryDraft[]
      */
@@ -172,8 +172,8 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int $entryId
-     * @param int $siteId
+     * @param int      $entryId
+     * @param int|null $siteId
      *
      * @return EntryDraft[]
      */

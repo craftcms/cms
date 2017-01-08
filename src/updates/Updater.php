@@ -185,7 +185,7 @@ class Updater
     }
 
     /**
-     * @param PluginInterface $plugin
+     * @param PluginInterface|null $plugin
      *
      * @throws DbUpdateException
      * @throws Exception

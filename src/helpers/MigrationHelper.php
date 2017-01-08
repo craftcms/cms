@@ -59,7 +59,7 @@ class MigrationHelper
      *
      * @param string          $tableName
      * @param string|string[] $columns
-     * @param Migration       $migration
+     * @param Migration|null  $migration
      *
      * @return void
      */
@@ -96,10 +96,10 @@ class MigrationHelper
     /**
      * Drops an index if it exists.
      *
-     * @param string       $tableName
-     * @param string|array $columns
-     * @param bool         $unique
-     * @param Migration    $migration
+     * @param string         $tableName
+     * @param string|array   $columns
+     * @param bool           $unique
+     * @param Migration|null $migration
      *
      * @return void
      */
@@ -113,9 +113,9 @@ class MigrationHelper
     /**
      * Renames a table, while also updating its index and FK names, as well as any other FK names pointing to the table.
      *
-     * @param string    $oldName
-     * @param string    $newName
-     * @param Migration $migration
+     * @param string         $oldName
+     * @param string         $newName
+     * @param Migration|null $migration
      *
      * @return void
      */
@@ -276,10 +276,10 @@ class MigrationHelper
     /**
      * Renames a column, while also updating any index and FK names that use the column.
      *
-     * @param string    $tableName
-     * @param string    $oldName
-     * @param string    $newName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param string         $oldName
+     * @param string         $newName
+     * @param Migration|null $migration
      *
      * @return void
      */
@@ -489,8 +489,8 @@ class MigrationHelper
     /**
      * Drops a table, its own foreign keys, and any foreign keys referencing it.
      *
-     * @param string    $tableName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param Migration|null $migration
      */
     public static function dropTable(string $tableName, Migration $migration = null)
     {
@@ -514,8 +514,8 @@ class MigrationHelper
     /**
      * Drops all the foreign keys on a table.
      *
-     * @param string    $tableName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param Migration|null $migration
      *
      * @return array An array of the foreign keys that were just dropped.
      */
@@ -544,8 +544,8 @@ class MigrationHelper
     /**
      * Drops all the foreign keys that reference a table.
      *
-     * @param string    $tableName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param Migration|null $migration
      *
      * @return void
      */
@@ -575,9 +575,9 @@ class MigrationHelper
     /**
      * Drops a foreign key.
      *
-     * @param           $tableName
-     * @param           $columns
-     * @param Migration $migration
+     * @param                $tableName
+     * @param                $columns
+     * @param Migration|null $migration
      */
     public static function dropForeignKey($tableName, $columns, Migration $migration = null)
     {
@@ -596,8 +596,8 @@ class MigrationHelper
     /**
      * Drops all the indexes on a table.
      *
-     * @param string    $tableName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param Migration|null $migration
      *
      * @return array An array of the indexes that were just dropped.
      */
@@ -620,8 +620,8 @@ class MigrationHelper
     /**
      * Drops all the unique indexes on a table.
      *
-     * @param string    $tableName
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param Migration|null $migration
      *
      * @return void
      */
@@ -644,7 +644,7 @@ class MigrationHelper
      * @param string          $tableName
      * @param string|string[] $columns
      * @param bool            $unique
-     * @param Migration       $migration
+     * @param Migration|null  $migration
      */
     public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -663,10 +663,10 @@ class MigrationHelper
     /**
      * Restores an index.
      *
-     * @param string    $tableName
-     * @param array     $columns
-     * @param bool      $unique
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param array          $columns
+     * @param bool           $unique
+     * @param Migration|null $migration
      */
     public static function restoreIndex(string $tableName, array $columns, bool $unique = false, Migration $migration = null)
     {
@@ -686,13 +686,13 @@ class MigrationHelper
     /**
      * Restores a foreign key.
      *
-     * @param string    $tableName
-     * @param array     $columns
-     * @param string    $refTable
-     * @param array     $refColumns
-     * @param string    $onUpdate
-     * @param string    $onDelete
-     * @param Migration $migration
+     * @param string         $tableName
+     * @param array          $columns
+     * @param string         $refTable
+     * @param array          $refColumns
+     * @param string         $onUpdate
+     * @param string         $onDelete
+     * @param Migration|null $migration
      */
     public static function restoreForeignKey(string $tableName, array $columns, string $refTable, array $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {

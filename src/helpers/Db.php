@@ -213,8 +213,8 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param int        $contentLength
-     * @param Connection $db The database connection
+     * @param int             $contentLength
+     * @param Connection|null $db The database connection
      *
      * @return string
      * @throws Exception if using an unsupported connection type
@@ -410,8 +410,8 @@ class Db
     /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
-     * @param string     $type
-     * @param Connection $db
+     * @param string          $type
+     * @param Connection|null $db
      *
      * @return bool
      */

@@ -128,7 +128,7 @@ class Routes extends Component
      * @param int|null $routeId      The route ID, if editing an existing route
      *
      * @return RouteRecord
-     * @throws RouteNotFoundException if $routeId is invalid
+     * @throws RouteNotFoundException if|null $routeId is invalid
      */
     public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null)
     {

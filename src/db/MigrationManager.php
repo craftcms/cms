@@ -324,7 +324,7 @@ class MigrationManager extends Component
     /**
      * Returns the migration history.
      *
-     * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
+     * @param int|null $limit The maximum number of records in the history to be returned. `null` for "no limit".
      *
      * @return array The migration history
      */

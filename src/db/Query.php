@@ -82,8 +82,8 @@ class Query extends \yii\db\Query
     /**
      * Executes the query and returns the first two columns in the results as key/value pairs.
      *
-     * @param YiiConnection $db The database connection used to execute the query.
-     *                          If this parameter is not given, the `db` application component will be used.
+     * @param YiiConnection|null $db The database connection used to execute the query.
+     *                               If this parameter is not given, the `db` application component will be used.
      *
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
@@ -136,9 +136,9 @@ class Query extends \yii\db\Query
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param int           $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param YiiConnection $db The database connection used to generate the SQL statement.
-     *                          If this parameter is not given, the `db` application component will be used.
+     * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param YiiConnection|null $db The database connection used to generate the SQL statement.
+     *                               If this parameter is not given, the `db` application component will be used.
      *
      * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
@@ -156,9 +156,9 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      *
-     * @param string        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
-     * @param YiiConnection $db     The database connection used to generate the SQL statement.
-     *                              If this parameter is not given, the `db` application component will be used.
+     * @param string|null        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
+     * @param YiiConnection|null $db     The database connection used to generate the SQL statement.
+     *                                   If this parameter is not given, the `db` application component will be used.
      */
     public function scalar($column = null, YiiConnection $db = null)
     {
@@ -184,9 +184,9 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      *
-     * @param string        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
-     * @param YiiConnection $db     The database connection used to generate the SQL statement.
-     *                              If this parameter is not given, the `db` application component will be used.
+     * @param string|null        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
+     * @param YiiConnection|null $db     The database connection used to generate the SQL statement.
+     *                                   If this parameter is not given, the `db` application component will be used.
      */
     public function column($column = null, YiiConnection $db = null)
     {

@@ -396,7 +396,7 @@ class Dashboard extends Component
     /**
      * Gets a widget's record.
      *
-     * @param int $widgetId
+     * @param int|null $widgetId
      *
      * @return WidgetRecord
      */

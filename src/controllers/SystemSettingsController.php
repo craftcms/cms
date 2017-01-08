@@ -80,7 +80,7 @@ class SystemSettingsController extends Controller
     /**
      * Shows the general settings form.
      *
-     * @param Info $info The info being edited, if there were any validation errors.
+     * @param Info|null $info The info being edited, if there were any validation errors.
      *
      * @return string The rendering result
      */
@@ -166,8 +166,8 @@ class SystemSettingsController extends Controller
     /**
      * Renders the email settings page.
      *
-     * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
-     * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
+     * @param MailSettings|null              $settings The posted email settings, if there were any validation errors
+     * @param TransportAdapterInterface|null $adapter  The transport adapter, if there were any validation errors
      *
      * @return string
      * @throws Exception if a plugin returns an invalid mail transport type

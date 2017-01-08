@@ -586,8 +586,8 @@ class Raster extends Image
     /**
      * Returns save options.
      *
-     * @param int|null $quality
-     * @param string   $extension
+     * @param int|null    $quality
+     * @param string|null $extension
      *
      * @return array
      */

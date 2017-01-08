@@ -87,7 +87,7 @@ class Globals
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invlaid
+     * @throws Exception if|null $siteHandle is invlaid
      */
     public function getSetById(int $globalSetId, string $siteHandle = null)
     {
@@ -115,7 +115,7 @@ class Globals
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invalid
+     * @throws Exception if|null $siteHandle is invalid
      */
     public function getSetByHandle(string $globalSetHandle, string $siteHandle = null)
     {

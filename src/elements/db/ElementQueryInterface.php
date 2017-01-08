@@ -290,8 +290,8 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Executes the query and returns all results as an array.
      *
-     * @param Connection $db The database connection used to generate the SQL statement.
-     *                       If this parameter is not given, the `db` application component will be used.
+     * @param Connection|null $db The database connection used to generate the SQL statement.
+     *                            If this parameter is not given, the `db` application component will be used.
      *
      * @return ElementInterface[] The resulting elements.
      */
@@ -307,9 +307,9 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Executes the query and returns a single row of result at a given offset.
      *
-     * @param int        $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
-     * @param Connection $db The database connection used to generate the SQL statement.
-     *                       If this parameter is not given, the `db` application component will be used.
+     * @param int             $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param Connection|null $db The database connection used to generate the SQL statement.
+     *                            If this parameter is not given, the `db` application component will be used.
      *
      * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
@@ -319,8 +319,8 @@ interface ElementQueryInterface extends QueryInterface
     /**
      * Executes the query and returns the IDs of the resulting elements.
      *
-     * @param Connection $db The database connection used to generate the SQL statement.
-     *                       If this parameter is not given, the `db` application component will be used.
+     * @param Connection|null $db The database connection used to generate the SQL statement.
+     *                            If this parameter is not given, the `db` application component will be used.
      *
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */

@@ -53,12 +53,12 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string $sectionHandle The section’s handle
-     * @param int    $entryId       The entry’s ID, if editing an existing entry.
-     * @param int    $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param int    $versionId     The entry version’s ID, if editing an existing version.
-     * @param int    $siteHandle    The site handle, if specified.
-     * @param Entry  $entry         The entry being edited, if there were any validation errors.
+     * @param string     $sectionHandle The section’s handle
+     * @param int|null   $entryId       The entry’s ID, if editing an existing entry.
+     * @param int|null   $draftId       The entry draft’s ID, if editing an existing draft.
+     * @param int|null   $versionId     The entry version’s ID, if editing an existing version.
+     * @param int|null   $siteHandle    The site handle, if specified.
+     * @param Entry|null $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
@@ -617,10 +617,10 @@ class EntriesController extends BaseEntriesController
     /**
      * Shows an entry/draft/version based on a token.
      *
-     * @param int $entryId
-     * @param int $siteId
-     * @param int $draftId
-     * @param int $versionId
+     * @param int|null $entryId
+     * @param int|null $siteId
+     * @param int|null $draftId
+     * @param int|null $versionId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found

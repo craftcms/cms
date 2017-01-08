@@ -824,9 +824,9 @@ class Users extends Component
     /**
      * Shuns a message for a user.
      *
-     * @param int      $userId     The user’s ID.
-     * @param string   $message    The message to be shunned.
-     * @param DateTime $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
+     * @param int           $userId     The user’s ID.
+     * @param string        $message    The message to be shunned.
+     * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
      *
      * @return bool Whether the message was shunned successfully.
      */
@@ -952,8 +952,8 @@ class Users extends Component
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int       $userId   The user’s ID.
-     * @param int|array $groupIds The groups’ IDs.
+     * @param int            $userId   The user’s ID.
+     * @param int|array|null $groupIds The groups’ IDs.
      *
      * @return bool Whether the users were successfully assigned to the groups.
      */

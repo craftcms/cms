@@ -30,11 +30,11 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param int    $entryId
-     * @param string $siteHandle
+     * @param int         $entryId
+     * @param string|null $siteHandle
      *
      * @return EntryDraft[]
-     * @throws Exception if $siteHandle is invalid
+     * @throws Exception if|null $siteHandle is invalid
      */
     public function getDraftsByEntryId(int $entryId, string $siteHandle = null)
     {
@@ -58,11 +58,11 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int    $entryId
-     * @param string $siteHandle
+     * @param int         $entryId
+     * @param string|null $siteHandle
      *
      * @return EntryDraft[]
-     * @throws Exception if $siteHandle is invalid
+     * @throws Exception if|null $siteHandle is invalid
      */
     public function getEditableDraftsByEntryId(int $entryId, string $siteHandle = null)
     {

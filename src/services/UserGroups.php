@@ -231,7 +231,7 @@ class UserGroups extends Component
     /**
      * Gets a group's record.
      *
-     * @param int $groupId
+     * @param int|null $groupId
      *
      * @return UserGroupRecord
      */

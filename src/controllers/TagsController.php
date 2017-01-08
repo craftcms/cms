@@ -51,7 +51,7 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param int           $tagGroupId The tag group’s ID, if any.
+     * @param int|null      $tagGroupId The tag group’s ID, if any.
      * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result

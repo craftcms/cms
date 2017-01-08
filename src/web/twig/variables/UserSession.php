@@ -77,9 +77,9 @@ class UserSession
     /**
      * Returns the URL the user was trying to access before getting sent to the login page.
      *
-     * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
+     * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
      *
-     * @return string The return URL, or $defaultUrl.
+     * @return string The return URL, or|null $defaultUrl.
      */
     public function getReturnUrl(string $defaultUrl = null)
     {

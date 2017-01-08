@@ -525,15 +525,15 @@ class View extends \yii\web\View
     /**
      * Registers a CSS file from the resources/ folder.
      *
-     * @param string $path    The resource path for the CSS file to be registered.
-     * @param array  $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
-     *                        the supported options. The following options are specially handled and are not treated as HTML attributes:
+     * @param string      $path    The resource path for the CSS file to be registered.
+     * @param array       $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
+     *                             the supported options. The following options are specially handled and are not treated as HTML attributes:
      *
      * - `depends`: array, specifies the names of the asset bundles that this CSS file depends on.
      *
-     * @param string $key     The key that identifies the CSS script file. If null, it will use
-     *                        $url as the key. If two CSS files are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string|null $key     The key that identifies the CSS script file. If null, it will use
+     *                             $url as the key. If two CSS files are registered with the same key, the latter
+     *                             will overwrite the former.
      */
     public function registerCssResource(string $path, array $options = [], string $key = null)
     {
@@ -543,9 +543,9 @@ class View extends \yii\web\View
     /**
      * Registers a JS file from the resources/ folder.
      *
-     * @param string $path    The resource path for the JS file to be registered.
-     * @param array  $options the HTML attributes for the script tag. The following options are specially handled
-     *                        and are not treated as HTML attributes:
+     * @param string      $path    The resource path for the JS file to be registered.
+     * @param array       $options the HTML attributes for the script tag. The following options are specially handled
+     *                             and are not treated as HTML attributes:
      *
      * - `depends`: array, specifies the names of the asset bundles that this JS file depends on.
      * - `position`: specifies where the JS script tag should be inserted in a page. The possible values are:
@@ -555,9 +555,9 @@ class View extends \yii\web\View
      *
      * Please refer to [[Html::jsFile()]] for other supported options.
      *
-     * @param string $key     the key that identifies the JS script file. If null, it will use
-     *                        $url as the key. If two JS files are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string|null $key     the key that identifies the JS script file. If null, it will use
+     *                             $url as the key. If two JS files are registered with the same key, the latter
+     *                             will overwrite the former.
      */
     public function registerJsResource(string $path, array $options = [], string $key = null)
     {
@@ -567,11 +567,11 @@ class View extends \yii\web\View
     /**
      * Registers a hi-res CSS code block.
      *
-     * @param string $css     the CSS code block to be registered
-     * @param array  $options the HTML attributes for the style tag.
-     * @param string $key     the key that identifies the CSS code block. If null, it will use
-     *                        $css as the key. If two CSS code blocks are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string      $css     the CSS code block to be registered
+     * @param array       $options the HTML attributes for the style tag.
+     * @param string|null $key     the key that identifies the CSS code block. If null, it will use
+     *                             $css as the key. If two CSS code blocks are registered with the same key, the latter
+     *                             will overwrite the former.
      *
      * @deprecated in 3.0. Use [[registerCss()]] and type your own media selector.
      */
@@ -789,7 +789,7 @@ class View extends \yii\web\View
      * Sets the active namespace.
      *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
-     * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
+     * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
      * @param string|null $namespace The new namespace. Set to null to remove the namespace.
      *
@@ -910,9 +910,9 @@ class View extends \yii\web\View
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html            The template with the inputs.
-     * @param string $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
-     * @param bool   $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
+     * @param string      $html            The template with the inputs.
+     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param bool        $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
      */
@@ -954,8 +954,8 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputName The input name that should be namespaced.
-     * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string      $inputName The input name that should be namespaced.
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
      *
      * @return string The namespaced input name.
      */
@@ -978,8 +978,8 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputId   The input ID that should be namespaced.
-     * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string      $inputId   The input ID that should be namespaced.
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
      *
      * @return string The namespaced input ID.
      */
@@ -1173,10 +1173,10 @@ class View extends \yii\web\View
     /**
      * Registers an asset bundle for a file in the resources/ folder.
      *
-     * @param string $path
-     * @param array  $options
-     * @param string $key
-     * @param string $kind
+     * @param string      $path
+     * @param array       $options
+     * @param string|null $key
+     * @param string      $kind
      */
     private function _registerResource(string $path, array $options, string $key = null, string $kind)
     {

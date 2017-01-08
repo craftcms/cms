@@ -205,11 +205,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Translates the given message.
      *
-     * @param string $message  The message to be translated.
-     * @param string $category the message category.
-     * @param array  $params   The parameters that will be used to replace the corresponding placeholders in the message.
-     * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     *                         [[\yii\base\Application::language|application language]] will be used.
+     * @param string      $message  The message to be translated.
+     * @param string|null $category the message category.
+     * @param array|null  $params   The parameters that will be used to replace the corresponding placeholders in the message.
+     * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
+     *                              [[\yii\base\Application::language|application language]] will be used.
      *
      * @return string the translated message.
      */
@@ -410,7 +410,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param \Twig_Environment                     $env
      * @param DateTimeInterface|DateInterval|string $date      A date
      * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
      * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
@@ -435,9 +435,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the Atom format.
      *
-     * @param \Twig_Environment                               $env
-     * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
-     * @param DateTimeZone|string|null|false                  $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param \Twig_Environment                              $env
+     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTimeZone|string|false|null                 $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -449,9 +449,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the RSS format.
      *
-     * @param \Twig_Environment                               $env
-     * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
-     * @param DateTimeZone|string|null|false                  $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param \Twig_Environment                              $env
+     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTimeZone|string|false|null                 $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -466,7 +466,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param \Twig_Environment                     $env
      * @param DateTimeInterface|DateInterval|string $date      A date
      * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
      * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
@@ -494,7 +494,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param \Twig_Environment                     $env
      * @param DateTimeInterface|DateInterval|string $date      A date
      * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|null|false        $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
      * @param bool                                  $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
@@ -587,11 +587,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Parses text through Markdown.
      *
-     * @param string $markdown    The markdown text to parse
-     * @param string $flavor      The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
-     *                            'gfm-comment' (GFM with newlines converted to `<br>`s),
-     *                            or 'extra' (Markdown Extra). Default is 'original'.
-     * @param bool   $inlineOnly  Whether to only parse inline elements, omitting any `<p>` tags.
+     * @param string      $markdown   The markdown text to parse
+     * @param string|null $flavor     The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
+     *                                'gfm-comment' (GFM with newlines converted to `<br>`s),
+     *                                or 'extra' (Markdown Extra). Default is 'original'.
+     * @param bool        $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      *
      * @return \Twig_Markup
      */

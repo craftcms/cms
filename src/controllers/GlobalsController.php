@@ -99,9 +99,9 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string    $globalSetHandle The global set’s handle.
-     * @param string    $siteHandle      The site handle, if specified.
-     * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
+     * @param string         $globalSetHandle The global set’s handle.
+     * @param string|null    $siteHandle      The site handle, if specified.
+     * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set

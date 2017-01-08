@@ -472,8 +472,8 @@ class Locale extends Object
     /**
      * Returns the localized ICU date format.
      *
-     * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date format.
      */
@@ -485,8 +485,8 @@ class Locale extends Object
     /**
      * Returns the localized ICU time format.
      *
-     * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU time format.
      */
@@ -498,8 +498,8 @@ class Locale extends Object
     /**
      * Returns the localized ICU date + time format.
      *
-     * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
-     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     * @param string|null $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
+     * @param string      $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
      *
      * @return string The localized ICU date + time format.
      */
@@ -511,9 +511,9 @@ class Locale extends Object
     /**
      * Returns a localized month name.
      *
-     * @param int    $month      The month to return (1-12).
-     * @param string $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool   $standAlone Whether to return the "stand alone" month name.
+     * @param int         $month      The month to return (1-12).
+     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool        $standAlone Whether to return the "stand alone" month name.
      *
      * @return string The localized month name.
      */
@@ -561,8 +561,8 @@ class Locale extends Object
     /**
      * Returns all of the localized month names.
      *
-     * @param string $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool   $standAlone Whether to return the "stand alone" month names.
+     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool        $standAlone Whether to return the "stand alone" month names.
      *
      * @return array The localized month names.
      */
@@ -580,9 +580,9 @@ class Locale extends Object
     /**
      * Returns a localized day of the week name.
      *
-     * @param int    $day        The day of the week to return (0-6), where 0 stands for Sunday.
-     * @param string $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
-     * @param bool   $standAlone Whether to return the "stand alone" day of the week name.
+     * @param int         $day        The day of the week to return (0-6), where 0 stands for Sunday.
+     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
+     * @param bool        $standAlone Whether to return the "stand alone" day of the week name.
      *
      * @return string The localized day of the week name.
      */
@@ -645,8 +645,8 @@ class Locale extends Object
     /**
      * Returns all of the localized day of the week names.
      *
-     * @param string $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
-     * @param bool   $standAlone Whether to return the "stand alone" day of the week names.
+     * @param string|null $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::MEDIUM, ::FULL
+     * @param bool        $standAlone Whether to return the "stand alone" day of the week names.
      *
      * @return array The localized day of the week names.
      */

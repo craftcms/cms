@@ -626,7 +626,7 @@ class Volumes extends Component
     /**
      * Gets a volume's record.
      *
-     * @param int $volumeId
+     * @param int|null $volumeId
      *
      * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord

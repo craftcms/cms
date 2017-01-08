@@ -99,8 +99,8 @@ class EmailMessages extends Component
     /**
      * Returns a system email message by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return RebrandEmail
      */
@@ -252,8 +252,8 @@ class EmailMessages extends Component
     /**
      * Gets a message record by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return EmailMessageRecord
      */

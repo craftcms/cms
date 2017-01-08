@@ -210,7 +210,7 @@ class CategoriesController extends Controller
     /**
      * Displays the category index page.
      *
-     * @param string $groupHandle The category group’s handle.
+     * @param string|null $groupHandle The category group’s handle.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit categories
@@ -232,10 +232,10 @@ class CategoriesController extends Controller
     /**
      * Displays the category edit page.
      *
-     * @param string   $groupHandle The category group’s handle.
-     * @param int      $categoryId  The category’s ID, if editing an existing category.
-     * @param string   $siteHandle  The site handle, if specified.
-     * @param Category $category    The category being edited, if there were any validation errors.
+     * @param string        $groupHandle The category group’s handle.
+     * @param int|null      $categoryId  The category’s ID, if editing an existing category.
+     * @param string|null   $siteHandle  The site handle, if specified.
+     * @param Category|null $category    The category being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
@@ -510,8 +510,8 @@ class CategoriesController extends Controller
     /**
      * Redirects the client to a URL for viewing a disabled category on the front end.
      *
-     * @param int $categoryId
-     * @param int $siteId
+     * @param int      $categoryId
+     * @param int|null $siteId
      *
      * @return Response
      * @throws Exception
@@ -555,8 +555,8 @@ class CategoriesController extends Controller
     /**
      * Shows an category/draft/version based on a token.
      *
-     * @param int $categoryId
-     * @param int $siteId
+     * @param int      $categoryId
+     * @param int|null $siteId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found

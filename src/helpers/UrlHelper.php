@@ -217,7 +217,7 @@ class UrlHelper
      * @param int|null          $siteId
      *
      * @return string
-     * @throws Exception if $siteId is invalid
+     * @throws Exception if|null $siteId is invalid
      */
     public static function siteUrl(string $path = '', $params = null, string $protocol = null, int $siteId = null)
     {

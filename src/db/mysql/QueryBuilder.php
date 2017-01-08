@@ -25,9 +25,9 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     /**
      * @inheritdoc
      *
-     * @param string $table   the name of the table to be created. The name will be properly quoted by the method.
-     * @param array  $columns the columns (name => definition) in the new table.
-     * @param string $options additional SQL fragment that will be appended to the generated SQL.
+     * @param string      $table   the name of the table to be created. The name will be properly quoted by the method.
+     * @param array       $columns the columns (name => definition) in the new table.
+     * @param string|null $options additional SQL fragment that will be appended to the generated SQL.
      *
      * @return string the SQL statement for creating a new DB table.
      */

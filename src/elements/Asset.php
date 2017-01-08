@@ -762,7 +762,7 @@ class Asset extends Element
     /**
      * Get a file's uri path in the source.
      *
-     * @param string $filename Filename to use. If not specified, the file's filename will be used.
+     * @param string|null $filename Filename to use. If not specified, the file's filename will be used.
      *
      * @return string
      */

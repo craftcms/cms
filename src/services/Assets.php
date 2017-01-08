@@ -1057,7 +1057,7 @@ class Assets extends Component
     /**
      * Get the user's folder.
      *
-     * @param User $userModel
+     * @param User|null $userModel
      *
      * @return VolumeFolder|null
      */

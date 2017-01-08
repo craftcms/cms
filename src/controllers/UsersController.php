@@ -458,7 +458,7 @@ class UsersController extends Controller
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found
-     * @throws BadRequestHttpException if there’s a mismatch between $userId and $user
+     * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
     public function actionEditUser($userId = null, User $user = null)
     {

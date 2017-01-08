@@ -332,9 +332,9 @@ class DateTimeHelper
     /**
      * Translates the words in a formatted date string to the application’s language.
      *
-     * @param string $str      The formatted date string
-     * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     *                         [[\yii\base\Application::language|application language]] will be used.
+     * @param string      $str      The formatted date string
+     * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
+     *                              [[\yii\base\Application::language|application language]] will be used.
      *
      * @return string The translated date string
      */

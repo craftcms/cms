@@ -626,8 +626,8 @@ class Plugins extends Component
     /**
      * Creates and returns a new plugin instance based on its class handle.
      *
-     * @param string $handle The plugin’s handle
-     * @param array  $row    The plugin’s row in the plugins table, if any
+     * @param string     $handle The plugin’s handle
+     * @param array|null $row    The plugin’s row in the plugins table, if any
      *
      * @return PluginInterface|null
      */

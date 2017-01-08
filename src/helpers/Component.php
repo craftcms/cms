@@ -26,11 +26,11 @@ class Component
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @param mixed  $config     The component’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @param string $instanceOf The class or interface that the component must be an instance of.
+     * @param mixed       $config     The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param string|null $instanceOf The class or interface that the component must be an instance of.
      *
      * @return ComponentInterface The component
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist
      */
     public static function createComponent($config, string $instanceOf = null)
