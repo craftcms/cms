@@ -54,7 +54,7 @@ class CategoryGroups
      *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null): array
+    public function getAllGroups(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.allGroups instead.');
 

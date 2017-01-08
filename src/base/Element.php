@@ -236,7 +236,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sources($context): array
+    public static function sources(string $context = null): array
     {
         $sources = static::defineSources($context);
 
@@ -283,7 +283,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources($context): array
+    protected static function defineSources(string $context = null): array
     {
         return [];
     }
@@ -296,7 +296,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array|null The available element actions.
      * @see actions()
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         return [];
     }
@@ -307,7 +307,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes): string
+    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string
     {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -828,7 +828,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    public function validateCustomFieldAttribute(string $attribute, $params)
+    public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
         /** @var Field $field */
         /** @var array|null $params */
@@ -1039,7 +1039,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setParent($parent)
+    public function setParent(ElementInterface $parent = null)
     {
         $this->_parent = $parent;
 

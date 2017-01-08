@@ -407,7 +407,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _createUrl(string $path, $params, $protocol, bool $cpUrl, bool $mustShowScriptName): string
+    private static function _createUrl(string $path, $params, string $protocol = null, bool $cpUrl, bool $mustShowScriptName): string
     {
         // Normalize the params
         $params = self::_normalizeParams($params, $anchor);
@@ -500,7 +500,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _normalizeParams($params, &$anchor): string
+    private static function _normalizeParams($params, &$anchor = null): string
     {
         if (is_array($params)) {
             // See if there's an anchor

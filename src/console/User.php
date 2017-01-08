@@ -90,7 +90,7 @@ class User extends Component
      *
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity($identity)
+    public function setIdentity(IdentityInterface $identity = null)
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;

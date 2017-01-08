@@ -689,7 +689,7 @@ class Categories extends Component
      *
      * @return CategoryGroup|null
      */
-    private function _createCategoryGroupFromRecord($groupRecord)
+    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null)
     {
         if (!$groupRecord) {
             return null;

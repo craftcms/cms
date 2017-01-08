@@ -47,7 +47,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Default to black, so the JS-based color picker is consistent with Chrome
         if (!$value) {

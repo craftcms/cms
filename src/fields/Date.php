@@ -163,7 +163,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $variables = [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
@@ -211,7 +211,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;

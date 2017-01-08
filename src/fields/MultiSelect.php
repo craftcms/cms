@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -43,7 +44,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $options = $this->getTranslatedOptions();
 

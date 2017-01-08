@@ -88,7 +88,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context): array
+    protected static function defineSources(string $context = null): array
     {
         $sources = [];
 
@@ -115,7 +115,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {

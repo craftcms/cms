@@ -193,7 +193,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var Element $element */
         /** @var Element $class */
@@ -268,7 +268,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var ElementQuery $value */
         $variables = $this->getInputTemplateVariables($value, $element);
@@ -447,7 +447,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputTemplateVariables($selectedElementsQuery, ElementInterface $element = null): array
+    protected function getInputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */
@@ -488,7 +488,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array|string
      */
-    protected function getInputSources($element)
+    protected function getInputSources(ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -516,7 +516,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return int
      */
-    protected function getTargetSiteId($element): int
+    protected function getTargetSiteId(ElementInterface $element = null): int
     {
         /** @var Element|null $element */
         if (Craft::$app->getIsMultiSite()) {

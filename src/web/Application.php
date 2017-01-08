@@ -502,7 +502,7 @@ class Application extends \yii\web\Application
      *
      * @return Response|null
      */
-    private function _processRequirementsCheck($request)
+    private function _processRequirementsCheck(Request $request = null)
     {
         // See if we're in the middle of an update.
         $update = false;

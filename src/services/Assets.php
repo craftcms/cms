@@ -405,13 +405,13 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset     $asset         The asset whose file should be renamed
-     * @param bool|null $runValidation Whether the filename should be validated
+     * @param Asset $asset         The asset whose file should be renamed
+     * @param bool  $runValidation Whether the filename should be validated
      *
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameFile(Asset $asset, $runValidation = true): bool
+    public function renameFile(Asset $asset, bool $runValidation = true): bool
     {
         if ($runValidation && !$asset->validate(['newFilename'])) {
             Craft::info('Asset file not renamed due to validation error.', __METHOD__);

@@ -65,7 +65,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {

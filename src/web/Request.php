@@ -1017,7 +1017,7 @@ class Request extends \yii\web\Request
      *
      * @return mixed
      */
-    private function _getParam($name, $defaultValue, array $params)
+    private function _getParam(string $name = null, $defaultValue, array $params)
     {
         // Do they just want the whole array?
         if ($name === null) {

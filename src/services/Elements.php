@@ -329,14 +329,14 @@ class Elements extends Component
      * ```
      *
      * @param ElementInterface $element       The element that is being saved
-     * @param bool|null        $runValidation Whether the element should be validated
+     * @param bool             $runValidation Whether the element should be validated
      *
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, $runValidation = true): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;

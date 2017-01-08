@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use yii\db\Schema;
 
@@ -95,7 +96,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if (empty($this->options)) {
             return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';

@@ -154,7 +154,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
@@ -170,7 +170,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decode($value);
@@ -195,7 +195,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
             // Drop the string row keys
@@ -236,7 +236,7 @@ class Table extends Field
      *
      * @return string
      */
-    private function _getInputHtml($value, $element, bool $static): string
+    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
         $columns = $this->columns;
 

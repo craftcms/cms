@@ -231,7 +231,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The sources.
      */
-    public static function sources($context): array;
+    public static function sources(string $context = null): array;
 
     /**
      * Returns the available element actions for a given source (if one is provided).
@@ -283,7 +283,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The element index HTML
      */
-    public static function indexHtml(ElementQueryInterface $elementQuery, $disabledElementIds, array $viewState, $sourceKey, $context, bool $includeContainer, bool $showCheckboxes): string;
+    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string;
 
     /**
      * Returns the attributes that elements can be sorted by.
@@ -508,7 +508,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return void
      */
-    public function setParent($parent);
+    public function setParent(ElementInterface $parent = null);
 
     /**
      * Returns the ID of the structure that the element is associated with, if any.

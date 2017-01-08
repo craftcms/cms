@@ -286,7 +286,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface|null
      */
-    public function getVolumeById($volumeId)
+    public function getVolumeById(int $volumeId = null)
     {
         // TODO: Temp volumes should not be created here!
         // Temporary volume?

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -34,7 +35,7 @@ class Dropdown extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $options = $this->getTranslatedOptions();
 

@@ -162,7 +162,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var string|null $value */
         if ($value !== null) {
@@ -176,7 +176,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var RichTextData|null $value */
         /** @var Element $element */
@@ -245,7 +245,7 @@ class RichText extends Field
      *
      * @return void
      */
-    public function validateLength(ElementInterface $element, $params)
+    public function validateLength(ElementInterface $element, array $params = null)
     {
         /** @var Element $element */
         /** @var RichTextData $value */
@@ -280,7 +280,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */
         if (!$value) {
@@ -383,7 +383,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getLinkOptions($element): array
+    private function _getLinkOptions(Element $element = null): array
     {
         $linkOptions = [];
 
@@ -422,7 +422,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getSectionSources($element): array
+    private function _getSectionSources(Element $element = null): array
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -454,7 +454,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getCategorySources($element): array
+    private function _getCategorySources(Element $element = null): array
     {
         $sources = [];
 

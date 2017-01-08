@@ -848,7 +848,7 @@ class Plugins extends Component
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
-    public function setPluginLicenseKey(string $pluginHandle, $licenseKey): bool
+    public function setPluginLicenseKey(string $pluginHandle, string $licenseKey = null): bool
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -925,7 +925,7 @@ class Plugins extends Component
      * @return void
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus(string $pluginHandle, $licenseKeyStatus)
+    public function setPluginLicenseKeyStatus(string $pluginHandle, string $licenseKeyStatus = null)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -1167,7 +1167,7 @@ class Plugins extends Component
      *
      * @return array|null
      */
-    private function _generateDefaultAliasesFromComposer(string $handle, array $composer, &$class, &$basePath)
+    private function _generateDefaultAliasesFromComposer(string $handle, array $composer, &$class = null, &$basePath = null)
     {
         if (empty($composer['autoload']['psr-4'])) {
             return null;

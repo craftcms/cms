@@ -210,7 +210,7 @@ class MigrateController extends BaseMigrateController
      */
     protected function getMigrationHistory($limit)
     {
-        return $this->getMigrator()->getMigrationHistory($limit);
+        return $this->getMigrator()->getMigrationHistory((int)$limit);
     }
 
     /**

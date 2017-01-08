@@ -70,7 +70,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         // If this is a new entry, look for a default option
         if ($this->isFresh($element)) {
@@ -103,7 +103,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         // It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
         return $value == false ? '0' : $value;

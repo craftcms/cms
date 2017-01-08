@@ -106,7 +106,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context): array
+    protected static function defineSources(string $context = null): array
     {
         if ($context === 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -123,7 +123,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         $actions = [];
 

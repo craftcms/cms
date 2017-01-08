@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;
@@ -95,7 +96,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
             [

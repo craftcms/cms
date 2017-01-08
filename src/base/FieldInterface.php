@@ -152,7 +152,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The input HTML.
      */
-    public function getInputHtml($value, $element): string;
+    public function getInputHtml($value, ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -215,7 +215,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, $element);
+    public function normalizeValue($value, ElementInterface $element = null);
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
@@ -227,7 +227,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return mixed The serialized field value
      */
-    public function serializeValue($value, $element);
+    public function serializeValue($value, ElementInterface $element = null);
 
     /**
      * Modifies an element query.
@@ -249,7 +249,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param bool|null $isFresh Whether the field is fresh.
      */
-    public function setIsFresh($isFresh);
+    public function setIsFresh(bool $isFresh = null);
 
     /**
      * Returns the field’s group.

@@ -115,7 +115,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context): array
+    protected static function defineSources(string $context = null): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -205,7 +205,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {

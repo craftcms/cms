@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 
 /**
  * Checkboxes represents a Checkboxes field.
@@ -43,7 +44,7 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $options = $this->getTranslatedOptions();
 

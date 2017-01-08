@@ -245,7 +245,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var Element $element */
         $query = MatrixBlock::find();
@@ -302,7 +302,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
 
@@ -374,7 +374,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return void
      */
-    public function validateBlocks(ElementInterface $element, $params)
+    public function validateBlocks(ElementInterface $element, array $params = null)
     {
         /** @var Element $element */
         /** @var MatrixBlockQuery $value */
@@ -657,7 +657,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      *
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, $element): array
+    private function _createBlocksFromSerializedData(array $value, ElementInterface $element = null): array
     {
         /** @var Element $element */
         // Get the possible block types for this field

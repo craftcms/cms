@@ -222,7 +222,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         return $value;
     }
@@ -230,7 +230,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
             [
@@ -293,7 +293,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         return Db::prepareValueForDb($value);
     }
@@ -321,7 +321,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh($isFresh)
+    public function setIsFresh(bool $isFresh = null)
     {
         $this->_isFresh = $isFresh;
     }
@@ -457,7 +457,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return bool
      */
-    protected function isFresh($element): bool
+    protected function isFresh(ElementInterface $element = null): bool
     {
         if ($this->_isFresh !== null) {
             return $this->_isFresh;

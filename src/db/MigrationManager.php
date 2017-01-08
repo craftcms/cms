@@ -121,12 +121,12 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int|null $limit     The number of new migrations to be applied. If 0 or null, it means
-     *                            applying all available new migrations.
+     * @param int $limit     The number of new migrations to be applied. If 0, it means
+     *                       applying all available new migrations.
      *
      * @return bool Whether the migrations were applied successfully
      */
-    public function up($limit = 0): bool
+    public function up(int $limit = 0): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
@@ -141,8 +141,7 @@ class MigrationManager extends Component
 
         $total = count($migrationNames);
 
-        $this->_normalizeLimit($limit);
-        if ($limit !== null) {
+        if ($limit !== 0) {
             $migrationNames = array_slice($migrationNames, 0, $limit);
         }
 
@@ -176,17 +175,16 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param int|null $limit     The number of migrations to be reverted. Defaults to 1,
-     *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
+     * @param int $limit The number of migrations to be reverted. Defaults to 1,
+     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      *
      * @return bool Whether the migrations were reverted successfully
      */
-    public function down($limit = 1): bool
+    public function down(int $limit = 1): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $this->_normalizeLimit($limit);
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
@@ -324,15 +322,17 @@ class MigrationManager extends Component
     /**
      * Returns the migration history.
      *
-     * @param int|null $limit The maximum number of records in the history to be returned. `null` for "no limit".
+     * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
      *
      * @return array The migration history
      */
-    public function getMigrationHistory(int $limit = null): array
+    public function getMigrationHistory(int $limit = 0): array
     {
-        $history = $this->_createMigrationQuery()
-            ->limit($limit)
-            ->pairs($this->db);
+        $query = $this->_createMigrationQuery();
+        if ($limit !== 0) {
+            $query->limit($limit);
+        }
+        $history = $query->pairs($this->db);
         unset($history[self::BASE_MIGRATION]);
 
         return $history;
@@ -432,7 +432,7 @@ class MigrationManager extends Component
      *
      * @param int|null &$limit
      */
-    private function _normalizeLimit(&$limit)
+    private function _normalizeLimit(&$limit = null)
     {
         if (is_numeric($limit) && $limit >= 1) {
             $limit = (int)$limit;

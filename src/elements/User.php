@@ -131,7 +131,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context): array
+    protected static function defineSources(string $context = null): array
     {
         $sources = [
             [
@@ -172,7 +172,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         $actions = [];
 

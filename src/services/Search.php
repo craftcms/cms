@@ -247,7 +247,7 @@ class Search extends Component
      * @return void
      * @throws \craft\errors\SiteNotFoundException
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, $siteId, string $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
     {
         $attribute = StringHelper::toLowerCase($attribute);
 

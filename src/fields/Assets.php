@@ -178,7 +178,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element): string
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         try {
             return parent::getInputHtml($value, $element);
@@ -243,7 +243,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -281,7 +281,7 @@ class Assets extends BaseRelationField
      *
      * @return int
      */
-    public function resolveDynamicPathToFolderId($element): int
+    public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
     }
@@ -502,9 +502,8 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSources($element)
+    protected function getInputSources(ElementInterface $element = null)
     {
-
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
 
@@ -694,7 +693,7 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @return int
      */
-    private function _determineUploadFolderId($element, bool $createDynamicFolders = true): int
+    private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         if ($this->useSingleFolder) {
             $volumeId = $this->singleUploadLocationSource;
