@@ -174,7 +174,7 @@ class Feeds extends Component
     /**
      * Returns an array of categories.
      *
-     * @param \stdClass[] $objects
+     * @param mixed $objects
      *
      * @return array
      */
