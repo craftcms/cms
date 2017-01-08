@@ -53,7 +53,6 @@ class SwitchTokenParser extends \Twig_TokenParser
 
         $expressionParser = $this->parser->getExpressionParser();
         $cases = [];
-        $default = null;
         $end = false;
 
         while (!$end) {
