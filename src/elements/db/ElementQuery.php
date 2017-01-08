@@ -28,8 +28,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
-use IteratorAggregate;
-use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
@@ -45,7 +43,7 @@ use yii\db\Expression;
  *
  * @method ElementInterface|array nth($n, $db = null)
  */
-class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
+class ElementQuery extends Query implements ElementQueryInterface
 {
     // Traits
     // =========================================================================
