@@ -7,9 +7,7 @@
 
 namespace craft\elements\db;
 
-use ArrayAccess;
 use ArrayIterator;
-use Countable;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
