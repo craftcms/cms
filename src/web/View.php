@@ -926,7 +926,7 @@ class View extends \yii\web\View
             $namespace = $this->getNamespace();
         }
 
-        if ($namespace) {
+        if ($namespace !== null) {
             // Protect the textarea content
             $this->_textareaMarkers = [];
             $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is',
@@ -965,7 +965,7 @@ class View extends \yii\web\View
             $namespace = $this->getNamespace();
         }
 
-        if ($namespace) {
+        if ($namespace !== null) {
             $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
         }
 
@@ -989,7 +989,7 @@ class View extends \yii\web\View
             $namespace = $this->getNamespace();
         }
 
-        if ($namespace) {
+        if ($namespace !== null) {
             $inputId = $this->formatInputId($namespace).'-'.$inputId;
         }
 
