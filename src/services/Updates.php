@@ -759,7 +759,7 @@ class Updates extends Component
                 Craft::info('Rolling back any file changes.', __METHOD__);
                 $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
 
-                if ($manifestData) {
+                if (!empty($manifestData)) {
                     UpdateHelper::rollBackFileChanges($manifestData, $handle);
                 }
 

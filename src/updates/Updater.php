@@ -166,7 +166,8 @@ class Updater
 
         // Update the files.
         Craft::info('Performing file update.', __METHOD__);
-        if (!Update::doFileUpdate(Update::getManifestData($unzipFolder, $handle), $unzipFolder, $handle)) {
+        $manifestData = Update::getManifestData($unzipFolder, $handle);
+        if ($manifestData === null || Update::doFileUpdate($manifestData, $unzipFolder, $handle) === false) {
             throw new FileException(Craft::t('app', 'There was a problem updating your files.'));
         }
     }
@@ -276,7 +277,7 @@ class Updater
         $basePath = Update::getBasePath($handle);
         $manifestData = Update::getManifestData($unzipFolder, $handle);
 
-        if ($manifestData) {
+        if (!empty($manifestData)) {
             // Find all the .bak files
             $filesToDelete = FileHelper::findFiles($basePath, ['only' => ['*.bak']]);
 
@@ -390,10 +391,16 @@ class Updater
      * @param string $handle
      *
      * @return array
+     * @throws Exception if something is wrong with the update manifest data
      */
     private function _validateManifestPathsWritable(string $unzipFolder, string $handle): array
     {
         $manifestData = Update::getManifestData($unzipFolder, $handle);
+
+        if ($manifestData === null) {
+            throw new Exception('Invalid update manifest data');
+        }
+
         $basePath = Update::getBasePath($handle);
         $writableErrors = [];
 
@@ -437,10 +444,15 @@ class Updater
      * @param string $handle
      *
      * @return bool
+     * @throws Exception if something is wrong with the update manifest data
      */
     private function _backupFiles(string $unzipFolder, string $handle): bool
     {
         $manifestData = Update::getManifestData($unzipFolder, $handle);
+
+        if ($manifestData === null) {
+            throw new Exception('Invalid update manifest data');
+        }
 
         try {
             foreach ($manifestData as $line) {

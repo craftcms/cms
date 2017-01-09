@@ -550,7 +550,7 @@ EOD;
         // Grab the old version from the manifest data before we nuke it.
         $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid), $handle);
 
-        if ($manifestData && $handle === 'craft') {
+        if (!empty($manifestData) && $handle === 'craft') {
             $oldVersion = Update::getLocalVersionFromManifest($manifestData);
         }
 

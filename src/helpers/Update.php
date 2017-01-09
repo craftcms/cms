@@ -220,11 +220,11 @@ class Update
      * @param string $manifestDataPath
      * @param string $handle
      *
-     * @return array
+     * @return array|null
      * @throws Exception if there was a problem reading the update manifest data
      * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      */
-    public static function getManifestData(string $manifestDataPath, string $handle): array
+    public static function getManifestData(string $manifestDataPath, string $handle)
     {
         if (self::$_manifestData !== null) {
             return self::$_manifestData ?: null;
