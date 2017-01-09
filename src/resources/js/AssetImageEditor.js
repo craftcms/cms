@@ -484,7 +484,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // If we're asked to store a specific state.
             if (state) {
                 this.cropperState = state;
-            } else {
+            } else if (this.clipper) {
                 this.cropperState = {
                     clipperData: {
                         deltaX: this.clipper.left - this.image.left,
@@ -519,8 +519,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 // Normalize the viewport rotation angle so it's between 0 and 359
                 this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
 
-                var imageDimensions = this.getScaledImageDimensions();
                 var newAngle = this.image.angle + degrees;
+                var scaledImageDimensions = this.getScaledImageDimensions();
+                var zoomToCover = this.getZoomToCoverRatio(scaledImageDimensions);
 
                 this.viewport.animate({
                     angle: degrees == 90 ? '+=90' : '-=90'
@@ -538,8 +539,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var state = this.cropperState;
                 var imageProperties = {
                     angle: newAngle,
-                    width: imageDimensions.width,
-                    height: imageDimensions.height
+                    width: scaledImageDimensions.width * zoomToCover,
+                    height: scaledImageDimensions.height * zoomToCover
                 };
 
                 // Make sure we reposition the image as well to focus on the same image area
@@ -553,17 +554,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
                     newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
 
-                    var currentArea = this._getBoundingRectangle(this.imageVerticeCoords);
+                    var zoomFactor = this.zoomRatio / state.zoom;
+                    var currentArea = this._getBoundingRectangle(this.getImageVerticeCoords());
                     var areaFactor = currentArea.width / state.imageArea.width;
 
-                    imageProperties.left = this.editorWidth/2 - newDeltaX;
-                    imageProperties.top = this.editorHeight/2 - newDeltaY;
+                    var modifiedDeltaX = newDeltaX * areaFactor * zoomFactor;
+                    var modifiedDeltaY = newDeltaY * areaFactor * zoomFactor;
 
-                    state.clipperData.deltaX = newDeltaX;
-                    state.clipperData.deltaY = newDeltaY;
-                    var temp = state.clipperData.width * areaFactor;
-                    state.clipperData.width = state.clipperData.height * areaFactor;
+                    imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
+                    imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
+                    imageProperties.width = imageProperties.width * this.zoomRatio / zoomToCover * areaFactor;
+                    imageProperties.height = imageProperties.height * this.zoomRatio / zoomToCover * areaFactor;
+
+                    state.clipperData.deltaX = newDeltaX * zoomFactor * areaFactor;
+                    state.clipperData.deltaY = newDeltaY * zoomFactor * areaFactor;
+                    var temp = state.clipperData.width;
+                    state.clipperData.width = state.clipperData.height;
                     state.clipperData.height = temp;
+                    state.zoom = this.zoomRatio;
+                    if (state) {
+                        this.storeCropperState(state);
+                    }
+
                 }
 
                 // Animate the rotation and dimension change
@@ -574,10 +586,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         var cleanAngle = parseInt((this.image.angle + 360) % 360, 10);
                         this.image.set({angle: cleanAngle});
                         this.animationInProgress = false;
-                        if (state) {
-                            state.imageArea = this._getBoundingRectangle(this.getImageVerticeCoords());
-                            this.storeCropperState(state);
-                        }
                     }.bind(this)
                 });
             }
@@ -1068,7 +1076,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this._showCropper(clipperData);
                     }.bind(this);
                 } else {
-                    // TODO: Maybe zoom in more for really small crop
                     this._hideCropper();
                     this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 
@@ -1102,7 +1109,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     }.bind(this)
                 });
 
-                console.log(viewportDimensions.width);
                 this.viewport.animate({
                     width: viewportDimensions.width,
                     height: viewportDimensions.height
