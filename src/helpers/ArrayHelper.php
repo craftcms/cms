@@ -77,7 +77,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function filterEmptyStringsFromArray(array $arr): array
     {
-        return array_filter($arr, [ArrayHelper::class, '_isNotAnEmptyString']);
+        return array_filter($arr, function($value): bool {
+            return $value !== '';
+        });
     }
 
     /**
@@ -134,20 +136,5 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         if (is_array($array) && (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array))) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
         }
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * The array_filter() callback function for filterEmptyStringsFromArray().
-     *
-     * @param string $val
-     *
-     * @return bool
-     */
-    private static function _isNotAnEmptyString(string $val): bool
-    {
-        return (mb_strlen($val) !== 0);
     }
 }
