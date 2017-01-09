@@ -247,12 +247,12 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template that represents an entire web page.
      *
-     * @param mixed $template  The name of the template to load
-     * @param array $variables The variables that should be available to the template
+     * @param string $template  The name of the template to load
+     * @param array  $variables The variables that should be available to the template
      *
      * @return string the rendering result
      */
-    public function renderPageTemplate($template, array $variables = []): string
+    public function renderPageTemplate(string $template, array $variables = []): string
     {
         ob_start();
         ob_implicit_flush(false);
