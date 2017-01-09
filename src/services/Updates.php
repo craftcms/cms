@@ -256,9 +256,9 @@ class Updates extends Component
     }
 
     /**
-     * @return Et
+     * @return Et|null
      */
-    public function check(): Et
+    public function check()
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 

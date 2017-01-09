@@ -50,10 +50,10 @@ abstract class BaseElementsController extends Controller
     /**
      * Returns the posted element type class.
      *
-     * @return ElementInterface
+     * @return string
      * @throws BadRequestHttpException if the requested element type is invalid
      */
-    protected function getElementType(): ElementInterface
+    protected function getElementType(): string
     {
         $class = Craft::$app->getRequest()->getRequiredParam('elementType');
 
