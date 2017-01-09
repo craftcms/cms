@@ -325,7 +325,7 @@ class ElementHelper
             }
 
             // Prepare for searching nested sources
-            $sources = isset($source['nested']) ? $source['nested'] : [];
+            $sources = $source['nested'] ?? [];
         }
 
         return null;

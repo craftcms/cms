@@ -857,7 +857,7 @@ class EntriesController extends BaseEntriesController
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
-            $authorId = isset($authorId[0]) ? $authorId[0] : null;
+            $authorId = $authorId[0] ?? null;
         }
 
         $entry->authorId = $authorId;
@@ -866,7 +866,7 @@ class EntriesController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = isset($parentId[0]) ? $parentId[0] : null;
+            $parentId = $parentId[0] ?? null;
         }
 
         $entry->newParentId = $parentId;

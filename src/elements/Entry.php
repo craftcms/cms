@@ -773,7 +773,7 @@ class Entry extends Element
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {
-            $author = isset($elements[0]) ? $elements[0] : null;
+            $author = $elements[0] ?? null;
             $this->setAuthor($author);
         } else {
             parent::setEagerLoadedElements($handle, $elements);

@@ -1111,7 +1111,7 @@ class User extends Element implements IdentityInterface
     {
         $preferences = $this->getPreferences();
 
-        return isset($preferences[$key]) ? $preferences[$key] : $default;
+        return $preferences[$key] ?? $default;
     }
 
     /**
@@ -1151,7 +1151,7 @@ class User extends Element implements IdentityInterface
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'photo') {
-            $photo = isset($elements[0]) ? $elements[0] : null;
+            $photo = $elements[0] ?? null;
             $this->setPhoto($photo);
         } else {
             parent::setEagerLoadedElements($handle, $elements);

@@ -547,7 +547,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'transferList' => $fileTransferList,
-            'newFolderId' => isset($folderIdChanges[$folderBeingMovedId]) ? $folderIdChanges[$folderBeingMovedId] : null
+            'newFolderId' => $folderIdChanges[$folderBeingMovedId] ?? null
         ]);
     }
 

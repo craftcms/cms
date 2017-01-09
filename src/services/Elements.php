@@ -1315,8 +1315,8 @@ class Elements extends Component
                         Craft::configure($query, array_merge(
                         // Default to no order and limit, but allow the element type/path criteria to override
                             ['orderBy' => null, 'limit' => null],
-                            (isset($map['criteria']) ? $map['criteria'] : []),
-                            (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
+                            ($map['criteria'] ?? []),
+                            ($pathCriterias[$targetPath] ?? [])
                         ));
                         $query->id = $uniqueTargetElementIds;
                         /** @var Element[] $targetElements */

@@ -185,7 +185,7 @@ class Assets
                 $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
-                $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
+                $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
 
                 $assets->createFolder($folder);
 

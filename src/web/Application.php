@@ -223,7 +223,7 @@ class Application extends \yii\web\Application
 
         if ($this->getConfig()->get('devMode')) {
             $exceptionArr['trace'] = $data['trace'];
-            $exceptionArr['traces'] = (isset($data['traces']) ? $data['traces'] : null);
+            $exceptionArr['traces'] = ($data['traces'] ?? null);
             $exceptionArr['file'] = $data['file'];
             $exceptionArr['line'] = $data['line'];
             $exceptionArr['type'] = $data['type'];
@@ -576,7 +576,7 @@ class Application extends \yii\web\Application
         } // We'll also let action requests to UpdateController through as well.
         else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] === 'update') {
             $controller = $actionSegs[0];
-            $action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
+            $action = $actionSegs[1] ?? 'index';
 
             return $this->runAction($controller.'/'.$action);
         }

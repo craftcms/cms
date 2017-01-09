@@ -161,9 +161,9 @@ class Feeds extends Component
         if (!empty($objects)) {
             foreach ($objects as $object) {
                 $authors[] = [
-                    'name' => isset($object['name']) ? $object['name'] : '',
-                    'url' => isset($object['uri']) ? $object['uri'] : '',
-                    'email' => isset($object['email']) ? $object['email'] : '',
+                    'name' => $object['name'] ?? '',
+                    'url' => $object['uri'] ?? '',
+                    'email' => $object['email'] ?? '',
                 ];
             }
         }
@@ -185,9 +185,9 @@ class Feeds extends Component
         if (!empty($objects)) {
             foreach ($objects as $object) {
                 $categories[] = [
-                    'term' => isset($object['term']) ? $object['term'] : '',
-                    'scheme' => isset($object['scheme']) ? $object['scheme'] : '',
-                    'label' => isset($object['label']) ? $object['label'] : '',
+                    'term' => $object['term'] ?? '',
+                    'scheme' => $object['scheme'] ?? '',
+                    'label' => $object['label'] ?? '',
                 ];
             }
         }

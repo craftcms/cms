@@ -1067,11 +1067,11 @@ class Plugins extends Component
         }
 
         list($vendor, $name) = explode('/', $composer['name'], 2);
-        $extra = isset($composer['extra']) ? $composer['extra'] : [];
+        $extra = $composer['extra'] ?? [];
 
         // class (required) + basePath + possibly set aliases
-        $class = isset($extra['class']) ? $extra['class'] : null;
-        $basePath = isset($extra['basePath']) ? $extra['basePath'] : null;
+        $class = $extra['class'] ?? null;
+        $basePath = $extra['basePath'] ?? null;
         $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class, $basePath);
 
         if ($class === null) {

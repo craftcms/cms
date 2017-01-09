@@ -759,7 +759,7 @@ class UsersController extends Controller
         return $this->renderTemplate('users/_edit', [
             'account' => $user,
             'isNewAccount' => $isNewAccount,
-            'statusLabel' => isset($statusLabel) ? $statusLabel : null,
+            'statusLabel' => $statusLabel ?? null,
             'actions' => $actions,
             'title' => $title,
             'tabs' => $tabs,

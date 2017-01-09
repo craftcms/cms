@@ -800,7 +800,7 @@ abstract class Element extends Component implements ElementInterface
                                     'params' => [
                                         $field,
                                         $rule[1],
-                                        isset($rule['params']) ? $rule['params'] : null,
+                                        $rule['params'] ?? null,
                                     ]
                                 ];
                             }

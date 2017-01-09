@@ -183,8 +183,8 @@ class Images extends Component
         $imageInfo = getimagesize($filePath);
         $K64 = 65536;
         $tweakFactor = 1.7;
-        $bits = isset($imageInfo['bits']) ? $imageInfo['bits'] : 8;
-        $channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
+        $bits = $imageInfo['bits'] ?? 8;
+        $channels = $imageInfo['channels'] ?? 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
         $memoryLimit = App::phpConfigValueInBytes('memory_limit');

@@ -323,7 +323,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if ($value instanceof ElementQueryInterface) {
             $element = $value->first();
         } else {
-            $element = isset($value[0]) ? $value[0] : null;
+            $element = $value[0] ?? null;
         }
 
         if ($element) {
@@ -341,7 +341,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getEagerLoadingMap(array $sourceElements)
     {
         /** @var Element|null $firstElement */
-        $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
+        $firstElement = $sourceElements[0] ?? null;
 
         // Get the source element IDs
         $sourceElementIds = [];

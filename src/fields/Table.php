@@ -181,7 +181,7 @@ class Table extends Field
             foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
                     if ($col['handle']) {
-                        $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
+                        $row[$col['handle']] = ($row[$colId] ?? null);
                     }
                 }
             }
