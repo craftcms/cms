@@ -44,7 +44,7 @@ class RebrandController extends Controller
      *
      * @return Response
      */
-    public function actionUploadSiteImage()
+    public function actionUploadSiteImage(): Response
     {
         $this->requireAcceptsJson();
         $this->requireAdmin();
@@ -96,7 +96,7 @@ class RebrandController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSiteImage()
+    public function actionDeleteSiteImage(): Response
     {
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');

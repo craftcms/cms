@@ -50,7 +50,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return void
      */
-    public function setContentFromRevision($content)
+    public function setContentFromRevision(array $content)
     {
         // Swap the field IDs with handles
         $contentByFieldHandles = [];
@@ -83,7 +83,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         if ($this->uri === null) {
             ElementHelper::setUniqueUri($this);

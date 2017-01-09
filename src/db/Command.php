@@ -102,7 +102,7 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function upsert($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, bool $includeAuditColumns = true): Command
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
@@ -153,7 +153,7 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function replace($table, $column, $find, $replace, $condition = '', array $params = [])
+    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): Command
     {
         $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 
@@ -167,7 +167,7 @@ class Command extends \yii\db\Command
      *
      * @return Command the command object itself
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table): Command
     {
         $sql = $this->db->getQueryBuilder()->dropTableIfExists($table);
 

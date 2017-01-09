@@ -46,7 +46,7 @@ class Migration extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%migrations}}';
     }
@@ -56,7 +56,7 @@ class Migration extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getPlugin()
+    public function getPlugin(): ActiveQueryInterface
     {
         return $this->hasOne(Plugin::class, ['id' => 'pluginId']);
     }

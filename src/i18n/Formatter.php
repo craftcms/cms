@@ -74,13 +74,13 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      *
      * @param int|string|DateTime $value
-     * @param string              $format
+     * @param string|null         $format
      *
      * @return string
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asDate($value, $format = null)
+    public function asDate($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->dateFormat;
@@ -101,13 +101,13 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      *
      * @param int|string|DateTime $value
-     * @param string              $format
+     * @param string|null         $format
      *
      * @return string
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asTime($value, $format = null)
+    public function asTime($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->timeFormat;
@@ -128,13 +128,13 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      *
      * @param int|string|DateTime $value
-     * @param string              $format
+     * @param string|null         $format
      *
      * @return string
      * @throws InvalidParamException
      * @throws InvalidConfigException
      */
-    public function asDatetime($value, $format = null)
+    public function asDatetime($value, $format = null): string
     {
         if ($format === null) {
             $format = $this->datetimeFormat;
@@ -180,7 +180,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, $format = null)
+    public function asTimestamp($value, $format = null): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
@@ -212,18 +212,18 @@ class Formatter extends \yii\i18n\Formatter
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
-     * @param mixed  $value        the value to be formatted.
-     * @param string $currency     the 3-letter ISO 4217 currency code indicating the currency to use.
-     *                             If null, [[currencyCode]] will be used.
-     * @param array  $options      optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
-     * @param array  $textOptions  optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
-     * @param bool   $stripZeros   Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
+     * @param mixed       $value       the value to be formatted.
+     * @param string|null $currency    the 3-letter ISO 4217 currency code indicating the currency to use.
+     *                                 If null, [[currencyCode]] will be used.
+     * @param array       $options     optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
+     * @param array       $textOptions optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
+     * @param bool        $stripZeros  Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
      *
      * @return string the formatted result.
      * @throws InvalidParamException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false)
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false): string
     {
         $omitDecimals = ($stripZeros && (int)$value == $value);
 
@@ -284,7 +284,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @return string the formatted result.
      */
-    private function _formatDateTimeValue($value, $format, $type)
+    private function _formatDateTimeValue($value, string $format, string $type): string
     {
         $timeZone = $this->timeZone;
 

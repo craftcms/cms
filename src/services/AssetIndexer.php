@@ -37,7 +37,7 @@ class AssetIndexer extends Component
      *
      * @return string
      */
-    public function getIndexingSessionId()
+    public function getIndexingSessionId(): string
     {
         return StringHelper::UUID();
     }
@@ -51,7 +51,7 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function prepareIndexList($sessionId, $volumeId, $directory = '')
+    public function prepareIndexList(string $sessionId, int $volumeId, string $directory = ''): array
     {
         try {
             /** @var Volume $volume */
@@ -277,7 +277,7 @@ class AssetIndexer extends Component
      *
      * @return void
      */
-    public function updateIndexEntryRecordId($entryId, $recordId)
+    public function updateIndexEntryRecordId(int $entryId, int $recordId)
     {
         Craft::$app->getDb()->createCommand()
             ->update(
@@ -296,7 +296,7 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function getMissingFiles($volumeIds, $sessionId)
+    public function getMissingFiles($volumeIds, $sessionId): array
     {
         $output = [];
 
@@ -340,7 +340,7 @@ class AssetIndexer extends Component
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return bool|Asset
      */
-    public function indexFile(VolumeInterface $volume, $path, $checkIfExists = true)
+    public function indexFile(VolumeInterface $volume, $path, bool $checkIfExists = true)
     {
         if ($checkIfExists && !$volume->fileExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t(
@@ -364,7 +364,7 @@ class AssetIndexer extends Component
      *
      * @return Asset|bool
      */
-    private function _indexFile(VolumeInterface $volume, $uriPath)
+    private function _indexFile(VolumeInterface $volume, string $uriPath)
     {
         /** @var Volume $volume */
         $extension = pathinfo($uriPath, PATHINFO_EXTENSION);

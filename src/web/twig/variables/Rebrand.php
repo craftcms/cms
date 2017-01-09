@@ -42,7 +42,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isLogoUploaded()
+    public function isLogoUploaded(): bool
     {
         return $this->isImageUploaded('logo');
     }
@@ -52,7 +52,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isIconUploaded()
+    public function isIconUploaded(): bool
     {
         return $this->isImageUploaded('icon');
     }
@@ -64,7 +64,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isImageUploaded($type)
+    public function isImageUploaded(string $type): bool
     {
         return in_array($type, ['logo', 'icon'], true) && ($this->_getImagePath($type) !== false);
     }
@@ -127,7 +127,7 @@ class Rebrand
      * @return string|false
      * @throws Exception in case of failure
      */
-    private function _getImagePath($type)
+    private function _getImagePath(string $type)
     {
         if (isset($this->_paths[$type])) {
             return $this->_paths[$type];
@@ -175,7 +175,7 @@ class Rebrand
      *
      * @return string
      */
-    private function _getImageUrl($path, $type)
+    private function _getImageUrl($path, $type): string
     {
         return UrlHelper::resourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }

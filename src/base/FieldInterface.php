@@ -28,7 +28,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool
      */
-    public static function hasContentColumn();
+    public static function hasContentColumn(): bool;
 
     // Public Methods
     // =========================================================================
@@ -44,7 +44,7 @@ interface FieldInterface extends SavableComponentInterface
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType();
+    public function getContentColumnType(): string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -53,7 +53,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The translation key
      */
-    public function getTranslationKey($element);
+    public function getTranslationKey(ElementInterface $element): string;
 
     /**
      * Returns the field’s input HTML.
@@ -152,7 +152,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The input HTML.
      */
-    public function getInputHtml($value, $element);
+    public function getInputHtml($value, ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -164,7 +164,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, $element);
+    public function getStaticHtml($value, ElementInterface $element): string;
 
     /**
      * Returns the validation rules for an element with this field.
@@ -187,7 +187,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return array
      */
-    public function getElementValidationRules();
+    public function getElementValidationRules(): array;
 
     /**
      * Returns the search keywords that should be associated with this field.
@@ -200,7 +200,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, $element);
+    public function getSearchKeywords($value, ElementInterface $element): string;
 
     /**
      * Normalizes the field’s value for use.
@@ -215,7 +215,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, $element);
+    public function normalizeValue($value, ElementInterface $element = null);
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
@@ -227,7 +227,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return mixed The serialized field value
      */
-    public function serializeValue($value, $element);
+    public function serializeValue($value, ElementInterface $element = null);
 
     /**
      * Modifies an element query.
@@ -249,7 +249,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param bool|null $isFresh Whether the field is fresh.
      */
-    public function setIsFresh($isFresh);
+    public function setIsFresh(bool $isFresh = null);
 
     /**
      * Returns the field’s group.
@@ -269,7 +269,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool Whether the element should be saved
      */
-    public function beforeElementSave(ElementInterface $element, $isNew);
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool;
 
     /**
      * Performs actions after the element has been saved.
@@ -279,7 +279,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return void
      */
-    public function afterElementSave(ElementInterface $element, $isNew);
+    public function afterElementSave(ElementInterface $element, bool $isNew);
 
     /**
      * Performs actions before an element is deleted.
@@ -288,7 +288,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return bool Whether the element should be deleted
      */
-    public function beforeElementDelete(ElementInterface $element);
+    public function beforeElementDelete(ElementInterface $element): bool;
 
     /**
      * Performs actions after the element has been deleted.

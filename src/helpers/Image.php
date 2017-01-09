@@ -38,7 +38,7 @@ class Image
      *
      * @return int[] Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
     {
         $factor = $sourceWidth / $sourceHeight;
 
@@ -58,7 +58,7 @@ class Image
      *
      * @return bool
      */
-    public static function isImageManipulatable($extension)
+    public static function isImageManipulatable($extension): bool
     {
         $path = Craft::$app->getPath()->getResourcesPath();
         $file = $path.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'samples'.DIRECTORY_SEPARATOR.'sample.'.StringHelper::toLowerCase($extension);
@@ -77,7 +77,7 @@ class Image
      *
      * @return string[]
      */
-    public static function webSafeFormats()
+    public static function webSafeFormats(): array
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
     }
@@ -157,7 +157,7 @@ class Image
      *
      * @return bool
      */
-    public static function canHaveExifData($filePath)
+    public static function canHaveExifData(string $filePath): bool
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -192,7 +192,7 @@ class Image
      *
      * @return int[]
      */
-    public static function imageSize($filePath)
+    public static function imageSize(string $filePath): array
     {
         if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
             $svg = file_get_contents($filePath);
@@ -212,7 +212,7 @@ class Image
      *
      * @return array [$width, $height]
      */
-    public static function parseSvgSize($svg)
+    public static function parseSvgSize(string $svg): array
     {
         if (
             preg_match(Svg::SVG_WIDTH_RE, $svg, $widthMatch) &&
@@ -247,7 +247,7 @@ class Image
      *
      * @return float The multiplier
      */
-    private static function _getSizeUnitMultiplier($unit)
+    private static function _getSizeUnitMultiplier(string $unit): float
     {
         $ppi = 72;
 

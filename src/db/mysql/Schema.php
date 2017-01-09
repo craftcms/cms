@@ -61,7 +61,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db);
     }
@@ -73,7 +73,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName($name): string
     {
         return '`'.$name.'`';
     }
@@ -133,7 +133,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultBackupCommand()
+    public function getDefaultBackupCommand(): string
     {
         return 'mysqldump'.
             ' --defaults-extra-file='.$this->_createDumpConfigFile().
@@ -154,7 +154,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultRestoreCommand()
+    public function getDefaultRestoreCommand(): string
     {
         return 'mysqldump'.
             ' --defaults-extra-file='.$this->_createDumpConfigFile().
@@ -176,7 +176,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return array All indexes for the given table.
      */
-    public function findIndexes($tableName)
+    public function findIndexes(string $tableName): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
@@ -205,7 +205,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return TableSchema driver dependent table metadata. Null if the table does not exist.
      */
-    protected function loadTableSchema($name)
+    protected function loadTableSchema($name): TableSchema
     {
         $table = new TableSchema;
         $this->resolveTableNames($table, $name);
@@ -269,7 +269,7 @@ SQL;
      *
      * @return string The path to the my.cnf file
      */
-    private function _createDumpConfigFile()
+    private function _createDumpConfigFile(): string
     {
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 

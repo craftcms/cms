@@ -27,7 +27,7 @@ class Routes
      *
      * @return array
      */
-    public function getDbRoutes()
+    public function getDbRoutes(): array
     {
         $routes = [];
 

@@ -11,13 +11,14 @@ use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
+use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
- * @method GlobalSet|array|null nth($n, $db = null)
+ * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -63,7 +64,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -90,7 +91,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         $this->joinElementTable('globalsets');
 

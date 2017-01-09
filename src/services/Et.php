@@ -89,7 +89,7 @@ class Et extends Component
      *
      * @return EtModel|null
      */
-    public function checkForUpdates($updateInfo)
+    public function checkForUpdates(Update $updateInfo)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_CHECK_FOR_UPDATES);
         $et->setData($updateInfo);
@@ -140,7 +140,7 @@ class Et extends Component
      *
      * @return string|null The update's md5
      */
-    public function getUpdateFileInfo($handle)
+    public function getUpdateFileInfo(string $handle)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_GET_UPDATE_FILE_INFO);
 
@@ -176,7 +176,7 @@ class Et extends Component
      * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      * @throws Exception if $handle is a plugin handle but no update info is known for it
      */
-    public function downloadUpdate($downloadPath, $md5, $handle)
+    public function downloadUpdate(string $downloadPath, string $md5, string $handle)
     {
         if (is_dir($downloadPath)) {
             $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
@@ -290,7 +290,7 @@ class Et extends Component
      *
      * @return EtModel|null
      */
-    public function fetchCouponPrice($edition, $couponCode)
+    public function fetchCouponPrice(int $edition, string $couponCode)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_GET_COUPON_PRICE);
         $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
@@ -305,7 +305,7 @@ class Et extends Component
      *
      * @return bool
      */
-    public function purchaseUpgrade(UpgradePurchase $model)
+    public function purchaseUpgrade(UpgradePurchase $model): bool
     {
         if ($model->validate()) {
             $et = $this->_createEtTransport(self::ENDPOINT_PURCHASE_UPGRADE);
@@ -392,7 +392,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function registerPlugin($packageName)
+    public function registerPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
         $et->setData([
@@ -409,7 +409,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function transferPlugin($packageName)
+    public function transferPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
         $et->setData([
@@ -426,7 +426,7 @@ class Et extends Component
      *
      * @return EtModel
      */
-    public function unregisterPlugin($packageName)
+    public function unregisterPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
         $et->setData([
@@ -474,7 +474,7 @@ class Et extends Component
      *
      * @return EtModel|null
      */
-    public function decodeEtModel($attributes)
+    public function decodeEtModel(string $attributes)
     {
         if ($attributes) {
             $attributes = Json::decode($attributes);
@@ -503,7 +503,7 @@ class Et extends Component
      *
      * @return EtTransport
      */
-    private function _createEtTransport($endpoint)
+    private function _createEtTransport(string $endpoint): EtTransport
     {
         $url = $this->elliottBaseUrl.'/actions/elliott/'.$endpoint;
 

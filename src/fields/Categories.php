@@ -26,7 +26,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Categories');
     }
@@ -34,7 +34,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Category::class;
     }
@@ -42,7 +42,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a category');
     }
@@ -65,7 +65,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -85,7 +85,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $this->getElementValue($element);
 

@@ -41,7 +41,7 @@ class Asset extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%assets}}';
     }
@@ -51,7 +51,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -61,7 +61,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }
@@ -71,7 +71,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFolder()
+    public function getFolder(): ActiveQueryInterface
     {
         return $this->hasOne(VolumeFolder::class, ['id' => 'folderId']);
     }

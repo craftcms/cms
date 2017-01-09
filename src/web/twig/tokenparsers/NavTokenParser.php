@@ -88,7 +88,7 @@ class NavTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideNavFork(\Twig_Token $token)
+    public function decideNavFork(\Twig_Token $token): bool
     {
         return $token->test(['ifchildren', 'children', 'endnav']);
     }
@@ -98,7 +98,7 @@ class NavTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideChildrenFork(\Twig_Token $token)
+    public function decideChildrenFork(\Twig_Token $token): bool
     {
         return $token->test('children');
     }
@@ -108,7 +108,7 @@ class NavTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideChildrenEnd(\Twig_Token $token)
+    public function decideChildrenEnd(\Twig_Token $token): bool
     {
         return $token->test('endifchildren');
     }
@@ -118,7 +118,7 @@ class NavTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideNavEnd(\Twig_Token $token)
+    public function decideNavEnd(\Twig_Token $token): bool
     {
         return $token->test('endnav');
     }

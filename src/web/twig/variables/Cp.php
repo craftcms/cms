@@ -39,7 +39,7 @@ class Cp extends Component
      *
      * @return array
      */
-    public function nav()
+    public function nav(): array
     {
         $navItems = [
             [
@@ -164,7 +164,7 @@ class Cp extends Component
      *
      * @return array
      */
-    public function settings()
+    public function settings(): array
     {
         $settings = [];
 
@@ -251,7 +251,7 @@ class Cp extends Component
      *
      * @return bool
      */
-    public function areAlertsCached()
+    public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Elliott request
         return (Craft::$app->getEt()->getLicenseKeyStatus() !== false);
@@ -262,7 +262,7 @@ class Cp extends Component
      *
      * @return array
      */
-    public function getAlerts()
+    public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
     }

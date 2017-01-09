@@ -26,7 +26,7 @@ class UploadFailedException extends FileException
      *
      * @param int $errorCode
      */
-    public function __construct($errorCode)
+    public function __construct(int $errorCode)
     {
         switch ($errorCode) {
             case UPLOAD_ERR_INI_SIZE:

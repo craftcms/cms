@@ -105,7 +105,7 @@ class MigrationManager extends Component
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
-    public function createMigration($name)
+    public function createMigration(string $name)
     {
         if (!is_dir($this->migrationPath)) {
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
@@ -121,12 +121,12 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int|null $limit     The number of new migrations to be applied. If 0 or null, it means
-     *                            applying all available new migrations.
+     * @param int $limit     The number of new migrations to be applied. If 0, it means
+     *                       applying all available new migrations.
      *
      * @return bool Whether the migrations were applied successfully
      */
-    public function up($limit = 0)
+    public function up(int $limit = 0): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
@@ -141,8 +141,7 @@ class MigrationManager extends Component
 
         $total = count($migrationNames);
 
-        $this->_normalizeLimit($limit);
-        if ($limit !== null) {
+        if ($limit !== 0) {
             $migrationNames = array_slice($migrationNames, 0, $limit);
         }
 
@@ -176,17 +175,16 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param int|null $limit     The number of migrations to be reverted. Defaults to 1,
-     *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
+     * @param int $limit The number of migrations to be reverted. Defaults to 1,
+     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      *
      * @return bool Whether the migrations were reverted successfully
      */
-    public function down($limit = 1)
+    public function down(int $limit = 1): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $this->_normalizeLimit($limit);
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
@@ -225,7 +223,7 @@ class MigrationManager extends Component
      * @return bool Whether the migration was applied successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateUp($migration)
+    public function migrateUp($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -277,7 +275,7 @@ class MigrationManager extends Component
      * @return bool Whether the migration was reverted successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateDown($migration)
+    public function migrateDown($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -328,11 +326,13 @@ class MigrationManager extends Component
      *
      * @return array The migration history
      */
-    public function getMigrationHistory($limit = null)
+    public function getMigrationHistory(int $limit = 0): array
     {
-        $history = $this->_createMigrationQuery()
-            ->limit($limit)
-            ->pairs($this->db);
+        $query = $this->_createMigrationQuery();
+        if ($limit !== 0) {
+            $query->limit($limit);
+        }
+        $history = $query->pairs($this->db);
         unset($history[self::BASE_MIGRATION]);
 
         return $history;
@@ -343,7 +343,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function addMigrationHistory($name)
+    public function addMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->insert(
@@ -362,7 +362,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function removeMigrationHistory($name)
+    public function removeMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -382,7 +382,7 @@ class MigrationManager extends Component
      *
      * @return bool Whether the migration has been applied
      */
-    public function hasRun($name)
+    public function hasRun(string $name): bool
     {
         return $this->_createMigrationQuery()
             ->andWhere(['name' => $name])
@@ -394,7 +394,7 @@ class MigrationManager extends Component
      *
      * @return array The list of new migrations
      */
-    public function getNewMigrations()
+    public function getNewMigrations(): array
     {
         $migrations = [];
 
@@ -432,7 +432,7 @@ class MigrationManager extends Component
      *
      * @param int|null &$limit
      */
-    private function _normalizeLimit(&$limit)
+    private function _normalizeLimit(&$limit = null)
     {
         if (is_numeric($limit) && $limit >= 1) {
             $limit = (int)$limit;
@@ -448,7 +448,7 @@ class MigrationManager extends Component
      *
      * @return array
      */
-    private function _normalizeMigration($migration)
+    private function _normalizeMigration($migration): array
     {
         if (is_string($migration)) {
             $migrationName = $migration;
@@ -466,7 +466,7 @@ class MigrationManager extends Component
      *
      * @return Query The query
      */
-    private function _createMigrationQuery()
+    private function _createMigrationQuery(): Query
     {
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {

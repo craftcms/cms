@@ -102,7 +102,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransform[]
      */
-    public function getAllTransforms()
+    public function getAllTransforms(): array
     {
         if ($this->_fetchedAllTransforms) {
             return array_values($this->_transformsByHandle);
@@ -127,7 +127,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransform|null
      */
-    public function getTransformByHandle($handle)
+    public function getTransformByHandle(string $handle)
     {
         if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
             return $this->_transformsByHandle[$handle];
@@ -157,7 +157,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransform|null
      */
-    public function getTransformById($id)
+    public function getTransformById(int $id)
     {
         $result = $this->_createTransformQuery()
             ->where(['id' => $id])
@@ -181,7 +181,7 @@ class AssetTransforms extends Component
      * @throws ValidationException     If the validation failed.
      * @return bool
      */
-    public function saveTransform(AssetTransform $transform, $runValidation = true)
+    public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool
     {
         if ($runValidation && !$transform->validate()) {
             Craft::info('Asset transform not saved due to validation error.', __METHOD__);
@@ -250,7 +250,7 @@ class AssetTransforms extends Component
      *
      * @return bool
      */
-    public function deleteTransform($transformId)
+    public function deleteTransform(int $transformId): bool
     {
         $transform = $this->getTransformById($transformId);
 
@@ -281,7 +281,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function eagerLoadTransforms($assets, $transforms)
+    public function eagerLoadTransforms(array $assets, array $transforms)
     {
         if (empty($assets) || empty($transforms)) {
             return;
@@ -379,7 +379,7 @@ class AssetTransforms extends Component
      * @return AssetTransformIndex
      * @throws AssetTransformException if the transform cannot be found by the handle
      */
-    public function getTransformIndex(Asset $asset, $transform)
+    public function getTransformIndex(Asset $asset, $transform): AssetTransformIndex
     {
         $transform = $this->normalizeTransform($transform);
         $transformLocation = $this->_getTransformFolderName($transform);
@@ -444,7 +444,7 @@ class AssetTransforms extends Component
      *
      * @return bool Whether the index result is still valid
      */
-    public function validateTransformIndexResult($result, AssetTransform $transform, Asset $asset)
+    public function validateTransformIndexResult(array $result, AssetTransform $transform, Asset $asset): bool
     {
         $indexedAfterFileModified = $result['dateIndexed'] >= Db::prepareDateForDb($asset->dateModified);
         $indexedAfterTransformParameterChange =
@@ -463,7 +463,7 @@ class AssetTransforms extends Component
      * @throws AssetTransformException If there was an error generating the transform.
      * @return string
      */
-    public function ensureTransformUrlByIndexModel(AssetTransformIndex $index)
+    public function ensureTransformUrlByIndexModel(AssetTransformIndex $index): string
     {
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
@@ -521,7 +521,7 @@ class AssetTransforms extends Component
      *
      * @return bool true if transform exists for the index
      */
-    private function _generateTransform(AssetTransformIndex $index)
+    private function _generateTransform(AssetTransformIndex $index): bool
     {
         // For _widthxheight_mode
         if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
@@ -659,7 +659,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex
      */
-    public function storeTransformIndexData(AssetTransformIndex $index)
+    public function storeTransformIndexData(AssetTransformIndex $index): AssetTransformIndex
     {
         $values = Db::prepareValuesForDb(
             $index->toArray([
@@ -694,7 +694,7 @@ class AssetTransforms extends Component
      *
      * @return array
      */
-    public function getPendingTransformIndexIds()
+    public function getPendingTransformIndexIds(): array
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
@@ -709,7 +709,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelById($transformId)
+    public function getTransformIndexModelById(int $transformId)
     {
         $entry = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
@@ -730,7 +730,7 @@ class AssetTransforms extends Component
      *
      * @return AssetTransformIndex|null
      */
-    public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
+    public function getTransformIndexModelByAssetIdAndHandle(int $assetId, string $transformHandle)
     {
         $result = $this->_createTransformIndexQuery()
             ->where([
@@ -753,7 +753,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByIndexId($transformId)
+    public function getUrlForTransformByIndexId(int $transformId): string
     {
         $transformIndexModel = $this->getTransformIndexModelById($transformId);
 
@@ -771,7 +771,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getUrlForTransformByAssetAndTransformIndex(Asset $asset, AssetTransformIndex $transformIndexModel)
+    public function getUrlForTransformByAssetAndTransformIndex(Asset $asset, AssetTransformIndex $transformIndexModel): string
     {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
@@ -788,7 +788,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function deleteTransformIndexDataByAssetId($assetId)
+    public function deleteTransformIndexDataByAssetId(int $assetId)
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%assettransformindex}}', ['assetId' => $assetId])
@@ -802,7 +802,7 @@ class AssetTransforms extends Component
      *
      * @return void
      */
-    public function deleteTransformIndex($indexId)
+    public function deleteTransformIndex(int $indexId)
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%assettransformindex}}', ['id' => $indexId])
@@ -850,7 +850,7 @@ class AssetTransforms extends Component
      * @throws VolumeException               If there was an error downloading the remote file.
      * @return string
      */
-    public function getLocalImageSource(Asset $asset)
+    public function getLocalImageSource(Asset $asset): string
     {
         $volume = $asset->getVolume();
 
@@ -903,7 +903,7 @@ class AssetTransforms extends Component
      *
      * @return int
      */
-    public function getCachedCloudImageSize()
+    public function getCachedCloudImageSize(): int
     {
         return (int)Craft::$app->getConfig()->get('maxCachedCloudImageSize');
     }
@@ -1022,7 +1022,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index)
+    public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index): string
     {
         $path = $index->location;
 
@@ -1041,7 +1041,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getTransformFilename(Asset $asset, AssetTransformIndex $index)
+    public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
     {
         if (empty($index->filename)) {
             return $asset->filename;
@@ -1058,7 +1058,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    public function getTransformSubpath(Asset $asset, AssetTransformIndex $index)
+    public function getTransformSubpath(Asset $asset, AssetTransformIndex $index): string
     {
         return $this->getTransformSubfolder($asset, $index).DIRECTORY_SEPARATOR.$this->getTransformFilename($asset, $index);
     }
@@ -1143,7 +1143,7 @@ class AssetTransforms extends Component
      *
      * @return array
      */
-    public function getAllCreatedTransformsForAsset(Asset $asset)
+    public function getAllCreatedTransformsForAsset(Asset $asset): array
     {
         $results = $this->_createTransformIndexQuery()
             ->where(['assetId' => $asset->id])
@@ -1181,7 +1181,7 @@ class AssetTransforms extends Component
      *
      * @return Query
      */
-    private function _createTransformIndexQuery()
+    private function _createTransformIndexQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1205,7 +1205,7 @@ class AssetTransforms extends Component
      *
      * @return Query
      */
-    private function _createTransformQuery()
+    private function _createTransformQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1231,7 +1231,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getTransformFolderName(AssetTransform $transform)
+    private function _getTransformFolderName(AssetTransform $transform): string
     {
         if ($transform->getIsNamedTransform()) {
             return $this->_getNamedTransformFolderName($transform);
@@ -1247,7 +1247,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getNamedTransformFolderName(AssetTransform $transform)
+    private function _getNamedTransformFolderName(AssetTransform $transform): string
     {
         return '_'.$transform->handle;
     }
@@ -1259,7 +1259,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getUnnamedTransformFolderName(AssetTransform $transform)
+    private function _getUnnamedTransformFolderName(AssetTransform $transform): string
     {
         return '_'.($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO').
             '_'.$transform->mode.
@@ -1364,7 +1364,7 @@ class AssetTransforms extends Component
      *
      * @return string
      */
-    private function _getThumbExtension(Asset $asset)
+    private function _getThumbExtension(Asset $asset): string
     {
         // For non-web-safe formats we go with jpg.
         if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats(), true)) {

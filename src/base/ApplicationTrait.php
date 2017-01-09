@@ -171,7 +171,7 @@ trait ApplicationTrait
      *
      * @return string|null
      */
-    public function getTargetLanguage($useUserLanguage = true)
+    public function getTargetLanguage(bool $useUserLanguage = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->getIsInstalled()) {
@@ -245,7 +245,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsInstalled()
+    public function getIsInstalled(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_isInstalled !== null) {
@@ -284,7 +284,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsUpdating()
+    public function getIsUpdating(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
@@ -316,7 +316,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsMultiSite()
+    public function getIsMultiSite(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_isMultiSite !== null) {
@@ -331,7 +331,7 @@ trait ApplicationTrait
      *
      * @return int
      */
-    public function getEdition()
+    public function getEdition(): int
     {
         /** @var WebApplication|ConsoleApplication $this */
         return (int)$this->getInfo()->edition;
@@ -342,7 +342,7 @@ trait ApplicationTrait
      *
      * @return string
      */
-    public function getEditionName()
+    public function getEditionName(): string
     {
         /** @var WebApplication|ConsoleApplication $this */
         return App::editionName($this->getEdition());
@@ -387,7 +387,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getHasWrongEdition()
+    public function getHasWrongEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         $licensedEdition = $this->getLicensedEdition();
@@ -402,7 +402,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function setEdition($edition)
+    public function setEdition(int $edition): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
@@ -432,7 +432,7 @@ trait ApplicationTrait
      * @return void
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition($edition, $orBetter = true)
+    public function requireEdition(int $edition, bool $orBetter = true)
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->getIsInstalled()) {
@@ -450,7 +450,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getCanUpgradeEdition()
+    public function getCanUpgradeEdition(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         // Only admins can upgrade Craft
@@ -473,7 +473,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getCanTestEditions()
+    public function getCanTestEditions(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         $request = $this->getRequest();
@@ -486,7 +486,7 @@ trait ApplicationTrait
      *
      * @return string
      */
-    public function getSystemUid()
+    public function getSystemUid(): string
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->getInfo()->uid;
@@ -497,7 +497,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsSystemOn()
+    public function getIsSystemOn(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if (is_bool($on = $this->getConfig()->get('isSystemOn'))) {
@@ -512,7 +512,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsInMaintenanceMode()
+    public function getIsInMaintenanceMode(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         return (bool)$this->getInfo()->maintenance;
@@ -523,7 +523,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function enableMaintenanceMode()
+    public function enableMaintenanceMode(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->_setMaintenanceMode(true);
@@ -534,7 +534,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function disableMaintenanceMode()
+    public function disableMaintenanceMode(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->_setMaintenanceMode(false);
@@ -546,7 +546,7 @@ trait ApplicationTrait
      * @return Info
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo()
+    public function getInfo(): Info
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_info !== null) {
@@ -597,7 +597,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function saveInfo(Info $info)
+    public function saveInfo(Info $info): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($info->validate()) {
@@ -656,7 +656,7 @@ trait ApplicationTrait
      * @throws DbConnectException
      * @return bool Whether the config file is valid
      */
-    public function validateDbConfigFile()
+    public function validateDbConfigFile(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_isDbConfigValid === null) {
@@ -699,7 +699,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    public function getIsDbConnectionValid()
+    public function getIsDbConnectionValid(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_isDbConnectionValid !== null) {
@@ -800,7 +800,7 @@ trait ApplicationTrait
      *
      * @return MigrationManager The content migration manager
      */
-    public function getContentMigrator()
+    public function getContentMigrator(): MigrationManager
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('contentMigrator');
@@ -943,7 +943,7 @@ trait ApplicationTrait
      *
      * @return Locale The Locale object for the target language
      */
-    public function getLocale()
+    public function getLocale(): Locale
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('locale');
@@ -976,7 +976,7 @@ trait ApplicationTrait
      *
      * @return MigrationManager The application’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('migrator');
@@ -987,7 +987,7 @@ trait ApplicationTrait
      *
      * @return FileMutex The application’s mutex service
      */
-    public function getMutex()
+    public function getMutex(): FileMutex
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('mutex');
@@ -1282,7 +1282,7 @@ trait ApplicationTrait
      *
      * @return bool
      */
-    private function _setMaintenanceMode($value)
+    private function _setMaintenanceMode(bool $value): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
         $info = $this->getInfo();
@@ -1297,7 +1297,7 @@ trait ApplicationTrait
      *
      * @return string
      */
-    private function _getFallbackLanguage()
+    private function _getFallbackLanguage(): string
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this instanceof WebApplication) {

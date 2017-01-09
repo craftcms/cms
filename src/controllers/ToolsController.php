@@ -45,7 +45,7 @@ class ToolsController extends Controller
      *
      * @return Response
      */
-    public function actionPerformAction()
+    public function actionPerformAction(): Response
     {
         $this->requirePostRequest();
 
@@ -72,7 +72,7 @@ class ToolsController extends Controller
      * @return Response
      * @throws NotFoundHttpException
      */
-    public function actionDownloadBackupFile()
+    public function actionDownloadBackupFile(): Response
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';

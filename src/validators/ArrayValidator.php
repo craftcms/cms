@@ -134,7 +134,7 @@ class ArrayValidator extends Validator
             return [$this->message, []];
         }
 
-        $count = count($value);
+        $count = count((array)$value);
 
         if ($this->min !== null && $count < $this->min) {
             return [$this->tooFew, ['min' => $this->min]];

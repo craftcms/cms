@@ -39,7 +39,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%matrixblocks}}';
     }
@@ -49,7 +49,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -59,7 +59,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner()
+    public function getOwner(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
@@ -69,7 +69,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwnerSite()
+    public function getOwnerSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
@@ -79,7 +79,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField()
+    public function getField(): ActiveQueryInterface
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -89,7 +89,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getType()
+    public function getType(): ActiveQueryInterface
     {
         return $this->hasOne(MatrixBlockType::class, ['id' => 'typeId']);
     }

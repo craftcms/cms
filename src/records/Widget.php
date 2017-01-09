@@ -35,7 +35,7 @@ class Widget extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%widgets}}';
     }
@@ -45,7 +45,7 @@ class Widget extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getUser()
+    public function getUser(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }

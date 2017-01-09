@@ -25,7 +25,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Feed');
     }
@@ -86,7 +86,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }

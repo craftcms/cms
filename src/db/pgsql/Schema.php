@@ -49,7 +49,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db);
     }
@@ -61,7 +61,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName($name): string
     {
         return '"'.$name.'"';
     }
@@ -145,7 +145,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultRestoreCommand()
+    public function getDefaultRestoreCommand(): string
     {
         return 'psql'.
             ' --dbname={database}'.
@@ -170,7 +170,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return array All indexes for the given table.
      */
-    public function findIndexes($tableName)
+    public function findIndexes(string $tableName): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
@@ -307,7 +307,7 @@ SQL;
      *
      * @return array Index and column names
      */
-    protected function getIndexInformation($table)
+    protected function getIndexInformation(TableSchema $table): array
     {
         $sql = <<<SQL
 SELECT

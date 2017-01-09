@@ -48,10 +48,10 @@ class UploadedFile extends \yii\web\UploadedFile
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true)
+    public static function getInstancesByName($name, $lookForSingleInstance = true): array
     {
         $name = self::_normalizeName($name);
-        $instances = static::getInstancesByName($name);
+        $instances = parent::getInstancesByName($name);
 
         if (empty($instances) && $lookForSingleInstance) {
             $singleInstance = static::getInstanceByName($name);
@@ -73,7 +73,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error
      */
-    public function saveAsTempFile($deleteTempFile = true)
+    public function saveAsTempFile(bool $deleteTempFile = true)
     {
         if ($this->error != UPLOAD_ERR_OK) {
             return false;
@@ -101,7 +101,7 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @return string
      */
-    private static function _normalizeName($name)
+    private static function _normalizeName(string $name): string
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]

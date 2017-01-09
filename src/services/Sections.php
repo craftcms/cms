@@ -119,7 +119,7 @@ class Sections extends Component
      *
      * @return int[] All the sections’ IDs.
      */
-    public function getAllSectionIds()
+    public function getAllSectionIds(): array
     {
         if ($this->_allSectionIds !== null) {
             return $this->_allSectionIds;
@@ -139,7 +139,7 @@ class Sections extends Component
      *
      * @return array All the editable sections’ IDs.
      */
-    public function getEditableSectionIds()
+    public function getEditableSectionIds(): array
     {
         if ($this->_editableSectionIds !== null) {
             return $this->_editableSectionIds;
@@ -161,7 +161,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections.
      */
-    public function getAllSections()
+    public function getAllSections(): array
     {
         if ($this->_fetchedAllSections) {
             return array_values($this->_sectionsById);
@@ -187,7 +187,7 @@ class Sections extends Component
      *
      * @return Section[] All the editable sections.
      */
-    public function getEditableSections()
+    public function getEditableSections(): array
     {
         $editableSectionIds = $this->getEditableSectionIds();
         $editableSections = [];
@@ -209,7 +209,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections of the given type.
      */
-    public function getSectionsByType($type)
+    public function getSectionsByType(string $type): array
     {
         $sections = [];
 
@@ -227,7 +227,7 @@ class Sections extends Component
      *
      * @return int
      */
-    public function getTotalSections()
+    public function getTotalSections(): int
     {
         return count($this->getAllSectionIds());
     }
@@ -237,7 +237,7 @@ class Sections extends Component
      *
      * @return int
      */
-    public function getTotalEditableSections()
+    public function getTotalEditableSections(): int
     {
         return count($this->getEditableSectionIds());
     }
@@ -249,7 +249,7 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionById($sectionId)
+    public function getSectionById(int $sectionId)
     {
         if (!$sectionId) {
             return null;
@@ -283,7 +283,7 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionByHandle($sectionHandle)
+    public function getSectionByHandle(string $sectionHandle)
     {
         $result = $this->_createSectionQuery()
             ->where(['sections.handle' => $sectionHandle])
@@ -306,7 +306,7 @@ class Sections extends Component
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId)
+    public function getSectionSiteSettings(int $sectionId): array
     {
         $siteSettings = (new Query())
             ->select([
@@ -341,7 +341,7 @@ class Sections extends Component
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSection(Section $section, $runValidation = true)
+    public function saveSection(Section $section, bool $runValidation = true): bool
     {
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
@@ -673,7 +673,7 @@ class Sections extends Component
      * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSectionById($sectionId)
+    public function deleteSectionById(int $sectionId): bool
     {
         $section = $this->getSectionById($sectionId);
 
@@ -692,7 +692,7 @@ class Sections extends Component
      * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSection(Section $section)
+    public function deleteSection(Section $section): bool
     {
         // Fire a 'beforeDeleteSection' event
         $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
@@ -770,7 +770,7 @@ class Sections extends Component
      *
      * @return bool
      */
-    public function isSectionTemplateValid(Section $section, $siteId)
+    public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
@@ -804,7 +804,7 @@ class Sections extends Component
      *
      * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId)
+    public function getEntryTypesBySectionId(int $sectionId): array
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
@@ -834,7 +834,7 @@ class Sections extends Component
      *
      * @return EntryType|null
      */
-    public function getEntryTypeById($entryTypeId)
+    public function getEntryTypeById(int $entryTypeId)
     {
         if (!$entryTypeId) {
             return null;
@@ -867,7 +867,7 @@ class Sections extends Component
      *
      * @return EntryType[]
      */
-    public function getEntryTypesByHandle($entryTypeHandle)
+    public function getEntryTypesByHandle(int $entryTypeHandle): array
     {
         $entryTypes = [];
 
@@ -901,7 +901,7 @@ class Sections extends Component
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType, $runValidation = true)
+    public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -1009,7 +1009,7 @@ class Sections extends Component
      * @return bool Whether the entry types were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderEntryTypes($entryTypeIds)
+    public function reorderEntryTypes(array $entryTypeIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1038,7 +1038,7 @@ class Sections extends Component
      * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryTypeById($entryTypeId)
+    public function deleteEntryTypeById(int $entryTypeId): bool
     {
         $entryType = $this->getEntryTypeById($entryTypeId);
 
@@ -1057,7 +1057,7 @@ class Sections extends Component
      * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryType(EntryType $entryType)
+    public function deleteEntryType(EntryType $entryType): bool
     {
         // Fire a 'beforeSaveEntryType' event
         $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
@@ -1116,7 +1116,7 @@ class Sections extends Component
      *
      * @return Query
      */
-    private function _createSectionQuery()
+    private function _createSectionQuery(): Query
     {
         return (new Query())
             ->select([

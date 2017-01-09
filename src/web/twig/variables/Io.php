@@ -27,7 +27,7 @@ class Io
      *
      * @return int
      */
-    public function getMaxUploadSize()
+    public function getMaxUploadSize(): int
     {
         $maxUpload = AppHelper::phpConfigValueInBytes('upload_max_filesize');
         $maxPost = AppHelper::phpConfigValueInBytes('post_max_size');
@@ -53,7 +53,7 @@ class Io
      *
      * @return array
      */
-    public function getFileKinds()
+    public function getFileKinds(): array
     {
         return Assets::getFileKinds();
     }

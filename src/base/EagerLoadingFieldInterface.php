@@ -31,5 +31,5 @@ interface EagerLoadingFieldInterface extends SavableComponentInterface
      *
      * @return array|false The eager-loading element ID mappings, or false if no mappings exist
      */
-    public function getEagerLoadingMap($sourceElements);
+    public function getEagerLoadingMap(array $sourceElements);
 }

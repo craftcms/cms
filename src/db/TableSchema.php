@@ -27,7 +27,7 @@ class TableSchema extends \yii\db\TableSchema
      *
      * @return array
      */
-    public function getExtendedForeignKeys()
+    public function getExtendedForeignKeys(): array
     {
         return $this->_extendedForeignKeys;
     }

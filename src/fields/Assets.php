@@ -41,7 +41,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Assets');
     }
@@ -49,7 +49,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Asset::class;
     }
@@ -57,7 +57,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an asset');
     }
@@ -178,7 +178,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         try {
             return parent::getInputHtml($value, $element);
@@ -202,7 +202,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateFileType';
@@ -243,7 +243,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -277,11 +277,11 @@ class Assets extends BaseRelationField
     /**
      * Resolve source path for uploading for this field.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|null $element
      *
      * @return int
      */
-    public function resolveDynamicPathToFolderId($element)
+    public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
     }
@@ -294,7 +294,7 @@ class Assets extends BaseRelationField
      *
      * @todo All of the validation stuff here should be moved to an actual validation function
      */
-    public function beforeElementSave(ElementInterface $element, $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         /** @var Element $element */
         $incomingFiles = [];
@@ -423,7 +423,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $this->getElementValue($element);
         $assetsToMove = [];
@@ -502,9 +502,8 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSources($element)
+    protected function getInputSources(ElementInterface $element = null)
     {
-
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
 
@@ -535,7 +534,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSelectionCriteria()
+    protected function getInputSelectionCriteria(): array
     {
         return [
             'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
@@ -548,16 +547,16 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param int              $volumeId
-     * @param string           $subpath
-     * @param ElementInterface $element
-     * @param bool             $createDynamicFolders whether missing folders should be created in the process
+     * @param int                   $volumeId
+     * @param string                $subpath
+     * @param ElementInterface|null $element
+     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId($volumeId, $subpath, $element, $createDynamicFolders = true)
+    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         // Get the root folder in the source
         $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
@@ -644,7 +643,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeFolder The new subfolder
      */
-    private function _createSubfolder($currentFolder, $folderName)
+    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName): VolumeFolder
     {
         $newFolder = new VolumeFolder();
         $newFolder->parentId = $currentFolder->id;
@@ -667,7 +666,7 @@ class Assets extends BaseRelationField
      *
      * @return array
      */
-    private function _getAllowedExtensions()
+    private function _getAllowedExtensions(): array
     {
         if (!is_array($this->allowedKinds)) {
             return [];
@@ -688,13 +687,13 @@ class Assets extends BaseRelationField
     /**
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface|null $element
      * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidSubpathException if the folder subpath is not valid
      * @return int
      */
-    private function _determineUploadFolderId($element, $createDynamicFolders = true)
+    private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         if ($this->useSingleFolder) {
             $volumeId = $this->singleUploadLocationSource;

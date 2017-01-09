@@ -39,7 +39,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveRoute()
+    public function actionSaveRoute(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -71,7 +71,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteRoute()
+    public function actionDeleteRoute(): Response
     {
         $this->requirePostRequest();
 
@@ -86,7 +86,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionUpdateRouteOrder()
+    public function actionUpdateRouteOrder(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

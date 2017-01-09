@@ -38,7 +38,7 @@ class User extends Component
      *
      * @return bool Whether the current user is a guest.
      */
-    public function getIsGuest()
+    public function getIsGuest(): bool
     {
         return $this->getIdentity() === null;
     }
@@ -51,7 +51,7 @@ class User extends Component
      *
      * @return bool Whether the current user is an admin.
      */
-    public function getIsAdmin()
+    public function getIsAdmin(): bool
     {
         $user = $this->getIdentity();
 
@@ -65,7 +65,7 @@ class User extends Component
      *
      * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
 
@@ -90,7 +90,7 @@ class User extends Component
      *
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity($identity)
+    public function setIdentity(IdentityInterface $identity = null)
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;

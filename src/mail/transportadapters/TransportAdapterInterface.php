@@ -28,5 +28,5 @@ interface TransportAdapterInterface extends SavableComponentInterface
      *
      * @return array The transport config
      */
-    public function getTransportConfig();
+    public function getTransportConfig(): array;
 }

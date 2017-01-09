@@ -55,7 +55,7 @@ class FieldGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -65,7 +65,7 @@ class FieldGroup extends Model
      *
      * @return FieldInterface[]
      */
-    public function getFields()
+    public function getFields(): array
     {
         return Craft::$app->getFields()->getFieldsByGroupId($this->id);
     }

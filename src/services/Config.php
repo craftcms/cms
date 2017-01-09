@@ -110,7 +110,7 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function get($item, $category = self::CATEGORY_GENERAL)
+    public function get(string $item, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -145,7 +145,7 @@ class Config extends Component
      *
      * @return void
      */
-    public function set($item, $value, $category = self::CATEGORY_GENERAL)
+    public function set(string $item, $value, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
         $this->_configSettings[$category][$item] = $value;
@@ -167,13 +167,13 @@ class Config extends Component
      * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
      * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
-     * @param string $item       The name of the config setting.
-     * @param string $siteHandle The site handle to return. Defaults to the current site.
-     * @param string $category   The name of the config file (sans .php). Defaults to 'general'.
+     * @param string      $item       The name of the config setting.
+     * @param string|null $siteHandle The site handle to return. Defaults to the current site.
+     * @param string      $category   The name of the config file (sans .php). Defaults to 'general'.
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized($item, $siteHandle = null, $category = self::CATEGORY_GENERAL)
+    public function getLocalized(string $item, string $siteHandle = null, string $category = self::CATEGORY_GENERAL)
     {
         $value = $this->get($item, $category);
 
@@ -223,7 +223,7 @@ class Config extends Component
      *
      * @return bool Whether the config setting value exists.
      */
-    public function exists($item, $category = self::CATEGORY_GENERAL)
+    public function exists(string $item, string $category = self::CATEGORY_GENERAL): bool
     {
         $this->_loadConfigSettings($category);
 
@@ -241,7 +241,7 @@ class Config extends Component
      *
      * @return array The config settings.
      */
-    public function getConfigSettings($category)
+    public function getConfigSettings(string $category): array
     {
         $this->_loadConfigSettings($category);
 
@@ -262,7 +262,7 @@ class Config extends Component
      *
      * @return int The cacheDuration config setting value, in seconds.
      */
-    public function getCacheDuration()
+    public function getCacheDuration(): int
     {
         if ($this->_cacheDuration !== null) {
             return $this->_cacheDuration;
@@ -302,7 +302,7 @@ class Config extends Component
      *
      * @return bool Whether generated URLs should omit “index.php”.
      */
-    public function getOmitScriptNameInUrls()
+    public function getOmitScriptNameInUrls(): bool
     {
         if ($this->_omitScriptNameInUrls !== null) {
             return $this->_omitScriptNameInUrls;
@@ -374,7 +374,7 @@ class Config extends Component
      *
      * @return bool Whether generated URLs should be formatted using PATH_INFO
      */
-    public function getUsePathInfo()
+    public function getUsePathInfo(): bool
     {
         if ($this->_usePathInfo !== null) {
             return $this->_usePathInfo;
@@ -460,7 +460,7 @@ class Config extends Component
      * @return int|null The user session duration in seconds, or `null` if user sessions should expire along with the
      *                  HTTP session.
      */
-    public function getUserSessionDuration($remembered = false)
+    public function getUserSessionDuration(bool $remembered = false)
     {
         if ($remembered) {
             $duration = $this->get('rememberedUserSessionDuration');
@@ -513,7 +513,7 @@ class Config extends Component
      *
      * @return string The login path.
      */
-    public function getLoginPath()
+    public function getLoginPath(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -532,7 +532,7 @@ class Config extends Component
      *
      * @return string The logout path.
      */
-    public function getLogoutPath()
+    public function getLogoutPath(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -562,7 +562,7 @@ class Config extends Component
      * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
      * time being, with deprecation logs.
      */
-    public function getSetPasswordPath($code, $uid, $user, $full = false)
+    public function getSetPasswordPath(string $code, string $uid, User $user, bool $full = false): string
     {
         if ($user->can('accessCp')) {
             $url = $this->getCpSetPasswordPath();
@@ -606,7 +606,7 @@ class Config extends Component
      *
      * @return string The Set Password path.
      */
-    public function getCpSetPasswordPath()
+    public function getCpSetPasswordPath(): string
     {
         return 'setpassword';
     }
@@ -616,7 +616,7 @@ class Config extends Component
      *
      * @return string The Login path.
      */
-    public function getCpLoginPath()
+    public function getCpLoginPath(): string
     {
         return 'login';
     }
@@ -626,7 +626,7 @@ class Config extends Component
      *
      * @return string The Logout path.
      */
-    public function getCpLogoutPath()
+    public function getCpLogoutPath(): string
     {
         return 'logout';
     }
@@ -642,7 +642,7 @@ class Config extends Component
      *
      * @return string The parsed string.
      */
-    public function parseEnvironmentString($str)
+    public function parseEnvironmentString(string $str): string
     {
         foreach ($this->get('environmentVariables') as $key => $value) {
             $str = str_replace('{'.$key.'}', $value, $str);
@@ -659,7 +659,7 @@ class Config extends Component
      *
      * @return string The Resource Request trigger word.
      */
-    public function getResourceTrigger()
+    public function getResourceTrigger(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -675,7 +675,7 @@ class Config extends Component
      *
      * @return bool Whether the system is allowed to be auto-updated to the latest release.
      */
-    public function allowAutoUpdates()
+    public function allowAutoUpdates(): bool
     {
         $update = Craft::$app->getUpdates()->getUpdates();
 
@@ -707,7 +707,7 @@ class Config extends Component
      *
      * @return bool
      */
-    public function getUseFileLocks()
+    public function getUseFileLocks(): bool
     {
         if ($this->_useFileLocks !== null) {
             return $this->_useFileLocks;
@@ -751,7 +751,7 @@ class Config extends Component
      *
      * @return string[] The allowed file extensions
      */
-    public function getAllowedFileExtensions()
+    public function getAllowedFileExtensions(): array
     {
         if ($this->_allowedFileExtensions !== null) {
             return $this->_allowedFileExtensions;
@@ -778,7 +778,7 @@ class Config extends Component
      *
      * @return bool Whether the extension is allowed
      */
-    public function isExtensionAllowed($extension)
+    public function isExtensionAllowed(string $extension): bool
     {
         return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
     }
@@ -788,7 +788,7 @@ class Config extends Component
      *
      * @return string
      */
-    public function getDbTablePrefix()
+    public function getDbTablePrefix(): string
     {
         // Table prefixes cannot be longer than 5 characters
         $tablePrefix = rtrim($this->get('tablePrefix', self::CATEGORY_DB), '_');
@@ -813,7 +813,7 @@ class Config extends Component
      *
      * @return int
      */
-    public function getDbPort()
+    public function getDbPort(): int
     {
         $config = Craft::$app->getConfig();
         $port = $config->get('port', Config::CATEGORY_DB);
@@ -841,7 +841,7 @@ class Config extends Component
      *
      * @throws InvalidParamException if $category is not supported
      */
-    private function _loadConfigSettings($category)
+    private function _loadConfigSettings(string $category)
     {
         // Have we already loaded this category?
         if (isset($this->_configSettings[$category])) {
@@ -922,7 +922,7 @@ class Config extends Component
      *
      * @return void
      */
-    private function _mergeConfigs(&$baseConfig, $customConfig)
+    private function _mergeConfigs(array &$baseConfig, array $customConfig)
     {
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {

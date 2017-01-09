@@ -44,7 +44,7 @@ class MailerHelper
      *
      * @return string[]
      */
-    public static function allMailerTransportTypes()
+    public static function allMailerTransportTypes(): array
     {
         $transportTypes = [
             Php::class,
@@ -70,7 +70,7 @@ class MailerHelper
      * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
-    public static function createTransportAdapter($type, $settings = null)
+    public static function createTransportAdapter(string $type, array $settings = null): TransportAdapterInterface
     {
         /** @var BaseTransportAdapter $adapter */
         $adapter = Component::createComponent([
@@ -88,7 +88,7 @@ class MailerHelper
      *
      * @return Mailer
      */
-    public static function createMailer(MailSettings $settings)
+    public static function createMailer(MailSettings $settings): Mailer
     {
         try {
             $adapter = self::createTransportAdapter($settings->transportType, $settings->transportSettings);

@@ -70,7 +70,7 @@ class Field extends ActiveRecord
      *
      * @return string
      */
-    public function getOldHandle()
+    public function getOldHandle(): string
     {
         return $this->_oldHandle;
     }
@@ -80,7 +80,7 @@ class Field extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fields}}';
     }
@@ -90,7 +90,7 @@ class Field extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }

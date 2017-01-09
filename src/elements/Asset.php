@@ -20,6 +20,7 @@ use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
@@ -63,7 +64,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Asset');
     }
@@ -71,7 +72,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -79,7 +80,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -87,7 +88,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -97,7 +98,7 @@ class Asset extends Element
      *
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new AssetQuery(get_called_class());
     }
@@ -105,7 +106,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources(string $context = null): array
     {
         if ($context === 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -122,7 +123,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         $actions = [];
 
@@ -190,7 +191,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function searchableAttributes()
+    public static function searchableAttributes(): array
     {
         return ['filename', 'extension', 'kind'];
     }
@@ -198,7 +199,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes()
+    protected static function defineSortableAttributes(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -213,7 +214,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineTableAttributes()
+    protected static function defineTableAttributes(): array
     {
         return [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -233,7 +234,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source): array
     {
         return [
             'filename',
@@ -250,7 +251,7 @@ class Asset extends Element
      *
      * @return array
      */
-    private static function _assembleSourceList($folders, $includeNestedFolders = true)
+    private static function _assembleSourceList(array $folders, bool $includeNestedFolders = true): array
     {
         $sources = [];
 
@@ -269,7 +270,7 @@ class Asset extends Element
      *
      * @return array
      */
-    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
+    private static function _assembleSourceInfoForFolder(VolumeFolder $folder, bool $includeNestedFolders = true): array
     {
         $source = [
             'key' => 'folder:'.$folder->id,
@@ -406,7 +407,7 @@ class Asset extends Element
      *
      * @return bool Whether the property is set
      */
-    public function __isset($name)
+    public function __isset($name): bool
     {
         return parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name);
     }
@@ -455,7 +456,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'dateModified';
@@ -538,7 +539,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(
             'uploadToVolume:'.$this->volumeId
@@ -567,7 +568,7 @@ class Asset extends Element
      * @return VolumeFolder
      * @throws InvalidConfigException if [[folderId]] is missing or invalid
      */
-    public function getFolder()
+    public function getFolder(): VolumeFolder
     {
         if (!$this->folderId) {
             throw new InvalidConfigException('Asset is missing its folder ID');
@@ -586,7 +587,7 @@ class Asset extends Element
      * @return VolumeInterface
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
-    public function getVolume()
+    public function getVolume(): VolumeInterface
     {
         if ($this->_volume !== null) {
             return $this->_volume;
@@ -610,7 +611,7 @@ class Asset extends Element
      *
      * @return Asset
      */
-    public function setTransform($transform)
+    public function setTransform($transform): Asset
     {
         $this->_transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
@@ -649,7 +650,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size)
+    public function getThumbUrl(int $size)
     {
         if ($this->getHasThumb()) {
             return UrlHelper::resourceUrl(
@@ -668,7 +669,7 @@ class Asset extends Element
      *
      * @return bool
      */
-    public function getHasThumb()
+    public function getHasThumb(): bool
     {
         return (
             $this->kind === 'image' &&
@@ -691,7 +692,7 @@ class Asset extends Element
     /**
      * @return string
      */
-    public function getMimeType()
+    public function getMimeType(): string
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
@@ -725,7 +726,7 @@ class Asset extends Element
      *
      * @return bool|float|mixed
      */
-    public function getWidth($transform = null)
+    public function getWidth(string $transform = null)
     {
         if ($transform !== null && !Image::isImageManipulatable(
                 $this->getExtension()
@@ -740,7 +741,7 @@ class Asset extends Element
     /**
      * @return string
      */
-    public function getTransformSource()
+    public function getTransformSource(): string
     {
         if (!$this->_transformSource) {
             Craft::$app->getAssetTransforms()->getLocalImageSource($this);
@@ -754,7 +755,7 @@ class Asset extends Element
      *
      * @param string $uri
      */
-    public function setTransformSource($uri)
+    public function setTransformSource(string $uri)
     {
         $this->_transformSource = $uri;
     }
@@ -762,11 +763,11 @@ class Asset extends Element
     /**
      * Get a file's uri path in the source.
      *
-     * @param string $filename Filename to use. If not specified, the file's filename will be used.
+     * @param string|null $filename Filename to use. If not specified, the file's filename will be used.
      *
      * @return string
      */
-    public function getUri($filename = null)
+    public function getUri(string $filename = null): string
     {
         return $this->folderPath.($filename ?: $this->filename);
     }
@@ -776,7 +777,7 @@ class Asset extends Element
      *
      * @return string
      */
-    public function getImageTransformSourcePath()
+    public function getImageTransformSourcePath(): string
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 
@@ -792,7 +793,7 @@ class Asset extends Element
      *
      * @return string
      */
-    public function getCopyOfFile()
+    public function getCopyOfFile(): string
     {
         $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
@@ -806,7 +807,7 @@ class Asset extends Element
      *
      * @return bool
      */
-    public function getHasUrls()
+    public function getHasUrls(): bool
     {
         /** @var Volume $volume */
         $volume = $this->getVolume();
@@ -820,7 +821,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'filename':
@@ -851,7 +852,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
@@ -890,7 +891,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew): bool
     {
         if ($isNew && !$this->title) {
             // Give it a default title based on the file name
@@ -904,7 +905,7 @@ class Asset extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the asset record
         if (!$isNew) {
@@ -967,7 +968,7 @@ class Asset extends Element
      *
      * @return null|float|mixed
      */
-    private function _getDimension($dimension, $transform)
+    private function _getDimension(string $dimension, $transform)
     {
         if ($this->kind !== 'image') {
             return null;

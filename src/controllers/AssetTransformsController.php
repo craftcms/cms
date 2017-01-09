@@ -42,7 +42,7 @@ class AssetTransformsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionTransformIndex()
+    public function actionTransformIndex(): string
     {
         $variables = [];
 
@@ -61,7 +61,7 @@ class AssetTransformsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
+    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): string
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -154,7 +154,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTransform()
+    public function actionDeleteTransform(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

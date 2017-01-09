@@ -25,7 +25,7 @@ interface PluginInterface
      *
      * @return bool Whether the plugin has its own section in the CP.
      */
-    public static function hasCpSection();
+    public static function hasCpSection(): bool;
 
     // Public Methods
     // =========================================================================
@@ -35,7 +35,7 @@ interface PluginInterface
      *
      * @return string The plugin’s handle
      */
-    public function getHandle();
+    public function getHandle(): string;
 
     /**
      * Installs the plugin.
@@ -53,7 +53,7 @@ interface PluginInterface
      * @return void|false Return `false` to indicate the update failed.
      * All other return values mean the update was successful.
      */
-    public function update($fromVersion);
+    public function update(string $fromVersion);
 
     /**
      * Uninstalls the plugin.

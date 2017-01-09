@@ -46,7 +46,7 @@ class Response extends \yii\web\Response
      *
      * @return static self reference
      */
-    public function setLastModifiedHeader($path)
+    public function setLastModifiedHeader(string $path)
     {
         $modifiedTime = filemtime($path);
 
@@ -60,9 +60,9 @@ class Response extends \yii\web\Response
     /**
      * @inheritdoc \yii\web\Response::sendFile()
      *
-     * @param string $filePath
-     * @param string $attachmentName
-     * @param array  $options
+     * @param string      $filePath
+     * @param string|null $attachmentName
+     * @param array       $options
      *
      * @return static self reference
      */

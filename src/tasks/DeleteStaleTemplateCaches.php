@@ -64,7 +64,7 @@ class DeleteStaleTemplateCaches extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         // What type of element(s) are we dealing with?
         $this->_elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
@@ -96,7 +96,7 @@ class DeleteStaleTemplateCaches extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         // Do we need to grab a fresh batch?
         if (empty($this->_batchRows)) {
@@ -147,7 +147,7 @@ class DeleteStaleTemplateCaches extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         return Craft::t('app', 'Deleting stale template caches');
     }
@@ -160,7 +160,7 @@ class DeleteStaleTemplateCaches extends Task
      *
      * @return Query
      */
-    private function _getQuery()
+    private function _getQuery(): Query
     {
         return (new Query())
             ->from(['{{%templatecachequeries}}'])

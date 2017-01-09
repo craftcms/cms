@@ -52,7 +52,7 @@ class EmailMessages extends Component
      *
      * @return RebrandEmail[]
      */
-    public function getAllMessages($language = null)
+    public function getAllMessages(string $language = null): array
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -99,12 +99,12 @@ class EmailMessages extends Component
     /**
      * Returns a system email message by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return RebrandEmail
      */
-    public function getMessage($key, $language = null)
+    public function getMessage(string $key, string $language = null): RebrandEmail
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -129,7 +129,7 @@ class EmailMessages extends Component
      *
      * @return bool
      */
-    public function saveMessage(RebrandEmail $message)
+    public function saveMessage(RebrandEmail $message): bool
     {
         $record = $this->_getMessageRecord($message->key, $message->language);
 
@@ -153,7 +153,7 @@ class EmailMessages extends Component
      *
      * @return array
      */
-    private function _getAllMessageKeys()
+    private function _getAllMessageKeys(): array
     {
         $this->_setAllMessageInfo();
 
@@ -167,7 +167,7 @@ class EmailMessages extends Component
      *
      * @return array|null
      */
-    private function _getMessageInfoByKey($key)
+    private function _getMessageInfoByKey(string $key)
     {
         $this->_setAllMessageInfo();
 
@@ -230,7 +230,7 @@ class EmailMessages extends Component
      *
      * @return null|string
      */
-    private function _translateMessageString($key, $part, $language)
+    private function _translateMessageString(string $key, string $part, string $language)
     {
         $messageInfo = $this->_getMessageInfoByKey($key);
 
@@ -252,12 +252,12 @@ class EmailMessages extends Component
     /**
      * Gets a message record by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return EmailMessageRecord
      */
-    private function _getMessageRecord($key, $language = null)
+    private function _getMessageRecord(string $key, string $language = null): EmailMessageRecord
     {
         if ($language === null) {
             $language = Craft::$app->language;

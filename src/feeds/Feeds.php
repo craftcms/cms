@@ -154,7 +154,7 @@ class Feeds extends Component
      *
      * @return array
      */
-    private function _getItemAuthors($objects)
+    private function _getItemAuthors($objects): array
     {
         $authors = [];
 
@@ -174,11 +174,11 @@ class Feeds extends Component
     /**
      * Returns an array of categories.
      *
-     * @param \stdClass[] $objects
+     * @param mixed $objects
      *
      * @return array
      */
-    private function _getItemCategories($objects)
+    private function _getItemCategories($objects): array
     {
         $categories = [];
 

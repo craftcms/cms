@@ -116,7 +116,7 @@ class TemplateCaches extends Component
      *
      * @return string|null
      */
-    public function getTemplateCache($key, $global)
+    public function getTemplateCache(string $key, bool $global)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -165,7 +165,7 @@ class TemplateCaches extends Component
      *
      * @return void
      */
-    public function startTemplateCache($key)
+    public function startTemplateCache(string $key)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -231,7 +231,7 @@ class TemplateCaches extends Component
      *
      * @return void
      */
-    public function includeElementInTemplateCaches($elementId)
+    public function includeElementInTemplateCaches(int $elementId)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -260,7 +260,7 @@ class TemplateCaches extends Component
      * @throws \Exception
      * @return void
      */
-    public function endTemplateCache($key, $global, $duration, $expiration, $body)
+    public function endTemplateCache($key, $global, $duration, $expiration, string $body)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -373,7 +373,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCacheById($cacheId)
+    public function deleteCacheById($cacheId): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -393,7 +393,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCachesByElementType($elementType)
+    public function deleteCachesByElementType(string $elementType): bool
     {
         if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -425,7 +425,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCachesByElement($elements)
+    public function deleteCachesByElement($elements): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -464,7 +464,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
+    public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -525,7 +525,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCachesByElementQuery(ElementQuery $query)
+    public function deleteCachesByElementQuery(ElementQuery $query): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -546,7 +546,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteCachesByKey($key)
+    public function deleteCachesByKey($key): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -564,7 +564,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteExpiredCaches()
+    public function deleteExpiredCaches(): bool
     {
         if ($this->_deletedAllCaches || $this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -584,7 +584,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteExpiredCachesIfOverdue()
+    public function deleteExpiredCachesIfOverdue(): bool
     {
         // Ignore if we've already done this once during the request
         if ($this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
@@ -610,7 +610,7 @@ class TemplateCaches extends Component
      *
      * @return bool
      */
-    public function deleteAllCaches()
+    public function deleteAllCaches(): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -633,7 +633,7 @@ class TemplateCaches extends Component
      *
      * @return bool Whether template caching is enabled
      */
-    private function _isTemplateCachingEnabled()
+    private function _isTemplateCachingEnabled(): bool
     {
         if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
             return true;
@@ -647,7 +647,7 @@ class TemplateCaches extends Component
      *
      * @return string
      */
-    private function _getPath()
+    private function _getPath(): string
     {
         if ($this->_path !== null) {
             return $this->_path;

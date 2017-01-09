@@ -40,7 +40,7 @@ class Structure extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%structures}}';
     }
@@ -50,7 +50,7 @@ class Structure extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElements()
+    public function getElements(): ActiveQueryInterface
     {
         return $this->hasMany(StructureElement::class, ['structureId' => 'id']);
     }

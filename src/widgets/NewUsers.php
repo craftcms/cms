@@ -25,7 +25,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'New Users');
     }
@@ -33,7 +33,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
         return (Craft::$app->getEdition() === Craft::Pro);
@@ -59,7 +59,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         if ($groupId = $this->userGroupId) {
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);

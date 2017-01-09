@@ -24,7 +24,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Craft Support');
     }
@@ -32,7 +32,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
         return (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin());
@@ -41,7 +41,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return false;
     }
@@ -60,7 +60,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return Craft::t('app', 'Send a message to Craft Support');
     }

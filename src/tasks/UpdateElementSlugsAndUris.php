@@ -64,7 +64,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_elementIds = (array)$this->elementId;
         $this->_skipRemainingEntries = false;
@@ -75,7 +75,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         if ($this->_skipRemainingEntries) {
             return true;
@@ -133,7 +133,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function getDefaultDescription(): string
     {
         return Craft::t('app', 'Updating element slugs and URIs');
     }

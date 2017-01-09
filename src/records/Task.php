@@ -46,7 +46,7 @@ class Task extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%tasks}}';
     }
@@ -56,7 +56,7 @@ class Task extends ActiveRecord
      *
      * @return TaskQuery
      */
-    public static function find()
+    public static function find(): TaskQuery
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::createObject(TaskQuery::class, [get_called_class()]);

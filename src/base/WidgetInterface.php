@@ -25,7 +25,7 @@ interface WidgetInterface extends SavableComponentInterface
      *
      * @return string The widget’s title.
      */
-    public function getTitle();
+    public function getTitle(): string;
 
     /**
      * Returns the path to the widget’s SVG icon.

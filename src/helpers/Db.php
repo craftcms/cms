@@ -40,7 +40,7 @@ class Db
      *
      * @return array The prepared values
      */
-    public static function prepareValuesForDb($values)
+    public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
         $values = ArrayHelper::toArray($values);
@@ -124,7 +124,7 @@ class Db
      *
      * @return string
      */
-    public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
+    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
         // Normalize the arguments
         if (!is_numeric($min)) {
@@ -213,13 +213,13 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param int        $contentLength
-     * @param Connection $db The database connection
+     * @param int             $contentLength
+     * @param Connection|null $db The database connection
      *
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength($contentLength, $db = null)
+    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -257,7 +257,7 @@ class Db
      *
      * @return string The escaped param value.
      */
-    public static function escapeParam($value)
+    public static function escapeParam(string $value): string
     {
         return str_replace([',', '*'], ['\,', '\*'], $value);
     }
@@ -283,7 +283,7 @@ class Db
      *
      * @return mixed
      */
-    public static function parseParam($column, $value)
+    public static function parseParam(string $column, $value)
     {
         // Need to do a strict check here in case $value = true
         if ($value === 'not ') {
@@ -366,7 +366,7 @@ class Db
      *
      * @return mixed
      */
-    public static function parseDateParam($column, $value)
+    public static function parseDateParam(string $column, $value)
     {
         $normalizedValues = [];
 
@@ -410,12 +410,12 @@ class Db
     /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
-     * @param string     $type
-     * @param Connection $db
+     * @param string          $type
+     * @param Connection|null $db
      *
      * @return bool
      */
-    public static function isTypeSupported($type, $db = null)
+    public static function isTypeSupported(string $type, Connection $db = null): bool
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -435,7 +435,7 @@ class Db
      *
      * @param string &$value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(string &$value)
     {
         if ($value === null) {
             $value = ':empty:';
@@ -451,7 +451,7 @@ class Db
      *
      * @return string The operator.
      */
-    private static function _parseParamOperator(&$value)
+    private static function _parseParamOperator(string &$value): string
     {
         foreach (self::$_operators as $testOperator) {
             // Does the value start with this operator?

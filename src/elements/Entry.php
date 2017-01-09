@@ -52,7 +52,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Entry');
     }
@@ -60,7 +60,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -68,7 +68,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -76,7 +76,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -84,7 +84,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -92,7 +92,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function statuses()
+    public static function statuses(): array
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
@@ -107,7 +107,7 @@ class Entry extends Element
      *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new EntryQuery(get_called_class());
     }
@@ -115,7 +115,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources(string $context = null): array
     {
         if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -205,7 +205,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
@@ -344,7 +344,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes()
+    protected static function defineSortableAttributes(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -359,7 +359,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineTableAttributes()
+    protected static function defineTableAttributes(): array
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -387,7 +387,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source): array
     {
         $attributes = [];
 
@@ -409,7 +409,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'author') {
             // Get the source element IDs
@@ -422,7 +422,7 @@ class Entry extends Element
             $map = (new Query())
                 ->select(['id as source', 'authorId as target'])
                 ->from(['{{%entries}}'])
-                ->where(['id' => $sourceElementIds])
+                ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
                 ->all();
 
             return [
@@ -437,7 +437,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
         /** @var ElementQuery $elementQuery */
         if ($attribute === 'author') {
@@ -516,7 +516,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'postDate';
@@ -643,7 +643,7 @@ class Entry extends Element
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
         if (!$this->sectionId) {
             throw new InvalidConfigException('Entry is missing its section ID');
@@ -662,7 +662,7 @@ class Entry extends Element
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): EntryType
     {
         if (!$this->typeId) {
             throw new InvalidConfigException('Entry is missing its type ID');
@@ -739,7 +739,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
@@ -770,7 +770,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {
             $author = isset($elements[0]) ? $elements[0] : null;
@@ -786,7 +786,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'author':
@@ -807,7 +807,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = '';
         $view = Craft::$app->getView();
@@ -868,7 +868,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
         $entryType = $this->getType();
@@ -917,7 +917,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         $section = $this->getSection();
 
@@ -965,7 +965,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure($structureId)
+    public function afterMoveInStructure(int $structureId)
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();
@@ -998,7 +998,7 @@ EOD;
      * @see beforeSave()
      * @see afterSave()
      */
-    private function _hasNewParent()
+    private function _hasNewParent(): bool
     {
         if ($this->_hasNewParent !== null) {
             return $this->_hasNewParent;
@@ -1013,7 +1013,7 @@ EOD;
      * @return bool
      * @see _hasNewParent()
      */
-    private function _checkForNewParent()
+    private function _checkForNewParent(): bool
     {
         // Make sure this is a Structure section
         if ($this->getSection()->type != Section::TYPE_STRUCTURE) {

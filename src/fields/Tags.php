@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Tag;
 use craft\models\TagGroup;
@@ -27,7 +28,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tags');
     }
@@ -35,7 +36,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Tag::class;
     }
@@ -43,7 +44,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a tag');
     }
@@ -72,7 +73,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if (!($value instanceof ElementQueryInterface)) {
             /** @var Element $class */

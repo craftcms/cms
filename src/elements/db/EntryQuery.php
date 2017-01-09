@@ -17,6 +17,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
 use DateTime;
+use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
@@ -29,7 +30,7 @@ use DateTime;
  *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth($n, $db = null)
+ * @method Entry|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -126,7 +127,7 @@ class EntryQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -331,7 +332,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
@@ -386,7 +387,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 

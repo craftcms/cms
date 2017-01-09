@@ -28,7 +28,7 @@ class UserPermissions
      *
      * @return array
      */
-    public function getAllPermissions()
+    public function getAllPermissions(): array
     {
         Craft::$app->getDeprecator()->log('craft.userPermissions.getAllPermissions()', 'craft.userPermissions.getAllPermissions() has been deprecated. Use craft.app.userPermissions.allPermissions instead.');
 
@@ -42,7 +42,7 @@ class UserPermissions
      *
      * @return array
      */
-    public function getGroupPermissionsByUserId($userId)
+    public function getGroupPermissionsByUserId(int $userId): array
     {
         Craft::$app->getDeprecator()->log('craft.userPermissions.getGroupPermissionsByUserId()', 'craft.userPermissions.getGroupPermissionsByUserId() has been deprecated. Use craft.app.userPermissions.getGroupPermissionsByUserId() instead.');
 

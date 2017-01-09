@@ -46,7 +46,7 @@ class Search
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], $processCharMap = true)
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true): string
     {
         // Flatten
         if (is_array($str)) {
@@ -94,7 +94,7 @@ class Search
      * @todo Get actual value from DB
      * @return int
      */
-    public static function minWordLength()
+    public static function minWordLength(): int
     {
         if (self::$_ftMinWordLength !== null) {
             return self::$_ftMinWordLength;
@@ -109,7 +109,7 @@ class Search
      * @todo Make this customizable from the config settings
      * @return array
      */
-    public static function stopWords()
+    public static function stopWords(): array
     {
         if (self::$_ftStopWords !== null) {
             return self::$_ftStopWords;
@@ -131,7 +131,7 @@ class Search
      *
      * @return array
      */
-    private static function _getCharMap()
+    private static function _getCharMap(): array
     {
         // Keep local copy
         static $map = [];
@@ -159,7 +159,7 @@ class Search
      *
      * @return array
      */
-    private static function _getPunctuation()
+    private static function _getPunctuation(): array
     {
         // Keep local copy
         static $asciiPunctuation = [];

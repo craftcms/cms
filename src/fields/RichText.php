@@ -41,7 +41,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Rich Text');
     }
@@ -154,7 +154,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return $this->columnType;
     }
@@ -162,7 +162,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var string|null $value */
         if ($value !== null) {
@@ -176,7 +176,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var RichTextData|null $value */
         /** @var Element $element */
@@ -209,7 +209,7 @@ class RichText extends Field
             $value = $value->getRawContent();
         }
 
-        if (StringHelper::contains($value, '{')) {
+        if ($value !== null && StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function($matches) {
@@ -229,7 +229,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateLength';
@@ -245,7 +245,7 @@ class RichText extends Field
      *
      * @return void
      */
-    public function validateLength(ElementInterface $element, $params)
+    public function validateLength(ElementInterface $element, array $params = null)
     {
         /** @var Element $element */
         /** @var RichTextData $value */
@@ -271,7 +271,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var RichTextData|null $value */
         return '<div class="text">'.($value ?: '&nbsp;').'</div>';
@@ -280,7 +280,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */
         if (!$value) {
@@ -353,7 +353,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var RichTextData|null $value */
         if ($value) {
@@ -383,7 +383,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getLinkOptions($element)
+    private function _getLinkOptions(Element $element = null): array
     {
         $linkOptions = [];
 
@@ -422,7 +422,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getSectionSources($element)
+    private function _getSectionSources(Element $element = null): array
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -454,7 +454,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getCategorySources($element)
+    private function _getCategorySources(Element $element = null): array
     {
         $sources = [];
 
@@ -478,7 +478,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getVolumes()
+    private function _getVolumes(): array
     {
         $volumes = [];
 
@@ -506,7 +506,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getTransforms()
+    private function _getTransforms(): array
     {
         $allTransforms = Craft::$app->getAssetTransforms()->getAllTransforms();
         $transformList = [];
@@ -529,7 +529,7 @@ class RichText extends Field
      *
      * @return string
      */
-    private function _getConfigJson()
+    private function _getConfigJson(): string
     {
         if (!$this->configFile) {
             return '{}';
@@ -553,7 +553,7 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _includeFieldResources($configJs)
+    private function _includeFieldResources(string $configJs)
     {
         $view = Craft::$app->getView();
         $view->registerCssResource('lib/redactor/redactor.css');
@@ -626,7 +626,7 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+    private function _maybeIncludeRedactorPlugin(string $configJs, string $plugin, bool $includeCss)
     {
         if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
             if (($pipe = strpos($plugin, '|')) !== false) {
@@ -649,7 +649,7 @@ class RichText extends Field
      *
      * @return bool
      */
-    private function _includeRedactorLangFile($lang)
+    private function _includeRedactorLangFile(string $lang): bool
     {
         $resourcePath = "lib/redactor/lang/{$lang}.js";
         $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);

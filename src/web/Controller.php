@@ -78,7 +78,7 @@ abstract class Controller extends \yii\web\Controller
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate($template, array $variables = [])
+    public function renderTemplate(string $template, array $variables = []): string
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
@@ -140,7 +140,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
-    public function requirePermission($permissionName)
+    public function requirePermission(string $permissionName)
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
@@ -155,7 +155,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
-    public function requireAuthorization($action)
+    public function requireAuthorization(string $action)
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
@@ -217,14 +217,14 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed  $object  Object containing properties that should be parsed for in the URL.
-     * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
-     *                        null, then the current request’s path will be used.
+     * @param mixed       $object  Object containing properties that should be parsed for in the URL.
+     * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
+     *                             null, then the current request’s path will be used.
      *
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, $default = null)
+    public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
     {
         $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
@@ -251,7 +251,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJson($var = [])
+    public function asJson($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -268,7 +268,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJsonP($var = [])
+    public function asJsonP($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -285,7 +285,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asRaw($var = [])
+    public function asRaw($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -302,7 +302,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asXml($var = [])
+    public function asXml($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -318,7 +318,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function asErrorJson($error)
+    public function asErrorJson(string $error): YiiResponse
     {
         return $this->asJson(['error' => $error]);
     }
@@ -328,7 +328,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function redirect($url, $statusCode = 302)
+    public function redirect($url, $statusCode = 302): YiiResponse
     {
         if (is_string($url)) {
             $url = UrlHelper::url($url);

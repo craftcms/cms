@@ -70,7 +70,7 @@ class MatrixBlockType extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%matrixblocktypes}}';
     }
@@ -80,7 +80,7 @@ class MatrixBlockType extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField()
+    public function getField(): ActiveQueryInterface
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -90,7 +90,7 @@ class MatrixBlockType extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

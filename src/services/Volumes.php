@@ -107,7 +107,7 @@ class Volumes extends Component
      *
      * @return string[]
      */
-    public function getAllVolumeTypes()
+    public function getAllVolumeTypes(): array
     {
         $volumeTypes = [
             Local::class
@@ -126,7 +126,7 @@ class Volumes extends Component
      *
      * @return array
      */
-    public function getAllVolumeIds()
+    public function getAllVolumeIds(): array
     {
         if ($this->_allVolumeIds !== null) {
             return $this->_allVolumeIds;
@@ -147,7 +147,7 @@ class Volumes extends Component
      *
      * @return array
      */
-    public function getViewableVolumeIds()
+    public function getViewableVolumeIds(): array
     {
         if ($this->_viewableVolumeIds !== null) {
             return $this->_viewableVolumeIds;
@@ -169,7 +169,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface[]
      */
-    public function getViewableVolumes()
+    public function getViewableVolumes(): array
     {
         if ($this->_viewableVolumes !== null) {
             return $this->_viewableVolumes;
@@ -192,7 +192,7 @@ class Volumes extends Component
      *
      * @return int[]
      */
-    public function getPublicVolumeIds()
+    public function getPublicVolumeIds(): array
     {
         if ($this->_publicVolumeIds !== null) {
             return $this->_publicVolumeIds;
@@ -215,7 +215,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface[]
      */
-    public function getPublicVolumes()
+    public function getPublicVolumes(): array
     {
         if ($this->_publicVolumes !== null) {
             return $this->_publicVolumes;
@@ -238,7 +238,7 @@ class Volumes extends Component
      *
      * @return int
      */
-    public function getTotalVolumes()
+    public function getTotalVolumes(): int
     {
         return count($this->getAllVolumeIds());
     }
@@ -248,7 +248,7 @@ class Volumes extends Component
      *
      * @return int
      */
-    public function getTotalViewableVolumes()
+    public function getTotalViewableVolumes(): int
     {
         return count($this->getViewableVolumeIds());
     }
@@ -258,7 +258,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface[]
      */
-    public function getAllVolumes()
+    public function getAllVolumes(): array
     {
         if ($this->_fetchedAllVolumes) {
             return array_values($this->_volumesById);
@@ -286,7 +286,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface|null
      */
-    public function getVolumeById($volumeId)
+    public function getVolumeById(int $volumeId = null)
     {
         // TODO: Temp volumes should not be created here!
         // Temporary volume?
@@ -323,7 +323,7 @@ class Volumes extends Component
      * @throws \Exception
      */
 
-    public function saveVolume(VolumeInterface $volume, $runValidation = true)
+    public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
         /** @var Volume $volume */
         if ($runValidation && !$volume->validate()) {
@@ -440,7 +440,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function reorderVolumes($volumeIds)
+    public function reorderVolumes(array $volumeIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -468,7 +468,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface The asset volume
      */
-    public function createVolume($config)
+    public function createVolume($config): VolumeInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -495,7 +495,7 @@ class Volumes extends Component
      *
      * @return int
      */
-    public function ensureTopFolder(VolumeInterface $volume)
+    public function ensureTopFolder(VolumeInterface $volume): int
     {
         /** @var Volume $volume */
         $folder = VolumeFolder::findOne(
@@ -525,7 +525,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function deleteVolumeById($volumeId)
+    public function deleteVolumeById(int $volumeId): bool
     {
         $volume = $this->getVolumeById($volumeId);
 
@@ -544,7 +544,7 @@ class Volumes extends Component
      * @throws \Exception
      * @return bool
      */
-    public function deleteVolume($volume)
+    public function deleteVolume(VolumeInterface $volume): bool
     {
         /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
@@ -603,7 +603,7 @@ class Volumes extends Component
      *
      * @return Query
      */
-    private function _createVolumeQuery()
+    private function _createVolumeQuery(): Query
     {
         return (new Query())
             ->select([
@@ -626,12 +626,12 @@ class Volumes extends Component
     /**
      * Gets a volume's record.
      *
-     * @param int $volumeId
+     * @param int|null $volumeId
      *
      * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */
-    private function _getVolumeRecordById($volumeId = null)
+    private function _getVolumeRecordById(int $volumeId = null): AssetVolumeRecord
     {
         if ($volumeId !== null) {
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);

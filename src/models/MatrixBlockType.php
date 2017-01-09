@@ -97,7 +97,7 @@ class MatrixBlockType extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->handle;
     }
@@ -107,7 +107,7 @@ class MatrixBlockType extends Model
      *
      * @return bool
      */
-    public function getIsNew()
+    public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
     }
@@ -117,7 +117,7 @@ class MatrixBlockType extends Model
      *
      * @return FieldInterface[]
      */
-    public function getFields()
+    public function getFields(): array
     {
         return $this->getFieldLayout()->getFields();
     }
@@ -129,7 +129,7 @@ class MatrixBlockType extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->getFieldLayout()->setFields($fields);
     }

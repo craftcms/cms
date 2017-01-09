@@ -51,7 +51,7 @@ class NamespaceTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideNamespaceEnd(\Twig_Token $token)
+    public function decideNamespaceEnd(\Twig_Token $token): bool
     {
         return $token->test('endnamespace');
     }

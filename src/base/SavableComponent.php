@@ -58,7 +58,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         return true;
     }
@@ -69,7 +69,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function getIsNew()
+    public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
     }
@@ -77,7 +77,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function getSettings()
+    public function getSettings(): array
     {
         $settings = [];
 
@@ -99,7 +99,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function settingsAttributes()
+    public function settingsAttributes(): array
     {
         $class = new \ReflectionClass($this);
         $names = [];
@@ -119,7 +119,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew): bool
     {
         // Trigger a 'beforeSave' event
         $event = new ModelEvent([
@@ -133,7 +133,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Trigger an 'afterSave' event
         $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
@@ -144,7 +144,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function beforeDelete()
+    public function beforeDelete(): bool
     {
         // Trigger a 'beforeDelete' event
         $event = new ModelEvent();

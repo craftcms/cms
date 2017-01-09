@@ -158,7 +158,7 @@ class View extends \yii\web\View
      *
      * @return Environment
      */
-    public function getTwig()
+    public function getTwig(): Environment
     {
         if ($this->_twig !== null) {
             return $this->_twig;
@@ -186,7 +186,7 @@ class View extends \yii\web\View
      *
      * @return bool Whether a template is currently being rendered.
      */
-    public function getIsRenderingTemplate()
+    public function getIsRenderingTemplate(): bool
     {
         return $this->_renderingTemplate !== null;
     }
@@ -229,7 +229,7 @@ class View extends \yii\web\View
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, array $variables = [])
+    public function renderTemplate($template, array $variables = []): string
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -252,7 +252,7 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      */
-    public function renderPageTemplate($template, array $variables = [])
+    public function renderPageTemplate($template, array $variables = []): string
     {
         ob_start();
         ob_implicit_flush(false);
@@ -278,7 +278,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered macro output.
      */
-    public function renderTemplateMacro($template, $macro, array $args = [])
+    public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
@@ -299,7 +299,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderString(string $template, array $variables = [])
+    public function renderString(string $template, array $variables = []): string
     {
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
@@ -321,7 +321,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderObjectTemplate($template, $object)
+    public function renderObjectTemplate(string $template, $object): string
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -375,7 +375,7 @@ class View extends \yii\web\View
      *
      * @return bool Whether the template exists.
      */
-    public function doesTemplateExist($name)
+    public function doesTemplateExist(string $name): bool
     {
         try {
             return ($this->resolveTemplate($name) !== false);
@@ -459,7 +459,7 @@ class View extends \yii\web\View
      *
      * @return string|false The path to the template if it exists, or `false`.
      */
-    public function resolveTemplate($name)
+    public function resolveTemplate(string $name)
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
@@ -525,17 +525,17 @@ class View extends \yii\web\View
     /**
      * Registers a CSS file from the resources/ folder.
      *
-     * @param string $path    The resource path for the CSS file to be registered.
-     * @param array  $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
-     *                        the supported options. The following options are specially handled and are not treated as HTML attributes:
+     * @param string      $path    The resource path for the CSS file to be registered.
+     * @param array       $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
+     *                             the supported options. The following options are specially handled and are not treated as HTML attributes:
      *
      * - `depends`: array, specifies the names of the asset bundles that this CSS file depends on.
      *
-     * @param string $key     The key that identifies the CSS script file. If null, it will use
-     *                        $url as the key. If two CSS files are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string|null $key     The key that identifies the CSS script file. If null, it will use
+     *                             $url as the key. If two CSS files are registered with the same key, the latter
+     *                             will overwrite the former.
      */
-    public function registerCssResource($path, array $options = [], $key = null)
+    public function registerCssResource(string $path, array $options = [], string $key = null)
     {
         $this->_registerResource($path, $options, $key, 'css');
     }
@@ -543,9 +543,9 @@ class View extends \yii\web\View
     /**
      * Registers a JS file from the resources/ folder.
      *
-     * @param string $path    The resource path for the JS file to be registered.
-     * @param array  $options the HTML attributes for the script tag. The following options are specially handled
-     *                        and are not treated as HTML attributes:
+     * @param string      $path    The resource path for the JS file to be registered.
+     * @param array       $options the HTML attributes for the script tag. The following options are specially handled
+     *                             and are not treated as HTML attributes:
      *
      * - `depends`: array, specifies the names of the asset bundles that this JS file depends on.
      * - `position`: specifies where the JS script tag should be inserted in a page. The possible values are:
@@ -555,11 +555,11 @@ class View extends \yii\web\View
      *
      * Please refer to [[Html::jsFile()]] for other supported options.
      *
-     * @param string $key     the key that identifies the JS script file. If null, it will use
-     *                        $url as the key. If two JS files are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string|null $key     the key that identifies the JS script file. If null, it will use
+     *                             $url as the key. If two JS files are registered with the same key, the latter
+     *                             will overwrite the former.
      */
-    public function registerJsResource($path, array $options = [], $key = null)
+    public function registerJsResource(string $path, array $options = [], string $key = null)
     {
         $this->_registerResource($path, $options, $key, 'js');
     }
@@ -567,15 +567,15 @@ class View extends \yii\web\View
     /**
      * Registers a hi-res CSS code block.
      *
-     * @param string $css     the CSS code block to be registered
-     * @param array  $options the HTML attributes for the style tag.
-     * @param string $key     the key that identifies the CSS code block. If null, it will use
-     *                        $css as the key. If two CSS code blocks are registered with the same key, the latter
-     *                        will overwrite the former.
+     * @param string      $css     the CSS code block to be registered
+     * @param array       $options the HTML attributes for the style tag.
+     * @param string|null $key     the key that identifies the CSS code block. If null, it will use
+     *                             $css as the key. If two CSS code blocks are registered with the same key, the latter
+     *                             will overwrite the former.
      *
      * @deprecated in 3.0. Use [[registerCss()]] and type your own media selector.
      */
-    public function registerHiResCss($css, array $options = [], $key = null)
+    public function registerHiResCss(string $css, array $options = [], string $key = null)
     {
         Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
 
@@ -624,7 +624,7 @@ class View extends \yii\web\View
      *
      * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer($scriptTag = true)
+    public function clearJsBuffer(bool $scriptTag = true)
     {
         if (empty($this->_jsBuffers)) {
             return false;
@@ -665,7 +665,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getHeadHtml($clear = true)
+    public function getHeadHtml(bool $clear = true): string
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -695,7 +695,7 @@ class View extends \yii\web\View
      *
      * @return string the rendered content
      */
-    public function getBodyHtml($clear = true)
+    public function getBodyHtml(bool $clear = true): string
     {
         // Register any asset bundles
         $this->registerAllAssetFiles();
@@ -740,7 +740,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function registerTranslations($category, $messages)
+    public function registerTranslations(string $category, array $messages)
     {
         foreach ($messages as $message) {
             if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
@@ -778,7 +778,7 @@ class View extends \yii\web\View
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
      * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
      *
-     * @return string The namespace.
+     * @return string|null The namespace.
      */
     public function getNamespace()
     {
@@ -789,13 +789,13 @@ class View extends \yii\web\View
      * Sets the active namespace.
      *
      * This is the default namespaces that will be used when [[namespaceInputs()]], [[namespaceInputName()]],
-     * and [[namespaceInputId()]] are called, if their $namespace arguments are null.
+     * and [[namespaceInputId()]] are called, if their|null $namespace arguments are null.
      *
-     * @param string $namespace The new namespace.
+     * @param string|null $namespace The new namespace. Set to null to remove the namespace.
      *
      * @return void
      */
-    public function setNamespace($namespace)
+    public function setNamespace(string $namespace = null)
     {
         $this->_namespace = $namespace;
     }
@@ -805,7 +805,7 @@ class View extends \yii\web\View
      *
      * @return string Either 'site' or 'cp'.
      */
-    public function getTemplateMode()
+    public function getTemplateMode(): string
     {
         return $this->_templateMode;
     }
@@ -824,7 +824,7 @@ class View extends \yii\web\View
      * @return void
      * @throws Exception if $templateMode is invalid
      */
-    public function setTemplateMode($templateMode)
+    public function setTemplateMode(string $templateMode)
     {
         // Validate
         if (!in_array($templateMode, [
@@ -856,7 +856,7 @@ class View extends \yii\web\View
      *
      * @return string
      */
-    public function getTemplatesPath()
+    public function getTemplatesPath(): string
     {
         return $this->_templatesPath;
     }
@@ -868,7 +868,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function setTemplatesPath($templatesPath)
+    public function setTemplatesPath(string $templatesPath)
     {
         $this->_templatesPath = rtrim($templatesPath, '/\\');
     }
@@ -910,15 +910,15 @@ class View extends \yii\web\View
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html            The template with the inputs.
-     * @param string $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
-     * @param bool   $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
+     * @param string      $html            The template with the inputs.
+     * @param string|null $namespace       The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param bool        $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
      *
      * @return string The HTML with namespaced input names.
      */
-    public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
+    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true): string
     {
-        if (!is_string($html) || $html === '') {
+        if ($html === '') {
             return '';
         }
 
@@ -954,12 +954,12 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `name=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputName The input name that should be namespaced.
-     * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string      $inputName The input name that should be namespaced.
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
      *
      * @return string The namespaced input name.
      */
-    public function namespaceInputName($inputName, $namespace = null)
+    public function namespaceInputName(string $inputName, string $namespace = null): string
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -978,12 +978,12 @@ class View extends \yii\web\View
      * This method applies the same namespacing treatment that [[namespaceInputs()]] does to `id=` attributes,
      * but only to a single value, which is passed directly into this method.
      *
-     * @param string $inputId   The input ID that should be namespaced.
-     * @param string $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
+     * @param string      $inputId   The input ID that should be namespaced.
+     * @param string|null $namespace The namespace. Defaults to the [[getNamespace() active namespace]].
      *
      * @return string The namespaced input ID.
      */
-    public function namespaceInputId($inputId, $namespace = null)
+    public function namespaceInputId(string $inputId, string $namespace = null): string
     {
         if ($namespace === null) {
             $namespace = $this->getNamespace();
@@ -1013,7 +1013,7 @@ class View extends \yii\web\View
      *
      * @return string The input ID.
      */
-    public function formatInputId($inputName)
+    public function formatInputId(string $inputName): string
     {
         return rtrim(preg_replace('/[\[\]\\\]+/', '-', $inputName), '-');
     }
@@ -1048,7 +1048,7 @@ class View extends \yii\web\View
      *
      * @return void
      */
-    public function hook($hook, $method)
+    public function hook(string $hook, $method)
     {
         $this->_hooks[$hook][] = $method;
     }
@@ -1063,7 +1063,7 @@ class View extends \yii\web\View
      *
      * @return string Whatever the hooks returned.
      */
-    public function invokeHook($hook, &$context)
+    public function invokeHook(string $hook, array &$context): string
     {
         $return = '';
 
@@ -1087,7 +1087,7 @@ class View extends \yii\web\View
      *
      * @throws \Twig_Error_Loader
      */
-    private function _validateTemplateName($name)
+    private function _validateTemplateName(string $name)
     {
         if (StringHelper::contains($name, "\0")) {
             throw new \Twig_Error_Loader(Craft::t('app', 'A template name cannot contain NUL bytes.'));
@@ -1106,7 +1106,7 @@ class View extends \yii\web\View
      *
      * @return string|null The matching file path, or `null`.
      */
-    private function _resolveTemplate($basePath, $name)
+    private function _resolveTemplate(string $basePath, string $name)
     {
         // Normalize the path and name
         $basePath = FileHelper::normalizePath($basePath);
@@ -1148,7 +1148,7 @@ class View extends \yii\web\View
      *
      * @return array
      */
-    private function _getTwigOptions()
+    private function _getTwigOptions(): array
     {
         if ($this->_twigOptions !== null) {
             return $this->_twigOptions;
@@ -1173,14 +1173,16 @@ class View extends \yii\web\View
     /**
      * Registers an asset bundle for a file in the resources/ folder.
      *
-     * @param string $path
-     * @param array  $options
-     * @param string $key
-     * @param string $kind
+     * @param string      $path
+     * @param array       $options
+     * @param string|null $key
+     * @param string      $kind
      */
-    private function _registerResource($path, $options, $key, $kind)
+    private function _registerResource(string $path, array $options, string $key = null, string $kind)
     {
-        $key = $key ?: 'resource:'.$path;
+        if ($key === null) {
+            $key = 'resource:'.$path;
+        }
 
         // Make AppAsset the default dependency
         $depends = (array)ArrayHelper::remove($options, 'depends', [
@@ -1237,7 +1239,7 @@ class View extends \yii\web\View
      *
      * @return string
      */
-    private function _createTextareaMarker($matches)
+    private function _createTextareaMarker(array $matches): string
     {
         $marker = '{marker:'.StringHelper::randomString().'}';
         $this->_textareaMarkers[$marker] = $matches[2];
@@ -1252,7 +1254,7 @@ class View extends \yii\web\View
      *
      * @return string|null
      */
-    private function _getCpElementHtml(&$context)
+    private function _getCpElementHtml(array &$context)
     {
         if (!isset($context['element'])) {
             return null;

@@ -21,7 +21,7 @@ class Stringy extends \Stringy\Stringy
      *
      * @return array
      */
-    public function getAsciiCharMap()
+    public function getAsciiCharMap(): array
     {
         return $this->charsArray();
     }

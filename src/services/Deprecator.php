@@ -55,7 +55,7 @@ class Deprecator extends Component
      *
      * @return bool
      */
-    public function log($key, $message)
+    public function log(string $key, string $message): bool
     {
         if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecationlog');
@@ -134,7 +134,7 @@ class Deprecator extends Component
      *
      * @return DeprecationError[]
      */
-    public function getRequestLogs()
+    public function getRequestLogs(): array
     {
         return $this->_requestLogs;
     }
@@ -144,7 +144,7 @@ class Deprecator extends Component
      *
      * @return int
      */
-    public function getTotalLogs()
+    public function getTotalLogs(): int
     {
         return (new Query())
             ->from([self::$_tableName])
@@ -158,7 +158,7 @@ class Deprecator extends Component
      *
      * @return DeprecationError[]
      */
-    public function getLogs($limit = 100)
+    public function getLogs(int $limit = 100): array
     {
         if ($this->_allLogs !== null) {
             return $this->_allLogs;
@@ -205,7 +205,7 @@ class Deprecator extends Component
      *
      * @return bool
      */
-    public function deleteLogById($id)
+    public function deleteLogById($id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_tableName, ['id' => $id])
@@ -219,7 +219,7 @@ class Deprecator extends Component
      *
      * @return bool
      */
-    public function deleteAllLogs()
+    public function deleteAllLogs(): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_tableName)
@@ -236,7 +236,7 @@ class Deprecator extends Component
      *
      * @return Query
      */
-    private function _createDeprecationErrorQuery()
+    private function _createDeprecationErrorQuery(): Query
     {
         return (new Query())
             ->select([
@@ -341,7 +341,7 @@ class Deprecator extends Component
      *
      * @return string
      */
-    private function _argsToString($args)
+    private function _argsToString($args): string
     {
         $strArgs = [];
         $isAssoc = ($args !== array_values($args));

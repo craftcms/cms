@@ -28,7 +28,7 @@ class CategoryGroups
      *
      * @return int[]
      */
-    public function getAllGroupIds()
+    public function getAllGroupIds(): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroupIds()', 'craft.categoryGroups.getAllGroupIds() has been deprecated. Use craft.app.categories.allGroupIds instead.');
 
@@ -40,7 +40,7 @@ class CategoryGroups
      *
      * @return int[]
      */
-    public function getEditableGroupIds()
+    public function getEditableGroupIds(): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroupIds()', 'craft.categoryGroups.getEditableGroupIds() has been deprecated. Use craft.app.categories.editableGroupIds instead.');
 
@@ -50,11 +50,11 @@ class CategoryGroups
     /**
      * Returns all category groups.
      *
-     * @param null|string $indexBy
+     * @param string|null $indexBy
      *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.allGroups instead.');
 
@@ -70,7 +70,7 @@ class CategoryGroups
      *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroups()', 'craft.categoryGroups.getEditableGroups() has been deprecated. Use craft.app.categories.editableGroups instead.');
 
@@ -84,7 +84,7 @@ class CategoryGroups
      *
      * @return int
      */
-    public function getTotalGroups()
+    public function getTotalGroups(): int
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getTotalGroups()', 'craft.categoryGroups.getTotalGroups() has been deprecated. Use craft.app.categories.totalGroups instead.');
 

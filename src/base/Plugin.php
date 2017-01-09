@@ -35,7 +35,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public static function hasCpSection()
+    public static function hasCpSection(): bool
     {
         return false;
     }
@@ -77,7 +77,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getHandle()
+    public function getHandle(): string
     {
         return $this->id;
     }
@@ -113,7 +113,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update($fromVersion)
+    public function update(string $fromVersion)
     {
         if ($this->beforeUpdate() === false) {
             return false;
@@ -184,7 +184,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return MigrationManager The plugin’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
@@ -227,7 +227,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall()
+    protected function beforeInstall(): bool
     {
         return true;
     }
@@ -244,7 +244,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate()
+    protected function beforeUpdate(): bool
     {
         return true;
     }
@@ -261,7 +261,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return bool Whether the plugin should be installed
      */
-    protected function beforeUninstall()
+    protected function beforeUninstall(): bool
     {
         return true;
     }
@@ -288,7 +288,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string The rendered settings HTML
      */
-    protected function getSettingsHtml()
+    protected function getSettingsHtml(): string
     {
         return null;
     }

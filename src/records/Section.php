@@ -35,7 +35,7 @@ class Section extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%sections}}';
     }
@@ -45,7 +45,7 @@ class Section extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): ActiveQueryInterface
     {
         return $this->hasMany(Section_SiteSettings::class, ['sectionId' => 'id']);
     }
@@ -55,7 +55,7 @@ class Section extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getStructure()
+    public function getStructure(): ActiveQueryInterface
     {
         return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }

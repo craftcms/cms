@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use yii\db\Connection;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
@@ -21,7 +22,7 @@ use craft\helpers\Db;
  *
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth($n, $db = null)
+ * @method Asset|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -271,7 +272,7 @@ class AssetQuery extends ElementQuery
      *
      * @return static self reference
      */
-    public function includeSubfolders($value = true)
+    public function includeSubfolders(bool $value = true)
     {
         $this->includeSubfolders = $value;
 
@@ -285,7 +286,7 @@ class AssetQuery extends ElementQuery
      *
      * @return self The query object itself
      */
-    public function withTransforms($value)
+    public function withTransforms(array $value)
     {
         $this->withTransforms = $value;
 
@@ -315,7 +316,7 @@ class AssetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'source' was set to an invalid handle
         if ($this->volumeId === []) {

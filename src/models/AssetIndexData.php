@@ -67,7 +67,7 @@ class AssetIndexData extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'timestamp';
@@ -90,7 +90,7 @@ class AssetIndexData extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->uri;
     }

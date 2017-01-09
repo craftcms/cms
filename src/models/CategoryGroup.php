@@ -123,7 +123,7 @@ class CategoryGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -133,7 +133,7 @@ class CategoryGroup extends Model
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): array
     {
         if ($this->_siteSettings !== null) {
             return $this->_siteSettings;
@@ -156,7 +156,7 @@ class CategoryGroup extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 

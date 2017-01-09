@@ -36,7 +36,7 @@ class DeleteUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Delete…');
     }
@@ -44,7 +44,7 @@ class DeleteUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return true;
     }
@@ -99,7 +99,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var User[] $users */
         $users = $query->all();
@@ -141,7 +141,7 @@ EOD;
      *
      * @return array
      */
-    private function _getUndeletableUserIds()
+    private function _getUndeletableUserIds(): array
     {
         if (!Craft::$app->getUser()->getIsAdmin()) {
             // Only admins can delete other admins

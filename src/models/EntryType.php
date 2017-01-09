@@ -125,7 +125,7 @@ class EntryType extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->handle;
     }
@@ -135,7 +135,7 @@ class EntryType extends Model
      *
      * @return string
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): string
     {
         return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
     }

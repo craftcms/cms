@@ -44,7 +44,7 @@ class SearchQuery
      * @param string $query
      * @param array  $termOptions
      */
-    public function __construct($query, array $termOptions = [])
+    public function __construct(string $query, array $termOptions = [])
     {
         $this->_query = $query;
         $this->_termOptions = $termOptions;
@@ -57,7 +57,7 @@ class SearchQuery
      *
      * @return array
      */
-    public function getTokens()
+    public function getTokens(): array
     {
         return $this->_tokens;
     }
@@ -67,7 +67,7 @@ class SearchQuery
      *
      * @return string
      */
-    public function getQuery()
+    public function getQuery(): string
     {
         return $this->_query;
     }

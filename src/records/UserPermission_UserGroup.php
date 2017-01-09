@@ -42,7 +42,7 @@ class UserPermission_UserGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%userpermissions_usergroups}}';
     }
@@ -52,7 +52,7 @@ class UserPermission_UserGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getPermission()
+    public function getPermission(): ActiveQueryInterface
     {
         return $this->hasOne(UserPermission::class,
             ['id' => 'permissionId']);
@@ -63,7 +63,7 @@ class UserPermission_UserGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(UserGroup::class, ['id' => 'groupId']);
     }

@@ -43,7 +43,7 @@ class Template
      *
      * @internal
      */
-    public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
+    public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], string $type = \Twig_Template::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
         if ($object instanceof ElementInterface) {
             self::_includeElementInTemplateCaches($object);
@@ -66,7 +66,7 @@ class Template
      *
      * @return array
      */
-    public static function paginateCriteria(ElementQueryInterface $query)
+    public static function paginateCriteria(ElementQueryInterface $query): array
     {
         /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
@@ -124,7 +124,7 @@ class Template
      *
      * @return \Twig_Markup
      */
-    public static function raw($value)
+    public static function raw($value): \Twig_Markup
     {
         return new \Twig_Markup($value, Craft::$app->charset);
     }

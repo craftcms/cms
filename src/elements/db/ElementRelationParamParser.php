@@ -138,7 +138,7 @@ class ElementRelationParamParser
      *
      * @return bool
      */
-    public function getIsRelationFieldQuery()
+    public function getIsRelationFieldQuery(): bool
     {
         return (
             $this->_joinSourcesCount === 1 &&

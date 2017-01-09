@@ -31,7 +31,7 @@ class Globals
      *
      * @return array
      */
-    public function getAllSets($indexBy = null)
+    public function getAllSets(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.allSets instead.');
 
@@ -47,7 +47,7 @@ class Globals
      *
      * @return array
      */
-    public function getEditableSets($indexBy = null)
+    public function getEditableSets(string $indexBy = null): array
     {
         Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.editableSets instead.');
 
@@ -61,7 +61,7 @@ class Globals
      *
      * @return int
      */
-    public function getTotalSets()
+    public function getTotalSets(): int
     {
         Craft::$app->getDeprecator()->log('craft.globals.getTotalSets()', 'craft.globals.getTotalSets() has been deprecated. Use craft.app.globals.totalSets instead.');
 
@@ -73,7 +73,7 @@ class Globals
      *
      * @return int
      */
-    public function getTotalEditableSets()
+    public function getTotalEditableSets(): int
     {
         Craft::$app->getDeprecator()->log('craft.globals.getTotalEditableSets()', 'craft.globals.getTotalEditableSets() has been deprecated. Use craft.app.globals.totalEditableSets instead.');
 
@@ -87,9 +87,9 @@ class Globals
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invlaid
+     * @throws Exception if|null $siteHandle is invlaid
      */
-    public function getSetById($globalSetId, $siteHandle = null)
+    public function getSetById(int $globalSetId, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetById()', 'craft.globals.getSetById() has been deprecated. Use craft.app.globals.getSetById() instead.');
 
@@ -115,9 +115,9 @@ class Globals
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invalid
+     * @throws Exception if|null $siteHandle is invalid
      */
-    public function getSetByHandle($globalSetHandle, $siteHandle = null)
+    public function getSetByHandle(string $globalSetHandle, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetByHandle()', 'craft.globals.getSetByHandle() has been deprecated. Use craft.app.globals.getSetByHandle() instead.');
 

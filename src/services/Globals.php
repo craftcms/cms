@@ -72,7 +72,7 @@ class Globals extends Component
      *
      * @return array
      */
-    public function getAllSetIds()
+    public function getAllSetIds(): array
     {
         if ($this->_allGlobalSetIds !== null) {
             return $this->_allGlobalSetIds;
@@ -89,7 +89,7 @@ class Globals extends Component
      *
      * @return array
      */
-    public function getEditableSetIds()
+    public function getEditableSetIds(): array
     {
         if ($this->_editableGlobalSetIds !== null) {
             return $this->_editableGlobalSetIds;
@@ -112,7 +112,7 @@ class Globals extends Component
      *
      * @return GlobalSet[]
      */
-    public function getAllSets()
+    public function getAllSets(): array
     {
         if ($this->_allGlobalSets !== null) {
             return $this->_allGlobalSets;
@@ -129,7 +129,7 @@ class Globals extends Component
      *
      * @return GlobalSet[]
      */
-    public function getEditableSets()
+    public function getEditableSets(): array
     {
         $globalSets = $this->getAllSets();
         $editableGlobalSetIds = $this->getEditableSetIds();
@@ -149,7 +149,7 @@ class Globals extends Component
      *
      * @return int
      */
-    public function getTotalSets()
+    public function getTotalSets(): int
     {
         return count($this->getAllSetIds());
     }
@@ -159,7 +159,7 @@ class Globals extends Component
      *
      * @return int
      */
-    public function getTotalEditableSets()
+    public function getTotalEditableSets(): int
     {
         return count($this->getEditableSetIds());
     }
@@ -172,7 +172,7 @@ class Globals extends Component
      *
      * @return GlobalSet|null
      */
-    public function getSetById($globalSetId, $siteId = null)
+    public function getSetById(int $globalSetId, int $siteId = null)
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
@@ -204,7 +204,7 @@ class Globals extends Component
      *
      * @return GlobalSet|null
      */
-    public function getSetByHandle($globalSetHandle, $siteId = null)
+    public function getSetByHandle(int $globalSetHandle, int $siteId = null)
     {
         $currentSiteId = Craft::$app->getSites()->currentSite->id;
 
@@ -239,7 +239,7 @@ class Globals extends Component
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSet(GlobalSet $globalSet)
+    public function saveSet(GlobalSet $globalSet): bool
     {
         $isNewSet = !$globalSet->id;
 

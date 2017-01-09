@@ -55,7 +55,7 @@ class User extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%users}}';
     }
@@ -65,7 +65,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -75,7 +75,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSessions()
+    public function getSessions(): ActiveQueryInterface
     {
         return $this->hasMany(Session::class, ['userId' => 'id']);
     }
@@ -85,7 +85,7 @@ class User extends ActiveRecord
      *
      * @return ActiveQueryInterface
      */
-    public function getGroups()
+    public function getGroups(): ActiveQueryInterface
     {
         return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
@@ -95,14 +95,14 @@ class User extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true)
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
             $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
-        return parent::validate($attributes, false);
+        return parent::validate($attributeNames, false);
     }
 
     /**

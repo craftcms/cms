@@ -29,7 +29,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         return (static::allowMultipleInstances() || !Craft::$app->getDashboard()->doesUserHaveWidget(static::class));
     }
@@ -39,7 +39,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      *
      * @return bool Whether the widget can be selected more than once
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return true;
     }
@@ -65,7 +65,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         // Default to the widget's display name
         return static::displayName();

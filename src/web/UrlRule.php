@@ -39,7 +39,7 @@ class UrlRule extends \yii\web\UrlRule
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         // Add support for a 'template' config option, which acts as a shortcut for templates/render?template=foo
         if (isset($config['template'])) {

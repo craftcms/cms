@@ -27,21 +27,21 @@ abstract class Image extends Object
      *
      * @return int
      */
-    abstract public function getWidth();
+    abstract public function getWidth(): int;
 
     /**
      * Returns the height of the image.
      *
      * @return int
      */
-    abstract public function getHeight();
+    abstract public function getHeight(): int;
 
     /**
      * Returns the file extension.
      *
      * @return string
      */
-    abstract public function getExtension();
+    abstract public function getExtension(): string;
 
     /**
      * Loads an image from a file system path.
@@ -51,7 +51,7 @@ abstract class Image extends Object
      * @return static|Svg Self reference
      * @throws ImageException if the file cannot be loaded
      */
-    abstract public function loadImage($path);
+    abstract public function loadImage(string $path);
 
     /**
      * Crops the image to the specified coordinates.
@@ -63,7 +63,7 @@ abstract class Image extends Object
      *
      * @return static Self reference
      */
-    abstract public function crop($x1, $x2, $y1, $y2);
+    abstract public function crop(int $x1, int $x2, int $y1, int $y2);
 
     /**
      * Scale the image to fit within the specified size.
@@ -74,7 +74,7 @@ abstract class Image extends Object
      *
      * @return static Self reference
      */
-    abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
+    abstract public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true);
 
     /**
      * Scale and crop image to exactly fit the specified size.
@@ -86,7 +86,7 @@ abstract class Image extends Object
      *
      * @return static Self reference
      */
-    abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
+    abstract public function scaleAndCrop(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center');
 
     /**
      * Resizes the image.
@@ -96,7 +96,7 @@ abstract class Image extends Object
      *
      * @return static Self reference
      */
-    abstract public function resize($targetWidth, $targetHeight = null);
+    abstract public function resize(int $targetWidth, int $targetHeight = null);
 
     /**
      * Saves the image to the target path.
@@ -107,14 +107,14 @@ abstract class Image extends Object
      * @return bool
      * @throws ImageException if the image cannot be saved.
      */
-    abstract public function saveAs($targetPath, $autoQuality = false);
+    abstract public function saveAs(string $targetPath, bool $autoQuality = false): bool;
 
     /**
      * Returns whether the image is transparent.
      *
      * @return bool
      */
-    abstract public function getIsTransparent();
+    abstract public function getIsTransparent(): bool;
 
     // Protected Methods
     // =========================================================================

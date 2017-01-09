@@ -66,7 +66,7 @@ class Application extends \yii\web\Application
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         Craft::$app = $this;
         parent::__construct($config);
@@ -96,7 +96,7 @@ class Application extends \yii\web\Application
      * @throws ForbiddenHttpException
      * @throws \yii\web\NotFoundHttpException
      */
-    public function handleRequest($request)
+    public function handleRequest($request): Response
     {
         // If this is a resource request, we should respond with the resource ASAP
         $this->_processResourceRequest();
@@ -215,7 +215,7 @@ class Application extends \yii\web\Application
      *
      * @return void
      */
-    public function returnAjaxException($data)
+    public function returnAjaxException(array $data)
     {
         $exceptionArr = [
             'error' => $data['message']
@@ -244,7 +244,7 @@ class Application extends \yii\web\Application
      *
      * @return void
      */
-    public function returnAjaxError($code, $message, $file, $line)
+    public function returnAjaxError(int $code, string $message, string $file, string $line)
     {
         if ($this->getConfig()->get('devMode')) {
             $outputTrace = '';
@@ -407,7 +407,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processInstallRequest($request)
+    private function _processInstallRequest(Request $request)
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -454,7 +454,7 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws NotFoundHttpException if the requested action route is invalid
      */
-    private function _processActionRequest($request)
+    private function _processActionRequest(Request $request)
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -477,7 +477,7 @@ class Application extends \yii\web\Application
      *
      * @return bool
      */
-    private function _isSpecialCaseActionRequest($request)
+    private function _isSpecialCaseActionRequest(Request $request): bool
     {
         $segments = $request->getActionSegments();
 
@@ -502,7 +502,7 @@ class Application extends \yii\web\Application
      *
      * @return Response|null
      */
-    private function _processRequirementsCheck($request)
+    private function _processRequirementsCheck(Request $request = null)
     {
         // See if we're in the middle of an update.
         $update = false;
@@ -535,7 +535,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processUpdateLogic($request)
+    private function _processUpdateLogic(Request $request)
     {
         $this->_unregisterDebugModule();
 
@@ -594,7 +594,7 @@ class Application extends \yii\web\Application
      * @return void
      * @throws ServiceUnavailableHttpException
      */
-    private function _enforceSystemStatusPermissions($request)
+    private function _enforceSystemStatusPermissions(Request $request)
     {
         if (!$this->_checkSystemStatusPermissions()) {
             $error = null;
@@ -625,7 +625,7 @@ class Application extends \yii\web\Application
      *
      * @return bool
      */
-    private function _checkSystemStatusPermissions()
+    private function _checkSystemStatusPermissions(): bool
     {
         if ($this->getIsSystemOn()) {
             return true;

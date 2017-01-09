@@ -23,7 +23,7 @@ class CacheTokenParser extends \Twig_TokenParser
     /**
      * @return string
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'cache';
     }
@@ -111,7 +111,7 @@ class CacheTokenParser extends \Twig_TokenParser
      *
      * @return bool
      */
-    public function decideCacheEnd(\Twig_Token $token)
+    public function decideCacheEnd(\Twig_Token $token): bool
     {
         return $token->test('endcache');
     }

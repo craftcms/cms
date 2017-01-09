@@ -14,6 +14,7 @@ use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -83,7 +84,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'User');
     }
@@ -91,27 +92,23 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
 
     /**
-     * Returns whether this element type can have statuses.
-     *
-     * @return bool
+     * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return true;
     }
 
     /**
-     * Returns all of the possible statuses that elements of this type may have.
-     *
-     * @return array|null
+     * @inheritdoc
      */
-    public static function statuses()
+    public static function statuses(): array
     {
         return [
             self::STATUS_ACTIVE => Craft::t('app', 'Active'),
@@ -126,7 +123,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new UserQuery(get_called_class());
     }
@@ -134,7 +131,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources(string $context = null): array
     {
         $sources = [
             [
@@ -175,7 +172,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null)
     {
         $actions = [];
 
@@ -204,7 +201,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function searchableAttributes()
+    public static function searchableAttributes(): array
     {
         return ['username', 'firstName', 'lastName', 'fullName', 'email'];
     }
@@ -212,7 +209,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes()
+    protected static function defineSortableAttributes(): array
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = [
@@ -241,7 +238,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineTableAttributes()
+    protected static function defineTableAttributes(): array
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             // Start with Email and don't even give Username as an option
@@ -275,7 +272,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source): array
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
@@ -289,7 +286,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         if ($handle === 'photo') {
             // Get the source element IDs
@@ -362,7 +359,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array|null The authentication data, or `null` if it was invalid.
      */
-    public static function authData($authKey)
+    public static function authData(string $authKey)
     {
         $data = json_decode($authKey, true);
 
@@ -554,7 +551,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'lastLoginDate';
@@ -673,7 +670,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function authenticate($password)
+    public function authenticate(string $password): bool
     {
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED:
@@ -761,7 +758,7 @@ class User extends Element implements IdentityInterface
      *
      * @return UserGroup[]
      */
-    public function getGroups()
+    public function getGroups(): array
     {
         if ($this->_groups !== null) {
             return $this->_groups;
@@ -781,7 +778,7 @@ class User extends Element implements IdentityInterface
      *
      * @return void
      */
-    public function setGroups($groups)
+    public function setGroups(array $groups)
     {
         if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
@@ -795,7 +792,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function isInGroup($group)
+    public function isInGroup($group): bool
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return false;
@@ -842,7 +839,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         if (($fullName = $this->getFullName()) !== null) {
             return $fullName;
@@ -908,7 +905,7 @@ class User extends Element implements IdentityInterface
      * @return string|null
      * @deprecated in 3.0. Use getPhoto().getUrl() instead.
      */
-    public function getPhotoUrl($size = 100)
+    public function getPhotoUrl(int $size = 100)
     {
         Craft::$app->getDeprecator()->log('User::getPhotoUrl()', 'User::getPhotoUrl() has been deprecated. Use getPhoto() to access the photo asset (if there is one), and call its getUrl() method to access the photo URL.');
         $photo = $this->getPhoto();
@@ -926,7 +923,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size)
+    public function getThumbUrl(int $size)
     {
         $photo = $this->getPhoto();
 
@@ -945,7 +942,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editUsers');
     }
@@ -955,7 +952,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function getIsCurrent()
+    public function getIsCurrent(): bool
     {
         if ($this->id) {
             $currentUser = Craft::$app->getUser()->getIdentity();
@@ -975,7 +972,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function can($permission)
+    public function can(string $permission): bool
     {
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->admin) {
@@ -999,7 +996,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    public function hasShunned($message)
+    public function hasShunned(string $message): bool
     {
         if ($this->id) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
@@ -1073,19 +1070,19 @@ class User extends Element implements IdentityInterface
      *
      * In addition, we check that the username does not have any whitespace in it.
      *
-     * @param null $attributes
-     * @param bool $clearErrors
+     * @param array|null $attributeNames
+     * @param bool       $clearErrors
      *
      * @return bool|null
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true)
     {
         // Don't allow whitespace in the username.
         if (preg_match('/\s+/', $this->username)) {
             $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
         }
 
-        return parent::validate($attributes, false);
+        return parent::validate($attributeNames, false);
     }
 
     /**
@@ -1093,7 +1090,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array The user’s preferences.
      */
-    public function getPreferences()
+    public function getPreferences(): array
     {
         if ($this->_preferences === null) {
             $this->_preferences = Craft::$app->getUsers()->getUserPreferences($this->id);
@@ -1108,9 +1105,9 @@ class User extends Element implements IdentityInterface
      * @param string $key     The preference’s key
      * @param mixed  $default The default value, if the preference hasn’t been set
      *
-     * @return array The user’s preferences.
+     * @return mixed The user’s preference
      */
-    public function getPreference($key, $default = null)
+    public function getPreference(string $key, $default = null)
     {
         $preferences = $this->getPreferences();
 
@@ -1141,7 +1138,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array The user’s new preferences.
      */
-    public function mergePreferences($preferences)
+    public function mergePreferences(array $preferences): array
     {
         $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
@@ -1151,7 +1148,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'photo') {
             $photo = isset($elements[0]) ? $elements[0] : null;
@@ -1200,7 +1197,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'email':
@@ -1218,7 +1215,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
             'account' => $this,
@@ -1238,7 +1235,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the user record
         if (!$isNew) {
@@ -1308,7 +1305,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function beforeDelete()
+    public function beforeDelete(): bool
     {
         // Get the entry IDs that belong to this user
         $entryQuery = (new Query())
@@ -1372,7 +1369,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string The new session row's UID.
      */
-    private function _storeSessionToken($sessionToken)
+    private function _storeSessionToken(string $sessionToken): string
     {
         $sessionRecord = new SessionRecord();
         $sessionRecord->userId = $this->id;
@@ -1389,7 +1386,7 @@ class User extends Element implements IdentityInterface
      *
      * @return string|null The session token, or `null` if it could not be found.
      */
-    private function _findSessionTokenByUid($uid)
+    private function _findSessionTokenByUid(string $uid)
     {
         return (new Query())
             ->select(['token'])
@@ -1406,7 +1403,7 @@ class User extends Element implements IdentityInterface
      *
      * @return bool
      */
-    private function _validateUserAgent($userAgent)
+    private function _validateUserAgent(string $userAgent): bool
     {
         if (Craft::$app->getConfig()->get('requireMatchingUserAgentForSession')) {
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();

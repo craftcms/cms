@@ -48,7 +48,7 @@ class Plugin extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%plugins}}';
     }
@@ -58,7 +58,7 @@ class Plugin extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getMigrations()
+    public function getMigrations(): ActiveQueryInterface
     {
         return $this->hasMany(Migration::class, ['pluginId' => 'id']);
     }

@@ -41,7 +41,7 @@ class TasksController extends Controller
      *
      * @return string
      */
-    public function actionRunPendingTasks()
+    public function actionRunPendingTasks(): string
     {
         $tasksService = Craft::$app->getTasks();
 
@@ -70,7 +70,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetRunningTaskInfo()
+    public function actionGetRunningTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
@@ -107,7 +107,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionRerunTask()
+    public function actionRerunTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -139,7 +139,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTask()
+    public function actionDeleteTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -158,7 +158,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetTaskInfo()
+    public function actionGetTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');

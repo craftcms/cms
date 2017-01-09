@@ -59,7 +59,7 @@ class ElementHelper
      *
      * @return string
      */
-    public static function createSlug($str)
+    public static function createSlug(string $str): string
     {
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
@@ -172,7 +172,7 @@ class ElementHelper
      *
      * @return bool
      */
-    public static function doesUriFormatHaveSlugTag($uriFormat)
+    public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
         $element = (object)['slug' => StringHelper::randomString()];
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
@@ -190,7 +190,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element)
+    public static function supportedSitesForElement(ElementInterface $element): array
     {
         $sites = [];
 
@@ -217,7 +217,7 @@ class ElementHelper
      *
      * @return bool
      */
-    public static function isElementEditable(ElementInterface $element)
+    public static function isElementEditable(ElementInterface $element): bool
     {
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
@@ -241,7 +241,7 @@ class ElementHelper
      *
      * @return array
      */
-    public static function editableSiteIdsForElement(ElementInterface $element)
+    public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
 
@@ -268,7 +268,7 @@ class ElementHelper
      *
      * @return void
      */
-    public static function setNextPrevOnElements($elements)
+    public static function setNextPrevOnElements(array $elements)
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
@@ -292,13 +292,13 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param ElementInterface $elementType The element type class
-     * @param string           $sourceKey   The source key/path
-     * @param string|null      $context     The context
+     * @param string      $elementType The element type class
+     * @param string      $sourceKey   The source key/path
+     * @param string|null $context     The context
      *
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource($elementType, $sourceKey, $context = null)
+    public static function findSource($elementType, $sourceKey, string $context = null)
     {
         /** @var ElementInterface $elementType */
         $path = explode('/', $sourceKey);

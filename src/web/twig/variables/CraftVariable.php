@@ -171,7 +171,7 @@ class CraftVariable extends ServiceLocator
      * @return string
      * @deprecated in 3.0
      */
-    public function locale()
+    public function locale(): string
     {
         Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
 
@@ -184,7 +184,7 @@ class CraftVariable extends ServiceLocator
      * @return bool
      * @deprecated in 3.0. Use craft.app.isMultiSite instead
      */
-    public function isLocalized()
+    public function isLocalized(): bool
     {
         Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
 
@@ -201,7 +201,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return AssetQuery
      */
-    public function assets($criteria = null)
+    public function assets($criteria = null): AssetQuery
     {
         $query = Asset::find();
         if ($criteria) {
@@ -218,7 +218,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return CategoryQuery
      */
-    public function categories($criteria = null)
+    public function categories($criteria = null): CategoryQuery
     {
         $query = Category::find();
         if ($criteria) {
@@ -235,7 +235,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return EntryQuery
      */
-    public function entries($criteria = null)
+    public function entries($criteria = null): EntryQuery
     {
         $query = Entry::find();
         if ($criteria) {
@@ -252,7 +252,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return TagQuery
      */
-    public function tags($criteria = null)
+    public function tags($criteria = null): TagQuery
     {
         $query = Tag::find();
         if ($criteria) {
@@ -269,7 +269,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return UserQuery
      */
-    public function users($criteria = null)
+    public function users($criteria = null): UserQuery
     {
         $query = User::find();
         if ($criteria) {

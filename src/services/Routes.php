@@ -56,7 +56,7 @@ class Routes extends Component
      *
      * @return array
      */
-    public function getConfigFileRoutes()
+    public function getConfigFileRoutes(): array
     {
         $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
@@ -92,7 +92,7 @@ class Routes extends Component
      *
      * @return array
      */
-    public function getDbRoutes()
+    public function getDbRoutes(): array
     {
         $results = (new Query())
             ->select(['uriPattern', 'template'])
@@ -128,9 +128,9 @@ class Routes extends Component
      * @param int|null $routeId      The route ID, if editing an existing route
      *
      * @return RouteRecord
-     * @throws RouteNotFoundException if $routeId is invalid
+     * @throws RouteNotFoundException if|null $routeId is invalid
      */
-    public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
+    public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null): RouteRecord
     {
         // Fire a 'beforeSaveRoute' event
         $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
@@ -214,7 +214,7 @@ class Routes extends Component
      *
      * @return bool
      */
-    public function deleteRouteById($routeId)
+    public function deleteRouteById(int $routeId): bool
     {
         $routeRecord = RouteRecord::findOne($routeId);
 
@@ -256,7 +256,7 @@ class Routes extends Component
      *
      * @return void
      */
-    public function updateRouteOrder($routeIds)
+    public function updateRouteOrder(array $routeIds)
     {
         $db = Craft::$app->getDb();
 

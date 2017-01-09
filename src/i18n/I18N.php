@@ -62,7 +62,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return bool Whether the Intl extension is loaded.
      */
-    public function getIsIntlLoaded()
+    public function getIsIntlLoaded(): bool
     {
         return $this->_intlLoaded;
     }
@@ -74,7 +74,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return Locale
      */
-    public function getLocaleById($localeId)
+    public function getLocaleById(string $localeId): Locale
     {
         return new Locale($localeId);
     }
@@ -132,7 +132,7 @@ class I18N extends \yii\i18n\I18N
      * @return Locale[] An array of [[Locale]] objects.
      * @see getAllLocaleIds()
      */
-    public function getAllLocales()
+    public function getAllLocales(): array
     {
         $locales = [];
         $localeIds = $this->getAllLocaleIds();
@@ -154,7 +154,7 @@ class I18N extends \yii\i18n\I18N
      * @return Locale[] An array of [[Locale]] objects.
      * @throws Exception in case of failure
      */
-    public function getAppLocales()
+    public function getAppLocales(): array
     {
         if ($this->_appLocales !== null) {
             return $this->_appLocales;
@@ -189,7 +189,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return array An array of locale IDs.
      */
-    public function getAppLocaleIds()
+    public function getAppLocaleIds(): array
     {
         $locales = $this->getAppLocales();
         $localeIds = [];
@@ -209,7 +209,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return Locale[] An array of [[Locale]] objects.
      */
-    public function getSiteLocales()
+    public function getSiteLocales(): array
     {
         $locales = [];
 
@@ -226,7 +226,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return Locale A [[Locale]] object representing the primary locale.
      */
-    public function getPrimarySiteLocale()
+    public function getPrimarySiteLocale(): Locale
     {
         $locales = $this->getSiteLocales();
 
@@ -239,7 +239,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return string The primary locale ID.
      */
-    public function getPrimarySiteLocaleId()
+    public function getPrimarySiteLocaleId(): string
     {
         return $this->getPrimarySiteLocale()->id;
     }
@@ -249,7 +249,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return array An array of locale IDs.
      */
-    public function getSiteLocaleIds()
+    public function getSiteLocaleIds(): array
     {
         $localeIds = [];
 
@@ -268,7 +268,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return array
      */
-    public function getEditableLocales()
+    public function getEditableLocales(): array
     {
         if (Craft::$app->getIsMultiSite()) {
             $locales = $this->getSiteLocales();
@@ -291,7 +291,7 @@ class I18N extends \yii\i18n\I18N
      *
      * @return array
      */
-    public function getEditableLocaleIds()
+    public function getEditableLocaleIds(): array
     {
         $locales = $this->getEditableLocales();
         $localeIds = [];

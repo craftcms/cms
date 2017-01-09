@@ -74,7 +74,7 @@ class Section_SiteSettings extends Model
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
         if ($this->_section !== null) {
             return $this->_section;

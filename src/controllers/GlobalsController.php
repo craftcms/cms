@@ -83,7 +83,7 @@ class GlobalsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSet()
+    public function actionDeleteSet(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -99,15 +99,15 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string    $globalSetHandle The global set’s handle.
-     * @param string    $siteHandle      The site handle, if specified.
-     * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
+     * @param string         $globalSetHandle The global set’s handle.
+     * @param string|null    $siteHandle      The site handle, if specified.
+     * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent($globalSetHandle, $siteHandle = null, GlobalSet $globalSet = null)
+    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): string
     {
         // Get the sites the user is allowed to edit
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();

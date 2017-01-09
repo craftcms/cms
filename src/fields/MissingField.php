@@ -7,6 +7,7 @@
 
 namespace craft\fields;
 
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
@@ -30,7 +31,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -41,7 +42,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return '<p class="error">'.$this->errorMessage.'</p>';
     }

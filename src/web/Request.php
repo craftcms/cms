@@ -220,7 +220,7 @@ class Request extends \yii\web\Request
      *
      * @return string
      */
-    public function getFullPath()
+    public function getFullPath(): string
     {
         if ($this->_fullPath === null) {
             try {
@@ -259,7 +259,7 @@ class Request extends \yii\web\Request
      * @return string The requested path, or the path info.
      * @throws InvalidConfigException if the path info cannot be determined due to unexpected server configuration
      */
-    public function getPathInfo($returnRealPathInfo = false)
+    public function getPathInfo(bool $returnRealPathInfo = false): string
     {
         if ($returnRealPathInfo) {
             return parent::getPathInfo();
@@ -277,7 +277,7 @@ class Request extends \yii\web\Request
      *
      * @return array The Craft path’s segments.
      */
-    public function getSegments()
+    public function getSegments(): array
     {
         return $this->_segments;
     }
@@ -289,7 +289,7 @@ class Request extends \yii\web\Request
      *
      * @return string|null The matching segment, or `null` if there wasn’t one.
      */
-    public function getSegment($num)
+    public function getSegment(int $num)
     {
         if ($num > 0 && isset($this->_segments[$num - 1])) {
             return $this->_segments[$num - 1];
@@ -311,7 +311,7 @@ class Request extends \yii\web\Request
      *
      * @return int The requested page number.
      */
-    public function getPageNum()
+    public function getPageNum(): int
     {
         return $this->_pageNum;
     }
@@ -337,7 +337,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the current request should be routed to the Control Panel.
      */
-    public function getIsCpRequest()
+    public function getIsCpRequest(): bool
     {
         return $this->_isCpRequest;
     }
@@ -349,7 +349,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the current request should be routed to the front-end site.
      */
-    public function getIsSiteRequest()
+    public function getIsSiteRequest(): bool
     {
         return !$this->_isCpRequest;
     }
@@ -362,7 +362,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the current request should be routed to a resource.
      */
-    public function getIsResourceRequest()
+    public function getIsResourceRequest(): bool
     {
         $this->_checkRequestType();
 
@@ -381,7 +381,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the current request should be routed to a controller action.
      */
-    public function getIsActionRequest()
+    public function getIsActionRequest(): bool
     {
         $this->_checkRequestType();
 
@@ -405,7 +405,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether this is a Live Preview request.
      */
-    public function getIsLivePreview()
+    public function getIsLivePreview(): bool
     {
         return (
             $this->getIsSiteRequest() &&
@@ -423,7 +423,7 @@ class Request extends \yii\web\Request
      *
      * @return bool Whether the request is coming from a mobile browser.
      */
-    public function isMobileBrowser($detectTablets = false)
+    public function isMobileBrowser(bool $detectTablets = false): bool
     {
         if ($detectTablets) {
             $property = &$this->_isMobileOrTabletBrowser;
@@ -461,7 +461,7 @@ class Request extends \yii\web\Request
      *
      * @return string The host name.
      */
-    public function getHostName()
+    public function getHostName(): string
     {
         if (isset($_SERVER['HTTP_HOST'])) {
             return $_SERVER['HTTP_HOST'];
@@ -519,7 +519,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
-    public function getRequiredBodyParam($name)
+    public function getRequiredBodyParam(string $name)
     {
         $value = $this->getBodyParam($name);
 
@@ -539,7 +539,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
-    public function getValidatedBodyParam($name)
+    public function getValidatedBodyParam(string $name)
     {
         $value = $this->getBodyParam($name);
 
@@ -604,7 +604,7 @@ class Request extends \yii\web\Request
      * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
-    public function getRequiredQueryParam($name)
+    public function getRequiredQueryParam(string $name)
     {
         $value = $this->getQueryParam($name);
 
@@ -627,7 +627,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getParam($name, $defaultValue = null)
+    public function getParam(string $name, $defaultValue = null)
     {
         if (($value = $this->getQueryParam($name)) !== null) {
             return $value;
@@ -651,7 +651,7 @@ class Request extends \yii\web\Request
      * @see getQueryParam()
      * @see getBodyParam()
      */
-    public function getRequiredParam($name)
+    public function getRequiredParam(string $name)
     {
         $value = $this->getParam($name);
 
@@ -667,7 +667,7 @@ class Request extends \yii\web\Request
      *
      * @return string The query string.
      */
-    public function getQueryStringWithoutPath()
+    public function getQueryStringWithoutPath(): string
     {
         $queryParams = $this->getQueryParams();
         $pathParam = Craft::$app->getConfig()->get('pathParam');
@@ -686,7 +686,7 @@ class Request extends \yii\web\Request
      *
      * @return string The IP address.
      */
-    public function getUserIP()
+    public function getUserIP(): string
     {
         if ($this->_ipAddress === null) {
             $ipMatch = false;
@@ -743,7 +743,7 @@ class Request extends \yii\web\Request
      *
      * @return string The OS the client is running.
      */
-    public function getClientOs()
+    public function getClientOs(): string
     {
         $userAgent = $this->getUserAgent();
 
@@ -774,7 +774,7 @@ class Request extends \yii\web\Request
      *
      * @return string the token used to perform CSRF validation.
      */
-    public function getCsrfToken($regenerate = false)
+    public function getCsrfToken($regenerate = false): string
     {
         if ($this->_craftCsrfToken === null || $regenerate) {
             $token = $this->loadCsrfToken();
@@ -819,7 +819,7 @@ class Request extends \yii\web\Request
      *
      * @return string the random token for CSRF validation.
      */
-    protected function generateCsrfToken()
+    protected function generateCsrfToken(): string
     {
         $existingToken = $this->loadCsrfToken();
 
@@ -870,7 +870,7 @@ class Request extends \yii\web\Request
      *
      * @return bool
      */
-    protected function csrfTokenValidForCurrentUser($token)
+    protected function csrfTokenValidForCurrentUser(string $token): bool
     {
         $currentUser = false;
 
@@ -908,7 +908,7 @@ class Request extends \yii\web\Request
      *
      * @return string
      */
-    private function _getQueryStringPath()
+    private function _getQueryStringPath(): string
     {
         $pathParam = Craft::$app->getConfig()->get('pathParam');
 
@@ -1017,7 +1017,7 @@ class Request extends \yii\web\Request
      *
      * @return mixed
      */
-    private function _getParam($name, $defaultValue, $params)
+    private function _getParam(string $name = null, $defaultValue, array $params)
     {
         // Do they just want the whole array?
         if ($name === null) {
@@ -1053,7 +1053,7 @@ class Request extends \yii\web\Request
      *
      * @return bool
      */
-    private function _validateIp($ip)
+    private function _validateIp(string $ip): bool
     {
         return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
             filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
@@ -1068,7 +1068,7 @@ class Request extends \yii\web\Request
      *
      * @return string the XOR result
      */
-    private function _xorTokens($token1, $token2)
+    private function _xorTokens(string $token1, string $token2): string
     {
         $n1 = StringHelper::byteLength($token1);
         $n2 = StringHelper::byteLength($token2);

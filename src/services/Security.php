@@ -48,7 +48,7 @@ class Security extends \yii\base\Security
     /**
      * @return int
      */
-    public function getMinimumPasswordLength()
+    public function getMinimumPasswordLength(): int
     {
         return 6;
     }
@@ -62,7 +62,7 @@ class Security extends \yii\base\Security
      *
      * @return string The hash.
      */
-    public function hashPassword($password, $validateHash = false)
+    public function hashPassword(string $password, bool $validateHash = false): string
     {
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
@@ -123,7 +123,7 @@ class Security extends \yii\base\Security
      * @see hkdf()
      * @see pbkdf2()
      */
-    public function hashData($data, $key = null, $rawHash = false)
+    public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
             $key = $this->getValidationKey();
@@ -150,7 +150,7 @@ class Security extends \yii\base\Security
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
      */
-    public function validateData($data, $key = null, $rawHash = false)
+    public function validateData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
             $key = $this->getValidationKey();

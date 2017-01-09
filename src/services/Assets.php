@@ -94,7 +94,7 @@ class Assets extends Component
      *
      * @return Asset|null
      */
-    public function getAssetById($assetId, $siteId = null)
+    public function getAssetById(int $assetId, int $siteId = null)
     {
         /** @var Asset|null $asset */
         $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
@@ -109,7 +109,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function getTotalAssets($criteria = null)
+    public function getTotalAssets($criteria = null): int
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
@@ -253,7 +253,7 @@ class Assets extends Component
      *
      * @return void
      */
-    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, $mergeRelationships = false)
+    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, bool $mergeRelationships = false)
     {
         $targetVolume = $assetToReplace->getVolume();
 
@@ -320,7 +320,7 @@ class Assets extends Component
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
      */
-    public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
+    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
         if (AssetsHelper::getFileKindByExtension($pathOnServer) === 'image') {
             Image::cleanImageByPath($pathOnServer);
@@ -405,13 +405,13 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset     $asset         The asset whose file should be renamed
-     * @param bool|null $runValidation Whether the filename should be validated
+     * @param Asset $asset         The asset whose file should be renamed
+     * @param bool  $runValidation Whether the filename should be validated
      *
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameFile(Asset $asset, $runValidation = true)
+    public function renameFile(Asset $asset, bool $runValidation = true): bool
     {
         if ($runValidation && !$asset->validate(['newFilename'])) {
             Craft::info('Asset file not renamed due to validation error.', __METHOD__);
@@ -498,7 +498,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
      * @return string The new folder name after cleaning it.
      */
-    public function renameFolderById($folderId, $newName)
+    public function renameFolderById($folderId, $newName): string
     {
         $newName = AssetsHelper::prepareAssetName($newName, false);
         $folder = $this->getFolderById($folderId);
@@ -555,7 +555,7 @@ class Assets extends Component
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
      */
-    public function deleteFoldersByIds($folderIds, $deleteFolder = true)
+    public function deleteFoldersByIds($folderIds, bool $deleteFolder = true)
     {
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
@@ -579,7 +579,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = [])
+    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = []): array
     {
         static $volumeFolders = [];
 
@@ -616,7 +616,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getFolderTreeByFolderId($folderId)
+    public function getFolderTreeByFolderId($folderId): array
     {
         if (($folder = $this->getFolderById($folderId)) === null) {
             return [];
@@ -632,7 +632,7 @@ class Assets extends Component
      *
      * @return VolumeFolder|null
      */
-    public function getFolderById($folderId)
+    public function getFolderById(int $folderId)
     {
         if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
             return $this->_foldersById[$folderId];
@@ -656,7 +656,7 @@ class Assets extends Component
      *
      * @return VolumeFolder[]
      */
-    public function findFolders($criteria = null)
+    public function findFolders($criteria = null): array
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -706,7 +706,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, $orderBy = 'path')
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /**
          * @var $query Query
@@ -773,7 +773,7 @@ class Assets extends Component
      *
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
-    public function getRootFolderByVolumeId($volumeId)
+    public function getRootFolderByVolumeId(int $volumeId)
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
@@ -788,7 +788,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function getTotalFolders($criteria)
+    public function getTotalFolders($criteria): int
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -814,7 +814,7 @@ class Assets extends Component
      *
      * @return string
      */
-    public function getUrlForAsset(Asset $asset, $transform = null)
+    public function getUrlForAsset(Asset $asset, string $transform = null): string
     {
         if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
@@ -863,7 +863,7 @@ class Assets extends Component
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
-    public function getNameReplacementInFolder($originalFilename, $folderId)
+    public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
         if (!$folder) {
@@ -939,7 +939,7 @@ class Assets extends Component
      * @throws AssetLogicException               If the target folder does not exist.
      * @return void
      */
-    public function moveAsset(Asset $asset, $folderId, $newFilename = '')
+    public function moveAsset(Asset $asset, int $folderId, string $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
@@ -987,7 +987,7 @@ class Assets extends Component
      *
      * @return int
      */
-    public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
+    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId): int
     {
         $parameters = new FolderCriteria([
             'path' => $fullPath,
@@ -1057,7 +1057,7 @@ class Assets extends Component
     /**
      * Get the user's folder.
      *
-     * @param User $userModel
+     * @param User|null $userModel
      *
      * @return VolumeFolder|null
      */
@@ -1113,7 +1113,7 @@ class Assets extends Component
      * @throws FileException If there was a problem with the actual file.
      * @return void
      */
-    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, $newFilename = '')
+    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, string $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
@@ -1195,7 +1195,7 @@ class Assets extends Component
      *
      * @return Query
      */
-    private function _createFolderQuery()
+    private function _createFolderQuery(): Query
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
@@ -1209,7 +1209,7 @@ class Assets extends Component
      *
      * @return array
      */
-    private function _getFolderTreeByFolders($folders)
+    private function _getFolderTreeByFolders(array $folders): array
     {
         $tree = [];
         $referenceStore = [];
@@ -1239,7 +1239,7 @@ class Assets extends Component
      *
      * @return void
      */
-    private function _applyFolderConditions($query, FolderCriteria $criteria)
+    private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
     {
         if ($criteria->id) {
             $query->andWhere(Db::parseParam('id', $criteria->id));

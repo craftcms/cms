@@ -38,7 +38,7 @@ abstract class BaseEventTagVisitor implements \Twig_NodeVisitorInterface
      *
      * @return bool
      */
-    protected static function foundAllEventTags()
+    protected static function foundAllEventTags(): bool
     {
         return (
             static::$foundHead === true &&

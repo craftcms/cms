@@ -29,7 +29,7 @@ class SystemSettings
      *
      * @return bool
      */
-    public function __isset($category)
+    public function __isset(string $category): bool
     {
         return true;
     }
@@ -42,7 +42,7 @@ class SystemSettings
      *
      * @return array
      */
-    public function __get($category)
+    public function __get(string $category): array
     {
         Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.systemSettings.getSettings(\'category\') instead.');
 

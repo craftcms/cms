@@ -36,7 +36,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -47,7 +47,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @return string The Element class name
      * @throws NotSupportedException if the method hasn't been implemented by the subclass
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         throw new NotSupportedException('"elementType()" is not implemented.');
     }
@@ -57,7 +57,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string The default selection label
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Choose');
     }
@@ -141,7 +141,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function settingsAttributes()
+    public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'sources';
@@ -176,7 +176,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         // Don't call parent::getElementValidationRules() here - we'll do our own required validation
         return [
@@ -193,7 +193,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var Element $element */
         /** @var Element $class */
@@ -268,7 +268,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var ElementQuery $value */
         $variables = $this->getInputTemplateVariables($value, $element);
@@ -279,7 +279,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         $titles = [];
@@ -294,7 +294,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         if (count($value)) {
@@ -318,7 +318,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value instanceof ElementQueryInterface) {
             $element = $value->first();
@@ -338,7 +338,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap($sourceElements)
+    public function getEagerLoadingMap(array $sourceElements)
     {
         /** @var Element|null $firstElement */
         $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
@@ -387,7 +387,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew): bool
     {
         $this->_makeExistingRelationsTranslatable = false;
 
@@ -406,7 +406,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
             Craft::$app->getTasks()->queueTask([
@@ -421,7 +421,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $this->getElementValue($element);
 
@@ -443,11 +443,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|null $selectedElementsQuery
-     * @param ElementInterface           $element
+     * @param ElementInterface|null      $element
      *
      * @return array
      */
-    protected function getInputTemplateVariables($selectedElementsQuery, $element)
+    protected function getInputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */
@@ -488,7 +488,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array|string
      */
-    protected function getInputSources($element)
+    protected function getInputSources(ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -504,7 +504,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputSelectionCriteria()
+    protected function getInputSelectionCriteria(): array
     {
         return [];
     }
@@ -516,7 +516,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return int
      */
-    protected function getTargetSiteId($element)
+    protected function getTargetSiteId(ElementInterface $element = null): int
     {
         /** @var Element|null $element */
         if (Craft::$app->getIsMultiSite()) {
@@ -575,7 +575,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getSourceOptions()
+    protected function getSourceOptions(): array
     {
         $options = [];
         $optionNames = [];
@@ -651,7 +651,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string
      */
-    protected function getViewMode()
+    protected function getViewMode(): string
     {
         $supportedViewModes = $this->getSupportedViewModes();
         $viewMode = $this->viewMode;
@@ -668,7 +668,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getAvailableSources()
+    protected function getAvailableSources(): array
     {
         return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
     }

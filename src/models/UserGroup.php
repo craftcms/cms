@@ -63,7 +63,7 @@ class UserGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -75,7 +75,7 @@ class UserGroup extends Model
      *
      * @return bool
      */
-    public function can($permission)
+    public function can(string $permission): bool
     {
         if ($this->id) {
             return Craft::$app->getUserPermissions()->doesGroupHavePermission($this->id, $permission);

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\fields\data\MultiOptionsFieldData;
@@ -72,7 +73,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function settingsAttributes()
+    public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'options';
@@ -83,7 +84,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         if ($this->multi) {
             // See how much data we could possibly be saving if everything was selected.
@@ -146,7 +147,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         $selectedValues = ArrayHelper::toArray($value);
 
@@ -184,7 +185,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
 
@@ -203,7 +204,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */
@@ -228,14 +229,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string
      */
-    abstract protected function getOptionsSettingsLabel();
+    abstract protected function getOptionsSettingsLabel(): string;
 
     /**
      * Returns the field options, with labels run through Craft::t().
      *
      * @return array
      */
-    protected function getTranslatedOptions()
+    protected function getTranslatedOptions(): array
     {
         $translatedOptions = [];
 
@@ -256,7 +257,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string
      */
-    protected function getOptionLabel($value)
+    protected function getOptionLabel(string $value): string
     {
         foreach ($this->options as $option) {
             if ($option['value'] == $value) {
@@ -298,7 +299,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */

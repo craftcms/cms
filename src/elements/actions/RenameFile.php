@@ -25,7 +25,7 @@ class RenameFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Rename file');
     }

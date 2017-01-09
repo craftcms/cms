@@ -50,7 +50,7 @@ class Tokens extends Component
      *
      * @return string|false             The generated token, or `false` if there was an error.
      */
-    public function createToken($route, $usageLimit = null, $expiryDate = null)
+    public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {
         if (!$expiryDate) {
             $expiryDate = DateTimeHelper::currentUTCDateTime();
@@ -83,7 +83,7 @@ class Tokens extends Component
      *
      * @return array|false
      */
-    public function getTokenRoute($token)
+    public function getTokenRoute(string $token)
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
@@ -125,7 +125,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function incrementTokenUsageCountById($tokenId)
+    public function incrementTokenUsageCountById(int $tokenId): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
@@ -148,7 +148,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function deleteTokenById($tokenId)
+    public function deleteTokenById(int $tokenId): bool
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%tokens}}', ['id' => $tokenId])
@@ -162,7 +162,7 @@ class Tokens extends Component
      *
      * @return bool
      */
-    public function deleteExpiredTokens()
+    public function deleteExpiredTokens(): bool
     {
         // Ignore if we've already done this once during the request
         if ($this->_deletedExpiredTokens) {

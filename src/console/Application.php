@@ -67,7 +67,7 @@ class Application extends \yii\console\Application
      *
      * @return array The configuration of the built-in commands.
      */
-    public function coreCommands()
+    public function coreCommands(): array
     {
         return [
             'help' => HelpController::class,

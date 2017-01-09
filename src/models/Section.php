@@ -120,7 +120,7 @@ class Section extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -130,7 +130,7 @@ class Section extends Model
      *
      * @return Section_SiteSettings[]
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): array
     {
         if ($this->_siteSettings !== null) {
             return $this->_siteSettings;
@@ -153,7 +153,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 
@@ -170,7 +170,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function addSiteSettingsErrors($errors, $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute.'-'.$siteId;
@@ -185,7 +185,7 @@ class Section extends Model
      *
      * @return EntryType[]
      */
-    public function getEntryTypes()
+    public function getEntryTypes(): array
     {
         if ($this->_entryTypes !== null) {
             return $this->_entryTypes;

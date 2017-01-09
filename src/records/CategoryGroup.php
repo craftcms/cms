@@ -36,7 +36,7 @@ class CategoryGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%categorygroups}}';
     }
@@ -46,7 +46,7 @@ class CategoryGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getStructure()
+    public function getStructure(): ActiveQueryInterface
     {
         return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
@@ -56,7 +56,7 @@ class CategoryGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
@@ -67,7 +67,7 @@ class CategoryGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): ActiveQueryInterface
     {
         return $this->hasMany(CategoryGroup_SiteSettings::class, ['groupId' => 'id']);
     }
@@ -77,7 +77,7 @@ class CategoryGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getCategories()
+    public function getCategories(): ActiveQueryInterface
     {
         return $this->hasMany(Category::class, ['groupId' => 'id']);
     }

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use yii\db\Schema;
 
@@ -25,7 +26,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Position Select');
     }
@@ -35,7 +36,7 @@ class PositionSelect extends Field
      *
      * @return array
      */
-    private static function _getOptions()
+    private static function _getOptions(): array
     {
         return [
             'left' => Craft::t('app', 'Left'),
@@ -75,7 +76,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING.'(100)';
     }
@@ -95,7 +96,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if (empty($this->options)) {
             return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';

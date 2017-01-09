@@ -25,7 +25,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool whether the component should be selectable in component Type selects.
      */
-    public static function isSelectable();
+    public static function isSelectable(): bool;
 
     // Public Methods
     // =========================================================================
@@ -35,15 +35,15 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component is new
      */
-    public function getIsNew();
+    public function getIsNew(): bool;
 
     /**
      * Validates the component.
      *
-     * @param array $attributeNames   List of attribute names that should be validated.
-     *                                If this parameter is empty, it means any attribute listed in the applicable
-     *                                validation rules should be validated.
-     * @param bool  $clearErrors      Whether existing errors should be cleared before performing validation
+     * @param string[]|null $attributeNames List of attribute names that should be validated.
+     *                                      If this parameter is empty, it means any attribute listed in the applicable
+     *                                      validation rules should be validated.
+     * @param bool          $clearErrors    Whether existing errors should be cleared before performing validation
      *
      * @return bool Whether the validation is successful without any error.
      */
@@ -58,14 +58,14 @@ interface SavableComponentInterface extends ComponentInterface
      * @return array The list of settings attribute names
      * @see getSettings()
      */
-    public function settingsAttributes();
+    public function settingsAttributes(): array;
 
     /**
      * Returns an array of the component’s settings.
      *
      * @return array The component’s settings.
      */
-    public function getSettings();
+    public function getSettings(): array;
 
     /**
      * Returns the component’s settings HTML.
@@ -171,7 +171,7 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return bool Whether the component should be saved
      */
-    public function beforeSave($isNew);
+    public function beforeSave(bool $isNew): bool;
 
     /**
      * Performs actions after a component is saved.
@@ -180,14 +180,14 @@ interface SavableComponentInterface extends ComponentInterface
      *
      * @return void
      */
-    public function afterSave($isNew);
+    public function afterSave(bool $isNew);
 
     /**
      * Performs actions before a component is deleted.
      *
      * @return bool Whether the component should be deleted
      */
-    public function beforeDelete();
+    public function beforeDelete(): bool;
 
     /**
      * Performs actions after a component is deleted.

@@ -27,7 +27,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Recent Entries');
     }
@@ -98,7 +98,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getSections()->getSectionById($this->section);
@@ -167,7 +167,7 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEntries()
+    private function _getEntries(): array
     {
         $targetSiteId = $this->_getTargetSiteId();
 
@@ -205,7 +205,7 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEditableSectionIds()
+    private function _getEditableSectionIds(): array
     {
         $sectionIds = [];
 

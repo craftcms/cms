@@ -90,7 +90,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function getIsImagick()
+    public function getIsImagick(): bool
     {
         return $this->_driver == self::DRIVER_IMAGICK;
     }
@@ -102,7 +102,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function getIsImagickAtLeast($requiredVersion)
+    public function getIsImagickAtLeast(string $requiredVersion): bool
     {
         if (!extension_loaded('imagick')) {
             return false;
@@ -131,7 +131,7 @@ class Images extends Component
      *
      * @return Image
      */
-    public function loadImage($path, $rasterize = false, $svgSize = 1000)
+    public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
     {
         if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
             $image = new Svg();
@@ -164,7 +164,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function checkMemoryForImage($filePath, $toTheMax = false)
+    public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
     {
         if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'svg') {
             return true;
@@ -208,7 +208,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function cleanImage($filePath)
+    public function cleanImage(string $filePath): bool
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
@@ -238,7 +238,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function rotateImageByExifData($filePath)
+    public function rotateImageByExifData(string $filePath): bool
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return false;
@@ -284,7 +284,7 @@ class Images extends Component
      *
      * @return array
      */
-    public function getExifData($filePath)
+    public function getExifData(string $filePath): array
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;
@@ -302,7 +302,7 @@ class Images extends Component
      *
      * @return bool
      */
-    public function stripOrientationFromExifData($filePath)
+    public function stripOrientationFromExifData(string $filePath): bool
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return false;
