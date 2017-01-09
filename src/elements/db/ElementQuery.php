@@ -1589,6 +1589,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param Connection $db
      *
+     * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
     private function _applySearchParam(Connection $db)
@@ -1646,6 +1647,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param Connection $db
      *
+     * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
     private function _applyOrderByParams(Connection $db)
