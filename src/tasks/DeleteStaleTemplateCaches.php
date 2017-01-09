@@ -69,7 +69,7 @@ class DeleteStaleTemplateCaches extends Task
         // What type of element(s) are we dealing with?
         $this->_elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
 
-        if (!$this->_elementType) {
+        if ($this->_elementType === null) {
             return 0;
         }
 

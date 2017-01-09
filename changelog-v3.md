@@ -174,6 +174,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\elements\User::getPhoto()` now throws a `yii\base\InvalidConfigException` if its `$photoId` property is set to an invalid asset ID.
 - `craft\models\FieldLayoutTab::getLayout()` now throws a `yii\base\InvalidConfigException` if its `$layoutId` property is set to an invalid field layout ID.
 - `craft\services\Elements::deleteElementById()` now has `$elementType` and `$siteId` arguments.
+- `craft\services\Element::getElementTypeById()` no longer accepts an array of element IDs.
 - `craft\services\Path::getAppPath()` now throws an exception if it is called within a Composer install, as there is no “app path”.
 - The `beforeElementSave` and `afterElementSave` events triggered by `craft\base\Element` now have `$isNew` properties, which indicate whether the element is brand new.
 - The `beforeSave` and `afterSave` events triggered by `craft\base\Element` now have `$isNew` properties, which indicate whether the element is brand new.

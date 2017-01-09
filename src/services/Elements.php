@@ -152,7 +152,7 @@ class Elements extends Component
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
-            if (!$elementType) {
+            if ($elementType === null) {
                 return null;
             }
         }
@@ -218,33 +218,21 @@ class Elements extends Component
     }
 
     /**
-     * Returns the class(es) of an element with a given ID(s).
+     * Returns the class of an element with a given ID.
      *
-     * If a single ID is passed in (an int), then a single element class will be returned (a string), or `null` if
-     * no element exists by that ID.
+     * @param int $elementId The element’s ID
      *
-     * If an array is passed in, then an array will be returned.
-     *
-     * @param int|array $elementId The element’s ID, or an array of element IDs.
-     *
-     * @return ElementInterface|ElementInterface[]|Element|Element[]|false The element class(es).
+     * @return string|null The element’s class, or null if it could not be found
      */
-    public function getElementTypeById($elementId)
+    public function getElementTypeById(int $elementId)
     {
-        if (is_array($elementId)) {
-            return (new Query())
-                ->select(['type'])
-                ->distinct(true)
-                ->from(['{{%elements}}'])
-                ->where(['id' => $elementId])
-                ->column();
-        }
-
-        return (new Query())
+        $class = (new Query())
             ->select(['type'])
             ->from(['{{%elements}}'])
             ->where(['id' => $elementId])
             ->scalar();
+
+        return $class !== false ? $class : null;
     }
 
     /**
@@ -846,7 +834,7 @@ class Elements extends Component
             // Update any reference tags
             $elementType = $this->getElementTypeById($prevailingElementId);
 
-            if ($elementType && ($elementTypeHandle = $elementType::classHandle())) {
+            if ($elementType !== null && ($elementTypeHandle = $elementType::classHandle())) {
                 $refTagPrefix = "{{$elementTypeHandle}:";
 
                 Craft::$app->getTasks()->queueTask([
@@ -901,7 +889,7 @@ class Elements extends Component
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
-            if (!$elementType) {
+            if ($elementType === null) {
                 return false;
             }
         }
