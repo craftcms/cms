@@ -167,11 +167,11 @@ class Image
     /**
      * Clean an image provided by path from all malicious code and the like.
      *
-     * @param $imagePath
+     * @param string $imagePath
      *
      * @return void
      */
-    public static function cleanImageByPath($imagePath)
+    public static function cleanImageByPath(string $imagePath)
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
