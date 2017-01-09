@@ -25,6 +25,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
+- Added method paramater and return types everywhere possible.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
 - Added `craft\db\pgsql\QueryBuilder`.
