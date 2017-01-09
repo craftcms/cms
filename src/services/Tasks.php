@@ -352,7 +352,7 @@ class Tasks extends Component
             return true;
         }
 
-        $this->fail($task, $error);
+        $this->fail($task, is_string($error) ? $error : null);
 
         return false;
     }
@@ -382,7 +382,7 @@ class Tasks extends Component
             }
         }
 
-        if (is_string($error)) {
+        if ($error !== null) {
             $logMessage .= ': '.$error;
         } else {
             $logMessage .= '.';
