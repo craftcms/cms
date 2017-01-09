@@ -9,10 +9,10 @@ namespace craft\elements\db;
 
 use ArrayAccess;
 use Countable;
-use IteratorAggregate;
 use craft\base\ElementInterface;
 use craft\models\Site;
 use craft\search\SearchQuery;
+use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
