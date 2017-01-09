@@ -173,7 +173,7 @@ class ClearCaches extends Tool
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
-                call_user_func($action);
+                $action();
             }
         }
     }

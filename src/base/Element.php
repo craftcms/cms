@@ -838,7 +838,7 @@ abstract class Element extends Component implements ElementInterface
             $method = [$field, $method];
         }
 
-        call_user_func($method, $this, $fieldParams);
+        $method($this, $fieldParams);
     }
 
     /**
