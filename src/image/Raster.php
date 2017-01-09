@@ -377,7 +377,7 @@ class Raster extends Image
     {
         $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-        $options = $this->_getSaveOptions(false, $extension);
+        $options = $this->_getSaveOptions(null, $extension);
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
@@ -594,7 +594,7 @@ class Raster extends Image
     private function _getSaveOptions(int $quality = null, string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
-        $quality = ($quality === null || $quality === false ? $this->_quality : $quality);
+        $quality = ($quality === null ? $this->_quality : $quality);
         $extension = (!$extension ? $this->getExtension() : $extension);
 
         switch ($extension) {
