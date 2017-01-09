@@ -435,9 +435,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the Atom format.
      *
-     * @param \Twig_Environment                              $env
-     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
-     * @param DateTimeZone|string|false|null                 $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param \Twig_Environment                 $env
+     * @param DateTime|DateTimeInterface|string $date     A date
+     * @param DateTimeZone|string|false|null    $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -449,9 +449,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Converts a date to the RSS format.
      *
-     * @param \Twig_Environment                              $env
-     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
-     * @param DateTimeZone|string|false|null                 $timezone The target timezone, null to use the default, false to leave unchanged
+     * @param \Twig_Environment                 $env
+     * @param DateTime|DateTimeInterface|string $date     A date
+     * @param DateTimeZone|string|false|null    $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
      */
@@ -463,11 +463,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a time.
      *
-     * @param \Twig_Environment                     $env
-     * @param DateTimeInterface|DateInterval|string $date      A date
-     * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
-     * @param bool                                  $translate Whether the formatted date string should be translated
+     * @param \Twig_Environment              $env
+     * @param DateTimeInterface|string       $date      A date
+     * @param string|null                    $format    The target format, null to use the default
+     * @param DateTimeZone|string|false|null $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param bool                           $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
@@ -491,11 +491,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Formats the value as a date+time.
      *
-     * @param \Twig_Environment                     $env
-     * @param DateTimeInterface|DateInterval|string $date      A date
-     * @param string|null                           $format    The target format, null to use the default
-     * @param DateTimeZone|string|false|null        $timezone  The target timezone, null to use the default, false to leave unchanged
-     * @param bool                                  $translate Whether the formatted date string should be translated
+     * @param \Twig_Environment              $env
+     * @param DateTimeInterface|string       $date      A date
+     * @param string|null                    $format    The target format, null to use the default
+     * @param DateTimeZone|string|false|null $timezone  The target timezone, null to use the default, false to leave unchanged
+     * @param bool                           $translate Whether the formatted date string should be translated
      *
      * @return mixed|string
      */
