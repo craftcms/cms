@@ -77,8 +77,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function filterEmptyStringsFromArray(array $arr): array
     {
-        return array_filter($arr,
-            ['\craft\helpers\ArrayHelper', '_isNotAnEmptyString']);
+        return array_filter($arr, [ArrayHelper::class, '_isNotAnEmptyString']);
     }
 
     /**

@@ -34,7 +34,7 @@ class Sendmail extends BaseTransportAdapter
     public function getTransportConfig(): array
     {
         return [
-            'class' => 'Swift_SendmailTransport',
+            'class' => \Swift_SendmailTransport::class,
         ];
     }
 }

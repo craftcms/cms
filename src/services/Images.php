@@ -245,7 +245,7 @@ class Images extends Component
         }
 
         // Quick and dirty, if possible
-        if (!($this->getIsImagick() && method_exists('Imagick', 'getImageOrientation'))) {
+        if (!($this->getIsImagick() && method_exists(\Imagick::class, 'getImageOrientation'))) {
             return false;
         }
 
@@ -309,7 +309,7 @@ class Images extends Component
         }
 
         // Quick and dirty, if possible
-        if (!($this->getIsImagick() && method_exists('Imagick', 'setImageOrientation'))) {
+        if (!($this->getIsImagick() && method_exists(\Imagick::class, 'setImageOrientation'))) {
             return false;
         }
 

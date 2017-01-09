@@ -120,7 +120,7 @@ class Smtp extends BaseTransportAdapter
     public function getTransportConfig(): array
     {
         $config = [
-            'class' => 'Swift_SmtpTransport',
+            'class' => \Swift_SmtpTransport::class,
             'host' => $this->host,
             'port' => $this->port,
             'timeout' => $this->timeout,

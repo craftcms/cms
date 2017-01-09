@@ -87,7 +87,7 @@ class Gmail extends BaseTransportAdapter
     public function getTransportConfig(): array
     {
         return [
-            'class' => 'Swift_SmtpTransport',
+            'class' => \Swift_SmtpTransport::class,
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',

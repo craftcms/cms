@@ -129,7 +129,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         if ($url === null) {
             if (strpos($class, '__TwigTemplate_') === 0) {
-                $class = 'Twig_Template';
+                $class = \Twig_Template::class;
             }
 
             if (strpos($class, 'Twig_') === 0) {

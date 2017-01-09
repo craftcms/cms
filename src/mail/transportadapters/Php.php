@@ -35,7 +35,7 @@ class Php extends BaseTransportAdapter
     public function getTransportConfig(): array
     {
         return [
-            'class' => 'Swift_MailTransport',
+            'class' => \Swift_MailTransport::class,
         ];
     }
 }

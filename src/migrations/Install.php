@@ -101,7 +101,7 @@ class Install extends Migration
             'class' => Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
-                'class' => 'Swift_MailTransport'
+                'class' => \Swift_MailTransport::class
             ]
         ]);
         echo " done\n";
