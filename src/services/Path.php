@@ -78,7 +78,7 @@ class Path extends Component
 
         $basePath = Craft::$app->getBasePath();
 
-        return $this->_appPath = dirname(dirname(dirname($basePath)));
+        return $this->_appPath = dirname($basePath, 3);
     }
 
     /**
