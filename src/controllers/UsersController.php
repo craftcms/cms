@@ -1441,7 +1441,12 @@ class UsersController extends Controller
                 $message = Craft::t('app', 'Account locked.');
                 break;
             case User::AUTH_ACCOUNT_COOLDOWN:
-                $timeRemaining = $user->getRemainingCooldownTime();
+                $timeRemaining = null;
+
+                if ($user !== null) {
+                    $timeRemaining = $user->getRemainingCooldownTime();
+                }
+
                 if ($timeRemaining) {
                     $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDurationFromInterval($timeRemaining)]);
                 } else {

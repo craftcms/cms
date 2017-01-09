@@ -133,7 +133,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             }
 
             if (strpos($class, 'Twig_') === 0) {
-                $url = "http://twig.sensiolabs.org/api/master/$class.html";
+                $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
                     $url .= "#method_$method";

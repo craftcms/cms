@@ -277,7 +277,7 @@ class Assets extends BaseRelationField
     /**
      * Resolve source path for uploading for this field.
      *
-     * @param ElementInterface|null $element
+     * @param ElementInterface $element
      *
      * @return int
      */
@@ -687,7 +687,7 @@ class Assets extends BaseRelationField
     /**
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
-     * @param ElementInterface|null $element
+     * @param ElementInterface $element
      * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidSubpathException if the folder subpath is not valid

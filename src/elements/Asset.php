@@ -915,7 +915,7 @@ class Asset extends Element
                 throw new Exception('Invalid asset ID: '.$this->id);
             }
 
-            if ($this->filename != $record->filename) {
+            if ($this->filename !== $record->filename) {
                 throw new Exception('Unable to change an asset’s filename like this.');
             }
         } else {
@@ -934,7 +934,7 @@ class Asset extends Element
         $record->save(false);
 
         if ($this->newFilename) {
-            if ($this->newFilename == $this->filename) {
+            if ($this->newFilename === $this->filename) {
                 $this->newFilename = null;
             } else {
                 Craft::$app->getAssets()->renameFile($this, false);

@@ -278,8 +278,8 @@ class Db
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string       $column The database column that the param is targeting.
-     * @param string|array $value  The param value(s).
+     * @param string           $column The database column that the param is targeting.
+     * @param string|int|array $value  The param value(s).
      *
      * @return mixed
      */
