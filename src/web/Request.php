@@ -985,25 +985,31 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * @param array|string $things
+     * @param array $things
      *
-     * @return mixed
+     * @return array
      */
-    private function _utf8AllTheThings($things)
+    private function _utf8AllTheThings(array $things): array
     {
-        if (is_array($things)) {
-            foreach ($things as $key => $value) {
-                if (is_array($value)) {
-                    $things[$key] = $this->_utf8AllTheThings($value);
-                } else {
-                    $things[$key] = StringHelper::convertToUtf8($value);
-                }
-            }
-        } else {
-            $things = StringHelper::convertToUtf8($things);
+        foreach ($things as $key => $value) {
+            $things[$key] = $this->_utf8Value($value);
         }
 
         return $things;
+    }
+
+    /**
+     * @param array|string $value
+     *
+     * @return array|string
+     */
+    private function _utf8Value($value)
+    {
+        if (is_array($value)) {
+            return $this->_utf8AllTheThings($value);
+        }
+
+        return StringHelper::convertToUtf8($value);
     }
 
     /**
@@ -1026,7 +1032,7 @@ class Request extends \yii\web\Request
 
         // Looking for a specific value?
         if (isset($params[$name])) {
-            return $this->_utf8AllTheThings($params[$name]);
+            return $this->_utf8Value($params[$name]);
         }
 
         // Maybe they're looking for a nested param?
@@ -1042,7 +1048,7 @@ class Request extends \yii\web\Request
                 }
             }
 
-            return $this->_utf8AllTheThings($param);
+            return $this->_utf8Value($param);
         }
 
         return $defaultValue;
