@@ -1282,7 +1282,7 @@ class AssetTransforms extends Component
             return;
         }
 
-        if (empty($index->transform)) {
+        if ($index->transform === null) {
             if (($transform = $this->normalizeTransform(mb_substr($index->location, 1))) === null) {
                 throw new AssetTransformException(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
             }

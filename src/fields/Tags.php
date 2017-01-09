@@ -75,6 +75,7 @@ class Tags extends BaseRelationField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var Element|null $element */
         if (!($value instanceof ElementQueryInterface)) {
             /** @var Element $class */
             $class = static::elementType();
@@ -93,7 +94,7 @@ class Tags extends BaseRelationField
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
                     'targetSiteId' => $this->getTargetSiteId($element),
-                    'sourceElementId' => !empty($element) ? $element->id : null,
+                    'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         } else {
