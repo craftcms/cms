@@ -226,6 +226,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\fields\BaseOptionsField::getOptionLabel()` to `optionLabel()`.
 - Renamed `craft\fields\BaseOptionsField::getOptionsSettingsLabel()` to `optionsSettingLabel()`.
 - Renamed `craft\fields\BaseOptionsField::getTranslatedOptions()` to `translatedOptions()`.
+- Renamed `craft\fields\BaseRelationField::getInputSources()` to `inputSources()`.
 - Renamed `craft\fields\BaseRelationField::getInputTemplateVariables()` to `inputTemplateVariables()`.
 - Renamed `craft\helpers\App::getEditionName()` to `editionName()`.
 - Renamed `craft\helpers\App::getEditions()` to `editions()`.

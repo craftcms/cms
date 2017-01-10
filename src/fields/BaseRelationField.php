@@ -472,7 +472,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             'storageKey' => 'field.'.$this->id,
             'name' => $this->handle,
             'elements' => $selectedElementsQuery,
-            'sources' => $this->getInputSources($element),
+            'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'limit' => $this->allowLimit ? $this->limit : null,
@@ -488,7 +488,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array|string
      */
-    protected function getInputSources(ElementInterface $element = null)
+    protected function inputSources(ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;

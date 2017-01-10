@@ -502,7 +502,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSources(ElementInterface $element = null)
+    protected function inputSources(ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
