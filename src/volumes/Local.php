@@ -46,14 +46,6 @@ class Local extends Volume implements LocalVolumeInterface
         return Craft::t('app', 'Local Folder');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function isLocal(): bool
-    {
-        return true;
-    }
-
     // Properties
     // =========================================================================
 

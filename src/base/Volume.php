@@ -58,16 +58,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // Public Methods
     // =========================================================================
 
-    /**
-     * Returns whether this volume stores files locally on the server.
-     *
-     * @return bool Whether files are stored locally.
-     */
-    public static function isLocal(): bool
-    {
-        return false;
-    }
-
     // Public Methods
     // =========================================================================
 
