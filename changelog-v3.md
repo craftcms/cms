@@ -206,7 +206,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Element::getStatuses()` to `statuses()`.
 - Renamed `craft\base\Element::setContentPostLocation()` to `setFieldParamNamespace()`.
 - Renamed `craft\base\Element::setFieldValuesFromPost()` to `setFieldValuesFromRequest()`, and the method no longer accepts an array of field values. Only call this method as a shortcut for `setFieldParamNamespace()` and `setFieldValues()`, passing in the param namespace the field values should be extracted from on the request body.
-- Renamed `craft\base\Field::getContentPostLocation()` to `getRequestParamName()`.
+- Renamed `craft\base\Field::getContentPostLocation()` to `requestParamName()`.
 - Renamed `craft\base\Field::prepareValue()` to `normalizeValue()`.
 - Renamed `craft\base\Field::prepareValueForDb()` to `serializeValue()`.
 - Renamed `craft\base\Plugin::getSettingsHtml()` to `settingsHtml()`.

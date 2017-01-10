@@ -412,7 +412,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The field’s param name on the request
      */
-    protected function getRequestParamName(ElementInterface $element)
+    protected function requestParamName(ElementInterface $element)
     {
         if (!$element) {
             return null;

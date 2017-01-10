@@ -342,10 +342,10 @@ class Assets extends BaseRelationField
         }
 
         // See if we have uploaded file(s).
-        $contentPostLocation = $this->getRequestParamName($element);
+        $paramName = $this->requestParamName($element);
 
-        if ($contentPostLocation !== null) {
-            $files = UploadedFile::getInstancesByName($contentPostLocation);
+        if ($paramName !== null) {
+            $files = UploadedFile::getInstancesByName($paramName);
 
             foreach ($files as $file) {
                 $incomingFiles[] = [
