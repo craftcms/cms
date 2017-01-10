@@ -165,7 +165,7 @@ class Assets extends BaseRelationField
                 'allowLimit' => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
-                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
+                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),

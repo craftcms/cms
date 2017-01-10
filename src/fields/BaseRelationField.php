@@ -165,7 +165,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'allowMultipleSources' => $this->allowMultipleSources,
                 'allowLimit' => $this->allowLimit,
                 'sources' => $this->getSourceOptions(),
-                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
+                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
@@ -537,7 +537,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string|null
      */
-    protected function getTargetSiteFieldHtml()
+    protected function targetSiteFieldHtml()
     {
         /** @var Element $class */
         $class = static::elementType();
