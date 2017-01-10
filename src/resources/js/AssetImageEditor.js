@@ -765,43 +765,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     top: this.editorHeight / 2 - this.viewport.height / 2 + deltaY
                 };
 
-                var rectangleVertices = this._getRectangleVertices(rectangle);
-
-                var vertex;
-
-                // Check if any of the viewport vertices end up out of bounds
-                for (var verticeIndex = 0; verticeIndex < rectangleVertices.length; verticeIndex++) {
-                    vertex = rectangleVertices[verticeIndex];
-                    if (!this.arePointsInsideRectangle([vertex], imageVertices)){
-                        break;
-                    }
-                    vertex = false;
-                }
-
-                // If there's no vertex set after loop, it means that all of them are inside the image rectangle
-                if (!vertex) {
-                    success = true;
-                } else {
-                    // Find out which edge got crossed by the vertex
-                    var edge = this._getEdgeCrossed(imageVertices, vertex);
-
-                    var viewportCenter = {
-                        x: this.editorWidth / 2 + deltaX,
-                        y: this.editorHeight / 2 + deltaY
-                    };
-
-                    // Calculate how much further that edge needs to be.
-                    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
-                    var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
-                    var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * viewportCenter.x - (edge[1].x - edge[0].x) * viewportCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
-
-                    // Adjust the zoom ratio
-                    adjustmentRatio = ((distanceFromVertexToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge);
-                    currentZoomRatio = currentZoomRatio * adjustmentRatio;
-                }
+                adjustmentRatio = this._getZoomRatioToFitRectangle(rectangle, imageVertices);
+                currentZoomRatio = currentZoomRatio * adjustmentRatio;
 
                 // If we had to make adjustments, do the calculations again
-            } while (!success && adjustmentRatio != 1);
+            } while (adjustmentRatio != 1);
+
             // Reposition the image correctly
             this.image.set({
                 left: this.editorWidth / 2 - deltaX,
@@ -826,6 +795,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Zoom the image in and we're done.
             this.zoomRatio = currentZoomRatio;
             this._zoomImage();
+        },
+
+        /**
+         * Get the zoom ratio required to fit a rectangle within another rectangle, that is defined by vertices.
+         * If the rectangle fits, 1 will be returned.
+         *
+         * @param rectangle
+         * @param containingVertices
+         */
+        _getZoomRatioToFitRectangle: function (rectangle, containingVertices) {
+            var rectangleVertices = this._getRectangleVertices(rectangle);
+            var vertex;
+
+            // Check if any of the viewport vertices end up out of bounds
+            for (var verticeIndex = 0; verticeIndex < rectangleVertices.length; verticeIndex++) {
+                vertex = rectangleVertices[verticeIndex];
+                if (!this.arePointsInsideRectangle([vertex], containingVertices)){
+                    break;
+                }
+                vertex = false;
+            }
+
+            // If there's no vertex set after loop, it means that all of them are inside the image rectangle
+            if (!vertex) {
+                return 1
+            } else {
+                // Find out which edge got crossed by the vertex
+                var edge = this._getEdgeCrossed(containingVertices, vertex);
+
+                var rectangleCenter = {
+                    x: rectangle.left + rectangle.width / 2,
+                    y: rectangle.top + rectangle.height / 2
+                };
+
+                // Calculate how much further that edge needs to be.
+                // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
+                var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
+                var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * rectangleCenter.x - (edge[1].x - edge[0].x) * rectangleCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
+
+                // Adjust the zoom ratio
+                adjustmentRatio = ((distanceFromVertexToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge);
+            }
+
+            return adjustmentRatio;
         },
 
         /**
