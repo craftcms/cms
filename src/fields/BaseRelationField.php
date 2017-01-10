@@ -580,7 +580,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $options = [];
         $optionNames = [];
 
-        foreach ($this->getAvailableSources() as $source) {
+        foreach ($this->availableSources() as $source) {
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
@@ -668,7 +668,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getAvailableSources(): array
+    protected function availableSources(): array
     {
         return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
     }
