@@ -300,7 +300,7 @@ class ElementHelper
      */
     public static function findSource(string $elementType, string $sourceKey, string $context = null)
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 

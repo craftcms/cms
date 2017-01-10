@@ -1371,7 +1371,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStatusParam(string $class)
     {
-        /** @var ElementInterface $class */
+        /** @var string|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }

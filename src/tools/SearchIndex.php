@@ -71,7 +71,7 @@ class SearchIndex extends Tool
                 'batches' => [$batch]
             ];
         } else {
-            /** @var ElementInterface $class */
+            /** @var string|ElementInterface $class */
             $class = $params['type'];
 
             if ($class::isLocalized()) {

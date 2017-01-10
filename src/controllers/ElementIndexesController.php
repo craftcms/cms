@@ -291,7 +291,7 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _getElementQuery(): ElementQueryInterface
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
         $query = $elementType::find();
 
@@ -378,7 +378,7 @@ class ElementIndexesController extends BaseElementsController
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->_actions);
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
 
         $responseData['html'] = $elementType::indexHtml(
@@ -408,7 +408,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
         $actions = $elementType::actions($this->_sourceKey);
 

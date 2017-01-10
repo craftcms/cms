@@ -70,7 +70,7 @@ class ElementIndexes extends Component
      */
     public function saveSettings(string $elementType, array $newSettings): bool
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources('index'));
@@ -153,7 +153,7 @@ class ElementIndexes extends Component
      */
     public function getSources(string $elementType, string $context = 'index'): array
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
@@ -209,7 +209,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableAttributes(string $elementType, bool $includeFields = true): array
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
         foreach ($attributes as $key => $info) {
@@ -241,7 +241,7 @@ class ElementIndexes extends Component
      */
     public function getTableAttributes(string $elementType, string $sourceKey): array
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
@@ -287,7 +287,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableFields(string $elementType): array
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
         $availableFields = [];
 
