@@ -166,7 +166,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'allowLimit' => $this->allowLimit,
                 'sources' => $this->sourceOptions(),
                 'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
+                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
                 'defaultSelectionLabel' => static::defaultSelectionLabel(),
@@ -602,7 +602,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string|null
      */
-    protected function getViewModeFieldHtml()
+    protected function viewModeFieldHtml()
     {
         $supportedViewModes = $this->getSupportedViewModes();
 

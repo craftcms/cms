@@ -166,7 +166,7 @@ class Assets extends BaseRelationField
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
                 'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
+                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
                 'fileKindOptions' => $fileKindOptions,
