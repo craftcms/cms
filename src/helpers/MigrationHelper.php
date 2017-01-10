@@ -469,7 +469,7 @@ class MigrationHelper
      *
      * @return array A list of the foreign keys pointing to that table/column.
      */
-    public static function findForeignKeysTo($tableName, $column = 'id')
+    public static function findForeignKeysTo(string $tableName, string $column = 'id'): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $allTables = Craft::$app->getDb()->getSchema()->getTableSchemas();

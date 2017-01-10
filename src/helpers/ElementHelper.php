@@ -298,7 +298,7 @@ class ElementHelper
      *
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource($elementType, $sourceKey, string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, string $context = null)
     {
         /** @var ElementInterface $elementType */
         $path = explode('/', $sourceKey);

@@ -551,17 +551,17 @@ class EntriesController extends BaseEntriesController
     /**
      * Redirects the client to a URL for viewing an entry/draft/version on the front end.
      *
-     * @param int $entryId
-     * @param int $siteId
-     * @param int $draftId
-     * @param int $versionId
+     * @param int|null $entryId
+     * @param int|null $siteId
+     * @param int|null $draftId
+     * @param int|null $versionId
      *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
      * @throws ServerErrorHttpException if the section is not configured properly
      */
-    public function actionShareEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
+    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
     {
         if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);

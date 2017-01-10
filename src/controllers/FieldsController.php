@@ -103,15 +103,15 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param int                 $fieldId The field’s ID, if editing an existing field
+     * @param int|null            $fieldId The field’s ID, if editing an existing field
      * @param FieldInterface|null $field   The field being edited, if there were any validation errors
-     * @param int                 $groupId The default group ID that the field should be saved in
+     * @param int|null            $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
+    public function actionEditField(int $fieldId = null, FieldInterface $field = null, int $groupId = null): string
     {
         $this->requireAdmin();
 

@@ -160,7 +160,7 @@ class Users extends Component
      *
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
-    public function getUserByUsernameOrEmail($usernameOrEmail)
+    public function getUserByUsernameOrEmail(string $usernameOrEmail)
     {
         return User::find()
             ->where([

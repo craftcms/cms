@@ -69,7 +69,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      *
      * @todo Remove the|null $newCode stuff in Craft 4
      */
-    public function __construct($tag, $method, $allowTagPair = false, $allowPosition = false, $allowRuntimePosition = false, bool $allowOptions = false, string $newCode = null)
+    public function __construct(string $tag, string $method, bool $allowTagPair = false, bool $allowPosition = false, bool $allowRuntimePosition = false, bool $allowOptions = false, string $newCode = null)
     {
         $this->_tag = $tag;
         $this->_method = $method;

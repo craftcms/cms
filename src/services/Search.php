@@ -351,7 +351,7 @@ class Search extends Component
      *
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm($term, $row, $weight = 1)
+    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.

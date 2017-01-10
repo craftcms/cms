@@ -910,11 +910,11 @@ class Locale extends Object
      *
      * @return string The date/time format
      */
-    private function _getDateTimeFormat($length, $withDate, $withTime, $format)
+    private function _getDateTimeFormat(string $length, bool $withDate, bool $withTime, string $format): string
     {
         $icuFormat = $this->_getDateTimeIcuFormat($length, $withDate, $withTime);
 
-        if ($format != self::FORMAT_ICU) {
+        if ($format !== self::FORMAT_ICU) {
             $type = ($withDate ? 'date' : '').($withTime ? 'time' : '');
 
             switch ($format) {
@@ -938,7 +938,7 @@ class Locale extends Object
      * @return string The ICU date/time format
      * @throws Exception if $length is invalid
      */
-    private function _getDateTimeIcuFormat($length, $withDate, $withTime)
+    private function _getDateTimeIcuFormat(string $length, bool $withDate, bool $withTime): string
     {
         if ($length === null) {
             $length = self::LENGTH_MEDIUM;

@@ -53,14 +53,14 @@ class Feeds extends Component
      * - **title** – The item’s title.
      *
      * @param string $url           The feed’s URL.
-     * @param int    $limit         The maximum number of items to return. Default is 0 (no limit).
-     * @param int    $offset        The number of items to skip. Defaults to 0.
-     * @param string $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * @param int|null    $limit         The maximum number of items to return. Default is 0 (no limit).
+     * @param int|null    $offset        The number of items to skip. Defaults to 0.
+     * @param string|null $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
      * @return array|string The list of feed items.
      * @throws \Zend\Feed\Reader\Exception\RuntimeException
      */
-    public function getFeedItems($url, $limit = null, $offset = null, $cacheDuration = null)
+    public function getFeedItems(string $url, int $limit = null, int $offset = null, string $cacheDuration = null)
     {
         // Prevent $limit and $offset from being any empty value besides 0
         $limit = ($limit ?: 0);

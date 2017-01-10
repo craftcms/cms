@@ -308,7 +308,7 @@ class Assets
      *
      * @return string The file kind, or "unknown" if unknown.
      */
-    public static function getFileKindByExtension($file): string
+    public static function getFileKindByExtension(string $file): string
     {
         if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
             $ext = strtolower($ext);

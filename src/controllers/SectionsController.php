@@ -282,7 +282,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
-    public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
+    public function actionEditEntryType(int $sectionId, int $entryTypeId = null, EntryType $entryType = null): string
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 

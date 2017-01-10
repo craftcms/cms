@@ -166,7 +166,7 @@ class Formatter extends \yii\i18n\Formatter
      *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
      * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
      *
-     * @param string              $format     The format used to convert the value into a date string.
+     * @param string|null         $format     The format used to convert the value into a date string.
      *                                        If null, [[dateFormat]] will be used.
      *
      * This can be "short", "medium", "long", or "full", which represents a preset format of different lengths.
@@ -180,7 +180,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, $format = null): string
+    public function asTimestamp($value, string $format = null): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */

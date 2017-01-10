@@ -188,7 +188,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @return bool whether the path is writable
      * @throws ErrorException in case of failure
      */
-    public static function isWritable($path): bool
+    public static function isWritable(string $path): bool
     {
         // If it's a directory, test on a temp sub file
         if (is_dir($path)) {

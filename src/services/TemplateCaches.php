@@ -260,7 +260,7 @@ class TemplateCaches extends Component
      * @throws \Exception
      * @return void
      */
-    public function endTemplateCache($key, $global, $duration, $expiration, string $body)
+    public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {

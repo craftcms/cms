@@ -173,13 +173,13 @@ class Db
     /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
-     * @param string     $columnType The textual column type to check
-     * @param Connection $db         The database connection
+     * @param string          $columnType The textual column type to check
+     * @param Connection|null $db         The database connection
      *
      * @return int|null The storage capacity of the column type in bytes. If unlimited, null is returned.
      * @throws Exception if given an unknown column type/database combination
      */
-    public static function getTextualColumnStorageCapacity($columnType, $db = null)
+    public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
         if ($db === null) {
             $db = Craft::$app->getDb();

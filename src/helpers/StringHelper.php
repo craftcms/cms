@@ -662,7 +662,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string The resulting string after the replacements.
      */
-    public static function regexReplace($str, $pattern, $replacement, $options = 'msr'): string
+    public static function regexReplace(string $str, string $pattern, string $replacement, string $options = 'msr'): string
     {
         return (string)Stringy::create($str)->regexReplace($pattern, $replacement, $options);
     }
@@ -1021,7 +1021,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @see http://stackoverflow.com/a/16496730/1688568
      */
-    public static function encodeMb4($string)
+    public static function encodeMb4(string $string): string
     {
         // Does this string have any 4+ byte Unicode chars?
         if (max(array_map('ord', str_split($string))) >= 240) {
