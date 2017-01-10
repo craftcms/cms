@@ -230,6 +230,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\fields\BaseRelationField::getInputSources()` to `inputSources()`.
 - Renamed `craft\fields\BaseRelationField::getInputTemplateVariables()` to `inputTemplateVariables()`.
 - Renamed `craft\fields\BaseRelationField::getSourceOptions()` to `sourceOptions()`.
+- Renamed `craft\fields\BaseRelationField::getSupportedViewModes()` to `supportedViewModes()`.
 - Renamed `craft\fields\BaseRelationField::getTargetSiteFieldHtml()` to `targetSiteFieldHtml()`.
 - Renamed `craft\fields\BaseRelationField::getTargetSiteId()` to `targetSiteId()`.
 - Renamed `craft\fields\BaseRelationField::getViewModeFieldHtml()` to `viewModeFieldHtml()`.
