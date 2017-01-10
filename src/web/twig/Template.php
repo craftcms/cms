@@ -9,8 +9,6 @@ namespace craft\web\twig;
 
 use Craft;
 
-/** @noinspection PhpInternalEntityUsedInspection */
-
 /**
  * Base Twig template class.
  *

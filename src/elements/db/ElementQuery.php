@@ -48,8 +48,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     use ArrayableTrait;
-    use /** @noinspection PhpUndefinedClassInspection */
-        ElementQueryTrait;
+    use ElementQueryTrait;
 
     // Constants
     // =========================================================================
