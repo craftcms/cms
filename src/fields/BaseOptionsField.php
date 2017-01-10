@@ -155,7 +155,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             if (is_array($value)) {
                 // Convert all the values to OptionData objects
                 foreach ($value as &$val) {
-                    $label = $this->getOptionLabel($val);
+                    $label = $this->optionLabel($val);
                     $val = new OptionData($label, $val, true);
                 }
                 unset($val);
@@ -166,7 +166,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = new MultiOptionsFieldData($value);
         } else {
             // Convert the value to a SingleOptionFieldData object
-            $label = $this->getOptionLabel($value);
+            $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
 
@@ -257,7 +257,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string
      */
-    protected function getOptionLabel(string $value): string
+    protected function optionLabel(string $value): string
     {
         foreach ($this->options as $option) {
             if ($option['value'] == $value) {
