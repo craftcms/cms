@@ -271,7 +271,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var ElementQuery $value */
-        $variables = $this->getInputTemplateVariables($value, $element);
+        $variables = $this->inputTemplateVariables($value, $element);
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
     }
@@ -447,7 +447,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */
