@@ -253,8 +253,8 @@ SQL;
 
         $extendedConstraints = $this->db->createCommand($sql)->queryAll();
 
-        foreach ($extendedConstraints as $count => $extendedConstraint) {
-            $table->addExtendedForeignKey([
+        foreach ($extendedConstraints as $key => $extendedConstraint) {
+            $table->addExtendedForeignKey($key, [
                 'updateType' => $extendedConstraint['UPDATE_RULE'],
                 'deleteType' => $extendedConstraint['DELETE_RULE']
             ]);

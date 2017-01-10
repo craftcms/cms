@@ -254,7 +254,7 @@ SQL;
 
         $extendedConstraints = $this->db->createCommand($sql)->queryAll();
 
-        foreach ($extendedConstraints as $count => $extendedConstraint) {
+        foreach ($extendedConstraints as $key => $extendedConstraint) {
             // Find out what to do on update.
             switch ($extendedConstraint['update_type']) {
                 case 'a':
@@ -293,7 +293,7 @@ SQL;
                     break;
             }
 
-            $table->addExtendedForeignKey([
+            $table->addExtendedForeignKey($key, [
                 'updateType' => $updateAction,
                 'deleteType' => $deleteAction,
             ]);
