@@ -216,10 +216,11 @@ class Entry extends Element
                 $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
                 break;
             default:
-                if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-                    if ($section = Craft::$app->getSections()->getSectionById($matches[1])) {
-                        $sections = [$section];
-                    }
+                if (
+                    preg_match('/^section:(\d+)$/', $source, $matches) &&
+                    ($section = Craft::$app->getSections()->getSectionById($matches[1])) !== null
+                ) {
+                    $sections = [$section];
                 }
         }
 
