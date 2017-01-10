@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
