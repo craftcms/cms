@@ -19,9 +19,9 @@ class SingleOptionFieldData extends OptionData
     // =========================================================================
 
     /**
-     * @var
+     * @var array
      */
-    private $_options;
+    private $_options = [];
 
     // Public Methods
     // =========================================================================
@@ -29,9 +29,9 @@ class SingleOptionFieldData extends OptionData
     /**
      * Returns the options.
      *
-     * @return array|null
+     * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->_options;
     }

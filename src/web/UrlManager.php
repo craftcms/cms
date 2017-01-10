@@ -205,7 +205,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the rules that should be used for the current request.
      *
-     * @return array|null
+     * @return array|null The rules, or null if it's a console request
      */
     private function _getRules()
     {
@@ -218,6 +218,7 @@ class UrlManager extends \yii\web\UrlManager
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
+            /** @var array $rules */
             $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
 
             if (Craft::$app->getEdition() >= Craft::Client) {

@@ -488,24 +488,24 @@ class Updates extends Component
      * Checks to see if Craft can write to a defined set of folders/files that are
      * needed for auto-update to work.
      *
-     * @return array|null
+     * @return array
      */
-    public function getUnwritableFolders()
+    public function getUnwritableFolders(): array
     {
         $checkPaths = [
             Craft::$app->getPath()->getAppPath(),
             Craft::$app->getPath()->getPluginsPath(),
         ];
 
-        $errorPath = null;
+        $errorPaths = [];
 
         foreach ($checkPaths as $writablePath) {
             if (!FileHelper::isWritable($writablePath)) {
-                $errorPath[] = $writablePath;
+                $errorPaths[] = $writablePath;
             }
         }
 
-        return $errorPath;
+        return $errorPaths;
     }
 
     /**
