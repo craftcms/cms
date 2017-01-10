@@ -1069,7 +1069,7 @@ class View extends \yii\web\View
 
         if (isset($this->_hooks[$hook])) {
             foreach ($this->_hooks[$hook] as $method) {
-                $return .= call_user_func_array($method, [&$context]);
+                $return .= $method($context);
             }
         }
 
