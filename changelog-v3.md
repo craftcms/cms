@@ -192,6 +192,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\mail\transportadaptors\Sendmail` to `craft\mail\transportadapters\Sendmail`.
 - Renamed `craft\mail\transportadaptors\Smtp` to `craft\mail\transportadapters\Smtp`.
 - Renamed `craft\mail\transportadaptors\TransportAdaptorInterface` to `craft\mail\transportadapters\TransportAdapterInterface`.
+- Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
 - Renamed `craft\base\Element::defineSortableAttributes()` to `sortableAttributes()`.
@@ -215,7 +216,6 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Volume::getAdapter()` to `adapter()`.
 - Renamed `craft\base\Volume::getFilesystem()` to `filesystem()`.
 - Renamed `craft\base\Volume::getVisibilitySetting()` to `visibility()`.
-- Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\db\Command::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\Migration::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\mysql\QueryBuilder::insertOrUpdate()` to `upsert()`.
