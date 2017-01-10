@@ -1030,7 +1030,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             $db = null;
         }
 
-        return $this->column('elements.id', $db);
+        $select = $this->select;
+        $this->select = ['elements.column'];
+        $result = $this->column($db);
+        $this->select($select);
+
+        return $result;
     }
 
     /**
@@ -1607,7 +1612,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->limit = null;
             $this->subQuery->offset = null;
 
-            $elementIds = $this->query->column('elements.id');
+            $select = $this->query->select;
+            $this->query->select = ['elements.id'];
+            $elementIds = $this->query->column();
+            $this->query->select = $select;
             $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
 
             $this->query->limit = $limit;

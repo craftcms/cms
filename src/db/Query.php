@@ -155,62 +155,6 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     *
-     * @param string|null        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
-     * @param YiiConnection|null $db     The database connection used to generate the SQL statement.
-     *                                   If this parameter is not given, the `db` application component will be used.
-     */
-    public function scalar($column = null, YiiConnection $db = null)
-    {
-        if ($column !== null) {
-            $select = $this->select;
-            $this->select = [$column];
-        }
-
-        try {
-            $result = parent::scalar($db);
-        } catch (QueryAbortedException $e) {
-            $result = false;
-        }
-
-        if ($column !== null) {
-            /** @noinspection PhpUndefinedVariableInspection */
-            $this->select = $select;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param string|null        $column The column to select. If not null, [[select]] will be temporarily overridden with this value.
-     * @param YiiConnection|null $db     The database connection used to generate the SQL statement.
-     *                                   If this parameter is not given, the `db` application component will be used.
-     */
-    public function column($column = null, YiiConnection $db = null)
-    {
-        if ($column !== null) {
-            $select = $this->select;
-            $this->select = [$column];
-        }
-
-        try {
-            $result = parent::column($db);
-        } catch (QueryAbortedException $e) {
-            $result = [];
-        }
-
-        if ($column !== null) {
-            /** @noinspection PhpUndefinedVariableInspection */
-            $this->select = $select;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @inheritdoc
      */
     protected function queryScalar($selectExpression, $db)
     {

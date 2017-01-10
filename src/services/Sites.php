@@ -741,8 +741,9 @@ class Sites extends Component
         // Is the primary site ID getting deleted?
         if ($oldPrimarySiteId === $site->id) {
             $newPrimarySiteId = $this->_createSiteQuery()
+                ->select('id')
                 ->offset(1)
-                ->scalar('id');
+                ->scalar();
 
             if (!$newPrimarySiteId || $oldPrimarySiteId == $newPrimarySiteId) {
                 throw new Exception('Deleting the only site is not permitted');
