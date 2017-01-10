@@ -87,7 +87,7 @@ class Categories extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $value = $this->getElementValue($element);
+        $value = $element->getFieldValue($this->handle);
 
         // Make sure something was actually posted
         if ($value !== null) {

@@ -300,7 +300,7 @@ class Assets extends BaseRelationField
         $incomingFiles = [];
 
         /** @var AssetQuery $newValue */
-        $query = $this->getElementValue($element);
+        $query = $element->getFieldValue($this->handle);
         $value = !empty($query->id) ? $query->id : [];
 
         // Grab data strings
@@ -413,7 +413,7 @@ class Assets extends BaseRelationField
 
                 /** @var AssetQuery $newValue */
                 $newValue = $this->normalizeValue($assetIds, $element);
-                $this->setElementValue($element, $newValue);
+                $element->setFieldValue($this->handle, $newValue);
             }
         }
 
@@ -425,7 +425,7 @@ class Assets extends BaseRelationField
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $value = $this->getElementValue($element);
+        $value = $element->getFieldValue($this->handle);
         $assetsToMove = [];
 
         if ($value instanceof AssetQuery) {

@@ -423,7 +423,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $value = $this->getElementValue($element);
+        $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value->id;

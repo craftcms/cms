@@ -353,6 +353,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Element::getSourceByKey()`.
 - Removed `craft\base\Element::saveElement()`.
 - Removed `craft\base\Element::setRawPostValueForField()`.
+- Removed `craft\base\Field::getElementValue()`.
+- Removed `craft\base\Field::setElementValue()`.
 - Removed `craft\base\FieldInterface::validateValue()`. Fields should start implementing `getElementValidationRules()` if they want to customize how their values get validated.
 - Removed `craft\base\Model::create()`.
 - Removed `craft\base\Model::getAllErrors()`.

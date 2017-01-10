@@ -428,29 +428,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     *
-     * @return mixed The field’s value
-     */
-    protected function getElementValue(ElementInterface $element)
-    {
-        return $element->getFieldValue($this->handle);
-    }
-
-    /**
-     * Updates this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     * @param mixed            $value   The field’s new value
-     */
-    protected function setElementValue(ElementInterface $element, $value)
-    {
-        $element->setFieldValue($this->handle, $value);
-    }
-
-    /**
      * Returns whether this is the first time the element's content has been edited.
      *
      * @param ElementInterface|null $element
