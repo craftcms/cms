@@ -214,6 +214,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Task::getDefaultDescription()` to `defaultDescription()`.
 - Renamed `craft\base\Volume::getAdapter()` to `adapter()`.
 - Renamed `craft\base\Volume::getFilesystem()` to `filesystem()`.
+- Renamed `craft\base\Volume::getVisibilitySetting()` to `visibility()`.
 - Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\db\Command::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\Migration::insertOrUpdate()` to `upsert()`.

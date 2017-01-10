@@ -351,8 +351,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     protected function addFileMetadataToConfig(array $config): array
     {
-        $config = array_merge($config,
-            ['visibility' => $this->getVisibilitySetting()]);
+        $config = array_merge($config, [
+            'visibility' => $this->visibility()
+        ]);
 
         return $config;
     }
@@ -374,7 +375,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return string
      */
-    protected function getVisibilitySetting(): string
+    protected function visibility(): string
     {
         return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }
