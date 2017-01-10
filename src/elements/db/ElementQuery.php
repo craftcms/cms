@@ -1021,7 +1021,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids(Connection $db = null): array
+    public function ids($db = null): array
     {
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes

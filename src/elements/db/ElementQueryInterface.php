@@ -328,5 +328,5 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
-    public function ids(Connection $db = null): array;
+    public function ids($db = null): array;
 }
