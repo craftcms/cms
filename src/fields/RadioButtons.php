@@ -58,7 +58,7 @@ class RadioButtons extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function getOptionsSettingsLabel(): string
+    protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Radio Button Options');
     }

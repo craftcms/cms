@@ -67,7 +67,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function getOptionsSettingsLabel(): string
+    protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Multi-select Options');
     }

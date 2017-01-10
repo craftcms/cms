@@ -117,7 +117,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
             [
                 [
-                    'label' => $this->getOptionsSettingsLabel(),
+                    'label' => $this->optionsSettingLabel(),
                     'instructions' => Craft::t('app', 'Define the available options.'),
                     'id' => 'options',
                     'name' => 'options',
@@ -229,7 +229,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string
      */
-    abstract protected function getOptionsSettingsLabel(): string;
+    abstract protected function optionsSettingLabel(): string;
 
     /**
      * Returns the field options, with labels run through Craft::t().
