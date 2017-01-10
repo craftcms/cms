@@ -651,7 +651,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name): bool
     {
-        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name);
+        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
     }
 
     /**
@@ -682,7 +682,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Give custom fields priority over other getters so we have a chance to prepare their values
-        $field = $this->getFieldByHandle($name);
+        $field = $this->fieldByHandle($name);
         if ($field !== null) {
             return $this->getFieldValue($name);
         }
@@ -1278,7 +1278,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset);
+        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
     }
 
     /**
@@ -1655,7 +1655,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function normalizeFieldValue(string $fieldHandle)
     {
-        $field = $this->getFieldByHandle($fieldHandle);
+        $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
             throw new Exception('Invalid field handle: '.$fieldHandle);
@@ -1706,7 +1706,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return Field|null
      */
-    protected function getFieldByHandle(string $handle)
+    protected function fieldByHandle(string $handle)
     {
         if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
             return $this->_fieldsByHandle[$handle];

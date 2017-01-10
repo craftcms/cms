@@ -199,6 +199,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Element::getContentPostLocation()` to `getFieldParamNamespace()`.
 - Renamed `craft\base\Element::getDefaultTableAttributes()` to `defaultTableAttributes()`.
 - Renamed `craft\base\Element::getEagerLoadingMap()` to `eagerLoadingMap()`.
+- Renamed `craft\base\Element::getFieldByHandle()` to `fieldByHandle()`.
 - Renamed `craft\base\Element::getIndexHtml()` to `indexHtml()`.
 - Renamed `craft\base\Element::getSources()` to `sources()`.
 - Renamed `craft\base\Element::getStatuses()` to `statuses()`.
