@@ -412,7 +412,7 @@ class ElementIndexesController extends BaseElementsController
         $elementType = $this->_elementType;
         $actions = $elementType::actions($this->_sourceKey);
 
-        if ($actions) {
+        if (!empty($actions)) {
             foreach ($actions as $i => $action) {
                 // $action could be a string or config array
                 if (!$action instanceof ElementActionInterface) {
