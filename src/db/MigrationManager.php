@@ -428,20 +428,6 @@ class MigrationManager extends Component
     // =========================================================================
 
     /**
-     * Normalizes the $limit argument passed to [[up()]] and [[down()]]
-     *
-     * @param int|null &$limit
-     */
-    private function _normalizeLimit(&$limit = null)
-    {
-        if (is_numeric($limit) && $limit >= 1) {
-            $limit = (int)$limit;
-        } else {
-            $limit = null;
-        }
-    }
-
-    /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
