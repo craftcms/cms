@@ -50,7 +50,7 @@ class Checkboxes extends BaseOptionsField
 
         // If this is a new entry, look for any default options
         if ($this->isFresh($element)) {
-            $value = $this->getDefaultValue();
+            $value = $this->defaultValue();
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup',

@@ -273,7 +273,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return string[]|string|null
      */
-    protected function getDefaultValue()
+    protected function defaultValue()
     {
         if ($this->multi) {
             $defaultValues = [];
