@@ -49,7 +49,7 @@ class ElementIndexesController extends BaseElementsController
     private $_sourceKey;
 
     /**
-     * @var array|null
+     * @var array
      */
     private $_source;
 
@@ -64,7 +64,7 @@ class ElementIndexesController extends BaseElementsController
     private $_elementQuery;
 
     /**
-     * @var ElementActionInterface[]|null
+     * @var ElementActionInterface[]
      */
     private $_actions;
 
@@ -83,12 +83,12 @@ class ElementIndexesController extends BaseElementsController
         $this->_elementType = $this->elementType();
         $this->_context = $this->context();
         $this->_sourceKey = Craft::$app->getRequest()->getParam('source');
-        $this->_source = $this->_getSource();
-        $this->_viewState = $this->_getViewState();
-        $this->_elementQuery = $this->_getElementQuery();
+        $this->_source = $this->_source();
+        $this->_viewState = $this->_viewState();
+        $this->_elementQuery = $this->_elementQuery();
 
         if ($this->_context === 'index') {
-            $this->_actions = $this->_getAvailableActions();
+            $this->_actions = $this->_availableActions();
         }
     }
 
@@ -116,7 +116,7 @@ class ElementIndexesController extends BaseElementsController
     public function actionGetElements(): Response
     {
         $includeActions = ($this->_context === 'index');
-        $responseData = $this->_getElementResponseData(true, $includeActions);
+        $responseData = $this->_elementResponseData(true, $includeActions);
 
         return $this->asJson($responseData);
     }
@@ -128,7 +128,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionGetMoreElements(): Response
     {
-        $responseData = $this->_getElementResponseData(false, false);
+        $responseData = $this->_elementResponseData(false, false);
 
         return $this->asJson($responseData);
     }
@@ -221,7 +221,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($success) {
             // Send a new set of elements
-            $responseData = array_merge($responseData, $this->_getElementResponseData(true, true));
+            $responseData = array_merge($responseData, $this->_elementResponseData(true, true));
         }
 
         return $this->asJson($responseData);
@@ -249,10 +249,10 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @return array|null
+     * @return array
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    private function _getSource()
+    private function _source(): array
     {
         if (!$this->_sourceKey) {
             return null;
@@ -273,7 +273,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getViewState(): array
+    private function _viewState(): array
     {
         $viewState = Craft::$app->getRequest()->getParam('viewState', []);
 
@@ -289,7 +289,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    private function _getElementQuery(): ElementQueryInterface
+    private function _elementQuery(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
@@ -363,7 +363,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getElementResponseData(bool $includeContainer, bool $includeActions): array
+    private function _elementResponseData(bool $includeContainer, bool $includeActions): array
     {
         $responseData = [];
 
@@ -371,7 +371,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
         if ($includeActions) {
-            $responseData['actions'] = $this->_getActionData();
+            $responseData['actions'] = $this->_actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
         }
@@ -400,9 +400,9 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the available actions for the current source.
      *
-     * @return ElementActionInterface[]|null
+     * @return ElementActionInterface[]
      */
-    private function _getAvailableActions()
+    private function _availableActions(): array
     {
         if (Craft::$app->getRequest()->isMobileBrowser()) {
             return null;
@@ -412,22 +412,18 @@ class ElementIndexesController extends BaseElementsController
         $elementType = $this->_elementType;
         $actions = $elementType::actions($this->_sourceKey);
 
-        if (!empty($actions)) {
-            foreach ($actions as $i => $action) {
-                // $action could be a string or config array
-                if (!$action instanceof ElementActionInterface) {
-                    $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
+        foreach ($actions as $i => $action) {
+            // $action could be a string or config array
+            if (!$action instanceof ElementActionInterface) {
+                $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
-                    if ($actions[$i] === null) {
-                        unset($actions[$i]);
-                    }
+                if ($actions[$i] === null) {
+                    unset($actions[$i]);
                 }
             }
-
-            return array_values($actions);
         }
 
-        return null;
+        return array_values($actions);
     }
 
     /**
@@ -435,7 +431,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    private function _getActionData()
+    private function _actionData()
     {
         if (empty($this->_actions)) {
             return null;
