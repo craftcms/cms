@@ -521,17 +521,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var newAngle = this.image.angle + degrees;
                 var scaledImageDimensions = this.getScaledImageDimensions();
-                var zoomToCover = this.getZoomToCoverRatio(scaledImageDimensions);
+                var imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
+                var state = this.cropperState;
+
+                if (this.zoomRatio > imageZoomRatio) {
+                    imageZoomRatio = this.zoomRatio;
+                }
 
                 var viewportProperties = {
                     angle: degrees == 90 ? '+=90' : '-=90'
                 };
 
-                var state = this.cropperState;
                 var imageProperties = {
                     angle: newAngle,
-                    width: scaledImageDimensions.width * zoomToCover,
-                    height: scaledImageDimensions.height * zoomToCover
+                    width: scaledImageDimensions.width * imageZoomRatio,
+                    height: scaledImageDimensions.height * imageZoomRatio
                 };
 
                 // Make sure we reposition the image as well to focus on the same image area
@@ -545,7 +549,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
                     newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
 
-                    var zoomFactor = zoomToCover / state.zoom;
+                    var zoomFactor = imageZoomRatio / state.zoom;
                     var currentArea = this._getBoundingRectangle(this.getImageVerticeCoords());
                     var areaFactor = currentArea.width / state.imageArea.width;
 
@@ -719,7 +723,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var angleDelta = this.image.angle - previousAngle;
             var state = this.cropperState;
 
-            var success = false;
             var currentZoomRatio = this.zoomRatio;
             var adjustmentRatio = 1;
 
@@ -1066,6 +1069,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var callback = $.noop;
 
                 if (mode == 'crop') {
+                    var previousZoomRatio = this.zoomRatio;
                     this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
                     viewportDimensions = {
                         width: this.editorWidth,
