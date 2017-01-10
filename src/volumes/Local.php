@@ -108,7 +108,7 @@ class Local extends Volume implements LocalVolumeInterface
         $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
 
         try {
-            return $this->getFilesystem()->rename($path, $newPath);
+            return $this->filesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {

@@ -124,7 +124,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFileList(string $directory, bool $recursive): array
     {
-        return $this->getFilesystem()->listContents($directory, $recursive);
+        return $this->filesystem()->listContents($directory, $recursive);
     }
 
     /**
@@ -135,7 +135,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         try {
             $config = $this->addFileMetadataToConfig($config);
 
-            return $this->getFilesystem()->writeStream($path, $stream, $config);
+            return $this->filesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         }
@@ -149,7 +149,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         try {
             $config = $this->addFileMetadataToConfig($config);
 
-            return $this->getFilesystem()->updateStream($path, $stream, $config);
+            return $this->filesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException($exception->getMessage());
         }
@@ -160,7 +160,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function fileExists(string $path): bool
     {
-        return $this->getFilesystem()->has($path);
+        return $this->filesystem()->has($path);
     }
 
     /**
@@ -181,7 +181,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function deleteFile(string $path): bool
     {
         try {
-            $result = $this->getFilesystem()->delete($path);
+            $result = $this->filesystem()->delete($path);
         } catch (FileNotFoundException $exception) {
             // Make a note of it, but otherwise - mission accomplished!
             Craft::info($exception->getMessage());
@@ -201,7 +201,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function renameFile(string $path, string $newPath): bool
     {
         try {
-            return $this->getFilesystem()->rename($path, $newPath);
+            return $this->filesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
@@ -216,7 +216,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function copyFile(string $path, string $newPath): bool
     {
-        return $this->getFilesystem()->copy($path, $newPath);
+        return $this->filesystem()->copy($path, $newPath);
     }
 
     /**
@@ -230,7 +230,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 ['folder' => $path]));
         }
 
-        return $this->getFilesystem()->createDir($path);
+        return $this->filesystem()->createDir($path);
     }
 
     /**
@@ -239,7 +239,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function deleteDir(string $path): bool
     {
         try {
-            return $this->getFilesystem()->deleteDir($path);
+            return $this->filesystem()->deleteDir($path);
         } catch (\Exception $exception) {
             // We catch all Exceptions because most of the times these will be 3rd party exceptions.
             return false;
@@ -293,7 +293,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $stream = $this->getFilesystem()->readStream($uriPath);
+        $stream = $this->filesystem()->readStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);
@@ -333,7 +333,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return \League\Flysystem\Filesystem The Flysystem filesystem.
      */
-    protected function getFilesystem()
+    protected function filesystem()
     {
         if ($this->_filesystem !== null) {
             return $this->_filesystem;
