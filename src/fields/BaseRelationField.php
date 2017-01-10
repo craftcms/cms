@@ -164,7 +164,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             [
                 'allowMultipleSources' => $this->allowMultipleSources,
                 'allowLimit' => $this->allowLimit,
-                'sources' => $this->getSourceOptions(),
+                'sources' => $this->sourceOptions(),
                 'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
@@ -575,7 +575,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getSourceOptions(): array
+    protected function sourceOptions(): array
     {
         $options = [];
         $optionNames = [];
