@@ -30,7 +30,7 @@ class MissingTask extends Task implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         return $this->expectedType;
     }

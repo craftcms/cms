@@ -110,7 +110,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Localizing relations');
     }

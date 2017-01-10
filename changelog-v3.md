@@ -211,6 +211,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Field::prepareValueForDb()` to `serializeValue()`.
 - Renamed `craft\base\Plugin::getSettingsHtml()` to `settingsHtml()`.
 - Renamed `craft\base\PluginInterface::getVariableDefinition()` to `defineTemplateComponent()`.
+- Renamed `craft\base\Task::getDefaultDescription()` to `defaultDescription()`.
 - Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\db\Command::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\Migration::insertOrUpdate()` to `upsert()`.

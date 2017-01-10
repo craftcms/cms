@@ -133,7 +133,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Updating element slugs and URIs');
     }

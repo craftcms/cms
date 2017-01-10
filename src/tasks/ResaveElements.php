@@ -115,7 +115,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Resaving {class} elements', [
             'class' => StringHelper::toLowerCase($this->elementType)

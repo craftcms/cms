@@ -92,7 +92,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');

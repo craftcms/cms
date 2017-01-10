@@ -48,7 +48,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      */
     public function getDescription(): string
     {
-        return $this->description ?: $this->getDefaultDescription();
+        return $this->description ?: $this->defaultDescription();
     }
 
     /**
@@ -99,7 +99,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @return string The default task description
      */
-    protected function getDefaultDescription(): string
+    protected function defaultDescription(): string
     {
         return static::displayName();
     }
