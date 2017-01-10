@@ -176,5 +176,7 @@ class ClearCaches extends Tool
                 $action();
             }
         }
+
+        return [];
     }
 }

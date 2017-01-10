@@ -96,6 +96,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *

@@ -106,6 +106,7 @@ class Local extends Volume implements LocalVolumeInterface
         return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
     }
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * @inheritdoc
      */

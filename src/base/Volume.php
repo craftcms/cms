@@ -294,6 +294,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         foreach ($directoryList as $dir) {
             $this->deleteDir($dir);
         }
+
+        return true;
     }
 
     /**
