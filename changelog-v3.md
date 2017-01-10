@@ -223,6 +223,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\db\mysql\QueryBuilder::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\elements\User::getAuthData()` to `authData()`
 - Renamed `craft\fields\BaseOptionsField::getOptionsSettingsLabel()` to `optionsSettingLabel()`.
+- Renamed `craft\fields\BaseOptionsField::getTranslatedOptions()` to `translatedOptions()`.
 - Renamed `craft\helpers\App::getEditionName()` to `editionName()`.
 - Renamed `craft\helpers\App::getEditions()` to `editions()`.
 - Renamed `craft\helpers\App::getMajorVersion()` to `majorVersion()`.

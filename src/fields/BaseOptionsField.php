@@ -236,7 +236,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @return array
      */
-    protected function getTranslatedOptions(): array
+    protected function translatedOptions(): array
     {
         $translatedOptions = [];
 

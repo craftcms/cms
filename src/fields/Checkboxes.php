@@ -46,7 +46,7 @@ class Checkboxes extends BaseOptionsField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->getTranslatedOptions();
+        $options = $this->translatedOptions();
 
         // If this is a new entry, look for any default options
         if ($this->isFresh($element)) {

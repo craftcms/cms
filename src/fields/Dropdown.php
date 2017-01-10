@@ -37,7 +37,7 @@ class Dropdown extends BaseOptionsField
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->getTranslatedOptions();
+        $options = $this->translatedOptions();
 
         // If this is a new entry, look for a default option
         if ($this->isFresh($element)) {
