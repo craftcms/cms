@@ -172,7 +172,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists(string $path)
     {
-        return $this->getAdapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**
@@ -319,7 +319,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return \League\Flysystem\AdapterInterface The Flysystem adapter.
      */
-    protected function getAdapter()
+    protected function adapter()
     {
         if ($this->_adapter !== null) {
             return $this->_adapter;
@@ -339,7 +339,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             return $this->_filesystem;
         }
 
-        return $this->_filesystem = new Filesystem($this->getAdapter());
+        return $this->_filesystem = new Filesystem($this->adapter());
     }
 
     /**
