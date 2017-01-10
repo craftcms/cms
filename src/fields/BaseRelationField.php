@@ -606,7 +606,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $supportedViewModes = $this->supportedViewModes();
 
-        if (!$supportedViewModes || count($supportedViewModes) == 1) {
+        if (count($supportedViewModes) === 1) {
             return null;
         }
 
@@ -631,9 +631,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the field’s supported view modes.
      *
-     * @return array|null
+     * @return array
      */
-    protected function supportedViewModes()
+    protected function supportedViewModes(): array
     {
         $viewModes = [
             'list' => Craft::t('app', 'List'),
