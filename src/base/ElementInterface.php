@@ -529,32 +529,32 @@ interface ElementInterface extends ComponentInterface
      *
      * @param int|null $dist
      *
-     * @return ElementQueryInterface
+     * @return ElementQueryInterface|ElementInterface[]
      */
-    public function getAncestors(int $dist = null): ElementQueryInterface;
+    public function getAncestors(int $dist = null);
 
     /**
      * Returns the element’s descendants.
      *
      * @param int|null $dist
      *
-     * @return ElementQueryInterface
+     * @return ElementQueryInterface|ElementInterface[]
      */
-    public function getDescendants(int $dist = null): ElementQueryInterface;
+    public function getDescendants(int $dist = null);
 
     /**
      * Returns the element’s children.
      *
-     * @return ElementQueryInterface
+     * @return ElementQueryInterface|ElementInterface[]
      */
-    public function getChildren(): ElementQueryInterface;
+    public function getChildren();
 
     /**
      * Returns all of the element’s siblings.
      *
-     * @return ElementQueryInterface
+     * @return ElementQueryInterface|ElementInterface[]
      */
-    public function getSiblings(): ElementQueryInterface;
+    public function getSiblings();
 
     /**
      * Returns the element’s previous sibling.

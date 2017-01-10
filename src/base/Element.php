@@ -1081,7 +1081,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getAncestors(int $dist = null): ElementQueryInterface
+    public function getAncestors(int $dist = null)
     {
         return static::find()
             ->structureId($this->getStructureId())
@@ -1093,11 +1093,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getDescendants(int $dist = null): ElementQueryInterface
+    public function getDescendants(int $dist = null)
     {
         // Eager-loaded?
-        if ($this->hasEagerLoadedElements('descendants')) {
-            return $this->getEagerLoadedElements('descendants');
+        if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
+            return $descendants;
         }
 
         return static::find()
@@ -1110,11 +1110,11 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getChildren(): ElementQueryInterface
+    public function getChildren()
     {
         // Eager-loaded?
-        if ($this->hasEagerLoadedElements('children')) {
-            return $this->getEagerLoadedElements('children');
+        if (($children = $this->getEagerLoadedElements('children')) !== null) {
+            return $children;
         }
 
         return $this->getDescendants(1);
@@ -1123,7 +1123,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSiblings(): ElementQueryInterface
+    public function getSiblings()
     {
         return static::find()
             ->structureId($this->getStructureId())
@@ -1436,14 +1436,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getEagerLoadedElements(string $handle)
     {
-        if (isset($this->_eagerLoadedElements[$handle])) {
-
-            ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
-
-            return $this->_eagerLoadedElements[$handle];
+        if (!isset($this->_eagerLoadedElements[$handle])) {
+            return null;
         }
 
-        return null;
+        ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
+
+        return $this->_eagerLoadedElements[$handle];
     }
 
     /**
