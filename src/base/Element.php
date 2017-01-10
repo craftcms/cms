@@ -1288,7 +1288,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $values = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $values[$field->handle] = $this->getFieldValue($field->handle);
             }
@@ -1304,7 +1304,7 @@ abstract class Element extends Component implements ElementInterface
     {
         $serializedValues = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $value = $this->getFieldValue($field->handle);
                 $serializedValues[$field->handle] = $field->serializeValue($value, $this);
@@ -1357,7 +1357,7 @@ abstract class Element extends Component implements ElementInterface
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
@@ -1531,7 +1531,7 @@ abstract class Element extends Component implements ElementInterface
     public function beforeSave(bool $isNew): bool
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             if (!$field->beforeElementSave($this, $isNew)) {
                 return false;
             }
@@ -1552,7 +1552,7 @@ abstract class Element extends Component implements ElementInterface
     public function afterSave(bool $isNew)
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             $field->afterElementSave($this, $isNew);
         }
 
@@ -1568,7 +1568,7 @@ abstract class Element extends Component implements ElementInterface
     public function beforeDelete(): bool
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             if (!$field->beforeElementDelete($this)) {
                 return false;
             }
@@ -1587,7 +1587,7 @@ abstract class Element extends Component implements ElementInterface
     public function afterDelete()
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fields() as $field) {
             $field->afterElementDelete($this);
         }
 
@@ -1726,7 +1726,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return Field[] This element’s fields
      */
-    protected function getFields(): array
+    protected function fields(): array
     {
         $fieldLayout = $this->getFieldLayout();
 
