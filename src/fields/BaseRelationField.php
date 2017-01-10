@@ -200,7 +200,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
-            ->siteId($this->getTargetSiteId($element));
+            ->siteId($this->targetSiteId($element));
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -370,7 +370,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ->all();
 
         // Figure out which target site to use
-        $targetSite = $this->getTargetSiteId($firstElement);
+        $targetSite = $this->targetSiteId($firstElement);
 
         return [
             'elementType' => static::elementType(),
@@ -462,7 +462,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        $selectionCriteria['siteId'] = $this->getTargetSiteId($element);
+        $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         return [
             'jsClass' => $this->inputJsClass,
@@ -516,7 +516,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return int
      */
-    protected function getTargetSiteId(ElementInterface $element = null): int
+    protected function targetSiteId(ElementInterface $element = null): int
     {
         /** @var Element|null $element */
         if (Craft::$app->getIsMultiSite()) {

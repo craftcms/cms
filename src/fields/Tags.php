@@ -93,7 +93,7 @@ class Tags extends BaseRelationField
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
-                    'targetSiteId' => $this->getTargetSiteId($element),
+                    'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);

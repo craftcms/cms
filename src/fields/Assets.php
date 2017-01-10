@@ -251,7 +251,7 @@ class Assets extends BaseRelationField
             $class = static::elementType();
             /** @var ElementQuery $query */
             $query = $class::find()
-                ->siteId($this->getTargetSiteId($element));
+                ->siteId($this->targetSiteId($element));
 
             // $value might be an array of element IDs
             if (is_array($value)) {
