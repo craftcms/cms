@@ -460,7 +460,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 ->enabledForSite(false);
         }
 
-        $selectionCriteria = $this->getInputSelectionCriteria();
+        $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
         $selectionCriteria['siteId'] = $this->getTargetSiteId($element);
 
@@ -504,7 +504,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputSelectionCriteria(): array
+    protected function inputSelectionCriteria(): array
     {
         return [];
     }

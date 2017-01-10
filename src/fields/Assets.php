@@ -534,7 +534,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSelectionCriteria(): array
+    protected function inputSelectionCriteria(): array
     {
         return [
             'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
