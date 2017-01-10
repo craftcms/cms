@@ -154,7 +154,7 @@ class ClearCaches extends Tool
     public function performAction(array $params): array
     {
         if (!isset($params['caches'])) {
-            return;
+            return [];
         }
 
         foreach (self::_getAllCacheOptions() as $cacheOption) {
