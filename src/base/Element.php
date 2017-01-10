@@ -252,7 +252,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function actions(string $source)
+    public static function actions(string $source): array
     {
         $actions = static::defineActions($source);
 
