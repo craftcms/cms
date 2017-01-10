@@ -43,7 +43,7 @@ class ElementsController extends BaseElementsController
     public function actionGetModalBody(): Response
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
         $context = $this->getContext();
 
         $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');

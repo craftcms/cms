@@ -53,7 +53,7 @@ abstract class BaseElementsController extends Controller
      * @return string
      * @throws BadRequestHttpException if the requested element type is invalid
      */
-    protected function getElementType(): string
+    protected function elementType(): string
     {
         $class = Craft::$app->getRequest()->getRequiredParam('elementType');
 

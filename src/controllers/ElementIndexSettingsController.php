@@ -32,7 +32,7 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         // Get the source info
         $elementIndexesService = Craft::$app->getElementIndexes();
@@ -80,7 +80,7 @@ class ElementIndexSettingsController extends BaseElementsController
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         $request = Craft::$app->getRequest();
         $sourceOrder = $request->getBodyParam('sourceOrder', []);
