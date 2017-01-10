@@ -523,18 +523,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var scaledImageDimensions = this.getScaledImageDimensions();
                 var zoomToCover = this.getZoomToCoverRatio(scaledImageDimensions);
 
-                this.viewport.animate({
+                var viewportProperties = {
                     angle: degrees == 90 ? '+=90' : '-=90'
-
-                }, {
-                    duration: this.settings.animationDuration,
-                    onComplete: function () {
-                        var temp = this.viewport.width;
-                        this.viewport.width = this.viewport.height;
-                        this.viewport.height = temp;
-                        this.viewport.angle = 0;
-                    }.bind(this)
-                });
+                };
 
                 var state = this.cropperState;
                 var imageProperties = {
@@ -575,8 +566,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     if (state) {
                         this.storeCropperState(state);
                     }
-
+                } else {
+                    viewportProperties.width = imageProperties.width;
+                    viewportProperties.height = imageProperties.height;
                 }
+
+                this.viewport.animate(viewportProperties, {
+                    duration: this.settings.animationDuration,
+                    onComplete: function () {
+                        var cleanAngle = parseInt((this.viewport.angle + 360) % 360, 10);
+                        this.viewport.set({angle: cleanAngle});
+                    }.bind(this)
+                });
 
                 // Animate the rotation and dimension change
                 this.image.animate(imageProperties, {
