@@ -44,7 +44,7 @@ class ElementsController extends BaseElementsController
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
         $elementType = $this->elementType();
-        $context = $this->getContext();
+        $context = $this->context();
 
         $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
 

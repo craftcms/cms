@@ -74,7 +74,7 @@ abstract class BaseElementsController extends Controller
      *
      * @return string
      */
-    protected function getContext(): string
+    protected function context(): string
     {
         return Craft::$app->getRequest()->getParam('context');
     }

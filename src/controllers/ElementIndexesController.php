@@ -81,7 +81,7 @@ class ElementIndexesController extends BaseElementsController
         parent::init();
 
         $this->_elementType = $this->elementType();
-        $this->_context = $this->getContext();
+        $this->_context = $this->context();
         $this->_sourceKey = Craft::$app->getRequest()->getParam('source');
         $this->_source = $this->_getSource();
         $this->_viewState = $this->_getViewState();
