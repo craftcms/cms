@@ -715,17 +715,6 @@ trait ApplicationTrait
         }
     }
 
-    /**
-     * Don't even think of moving this check into Connection->init().
-     *
-     * @param $value
-     */
-    public function setIsDbConnectionValid($value)
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        $this->_isDbConnectionValid = $value;
-    }
-
     // Service Getters
     // -------------------------------------------------------------------------
 
