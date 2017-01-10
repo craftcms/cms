@@ -196,10 +196,10 @@ interface ElementInterface extends ComponentInterface
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[getElementQueryStatusCondition()]].
      *
-     * @return array|null
+     * @return array
      * @see hasStatuses()
      */
-    public static function statuses();
+    public static function statuses(): array;
 
     /**
      * Returns the source definitions that elements of this type may belong to.
