@@ -1201,6 +1201,17 @@ trait ApplicationTrait
         return $this->get('volumes');
     }
 
+    /**
+     * Returns the utilities service.
+     *
+     * @return \craft\services\Utilities The utilities service
+     */
+    public function getUtilities()
+    {
+        /** @var \craft\web\Application|\craft\console\Application $this */
+        return $this->get('utilities');
+    }
+
     // Private Methods
     // =========================================================================
 

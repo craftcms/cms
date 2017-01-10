@@ -181,6 +181,13 @@ class UserPermissions extends Component
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 
+        // Utilities
+        // ---------------------------------------------------------------------
+
+        $utilities = Craft::$app->getUtilities()->getAllNavItems();
+
+        $permissions[Craft::t('app', 'Utilities')] = $this->_getUtilityPermissions($utilities);
+
         // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
 
@@ -524,6 +531,26 @@ class UserPermissions extends Component
                 ]
             ]
         ];
+    }
+
+    /**
+     * Returns the permissions for the utilities.
+     *
+     * @param array $utilities
+     *
+     * @return array
+     */
+    private function _getUtilityPermissions($utilities)
+    {
+        $permissions = [];
+
+        foreach ($utilities as $handle => $utility) {
+            $permissions['viewUtility:'.$handle] = [
+                'label' => $utility['label']
+            ];
+        }
+
+        return $permissions;
     }
 
     /**

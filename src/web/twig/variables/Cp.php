@@ -125,11 +125,16 @@ class Cp extends Component
             ];
         }
 
-        $navItems[] = [
-            'url' => 'utilities',
-            'label' => Craft::t('app', 'Utilities'),
-            'icon' => 'tool'
-        ];
+        $utilities = Craft::$app->getUtilities()->getNavItems();
+
+        if(count($utilities) > 0)
+        {
+            $navItems[] = [
+                'url' => 'utilities',
+                'label' => Craft::t('app', 'Utilities'),
+                'icon' => 'tool'
+            ];
+        }
 
         // Allow plugins to modify the nav
         $event = new RegisterCpNavItemsEvent([

@@ -47,6 +47,7 @@ return [
     'users' => craft\services\Users::class,
     'view' => craft\web\View::class,
     'volumes' => craft\services\Volumes::class,
+    'utilities' => craft\services\Utilities::class,
 
     // Configured components
     // -------------------------------------------------------------------------
