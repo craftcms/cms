@@ -175,7 +175,7 @@ class Plugin extends Module implements PluginInterface
         return $controller->renderTemplate('settings/plugins/_settings',
             [
                 'plugin' => $this,
-                'settingsHtml' => $this->getSettingsHtml()
+                'settingsHtml' => $this->settingsHtml()
             ]);
     }
 
@@ -288,7 +288,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string The rendered settings HTML
      */
-    protected function getSettingsHtml(): string
+    protected function settingsHtml(): string
     {
         return null;
     }
