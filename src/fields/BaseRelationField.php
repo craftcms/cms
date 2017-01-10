@@ -476,7 +476,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             'criteria' => $selectionCriteria,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'limit' => $this->allowLimit ? $this->limit : null,
-            'viewMode' => $this->getViewMode(),
+            'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
         ];
     }
@@ -651,7 +651,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string
      */
-    protected function getViewMode(): string
+    protected function viewMode(): string
     {
         $supportedViewModes = $this->supportedViewModes();
         $viewMode = $this->viewMode;

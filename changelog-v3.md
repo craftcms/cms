@@ -233,6 +233,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\fields\BaseRelationField::getSupportedViewModes()` to `supportedViewModes()`.
 - Renamed `craft\fields\BaseRelationField::getTargetSiteFieldHtml()` to `targetSiteFieldHtml()`.
 - Renamed `craft\fields\BaseRelationField::getTargetSiteId()` to `targetSiteId()`.
+- Renamed `craft\fields\BaseRelationField::getViewMode()` to `viewMode()`.
 - Renamed `craft\fields\BaseRelationField::getViewModeFieldHtml()` to `viewModeFieldHtml()`.
 - Renamed `craft\helpers\App::getEditionName()` to `editionName()`.
 - Renamed `craft\helpers\App::getEditions()` to `editions()`.
