@@ -489,8 +489,8 @@ class Assets extends Component
     /**
      * Rename a folder by it's id.
      *
-     * @param $folderId
-     * @param $newName
+     * @param int    $folderId
+     * @param string $newName
      *
      * @throws AssetConflictException           If a folder already exists with such name in Assets Index
      * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
@@ -498,7 +498,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
      * @return string The new folder name after cleaning it.
      */
-    public function renameFolderById($folderId, $newName): string
+    public function renameFolderById(int $folderId, string $newName): string
     {
         $newName = AssetsHelper::prepareAssetName($newName, false);
         $folder = $this->getFolderById($folderId);
@@ -612,11 +612,11 @@ class Assets extends Component
     /**
      * Get the folder tree for Assets by a folder id.
      *
-     * @param $folderId
+     * @param int $folderId
      *
      * @return array
      */
-    public function getFolderTreeByFolderId($folderId): array
+    public function getFolderTreeByFolderId(int $folderId): array
     {
         if (($folder = $this->getFolderById($folderId)) === null) {
             return [];

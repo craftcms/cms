@@ -301,7 +301,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function saveFileLocally($uriPath, $targetPath): int
+    public function saveFileLocally(string $uriPath, string $targetPath): int
     {
         $stream = $this->getFilesystem()->readStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');

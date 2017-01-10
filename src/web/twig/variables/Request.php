@@ -211,11 +211,11 @@ class Request
     /**
      * Returns a [[Cookie]] if it exists, otherwise, null.
      *
-     * @param $name
+     * @param string $name
      *
      * @return Cookie|null
      */
-    public function getCookie($name)
+    public function getCookie(string $name)
     {
         Craft::$app->getDeprecator()->log('craft.request.getCookie()', 'craft.request.getCookie() has been deprecated. Use craft.app.request.cookies.get() instead.');
 

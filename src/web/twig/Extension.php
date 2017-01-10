@@ -685,12 +685,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     }
 
     /**
-     * @param $template
-     * @param $object
+     * @param string $template
+     * @param mixed  $object
      *
      * @return string
      */
-    public function renderObjectTemplate($template, $object): string
+    public function renderObjectTemplate(string $template, $object): string
     {
         return Craft::$app->getView()->renderObjectTemplate($template, $object);
     }

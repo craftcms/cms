@@ -721,22 +721,22 @@ EOD;
     // =========================================================================
 
     /**
-     * @param $data
+     * @param array $data
      *
      * @return bool
      */
-    private function _isManualUpdate($data): bool
+    private function _isManualUpdate(array $data): bool
     {
         return isset($data['manualUpdate']) && $data['manualUpdate'] == 1;
     }
 
     /**
-     * @param $data
+     * @param array $data
      *
      * @return string
      * @throws UpdateValidationException
      */
-    private function _getFixedHandle($data): string
+    private function _getFixedHandle(array $data): string
     {
         if (!isset($data['handle'])) {
             return 'craft';

@@ -165,13 +165,13 @@ class AssetIndexer extends Component
     /**
      * Process index for a volume.
      *
-     * @param $sessionId
-     * @param $offset
-     * @param $volumeId
+     * @param string $sessionId
+     * @param int    $offset
+     * @param int    $volumeId
      *
      * @return mixed
      */
-    public function processIndexForVolume($sessionId, $offset, $volumeId)
+    public function processIndexForVolume(string $sessionId, int $offset, int $volumeId)
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
@@ -223,9 +223,11 @@ class AssetIndexer extends Component
     /**
      * Store an index entry.
      *
-     * @param $data
+     * @param array $data
+     *
+     * @return void
      */
-    public function storeIndexEntry($data)
+    public function storeIndexEntry(array $data)
     {
         $entry = new AssetIndexDataRecord();
 
@@ -239,13 +241,13 @@ class AssetIndexer extends Component
     /**
      * Return an index model.
      *
-     * @param $volumeId
-     * @param $sessionId
-     * @param $offset
+     * @param int    $volumeId
+     * @param string $sessionId
+     * @param int    $offset
      *
      * @return AssetIndexData|null
      */
-    public function getIndexEntry($volumeId, $sessionId, $offset)
+    public function getIndexEntry(int $volumeId, string $sessionId, int $offset)
     {
         $record = AssetIndexDataRecord::findOne(
             [
@@ -291,12 +293,12 @@ class AssetIndexer extends Component
     /**
      * Return a list of missing files for an indexing session.
      *
-     * @param $volumeIds
-     * @param $sessionId
+     * @param array  $volumeIds
+     * @param string $sessionId
      *
      * @return array
      */
-    public function getMissingFiles($volumeIds, $sessionId): array
+    public function getMissingFiles(array $volumeIds, string $sessionId): array
     {
         $output = [];
 
@@ -334,13 +336,13 @@ class AssetIndexer extends Component
      * Index a single file by Volume and path.
      *
      * @param VolumeInterface $volume
-     * @param                 $path
+     * @param  string         $path
      * @param bool            $checkIfExists
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return bool|Asset
      */
-    public function indexFile(VolumeInterface $volume, $path, bool $checkIfExists = true)
+    public function indexFile(VolumeInterface $volume, string $path, bool $checkIfExists = true)
     {
         if ($checkIfExists && !$volume->fileExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t(

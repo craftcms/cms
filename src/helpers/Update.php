@@ -171,11 +171,11 @@ class Update
     }
 
     /**
-     * @param $line
+     * @param string $line
      *
      * @return bool
      */
-    public static function isManifestVersionInfoLine($line): bool
+    public static function isManifestVersionInfoLine(string $line): bool
     {
         return strpos($line, '##') === 0;
     }
@@ -183,11 +183,11 @@ class Update
     /**
      * Returns the local version number from the given manifest file.
      *
-     * @param $manifestData
+     * @param array $manifestData
      *
      * @return false|string
      */
-    public static function getLocalVersionFromManifest($manifestData)
+    public static function getLocalVersionFromManifest(array $manifestData)
     {
         if (!static::isManifestVersionInfoLine($manifestData[0])) {
             return false;
@@ -201,11 +201,11 @@ class Update
     /**
      * Return true if line is a manifest migration line.
      *
-     * @param $line
+     * @param string $line
      *
      * @return bool
      */
-    public static function isManifestMigrationLine($line): bool
+    public static function isManifestMigrationLine(string $line): bool
     {
         if (StringHelper::contains($line, 'migrations/')) {
             return true;
@@ -293,11 +293,11 @@ class Update
     }
 
     /**
-     * @param $uid
+     * @param string $uid
      *
      * @return string
      */
-    public static function getZipFileFromUID($uid): string
+    public static function getZipFileFromUID(string $uid): string
     {
         return Craft::$app->getPath()->getTempPath().'/'.$uid.'.zip';
     }

@@ -190,11 +190,11 @@ class Header
     /**
      * Removes a header by key.
      *
-     * @param $key
+     * @param string $key
      *
      * @return void
      */
-    public static function removeHeader($key)
+    public static function removeHeader(string $key)
     {
         header_remove($key);
     }

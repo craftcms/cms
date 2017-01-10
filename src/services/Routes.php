@@ -271,11 +271,11 @@ class Routes extends Component
     }
 
     /**
-     * @param $string
+     * @param string $string
      *
      * @return mixed
      */
-    private function _escapeRegexChars($string)
+    private function _escapeRegexChars(string $string)
     {
         $charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
         $escapedChars = [];

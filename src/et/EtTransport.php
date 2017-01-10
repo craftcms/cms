@@ -44,7 +44,9 @@ class EtTransport
     // =========================================================================
 
     /**
-     * @param         $endpoint
+     * Constructor
+     *
+     * @param string $endpoint
      */
     public function __construct($endpoint)
     {
@@ -81,7 +83,7 @@ class EtTransport
     /**
      * Sets custom data on the EtModel.
      *
-     * @param $data
+     * @param mixed $data
      *
      * @return void
      */
@@ -93,11 +95,11 @@ class EtTransport
     /**
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
-     * @param $handle
+     * @param string $handle
      *
      * @return void
      */
-    public function setHandle($handle)
+    public function setHandle(string $handle)
     {
         $this->_model->handle = $handle;
     }
@@ -264,12 +266,12 @@ class EtTransport
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
      * @return bool
      * @throws Exception|EtException
      */
-    private function _setLicenseKey($key): bool
+    private function _setLicenseKey(string $key): bool
     {
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.

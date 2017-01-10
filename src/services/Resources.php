@@ -277,11 +277,11 @@ class Resources extends Component
     // =========================================================================
 
     /**
-     * @param $match
+     * @param array $match
      *
      * @return string
      */
-    private function _normalizeCssUrl($match): string
+    private function _normalizeCssUrl(array $match): string
     {
         // Ignore root-relative, absolute, and data: URLs
         if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3])) {
@@ -320,11 +320,11 @@ class Resources extends Component
     /**
      * Returns the icon path for a given extension
      *
-     * @param $ext
+     * @param string $ext
      *
      * @return string
      */
-    private function _getIconPath($ext): string
+    private function _getIconPath(string $ext): string
     {
         $pathService = Craft::$app->getPath();
         $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';

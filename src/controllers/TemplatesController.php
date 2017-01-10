@@ -43,13 +43,13 @@ class TemplatesController extends Controller
     /**
      * Renders a template.
      *
-     * @param       $template
+     * @param string $template
      * @param array $variables
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested template cannot be found
      */
-    public function actionRender($template, array $variables = []): string
+    public function actionRender(string $template, array $variables = []): string
     {
         // Does that template exist?
         if (Craft::$app->getView()->doesTemplateExist($template)) {

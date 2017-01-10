@@ -94,11 +94,11 @@ class CategoryGroups
     /**
      * Returns a group by its ID.
      *
-     * @param $groupId
+     * @param int $groupId
      *
      * @return CategoryGroup|null
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupById()', 'craft.categoryGroups.getGroupById() has been deprecated. Use craft.app.categories.getGroupById() instead.');
 
@@ -108,11 +108,11 @@ class CategoryGroups
     /**
      * Returns a group by its handle.
      *
-     * @param $groupHandle
+     * @param string $groupHandle
      *
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(string $groupHandle)
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupByHandle()', 'craft.categoryGroups.getGroupByHandle() has been deprecated. Use craft.app.categories.getGroupByHandle() instead.');
 

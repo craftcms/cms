@@ -54,11 +54,11 @@ class Image
     /**
      * Returns whether an image extension is considered manipulatable.
      *
-     * @param $extension
+     * @param string $extension
      *
      * @return bool
      */
-    public static function isImageManipulatable($extension): bool
+    public static function isImageManipulatable(string $extension): bool
     {
         $path = Craft::$app->getPath()->getResourcesPath();
         $file = $path.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'samples'.DIRECTORY_SEPARATOR.'sample.'.StringHelper::toLowerCase($extension);

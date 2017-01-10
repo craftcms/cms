@@ -19,6 +19,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
 use craft\i18n\Locale;
+use craft\models\AppNewRelease;
 use craft\models\AppUpdate;
 use craft\models\Et;
 use craft\models\PluginNewRelease;
@@ -85,11 +86,11 @@ class Updates extends Component
     // =========================================================================
 
     /**
-     * @param $craftReleases
+     * @param AppNewRelease[] $craftReleases
      *
      * @return bool
      */
-    public function criticalCraftUpdateAvailable($craftReleases): bool
+    public function criticalCraftUpdateAvailable(array $craftReleases): bool
     {
         foreach ($craftReleases as $craftRelease) {
             if ($craftRelease->critical) {
@@ -101,15 +102,15 @@ class Updates extends Component
     }
 
     /**
-     * @param $plugins
+     * @param PluginUpdate[] $pluginUpdate
      *
      * @return bool
      */
-    public function criticalPluginUpdateAvailable($plugins): bool
+    public function criticalPluginUpdateAvailable(array $pluginUpdate): bool
     {
-        foreach ($plugins as $plugin) {
-            if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
-                foreach ($plugin->releases as $release) {
+        foreach ($pluginUpdate as $pluginRelease) {
+            if ($pluginRelease->status === PluginUpdateStatus::UpdateAvailable && count($pluginRelease->releases) > 0) {
+                foreach ($pluginRelease->releases as $release) {
                     if ($release->critical) {
                         return true;
                     }

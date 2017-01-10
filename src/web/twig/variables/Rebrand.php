@@ -92,11 +92,11 @@ class Rebrand
     /**
      * Get the ImageVariable for type.
      *
-     * @param $type
+     * @param string $type
      *
      * @return Image|null
      */
-    public function getImageVariable($type)
+    public function getImageVariable(string $type)
     {
         if (!in_array($type, ['logo', 'icon'], true)) {
             return null;
@@ -170,12 +170,12 @@ class Rebrand
     /**
      * Returns the URL to a rebrand image.
      *
-     * @param $path
-     * @param $type
+     * @param string $path
+     * @param string $type
      *
      * @return string
      */
-    private function _getImageUrl($path, $type): string
+    private function _getImageUrl(string $path, string $type): string
     {
         return UrlHelper::resourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }

@@ -575,11 +575,11 @@ class MigrationHelper
     /**
      * Drops a foreign key.
      *
-     * @param                $tableName
-     * @param                $columns
+     * @param string         $tableName
+     * @param string|array   $columns
      * @param Migration|null $migration
      */
-    public static function dropForeignKey($tableName, $columns, Migration $migration = null)
+    public static function dropForeignKey(string $tableName, $columns, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $foreignKeyName = Craft::$app->getDb()->getForeignKeyName($tableName, $columns);
@@ -715,11 +715,11 @@ class MigrationHelper
     // =========================================================================
 
     /**
-     * @param $foreignKey
+     * @param array $foreignKey
      *
      * @return array
      */
-    private static function _getColumnsForFK($foreignKey): array
+    private static function _getColumnsForFK(array $foreignKey): array
     {
         $columns = [];
 

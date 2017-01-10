@@ -21,11 +21,11 @@ class Logging
     /**
      * Will attempt to remove passwords from the log file.
      *
-     * @param $log
+     * @param string $log
      *
      * @return string
      */
-    public static function redact($log): string
+    public static function redact(string $log): string
     {
         // Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
         $log = preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);

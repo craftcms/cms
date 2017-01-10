@@ -232,11 +232,11 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * @param $name
+     * @param string $name
      *
      * @return string
      */
-    public function quoteDatabaseName($name): string
+    public function quoteDatabaseName(string $name): string
     {
         return $this->getSchema()->quoteTableName($name);
     }

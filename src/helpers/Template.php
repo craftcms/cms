@@ -120,11 +120,11 @@ class Template
     /**
      * Returns a string wrapped in a \Twig_Markup object
      *
-     * @param $value
+     * @param string $value
      *
      * @return \Twig_Markup
      */
-    public static function raw($value): \Twig_Markup
+    public static function raw(string $value): \Twig_Markup
     {
         return new \Twig_Markup($value, Craft::$app->charset);
     }

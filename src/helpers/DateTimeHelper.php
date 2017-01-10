@@ -409,13 +409,19 @@ class DateTimeHelper
     }
 
     /**
-     * @param $timestamp
+     * @param string|int $timestamp
      *
      * @return bool
      */
     public static function isValidTimeStamp($timestamp): bool
     {
-        return (is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX));
+        if (!is_numeric($timestamp)) {
+            return false;
+        }
+
+        $timestamp = (int)$timestamp;
+
+        return $timestamp <= PHP_INT_MAX && $timestamp >= ~PHP_INT_MAX;
     }
 
     /**
@@ -539,11 +545,11 @@ class DateTimeHelper
      * Takes a PHP time format string and converts it to seconds.
      * {@see http://www.php.net/manual/en/datetime.formats.time.php}
      *
-     * @param $timeFormatString
+     * @param string $timeFormatString
      *
      * @return int|null
      */
-    public static function timeFormatToSeconds($timeFormatString)
+    public static function timeFormatToSeconds(string $timeFormatString)
     {
         $interval = new \DateInterval($timeFormatString);
 
@@ -579,11 +585,11 @@ class DateTimeHelper
     /**
      * Returns true if interval string is a valid interval.
      *
-     * @param $intervalString
+     * @param string $intervalString
      *
      * @return bool
      */
-    public static function isValidIntervalString($intervalString): bool
+    public static function isValidIntervalString(string $intervalString): bool
     {
         $interval = \DateInterval::createFromDateString($intervalString);
 

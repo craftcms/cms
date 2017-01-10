@@ -813,11 +813,11 @@ class AssetTransforms extends Component
      * Get a thumb server path by Asset model and size.
      *
      * @param Asset $asset
-     * @param       $size
+     * @param int   $size
      *
      * @return bool|string
      */
-    public function getResizedAssetServerPath(Asset $asset, $size)
+    public function getResizedAssetServerPath(Asset $asset, int $size)
     {
         $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().DIRECTORY_SEPARATOR.$size;
         FileHelper::createDirectory($thumbFolder);
@@ -921,9 +921,8 @@ class AssetTransforms extends Component
             $this->_sourcesToBeDeleted[] = $imageSource;
 
             // TODO this method seems to be gone.
-            if (count($this->_sourcesToBeDeleted) == 1) {
-                Craft::$app->on(Application::EVENT_AFTER_REQUEST,
-                    [$this, 'deleteQueuedSourceFiles']);
+            if (count($this->_sourcesToBeDeleted) === 1) {
+                Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'deleteQueuedSourceFiles']);
             }
         }
     }
@@ -931,12 +930,12 @@ class AssetTransforms extends Component
     /**
      * Store a local image copy to a destination path.
      *
-     * @param $source
-     * @param $destination
+     * @param string $source
+     * @param string $destination
      *
      * @return void
      */
-    public function storeLocalSource($source, $destination = '')
+    public function storeLocalSource(string $source, string $destination = '')
     {
         if (!$destination) {
             $source = $destination;

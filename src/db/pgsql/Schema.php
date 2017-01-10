@@ -57,11 +57,11 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Quotes a database name for use in a query.
      *
-     * @param $name
+     * @param string $name
      *
      * @return string
      */
-    public function quoteDatabaseName($name): string
+    public function quoteDatabaseName(string $name): string
     {
         return '"'.$name.'"';
     }

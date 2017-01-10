@@ -181,11 +181,11 @@ class Deprecator extends Component
     /**
      * Returns a log by its ID.
      *
-     * @param $logId
+     * @param int $logId
      *
      * @return DeprecationError|null
      */
-    public function getLogById($logId)
+    public function getLogById(int $logId)
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -201,11 +201,11 @@ class Deprecator extends Component
     /**
      * Deletes a log by its ID.
      *
-     * @param $id
+     * @param int $id
      *
      * @return bool
      */
-    public function deleteLogById($id): bool
+    public function deleteLogById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_tableName, ['id' => $id])
@@ -337,11 +337,11 @@ class Deprecator extends Component
      *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
-     * @param $args array
+     * @param array $args
      *
      * @return string
      */
-    private function _argsToString($args): string
+    private function _argsToString(array $args): string
     {
         $strArgs = [];
         $isAssoc = ($args !== array_values($args));
