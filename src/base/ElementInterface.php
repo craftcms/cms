@@ -241,9 +241,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $source The selected source’s key.
      *
-     * @return array|null The available element actions.
+     * @return array The available element actions.
      */
-    public static function actions(string $source);
+    public static function actions(string $source): array;
 
     /**
      * Defines which element attributes should be searchable.

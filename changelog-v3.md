@@ -196,7 +196,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
 - Renamed `craft\base\Element::defineSortableAttributes()` to `sortableAttributes()`.
-- Renamed `craft\base\Element::getAvailableActions()` to `actions()`.
+- Renamed `craft\base\Element::getAvailableActions()` to `actions()`, and the method must return an array now.
 - Renamed `craft\base\Element::getContentPostLocation()` to `getFieldParamNamespace()`.
 - Renamed `craft\base\Element::getDefaultTableAttributes()` to `defaultTableAttributes()`.
 - Renamed `craft\base\Element::getEagerLoadingMap()` to `eagerLoadingMap()`.

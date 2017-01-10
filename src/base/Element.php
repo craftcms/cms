@@ -292,10 +292,10 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string|null $source The selected source’s key, if any.
      *
-     * @return array|null The available element actions.
+     * @return array The available element actions.
      * @see actions()
      */
-    protected static function defineActions(string $source = null)
+    protected static function defineActions(string $source = null): array
     {
         return [];
     }
