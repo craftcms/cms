@@ -630,11 +630,11 @@ class Fields extends Component
     /**
      * Returns all of the fields used by a given element type.
      *
-     * @param ElementInterface|string $elementType
+     * @param string $elementType
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByElementType($elementType): array
+    public function getFieldsByElementType(string $elementType): array
     {
         $results = $this->_createFieldQuery()
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')

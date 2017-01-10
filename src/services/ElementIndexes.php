@@ -37,11 +37,11 @@ class ElementIndexes extends Component
     /**
      * Returns the element index settings for a given element type.
      *
-     * @param ElementInterface|string $elementType The element type class
+     * @param string $elementType The element type class
      *
      * @return array|null
      */
-    public function getSettings($elementType)
+    public function getSettings(string $elementType)
     {
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
@@ -63,13 +63,14 @@ class ElementIndexes extends Component
     /**
      * Saves new element index settings for a given element type.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param array                   $newSettings The new index settings
+     * @param string $elementType The element type class
+     * @param array  $newSettings The new index settings
      *
      * @return bool Whether the settings were saved successfully
      */
-    public function saveSettings($elementType, array $newSettings): bool
+    public function saveSettings(string $elementType, array $newSettings): bool
     {
+        /** @var ElementInterface $elementType */
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources('index'));
@@ -145,13 +146,14 @@ class ElementIndexes extends Component
     /**
      * Returns the element index sources in the custom groupings/order.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param string                  $context     The context
+     * @param string $elementType The element type class
+     * @param string $context     The context
      *
      * @return array
      */
-    public function getSources($elementType, string $context = 'index'): array
+    public function getSources(string $elementType, string $context = 'index'): array
     {
+        /** @var ElementInterface $elementType */
         $settings = $this->getSettings($elementType);
         $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
@@ -200,13 +202,14 @@ class ElementIndexes extends Component
     /**
      * Returns all of the available attributes that can be shown for a given element type source.
      *
-     * @param ElementInterface|string $elementType   The element type class
-     * @param bool                    $includeFields Whether custom fields should be included in the list
+     * @param string $elementType   The element type class
+     * @param bool   $includeFields Whether custom fields should be included in the list
      *
      * @return array
      */
-    public function getAvailableTableAttributes($elementType, bool $includeFields = true): array
+    public function getAvailableTableAttributes(string $elementType, bool $includeFields = true): array
     {
+        /** @var ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
         foreach ($attributes as $key => $info) {
@@ -231,13 +234,14 @@ class ElementIndexes extends Component
     /**
      * Returns the attributes that should be shown for a given element type source.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param string                  $sourceKey   The element type source key
+     * @param string $elementType The element type class
+     * @param string $sourceKey   The element type source key
      *
      * @return array
      */
-    public function getTableAttributes($elementType, string $sourceKey): array
+    public function getTableAttributes(string $elementType, string $sourceKey): array
     {
+        /** @var ElementInterface $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
@@ -277,12 +281,13 @@ class ElementIndexes extends Component
     /**
      * Returns the fields that are available to be shown as table attributes.
      *
-     * @param ElementInterface|string $elementType The element type class
+     * @param string $elementType The element type class
      *
      * @return FieldInterface[]
      */
-    public function getAvailableTableFields($elementType): array
+    public function getAvailableTableFields(string $elementType): array
     {
+        /** @var ElementInterface $elementType */
         $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
         $availableFields = [];
 
