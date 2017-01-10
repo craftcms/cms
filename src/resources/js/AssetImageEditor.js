@@ -545,7 +545,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
                     newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
 
-                    var zoomFactor = this.zoomRatio / state.zoom;
+                    var zoomFactor = zoomToCover / state.zoom;
                     var currentArea = this._getBoundingRectangle(this.getImageVerticeCoords());
                     var areaFactor = currentArea.width / state.imageArea.width;
 
@@ -554,16 +554,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                     imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
                     imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
-                    imageProperties.width = imageProperties.width * this.zoomRatio / zoomToCover * areaFactor;
-                    imageProperties.height = imageProperties.height * this.zoomRatio / zoomToCover * areaFactor;
 
-                    state.clipperData.deltaX = newDeltaX * zoomFactor * areaFactor;
-                    state.clipperData.deltaY = newDeltaY * zoomFactor * areaFactor;
+                    state.clipperData.deltaX = newDeltaX;
+                    state.clipperData.deltaY = newDeltaY;
+
                     var temp = state.clipperData.width;
                     state.clipperData.width = state.clipperData.height;
                     state.clipperData.height = temp;
-                    state.zoom = this.zoomRatio;
-                    if (state) {
+
+                    if (state)
+                    {
                         this.storeCropperState(state);
                     }
                 } else {
@@ -574,8 +574,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration,
                     onComplete: function () {
-                        var cleanAngle = parseInt((this.viewport.angle + 360) % 360, 10);
-                        this.viewport.set({angle: cleanAngle});
+                        if (this.viewport.angle % 180 != 0) {
+                            var temp = this.viewport.height;
+                            this.viewport.height = this.viewport.width;
+                            this.viewport.width = temp;
+                        }
+                        this.viewport.set({angle: 0});
                     }.bind(this)
                 });
 
