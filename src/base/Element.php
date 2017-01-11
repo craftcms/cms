@@ -619,7 +619,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var
+     * @var ElementInterface[]|null
      */
     private $_eagerLoadedElements;
 
