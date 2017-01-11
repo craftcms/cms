@@ -194,7 +194,7 @@ class Config extends Component
         }
 
         // Just return the first value
-        return ArrayHelper::firstValue($value);
+        return reset($value);
     }
 
     /**

@@ -436,7 +436,7 @@ class TemplateCaches extends Component
         }
 
         if (is_array($elements)) {
-            $firstElement = ArrayHelper::firstValue($elements);
+            $firstElement = reset($elements);
         } else {
             $firstElement = $elements;
             $elements = [$elements];

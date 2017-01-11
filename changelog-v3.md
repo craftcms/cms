@@ -245,7 +245,6 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\App::getPhpConfigValueAsBool()` to `phpConfigValueAsBool()`.
 - Renamed `craft\helpers\App::getPhpConfigValueInBytes()` to `phpConfigValueInBytes()`.
 - Renamed `craft\helpers\ArrayHelper::getFirstKey()` to `firstKey()`.
-- Renamed `craft\helpers\ArrayHelper::getFirstValue()` to `firstValue()`.
 - Renamed `craft\helpers\Assets::getFileTransferList()` to `fileTransferList()`.
 - Renamed `craft\helpers\Assets::getPeriodList()` to `periodList()`.
 - Renamed `craft\helpers\Assets::getTempFilePath()` to `tempFilePath()`.
@@ -403,6 +402,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\db\Query::column()`.
 - Removed `craft\elements\db\ElementQuery::configure()`.
 - Removed `craft\elements\Tag::getName()`. Use the `title` property instead.
+- Removed `craft\helpers\ArrayHelper::getFirstValue()`.
 - Removed `craft\helpers\Json::removeComments()`.
 - Removed `craft\helpers\MigrationHelper::makeElemental()`.
 - Removed `craft\helpers\MigrationHelper::refresh()`.

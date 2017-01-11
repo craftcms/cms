@@ -300,7 +300,7 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(ArrayHelper::firstValue($value));
+        $firstVal = StringHelper::toLowerCase(reset($value));
 
         if ($firstVal === 'and' || $firstVal === 'or') {
             $conditionOperator = array_shift($value);

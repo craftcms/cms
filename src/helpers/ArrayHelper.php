@@ -102,25 +102,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
-     * Returns the first value in a given array.
-     *
-     * @param array $arr
-     *
-     * @return mixed|null
-     */
-    public static function firstValue(array $arr)
-    {
-        if (is_array($arr)) {
-            /** @noinspection LoopWhichDoesNotLoopInspection */
-            foreach ($arr as $value) {
-                return $value;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Renames an item in an array. If the new key already exists in the array and the old key doesn’t,
      * the array will be left unchanged.
      *
