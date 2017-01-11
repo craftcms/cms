@@ -100,7 +100,7 @@ class Elements extends Component
     // =========================================================================
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_placeholderElements;
 

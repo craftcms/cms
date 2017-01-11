@@ -23,12 +23,12 @@ class Delete extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The confirmation message that should be shown before the elements get deleted
+     * @var string|null The confirmation message that should be shown before the elements get deleted
      */
     public $confirmationMessage;
 
     /**
-     * @var string The message that should be shown after the elements get deleted
+     * @var string|null The message that should be shown after the elements get deleted
      */
     public $successMessage;
 

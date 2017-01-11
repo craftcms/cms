@@ -296,57 +296,57 @@ class Asset extends Element
     // =========================================================================
 
     /**
-     * @var int Source ID
+     * @var int|null Source ID
      */
     public $volumeId;
 
     /**
-     * @var int Folder ID
+     * @var int|null Folder ID
      */
     public $folderId;
 
     /**
-     * @var string Folder path
+     * @var string|null Folder path
      */
     public $folderPath;
 
     /**
-     * @var string Filename
+     * @var string|null Filename
      */
     public $filename;
 
     /**
-     * @var string Kind
+     * @var string|null Kind
      */
     public $kind;
 
     /**
-     * @var int Width
+     * @var int|null Width
      */
     public $width;
 
     /**
-     * @var int Height
+     * @var int|null Height
      */
     public $height;
 
     /**
-     * @var int Size
+     * @var int|null Size
      */
     public $size;
 
     /**
-     * @var \DateTime Date modified
+     * @var \DateTime|null Date modified
      */
     public $dateModified;
 
     /**
-     * @var string New filename
+     * @var string|null New filename
      */
     public $newFilename;
 
     /**
-     * @var string The new file path
+     * @var string|null The new file path
      */
     public $newFilePath;
 
@@ -371,7 +371,7 @@ class Asset extends Element
     private $_transformSource = '';
 
     /**
-     * @var VolumeInterface
+     * @var VolumeInterface|null
      */
     private $_volume;
 

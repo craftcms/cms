@@ -22,7 +22,7 @@ class CategoryGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var CategoryGroup The category group model associated with the event.
+     * @var CategoryGroup|null The category group model associated with the event.
      */
     public $categoryGroup;
 

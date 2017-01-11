@@ -21,12 +21,12 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     // =========================================================================
 
     /**
-     * @var string The tag name
+     * @var string|null The tag name
      */
     private $_tag;
 
     /**
-     * @var string The View method the tag represents
+     * @var string|null The View method the tag represents
      */
     private $_method;
 
@@ -36,7 +36,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private $_allowTagPair;
 
     /**
-     * @var bool Whether the tag can specify the position of the resource
+     * @var bool|null Whether the tag can specify the position of the resource
      */
     private $_allowPosition;
 
@@ -46,12 +46,12 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private $_allowRuntimePosition;
 
     /**
-     * @var bool Whether the tag can specify additional options
+     * @var bool|null Whether the tag can specify additional options
      */
     private $_allowOptions;
 
     /**
-     * @var string The new template code that should be used if this tag is deprecated
+     * @var string|null The new template code that should be used if this tag is deprecated
      */
     private $_newCode;
 

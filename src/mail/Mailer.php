@@ -36,12 +36,12 @@ class Mailer extends \yii\swiftmailer\Mailer
     // =========================================================================
 
     /**
-     * @var string The email template that should be used
+     * @var string|null The email template that should be used
      */
     public $template;
 
     /**
-     * @var string|array|User|User[] $from The default sender’s email address, or their user model(s).
+     * @var string|array|User|User[]|null $from The default sender’s email address, or their user model(s).
      */
     public $from;
 

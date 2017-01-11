@@ -60,7 +60,7 @@ class Et extends Component
     public $elliottBaseUrl = 'https://elliott.craftcms.com';
 
     /**
-     * @var string Query string to append to Elliott request URLs.
+     * @var string|null Query string to append to Elliott request URLs.
      */
     public $elliottQuery;
 

@@ -26,22 +26,22 @@ class Site extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $language;
 
@@ -51,12 +51,12 @@ class Site extends Model
     public $hasUrls = true;
 
     /**
-     * @var string Original base URL (set if [[baseUrl]] was overridden by the config)
+     * @var string|null Original base URL (set if [[baseUrl]] was overridden by the config)
      */
     public $originalBaseUrl;
 
     /**
-     * @var string Base URL
+     * @var string|null Base URL
      */
     public $baseUrl;
 

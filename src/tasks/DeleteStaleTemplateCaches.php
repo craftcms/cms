@@ -24,7 +24,7 @@ class DeleteStaleTemplateCaches extends Task
     // =========================================================================
 
     /**
-     * @var int|int[] The element ID(s) whose caches need to be cleared
+     * @var int|int[]|null The element ID(s) whose caches need to be cleared
      */
     public $elementId;
 

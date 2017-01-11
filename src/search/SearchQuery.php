@@ -21,17 +21,17 @@ class SearchQuery
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_query;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_termOptions;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_tokens;
 

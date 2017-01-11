@@ -21,12 +21,12 @@ class EntryDraft extends BaseEntryRevisionModel
     // =========================================================================
 
     /**
-     * @var int Draft ID
+     * @var int|null Draft ID
      */
     public $draftId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 

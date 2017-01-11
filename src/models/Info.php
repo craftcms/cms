@@ -21,12 +21,12 @@ class Info extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
@@ -56,22 +56,22 @@ class Info extends Model
     public $maintenance = false;
 
     /**
-     * @var string Uid
+     * @var string|null Uid
      */
     public $uid;
 
     /**
-     * @var string Field version
+     * @var string|null Field version
      */
     public $fieldVersion;
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 

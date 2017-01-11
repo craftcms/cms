@@ -25,32 +25,32 @@ class FieldLayoutTab extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Layout ID
+     * @var int|null Layout ID
      */
     public $layoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var int Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
     /**
-     * @var FieldLayout
+     * @var FieldLayout|null
      */
     private $_layout;
 
     /**
-     * @var FieldInterface[]
+     * @var FieldInterface[]|null
      */
     private $_fields;
 

@@ -66,21 +66,21 @@ class TemplateCaches extends Component
     /**
      * The current request's path, as it will be stored in the templatecaches table.
      *
-     * @var string
+     * @var string|null
      */
     private $_path;
 
     /**
      * A list of element queries that were executed within the existing caches.
      *
-     * @var array
+     * @var array|null
      */
     private $_cachedQueries;
 
     /**
      * A list of element IDs that are active within the existing caches.
      *
-     * @var array
+     * @var array|null
      */
     private $_cacheElementIds;
 
@@ -101,7 +101,7 @@ class TemplateCaches extends Component
     /**
      * Whether all caches have been deleted, on a per-element type basis, in this request.
      *
-     * @var bool
+     * @var bool|null
      */
     private $_deletedCachesByElementType;
 

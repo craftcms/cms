@@ -23,7 +23,7 @@ class View extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 

@@ -31,12 +31,12 @@ class EtTransport
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_endpoint;
 
     /**
-     * @var EtModel
+     * @var EtModel|null
      */
     private $_model;
 

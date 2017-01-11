@@ -52,7 +52,7 @@ class PositionSelect extends Field
     // =========================================================================
 
     /**
-     * @var string[] The position options that should be shown in the field
+     * @var string[]|null The position options that should be shown in the field
      */
     public $options;
 

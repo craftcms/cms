@@ -25,22 +25,22 @@ class Et extends Model
     // =========================================================================
 
     /**
-     * @var string License key
+     * @var string|null License key
      */
     public $licenseKey;
 
     /**
-     * @var string License key status
+     * @var string|null License key status
      */
     public $licenseKeyStatus;
 
     /**
-     * @var string Licensed edition
+     * @var string|null Licensed edition
      */
     public $licensedEdition;
 
     /**
-     * @var string Licensed domain
+     * @var string|null Licensed domain
      */
     public $licensedDomain;
 
@@ -50,17 +50,17 @@ class Et extends Model
     public $editionTestableDomain = false;
 
     /**
-     * @var array The installed plugin license keys
+     * @var array|null The installed plugin license keys
      */
     public $pluginLicenseKeys;
 
     /**
-     * @var array The plugins' license key statuses. Set by the server response.
+     * @var array|null The plugins' license key statuses. Set by the server response.
      */
     public $pluginLicenseKeyStatuses;
 
     /**
-     * @var array|string|Model Data
+     * @var array|string|Model|null Data
      */
     public $data;
 
@@ -75,27 +75,27 @@ class Et extends Model
     public $requestIp = '1.1.1.1';
 
     /**
-     * @var \DateTime Request time
+     * @var \DateTime|null Request time
      */
     public $requestTime;
 
     /**
-     * @var string Request port
+     * @var string|null Request port
      */
     public $requestPort;
 
     /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var string Local edition
+     * @var string|null Local edition
      */
     public $localEdition;
 
     /**
-     * @var string User email
+     * @var string|null User email
      */
     public $userEmail;
 
@@ -105,12 +105,12 @@ class Et extends Model
     public $showBeta = false;
 
     /**
-     * @var array Response errors
+     * @var array|null Response errors
      */
     public $responseErrors;
 
     /**
-     * @var array Server info
+     * @var array|null Server info
      */
     public $serverInfo;
 

@@ -39,12 +39,12 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_imageSourcePath;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_extension;
 
@@ -59,22 +59,22 @@ class Raster extends Image
     private $_quality = 0;
 
     /**
-     * @var ImagickImage|GdImage
+     * @var ImagickImage|GdImage|null
      */
     private $_image;
 
     /**
-     * @var Imagine
+     * @var Imagine|null
      */
     private $_instance;
 
     /**
-     * @var RGB
+     * @var RGB|null
      */
     private $_palette;
 
     /**
-     * @var Font
+     * @var Font|null
      */
     private $_font;
 

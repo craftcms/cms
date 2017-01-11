@@ -28,37 +28,37 @@ class AssetTransform extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var int Width
+     * @var int|null Width
      */
     public $width;
 
     /**
-     * @var int Height
+     * @var int|null Height
      */
     public $height;
 
     /**
-     * @var string Format
+     * @var string|null Format
      */
     public $format;
 
     /**
-     * @var \DateTime Dimension change time
+     * @var \DateTime|null Dimension change time
      */
     public $dimensionChangeTime;
 
@@ -73,7 +73,7 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
-     * @var int Quality
+     * @var int|null Quality
      */
     public $quality;
 

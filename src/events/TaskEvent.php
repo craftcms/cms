@@ -22,7 +22,7 @@ class TaskEvent extends Event
     // =========================================================================
 
     /**
-     * @var TaskInterface The task associated with this event.
+     * @var TaskInterface|null The task associated with this event.
      */
     public $task;
 

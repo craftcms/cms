@@ -36,7 +36,7 @@ class Table extends Field
     // =========================================================================
 
     /**
-     * @var array The columns that should be shown in the table
+     * @var array|null The columns that should be shown in the table
      */
     public $columns;
 

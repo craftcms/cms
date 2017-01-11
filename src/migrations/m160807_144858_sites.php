@@ -41,7 +41,7 @@ class m160807_144858_sites extends Migration
     // =========================================================================
 
     /**
-     * @var string The CASE SQL used to set site column values
+     * @var string|null The CASE SQL used to set site column values
      */
     protected $caseSql;
 

@@ -26,7 +26,7 @@ class RichTextData extends \Twig_Markup
     private $_pages;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_rawContent;
 

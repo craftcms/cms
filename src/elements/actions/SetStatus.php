@@ -26,7 +26,7 @@ class SetStatus extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The status elements should be set to
+     * @var string|null The status elements should be set to
      */
     public $status;
 

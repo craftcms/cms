@@ -22,7 +22,7 @@ class VolumeEvent extends Event
     // =========================================================================
 
     /**
-     * @var VolumeInterface The volume associated with the event.
+     * @var VolumeInterface|null The volume associated with the event.
      */
     public $volume;
 

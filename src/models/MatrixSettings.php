@@ -23,7 +23,7 @@ class MatrixSettings extends Model
     // =========================================================================
 
     /**
-     * @var int Max blocks
+     * @var int|null Max blocks
      */
     public $maxBlocks;
 

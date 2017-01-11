@@ -56,12 +56,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     // =========================================================================
 
     /**
-     * @var View
+     * @var View|null
      */
     protected $view;
 
     /**
-     * @var Environment
+     * @var Environment|null
      */
     protected $environment;
 

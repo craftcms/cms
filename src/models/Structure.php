@@ -24,12 +24,12 @@ class Structure extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 

@@ -22,22 +22,22 @@ class PluginNewRelease extends Model
     // =========================================================================
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $date;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $localizedDate;
 
     /**
-     * @var string Notes
+     * @var string|null Notes
      */
     public $notes;
 
@@ -47,7 +47,7 @@ class PluginNewRelease extends Model
     public $critical = false;
 
     /**
-     * @var string Manual Download Endpoint
+     * @var string|null Manual Download Endpoint
      */
     public $manualDownloadEndpoint;
 

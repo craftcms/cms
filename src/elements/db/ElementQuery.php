@@ -72,18 +72,18 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     /**
-     * @var string The name of the [[ElementInterface]] class.
+     * @var string|null The name of the [[ElementInterface]] class.
      */
     public $elementType;
 
     /**
-     * @var Query The query object created by [[prepare()]]
+     * @var Query|null The query object created by [[prepare()]]
      * @see prepare()
      */
     public $query;
 
     /**
-     * @var Query The subselect’s query object created by [[prepare()]]
+     * @var Query|null The subselect’s query object created by [[prepare()]]
      * @see prepare()
      */
     public $subQuery;
@@ -102,7 +102,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool Whether to return each element as an array. If false (default), an object
+     * @var bool|null Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      */
     public $asArray;
@@ -121,7 +121,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $uid;
 
     /**
-     * @var bool Whether results should be returned in the order specified by [[id]].
+     * @var bool|null Whether results should be returned in the order specified by [[id]].
      */
     public $fixedOrder;
 
@@ -131,7 +131,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $status = 'enabled';
 
     /**
-     * @var bool Whether to return only archived elements.
+     * @var bool|null Whether to return only archived elements.
      */
     public $archived;
 
@@ -264,7 +264,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     private $_result;
 
     /**
-     * @var Element[] The criteria params that were set when the cached element query result was set
+     * @var Element[]|null The criteria params that were set when the cached element query result was set
      * @see setCachedResult()
      */
     private $_resultCriteria;

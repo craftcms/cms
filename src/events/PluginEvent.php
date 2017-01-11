@@ -22,7 +22,7 @@ class PluginEvent extends Event
     // =========================================================================
 
     /**
-     * @var PluginInterface The plugin associated with this event
+     * @var PluginInterface|null The plugin associated with this event
      */
     public $plugin;
 }

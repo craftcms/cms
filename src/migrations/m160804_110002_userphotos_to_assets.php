@@ -19,7 +19,7 @@ use yii\base\Exception;
 class m160804_110002_userphotos_to_assets extends Migration
 {
     /**
-     * @var string
+     * @var string|null
      */
     private $_basePath;
 

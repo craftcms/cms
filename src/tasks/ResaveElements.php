@@ -26,22 +26,22 @@ class ResaveElements extends Task
     // =========================================================================
 
     /**
-     * @var string|ElementInterface The element type that should be resaved
+     * @var string|ElementInterface|null The element type that should be resaved
      */
     public $elementType;
 
     /**
-     * @var array The element criteria that determines which elements should be resaved
+     * @var array|null The element criteria that determines which elements should be resaved
      */
     public $criteria;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $_siteId;
 
     /**
-     * @var int[]
+     * @var int[]|null
      */
     private $_elementIds;
 

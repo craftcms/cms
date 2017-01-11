@@ -19,7 +19,7 @@ class NavNode extends \Twig_Node_For
     // =========================================================================
 
     /**
-     * @var NavItem_Node
+     * @var NavItem_Node|null
      */
     protected $navItemNode;
 

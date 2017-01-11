@@ -37,12 +37,12 @@ class PlainText extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var string The input’s placeholder text
+     * @var string|null The input’s placeholder text
      */
     public $placeholder;
 
     /**
-     * @var bool Whether the input should allow line breaks
+     * @var bool|null Whether the input should allow line breaks
      */
     public $multiline;
 
@@ -52,7 +52,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $initialRows = 4;
 
     /**
-     * @var int The maximum number of characters allowed in the field
+     * @var int|null The maximum number of characters allowed in the field
      */
     public $maxLength;
 

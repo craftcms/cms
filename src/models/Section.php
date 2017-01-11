@@ -35,32 +35,32 @@ class Section extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Structure ID
+     * @var int|null Structure ID
      */
     public $structureId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 
     /**
-     * @var int Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 

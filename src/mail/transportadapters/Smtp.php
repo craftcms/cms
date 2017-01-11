@@ -31,32 +31,32 @@ class Smtp extends BaseTransportAdapter
     // =========================================================================
 
     /**
-     * @var string The host that should be used
+     * @var string|null The host that should be used
      */
     public $host;
 
     /**
-     * @var string The port that should be used
+     * @var string|null The port that should be used
      */
     public $port;
 
     /**
-     * @var bool Whether to use authentication
+     * @var bool|null Whether to use authentication
      */
     public $useAuthentication;
 
     /**
-     * @var string The username that should be used
+     * @var string|null The username that should be used
      */
     public $username;
 
     /**
-     * @var string The password that should be used
+     * @var string|null The password that should be used
      */
     public $password;
 
     /**
-     * @var string The encryption method that should be used, if any (ssl or tls)
+     * @var string|null The encryption method that should be used, if any (ssl or tls)
      */
     public $encryptionMethod;
 

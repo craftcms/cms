@@ -24,7 +24,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     // =========================================================================
 
     /**
-     * @var View
+     * @var View|null
      */
     protected $view;
 

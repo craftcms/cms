@@ -19,12 +19,12 @@ class EntryVersion extends BaseEntryRevisionModel
     // =========================================================================
 
     /**
-     * @var int Version ID
+     * @var int|null Version ID
      */
     public $versionId;
 
     /**
-     * @var int Num
+     * @var int|null Num
      */
     public $num;
 

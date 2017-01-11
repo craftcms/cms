@@ -19,7 +19,7 @@ class TemplateLoaderException extends \Twig_Error_Loader
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $template;
 

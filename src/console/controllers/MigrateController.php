@@ -47,19 +47,19 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
-     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      *
      * If [[plugin]] is defined, this will automatically be set to 'plugin'. Otherwise defaults to 'app'.
      */
     public $type;
 
     /**
-     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
     /**
-     * @var MigrationManager The migration manager that will be used in this request
+     * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
 

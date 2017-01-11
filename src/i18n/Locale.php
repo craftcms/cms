@@ -234,7 +234,7 @@ class Locale extends Object
     private static $_rtlLanguages = ['ar', 'he', 'ur'];
 
     /**
-     * @var string The locale ID.
+     * @var string|null The locale ID.
      */
     public $id;
 
@@ -244,7 +244,7 @@ class Locale extends Object
     private $_data;
 
     /**
-     * @var Formatter The locale's formatter.
+     * @var Formatter|null The locale's formatter.
      */
     private $_formatter;
 

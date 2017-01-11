@@ -22,27 +22,27 @@ class MailSettings extends Model
     // =========================================================================
 
     /**
-     * @var string The default email address that emails should be sent from
+     * @var string|null The default email address that emails should be sent from
      */
     public $fromEmail;
 
     /**
-     * @var string The default name that emails should be sent from
+     * @var string|null The default name that emails should be sent from
      */
     public $fromName;
 
     /**
-     * @var string The template that emails should be sent with
+     * @var string|null The template that emails should be sent with
      */
     public $template;
 
     /**
-     * @var string The transport type that should be used
+     * @var string|null The transport type that should be used
      */
     public $transportType;
 
     /**
-     * @var array The transport type’s settings
+     * @var array|null The transport type’s settings
      */
     public $transportSettings;
 

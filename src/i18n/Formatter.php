@@ -33,37 +33,37 @@ class Formatter extends \yii\i18n\Formatter
     public $dateTimeFormats;
 
     /**
-     * @var array The localized "stand alone" month names.
+     * @var array|null The localized "stand alone" month names.
      */
     public $standAloneMonthNames;
 
     /**
-     * @var array The localized month names.
+     * @var array|null The localized month names.
      */
     public $monthNames;
 
     /**
-     * @var array The localized "stand alone" day of the week names.
+     * @var array|null The localized "stand alone" day of the week names.
      */
     public $standAloneWeekDayNames;
 
     /**
-     * @var array The localized day of the week names.
+     * @var array|null The localized day of the week names.
      */
     public $weekDayNames;
 
     /**
-     * @var string The localized AM name.
+     * @var string|null The localized AM name.
      */
     public $amName;
 
     /**
-     * @var string The localized PM name.
+     * @var string|null The localized PM name.
      */
     public $pmName;
 
     /**
-     * @var array The locale's currency symbols.
+     * @var array|null The locale's currency symbols.
      */
     public $currencySymbols;
 

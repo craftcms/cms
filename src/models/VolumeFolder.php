@@ -23,33 +23,33 @@ class VolumeFolder extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int|string Parent ID
+     * @var int|string|null Parent ID
      */
     public $parentId;
 
     /**
-     * @var int Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Path
+     * @var string|null Path
      */
     public $path;
 
 
     /**
-     * @var VolumeFolder[]
+     * @var VolumeFolder[]|null
      */
     private $_children;
 

@@ -106,12 +106,12 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
-     * @var string Craft’s schema version number.
+     * @var string|null Craft’s schema version number.
      */
     public $schemaVersion;
 
     /**
-     * @var string The minimum Craft build number required to update to this build.
+     * @var string|null The minimum Craft build number required to update to this build.
      */
     public $minVersionRequired;
 
@@ -141,12 +141,12 @@ trait ApplicationTrait
     private $_siteUrl;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     private $_isDbConfigValid;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     private $_isDbConnectionValid;
 
@@ -156,7 +156,7 @@ trait ApplicationTrait
     private $_gettingLanguage = false;
 
     /**
-     * @var string The stored version
+     * @var string|null The stored version
      * @todo Remove this after the next breakpoint
      */
     private $_storedVersion;

@@ -22,7 +22,7 @@ class UserGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var UserGroup The user group associated with this event
+     * @var UserGroup|null The user group associated with this event
      */
     public $userGroup;
 

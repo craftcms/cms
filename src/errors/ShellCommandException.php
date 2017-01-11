@@ -19,17 +19,17 @@ use yii\base\Exception;
 class ShellCommandException extends Exception
 {
     /**
-     * @var string The command that was executed
+     * @var string|null The command that was executed
      */
     public $command;
 
     /**
-     * @var int The command’s exit code
+     * @var int|null The command’s exit code
      */
     public $exitCode;
 
     /**
-     * @var string The command’s error output
+     * @var string|null The command’s error output
      */
     public $error;
 

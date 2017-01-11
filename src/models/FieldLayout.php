@@ -24,12 +24,12 @@ class FieldLayout extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 

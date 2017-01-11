@@ -24,7 +24,7 @@ class ValidationException extends Exception
 {
 
     /**
-     * @var Model
+     * @var Model|null
      */
     private $_model;
 

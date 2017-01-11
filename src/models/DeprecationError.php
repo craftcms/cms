@@ -24,62 +24,62 @@ class DeprecationError extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Key
+     * @var string|null Key
      */
     public $key;
 
     /**
-     * @var string Fingerprint
+     * @var string|null Fingerprint
      */
     public $fingerprint;
 
     /**
-     * @var DateTime Last occurrence
+     * @var DateTime|null Last occurrence
      */
     public $lastOccurrence;
 
     /**
-     * @var string File
+     * @var string|null File
      */
     public $file;
 
     /**
-     * @var int Line
+     * @var int|null Line
      */
     public $line;
 
     /**
-     * @var string Class
+     * @var string|null Class
      */
     public $class;
 
     /**
-     * @var string Method
+     * @var string|null Method
      */
     public $method;
 
     /**
-     * @var string Template
+     * @var string|null Template
      */
     public $template;
 
     /**
-     * @var int Template line
+     * @var int|null Template line
      */
     public $templateLine;
 
     /**
-     * @var string Message
+     * @var string|null Message
      */
     public $message;
 
     /**
-     * @var array Traces
+     * @var array|null Traces
      */
     public $traces;
 

@@ -22,7 +22,7 @@ class FieldGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldGroup The field group associated with this event.
+     * @var FieldGroup|null The field group associated with this event.
      */
     public $group;
 

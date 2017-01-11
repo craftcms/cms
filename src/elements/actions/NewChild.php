@@ -23,17 +23,17 @@ class NewChild extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 
     /**
-     * @var int The maximum number of levels that the structure is allowed to have
+     * @var int|null The maximum number of levels that the structure is allowed to have
      */
     public $maxLevels;
 
     /**
-     * @var string The URL that the user should be taken to after clicking on this element action
+     * @var string|null The URL that the user should be taken to after clicking on this element action
      */
     public $newChildUrl;
 

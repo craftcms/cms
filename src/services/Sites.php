@@ -89,22 +89,22 @@ class Sites extends Component
     public $currentSite;
 
     /**
-     * @var int[]
+     * @var int[]|null
      */
     private $_editableSiteIds;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      */
     private $_sitesById;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      */
     private $_sitesByHandle;
 
     /**
-     * @var Site
+     * @var Site|null
      */
     private $_primarySite;
 

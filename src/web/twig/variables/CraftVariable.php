@@ -54,7 +54,7 @@ class CraftVariable extends ServiceLocator
     // =========================================================================
 
     /**
-     * @var \craft\web\Application|\craft\console\Application The Craft application class
+     * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
 

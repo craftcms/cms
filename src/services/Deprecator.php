@@ -40,7 +40,7 @@ class Deprecator extends Component
     private $_requestLogs = [];
 
     /**
-     * @var DeprecationError[] All the unique deprecation errors that have been logged
+     * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
     private $_allLogs;
 

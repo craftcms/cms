@@ -19,7 +19,7 @@ trait WidgetTrait
     // =========================================================================
 
     /**
-     * @var int The user’s chosen cospan for the widget
+     * @var int|null The user’s chosen cospan for the widget
      */
     public $colspan;
 }

@@ -26,17 +26,17 @@ class Section_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var int Site ID
+     * @var int|null Site ID
      */
     public $siteId;
 
@@ -46,22 +46,22 @@ class Section_SiteSettings extends Model
     public $enabledByDefault = true;
 
     /**
-     * @var bool Has URLs?
+     * @var bool|null Has URLs?
      */
     public $hasUrls;
 
     /**
-     * @var string URI format
+     * @var string|null URI format
      */
     public $uriFormat;
 
     /**
-     * @var string Entry template
+     * @var string|null Entry template
      */
     public $template;
 
     /**
-     * @var Section
+     * @var Section|null
      */
     private $_section;
 

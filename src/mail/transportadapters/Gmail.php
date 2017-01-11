@@ -31,12 +31,12 @@ class Gmail extends BaseTransportAdapter
     // =========================================================================
 
     /**
-     * @var string The username that should be used
+     * @var string|null The username that should be used
      */
     public $username;
 
     /**
-     * @var string The password that should be used
+     * @var string|null The password that should be used
      */
     public $password;
 

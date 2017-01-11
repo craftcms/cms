@@ -23,12 +23,12 @@ class CraftSupport extends Model
     // =========================================================================
 
     /**
-     * @var string From email
+     * @var string|null From email
      */
     public $fromEmail;
 
     /**
-     * @var string Message
+     * @var string|null Message
      */
     public $message;
 

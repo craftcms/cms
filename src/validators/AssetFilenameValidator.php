@@ -25,17 +25,17 @@ class AssetFilenameValidator extends Validator
     // =========================================================================
 
     /**
-     * @var string[] Allowed file extensions
+     * @var string[]|null Allowed file extensions
      */
     public $allowedExtensions;
 
     /**
-     * @var string User-defined error message used when the extension is disallowed.
+     * @var string|null User-defined error message used when the extension is disallowed.
      */
     public $badExtension;
 
     /**
-     * @var string User-defined error message used when a file already exists with the same name.
+     * @var string|null User-defined error message used when a file already exists with the same name.
      */
     public $alreadyExists;
 

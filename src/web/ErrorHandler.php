@@ -24,7 +24,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     // =========================================================================
 
     /**
-     * @var bool Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
+     * @var bool|null Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
      */
     private $_renderAllCallStackItems;
 

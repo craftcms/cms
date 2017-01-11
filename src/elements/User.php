@@ -376,32 +376,32 @@ class User extends Element implements IdentityInterface
     // =========================================================================
 
     /**
-     * @var string Username
+     * @var string|null Username
      */
     public $username;
 
     /**
-     * @var int Photo asset id
+     * @var int|null Photo asset id
      */
     public $photoId;
 
     /**
-     * @var string First name
+     * @var string|null First name
      */
     public $firstName;
 
     /**
-     * @var string Last name
+     * @var string|null Last name
      */
     public $lastName;
 
     /**
-     * @var string Email
+     * @var string|null Email
      */
     public $email;
 
     /**
-     * @var string Password
+     * @var string|null Password
      */
     public $password;
 
@@ -431,22 +431,22 @@ class User extends Element implements IdentityInterface
     public $pending = false;
 
     /**
-     * @var \DateTime Last login date
+     * @var \DateTime|null Last login date
      */
     public $lastLoginDate;
 
     /**
-     * @var int Invalid login count
+     * @var int|null Invalid login count
      */
     public $invalidLoginCount;
 
     /**
-     * @var \DateTime Last invalid login date
+     * @var \DateTime|null Last invalid login date
      */
     public $lastInvalidLoginDate;
 
     /**
-     * @var \DateTime Lockout date
+     * @var \DateTime|null Lockout date
      */
     public $lockoutDate;
 
@@ -456,62 +456,62 @@ class User extends Element implements IdentityInterface
     public $passwordResetRequired = false;
 
     /**
-     * @var \DateTime Last password change date
+     * @var \DateTime|null Last password change date
      */
     public $lastPasswordChangeDate;
 
     /**
-     * @var string Unverified email
+     * @var string|null Unverified email
      */
     public $unverifiedEmail;
 
     /**
-     * @var string New password
+     * @var string|null New password
      */
     public $newPassword;
 
     /**
-     * @var string Current password
+     * @var string|null Current password
      */
     public $currentPassword;
 
     /**
-     * @var \DateTime Verification code issued date
+     * @var \DateTime|null Verification code issued date
      */
     public $verificationCodeIssuedDate;
 
     /**
-     * @var string Verification code
+     * @var string|null Verification code
      */
     public $verificationCode;
 
     /**
-     * @var string Last login attempt IP address.
+     * @var string|null Last login attempt IP address.
      */
     public $lastLoginAttemptIp;
 
     /**
-     * @var string Auth error
+     * @var string|null Auth error
      */
     public $authError;
 
     /**
-     * @var self The user who should take over the user’s content if the user is deleted.
+     * @var self|null The user who should take over the user’s content if the user is deleted.
      */
     public $inheritorOnDelete;
 
     /**
-     * @var Asset user photo
+     * @var Asset|null user photo
      */
     private $_photo;
 
     /**
-     * @var UserGroup[] The cached list of groups the user belongs to. Set by [[getGroups()]].
+     * @var UserGroup[]|null The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private $_groups;
 
     /**
-     * @var array The user’s preferences
+     * @var array|null The user’s preferences
      */
     private $_preferences;
 

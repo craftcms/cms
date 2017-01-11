@@ -23,12 +23,12 @@ class ResaveAllElements extends Task
     // =========================================================================
 
     /**
-     * @var int The site ID to fetch the elements in
+     * @var int|null The site ID to fetch the elements in
      */
     public $siteId;
 
     /**
-     * @var string Whether only localizable elements should be resaved
+     * @var string|null Whether only localizable elements should be resaved
      */
     public $localizableOnly;
 

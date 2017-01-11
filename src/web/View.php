@@ -57,7 +57,7 @@ class View extends \yii\web\View
     private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
-     * @var Environment
+     * @var Environment|null
      */
     private $_twig;
 
@@ -77,12 +77,12 @@ class View extends \yii\web\View
     private $_objectTemplates;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_templateMode;
 
     /**
-     * @var string The root path to look for templates in
+     * @var string|null The root path to look for templates in
      */
     private $_templatesPath;
 

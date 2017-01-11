@@ -21,7 +21,7 @@ class SectionEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\models\Section The section model associated with the event.
+     * @var \craft\models\Section|null The section model associated with the event.
      */
     public $section;
 

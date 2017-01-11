@@ -22,32 +22,32 @@ class AssetTransformIndex extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int File ID
+     * @var int|null File ID
      */
     public $assetId;
 
     /**
-     * @var int Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Filename
+     * @var string|null Filename
      */
     public $filename;
 
     /**
-     * @var string Format
+     * @var string|null Format
      */
     public $format;
 
     /**
-     * @var string Location
+     * @var string|null Location
      */
     public $location;
 
@@ -62,22 +62,22 @@ class AssetTransformIndex extends Model
     public $inProgress = false;
 
     /**
-     * @var \DateTime Date indexed
+     * @var \DateTime|null Date indexed
      */
     public $dateIndexed;
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 
     /**
-     * @var string Detected format
+     * @var string|null Detected format
      */
     public $detectedFormat;
 

@@ -25,7 +25,7 @@ class BaseEntryRevisionModel extends Entry
     // =========================================================================
 
     /**
-     * @var int The revision creator’s user ID
+     * @var int|null The revision creator’s user ID
      */
     public $creatorId;
 

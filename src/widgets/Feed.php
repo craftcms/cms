@@ -34,12 +34,12 @@ class Feed extends Widget
     // =========================================================================
 
     /**
-     * @var string The feed URL
+     * @var string|null The feed URL
      */
     public $url;
 
     /**
-     * @var string The feed title
+     * @var string|null The feed title
      */
     public $title;
 

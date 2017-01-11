@@ -22,7 +22,7 @@ use yii\base\Exception;
 class InvalidSubpathException extends Exception
 {
     /**
-     * @var string The invalid subpath
+     * @var string|null The invalid subpath
      */
     public $subpath;
 

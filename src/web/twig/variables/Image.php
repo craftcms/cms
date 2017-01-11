@@ -21,12 +21,12 @@ class Image
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $path;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $url;
 

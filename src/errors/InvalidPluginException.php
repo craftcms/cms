@@ -22,7 +22,7 @@ use yii\base\Exception;
 class InvalidPluginException extends Exception
 {
     /**
-     * @var string The invalid plugin handle
+     * @var string|null The invalid plugin handle
      */
     public $handle;
 

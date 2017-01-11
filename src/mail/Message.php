@@ -21,17 +21,17 @@ class Message extends \yii\swiftmailer\Message
     // =========================================================================
 
     /**
-     * @var string The key of the message that should be loaded
+     * @var string|null The key of the message that should be loaded
      */
     public $key;
 
     /**
-     * @var array Any variables that should be applied to the template when it is rendered
+     * @var array|null Any variables that should be applied to the template when it is rendered
      */
     public $variables;
 
     /**
-     * @var string The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred language
+     * @var string|null The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred language
      */
     public $language;
 

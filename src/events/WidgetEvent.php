@@ -22,7 +22,7 @@ class WidgetEvent extends Event
     // =========================================================================
 
     /**
-     * @var WidgetInterface The widget associated with this event.
+     * @var WidgetInterface|null The widget associated with this event.
      */
     public $widget;
 

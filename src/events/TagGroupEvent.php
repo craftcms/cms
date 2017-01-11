@@ -22,7 +22,7 @@ class TagGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var TagGroup The tag group model associated with the event.
+     * @var TagGroup|null The tag group model associated with the event.
      */
     public $tagGroup;
 

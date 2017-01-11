@@ -30,27 +30,27 @@ class Install extends Migration
     // =========================================================================
 
     /**
-     * @var string The admin user’s username
+     * @var string|null The admin user’s username
      */
     public $username;
 
     /**
-     * @var string The admin user’s password
+     * @var string|null The admin user’s password
      */
     public $password;
 
     /**
-     * @var string The database driver to use
+     * @var string|null The database driver to use
      */
     public $driver;
 
     /**
-     * @var string The admin user’s email
+     * @var string|null The admin user’s email
      */
     public $email;
 
     /**
-     * @var Site The default site
+     * @var Site|null The default site
      */
     public $site;
 

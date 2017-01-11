@@ -19,7 +19,7 @@ class ElementStructureEvent extends ModelEvent
     // =========================================================================
 
     /**
-     * @var int The structure ID
+     * @var int|null The structure ID
      */
     public $structureId;
 }

@@ -47,7 +47,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     // =========================================================================
 
     /**
-     * @var int Max blocks
+     * @var int|null Max blocks
      */
     public $maxBlocks;
 
@@ -57,7 +57,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public $localizeBlocks = false;
 
     /**
-     * @var MatrixBlockType[] The field’s block types
+     * @var MatrixBlockType[]|null The field’s block types
      */
     private $_blockTypes;
 

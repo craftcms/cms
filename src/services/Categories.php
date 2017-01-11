@@ -58,17 +58,17 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * @var int[]
+     * @var int[]|null
      */
     private $_allGroupIds;
 
     /**
-     * @var int[]
+     * @var int[]|null
      */
     private $_editableGroupIds;
 
     /**
-     * @var CategoryGroup[]
+     * @var CategoryGroup[]|null
      */
     private $_categoryGroupsById;
 

@@ -66,37 +66,37 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var bool Whether related assets should be limited to a single folder
+     * @var bool|null Whether related assets should be limited to a single folder
      */
     public $useSingleFolder;
 
     /**
-     * @var int The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var int|null The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
     /**
-     * @var string The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var int The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var int|null The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
     /**
-     * @var string The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSubpath;
 
     /**
-     * @var bool Whether the available assets should be restricted to [[allowedKinds]]
+     * @var bool|null Whether the available assets should be restricted to [[allowedKinds]]
      */
     public $restrictFiles;
 
     /**
-     * @var array The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
+     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
      */
     public $allowedKinds;
 

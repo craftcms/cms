@@ -43,7 +43,7 @@ class Number extends Field implements PreviewableFieldInterface
     public $min = 0;
 
     /**
-     * @var int|float The maximum allowed number
+     * @var int|float|null The maximum allowed number
      */
     public $max;
 

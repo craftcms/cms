@@ -19,7 +19,7 @@ class SiteEvent extends CancelableEvent
     // =========================================================================
 
     /**
-     * @var \craft\models\Site The site model associated with the event.
+     * @var \craft\models\Site|null The site model associated with the event.
      */
     public $site;
 

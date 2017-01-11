@@ -72,17 +72,17 @@ class GlobalSet extends Element
     // =========================================================================
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var int Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 

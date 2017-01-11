@@ -66,32 +66,32 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     // =========================================================================
 
     /**
-     * @var string[] The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
+     * @var string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
     public $sources;
 
     /**
-     * @var string The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
+     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
     public $source;
 
     /**
-     * @var int The site that this field should relate elements from
+     * @var int|null The site that this field should relate elements from
      */
     public $targetSiteId;
 
     /**
-     * @var string The view mode
+     * @var string|null The view mode
      */
     public $viewMode;
 
     /**
-     * @var int The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
 
     /**
-     * @var string The label that should be used on the selection input
+     * @var string|null The label that should be used on the selection input
      */
     public $selectionLabel;
 

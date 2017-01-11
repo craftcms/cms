@@ -21,7 +21,7 @@ class Update extends Model
     // =========================================================================
 
     /**
-     * @var AppUpdate App
+     * @var AppUpdate|null App
      */
     public $app;
 
@@ -31,7 +31,7 @@ class Update extends Model
     public $plugins = [];
 
     /**
-     * @var array Response errors
+     * @var array|null Response errors
      */
     public $responseErrors;
 

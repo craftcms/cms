@@ -22,22 +22,22 @@ class AppNewRelease extends Model
     // =========================================================================
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $date;
 
     /**
-     * @var string Notes
+     * @var string|null Notes
      */
     public $notes;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 

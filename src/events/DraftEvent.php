@@ -21,7 +21,7 @@ class DraftEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\models\EntryDraft The draft model associated with the event.
+     * @var \craft\models\EntryDraft|null The draft model associated with the event.
      */
     public $draft;
 

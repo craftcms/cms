@@ -73,12 +73,12 @@ class Updates extends Component
     // =========================================================================
 
     /**
-     * @var Update
+     * @var Update|null
      */
     private $_updateModel;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     private $_isCraftDbMigrationNeeded;
 

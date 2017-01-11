@@ -34,37 +34,37 @@ class ElementIndexesController extends BaseElementsController
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_elementType;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_context;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_sourceKey;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_source;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_viewState;
 
     /**
-     * @var ElementQueryInterface
+     * @var ElementQueryInterface|null
      */
     private $_elementQuery;
 
     /**
-     * @var ElementActionInterface[]
+     * @var ElementActionInterface[]|null
      */
     private $_actions;
 

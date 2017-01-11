@@ -454,47 +454,47 @@ class Entry extends Element
     // =========================================================================
 
     /**
-     * @var int Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var int Type ID
+     * @var int|null Type ID
      */
     public $typeId;
 
     /**
-     * @var int Author ID
+     * @var int|null Author ID
      */
     public $authorId;
 
     /**
-     * @var \DateTime Post date
+     * @var \DateTime|null Post date
      */
     public $postDate;
 
     /**
-     * @var \DateTime Expiry date
+     * @var \DateTime|null Expiry date
      */
     public $expiryDate;
 
     /**
-     * @var int New parent ID
+     * @var int|null New parent ID
      */
     public $newParentId;
 
     /**
-     * @var string Revision notes
+     * @var string|null Revision notes
      */
     public $revisionNotes;
 
     /**
-     * @var User
+     * @var User|null
      */
     private $_author;
 
     /**
-     * @var bool
+     * @var bool|null
      * @see _hasNewParent()
      */
     private $_hasNewParent;

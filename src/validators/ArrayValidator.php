@@ -22,7 +22,7 @@ class ArrayValidator extends Validator
     // =========================================================================
 
     /**
-     * @var int|array specifies the count limit of the value to be validated.
+     * @var int|array|null specifies the count limit of the value to be validated.
      * This can be specified in one of the following forms:
      *
      * - an int: the exact count that the value should be of;
@@ -37,29 +37,29 @@ class ArrayValidator extends Validator
     public $count;
 
     /**
-     * @var int maximum count. If not set, it means no maximum count limit.
+     * @var int|null maximum count. If not set, it means no maximum count limit.
      * @see tooMany for the customized message for a too long array.
      */
     public $max;
 
     /**
-     * @var int minimum count. If not set, it means no minimum count limit.
+     * @var int|null minimum count. If not set, it means no minimum count limit.
      * @see tooFew for the customized message for a too short array.
      */
     public $min;
 
     /**
-     * @var string user-defined error message used when the count of the value is smaller than [[min]].
+     * @var string|null user-defined error message used when the count of the value is smaller than [[min]].
      */
     public $tooFew;
 
     /**
-     * @var string user-defined error message used when the count of the value is greater than [[max]].
+     * @var string|null user-defined error message used when the count of the value is greater than [[max]].
      */
     public $tooMany;
 
     /**
-     * @var string user-defined error message used when the count of the value is not equal to [[count]].
+     * @var string|null user-defined error message used when the count of the value is not equal to [[count]].
      */
     public $notEqual;
 

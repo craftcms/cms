@@ -22,7 +22,7 @@ class FieldEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldInterface The field associated with this event.
+     * @var FieldInterface|null The field associated with this event.
      */
     public $field;
 

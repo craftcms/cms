@@ -28,12 +28,12 @@ class SearchEvent extends BaseEvent
     public $elementIds = true;
 
     /**
-     * @var SearchQuery The search query
+     * @var SearchQuery|null The search query
      */
     public $query;
 
     /**
-     * @var int The site ID to filter by
+     * @var int|null The site ID to filter by
      */
     public $siteId;
 }

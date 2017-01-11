@@ -32,32 +32,32 @@ class MatrixBlockType extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Field ID
+     * @var int|null Field ID
      */
     public $fieldId;
 
     /**
-     * @var int Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var int Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 

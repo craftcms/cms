@@ -36,17 +36,17 @@ class QuickPost extends Widget
     // =========================================================================
 
     /**
-     * @var int The ID of the section that the widget should post to
+     * @var int|null The ID of the section that the widget should post to
      */
     public $section;
 
     /**
-     * @var int The ID of the entry type that the widget should create
+     * @var int|null The ID of the entry type that the widget should create
      */
     public $entryType;
 
     /**
-     * @var int[] The IDs of the fields that the widget should show
+     * @var int[]|null The IDs of the fields that the widget should show
      */
     public $fields;
 

@@ -70,7 +70,7 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-     * @var AssetTransform[]
+     * @var AssetTransform[]|null
      */
     private $_transformsByHandle;
 
@@ -85,12 +85,12 @@ class AssetTransforms extends Component
     private $_sourcesToBeDeleted = [];
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_eagerLoadedTransformIndexes;
 
     /**
-     * @var AssetTransformIndex
+     * @var AssetTransformIndex|null
      */
     private $_activeTransformIndex;
 

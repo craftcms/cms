@@ -107,27 +107,27 @@ class MatrixBlock extends Element
     // =========================================================================
 
     /**
-     * @var int Field ID
+     * @var int|null Field ID
      */
     public $fieldId;
 
     /**
-     * @var int Owner ID
+     * @var int|null Owner ID
      */
     public $ownerId;
 
     /**
-     * @var int Owner site ID
+     * @var int|null Owner site ID
      */
     public $ownerSiteId;
 
     /**
-     * @var int Type ID
+     * @var int|null Type ID
      */
     public $typeId;
 
     /**
-     * @var int Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
@@ -137,7 +137,7 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
-     * @var ElementInterface|false The owner element, or false if [[ownerId]] is invalid
+     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 

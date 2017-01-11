@@ -66,12 +66,12 @@ class Config extends Component
     private $_usePathInfo;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     private $_useFileLocks;
 
     /**
-     * @var string[]
+     * @var string[]|null
      */
     private $_allowedFileExtensions;
 

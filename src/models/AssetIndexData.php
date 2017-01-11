@@ -22,42 +22,42 @@ class AssetIndexData extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Session ID
+     * @var string|null Session ID
      */
     public $sessionId;
 
     /**
-     * @var int Offset
+     * @var int|null Offset
      */
     public $offset;
 
     /**
-     * @var string URI
+     * @var string|null URI
      */
     public $uri;
 
     /**
-     * @var int Size
+     * @var int|null Size
      */
     public $size;
 
     /**
-     * @var int Record ID
+     * @var int|null Record ID
      */
     public $recordId;
 
     /**
-     * @var DateTime The index timestamp
+     * @var DateTime|null The index timestamp
      */
     public $timestamp;
 

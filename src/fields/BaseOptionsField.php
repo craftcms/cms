@@ -30,7 +30,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     // =========================================================================
 
     /**
-     * @var array The available options
+     * @var array|null The available options
      */
     public $options;
 

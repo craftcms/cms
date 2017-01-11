@@ -29,7 +29,7 @@ class I18N extends \yii\i18n\I18N
     private $_intlLoaded = false;
 
     /**
-     * @var array All of the known locales
+     * @var array|null All of the known locales
      * @see getAllLocales()
      */
     private $_allLocaleIds;
@@ -40,7 +40,7 @@ class I18N extends \yii\i18n\I18N
     private $_appLocales;
 
     /**
-     * @var bool Whether [[translate()]] should wrap translations with `@` characters
+     * @var bool|null Whether [[translate()]] should wrap translations with `@` characters
      */
     private $_translationDebugOutput;
 

@@ -19,27 +19,27 @@ trait TaskTrait
     // =========================================================================
 
     /**
-     * @var int The task’s level within its structure
+     * @var int|null The task’s level within its structure
      */
     public $level;
 
     /**
-     * @var string The task’s description
+     * @var string|null The task’s description
      */
     public $description;
 
     /**
-     * @var int The parent task’s ID
+     * @var int|null The parent task’s ID
      */
     public $parentId;
 
     /**
-     * @var int The total number of steps the task will take
+     * @var int|null The total number of steps the task will take
      */
     public $totalSteps;
 
     /**
-     * @var int The current step that the task is taking
+     * @var int|null The current step that the task is taking
      */
     public $currentStep;
 

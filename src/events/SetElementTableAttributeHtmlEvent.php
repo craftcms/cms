@@ -21,7 +21,7 @@ class SetElementTableAttributeHtmlEvent extends Event
     // =========================================================================
 
     /**
-     * @var array The table attribute associated with this event.
+     * @var array|null The table attribute associated with this event.
      */
     public $attribute;
 

@@ -21,7 +21,7 @@ class BackupEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The file path to the backup.
+     * @var string|null The file path to the backup.
      */
     public $file;
 }

@@ -21,7 +21,7 @@ class RestoreEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The file path to the backup to restore.
+     * @var string|null The file path to the backup to restore.
      */
     public $file;
 }

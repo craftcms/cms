@@ -26,17 +26,17 @@ class FindAndReplace extends Task
     // =========================================================================
 
     /**
-     * @var string The search text
+     * @var string|null The search text
      */
     public $find;
 
     /**
-     * @var string The replacement text
+     * @var string|null The replacement text
      */
     public $replace;
 
     /**
-     * @var int The Matrix field ID, if searching against a Matrix field’s content
+     * @var int|null The Matrix field ID, if searching against a Matrix field’s content
      */
     public $matrixFieldId;
 

@@ -582,7 +582,7 @@ abstract class Element extends Component implements ElementInterface
     private $_fieldParamNamePrefix;
 
     /**
-     * @var array Record of the fields whose values have already been normalized
+     * @var array|null Record of the fields whose values have already been normalized
      */
     private $_normalizedFieldValues;
 
@@ -597,7 +597,7 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var int|false The structure ID that the element is associated with
+     * @var int|false|null The structure ID that the element is associated with
      * @see getStructureId()
      * @see setStructureId()
      */

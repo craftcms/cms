@@ -24,17 +24,17 @@ class UpdateElementSlugsAndUris extends Task
     // =========================================================================
 
     /**
-     * @var int|int[] The ID(s) of the element(s) to update
+     * @var int|int[]|null The ID(s) of the element(s) to update
      */
     public $elementId;
 
     /**
-     * @var string|ElementInterface The type of elements to update.
+     * @var string|ElementInterface|null The type of elements to update.
      */
     public $elementType;
 
     /**
-     * @var int The site ID of the elements to update.
+     * @var int|null The site ID of the elements to update.
      */
     public $siteId;
 

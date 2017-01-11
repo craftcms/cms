@@ -58,7 +58,7 @@ class RichText extends Field
     // =========================================================================
 
     /**
-     * @var string The Redactor config file to use
+     * @var string|null The Redactor config file to use
      */
     public $configFile;
 

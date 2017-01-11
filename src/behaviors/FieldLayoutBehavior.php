@@ -24,7 +24,7 @@ class FieldLayoutBehavior extends Behavior
     // =========================================================================
 
     /**
-     * @var string The element type that the field layout will be associated with
+     * @var string|null The element type that the field layout will be associated with
      */
     public $elementType;
 
@@ -34,7 +34,7 @@ class FieldLayoutBehavior extends Behavior
     public $idAttribute = 'fieldLayoutId';
 
     /**
-     * @var FieldLayout The field layout associated with the owner
+     * @var FieldLayout|null The field layout associated with the owner
      */
     private $_fieldLayout;
 

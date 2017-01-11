@@ -30,27 +30,27 @@ class PluginUpdate extends Model
     // =========================================================================
 
     /**
-     * @var string Package name
+     * @var string|null Package name
      */
     public $packageName;
 
     /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var string Latest version
+     * @var string|null Latest version
      */
     public $latestVersion;
 
     /**
-     * @var \DateTime Latest date
+     * @var \DateTime|null Latest date
      */
     public $latestDate;
 
     /**
-     * @var string Display name
+     * @var string|null Display name
      */
     public $displayName;
 
@@ -65,12 +65,12 @@ class PluginUpdate extends Model
     public $manualUpdateRequired = false;
 
     /**
-     * @var string Manual download endpoint
+     * @var string|null Manual download endpoint
      */
     public $manualDownloadEndpoint;
 
     /**
-     * @var PluginNewRelease[] Releases
+     * @var PluginNewRelease[]|null Releases
      */
     public $releases;
 

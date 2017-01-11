@@ -22,7 +22,7 @@ class AssetTransformEvent extends Event
     // =========================================================================
 
     /**
-     * @var AssetTransform The asset transform model associated with the event.
+     * @var AssetTransform|null The asset transform model associated with the event.
      */
     public $assetTransform;
 

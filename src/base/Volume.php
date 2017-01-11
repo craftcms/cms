@@ -46,12 +46,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     protected $foldersHaveTrailingSlashes = true;
 
     /**
-     * @var AdapterInterface The Flysystem adapter, created by [[createAdapter()]]
+     * @var AdapterInterface|null The Flysystem adapter, created by [[createAdapter()]]
      */
     private $_adapter;
 
     /**
-     * @var Filesystem The Flysystem filesystem
+     * @var Filesystem|null The Flysystem filesystem
      */
     private $_filesystem;
 

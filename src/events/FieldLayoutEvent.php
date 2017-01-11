@@ -22,7 +22,7 @@ class FieldLayoutEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldLayout The field layout associated with this event.
+     * @var FieldLayout|null The field layout associated with this event.
      */
     public $layout;
 

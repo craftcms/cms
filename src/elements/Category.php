@@ -213,17 +213,17 @@ class Category extends Element
     // =========================================================================
 
     /**
-     * @var int Group ID
+     * @var int|null Group ID
      */
     public $groupId;
 
     /**
-     * @var int New parent ID
+     * @var int|null New parent ID
      */
     public $newParentId;
 
     /**
-     * @var bool
+     * @var bool|null
      * @see _hasNewParent()
      */
     private $_hasNewParent;

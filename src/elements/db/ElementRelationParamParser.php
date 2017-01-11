@@ -30,22 +30,22 @@ class ElementRelationParamParser
     // =========================================================================
 
     /**
-     * @var int
+     * @var int|null
      */
     private $_joinSourceMatrixBlocksCount;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $_joinTargetMatrixBlocksCount;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $_joinSourcesCount;
 
     /**
-     * @var int
+     * @var int|null
      */
     private $_joinTargetsCount;
 

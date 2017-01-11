@@ -21,7 +21,7 @@ class EntryTypeEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\models\EntryType The entry type model associated with the event.
+     * @var \craft\models\EntryType|null The entry type model associated with the event.
      */
     public $entryType;
 

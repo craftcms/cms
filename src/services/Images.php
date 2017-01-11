@@ -49,7 +49,7 @@ class Images extends Component
     /**
      * Imagick version being used, if any.
      *
-     * @var string
+     * @var string|null
      */
     private $_imagickVersion;
 

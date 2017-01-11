@@ -22,7 +22,7 @@ class VersionEvent extends Event
     // =========================================================================
 
     /**
-     * @var Entry The entry version associated with the event.
+     * @var Entry|null The entry version associated with the event.
      */
     public $version;
 }

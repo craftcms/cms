@@ -22,7 +22,7 @@ class ElementContentEvent extends Event
     // =========================================================================
 
     /**
-     * @var ElementInterface The element model associated with the event.
+     * @var ElementInterface|null The element model associated with the event.
      */
     public $element;
 }

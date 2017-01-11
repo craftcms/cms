@@ -37,22 +37,22 @@ class MigrationManager extends Component
     // =========================================================================
 
     /**
-     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      */
     public $type;
 
     /**
-     * @var int The plugin ID, if [[type]] is set to 'plugin'.
+     * @var int|null The plugin ID, if [[type]] is set to 'plugin'.
      */
     public $pluginId;
 
     /**
-     * @var string The namespace that the migration classes are in
+     * @var string|null The namespace that the migration classes are in
      */
     public $migrationNamespace;
 
     /**
-     * @var string The path to the migrations directory
+     * @var string|null The path to the migrations directory
      */
     public $migrationPath;
 

@@ -22,7 +22,7 @@ class GeneratePendingTransforms extends Task
     // =========================================================================
 
     /**
-     * @var int[] The pending transform index IDs
+     * @var int[]|null The pending transform index IDs
      */
     private $_indexIds;
 

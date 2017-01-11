@@ -23,7 +23,7 @@ class Session extends \yii\web\Session
     // =========================================================================
 
     /**
-     * @var string The session variable name used to store the authorization keys for the current session.
+     * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
      * @see deauthorize()
      * @see checkAuthorization()

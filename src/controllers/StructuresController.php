@@ -30,12 +30,12 @@ class StructuresController extends Controller
     // =========================================================================
 
     /**
-     * @var Structure
+     * @var Structure|null
      */
     private $_structure;
 
     /**
-     * @var Element
+     * @var Element|null
      */
     private $_element;
 

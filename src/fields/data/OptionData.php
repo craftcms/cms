@@ -21,17 +21,17 @@ class OptionData implements Serializable
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $label;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $value;
 
     /**
-     * @var bool
+     * @var bool|null
      */
     public $selected;
 

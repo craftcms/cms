@@ -25,12 +25,12 @@ class FieldGroup extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 

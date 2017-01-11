@@ -34,27 +34,27 @@ class EntryType extends Model
     // =========================================================================
 
     /**
-     * @var int ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var int Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var int Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
@@ -69,7 +69,7 @@ class EntryType extends Model
     public $titleLabel = 'Title';
 
     /**
-     * @var string Title format
+     * @var string|null Title format
      */
     public $titleFormat;
 
