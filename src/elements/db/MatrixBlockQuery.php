@@ -215,8 +215,7 @@ class MatrixBlockQuery extends ElementQuery
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->typeId = $query
+            $this->typeId = (new Query())
                 ->select(['id'])
                 ->from(['{{%matrixblocktypes}}'])
                 ->where(Db::parseParam('handle', $value))

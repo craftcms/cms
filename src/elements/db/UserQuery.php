@@ -172,8 +172,7 @@ class UserQuery extends ElementQuery
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->groupId = $query
+            $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
@@ -333,8 +332,7 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $query = new Query();
-            $userIds = $query
+            $userIds = (new Query())
                 ->select(['userId'])
                 ->from(['{{%usergroups_users}}'])
                 ->where(Db::parseParam('groupId', $this->groupId))

@@ -147,8 +147,7 @@ class EntryQuery extends ElementQuery
             $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->sectionId = $query
+            $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from(['{{%sections}}'])
                 ->where(Db::parseParam('handle', $value))
@@ -186,8 +185,7 @@ class EntryQuery extends ElementQuery
         if ($value instanceof EntryType) {
             $this->typeId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->typeId = $query
+            $this->typeId = (new Query())
                 ->select(['id'])
                 ->from(['{{%entrytypes}}'])
                 ->where(Db::parseParam('handle', $value))
@@ -239,8 +237,7 @@ class EntryQuery extends ElementQuery
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->authorGroupId = $query
+            $this->authorGroupId = (new Query())
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
@@ -383,7 +380,7 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        if ($this->orderBy === null && !$this->structureId && !$this->fixedOrder) {
+        if ($this->orderBy === null && !$this->structureId && $this->fixedOrder === false) {
             $this->orderBy = 'postDate desc';
         }
 
@@ -482,12 +479,12 @@ class EntryQuery extends ElementQuery
         if ($this->sectionId) {
             // Should we set the structureId param?
             if ($this->structureId === null && (!is_array($this->sectionId) || count($this->sectionId) === 1)) {
-                $query = new Query();
-                $this->structureId = $query
+                $structureId = (new Query())
                     ->select(['structureId'])
                     ->from(['{{%sections}}'])
                     ->where(Db::parseParam('id', $this->sectionId))
                     ->scalar();
+                $this->structureId = $structureId ? (int)$structureId : false;
             }
 
             $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId));

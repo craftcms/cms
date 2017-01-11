@@ -78,8 +78,7 @@ class TagQuery extends ElementQuery
         if ($value instanceof TagGroup) {
             $this->groupId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->groupId = $query
+            $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(['{{%taggroups}}'])
                 ->where(Db::parseParam('handle', $value))
