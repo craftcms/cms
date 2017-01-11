@@ -309,7 +309,7 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
-- Updated Twig to 2.0.0.
+- Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
 - Updated Garnish to 0.1.11.

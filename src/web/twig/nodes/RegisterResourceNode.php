@@ -15,31 +15,11 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
- * @todo   super hacky that this extends Twig_Node_Set, but that's the only way to get Twig_Parser::filterBodyNodes() to leave us alone
  */
-class RegisterResourceNode extends \Twig_Node_Set
+class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterface
 {
     // Public Methods
     // =========================================================================
-
-    /** @noinspection PhpMissingParentConstructorInspection */
-    /**
-     * Constructor.
-     *
-     * The nodes are automatically made available as properties ($this->node).
-     * The attributes are automatically made available as array items ($this['name']).
-     *
-     * @param array       $nodes      An array of named nodes
-     * @param array       $attributes An array of attributes (should not be nodes)
-     * @param int         $lineno     The line number
-     * @param string|null $tag        The tag name associated with the Node
-     */
-    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, string $tag = null)
-    {
-        // Bypass Twig_Node_Set::__construct()
-        \Twig_Node::__construct($nodes, $attributes, $lineno, $tag);
-    }
 
     /**
      * @inheritdoc
