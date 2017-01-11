@@ -34,7 +34,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[] The tag group ID(s) that the resulting tags must be in.
+     * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
      */
     public $groupId;
 
@@ -69,7 +69,7 @@ class TagQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
-     * @param string|string[]|TagGroup $value The property value
+     * @param string|string[]|TagGroup|null $value The property value
      *
      * @return static self reference
      */
@@ -77,13 +77,15 @@ class TagQuery extends ElementQuery
     {
         if ($value instanceof TagGroup) {
             $this->groupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
                 ->from(['{{%taggroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -92,7 +94,7 @@ class TagQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */

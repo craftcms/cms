@@ -39,10 +39,10 @@ class CategoryQuery extends ElementQuery
     /**
      * @var bool Whether to only return categories that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var int|int[] The category group ID(s) that the resulting categories must be in.
+     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
      */
     public $groupId;
 
@@ -78,7 +78,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given category group(s)’s handle(s).
      *
-     * @param string|string[]|CategoryGroup $value The property value
+     * @param string|string[]|CategoryGroup|null $value The property value
      *
      * @return static self reference
      */
@@ -87,13 +87,15 @@ class CategoryQuery extends ElementQuery
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
                 ->from('{{%categorygroups}}')
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -102,7 +104,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -149,7 +151,7 @@ class CategoryQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
+        if ($this->editable === true) {
             // Limit the query to only the category groups the user has permission to edit
             $this->subQuery->andWhere([
                 'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()

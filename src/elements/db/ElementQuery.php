@@ -111,12 +111,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var mixed The element ID(s). Prefix IDs with "not " to exclude them.
+     * @var int|int[]|false|null The element ID(s). Prefix IDs with "not " to exclude them.
      */
     public $id;
 
     /**
-     * @var mixed The element UID(s). Prefix UIDs with "not " to exclude them.
+     * @var string|string[]|null The element UID(s). Prefix UIDs with "not " to exclude them.
      */
     public $uid;
 
@@ -126,7 +126,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $fixedOrder;
 
     /**
-     * @var string|string[] The status(es) that the resulting elements must have.
+     * @var string|string[]|null The status(es) that the resulting elements must have.
      */
     public $status = 'enabled';
 
@@ -146,7 +146,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $dateUpdated;
 
     /**
-     * @var int The site ID that the elements should be returned in.
+     * @var int|null The site ID that the elements should be returned in.
      */
     public $siteId;
 
@@ -156,38 +156,38 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $enabledForSite = true;
 
     /**
-     * @var int|array|ElementInterface The element relation criteria.
+     * @var int|array|ElementInterface|null The element relation criteria.
      */
     public $relatedTo;
 
     /**
-     * @var string|string[] The title that resulting elements must have.
+     * @var string|string[]|null The title that resulting elements must have.
      */
     public $title;
 
     /**
-     * @var string|string[] The slug that resulting elements must have.
+     * @var string|string[]|null The slug that resulting elements must have.
      */
     public $slug;
 
     /**
-     * @var string|string[] The URI that the resulting element must have.
+     * @var string|string[]|null The URI that the resulting element must have.
      */
     public $uri;
 
     /**
-     * @var string|array|SearchQuery The search term to filter the resulting elements by.
+     * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
      */
     public $search;
 
     /**
-     * @var string|string[] The reference code(s) used to identify the element(s).
+     * @var string|string[]|null The reference code(s) used to identify the element(s).
      * This property is set when accessing elements via their reference tags, e.g. {entry:section/slug}.
      */
     public $ref;
 
     /**
-     * @var mixed The eager-loading declaration
+     * @var string|array|null The eager-loading declaration
      */
     public $with;
 
@@ -200,57 +200,57 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|false The structure ID that should be used to join in the structureelements table.
+     * @var int|false|null The structure ID that should be used to join in the structureelements table.
      */
     public $structureId;
 
     /**
-     * @var int The element’s level within the structure
+     * @var int|null The element’s level within the structure
      */
     public $level;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that results must be an ancestor of.
+     * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
      */
     public $ancestorOf;
 
     /**
-     * @var int The maximum number of levels that results may be separated from [[ancestorOf]].
+     * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
      */
     public $ancestorDist;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that results must be a descendant of.
+     * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
      */
     public $descendantOf;
 
     /**
-     * @var int The maximum number of levels that results may be separated from [[descendantOf]].
+     * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
      */
     public $descendantDist;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that the results must be a sibling of.
+     * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
      */
     public $siblingOf;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that the result must be the previous sibling of.
+     * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
      */
     public $prevSiblingOf;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that the result must be the next sibling of.
+     * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
      */
     public $nextSiblingOf;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that the results must be positioned before.
+     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
      */
     public $positionedBefore;
 
     /**
-     * @var int|ElementInterface The element (or its ID) that the results must be positioned after.
+     * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
      */
     public $positionedAfter;
 
@@ -541,7 +541,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function dateCreated($value = true)
+    public function dateCreated($value)
     {
         $this->dateCreated = $value;
 
@@ -551,7 +551,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function dateUpdated($value = true)
+    public function dateUpdated($value)
     {
         $this->dateUpdated = $value;
 
@@ -582,7 +582,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function siteId(int $value)
+    public function siteId(int $value = null)
     {
         $this->siteId = $value;
 
@@ -608,7 +608,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function enabledForSite($value = true)
+    public function enabledForSite(bool $value = true)
     {
         $this->enabledForSite = $value;
 
@@ -704,7 +704,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function structureId(int $value)
+    public function structureId(int $value = null)
     {
         $this->structureId = $value;
 
@@ -714,7 +714,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function level(int $value)
+    public function level(int $value = null)
     {
         $this->level = $value;
 
@@ -734,7 +734,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ancestorDist(int $value)
+    public function ancestorDist(int $value = null)
     {
         $this->ancestorDist = $value;
 
@@ -754,7 +754,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function descendantDist(int $value)
+    public function descendantDist(int $value = null)
     {
         $this->descendantDist = $value;
 

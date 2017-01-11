@@ -38,40 +38,40 @@ class UserQuery extends ElementQuery
     /**
      * @var bool Whether to only return users that are admins.
      */
-    public $admin;
+    public $admin = false;
 
     /**
      * @var bool Whether to only return the client user.
      */
-    public $client;
+    public $client = false;
 
     /**
-     * @var string|int The permission that the resulting users must have.
+     * @var string|int|null The permission that the resulting users must have.
      */
     public $can;
 
     /**
-     * @var int|int[] The tag group ID(s) that the resulting users must be in.
+     * @var int|int[]|null The tag group ID(s) that the resulting users must be in.
      */
     public $groupId;
 
     /**
-     * @var string|string[] The email address that the resulting users must have.
+     * @var string|string[]|null The email address that the resulting users must have.
      */
     public $email;
 
     /**
-     * @var string|string[] The username that the resulting users must have.
+     * @var string|string[]|null The username that the resulting users must have.
      */
     public $username;
 
     /**
-     * @var string|string[] The first name that the resulting users must have.
+     * @var string|string[]|null The first name that the resulting users must have.
      */
     public $firstName;
 
     /**
-     * @var string|string[] The last name that the resulting users must have.
+     * @var string|string[]|null The last name that the resulting users must have.
      */
     public $lastName;
 
@@ -149,7 +149,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[can]] property.
      *
-     * @param string|int $value The property value
+     * @param string|int|null $value The property value
      *
      * @return static self reference
      */
@@ -163,7 +163,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
-     * @param string|string[]|UserGroup $value The property value
+     * @param string|string[]|UserGroup|null $value The property value
      *
      * @return static self reference
      */
@@ -171,13 +171,15 @@ class UserQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -186,7 +188,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -200,7 +202,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[email]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -214,7 +216,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[username]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -228,7 +230,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[firstName]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -242,7 +244,7 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[lastName]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -318,13 +320,13 @@ class UserQuery extends ElementQuery
             $this->query->addSelect(['users.photoId']);
         }
 
-        if ($this->withPassword) {
+        if ($this->withPassword === true) {
             $this->query->addSelect(['users.password']);
         }
 
-        if ($this->admin) {
+        if ($this->admin === true) {
             $this->subQuery->andWhere(['users.admin' => '1']);
-        } else if ($this->client) {
+        } else if ($this->client === true) {
             $this->subQuery->andWhere(['users.client' => '1']);
         } else {
             $this->_applyCanParam();

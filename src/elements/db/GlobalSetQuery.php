@@ -34,10 +34,10 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @var bool Whether to only return global sets that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var string|string[] The handle(s) that the resulting global sets must have.
+     * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
     public $handle;
 
@@ -74,7 +74,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Sets the [[handle]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -120,7 +120,7 @@ class GlobalSetQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
+        if ($this->editable === true) {
             // Limit the query to only the global sets the user has permission to edit
             $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
             $this->subQuery->andWhere(['elements.id' => $editableSetIds]);

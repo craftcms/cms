@@ -46,25 +46,25 @@ class EntryQuery extends ElementQuery
     /**
      * @var bool Whether to only return entries that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var int|int[] The section ID(s) that the resulting entries must be in.
+     * @var int|int[]|null The section ID(s) that the resulting entries must be in.
      */
     public $sectionId;
 
     /**
-     * @var int|int[] The entry type ID(s) that the resulting entries must have.
+     * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
      */
     public $typeId;
 
     /**
-     * @var int|int[] The user ID(s) that the resulting entries’ authors must have.
+     * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
      */
     public $authorId;
 
     /**
-     * @var int|int[] The user group ID(s) that the resulting entries’ authors must be in.
+     * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
      */
     public $authorGroupId;
 
@@ -137,7 +137,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property based on a given section(s)’s handle(s).
      *
-     * @param string|string[]|Section $value The property value
+     * @param string|string[]|Section|null $value The property value
      *
      * @return static self reference
      */
@@ -146,13 +146,15 @@ class EntryQuery extends ElementQuery
         if ($value instanceof Section) {
             $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->sectionId = $query
                 ->select(['id'])
                 ->from(['{{%sections}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->sectionId = null;
         }
 
         return $this;
@@ -161,7 +163,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -175,7 +177,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given entry type(s)’s handle(s).
      *
-     * @param string|string[]|EntryType $value The property value
+     * @param string|string[]|EntryType|null $value The property value
      *
      * @return static self reference
      */
@@ -183,13 +185,15 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof EntryType) {
             $this->typeId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->typeId = $query
                 ->select(['id'])
                 ->from(['{{%entrytypes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->typeId = null;
         }
 
         return $this;
@@ -198,7 +202,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -212,7 +216,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -226,7 +230,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property based on a given user group(s)’s handle(s).
      *
-     * @param string|string[]| $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -234,13 +238,15 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->authorGroupId = $query
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->authorGroupId = null;
         }
 
         return $this;
@@ -249,7 +255,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -441,7 +447,7 @@ class EntryQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if (!$this->editable) {
+        if ($this->editable === false) {
             return;
         }
 

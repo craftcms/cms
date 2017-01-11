@@ -36,37 +36,37 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[] The volume ID(s) that the resulting assets must be in.
+     * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
      */
     public $volumeId;
 
     /**
-     * @var int|int[] The asset folder ID(s) that the resulting assets must be in.
+     * @var int|int[]|null The asset folder ID(s) that the resulting assets must be in.
      */
     public $folderId;
 
     /**
-     * @var string|string[] The filename(s) that the resulting assets must have.
+     * @var string|string[]|null The filename(s) that the resulting assets must have.
      */
     public $filename;
 
     /**
-     * @var string|string[] The file kind(s) that the resulting assets must be.
+     * @var string|string[]|null The file kind(s) that the resulting assets must be.
      */
     public $kind;
 
     /**
-     * @var int|string The width (in pixels) that the resulting assets must have.
+     * @var int|null The width (in pixels) that the resulting assets must have.
      */
     public $width;
 
     /**
-     * @var int|string The height (in pixels) that the resulting assets must have.
+     * @var int|null The height (in pixels) that the resulting assets must have.
      */
     public $height;
 
     /**
-     * @var int|string The size (in bytes) that the resulting assets must have.
+     * @var int|null The size (in bytes) that the resulting assets must have.
      */
     public $size;
 
@@ -81,7 +81,7 @@ class AssetQuery extends ElementQuery
     public $includeSubfolders = false;
 
     /**
-     * @var array The asset transform indexes that should be eager-loaded, if they exist
+     * @var array|null The asset transform indexes that should be eager-loaded, if they exist
      */
     public $withTransforms;
 
@@ -103,7 +103,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
      *
-     * @param string|string[]|Volume $value The property value
+     * @param string|string[]|Volume|null $value The property value
      *
      * @return static self reference
      */
@@ -111,13 +111,15 @@ class AssetQuery extends ElementQuery
     {
         if ($value instanceof Volume) {
             $this->volumeId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->volumeId = $query
                 ->select(['id'])
                 ->from(['{{%volumes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->volumeId = null;
         }
 
         return $this;
@@ -141,7 +143,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -170,7 +172,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[folderId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -184,7 +186,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[filename]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -198,7 +200,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[kind]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -212,11 +214,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[width]] property.
      *
-     * @param int|string $value The property value
+     * @param int|null $value The property value
      *
      * @return static self reference
      */
-    public function width($value)
+    public function width(int $value = null)
     {
         $this->width = $value;
 
@@ -226,11 +228,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[height]] property.
      *
-     * @param int|string $value The property value
+     * @param int|null $value The property value
      *
      * @return static self reference
      */
-    public function height($value)
+    public function height(int $value = null)
     {
         $this->height = $value;
 
@@ -240,11 +242,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[size]] property.
      *
-     * @param int|string $value The property value
+     * @param int|null $value The property value
      *
      * @return static self reference
      */
-    public function size($value)
+    public function size(int $value = null)
     {
         $this->size = $value;
 
@@ -282,11 +284,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[withTransforms]] property.
      *
-     * @param array $value The transforms to include.
+     * @param array|null $value The transforms to include.
      *
      * @return self The query object itself
      */
-    public function withTransforms(array $value)
+    public function withTransforms(array $value = null)
     {
         $this->withTransforms = $value;
 

@@ -42,22 +42,22 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[] The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[]|null The field ID(s) that the resulting Matrix blocks must belong to.
      */
     public $fieldId;
 
     /**
-     * @var int|int[] The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
      */
     public $ownerId;
 
     /**
-     * @var int The site ID that the resulting Matrix blocks must have been defined in.
+     * @var int|string|null The site ID that the resulting Matrix blocks must have been defined in, or ':empty:' to find blocks without an owner site ID.
      */
     public $ownerSiteId;
 
     /**
-     * @var int|int[] The block type ID(s) that the resulting Matrix blocks must have.
+     * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
      */
     public $typeId;
 
@@ -101,7 +101,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[fieldId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -115,7 +115,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[ownerId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -129,11 +129,11 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[ownerSiteId]] and [[siteId]] properties.
      *
-     * @param int $value The property value
+     * @param int|string|null $value The property value
      *
      * @return static self reference
      */
-    public function ownerSiteId(int $value)
+    public function ownerSiteId($value)
     {
         $this->ownerSiteId = $value;
 
@@ -206,7 +206,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given block type(s)’s handle(s).
      *
-     * @param string|string[]|MatrixBlockType $value The property value
+     * @param string|string[]|MatrixBlockType|null $value The property value
      *
      * @return static self reference
      */
@@ -214,13 +214,15 @@ class MatrixBlockQuery extends ElementQuery
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->typeId = $query
                 ->select(['id'])
                 ->from(['{{%matrixblocktypes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->typeId = null;
         }
 
         return $this;
@@ -229,7 +231,7 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param int|int[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
