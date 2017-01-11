@@ -1,9 +1,6 @@
 Craft CMS Changelog
 ===================
 
-<<<<<<< HEAD
-## Unreleased 
-=======
 ## Unreleased
 
 ### Changed
@@ -12,8 +9,6 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
-
-### Fixed
 - Fixed a deprecation error that was getting logged whenever a tag was saved within the Control Panel.
 
 ## 2.6.2958 - 2017-01-03
@@ -38,7 +33,6 @@ Craft CMS Changelog
 - Fixed several PHP 7.1 compatibility issues.
 
 ## 2.6.2956 - 2016-12-28
->>>>>>> origin/develop-v2
 
 ### Changed
 
