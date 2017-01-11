@@ -91,20 +91,6 @@ class User extends ActiveRecord
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    public function validate($attributeNames = null, $clearErrors = true)
-    {
-        // Don't allow whitespace in the username.
-        if (preg_match('/\s+/', $this->username)) {
-            $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
-        }
-
-        return parent::validate($attributeNames, false);
-    }
-
     /**
      * Sets a user's status to active.
      */
