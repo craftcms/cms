@@ -766,7 +766,7 @@ class User extends Element implements IdentityInterface
             return $this->_groups;
         }
 
-        if (Craft::$app->getEdition() !== Craft::Pro) {
+        if (Craft::$app->getEdition() !== Craft::Pro || $this->id === null) {
             return [];
         }
 
