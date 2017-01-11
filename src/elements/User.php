@@ -76,6 +76,7 @@ class User extends Element implements IdentityInterface
     // Validation scenarios
     // -------------------------------------------------------------------------
 
+    const SCENARIO_REGISTRATION = 'registration';
     const SCENARIO_PASSWORD = 'password';
 
     // Static
@@ -611,6 +612,7 @@ class User extends Element implements IdentityInterface
     {
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
+        $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
 
         return $scenarios;
     }

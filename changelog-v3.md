@@ -154,6 +154,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Plugin` no longer automatically registers volume types in the plugin’s `volumes/` subfolder.
 - Mailer Transport Adapters’ `getTransportConfig()` methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - `craft\elements\User` now supports a `password` validation scenario, which only validates the `$newPassword` property.
+- `craft\elements\User` now supports a `registration` validation scenario, which only validates the `$username`, `$email`, and `$newPassword` properties.
 - It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
 - `craft\elements\db\MatrixBlockQuery::owner()` and `ownerSiteId()` now set the `$siteId` property when appropriate.
 - The source keys that are passed into element methods’ `$source` arguments now reflect the full path to the source, if it is a nested source (e.g. `folder:1/folder:2`).
@@ -358,6 +359,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\events\UserEvent`.
 - Removed `craft\helpers\Io`.
 - Removed `craft\log\EmailTarget`.
+- Removed `craft\models\AccountSettings`
 - Removed `craft\models\Username`.
 - Removed `craft\io\BaseIO`.
 - Removed `craft\io\File`.
