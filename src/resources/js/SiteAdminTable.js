@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.SiteAdminTable = Craft.AdminTable.extend(
         {
             confirmDeleteModal: null,
@@ -131,6 +131,4 @@
                 this.addListener($form, 'submit', 'submitDeleteLocale');
             }
         });
-
-
 })(jQuery);

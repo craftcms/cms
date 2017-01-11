@@ -26,37 +26,37 @@ class Site extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $language;
 
     /**
-     * @var boolean Has URLs
+     * @var bool Has URLs
      */
     public $hasUrls = true;
 
     /**
-     * @var string Original base URL (set if [[baseUrl]] was overridden by the config)
+     * @var string|null Original base URL (set if [[baseUrl]] was overridden by the config)
      */
     public $originalBaseUrl;
 
     /**
-     * @var string Base URL
+     * @var string|null Base URL
      */
     public $baseUrl;
 
@@ -102,7 +102,7 @@ class Site extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -114,7 +114,7 @@ class Site extends Model
      *
      * @return void
      */
-    public function overrideBaseUrl($baseUrl)
+    public function overrideBaseUrl(string $baseUrl)
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = rtrim($baseUrl, '/').'/';

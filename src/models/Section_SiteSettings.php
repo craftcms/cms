@@ -26,42 +26,42 @@ class Section_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Site ID
+     * @var int|null Site ID
      */
     public $siteId;
 
     /**
-     * @var boolean Enabled by default
+     * @var bool Enabled by default
      */
     public $enabledByDefault = true;
 
     /**
-     * @var boolean Has URLs?
+     * @var bool|null Has URLs?
      */
     public $hasUrls;
 
     /**
-     * @var string URI format
+     * @var string|null URI format
      */
     public $uriFormat;
 
     /**
-     * @var string Entry template
+     * @var string|null Entry template
      */
     public $template;
 
     /**
-     * @var Section
+     * @var Section|null
      */
     private $_section;
 
@@ -74,7 +74,7 @@ class Section_SiteSettings extends Model
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
         if ($this->_section !== null) {
             return $this->_section;

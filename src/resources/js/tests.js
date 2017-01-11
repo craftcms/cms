@@ -1,3 +1,4 @@
+/** global: Craft */
 QUnit.test('Craft.getUrl()', function(assert) {
     // Setup for a site with path info
     Craft.baseUrl = 'http://craft.dev/admin';

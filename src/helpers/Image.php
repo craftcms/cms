@@ -31,14 +31,14 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  $targetWidth
-     * @param  $targetHeight
-     * @param  $sourceWidth
-     * @param  $sourceHeight
+     * @param  int $targetWidth
+     * @param  int $targetHeight
+     * @param  int $sourceWidth
+     * @param  int $sourceHeight
      *
-     * @return array Array of the width and height.
+     * @return int[] Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
     {
         $factor = $sourceWidth / $sourceHeight;
 
@@ -48,17 +48,17 @@ class Image
             $targetWidth = ceil($targetHeight * $factor);
         }
 
-        return [$targetWidth, $targetHeight];
+        return [(int)$targetWidth, (int)$targetHeight];
     }
 
     /**
      * Returns whether an image extension is considered manipulatable.
      *
-     * @param $extension
+     * @param string $extension
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isImageManipulatable($extension)
+    public static function isImageManipulatable(string $extension): bool
     {
         $path = Craft::$app->getPath()->getResourcesPath();
         $file = $path.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'samples'.DIRECTORY_SEPARATOR.'sample.'.StringHelper::toLowerCase($extension);
@@ -75,9 +75,9 @@ class Image
     /**
      * Returns a list of web safe image formats.
      *
-     * @return array
+     * @return string[]
      */
-    public static function webSafeFormats()
+    public static function webSafeFormats(): array
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
     }
@@ -96,7 +96,7 @@ class Image
      *
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
      */
-    public static function pngImageInfo($file)
+    public static function pngImageInfo(string $file)
     {
         if (empty($file)) {
             return false;
@@ -107,7 +107,7 @@ class Image
             file_get_contents($file, 0, null, 0, 29)
         );
 
-        if (!$info) {
+        if (empty($info)) {
             return false;
         }
 
@@ -155,9 +155,9 @@ class Image
      *
      * @param string $filePath the file path to check.
      *
-     * @return boolean
+     * @return bool
      */
-    public static function canHaveExifData($filePath)
+    public static function canHaveExifData(string $filePath): bool
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
@@ -167,15 +167,15 @@ class Image
     /**
      * Clean an image provided by path from all malicious code and the like.
      *
-     * @param $imagePath
+     * @param string $imagePath
      *
      * @return void
      */
-    public static function cleanImageByPath($imagePath)
+    public static function cleanImageByPath(string $imagePath)
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
-        if ($extension == 'svg') {
+        if ($extension === 'svg') {
             // No cleanup in the classic sense.
             return;
         }
@@ -190,11 +190,11 @@ class Image
      *
      * @param string $filePath The path to the image
      *
-     * @return array [$width, $height]
+     * @return int[]
      */
-    public static function imageSize($filePath)
+    public static function imageSize(string $filePath): array
     {
-        if (pathinfo($filePath, PATHINFO_EXTENSION) == 'svg') {
+        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
             $svg = file_get_contents($filePath);
 
             return static::parseSvgSize($svg);
@@ -212,7 +212,7 @@ class Image
      *
      * @return array [$width, $height]
      */
-    public static function parseSvgSize($svg)
+    public static function parseSvgSize(string $svg): array
     {
         if (
             preg_match(Svg::SVG_WIDTH_RE, $svg, $widthMatch) &&
@@ -247,7 +247,7 @@ class Image
      *
      * @return float The multiplier
      */
-    private static function _getSizeUnitMultiplier($unit)
+    private static function _getSizeUnitMultiplier(string $unit): float
     {
         $ppi = 72;
 

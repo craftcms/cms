@@ -80,7 +80,7 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 // -----------------------------------------------------------------------------
 
 // Set the vendor path. By default assume that Craft is located as a Composer dependency.
-$vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
+$vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(__DIR__, 3));
 
 // Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
 $craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));

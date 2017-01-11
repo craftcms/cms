@@ -40,7 +40,7 @@ class Deprecator extends Component
     private $_requestLogs = [];
 
     /**
-     * @var DeprecationError[] All the unique deprecation errors that have been logged
+     * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
     private $_allLogs;
 
@@ -53,9 +53,9 @@ class Deprecator extends Component
      * @param string $key
      * @param string $message
      *
-     * @return boolean
+     * @return bool
      */
-    public function log($key, $message)
+    public function log(string $key, string $message): bool
     {
         if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecationlog');
@@ -120,7 +120,7 @@ class Deprecator extends Component
                         $values,
                         ['id' => $existingId])
                     ->execute();
-                $log->id = $existingId;
+                $log->id = (int)$existingId;
             }
 
             $this->_requestLogs[$key] = $log;
@@ -134,7 +134,7 @@ class Deprecator extends Component
      *
      * @return DeprecationError[]
      */
-    public function getRequestLogs()
+    public function getRequestLogs(): array
     {
         return $this->_requestLogs;
     }
@@ -142,9 +142,9 @@ class Deprecator extends Component
     /**
      * Returns the total number of deprecation errors that have been logged.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalLogs()
+    public function getTotalLogs(): int
     {
         return (new Query())
             ->from([self::$_tableName])
@@ -154,11 +154,11 @@ class Deprecator extends Component
     /**
      * Get 'em all.
      *
-     * @param integer $limit
+     * @param int $limit
      *
      * @return DeprecationError[]
      */
-    public function getLogs($limit = 100)
+    public function getLogs(int $limit = 100): array
     {
         if ($this->_allLogs !== null) {
             return $this->_allLogs;
@@ -181,11 +181,11 @@ class Deprecator extends Component
     /**
      * Returns a log by its ID.
      *
-     * @param $logId
+     * @param int $logId
      *
      * @return DeprecationError|null
      */
-    public function getLogById($logId)
+    public function getLogById(int $logId)
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -201,11 +201,11 @@ class Deprecator extends Component
     /**
      * Deletes a log by its ID.
      *
-     * @param $id
+     * @param int $id
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteLogById($id)
+    public function deleteLogById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_tableName, ['id' => $id])
@@ -217,9 +217,9 @@ class Deprecator extends Component
     /**
      * Deletes all logs.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteAllLogs()
+    public function deleteAllLogs(): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(self::$_tableName)
@@ -236,7 +236,7 @@ class Deprecator extends Component
      *
      * @return Query
      */
-    private function _createDeprecationErrorQuery()
+    private function _createDeprecationErrorQuery(): Query
     {
         return (new Query())
             ->select([
@@ -337,11 +337,11 @@ class Deprecator extends Component
      *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
-     * @param $args array
+     * @param array $args
      *
      * @return string
      */
-    private function _argsToString($args)
+    private function _argsToString(array $args): string
     {
         $strArgs = [];
         $isAssoc = ($args !== array_values($args));

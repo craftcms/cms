@@ -35,7 +35,7 @@ class ChartsController extends Controller
      * @return Response
      * @throws Exception
      */
-    public function actionGetNewUsersData()
+    public function actionGetNewUsersData(): Response
     {
         $userGroupId = Craft::$app->getRequest()->getRequiredBodyParam('userGroupId');
         $startDateParam = Craft::$app->getRequest()->getRequiredBodyParam('startDate');

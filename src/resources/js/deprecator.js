@@ -1,5 +1,6 @@
 (function($) {
-
+    /** global: Craft */
+    /** global: Garnish */
     /**
      * Deprecator class
      */
@@ -80,5 +81,4 @@
         });
 
     new Deprecator();
-
 })(jQuery);

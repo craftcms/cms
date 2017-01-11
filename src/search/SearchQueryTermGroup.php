@@ -21,7 +21,7 @@ class SearchQueryTermGroup
     // =========================================================================
 
     /**
-     * @var array
+     * @var array|null
      */
     public $terms;
 

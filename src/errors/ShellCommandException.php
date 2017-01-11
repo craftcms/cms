@@ -19,17 +19,17 @@ use yii\base\Exception;
 class ShellCommandException extends Exception
 {
     /**
-     * @var string The command that was executed
+     * @var string|null The command that was executed
      */
     public $command;
 
     /**
-     * @var integer The command’s exit code
+     * @var int|null The command’s exit code
      */
     public $exitCode;
 
     /**
-     * @var string The command’s error output
+     * @var string|null The command’s error output
      */
     public $error;
 
@@ -54,13 +54,13 @@ class ShellCommandException extends Exception
     /**
      * Constructor.
      *
-     * @param string  $command  The command that was executed
-     * @param integer $exitCode The command’s exit code
-     * @param string  $error    The command’s error output
-     * @param string  $message  The error message
-     * @param integer $code     The error code
+     * @param string      $command  The command that was executed
+     * @param int         $exitCode The command’s exit code
+     * @param string|null $error    The command’s error output
+     * @param string|null $message  The error message
+     * @param int         $code     The error code
      */
-    public function __construct($command, $exitCode, $error = null, $message = null, $code = 0)
+    public function __construct(string $command, int $exitCode, string $error = null, string $message = null, int $code = 0)
     {
         $this->command = $command;
         $this->exitCode = $exitCode;
@@ -82,7 +82,7 @@ class ShellCommandException extends Exception
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Shell Command Failure';
     }

@@ -41,7 +41,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Assets');
     }
@@ -49,7 +49,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Asset::class;
     }
@@ -57,7 +57,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an asset');
     }
@@ -66,37 +66,37 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
-     * @var boolean Whether related assets should be limited to a single folder
+     * @var bool|null Whether related assets should be limited to a single folder
      */
     public $useSingleFolder;
 
     /**
-     * @var integer The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var int|null The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
     /**
-     * @var string The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var string|null The subpath that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var integer The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var int|null The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
     /**
-     * @var string The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var string|null The subpath that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSubpath;
 
     /**
-     * @var boolean Whether the available assets should be restricted to [[allowedKinds]]
+     * @var bool|null Whether the available assets should be restricted to [[allowedKinds]]
      */
     public $restrictFiles;
 
     /**
-     * @var array The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
+     * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
      */
     public $allowedKinds;
 
@@ -165,8 +165,8 @@ class Assets extends BaseRelationField
                 'allowLimit' => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
-                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
+                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
+                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
                 'fileKindOptions' => $fileKindOptions,
@@ -178,7 +178,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         try {
             return parent::getInputHtml($value, $element);
@@ -202,7 +202,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateFileType';
@@ -214,17 +214,16 @@ class Assets extends BaseRelationField
      * Validates the files to make sure they are one of the allowed file kinds.
      *
      * @param ElementInterface $element
-     * @param array|null       $params
      *
      * @return void
      */
-    public function validateFileType(ElementInterface $element, $params)
+    public function validateFileType(ElementInterface $element)
     {
         /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
         // Check if this field restricts files and if files are passed at all.
-        if ($this->restrictFiles && $this->allowedKinds && is_array($value) && !empty($value)) {
+        if ($this->restrictFiles && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
             $allowedExtensions = $this->_getAllowedExtensions();
 
             foreach ($value as $assetId) {
@@ -244,7 +243,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -252,7 +251,7 @@ class Assets extends BaseRelationField
             $class = static::elementType();
             /** @var ElementQuery $query */
             $query = $class::find()
-                ->siteId($this->getTargetSiteId($element));
+                ->siteId($this->targetSiteId($element));
 
             // $value might be an array of element IDs
             if (is_array($value)) {
@@ -280,9 +279,9 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface|null $element
      *
-     * @return mixed
+     * @return int
      */
-    public function resolveDynamicPathToFolderId($element)
+    public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
     }
@@ -295,13 +294,13 @@ class Assets extends BaseRelationField
      *
      * @todo All of the validation stuff here should be moved to an actual validation function
      */
-    public function beforeElementSave(ElementInterface $element, $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         /** @var Element $element */
         $incomingFiles = [];
 
         /** @var AssetQuery $newValue */
-        $query = $this->getElementValue($element);
+        $query = $element->getFieldValue($this->handle);
         $value = !empty($query->id) ? $query->id : [];
 
         // Grab data strings
@@ -343,10 +342,10 @@ class Assets extends BaseRelationField
         }
 
         // See if we have uploaded file(s).
-        $contentPostLocation = $this->getRequestParamName($element);
+        $paramName = $this->requestParamName($element);
 
-        if ($contentPostLocation) {
-            $files = UploadedFile::getInstancesByName($contentPostLocation);
+        if ($paramName !== null) {
+            $files = UploadedFile::getInstancesByName($paramName);
 
             foreach ($files as $file) {
                 $incomingFiles[] = [
@@ -357,7 +356,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        if ($this->restrictFiles && $this->allowedKinds) {
+        if ($this->restrictFiles && !empty($this->allowedKinds)) {
             $allowedExtensions = $this->_getAllowedExtensions();
         } else {
             $allowedExtensions = false;
@@ -386,10 +385,10 @@ class Assets extends BaseRelationField
             if (!empty($targetFolderId)) {
                 foreach ($incomingFiles as $file) {
                     $tempPath = AssetsHelper::tempFilePath($file['filename']);
-                    if ($file['type'] == 'upload') {
+                    if ($file['type'] === 'upload') {
                         move_uploaded_file($file['location'], $tempPath);
                     }
-                    if ($file['type'] == 'data') {
+                    if ($file['type'] === 'data') {
                         FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
@@ -414,7 +413,7 @@ class Assets extends BaseRelationField
 
                 /** @var AssetQuery $newValue */
                 $newValue = $this->normalizeValue($assetIds, $element);
-                $this->setElementValue($element, $newValue);
+                $element->setFieldValue($this->handle, $newValue);
             }
         }
 
@@ -424,9 +423,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $value = $this->getElementValue($element);
+        $value = $element->getFieldValue($this->handle);
         $assetsToMove = [];
 
         if ($value instanceof AssetQuery) {
@@ -503,9 +502,8 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSources($element)
+    protected function inputSources(ElementInterface $element = null)
     {
-
         $folderId = $this->_determineUploadFolderId($element, false);
         Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
 
@@ -525,7 +523,7 @@ class Assets extends BaseRelationField
                 }
             }
         } else {
-            if ($this->sources == '*') {
+            if ($this->sources === '*') {
                 $sources = '*';
             }
         }
@@ -536,10 +534,10 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function getInputSelectionCriteria()
+    protected function inputSelectionCriteria(): array
     {
         return [
-            'kind' => ($this->restrictFiles && $this->allowedKinds) ? $this->allowedKinds : [],
+            'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
         ];
     }
 
@@ -549,16 +547,16 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param integer          $volumeId
-     * @param string           $subpath
-     * @param ElementInterface $element
-     * @param bool             $createDynamicFolders whether missing folders should be created in the process
+     * @param int                   $volumeId
+     * @param string                $subpath
+     * @param ElementInterface|null $element
+     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidVolumeException if the volume root folder doesn’t exist
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId($volumeId, $subpath, $element, $createDynamicFolders = true)
+    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         // Get the root folder in the source
         $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
@@ -645,7 +643,7 @@ class Assets extends BaseRelationField
      *
      * @return VolumeFolder The new subfolder
      */
-    private function _createSubfolder($currentFolder, $folderName)
+    private function _createSubfolder(VolumeFolder $currentFolder, string $folderName): VolumeFolder
     {
         $newFolder = new VolumeFolder();
         $newFolder->parentId = $currentFolder->id;
@@ -668,7 +666,7 @@ class Assets extends BaseRelationField
      *
      * @return array
      */
-    private function _getAllowedExtensions()
+    private function _getAllowedExtensions(): array
     {
         if (!is_array($this->allowedKinds)) {
             return [];
@@ -690,12 +688,12 @@ class Assets extends BaseRelationField
      * Determine an upload folder id by looking at the settings and whether Element this field belongs to is new or not.
      *
      * @param ElementInterface|null $element
-     * @param boolean               $createDynamicFolders whether missing folders should be created in the process
+     * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @return mixed|null
+     * @return int
      */
-    private function _determineUploadFolderId($element, $createDynamicFolders = true)
+    private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         if ($this->useSingleFolder) {
             $volumeId = $this->singleUploadLocationSource;

@@ -32,9 +32,9 @@ class UserGroups
      *
      * @return array
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.getAllGroups() instead.');
+        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.allGroups instead.');
 
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
@@ -44,11 +44,11 @@ class UserGroups
     /**
      * Gets a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return UserGroup|null
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         Craft::$app->getDeprecator()->log('craft.userGroups.getGroupById()', 'craft.userGroups.getGroupById() has been deprecated. Use craft.app.userGroups.getGroupById() instead.');
 
@@ -62,7 +62,7 @@ class UserGroups
      *
      * @return UserGroup|null
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(string $groupHandle)
     {
         Craft::$app->getDeprecator()->log('craft.userGroups.getGroupByHandle()', 'craft.userGroups.getGroupByHandle() has been deprecated. Use craft.app.userGroups.getGroupByHandle() instead.');
 

@@ -58,7 +58,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException for reasons
      */
-    public function actionSaveAsset()
+    public function actionSaveAsset(): Response
     {
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
@@ -215,7 +215,7 @@ class AssetsController extends Controller
      *
      * @return Response
      */
-    public function actionReplaceFile()
+    public function actionReplaceFile(): Response
     {
         $this->requireAcceptsJson();
         $assetId = Craft::$app->getRequest()->getBodyParam('assetId');
@@ -254,7 +254,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the parent folder cannot be found
      */
-    public function actionCreateFolder()
+    public function actionCreateFolder(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();
@@ -299,7 +299,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      */
-    public function actionDeleteFolder()
+    public function actionDeleteFolder(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();
@@ -330,7 +330,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the folder cannot be found
      */
-    public function actionRenameFolder()
+    public function actionRenameFolder(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();
@@ -366,7 +366,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the asset or the target folder cannot be found
      */
-    public function actionMoveAsset()
+    public function actionMoveAsset(): Response
     {
         $this->requireLogin();
 
@@ -441,7 +441,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the folder to move, or the destination parent folder, cannot be found
      */
-    public function actionMoveFolder()
+    public function actionMoveFolder(): Response
     {
         $this->requireLogin();
 
@@ -547,7 +547,7 @@ class AssetsController extends Controller
         return $this->asJson([
             'success' => true,
             'transferList' => $fileTransferList,
-            'newFolderId' => isset($folderIdChanges[$folderBeingMovedId]) ? $folderIdChanges[$folderBeingMovedId] : null
+            'newFolderId' => $folderIdChanges[$folderBeingMovedId] ?? null
         ]);
     }
 
@@ -557,7 +557,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the file to download cannot be found.
      */
-    public function actionDownloadAsset()
+    public function actionDownloadAsset(): Response
     {
         $this->requireLogin();
         $this->requirePostRequest();
@@ -588,7 +588,7 @@ class AssetsController extends Controller
      *
      * @return Response
      */
-    public function actionGenerateTransform()
+    public function actionGenerateTransform(): Response
     {
         $request = Craft::$app->getRequest();
         $transformId = $request->getQueryParam('transformId');
@@ -625,7 +625,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByAsset($permissionName, Asset $asset)
+    private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
         $this->_requirePermissionByVolumeId($permissionName, $asset->volumeId);
     }
@@ -638,7 +638,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByFolder($permissionName, VolumeFolder $folder)
+    private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
         $this->_requirePermissionByVolumeId($permissionName, $folder->volumeId);
     }
@@ -651,7 +651,7 @@ class AssetsController extends Controller
      *
      * @return void
      */
-    private function _requirePermissionByVolumeId($permissionName, $volumeId)
+    private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {
         $this->requirePermission($permissionName.':'.$volumeId);
     }

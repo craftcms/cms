@@ -11,13 +11,14 @@ use Craft;
 use craft\db\QueryAbortedException;
 use craft\elements\GlobalSet;
 use craft\helpers\Db;
+use yii\db\Connection;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
  * @method GlobalSet[]|array all($db = null)
  * @method GlobalSet|array|null one($db = null)
- * @method GlobalSet|array|null nth($n, $db = null)
+ * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -31,12 +32,12 @@ class GlobalSetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return global sets that the user has permission to edit.
+     * @var bool Whether to only return global sets that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var string|string[] The handle(s) that the resulting global sets must have.
+     * @var string|string[]|null The handle(s) that the resulting global sets must have.
      */
     public $handle;
 
@@ -59,11 +60,11 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -73,7 +74,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * Sets the [[handle]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -90,7 +91,7 @@ class GlobalSetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         $this->joinElementTable('globalsets');
 
@@ -119,7 +120,7 @@ class GlobalSetQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
+        if ($this->editable === true) {
             // Limit the query to only the global sets the user has permission to edit
             $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
             $this->subQuery->andWhere(['elements.id' => $editableSetIds]);

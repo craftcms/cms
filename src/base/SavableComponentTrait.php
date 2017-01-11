@@ -21,17 +21,17 @@ trait SavableComponentTrait
     // =========================================================================
 
     /**
-     * @var integer The component’s ID
+     * @var int|null The component’s ID
      */
     public $id;
 
     /**
-     * @var DateTime The date that the component was created
+     * @var DateTime|null The date that the component was created
      */
     public $dateCreated;
 
     /**
-     * @var DateTime The date that the component was last updated
+     * @var DateTime|null The date that the component was last updated
      */
     public $dateUpdated;
 }

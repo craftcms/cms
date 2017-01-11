@@ -40,11 +40,11 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetModalBody()
+    public function actionGetModalBody(): Response
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
-        $elementType = $this->getElementType();
-        $context = $this->getContext();
+        $elementType = $this->elementType();
+        $context = $this->context();
 
         $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
 
@@ -91,21 +91,8 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionGetEditorHtml()
+    public function actionGetEditorHtml(): Response
     {
-        /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
-        $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
-
-        if (!$element) {
-            throw new NotFoundHttpException('Element could not be found');
-        }
-
-        if (!$element->getIsEditable()) {
-            throw new ForbiddenHttpException('User is not permitted to edit this element');
-        }*/
-
         $element = $this->_getEditorElement();
         $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
 
@@ -119,7 +106,7 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionSaveElement()
+    public function actionSaveElement(): Response
     {
         /** @var Element $element */
         $element = $this->_getEditorElement();
@@ -173,7 +160,7 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCategoriesInputHtml()
+    public function actionGetCategoriesInputHtml(): Response
     {
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
@@ -181,7 +168,7 @@ class ElementsController extends BaseElementsController
         // Fill in the gaps
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
-        if ($categoryIds) {
+        if (!empty($categoryIds)) {
             /** @var CategoryQuery $categoryQuery */
             $categoryQuery = Category::find()
                 ->id($categoryIds)
@@ -217,7 +204,7 @@ class ElementsController extends BaseElementsController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _getEditorElement()
+    private function _getEditorElement(): ElementInterface
     {
         $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
@@ -294,10 +281,7 @@ class ElementsController extends BaseElementsController
         // Populate it with any posted attributes
         $attributes = $request->getBodyParam('attributes', []);
         $attributes['siteId'] = $siteId;
-
-        if ($attributes) {
-            Craft::configure($element, $attributes);
-        }
+        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
@@ -312,19 +296,21 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param boolean          $includeSites
+     * @param bool             $includeSites
      *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
+    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
         /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
-        if (!$siteIds) {
+        if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
+
+        $response = [];
 
         if ($includeSites) {
             if (count($siteIds) > 1) {
@@ -359,7 +345,7 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs($element->getEditorHtml()).
+            Craft::$app->getView()->namespaceInputs((string)$element->getEditorHtml()).
             '</div>';
 
         $view = Craft::$app->getView();

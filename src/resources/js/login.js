@@ -1,5 +1,6 @@
 (function($) {
-
+    /** global: Craft */
+    /** global: Garnish */
     var LoginForm = Garnish.Base.extend(
         {
             $form: null,
@@ -225,6 +226,5 @@
         });
 
 
-    var loginForm = new LoginForm();
-
+    new LoginForm();
 })(jQuery);

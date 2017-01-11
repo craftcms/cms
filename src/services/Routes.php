@@ -56,7 +56,7 @@ class Routes extends Component
      *
      * @return array
      */
-    public function getConfigFileRoutes()
+    public function getConfigFileRoutes(): array
     {
         $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
@@ -92,7 +92,7 @@ class Routes extends Component
      *
      * @return array
      */
-    public function getDbRoutes()
+    public function getDbRoutes(): array
     {
         $results = (new Query())
             ->select(['uriPattern', 'template'])
@@ -105,32 +105,32 @@ class Routes extends Component
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        if ($results) {
-            $routes = [];
-
-            foreach ($results as $result) {
-                $routes[$result['uriPattern']] = ['template' => $result['template']];
-            }
-
-            return $routes;
+        if (empty($results)) {
+            return [];
         }
 
-        return [];
+        $routes = [];
+
+        foreach ($results as $result) {
+            $routes[$result['uriPattern']] = ['template' => $result['template']];
+        }
+
+        return $routes;
     }
 
     /**
      * Saves a new or existing route.
      *
-     * @param array        $uriParts The URI as defined by the user. This is an array where each element is either a
+     * @param array    $uriParts     The URI as defined by the user. This is an array where each element is either a
      *                               string or an array containing the name of a subpattern and the subpattern
-     * @param string       $template The template to route matching requests to
-     * @param integer|null $siteId   The site ID the route should be limited to, if any
-     * @param integer|null $routeId  The route ID, if editing an existing route
+     * @param string   $template     The template to route matching requests to
+     * @param int|null $siteId       The site ID the route should be limited to, if any
+     * @param int|null $routeId      The route ID, if editing an existing route
      *
      * @return RouteRecord
-     * @throws RouteNotFoundException if $routeId is invalid
+     * @throws RouteNotFoundException if|null $routeId is invalid
      */
-    public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
+    public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null): RouteRecord
     {
         // Fire a 'beforeSaveRoute' event
         $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
@@ -210,11 +210,11 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param integer $routeId
+     * @param int $routeId
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteRouteById($routeId)
+    public function deleteRouteById(int $routeId): bool
     {
         $routeRecord = RouteRecord::findOne($routeId);
 
@@ -256,7 +256,7 @@ class Routes extends Component
      *
      * @return void
      */
-    public function updateRouteOrder($routeIds)
+    public function updateRouteOrder(array $routeIds)
     {
         $db = Craft::$app->getDb();
 
@@ -271,11 +271,11 @@ class Routes extends Component
     }
 
     /**
-     * @param $string
+     * @param string $string
      *
      * @return mixed
      */
-    private function _escapeRegexChars($string)
+    private function _escapeRegexChars(string $string)
     {
         $charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
         $escapedChars = [];

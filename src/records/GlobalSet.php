@@ -13,8 +13,8 @@ use yii\db\ActiveQueryInterface;
 /**
  * Field group record class.
  *
- * @property integer     $id            ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
  * @property Element     $element       Element
@@ -33,7 +33,7 @@ class GlobalSet extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%globalsets}}';
     }
@@ -43,7 +43,7 @@ class GlobalSet extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -53,7 +53,7 @@ class GlobalSet extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);

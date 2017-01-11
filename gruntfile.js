@@ -4,16 +4,16 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		watch: {
 			sass: {
-				files: ['src/resources/sass/*.scss'],
+				files: ['src/resources-src/sass/*.scss'],
 				tasks: 'sass'
 			},
-			craftjs: {
-				files: ['src/resources/js/Craft/*.js'],
-				tasks: ['concat', 'uglify:craft'],
+			globaljs: {
+				files: ['src/resources-src/global-js/*.js'],
+				tasks: ['concat', 'uglify:globaljs'],
 			},
 			otherjs: {
 				files: ['src/resources/js/*.js', '!src/resources/js/Craft.js'],
-				tasks: ['uglify:other']
+				tasks: ['uglify:otherjs']
 			}
 		},
 		sass: {
@@ -23,24 +23,24 @@ module.exports = function(grunt) {
 			},
 			dist: {
 				expand: true,
-				cwd: 'src/resources/sass',
+				cwd: 'src/resources-src/sass',
 				src: '*.scss',
 				dest: 'src/resources/css',
 				ext: '.css'
 			}
 		},
 		concat: {
-			craft: {
+			globaljs: {
 				options: {
 					banner: '/*! <%= pkg.name %> <%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n' +
 						'(function($){\n\n',
 					footer: '\n})(jQuery);\n',
 				},
 				src: [
-					'src/resources/js/Craft/Craft.js',
-					'src/resources/js/Craft/Base*.js',
-					'src/resources/js/Craft/*.js',
-					'!(src/resources/js/Craft/Craft.js|src/resources/js/Craft/Base*.js)'
+					'src/resources-src/global-js/Craft.js',
+					'src/resources-src/global-js/Base*.js',
+					'src/resources-src/global-js/*.js',
+					'!(src/resources-src/global-js/Craft.js|src/resources-src/global-js/Base*.js)'
 				],
 				dest: 'src/resources/js/Craft.js'
 			}
@@ -51,15 +51,16 @@ module.exports = function(grunt) {
 				preserveComments: 'some',
 				screwIE8: true
 			},
-			craft: {
+			globaljs: {
 				src: 'src/resources/js/Craft.js',
-				dest: 'src/resources/js/compressed/Craft.js'
+				dest: 'src/resources/js/Craft.min.js'
 			},
-			other: {
+            otherjs: {
 				expand: true,
 				cwd: 'src/resources/js',
 				src: ['*.js', '!Craft.js'],
-				dest: 'src/resources/js/compressed'
+				dest: 'src/resources/js',
+				ext: '.min.js'
 			}
 		},
 		jshint: {
@@ -75,8 +76,9 @@ module.exports = function(grunt) {
 			beforeconcat: [
 				'gruntfile.js',
 				'src/resources/js/*.js',
+				'!src/resources/js/*.min.js',
 				'!src/resources/js/Craft.js',
-				'src/resources/js/Craft/*.js'
+				'src/resources-src/global-js/*.js'
 			],
 			afterconcat: [
 				'src/resources/js/Craft.js'

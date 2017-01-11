@@ -28,11 +28,11 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCustomizeSourcesModalData()
+    public function actionGetCustomizeSourcesModalData(): Response
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         // Get the source info
         $elementIndexesService = Craft::$app->getElementIndexes();
@@ -76,11 +76,11 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionSaveCustomizeSourcesModalSettings()
+    public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         $request = Craft::$app->getRequest();
         $sourceOrder = $request->getBodyParam('sourceOrder', []);

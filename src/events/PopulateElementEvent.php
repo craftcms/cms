@@ -19,7 +19,7 @@ class PopulateElementEvent extends ElementEvent
     // =========================================================================
 
     /**
-     * @var array The element query’s result for this element.
+     * @var array|null The element query’s result for this element.
      */
     public $row;
 }

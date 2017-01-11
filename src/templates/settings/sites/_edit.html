@@ -39,7 +39,7 @@
 		{% if not craft.app.i18n.getIsIntlLoaded() %}
 			{% set languageWarning = 'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.'|t('app', {
 				link1: 'http://php.net/manual/en/book.intl.php',
-				link2: 'https://github.com/pixelandtonic/CraftLocaleData'
+				link2: 'https://github.com/craftcms/locales'
 			}) %}
 		{% endif %}
 

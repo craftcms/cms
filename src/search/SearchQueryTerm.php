@@ -51,7 +51,7 @@ class SearchQueryTerm
     public $term;
 
     /**
-     * @var null
+     * @var bool|null
      */
     public $phrase;
 }

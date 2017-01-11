@@ -81,11 +81,11 @@ class EntryRevisions extends Component
     /**
      * Returns a draft by its ID.
      *
-     * @param integer $draftId
+     * @param int $draftId
      *
      * @return EntryDraft|null
      */
-    public function getDraftById($draftId)
+    public function getDraftById(int $draftId)
     {
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
@@ -125,14 +125,14 @@ class EntryRevisions extends Component
     /**
      * Returns drafts of a given entry.
      *
-     * @param integer $entryId
-     * @param integer $siteId
+     * @param int      $entryId
+     * @param int|null $siteId
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId($entryId, $siteId = null)
+    public function getDraftsByEntryId(int $entryId, int $siteId = null): array
     {
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
@@ -172,12 +172,12 @@ class EntryRevisions extends Component
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param integer $entryId
-     * @param integer $siteId
+     * @param int      $entryId
+     * @param int|null $siteId
      *
      * @return EntryDraft[]
      */
-    public function getEditableDraftsByEntryId($entryId, $siteId = null)
+    public function getEditableDraftsByEntryId(int $entryId, int $siteId = null): array
     {
         $editableDrafts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -199,11 +199,11 @@ class EntryRevisions extends Component
      * Saves a draft.
      *
      * @param EntryDraft $draft         The draft to be saved
-     * @param boolean    $runValidation Whether to perform validation
+     * @param bool       $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveDraft(EntryDraft $draft, $runValidation = true)
+    public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
         if ($runValidation && !$draft->validate()) {
             Craft::info('Draft not saved due to validation error.', __METHOD__);
@@ -254,11 +254,11 @@ class EntryRevisions extends Component
      * Publishes a draft.
      *
      * @param EntryDraft $draft         The draft to be published
-     * @param boolean    $runValidation Whether to perform validation
+     * @param bool       $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
-    public function publishDraft(EntryDraft $draft, $runValidation = true)
+    public function publishDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
@@ -301,9 +301,9 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft The draft to be deleted
      *
-     * @return boolean Whether the draft was deleted successfully
+     * @return bool Whether the draft was deleted successfully
      */
-    public function deleteDraft(EntryDraft $draft)
+    public function deleteDraft(EntryDraft $draft): bool
     {
         // Fire a 'beforeDeleteDraft' event
         $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
@@ -324,11 +324,11 @@ class EntryRevisions extends Component
     /**
      * Returns a version by its ID.
      *
-     * @param integer $versionId
+     * @param int $versionId
      *
      * @return EntryVersion|null
      */
-    public function getVersionById($versionId)
+    public function getVersionById(int $versionId)
     {
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
@@ -357,14 +357,14 @@ class EntryRevisions extends Component
     /**
      * Returns versions by an entry ID.
      *
-     * @param integer      $entryId        The entry ID to search for.
-     * @param integer      $siteId         The site ID to search for.
-     * @param integer|null $limit          The limit on the number of versions to retrieve.
-     * @param boolean      $includeCurrent Whether to include the current "top" version of the entry.
+     * @param int      $entryId        The entry ID to search for.
+     * @param int      $siteId         The site ID to search for.
+     * @param int|null $limit          The limit on the number of versions to retrieve.
+     * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId($entryId, $siteId, $limit = null, $includeCurrent = false)
+    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false): array
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -410,9 +410,9 @@ class EntryRevisions extends Component
      *
      * @param Entry $entry
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveVersion(Entry $entry)
+    public function saveVersion(Entry $entry): bool
     {
         // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
@@ -436,11 +436,11 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
-     * @param boolean      $runValidation Whether to perform validation
+     * @param bool         $runValidation Whether to perform validation
      *
-     * @return boolean
+     * @return bool
      */
-    public function revertEntryToVersion(EntryVersion $version, $runValidation = true)
+    public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
@@ -484,7 +484,7 @@ class EntryRevisions extends Component
      * @return EntryDraftRecord
      * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
-    private function _getDraftRecord(EntryDraft $draft)
+    private function _getDraftRecord(EntryDraft $draft): EntryDraftRecord
     {
         if ($draft->draftId) {
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
@@ -510,7 +510,7 @@ class EntryRevisions extends Component
      *
      * @return array
      */
-    private function _getRevisionData($revision)
+    private function _getRevisionData(Entry $revision): array
     {
         $revisionData = [
             'typeId' => $revision->typeId,

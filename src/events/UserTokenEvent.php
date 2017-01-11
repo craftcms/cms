@@ -22,7 +22,7 @@ class UserTokenEvent extends Event
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var User|null The user model associated with the event.
      */
     public $user;
 }

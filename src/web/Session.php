@@ -23,7 +23,7 @@ class Session extends \yii\web\Session
     // =========================================================================
 
     /**
-     * @var string The session variable name used to store the authorization keys for the current session.
+     * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
      * @see deauthorize()
      * @see checkAuthorization()
@@ -68,7 +68,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function setNotice($message)
+    public function setNotice(string $message)
     {
         $this->setFlash('notice', $message);
     }
@@ -85,7 +85,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function setError($message)
+    public function setError(string $message)
     {
         $this->setFlash('error', $message);
     }
@@ -100,7 +100,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function addJsResourceFlash($resource)
+    public function addJsResourceFlash(string $resource)
     {
         $resources = $this->getJsResourceFlashes(false);
 
@@ -113,11 +113,11 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS resource flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS resource flashes.
      */
-    public function getJsResourceFlashes($delete = true)
+    public function getJsResourceFlashes(bool $delete = true): array
     {
         return $this->getFlash('jsResources', [], $delete);
     }
@@ -132,7 +132,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function addJsFlash($js)
+    public function addJsFlash(string $js)
     {
         $scripts = $this->getJsFlashes();
         $scripts[] = $js;
@@ -142,11 +142,11 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS flashes.
      */
-    public function getJsFlashes($delete = true)
+    public function getJsFlashes(bool $delete = true): array
     {
         return $this->getFlash('js', [], $delete);
     }
@@ -161,7 +161,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function authorize($action)
+    public function authorize(string $action)
     {
         $access = $this->get($this->authAccessParam, []);
 
@@ -178,7 +178,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function deauthorize($action)
+    public function deauthorize(string $action)
     {
         $access = $this->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);
@@ -194,9 +194,9 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return boolean
+     * @return bool
      */
-    public function checkAuthorization($action)
+    public function checkAuthorization(string $action): bool
     {
         $access = $this->get($this->authAccessParam, []);
 

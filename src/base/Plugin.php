@@ -35,7 +35,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public static function hasCpSection()
+    public static function hasCpSection(): bool
     {
         return false;
     }
@@ -44,7 +44,7 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     /**
-     * @var Model|boolean The model used to store the plugin’s settings
+     * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
@@ -77,7 +77,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getHandle()
+    public function getHandle(): string
     {
         return $this->id;
     }
@@ -113,7 +113,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update($fromVersion)
+    public function update(string $fromVersion)
     {
         if ($this->beforeUpdate() === false) {
             return false;
@@ -175,7 +175,7 @@ class Plugin extends Module implements PluginInterface
         return $controller->renderTemplate('settings/plugins/_settings',
             [
                 'plugin' => $this,
-                'settingsHtml' => $this->getSettingsHtml()
+                'settingsHtml' => $this->settingsHtml()
             ]);
     }
 
@@ -184,7 +184,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return MigrationManager The plugin’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
@@ -225,9 +225,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall()
+    protected function beforeInstall(): bool
     {
         return true;
     }
@@ -242,9 +242,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is updated.
      *
-     * @return boolean Whether the plugin should be updated
+     * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate()
+    protected function beforeUpdate(): bool
     {
         return true;
     }
@@ -259,9 +259,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeUninstall()
+    protected function beforeUninstall(): bool
     {
         return true;
     }
@@ -288,7 +288,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string The rendered settings HTML
      */
-    protected function getSettingsHtml()
+    protected function settingsHtml(): string
     {
         return null;
     }

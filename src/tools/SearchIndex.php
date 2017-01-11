@@ -28,7 +28,7 @@ class SearchIndex extends Tool
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Rebuild Search Indexes');
     }
@@ -36,7 +36,7 @@ class SearchIndex extends Tool
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'search';
     }
@@ -47,7 +47,7 @@ class SearchIndex extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         if (!empty($params['start'])) {
             // Truncate the searchindex table
@@ -71,7 +71,7 @@ class SearchIndex extends Tool
                 'batches' => [$batch]
             ];
         } else {
-            /** @var ElementInterface $class */
+            /** @var string|ElementInterface $class */
             $class = $params['type'];
 
             if ($class::isLocalized()) {
@@ -111,6 +111,6 @@ class SearchIndex extends Tool
             }
         }
 
-        return null;
+        return [];
     }
 }

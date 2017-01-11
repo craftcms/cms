@@ -21,22 +21,22 @@ class UpgradeInfo extends Model
     // =========================================================================
 
     /**
-     * @var array Available editions
+     * @var array|null Available editions
      */
     public $editions;
 
     /**
-     * @var string The Stripe publishable key
+     * @var string|null The Stripe publishable key
      */
     public $stripePublicKey;
 
     /**
-     * @var array Known countries
+     * @var array|null Known countries
      */
     public $countries;
 
     /**
-     * @var array Known states
+     * @var array|null Known states
      */
     public $states;
 

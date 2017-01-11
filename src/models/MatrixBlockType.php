@@ -16,7 +16,7 @@ use craft\elements\MatrixBlock;
 /**
  * MatrixBlockType model class.
  *
- * @property boolean $isNew Whether this is a new block type
+ * @property bool $isNew Whether this is a new block type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,32 +32,32 @@ class MatrixBlockType extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Field ID
+     * @var int|null Field ID
      */
     public $fieldId;
 
     /**
-     * @var string Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var integer Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
@@ -97,7 +97,7 @@ class MatrixBlockType extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->handle;
     }
@@ -105,9 +105,9 @@ class MatrixBlockType extends Model
     /**
      * Returns whether this is a new block type.
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsNew()
+    public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
     }
@@ -117,7 +117,7 @@ class MatrixBlockType extends Model
      *
      * @return FieldInterface[]
      */
-    public function getFields()
+    public function getFields(): array
     {
         return $this->getFieldLayout()->getFields();
     }
@@ -129,7 +129,7 @@ class MatrixBlockType extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->getFieldLayout()->setFields($fields);
     }

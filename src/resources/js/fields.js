@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     var FieldsAdmin = Garnish.Base.extend(
         {
             $groups: null,
@@ -130,6 +130,4 @@
     Garnish.$doc.ready(function() {
         Craft.FieldsAdmin = new FieldsAdmin();
     });
-
-
 })(jQuery);

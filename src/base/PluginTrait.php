@@ -19,37 +19,42 @@ trait PluginTrait
     // =========================================================================
 
     /**
-     * @var string The plugin’s display name
+     * @var string|null The plugin’s package name
+     */
+    public $packageName;
+
+    /**
+     * @var string|null The plugin’s display name
      */
     public $name;
 
     /**
-     * @var string The plugin’s version number
+     * @var string|null The plugin’s version number
      */
     public $version;
 
     /**
-     * @var string The plugin’s schema version number
+     * @var string|null The plugin’s schema version number
      */
     public $schemaVersion;
 
     /**
-     * @var string The plugin’s description
+     * @var string|null The plugin’s description
      */
     public $description;
 
     /**
-     * @var string The plugin developer’s name
+     * @var string|null The plugin developer’s name
      */
     public $developer;
 
     /**
-     * @var string The plugin developer’s website URL
+     * @var string|null The plugin developer’s website URL
      */
     public $developerUrl;
 
     /**
-     * @var string The plugin’s documentation URL
+     * @var string|null The plugin’s documentation URL
      */
     public $documentationUrl;
 
@@ -109,7 +114,7 @@ trait PluginTrait
     public $sourceLanguage = 'en-US';
 
     /**
-     * @var boolean Whether the plugin has settings
+     * @var bool Whether the plugin has settings
      */
     public $hasSettings = false;
 }

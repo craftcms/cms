@@ -142,11 +142,11 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content we're saving.
      *
-     * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+     * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *                 element and its content model.
      * @throws Exception if $element has not been saved yet
      */
-    public function saveContent(ElementInterface $element)
+    public function saveContent(ElementInterface $element): bool
     {
         /** @var Element $element */
         if (!$element->id) {
@@ -251,7 +251,7 @@ class Content extends Component
      *
      * @return array
      */
-    private function _removeColumnPrefixesFromRow($row)
+    private function _removeColumnPrefixesFromRow(array $row): array
     {
         foreach ($row as $column => $value) {
             if (strpos($column, $this->fieldColumnPrefix) === 0) {

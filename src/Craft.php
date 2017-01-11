@@ -35,9 +35,7 @@ class Craft extends Yii
     // =========================================================================
 
     /**
-     * @var \craft\web\Application The application instance.
-     *
-     * This may return a [[\craft\console\Application]] instance if this is a console request.
+     * @var \craft\web\Application|\craft\console\Application The application instance.
      */
     public static $app;
 
@@ -52,13 +50,13 @@ class Craft extends Yii
     /**
      * Displays a variable.
      *
-     * @param mixed   $var       The variable to be dumped.
-     * @param integer $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param mixed $var       The variable to be dumped.
+     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
      * @return void
      */
-    public static function dump($var, $depth = 10, $highlight = true)
+    public static function dump($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
     }
@@ -66,14 +64,14 @@ class Craft extends Yii
     /**
      * Displays a variable and ends the request. (“Dump and die”)
      *
-     * @param mixed   $var       The variable to be dumped.
-     * @param integer $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param mixed $var       The variable to be dumped.
+     * @param int   $depth     The maximum depth that the dumper should go into the variable. Defaults to 10.
+     * @param bool  $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
      * @return void
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, $depth = 10, $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = true)
     {
         VarDumper::dump($var, $depth, $highlight);
         static::$app->end();
@@ -87,7 +85,7 @@ class Craft extends Yii
      *
      * @return array The cookie config array.
      */
-    public static function cookieConfig(array $config = [], $request = null)
+    public static function cookieConfig(array $config = [], Request $request = null): array
     {
         if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
@@ -137,10 +135,10 @@ class Craft extends Yii
             $elementQueryTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryTrait.php';
 
             if (
-                static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion) &&
-                static::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion)
+                self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
+                self::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion) &&
+                self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion) &&
+                self::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion)
             ) {
                 return;
             }
@@ -182,28 +180,28 @@ EOD;
                 $methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
             }
 
-            static::_writeFieldAttributesFile(
+            self::_writeFieldAttributesFile(
                 static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
                 ['{VERSION}', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n\n", $properties)],
                 $contentBehaviorFile
             );
 
-            static::_writeFieldAttributesFile(
+            self::_writeFieldAttributesFile(
                 static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentTrait.php.template',
                 ['{VERSION}', '{PROPERTIES}'],
                 [$storedFieldVersion, implode("\n", $propertyDocs)],
                 $contentTraitFile
             );
 
-            static::_writeFieldAttributesFile(
+            self::_writeFieldAttributesFile(
                 static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
                 ['{VERSION}', '/* METHODS */'],
                 [$storedFieldVersion, implode("\n\n", $methods)],
                 $elementQueryBehaviorFile
             );
 
-            static::_writeFieldAttributesFile(
+            self::_writeFieldAttributesFile(
                 static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryTrait.php.template',
                 ['{VERSION}', '{METHODS}'],
                 [$storedFieldVersion, implode("\n", $methodDocs)],
@@ -219,7 +217,7 @@ EOD;
      *
      * @return Client
      */
-    public static function createGuzzleClient(array $config = [])
+    public static function createGuzzleClient(array $config = []): Client
     {
         // Set the Craft header by default.
         $defaultConfig = [
@@ -248,9 +246,9 @@ EOD;
      * @param string $path
      * @param string $storedFieldVersion
      *
-     * @return boolean
+     * @return bool
      */
-    private static function _isFieldAttributesFileValid($path, $storedFieldVersion)
+    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion): bool
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date
@@ -273,12 +271,12 @@ EOD;
     /**
      * Writes a field attributes file.
      *
-     * @param $templatePath
-     * @param $search
-     * @param $replace
-     * @param $destinationPath
+     * @param string   $templatePath
+     * @param string[] $search
+     * @param string[] $replace
+     * @param string   $destinationPath
      */
-    private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
+    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);

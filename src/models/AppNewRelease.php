@@ -22,37 +22,37 @@ class AppNewRelease extends Model
     // =========================================================================
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $date;
 
     /**
-     * @var string Notes
+     * @var string|null Notes
      */
     public $notes;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 
     /**
-     * @var boolean Critical
+     * @var bool Critical
      */
     public $critical = false;
 
     /**
-     * @var boolean Manual
+     * @var bool Manual
      */
     public $manual = false;
 
     /**
-     * @var boolean Breakpoint
+     * @var bool Breakpoint
      */
     public $breakpoint = false;
 
@@ -62,7 +62,7 @@ class AppNewRelease extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';

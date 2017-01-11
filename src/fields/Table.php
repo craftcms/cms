@@ -27,7 +27,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Table');
     }
@@ -36,7 +36,7 @@ class Table extends Field
     // =========================================================================
 
     /**
-     * @var array The columns that should be shown in the table
+     * @var array|null The columns that should be shown in the table
      */
     public $columns;
 
@@ -51,7 +51,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_TEXT;
     }
@@ -64,7 +64,7 @@ class Table extends Field
         $columns = $this->columns;
         $defaults = $this->defaults;
 
-        if (!$columns) {
+        if (empty($columns)) {
             $columns = [
                 'col1' => [
                     'heading' => '',
@@ -154,7 +154,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $input = '<input type="hidden" name="'.$this->handle.'" value="">';
 
@@ -170,18 +170,18 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decode($value);
         }
 
-        if (is_array($value) && $this->columns) {
+        if (is_array($value) && !empty($this->columns)) {
             // Make the values accessible from both the col IDs and the handles
             foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
                     if ($col['handle']) {
-                        $row[$col['handle']] = (isset($row[$colId]) ? $row[$colId] : null);
+                        $row[$col['handle']] = ($row[$colId] ?? null);
                     }
                 }
             }
@@ -195,14 +195,14 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
             // Drop the string row keys
             $value = array_values($value);
 
             // Drop the column handle values
-            if ($this->columns) {
+            if (!empty($this->columns)) {
                 foreach ($value as &$row) {
                     foreach ($this->columns as $colId => $col) {
                         if ($col['handle']) {
@@ -219,7 +219,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
@@ -232,15 +232,15 @@ class Table extends Field
      *
      * @param mixed                 $value
      * @param ElementInterface|null $element
-     * @param boolean               $static
+     * @param bool                  $static
      *
      * @return string
      */
-    private function _getInputHtml($value, $element, $static)
+    private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
         $columns = $this->columns;
 
-        if ($columns) {
+        if (!empty($columns)) {
             // Translate the column headings
             foreach ($columns as &$column) {
                 if (!empty($column['heading'])) {

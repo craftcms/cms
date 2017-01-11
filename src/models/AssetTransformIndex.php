@@ -22,67 +22,67 @@ class AssetTransformIndex extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer File ID
+     * @var int|null File ID
      */
     public $assetId;
 
     /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Filename
+     * @var string|null Filename
      */
     public $filename;
 
     /**
-     * @var string Format
+     * @var string|null Format
      */
     public $format;
 
     /**
-     * @var string Location
+     * @var string|null Location
      */
     public $location;
 
     /**
-     * @var boolean File exists
+     * @var bool File exists
      */
     public $fileExists = false;
 
     /**
-     * @var boolean In progress
+     * @var bool In progress
      */
     public $inProgress = false;
 
     /**
-     * @var \DateTime Date indexed
+     * @var \DateTime|null Date indexed
      */
     public $dateIndexed;
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 
     /**
-     * @var string Detected format
+     * @var string|null Detected format
      */
     public $detectedFormat;
 
     /**
-     * @var array Transform
+     * @var AssetTransform|null Transform
      */
     public $transform;
 
@@ -92,7 +92,7 @@ class AssetTransformIndex extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'dateIndexed';
@@ -116,7 +116,7 @@ class AssetTransformIndex extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string)$this->id;
     }

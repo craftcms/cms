@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.NewUsersWidget = Garnish.Base.extend(
         {
             settings: null,
@@ -110,6 +110,4 @@
                 return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate();
             }
         });
-
-
 })(jQuery);

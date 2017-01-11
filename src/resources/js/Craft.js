@@ -1,6 +1,8 @@
-/*! Craft 3.0.0 - 2017-01-06 */
+/*! Craft 3.0.0 - 2017-01-11 */
 (function($){
 
+/** global: Craft */
+/** global: Garnish */
 // Set all the standard Craft.* stuff
 $.extend(Craft,
     {
@@ -147,8 +149,8 @@ $.extend(Craft,
          */
         t: function(category, message, params) {
             if (
-                typeof Craft.translations[category] != typeof undefined &&
-                typeof Craft.translations[category][message] != typeof undefined
+                Craft.translations[category] !== undefined &&
+                Craft.translations[category][message] !== undefined
             ) {
                 message = Craft.translations[category][message];
             }
@@ -476,7 +478,7 @@ $.extend(Craft,
                 },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus != 'success') {
-                        if (typeof Craft.cp != 'undefined') {
+                        if (Craft.cp !== undefined) {
                             Craft.cp.displayError();
                         }
                         else {
@@ -643,7 +645,7 @@ $.extend(Craft,
 
                 // If they're actual objects (not arrays), compare the keys
                 if (!(obj1 instanceof Array)) {
-                    if (typeof sortObjectKeys === typeof undefined || sortObjectKeys == true) {
+                    if (sortObjectKeys === undefined || sortObjectKeys == true) {
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
@@ -860,7 +862,7 @@ $.extend(Craft,
          * Converts a number of seconds into a human-facing time duration.
          */
         secondsToHumanTimeDuration: function(seconds, showSeconds) {
-            if (typeof showSeconds == 'undefined') {
+            if (showSeconds === undefined) {
                 showSeconds = true;
             }
 
@@ -1060,7 +1062,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementIndexClass: function(elementType, func) {
-            if (typeof this._elementIndexClasses[elementType] != 'undefined') {
+            if (this._elementIndexClasses[elementType] !== undefined) {
                 throw 'An element index class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1075,7 +1077,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementSelectorModalClass: function(elementType, func) {
-            if (typeof this._elementSelectorModalClasses[elementType] != 'undefined') {
+            if (this._elementSelectorModalClasses[elementType] !== undefined) {
                 throw 'An element selector modal class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1093,7 +1095,7 @@ $.extend(Craft,
         createElementIndex: function(elementType, $container, settings) {
             var func;
 
-            if (typeof this._elementIndexClasses[elementType] != 'undefined') {
+            if (this._elementIndexClasses[elementType] !== undefined) {
                 func = this._elementIndexClasses[elementType];
             }
             else {
@@ -1112,7 +1114,7 @@ $.extend(Craft,
         createElementSelectorModal: function(elementType, settings) {
             var func;
 
-            if (typeof this._elementSelectorModalClasses[elementType] != 'undefined') {
+            if (this._elementSelectorModalClasses[elementType] !== undefined) {
                 func = this._elementSelectorModalClasses[elementType];
             }
             else {
@@ -1131,7 +1133,7 @@ $.extend(Craft,
         getLocalStorage: function(key, defaultValue) {
             key = 'Craft-' + Craft.systemUid + '.' + key;
 
-            if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined') {
+            if (typeof localStorage !== 'undefined' && localStorage[key] !== undefined) {
                 return JSON.parse(localStorage[key]);
             }
             else {
@@ -1146,7 +1148,7 @@ $.extend(Craft,
          * @param value
          */
         setLocalStorage: function(key, value) {
-            if (typeof localStorage != 'undefined') {
+            if (typeof localStorage !== 'undefined') {
                 key = 'Craft-' + Craft.systemUid + '.' + key;
 
                 // localStorage might be filled all the way up.
@@ -1483,6 +1485,8 @@ Garnish.$doc.ready(function() {
     Craft.initUiElements();
 });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element index class
  */
@@ -1964,19 +1968,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceState: function(source, key, defaultValue) {
-            if (typeof this.sourceStates[source] == 'undefined') {
+            if (this.sourceStates[source] === undefined) {
                 // Set it now so any modifications to it by whoever's calling this will be stored.
                 this.sourceStates[source] = {};
             }
 
-            if (typeof key == 'undefined') {
+            if (key === undefined) {
                 return this.sourceStates[source];
             }
-            else if (typeof this.sourceStates[source][key] != 'undefined') {
+            else if (this.sourceStates[source][key] !== undefined) {
                 return this.sourceStates[source][key];
             }
             else {
-                return (typeof defaultValue != 'undefined' ? defaultValue : null);
+                return (defaultValue !== undefined ? defaultValue : null);
             }
         },
 
@@ -2257,7 +2261,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceByKey: function(key) {
-            if (typeof this.sourcesByKey[key] === typeof undefined) {
+            if (this.sourcesByKey[key] === undefined) {
                 return null;
             }
 
@@ -2324,9 +2328,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     var viewMode = this.sourceViewModes[i];
 
                     var $viewModeBtn = $('<div data-view="' + viewMode.mode + '" role="button"' +
-                        ' class="btn' + (typeof viewMode.className != 'undefined' ? ' ' + viewMode.className : '') + '"' +
+                        ' class="btn' + (viewMode.className !== undefined ? ' ' + viewMode.className : '') + '"' +
                         ' title="' + viewMode.title + '"' +
-                        (typeof viewMode.icon != 'undefined' ? ' data-icon="' + viewMode.icon + '"' : '') +
+                        (viewMode.icon !== undefined ? ' data-icon="' + viewMode.icon + '"' : '') +
                         '/>'
                     ).appendTo(this.$viewModeBtnContainer);
 
@@ -2445,14 +2449,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             // Deselect the previous view mode
-            if (this.viewMode && typeof this.viewModeBtns[this.viewMode] != 'undefined') {
+            if (this.viewMode && this.viewModeBtns[this.viewMode] !== undefined) {
                 this.viewModeBtns[this.viewMode].removeClass('active');
             }
 
             this.viewMode = viewMode;
             this.setSelecetedSourceState('mode', this.viewMode);
 
-            if (typeof this.viewModeBtns[this.viewMode] != 'undefined') {
+            if (this.viewModeBtns[this.viewMode] !== undefined) {
                 this.viewModeBtns[this.viewMode].addClass('active');
             }
         },
@@ -3063,6 +3067,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     });
 
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Base Element Index View
  */
@@ -3426,6 +3432,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element Select input
  */
@@ -3454,7 +3462,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     args = ['id', 'name', 'elementType', 'sources', 'criteria', 'sourceElementId', 'limit', 'modalStorageKey', 'fieldId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (typeof arguments[i] != typeof undefined) {
+                    if (arguments[i] !== undefined) {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {
@@ -3861,6 +3869,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element selector modal class
  */
@@ -4077,6 +4087,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Input Generator
  */
@@ -4170,6 +4182,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Admin table class
  */
@@ -4231,7 +4245,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
         reorderItems: function() {
             if (!this.settings.sortable) {
-                return false;
+                return;
             }
 
             // Get the new field order
@@ -4393,6 +4407,8 @@ Craft.AdminTable = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset image editor class
  */
@@ -4532,14 +4548,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         redrawEditor: function() {
-            var desiredHeight = 600,
-                desiredWidth = 600;
-
-            if (this.imageLoaded) {
-                desiredHeight = this.originalImageHeight;
-                desiredWidth = this.originalImageWidth;
-            }
-
             var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
                 availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 
@@ -4724,12 +4732,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         performOperation: function(operation, reverse) {
             var modifier = reverse ? -1 : 1;
 
-            if (typeof operation.imageRotation != "undefined") {
+            if (operation.imageRotation !== undefined) {
                 this.rotation += modifier * operation.imageRotation;
                 this.frameRotation += modifier * operation.imageRotation;
             }
 
-            if (typeof operation.straightenOffset != "undefined") {
+            if (operation.straightenOffset !== undefined) {
                 var value = modifier * operation.straightenOffset;
                 this.rotation += value;
 
@@ -5003,6 +5011,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     }
 );
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset index class
  */
@@ -5424,7 +5434,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     var responseArray = [];
                     var parameterArray = [];
 
-                    for (var i = 0; i < folderIds.length; i++) {
+                    for (i = 0; i < folderIds.length; i++) {
                         parameterArray.push({
                             folderId: folderIds[i],
                             parentId: targetFolderId
@@ -5453,12 +5463,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     // This will hold the final list of files to move
                     var fileMoveList = [];
 
-                    // These folders have to be deleted at the end
-                    var folderDeleteList = [];
-
-                    // This one tracks the changed folder ids
-                    var changedFolderIds = {};
-
                     var newSourceKey = '';
 
                     var onMoveFinish = $.proxy(function(responseArray) {
@@ -5468,7 +5472,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         for (var i = 0; i < responseArray.length; i++) {
                             var data = responseArray[i];
 
-                            // If succesful and have data, then update
+                            // If successful and have data, then update
                             if (data.success) {
                                 if (data.transferList) {
                                     fileMoveList = data.transferList;
@@ -5712,7 +5716,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 fileuploaddone: $.proxy(this, '_onUploadComplete')
             };
 
-            if (typeof this.settings.criteria.kind != "undefined") {
+            if (this.settings.criteria.kind !== undefined) {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -5815,10 +5819,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         /**
          * React on upload submit.
          *
-         * @param {object} event
          * @private
          */
-        _onUploadStart: function(event) {
+        _onUploadStart: function() {
             this.setIndexBusy();
 
             // Initial values
@@ -5987,13 +5990,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
          */
         _getFileDragHelper: function($element) {
             var currentView = this.getSelectedSourceState('mode');
+            var $outerContainer;
+            var $innerContainer;
 
             switch (currentView) {
                 case 'table': {
-                    var $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod),
-                        $innerContainer = $('<div class="tableview"/>').appendTo($outerContainer),
-                        $table = $('<table class="data"/>').appendTo($innerContainer),
-                        $tbody = $('<tbody/>').appendTo($table);
+                    $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod);
+                    $innerContainer = $('<div class="tableview"/>').appendTo($outerContainer);
+                    var $table = $('<table class="data"/>').appendTo($innerContainer);
+                    var $tbody = $('<tbody/>').appendTo($table);
 
                     $element.appendTo($tbody);
 
@@ -6022,8 +6027,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return $outerContainer;
                 }
                 case 'thumbs': {
-                    var $outerContainer = $('<div class="elements thumbviewhelper"/>').appendTo(Garnish.$bod),
-                        $innerContainer = $('<ul class="thumbsview"/>').appendTo($outerContainer);
+                    $outerContainer = $('<div class="elements thumbviewhelper"/>').appendTo(Garnish.$bod);
+                    $innerContainer = $('<ul class="thumbsview"/>').appendTo($outerContainer);
 
                     $element.appendTo($innerContainer);
 
@@ -6071,17 +6076,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             clearTimeout(this._expandDropTargetFolderTimeout);
 
             // If a source ID is passed in, exclude its parents
-            var excluded;
+            var $excludedSources;
 
             if (dropTargetFolderId) {
-                excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+                $excludedSources = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
             }
 
             for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
                 var $source = this._tempExpandedFolders[i];
 
                 // Check the parent list, if a source id is passed in
-                if (!dropTargetFolderId || excluded.filter('[data-key="' + $source.data('key') + '"]').length == 0) {
+                if (typeof $excludedSources === undefined || $excludedSources.filter('[data-key="' + $source.data('key') + '"]').length == 0) {
                     this._collapseFolder($source);
                     this._tempExpandedFolders.splice(i, 1);
                 }
@@ -6314,6 +6319,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset Select input
  */
@@ -6356,12 +6363,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            if (typeof this.settings.criteria.kind != "undefined") {
+            if (this.settings.criteria.kind !== undefined) {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -6488,7 +6495,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 var startPos = 0,
                     endPos = filename.baseFileName.length;
 
-                if (typeof input.selectionStart != "undefined") {
+                if (input.selectionStart !== undefined) {
                     input.selectionStart = startPos;
                     input.selectionEnd = endPos;
                 } else if (document.selection && document.selection.createRange) {
@@ -6537,6 +6544,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset selector modal class
  */
@@ -6625,7 +6634,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
         selectImagesWithTransform: function(transform) {
             // First we must get any missing transform URLs
-            if (typeof Craft.AssetSelectorModal.transformUrls[transform] == 'undefined') {
+            if (Craft.AssetSelectorModal.transformUrls[transform] === undefined) {
                 Craft.AssetSelectorModal.transformUrls[transform] = {};
             }
 
@@ -6636,7 +6645,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
                 var $item = $($selectedElements[i]),
                     elementId = Craft.getElementInfo($item).id;
 
-                if (typeof Craft.AssetSelectorModal.transformUrls[transform][elementId] == 'undefined') {
+                if (Craft.AssetSelectorModal.transformUrls[transform][elementId] === undefined) {
                     imageIdsWithMissingUrls.push(elementId);
                 }
             }
@@ -6692,7 +6701,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
                     var elementId = info[i].id;
 
                     if (
-                        typeof Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] != 'undefined' &&
+                        Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== undefined &&
                         Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== false
                     ) {
                         info[i].url = Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId];
@@ -6719,6 +6728,8 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 // Register it!
 Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * AuthManager class
  */
@@ -6775,7 +6786,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
                         this.submitLoginIfLoggedOut = false;
 
-                        if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+                        if (jqXHR.responseJSON.csrfTokenValue !== undefined && Craft.csrfTokenValue !== undefined) {
                             Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
                         }
                     }
@@ -7061,7 +7072,7 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.$passwordSpinner.removeClass('hidden');
                 this.clearLoginError();
 
-                if (typeof Craft.csrfTokenValue != 'undefined') {
+                if (Craft.csrfTokenValue !== undefined) {
                     // Check the auth status one last time before sending this off,
                     // in case the user has already logged back in from another window/tab
                     this.submitLoginIfLoggedOut = true;
@@ -7104,7 +7115,7 @@ Craft.AuthManager = Garnish.Base.extend(
         },
 
         showLoginError: function(error) {
-            if (error === null || typeof error == 'undefined') {
+            if (error === null || error === undefined) {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 
@@ -7121,6 +7132,8 @@ Craft.AuthManager = Garnish.Base.extend(
         minSafeSessiotTime: 120
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Category index class
  */
@@ -7147,7 +7160,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific category group in the URL?
-            if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined) {
+            if (this.settings.context == 'index' && typeof defaultGroupHandle !== 'undefined') {
                 for (var i = 0; i < this.$sources.length; i++) {
                     var $source = $(this.$sources[i]);
 
@@ -7240,7 +7253,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Categories index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history != typeof undefined) {
+            if (this.settings.context == 'index' && typeof history !== 'undefined') {
                 var uri = 'categories';
 
                 if (selectedSourceHandle) {
@@ -7319,6 +7332,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Category Select input
  */
@@ -7436,6 +7451,8 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Craft Charts
  */
@@ -7633,7 +7650,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                     return locale.timeFormat(this.settings.formats.shortDateFormats.month);
 
                 case 'hour':
-                    return locale.timeFormat(this.settings.formats.shortDateFormats.month + " %H:00:00");
+                    return locale.timeFormat(this.settings.formats.shortDateFormats.day + " %H:00:00");
 
                 default:
                     return locale.timeFormat(this.settings.formats.shortDateFormats.day);
@@ -8260,6 +8277,8 @@ Craft.charts.utils = {
     }
 };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * CP class
  */
@@ -8667,7 +8686,7 @@ Craft.CP = Garnish.Base.extend(
 
                 if (this.updateResponsiveTables._containerWidth > 0) {
                     // Is this the first time we've checked this table?
-                    if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined) {
+                    if (this.updateResponsiveTables._$table.data('lastContainerWidth') === undefined) {
                         this.updateResponsiveTables._check = true;
                     }
                     else {
@@ -9033,7 +9052,7 @@ Craft.CP = Garnish.Base.extend(
                         }
                     }
                 }, this));
-            }, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
+            }, this), (delay !== undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
         },
 
         stopTrackingTaskProgress: function() {
@@ -9586,6 +9605,8 @@ TaskProgressHUD.Task = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Customize Sources modal
  */
@@ -9681,7 +9702,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 this.sources.push(source);
             }
 
-            if (!this.selectedSource && typeof this.sources[0] != typeof undefined) {
+            if (!this.selectedSource && this.sources[0] !== undefined) {
                 this.sources[0].select();
             }
         },
@@ -9694,7 +9715,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 source;
 
             // Is this a heading?
-            if (typeof sourceData.heading !== typeof undefined) {
+            if (sourceData.heading !== undefined) {
                 $item.addClass('heading');
                 $itemInput.attr('name', 'sourceOrder[][heading]');
                 source = new Craft.CustomizeSourcesModal.Heading(this, $item, $itemLabel, $itemInput, sourceData);
@@ -10042,6 +10063,8 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * DataTableSorter
  */
@@ -10096,6 +10119,8 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Delete User Modal
  */
@@ -10246,6 +10271,8 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Editable table class
  */
@@ -10351,7 +10378,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 }
 
                 var col = columns[colId],
-                    value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
+                    value = (values[colId] !== undefined ? values[colId] : ''),
                     $cell;
 
                 if (col.type == 'heading') {
@@ -10509,7 +10536,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
                 var col = this.table.columns[colId];
 
-                if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val()) {
+                if (col.autopopulate && textareasByColId[col.autopopulate] !== undefined && !textareasByColId[colId].val()) {
                     new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
                 }
             }
@@ -10532,7 +10559,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 var val = $textarea.val();
 
                 // Does the browser support setSelectionRange()?
-                if (typeof $textarea[0].setSelectionRange != 'undefined') {
+                if ($textarea[0].setSelectionRange !== undefined) {
                     // Select the whole value
                     var length = val.length * 2;
                     $textarea[0].setSelectionRange(0, length);
@@ -10615,6 +10642,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         numericKeyCodes: [9 /* (tab) */, 8 /* (delete) */, 37, 38, 39, 40 /* (arrows) */, 45, 91 /* (minus) */, 46, 190 /* period */, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 /* (0-9) */]
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element Action Trigger
  */
@@ -10718,6 +10747,8 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element editor
  */
@@ -10740,7 +10771,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         init: function($element, settings) {
             // Param mapping
-            if (typeof settings == typeof undefined && $.isPlainObject($element)) {
+            if (settings === undefined && $.isPlainObject($element)) {
                 // (settings)
                 settings = $element;
                 $element = null;
@@ -10953,7 +10984,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                         }
 
                         // Update Live Preview
-                        if (typeof Craft.livePreview != 'undefined') {
+                        if (Craft.livePreview !== undefined) {
                             Craft.livePreview.updateIframe(true);
                         }
 
@@ -11036,6 +11067,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Elevated Session Form
  */
@@ -11048,7 +11081,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             this.$form = $(form);
 
             // Only check specific inputs?
-            if (typeof inputs !== typeof undefined) {
+            if (inputs !== undefined) {
                 this.inputs = [];
                 var inputs = $.makeArray(inputs);
 
@@ -11107,6 +11140,8 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Elevated Session Manager
  */
@@ -11222,7 +11257,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 password: this.$passwordInput.val()
             };
 
-            Craft.postActionRequest('users/startElevatedSession', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/start-elevated-session', data, $.proxy(function(response, textStatus) {
                 this.$passwordSpinner.addClass('hidden');
 
                 if (textStatus == 'success') {
@@ -11244,7 +11279,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         },
 
         showPasswordError: function(error) {
-            if (error === null || typeof error == 'undefined') {
+            if (error === null || error === undefined) {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 
@@ -11263,6 +11298,8 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 // Instantiate it
 Craft.elevatedSessionManager = new Craft.ElevatedSessionManager();
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Entry index class
  */
@@ -11289,7 +11326,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific section in the URL?
-            if (this.settings.context == 'index' && typeof defaultSectionHandle != typeof undefined) {
+            if (this.settings.context == 'index' && typeof defaultSectionHandle !== 'undefined') {
                 if (defaultSectionHandle == 'singles') {
                     return 'singles';
                 }
@@ -11394,7 +11431,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Entries index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history != typeof undefined) {
+            if (this.settings.context == 'index' && typeof history !== 'undefined') {
                 var uri = 'entries';
 
                 if (handle) {
@@ -11474,6 +11511,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
 
+/** global: Craft */
+/** global: Garnish */
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
     {
         $container: null,
@@ -12105,6 +12144,8 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * FieldToggle
  */
@@ -12284,6 +12325,8 @@ Craft.FieldToggle = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.Grid = Garnish.Base.extend(
     {
         $container: null,
@@ -12671,7 +12714,7 @@ Craft.Grid = Garnish.Base.extend(
 
         completeRefreshCols: function() {
             // Delete the internal variable object
-            if (typeof this.refreshCols._ != typeof undefined) {
+            if (this.refreshCols._ !== undefined) {
                 delete this.refreshCols._;
             }
 
@@ -12873,6 +12916,8 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Handle Generator
  */
@@ -12912,6 +12957,8 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Image upload class for user photos, site icon and logo.
  */
@@ -12937,7 +12984,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
@@ -13030,6 +13077,8 @@ Craft.ImageUpload = Garnish.Base.extend(
         }
     }
 );
+/** global: Craft */
+/** global: Garnish */
 /**
  * Info icon class
  */
@@ -13057,6 +13106,8 @@ Craft.InfoIcon = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Light Switch
  */
@@ -13263,6 +13314,8 @@ Craft.LightSwitch = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Live Preview
  */
@@ -13689,6 +13742,8 @@ Craft.LivePreview.init = function(settings) {
     Craft.livePreview = new Craft.LivePreview(settings);
 };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Pane class
  */
@@ -13742,7 +13797,7 @@ Craft.Pane = Garnish.Base.extend(
                     }
                 }
 
-                if (document.location.hash && typeof this.tabs[document.location.hash] != 'undefined') {
+                if (document.location.hash && this.tabs[document.location.hash] !== undefined) {
                     this.tabs[document.location.hash].$tab.trigger('activate');
                 }
                 else if (!this.selectedTab) {
@@ -13827,7 +13882,7 @@ Craft.Pane = Garnish.Base.extend(
 
         setMinContentSizeForSidebar: function() {
             if (true || this.$pane.hasClass('showing-sidebar')) {
-                this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - this.$tabsContainer.height() - 48;
+                this.setMinContentSizeForSidebar._minHeight = this.$sidebar.prop('scrollHeight') - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0) - 48;
             }
             else {
                 this.setMinContentSizeForSidebar._minHeight = 0;
@@ -13844,8 +13899,8 @@ Craft.Pane = Garnish.Base.extend(
 
             this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
             this.updateSidebarStyles._pageHeaderHeight = $pageHeader.outerHeight();
-            this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-            this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+            this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
+            this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
 
 			if($pageHeader.hasClass('fixed'))
             {
@@ -13893,6 +13948,8 @@ Craft.Pane = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Password Input
  */
@@ -14033,6 +14090,8 @@ Craft.PasswordInput = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -14120,6 +14179,8 @@ Craft.ProgressBar = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -14303,6 +14364,8 @@ Craft.PromptHandler = Garnish.Base.extend({
     }
 });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Slug Generator
  */
@@ -14336,6 +14399,8 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Structure class
  */
@@ -14369,7 +14434,7 @@ Craft.Structure = Garnish.Base.extend(
                 $.extend(this.state, Craft.getLocalStorage(this.settings.storageKey, {}));
             }
 
-            if (typeof this.state.collapsedElementIds == 'undefined') {
+            if (this.state.collapsedElementIds === undefined) {
                 this.state.collapsedElementIds = [];
             }
 
@@ -14472,14 +14537,16 @@ Craft.Structure = Garnish.Base.extend(
                 this.structureDrag.removeItems($li);
             }
 
+            var $parentUl;
+
             if (!$li.siblings().length) {
-                var $parentUl = $li.parent();
+                $parentUl = $li.parent();
             }
 
             $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {
                 $li.remove();
 
-                if (typeof $parentUl != 'undefined') {
+                if ($parentUl !== undefined) {
                     this._removeUl($parentUl);
                 }
             }, this));
@@ -14502,6 +14569,8 @@ Craft.Structure = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Structure drag class
  */
@@ -14876,6 +14945,8 @@ Craft.StructureDrag = Garnish.Drag.extend(
 
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
 
         // Properties
@@ -15471,6 +15542,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Table Element Index View
  */
@@ -15843,6 +15916,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Tag select input
  */
@@ -15870,7 +15945,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                     args = ['id', 'name', 'tagGroupId', 'sourceElementId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (typeof arguments[i] != typeof undefined) {
+                    if (arguments[i] !== undefined) {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {
@@ -16087,6 +16162,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Thumb Element Index View
  */
@@ -16097,6 +16174,8 @@ Craft.ThumbsElementIndexView = Craft.BaseElementIndexView.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.ui =
     {
         createTextInput: function(config) {
@@ -16109,7 +16188,7 @@ Craft.ui =
                 value: config.value,
                 maxlength: config.maxlength,
                 autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === typeof undefined || !config.autocomplete ? 'off' : null),
+                autocomplete: (config.autocomplete === undefined || !config.autocomplete ? 'off' : null),
                 disabled: this.getDisabledValue(config.disabled),
                 readonly: config.readonly,
                 title: config.title,
@@ -16214,14 +16293,14 @@ Craft.ui =
                 var option = config.options[key];
 
                 // Starting a new <optgroup>?
-                if (typeof option.optgroup != typeof undefined) {
+                if (option.optgroup !== undefined) {
                     $optgroup = $('<optgroup/>', {
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (typeof option.label != typeof undefined ? option.label : option),
-                        optionValue = (typeof option.value != typeof undefined ? option.value : key),
-                        optionDisabled = (typeof option.disabled != typeof undefined ? option.disabled : false);
+                    var optionLabel = (option.label !== undefined ? option.label : option),
+                        optionValue = (option.value !== undefined ? option.value : key),
+                        optionDisabled = (option.disabled !== undefined ? option.disabled : false);
 
                     $('<option/>', {
                         'value': optionValue,
@@ -16249,7 +16328,7 @@ Craft.ui =
 
             var $input = $('<input/>', {
                 type: 'checkbox',
-                value: (typeof config.value !== typeof undefined ? config.value : '1'),
+                value: (config.value !== undefined ? config.value : '1'),
                 id: id,
                 'class': 'checkbox',
                 name: config.name,
@@ -16519,6 +16598,8 @@ Craft.ui =
         }
     };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Craft Upgrade Modal
  */
@@ -17031,6 +17112,8 @@ Craft.UpgradeModal = Garnish.Modal.extend(
         clearCheckoutFormTimeoutDuration: 30000 // 1000 x 60 x 5
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -17088,7 +17171,7 @@ Craft.Uploader = Garnish.Base.extend(
          */
         setParams: function(paramObject) {
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
@@ -17245,7 +17328,7 @@ Craft.Uploader = Garnish.Base.extend(
             for (var i = 0; i < this.allowedKinds.length; i++) {
                 var allowedKind = this.allowedKinds[i];
 
-                if (typeof Craft.fileKinds[allowedKind] !== typeof undefined) {
+                if (Craft.fileKinds[allowedKind] !== undefined) {
                     for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++) {
                         var ext = Craft.fileKinds[allowedKind].extensions[j];
                         this._extensionList.push(ext);
@@ -17276,6 +17359,8 @@ Craft.Uploader = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Handle Generator
  */

@@ -24,62 +24,62 @@ class DeprecationError extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Key
+     * @var string|null Key
      */
     public $key;
 
     /**
-     * @var string Fingerprint
+     * @var string|null Fingerprint
      */
     public $fingerprint;
 
     /**
-     * @var DateTime Last occurrence
+     * @var DateTime|null Last occurrence
      */
     public $lastOccurrence;
 
     /**
-     * @var string File
+     * @var string|null File
      */
     public $file;
 
     /**
-     * @var integer Line
+     * @var int|null Line
      */
     public $line;
 
     /**
-     * @var string Class
+     * @var string|null Class
      */
     public $class;
 
     /**
-     * @var string Method
+     * @var string|null Method
      */
     public $method;
 
     /**
-     * @var string Template
+     * @var string|null Template
      */
     public $template;
 
     /**
-     * @var integer Template line
+     * @var int|null Template line
      */
     public $templateLine;
 
     /**
-     * @var string Message
+     * @var string|null Message
      */
     public $message;
 
     /**
-     * @var array Traces
+     * @var array|null Traces
      */
     public $traces;
 
@@ -101,7 +101,7 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'lastOccurrence';
@@ -125,7 +125,7 @@ class DeprecationError extends Model
      *
      * @return string
      */
-    public function getOrigin()
+    public function getOrigin(): string
     {
         if ($this->template) {
             $file = $this->template;

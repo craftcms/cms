@@ -20,7 +20,7 @@ class Sendmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return 'Sendmail';
     }
@@ -31,10 +31,10 @@ class Sendmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getTransportConfig()
+    public function getTransportConfig(): array
     {
         return [
-            'class' => 'Swift_SendmailTransport',
+            'class' => \Swift_SendmailTransport::class,
         ];
     }
 }

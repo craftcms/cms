@@ -74,10 +74,10 @@ class Search extends Component
      *
      * @param ElementInterface $element
      *
-     * @return boolean Whether the indexing was a success.
+     * @return bool Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element)
+    public function indexElementAttributes(ElementInterface $element): bool
     {
         /** @var Element $element */
         // Does it have any searchable attributes?
@@ -101,14 +101,14 @@ class Search extends Component
     /**
      * Indexes the field values for a given element and site.
      *
-     * @param integer $elementId The ID of the element getting indexed.
-     * @param integer $siteId    The site ID of the content getting indexed.
-     * @param array   $fields    The field values, indexed by field ID.
+     * @param int   $elementId The ID of the element getting indexed.
+     * @param int   $siteId    The site ID of the content getting indexed.
+     * @param array $fields    The field values, indexed by field ID.
      *
-     * @return boolean  Whether the indexing was a success.
+     * @return bool  Whether the indexing was a success.
      * @throws \craft\errors\SiteNotFoundException
      */
-    public function indexElementFields($elementId, $siteId, $fields)
+    public function indexElementFields(int $elementId, int $siteId, array $fields): bool
     {
         foreach ($fields as $fieldId => $value) {
             $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
@@ -120,15 +120,15 @@ class Search extends Component
     /**
      * Filters a list of element IDs by a given search query.
      *
-     * @param integer[]                $elementIds   The list of element IDs to filter by the search query.
+     * @param int[]                    $elementIds   The list of element IDs to filter by the search query.
      * @param string|array|SearchQuery $query        The search query (either a string or a SearchQuery instance)
-     * @param boolean                  $scoreResults Whether to order the results based on how closely they match the query.
-     * @param integer                  $siteId       The site ID to filter by.
-     * @param boolean                  $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
+     * @param bool                     $scoreResults Whether to order the results based on how closely they match the query.
+     * @param int|null                 $siteId       The site ID to filter by.
+     * @param bool                     $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $siteId = null, $returnScores = false)
+    public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false): array
     {
         if (is_string($query)) {
             $query = new SearchQuery($query, Craft::$app->getConfig()->get('defaultSearchTermOptions'));
@@ -164,11 +164,11 @@ class Search extends Component
         // Get where clause from tokens, bail out if no valid query is there
         $where = $this->_getWhereClause($siteId);
 
-        if (!$where) {
+        if ($where === false || empty($where)) {
             return [];
         }
 
-        if ($siteId) {
+        if ($siteId !== null) {
             $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
         }
 
@@ -176,7 +176,7 @@ class Search extends Component
         $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where);
 
         // Append elementIds to QSL
-        if ($elementIds) {
+        if (!empty($elementIds)) {
             $sql .= sprintf(' AND %s IN (%s)',
                 Craft::$app->getDb()->quoteColumnName('elementId'),
                 implode(',', $elementIds)
@@ -238,20 +238,20 @@ class Search extends Component
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param integer      $elementId
-     * @param string       $attribute
-     * @param string       $fieldId
-     * @param integer|null $siteId
-     * @param string       $dirtyKeywords
+     * @param int      $elementId
+     * @param string   $attribute
+     * @param string   $fieldId
+     * @param int|null $siteId
+     * @param string   $dirtyKeywords
      *
      * @return void
      * @throws \craft\errors\SiteNotFoundException
      */
-    private function _indexElementKeywords($elementId, $attribute, $fieldId, $siteId, $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
     {
         $attribute = StringHelper::toLowerCase($attribute);
 
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
@@ -275,7 +275,7 @@ class Search extends Component
 
         $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
-        if ($maxDbColumnSize) {
+        if ($maxDbColumnSize !== null) {
             // Give ourselves 10% wiggle room.
             $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
@@ -318,7 +318,7 @@ class Search extends Component
      *
      * @return float The total score for this row.
      */
-    private function _scoreRow($row)
+    private function _scoreRow(array $row): float
     {
         // Starting point
         $score = 0;
@@ -351,14 +351,11 @@ class Search extends Component
      *
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm($term, $row, $weight = 1)
+    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
-        if (
-            $term->exact ||
-            !($keywords = $this->_normalizeTerm($term->term))
-        ) {
+        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term))) {
             return 0;
         }
 
@@ -390,7 +387,7 @@ class Search extends Component
             }
 
             // If this is a title, 5X it
-            if ($row['attribute'] == 'title') {
+            if ($row['attribute'] === 'title') {
                 $mod *= 5;
             }
 
@@ -403,16 +400,16 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param integer|null $siteId The site ID to search within
+     * @param int|null $siteId The site ID to search within
      *
      * @return string|false
      */
-    private function _getWhereClause($siteId = null)
+    private function _getWhereClause(int $siteId = null)
     {
         $where = [];
 
         // Add the regular terms to the WHERE clause
-        if ($this->_terms) {
+        if (!empty($this->_terms)) {
             $condition = $this->_processTokens($this->_terms, true, $siteId);
 
             if ($condition === false) {
@@ -440,14 +437,14 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array        $tokens
-     * @param boolean      $inclusive
-     * @param integer|null $siteId
+     * @param array    $tokens
+     * @param bool     $inclusive
+     * @param int|null $siteId
      *
      * @return string|false
      * @throws \Exception
      */
-    private function _processTokens(array $tokens = [], $inclusive = true, $siteId = null)
+    private function _processTokens(array $tokens = [], bool $inclusive = true, int $siteId = null)
     {
         $andOr = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -465,7 +462,7 @@ class Search extends Component
             if ($sql) {
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
-            else if ($keywords) {
+            else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive) {
                     if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
                         $keywords = '+'.$keywords;
@@ -477,7 +474,7 @@ class Search extends Component
         }
 
         // If we collected full-text words, combine them into one
-        if ($words) {
+        if (!empty($words)) {
             $where[] = $this->_sqlFullText($words, true, $andOr);
         }
 
@@ -504,12 +501,12 @@ class Search extends Component
      * or returns keywords to use in a full text search clause
      *
      * @param SearchQueryTerm $term
-     * @param integer|null    $siteId
+     * @param int|null        $siteId
      *
      * @return array
      * @throws Exception
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, $siteId = null)
+    private function _getSqlFromTerm(SearchQueryTerm $term, int $siteId = null): array
     {
         // Initiate return value
         $sql = null;
@@ -573,7 +570,7 @@ class Search extends Component
                         }
 
                         // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
-                        if ($subSelect) {
+                        if ($subSelect !== null) {
                             // If there is a subselect, create the full text SQL bit
                             $sql = $this->_sqlFullText($keywords);
                         }
@@ -602,7 +599,7 @@ class Search extends Component
         }
 
         // If we have a where clause in the subselect, add the keyword bit to it.
-        if ($subSelect && $sql) {
+        if ($subSelect !== null && $sql !== null) {
             $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $siteId);
 
             // We need to reset keywords even if the subselect ended up in no results.
@@ -619,7 +616,7 @@ class Search extends Component
      *
      * @return string
      */
-    private function _normalizeTerm($term)
+    private function _normalizeTerm(string $term): string
     {
         static $terms = [];
 
@@ -635,9 +632,9 @@ class Search extends Component
      *
      * @param string $attribute
      *
-     * @return integer
+     * @return int
      */
-    private function _getFieldIdFromAttribute($attribute)
+    private function _getFieldIdFromAttribute(string $attribute): int
     {
         // Get field id from service
         /** @var Field $field */
@@ -656,7 +653,7 @@ class Search extends Component
      *
      * @return string
      */
-    private function _sqlWhere($key, $oper, $val)
+    private function _sqlWhere(string $key, string $oper, string $val): string
     {
         $key = Craft::$app->getDb()->quoteColumnName($key);
 
@@ -666,14 +663,14 @@ class Search extends Component
     /**
      * Get SQL necessary for a full text search.
      *
-     * @param mixed   $val   String or Array of keywords
-     * @param boolean $bool  Use In Boolean Mode or not
-     * @param string  $andOr If multiple values are passed in as an array, whether to AND or OR then.
+     * @param mixed  $val   String or Array of keywords
+     * @param bool   $bool  Use In Boolean Mode or not
+     * @param string $andOr If multiple values are passed in as an array, whether to AND or OR then.
      *
      * @return string
      * @throws Exception
      */
-    private function _sqlFullText($val, $bool = true, $andOr = ' AND ')
+    private function _sqlFullText($val, bool $bool = true, string $andOr = ' AND '): string
     {
         $driver = Craft::$app->getDb()->getDriverName();
         switch ($driver) {
@@ -681,7 +678,7 @@ class Search extends Component
                 return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
 
             case Connection::DRIVER_PGSQL:
-                if ($andOr == ' AND ') {
+                if ($andOr === ' AND ') {
                     $andOr = ' & ';
                 } else {
                     $andOr = ' | ';
@@ -707,25 +704,25 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string       $where
-     * @param integer|null $siteId
+     * @param string   $where
+     * @param int|null $siteId
      *
      * @return string|false
      */
-    private function _sqlSubSelect($where, $siteId = null)
+    private function _sqlSubSelect(string $where, int $siteId = null)
     {
         $query = (new Query())
             ->select(['elementId'])
             ->from(['{{%searchindex}}'])
             ->where($where);
 
-        if ($siteId) {
+        if ($siteId !== null) {
             $query->andWhere(['siteId' => $siteId]);
         }
 
         $elementIds = $query->column();
 
-        if ($elementIds) {
+        if (!empty($elementIds)) {
             return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
         }
 
@@ -740,7 +737,7 @@ class Search extends Component
      *
      * @return bool
      */
-    private function _doFullTextSearch($keywords, SearchQueryTerm $term)
+    private function _doFullTextSearch(string $keywords, SearchQueryTerm $term): bool
     {
         return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
     }
@@ -753,7 +750,7 @@ class Search extends Component
      *
      * @return string The SQL to perform the search.
      */
-    private function _sqlPhraseExactMatch($val, $exact = false)
+    private function _sqlPhraseExactMatch(string $val, bool $exact = false): string
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);

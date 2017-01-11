@@ -100,7 +100,7 @@ class Elements extends Component
     // =========================================================================
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_placeholderElements;
 
@@ -114,7 +114,7 @@ class Elements extends Component
      *
      * @return ElementInterface The element
      */
-    public function createElement($config)
+    public function createElement($config): ElementInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -135,14 +135,14 @@ class Elements extends Component
      *
      * The element’s status will not be a factor when using this method.
      *
-     * @param integer      $elementId   The element’s ID.
-     * @param string|null  $elementType The element class.
-     * @param integer|null $siteId      The site to fetch the element in.
+     * @param int         $elementId    The element’s ID.
+     * @param string|null $elementType  The element class.
+     * @param int|null    $siteId       The site to fetch the element in.
      *                                  Defaults to the current site.
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementById($elementId, $elementType = null, $siteId = null)
+    public function getElementById(int $elementId, string $elementType = null, int $siteId = null)
     {
         if (!$elementId) {
             return null;
@@ -152,7 +152,7 @@ class Elements extends Component
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
-            if (!$elementType) {
+            if ($elementType === null) {
                 return null;
             }
         }
@@ -171,20 +171,20 @@ class Elements extends Component
     /**
      * Returns an element by its URI.
      *
-     * @param string       $uri         The element’s URI.
-     * @param integer|null $siteId      The site to look for the URI in, and to return the element in.
+     * @param string   $uri             The element’s URI.
+     * @param int|null $siteId          The site to look for the URI in, and to return the element in.
      *                                  Defaults to the current site.
-     * @param boolean      $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
+     * @param bool     $enabledOnly     Whether to only look for an enabled element. Defaults to `false`.
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
-    public function getElementByUri($uri, $siteId = null, $enabledOnly = false)
+    public function getElementByUri(string $uri, int $siteId = null, bool $enabledOnly = false)
     {
         if ($uri === '') {
             $uri = '__home__';
         }
 
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
@@ -218,44 +218,32 @@ class Elements extends Component
     }
 
     /**
-     * Returns the class(es) of an element with a given ID(s).
+     * Returns the class of an element with a given ID.
      *
-     * If a single ID is passed in (an int), then a single element class will be returned (a string), or `null` if
-     * no element exists by that ID.
+     * @param int $elementId The element’s ID
      *
-     * If an array is passed in, then an array will be returned.
-     *
-     * @param integer|array $elementId The element’s ID, or an array of element IDs.
-     *
-     * @return ElementInterface|ElementInterface[]|Element|Element[]|false The element class(es).
+     * @return string|null The element’s class, or null if it could not be found
      */
-    public function getElementTypeById($elementId)
+    public function getElementTypeById(int $elementId)
     {
-        if (is_array($elementId)) {
-            return (new Query())
-                ->select(['type'])
-                ->distinct(true)
-                ->from(['{{%elements}}'])
-                ->where(['id' => $elementId])
-                ->column();
-        }
-
-        return (new Query())
+        $class = (new Query())
             ->select(['type'])
             ->from(['{{%elements}}'])
             ->where(['id' => $elementId])
             ->scalar();
+
+        return $class !== false ? $class : null;
     }
 
     /**
      * Returns an element’s URI for a given site.
      *
-     * @param integer $elementId The element’s ID.
-     * @param integer $siteId    The site to search for the element’s URI in.
+     * @param int $elementId The element’s ID.
+     * @param int $siteId    The site to search for the element’s URI in.
      *
      * @return string|null The element’s URI, or `null`.
      */
-    public function getElementUriForSite($elementId, $siteId)
+    public function getElementUriForSite(int $elementId, int $siteId)
     {
         return (new Query())
             ->select(['uri'])
@@ -267,12 +255,12 @@ class Elements extends Component
     /**
      * Returns the site IDs that a given element is enabled in.
      *
-     * @param integer $elementId The element’s ID.
+     * @param int $elementId The element’s ID.
      *
-     * @return integer[] The site IDs that the element is enabled in. If the element could not be found, an empty array
+     * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      *                   will be returned.
      */
-    public function getEnabledSiteIdsForElement($elementId)
+    public function getEnabledSiteIdsForElement(int $elementId): array
     {
         return (new Query())
             ->select(['siteId'])
@@ -329,14 +317,14 @@ class Elements extends Component
      * ```
      *
      * @param ElementInterface $element       The element that is being saved
-     * @param boolean|null     $runValidation Whether the element should be validated
+     * @param bool             $runValidation Whether the element should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, $runValidation = true)
+    public function saveElement(ElementInterface $element, bool $runValidation = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
@@ -392,9 +380,21 @@ class Elements extends Component
             // Save the element record
             $elementRecord->save(false);
 
+            $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+
+            if ($dateCreated === false) {
+                throw new Exception('There was a problem calculating dateCreated.');
+            }
+
+            $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+
+            if ($dateUpdated === false) {
+                throw new Exception('There was a problem calculating dateUpdated.');
+            }
+
             // Save the new dateCreated and dateUpdated dates on the model
-            $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
-            $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+            $element->dateCreated = $dateCreated;
+            $element->dateUpdated = $dateUpdated;
 
             if ($isNewElement) {
                 // Save the element ID on the element model, in case {id} is in the URL format
@@ -422,7 +422,7 @@ class Elements extends Component
 
             $supportedSites = ElementHelper::supportedSitesForElement($element);
 
-            if (!$supportedSites) {
+            if (empty($supportedSites)) {
                 throw new Exception('All elements must have at least one site associated with them.');
             }
 
@@ -632,13 +632,13 @@ class Elements extends Component
      * Updates an element’s slug and URI, along with any descendants.
      *
      * @param ElementInterface $element           The element to update.
-     * @param boolean          $updateOtherSites  Whether the element’s other sites should also be updated.
-     * @param boolean          $updateDescendants Whether the element’s descendants should also be updated.
-     * @param boolean          $asTask            Whether the element’s slug and URI should be updated via a background task.
+     * @param bool             $updateOtherSites  Whether the element’s other sites should also be updated.
+     * @param bool             $updateDescendants Whether the element’s descendants should also be updated.
+     * @param bool             $asTask            Whether the element’s slug and URI should be updated via a background task.
      *
      * @return void
      */
-    public function updateElementSlugAndUri(ElementInterface $element, $updateOtherSites = true, $updateDescendants = true, $asTask = false)
+    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $asTask = false)
     {
         /** @var Element $element */
         if ($asTask) {
@@ -711,12 +711,12 @@ class Elements extends Component
      * Updates an element’s descendants’ slugs and URIs.
      *
      * @param ElementInterface $element          The element whose descendants should be updated.
-     * @param boolean          $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param boolean          $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param bool             $updateOtherSites Whether the element’s other sites should also be updated.
+     * @param bool             $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
      *
      * @return void
      */
-    public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherSites = true, $asTask = false)
+    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $asTask = false)
     {
         /** @var Element $element */
         /** @var ElementQuery $query */
@@ -730,7 +730,7 @@ class Elements extends Component
         if ($asTask) {
             $childIds = $query->ids();
 
-            if ($childIds) {
+            if (!empty($childIds)) {
                 Craft::$app->getTasks()->queueTask([
                     'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
@@ -758,13 +758,13 @@ class Elements extends Component
      * - Any structures that contain the merged element
      * - Any reference tags in textual custom fields referencing the merged element
      *
-     * @param integer $mergedElementId     The ID of the element that is going away.
-     * @param integer $prevailingElementId The ID of the element that is sticking around.
+     * @param int $mergedElementId     The ID of the element that is going away.
+     * @param int $prevailingElementId The ID of the element that is sticking around.
      *
-     * @return boolean Whether the elements were merged successfully.
+     * @return bool Whether the elements were merged successfully.
      * @throws \Exception if reasons
      */
-    public function mergeElementsByIds($mergedElementId, $prevailingElementId)
+    public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -834,7 +834,7 @@ class Elements extends Component
             // Update any reference tags
             $elementType = $this->getElementTypeById($prevailingElementId);
 
-            if ($elementType && ($elementTypeHandle = $elementType::classHandle())) {
+            if ($elementType !== null && ($elementTypeHandle = $elementType::classHandle())) {
                 $refTagPrefix = "{{$elementTypeHandle}:";
 
                 Craft::$app->getTasks()->queueTask([
@@ -875,21 +875,21 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param integer      $elementId   The element’s ID
-     * @param string|null  $elementType The element class.
-     * @param integer|null $siteId      The site to fetch the element in.
+     * @param int         $elementId    The element’s ID
+     * @param string|null $elementType  The element class.
+     * @param int|null    $siteId       The site to fetch the element in.
      *                                  Defaults to the current site.
      *
-     * @return boolean Whether the element was deleted successfully
+     * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($elementId, $elementType = null, $siteId = null)
+    public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
         if ($elementType === null) {
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
-            if (!$elementType) {
+            if ($elementType === null) {
                 return false;
             }
         }
@@ -921,10 +921,10 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to be deleted
      *
-     * @return boolean Whether the element was deleted successfully
+     * @return bool Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElement($element)
+    public function deleteElement(ElementInterface $element): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
@@ -1000,7 +1000,7 @@ class Elements extends Component
      *
      * @return string[] The available element classes.
      */
-    public function getAllElementTypes()
+    public function getAllElementTypes(): array
     {
         $elementTypes = [
             Asset::class,
@@ -1030,7 +1030,7 @@ class Elements extends Component
      *
      * @return ElementActionInterface The element action
      */
-    public function createAction($config)
+    public function createAction($config): ElementActionInterface
     {
         /** @var ElementAction $action */
         $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
@@ -1048,7 +1048,7 @@ class Elements extends Component
      *
      * @return string|null The element class, or null if it could not be found
      */
-    public function getElementTypeByHandle($handle)
+    public function getElementTypeByHandle(string $handle)
     {
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|Element $class */
@@ -1067,7 +1067,7 @@ class Elements extends Component
      *
      * @return string The parsed string.
      */
-    public function parseRefs($str)
+    public function parseRefs(string $str): string
     {
         if (StringHelper::contains($str, '{')) {
             global $refTagsByElementHandle;
@@ -1095,7 +1095,7 @@ class Elements extends Component
                     return $token;
                 }, $str);
 
-            if ($refTagsByElementHandle) {
+            if (!empty($refTagsByElementHandle)) {
                 $search = [];
                 $replace = [];
 
@@ -1104,7 +1104,7 @@ class Elements extends Component
                 foreach ($refTagsByElementHandle as $elementTypeHandle => $refTags) {
                     $elementType = $this->getElementTypeByHandle($elementTypeHandle);
 
-                    if (!$elementType) {
+                    if ($elementType === null) {
                         // Just put the ref tags back the way they were
                         foreach ($refTags as $refTag) {
                             $search[] = $refTag['token'];
@@ -1127,7 +1127,7 @@ class Elements extends Component
                         foreach ($things as $thing) {
                             $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
 
-                            if ($refTagsByThing) {
+                            if (!empty($refTagsByThing)) {
                                 /** @var Element|string $elementType */
                                 $elementQuery = $elementType::find();
                                 $elementQuery->status(null);
@@ -1215,13 +1215,13 @@ class Elements extends Component
     /**
      * Returns a placeholder element by its ID and site ID.
      *
-     * @param integer $id     The element’s ID
-     * @param integer $siteId The element’s site ID
+     * @param int $id     The element’s ID
+     * @param int $siteId The element’s site ID
      *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
-    public function getPlaceholderElement($id, $siteId)
+    public function getPlaceholderElement(int $id, int $siteId)
     {
         if (isset($this->_placeholderElements[$id][$siteId])) {
             return $this->_placeholderElements[$id][$siteId];
@@ -1239,10 +1239,10 @@ class Elements extends Component
      *
      * @return void
      */
-    public function eagerLoadElements($elementType, $elements, $with)
+    public function eagerLoadElements(string $elementType, array $elements, $with)
     {
         // Bail if there aren't even any elements
-        if (!$elements) {
+        if (empty($elements)) {
             return;
         }
 
@@ -1315,14 +1315,14 @@ class Elements extends Component
                         Craft::configure($query, array_merge(
                         // Default to no order and limit, but allow the element type/path criteria to override
                             ['orderBy' => null, 'limit' => null],
-                            (isset($map['criteria']) ? $map['criteria'] : []),
-                            (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
+                            $map['criteria'] ?? [],
+                            $pathCriterias[$targetPath] ?? []
                         ));
                         $query->id = $uniqueTargetElementIds;
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();
 
-                        if ($targetElements) {
+                        if (!empty($targetElements)) {
                             // Success! Store those elements on $elementsByPath FFR
                             $elementsByPath[$targetPath] = $targetElements;
 

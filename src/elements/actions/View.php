@@ -23,7 +23,7 @@ class View extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 
@@ -43,7 +43,7 @@ class View extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }
@@ -67,7 +67,7 @@ class View extends ElementAction
 
             return (
                 \$element.data('url') &&
-                (\$element.data('status') == 'enabled' || \$element.data('status') == 'live')
+                (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
             );
         },
         activate: function(\$selectedItems)

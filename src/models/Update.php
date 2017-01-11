@@ -21,7 +21,7 @@ class Update extends Model
     // =========================================================================
 
     /**
-     * @var AppUpdate App
+     * @var AppUpdate|null App
      */
     public $app;
 
@@ -31,7 +31,7 @@ class Update extends Model
     public $plugins = [];
 
     /**
-     * @var array Response errors
+     * @var array|null Response errors
      */
     public $responseErrors;
 
@@ -46,9 +46,9 @@ class Update extends Model
         parent::init();
 
         if ($this->plugins !== null) {
-            foreach ($this->plugins as $key => $value) {
-                if (!$value instanceof PluginUpdate) {
-                    $this->plugins[$key] = new PluginUpdate($value);
+            foreach ($this->plugins as $packageName => $pluginUpdate) {
+                if (!$pluginUpdate instanceof PluginUpdate) {
+                    $this->plugins[$packageName] = new PluginUpdate($pluginUpdate);
                 }
             }
         }

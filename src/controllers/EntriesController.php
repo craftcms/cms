@@ -13,7 +13,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
@@ -53,17 +53,17 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string  $sectionHandle The section’s handle
-     * @param integer $entryId       The entry’s ID, if editing an existing entry.
-     * @param integer $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param integer $versionId     The entry version’s ID, if editing an existing version.
-     * @param integer $siteHandle    The site handle, if specified.
-     * @param Entry   $entry         The entry being edited, if there were any validation errors.
+     * @param string     $sectionHandle The section’s handle
+     * @param int|null   $entryId       The entry’s ID, if editing an existing entry.
+     * @param int|null   $draftId       The entry draft’s ID, if editing an existing draft.
+     * @param int|null   $versionId     The entry version’s ID, if editing an existing version.
+     * @param int|null   $siteHandle    The site handle, if specified.
+     * @param Entry|null $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $siteHandle = null, Entry $entry = null)
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null): string
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
@@ -73,7 +73,7 @@ class EntriesController extends BaseEntriesController
             'entry' => $entry
         ];
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
@@ -163,7 +163,7 @@ class EntriesController extends BaseEntriesController
                 } else {
                     $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
-                    if ($parentIds) {
+                    if (!empty($parentIds)) {
                         $parentId = $parentIds[0];
                     }
                 }
@@ -197,21 +197,16 @@ class EntriesController extends BaseEntriesController
 
         // Page title w/ revision label
         switch (get_class($entry)) {
-            case EntryDraft::class: {
+            case EntryDraft::class:
                 /** @var EntryDraft $entry */
                 $variables['revisionLabel'] = $entry->name;
                 break;
-            }
-
-            case EntryVersion::class: {
+            case EntryVersion::class:
                 /** @var EntryVersion $entry */
                 $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                 break;
-            }
-
-            default: {
+            default:
                 $variables['revisionLabel'] = Craft::t('app', 'Current');
-            }
         }
 
         if (!$entry->id) {
@@ -228,19 +223,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => Url::url('entries')
+                'url' => UrlHelper::url('entries')
             ]
         ];
 
         if ($section->type === Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => Url::url('entries/singles')
+                'url' => UrlHelper::url('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::url('entries/'.$section->handle)
+                'url' => UrlHelper::url('entries/'.$section->handle)
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
@@ -300,26 +295,23 @@ class EntriesController extends BaseEntriesController
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
                     switch ($className) {
-                        case EntryDraft::class: {
+                        case EntryDraft::class:
                             /** @var EntryDraft $entry */
                             $shareParams = ['draftId' => $entry->draftId];
                             break;
-                        }
-                        case EntryVersion::class: {
+                        case EntryVersion::class:
                             /** @var EntryVersion $entry */
                             $shareParams = ['versionId' => $entry->versionId];
                             break;
-                        }
-                        default: {
+                        default:
                             $shareParams = [
                                 'entryId' => $entry->id,
                                 'siteId' => $entry->siteId
                             ];
                             break;
-                        }
                     }
 
-                    $variables['shareUrl'] = Url::getActionUrl('entries/share-entry', $shareParams);
+                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
@@ -362,7 +354,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return Response
      */
-    public function actionSwitchEntryType()
+    public function actionSwitchEntryType(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -370,6 +362,8 @@ class EntriesController extends BaseEntriesController
         $entry = $this->_getEntryModel();
         $this->enforceEditEntryPermissions($entry);
         $this->_populateEntryModel($entry);
+
+        $variables = [];
 
         $variables['sectionId'] = $entry->sectionId;
         $variables['entry'] = $entry;
@@ -395,7 +389,7 @@ class EntriesController extends BaseEntriesController
      * @return string
      * @throws NotFoundHttpException if the requested entry version cannot be found
      */
-    public function actionPreviewEntry()
+    public function actionPreviewEntry(): string
     {
         $this->requirePostRequest();
 
@@ -481,6 +475,8 @@ class EntriesController extends BaseEntriesController
         }
 
         if ($request->getAcceptsJson()) {
+            $return = [];
+
             $return['success'] = true;
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;
@@ -555,19 +551,19 @@ class EntriesController extends BaseEntriesController
     /**
      * Redirects the client to a URL for viewing an entry/draft/version on the front end.
      *
-     * @param integer $entryId
-     * @param integer $siteId
-     * @param integer $draftId
-     * @param integer $versionId
+     * @param int|null $entryId
+     * @param int|null $siteId
+     * @param int|null $draftId
+     * @param int|null $versionId
      *
      * @return Response
      * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
      * @throws ServerErrorHttpException if the section is not configured properly
      */
-    public function actionShareEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
+    public function actionShareEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
     {
-        if ($entryId) {
+        if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
             if (!$entry) {
@@ -575,7 +571,7 @@ class EntriesController extends BaseEntriesController
             }
 
             $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
-        } else if ($draftId) {
+        } else if ($draftId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$entry) {
@@ -583,7 +579,7 @@ class EntriesController extends BaseEntriesController
             }
 
             $params = ['draftId' => $draftId];
-        } else if ($versionId) {
+        } else if ($versionId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
@@ -613,7 +609,7 @@ class EntriesController extends BaseEntriesController
             throw new Exception('There was a problem generating the token.');
         }
 
-        $url = Url::urlWithToken($entry->getUrl(), $token);
+        $url = UrlHelper::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
@@ -621,23 +617,23 @@ class EntriesController extends BaseEntriesController
     /**
      * Shows an entry/draft/version based on a token.
      *
-     * @param integer $entryId
-     * @param integer $siteId
-     * @param integer $draftId
-     * @param integer $versionId
+     * @param int|null $entryId
+     * @param int|null $siteId
+     * @param int|null $draftId
+     * @param int|null $versionId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
+    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): string
     {
         $this->requireToken();
 
-        if ($entryId) {
+        if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-        } else if ($draftId) {
+        } else if ($draftId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
-        } else if ($versionId) {
+        } else if ($versionId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
         }
 
@@ -660,7 +656,7 @@ class EntriesController extends BaseEntriesController
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
-    private function _prepEditEntryVariables(&$variables)
+    private function _prepEditEntryVariables(array &$variables)
     {
         // Get the section
         // ---------------------------------------------------------------------
@@ -808,7 +804,7 @@ class EntriesController extends BaseEntriesController
      * @return Entry
      * @throws NotFoundHttpException if the requested entry cannot be found
      */
-    private function _getEntryModel()
+    private function _getEntryModel(): Entry
     {
         $entryId = Craft::$app->getRequest()->getBodyParam('entryId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
@@ -861,7 +857,7 @@ class EntriesController extends BaseEntriesController
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
-            $authorId = isset($authorId[0]) ? $authorId[0] : null;
+            $authorId = $authorId[0] ?? null;
         }
 
         $entry->authorId = $authorId;
@@ -870,7 +866,7 @@ class EntriesController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = isset($parentId[0]) ? $parentId[0] : null;
+            $parentId = $parentId[0] ?? null;
         }
 
         $entry->newParentId = $parentId;
@@ -887,7 +883,7 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */
-    private function _showEntry(Entry $entry)
+    private function _showEntry(Entry $entry): string
     {
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 

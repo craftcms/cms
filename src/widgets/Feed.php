@@ -25,7 +25,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Feed');
     }
@@ -34,17 +34,17 @@ class Feed extends Widget
     // =========================================================================
 
     /**
-     * @var string The feed URL
+     * @var string|null The feed URL
      */
     public $url;
 
     /**
-     * @var string The feed title
+     * @var string|null The feed title
      */
     public $title;
 
     /**
-     * @var integer The maximum number of feed items to display
+     * @var int The maximum number of feed items to display
      */
     public $limit = 5;
 
@@ -86,7 +86,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }

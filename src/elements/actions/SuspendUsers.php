@@ -28,7 +28,7 @@ class SuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Suspend');
     }
@@ -69,7 +69,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var ElementQuery $query */
         // Get the users that aren't already suspended

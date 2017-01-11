@@ -99,7 +99,6 @@ class InfoPanel extends Panel
      */
     private function _getRequirementResults()
     {
-        require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
 
@@ -111,7 +110,7 @@ class InfoPanel extends Panel
      *
      * @return array
      */
-    private function _getPhpInfo()
+    private function _getPhpInfo(): array
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -178,7 +177,7 @@ class InfoPanel extends Panel
             foreach ($parts as $row) {
                 if (!isset($row[2])) {
                     continue;
-                } else if (!isset($row[3]) || $row[2] == $row[3]) {
+                } else if (!isset($row[3]) || $row[2] === $row[3]) {
                     $value = $row[2];
                 } else {
                     $value = array_slice($row, 2);

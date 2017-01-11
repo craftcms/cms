@@ -17,6 +17,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
 use DateTime;
+use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
@@ -29,7 +30,7 @@ use DateTime;
  *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth($n, $db = null)
+ * @method Entry|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -43,27 +44,27 @@ class EntryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return entries that the user has permission to edit.
+     * @var bool Whether to only return entries that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var integer|integer[] The section ID(s) that the resulting entries must be in.
+     * @var int|int[]|null The section ID(s) that the resulting entries must be in.
      */
     public $sectionId;
 
     /**
-     * @var integer|integer[] The entry type ID(s) that the resulting entries must have.
+     * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
      */
     public $typeId;
 
     /**
-     * @var integer|integer[] The user ID(s) that the resulting entries’ authors must have.
+     * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
      */
     public $authorId;
 
     /**
-     * @var integer|integer[] The user group ID(s) that the resulting entries’ authors must be in.
+     * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
      */
     public $authorGroupId;
 
@@ -99,40 +100,34 @@ class EntryQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'section': {
+            case 'section':
                 $this->section($value);
                 break;
-            }
-            case 'type': {
+            case 'type':
                 $this->type($value);
                 break;
-            }
-            case 'authorGroup': {
+            case 'authorGroup':
                 $this->authorGroup($value);
                 break;
-            }
-            case 'before': {
+            case 'before':
                 $this->before($value);
                 break;
-            }
-            case 'after': {
+            case 'after':
                 $this->after($value);
                 break;
-            }
-            default: {
+            default:
                 parent::__set($name, $value);
-            }
         }
     }
 
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -142,7 +137,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property based on a given section(s)’s handle(s).
      *
-     * @param string|string[]|Section $value The property value
+     * @param string|string[]|Section|null $value The property value
      *
      * @return static self reference
      */
@@ -151,13 +146,15 @@ class EntryQuery extends ElementQuery
         if ($value instanceof Section) {
             $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->sectionId = $query
                 ->select(['id'])
                 ->from(['{{%sections}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->sectionId = null;
         }
 
         return $this;
@@ -166,7 +163,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -180,7 +177,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given entry type(s)’s handle(s).
      *
-     * @param string|string[]|EntryType $value The property value
+     * @param string|string[]|EntryType|null $value The property value
      *
      * @return static self reference
      */
@@ -188,13 +185,15 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof EntryType) {
             $this->typeId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->typeId = $query
                 ->select(['id'])
                 ->from(['{{%entrytypes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->typeId = null;
         }
 
         return $this;
@@ -203,7 +202,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -217,7 +216,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -231,7 +230,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property based on a given user group(s)’s handle(s).
      *
-     * @param string|string[]| $value The property value
+     * @param string|string[]|null $value The property value
      *
      * @return static self reference
      */
@@ -239,13 +238,15 @@ class EntryQuery extends ElementQuery
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->authorGroupId = $query
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->authorGroupId = null;
         }
 
         return $this;
@@ -254,7 +255,7 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -337,7 +338,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
@@ -392,7 +393,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
 
@@ -446,7 +447,7 @@ class EntryQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if (!$this->editable) {
+        if ($this->editable === false) {
             return;
         }
 
@@ -511,7 +512,7 @@ class EntryQuery extends ElementQuery
         foreach ($refs as $ref) {
             $parts = array_filter(explode('/', $ref));
 
-            if ($parts) {
+            if (!empty($parts)) {
                 if (count($parts) == 1) {
                     $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {

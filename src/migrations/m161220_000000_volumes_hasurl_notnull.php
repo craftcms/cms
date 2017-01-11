@@ -20,11 +20,9 @@ class m161220_000000_volumes_hasurl_notnull extends Migration
         if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_PGSQL) {
             $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET NOT NULL');
             $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET DEFAULT FALSE');
-
         } else {
             $this->alterColumn('{{%volumes}}', 'hasUrls', $this->boolean()->defaultValue(false)->notNull());
         }
-
     }
 
     /**

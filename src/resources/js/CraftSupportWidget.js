@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.CraftSupportWidget = Garnish.Base.extend(
         {
             widgetId: 0,
@@ -98,6 +98,4 @@
         {
             widgets: {}
         });
-
-
 })(jQuery);

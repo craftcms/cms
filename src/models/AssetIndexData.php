@@ -22,42 +22,42 @@ class AssetIndexData extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Session ID
+     * @var string|null Session ID
      */
     public $sessionId;
 
     /**
-     * @var integer Offset
+     * @var int|null Offset
      */
     public $offset;
 
     /**
-     * @var string URI
+     * @var string|null URI
      */
     public $uri;
 
     /**
-     * @var integer Size
+     * @var int|null Size
      */
     public $size;
 
     /**
-     * @var integer Record ID
+     * @var int|null Record ID
      */
     public $recordId;
 
     /**
-     * @var DateTime The index timestamp
+     * @var DateTime|null The index timestamp
      */
     public $timestamp;
 
@@ -67,7 +67,7 @@ class AssetIndexData extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'timestamp';
@@ -90,7 +90,7 @@ class AssetIndexData extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->uri;
     }

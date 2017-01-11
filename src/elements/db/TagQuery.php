@@ -7,11 +7,11 @@
 
 namespace craft\elements\db;
 
-use Craft;
 use craft\db\Query;
 use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\models\TagGroup;
+use yii\db\Connection;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
@@ -20,7 +20,7 @@ use craft\models\TagGroup;
  *
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
- * @method Tag|array|null nth($n, $db = null)
+ * @method Tag|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -34,7 +34,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|integer[] The tag group ID(s) that the resulting tags must be in.
+     * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
      */
     public $groupId;
 
@@ -59,46 +59,17 @@ class TagQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            case 'name': {
-                Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-                $this->title = $value;
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __call($name, $params)
-    {
-        if ($name === 'name') {
-            Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-
-            if (count($params) == 1) {
-                $this->title = $params[0];
-            } else {
-                $this->title = $params;
-            }
-
-            return $this;
-        }
-
-        return parent::__call($name, $params);
     }
 
     /**
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
-     * @param string|string[]|TagGroup $value The property value
+     * @param string|string[]|TagGroup|null $value The property value
      *
      * @return static self reference
      */
@@ -106,13 +77,15 @@ class TagQuery extends ElementQuery
     {
         if ($value instanceof TagGroup) {
             $this->groupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
                 ->from(['{{%taggroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -121,7 +94,7 @@ class TagQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -138,7 +111,7 @@ class TagQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
@@ -153,14 +126,6 @@ class TagQuery extends ElementQuery
 
         if ($this->groupId) {
             $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId));
-        }
-
-        if (is_string($this->orderBy)) {
-            $this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy, -1, $count);
-
-            if ($count) {
-                Craft::$app->getDeprecator()->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
-            }
         }
 
         return parent::beforePrepare();

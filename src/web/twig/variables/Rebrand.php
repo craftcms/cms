@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -42,7 +42,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isLogoUploaded()
+    public function isLogoUploaded(): bool
     {
         return $this->isImageUploaded('logo');
     }
@@ -52,7 +52,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isIconUploaded()
+    public function isIconUploaded(): bool
     {
         return $this->isImageUploaded('icon');
     }
@@ -64,7 +64,7 @@ class Rebrand
      *
      * @return bool
      */
-    public function isImageUploaded($type)
+    public function isImageUploaded(string $type): bool
     {
         return in_array($type, ['logo', 'icon'], true) && ($this->_getImagePath($type) !== false);
     }
@@ -92,11 +92,11 @@ class Rebrand
     /**
      * Get the ImageVariable for type.
      *
-     * @param $type
+     * @param string $type
      *
      * @return Image|null
      */
-    public function getImageVariable($type)
+    public function getImageVariable(string $type)
     {
         if (!in_array($type, ['logo', 'icon'], true)) {
             return null;
@@ -127,7 +127,7 @@ class Rebrand
      * @return string|false
      * @throws Exception in case of failure
      */
-    private function _getImagePath($type)
+    private function _getImagePath(string $type)
     {
         if (isset($this->_paths[$type])) {
             return $this->_paths[$type];
@@ -170,13 +170,13 @@ class Rebrand
     /**
      * Returns the URL to a rebrand image.
      *
-     * @param $path
-     * @param $type
+     * @param string $path
+     * @param string $type
      *
      * @return string
      */
-    private function _getImageUrl($path, $type)
+    private function _getImageUrl(string $path, string $type): string
     {
-        return Url::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
+        return UrlHelper::resourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

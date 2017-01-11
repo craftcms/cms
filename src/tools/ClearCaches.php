@@ -35,7 +35,7 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Clear Caches');
     }
@@ -43,7 +43,7 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public static function iconValue()
+    public static function iconValue(): string
     {
         return 'trash';
     }
@@ -51,7 +51,7 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public static function optionsHtml()
+    public static function optionsHtml(): string
     {
         $options = [];
 
@@ -71,7 +71,7 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public static function buttonLabel()
+    public static function buttonLabel(): string
     {
         return Craft::t('app', 'Clear!');
     }
@@ -82,7 +82,7 @@ class ClearCaches extends Tool
      *
      * @return array
      */
-    private static function _getAllCacheOptions()
+    private static function _getAllCacheOptions(): array
     {
         $runtimePath = Craft::$app->getPath()->getRuntimePath();
 
@@ -151,10 +151,10 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction(array $params)
+    public function performAction(array $params): array
     {
         if (!isset($params['caches'])) {
-            return;
+            return [];
         }
 
         foreach (self::_getAllCacheOptions() as $cacheOption) {
@@ -173,8 +173,10 @@ class ClearCaches extends Tool
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
-                call_user_func($action);
+                $action();
             }
         }
+
+        return [];
     }
 }

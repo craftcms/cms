@@ -1,4 +1,6 @@
 (function($) {
+    /** global: Craft */
+    /** global: Garnish */
     var settings = {
         postParameters: {userId: $('.user-photo').attr('data-user')},
         containerSelector: '.user-photo',
@@ -9,8 +11,8 @@
         fileInputSelector: 'input[name=photo]',
 
         onAfterRefreshImage: function(response) {
-            if (typeof response.html != "undefined") {
-                if (typeof changeSidebarPicture != "undefined" && changeSidebarPicture) {
+            if (response.html !== undefined) {
+                if (typeof changeSidebarPicture !== 'undefined' && changeSidebarPicture) {
                     $('#user-photo').find('> img').replaceWith($('#current-photo').find('> img').clone());
                 }
             }

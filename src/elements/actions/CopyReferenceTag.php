@@ -24,7 +24,7 @@ class CopyReferenceTag extends ElementAction
     // =========================================================================
 
     /**
-     * @var ElementInterface|string The element type associated with this action
+     * @var string|null The element type associated with this action
      */
     public $elementType;
 
@@ -34,7 +34,7 @@ class CopyReferenceTag extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Copy reference tag');
     }
@@ -46,6 +46,7 @@ class CopyReferenceTag extends ElementAction
     {
         $type = Json::encode(static::class);
         $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $elementTypeHandle = Json::encode($elementType::classHandle());
 

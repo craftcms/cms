@@ -29,9 +29,9 @@ class ElementIndexes
      *
      * @return array
      */
-    public function getSources($elementTypeClass, $context = 'index')
+    public function getSources(string $elementTypeClass, string $context = 'index'): array
     {
-        Craft::$app->getDeprecator()->log('craft.elementIndexes.getSources()', 'craft.elementIndexes.getSources() has been deprecated. Use craft.app.elementIndexes.getSources() instead.');
+        Craft::$app->getDeprecator()->log('craft.elementIndexes.getSources()', 'craft.elementIndexes.getSources() has been deprecated. Use craft.app.elementIndexes.sources instead.');
 
         return Craft::$app->getElementIndexes()->getSources($elementTypeClass, $context);
     }

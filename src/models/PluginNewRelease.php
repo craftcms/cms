@@ -22,32 +22,32 @@ class PluginNewRelease extends Model
     // =========================================================================
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $date;
 
     /**
-     * @var \DateTime Date
+     * @var \DateTime|null Date
      */
     public $localizedDate;
 
     /**
-     * @var string Notes
+     * @var string|null Notes
      */
     public $notes;
 
     /**
-     * @var boolean Critical
+     * @var bool Critical
      */
     public $critical = false;
 
     /**
-     * @var string Manual Download Endpoint
+     * @var string|null Manual Download Endpoint
      */
     public $manualDownloadEndpoint;
 
@@ -57,7 +57,7 @@ class PluginNewRelease extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';

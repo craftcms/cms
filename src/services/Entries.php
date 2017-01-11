@@ -31,12 +31,12 @@ class Entries extends Component
      * $entry = Craft::$app->getEntries()->getEntryById($entryId);
      * ```
      *
-     * @param integer $entryId The entry’s ID.
-     * @param integer $siteId  The site to fetch the entry in. Defaults to the current site.
+     * @param int      $entryId The entry’s ID.
+     * @param int|null $siteId  The site to fetch the entry in. Defaults to the current site.
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById($entryId, $siteId = null)
+    public function getEntryById(int $entryId, int $siteId = null)
     {
         if (!$entryId) {
             return null;

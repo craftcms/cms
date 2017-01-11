@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.QuickPostWidget = Garnish.Base.extend(
         {
             params: null,
@@ -103,7 +103,7 @@
                 this.initForm($newForm);
 
                 // Are there any Recent Entries widgets to notify?
-                if (typeof Craft.RecentEntriesWidget != 'undefined') {
+                if (Craft.RecentEntriesWidget !== undefined) {
                     for (var i = 0; i < Craft.RecentEntriesWidget.instances.length; i++) {
                         var widget = Craft.RecentEntriesWidget.instances[i];
                         if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId) {
@@ -123,6 +123,4 @@
                 Craft.redirectTo(response.cpEditUrl);
             }
         });
-
-
 })(jQuery);

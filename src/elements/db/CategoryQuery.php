@@ -14,6 +14,7 @@ use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
+use yii\db\Connection;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -22,7 +23,7 @@ use craft\models\CategoryGroup;
  *
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
- * @method Category|array|null nth($n, $db = null)
+ * @method Category|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -36,12 +37,12 @@ class CategoryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return categories that the user has permission to edit.
+     * @var bool Whether to only return categories that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var integer|integer[] The category group ID(s) that the resulting categories must be in.
+     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
      */
     public $groupId;
 
@@ -63,11 +64,11 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
      * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -77,7 +78,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given category group(s)’s handle(s).
      *
-     * @param string|string[]|CategoryGroup $value The property value
+     * @param string|string[]|CategoryGroup|null $value The property value
      *
      * @return static self reference
      */
@@ -86,13 +87,15 @@ class CategoryQuery extends ElementQuery
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = $value->id;
-        } else {
+        } else if ($value !== null) {
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
                 ->from('{{%categorygroups}}')
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -101,7 +104,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
      * @return static self reference
      */
@@ -118,7 +121,7 @@ class CategoryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
@@ -148,7 +151,7 @@ class CategoryQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
+        if ($this->editable === true) {
             // Limit the query to only the category groups the user has permission to edit
             $this->subQuery->andWhere([
                 'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()
@@ -194,7 +197,7 @@ class CategoryQuery extends ElementQuery
         foreach ($refs as $ref) {
             $parts = array_filter(explode('/', $ref));
 
-            if ($parts) {
+            if (!empty($parts)) {
                 if (count($parts) == 1) {
                     $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {

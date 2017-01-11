@@ -48,10 +48,10 @@ class NavTokenParser extends \Twig_TokenParser
 
         $nextValue = $stream->next()->getValue();
 
-        if ($nextValue != 'endnav') {
+        if ($nextValue !== 'endnav') {
             $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-            if ($nextValue == 'ifchildren') {
+            if ($nextValue === 'ifchildren') {
                 $indent = $this->parser->subparse([
                     $this,
                     'decideChildrenFork'
@@ -86,9 +86,9 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideNavFork(\Twig_Token $token)
+    public function decideNavFork(\Twig_Token $token): bool
     {
         return $token->test(['ifchildren', 'children', 'endnav']);
     }
@@ -96,9 +96,9 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideChildrenFork(\Twig_Token $token)
+    public function decideChildrenFork(\Twig_Token $token): bool
     {
         return $token->test('children');
     }
@@ -106,9 +106,9 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideChildrenEnd(\Twig_Token $token)
+    public function decideChildrenEnd(\Twig_Token $token): bool
     {
         return $token->test('endifchildren');
     }
@@ -116,9 +116,9 @@ class NavTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideNavEnd(\Twig_Token $token)
+    public function decideNavEnd(\Twig_Token $token): bool
     {
         return $token->test('endnav');
     }

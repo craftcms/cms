@@ -23,7 +23,7 @@ class MatrixSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer Max blocks
+     * @var int|null Max blocks
      */
     public $maxBlocks;
 
@@ -78,7 +78,7 @@ class MatrixSettings extends Model
      *
      * @return MatrixBlockType[]
      */
-    public function getBlockTypes()
+    public function getBlockTypes(): array
     {
         if ($this->_blockTypes !== null) {
             return $this->_blockTypes;
@@ -98,7 +98,7 @@ class MatrixSettings extends Model
      *
      * @return void
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes(array $blockTypes)
     {
         $this->_blockTypes = $blockTypes;
     }
@@ -109,15 +109,15 @@ class MatrixSettings extends Model
      *
      * In addition, we validate the block type settings.
      *
-     * @param array|null $attributes
-     * @param boolean    $clearErrors
+     * @param array|null $attributeNames
+     * @param bool       $clearErrors
      *
-     * @return boolean
+     * @return bool
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         // Enforce $clearErrors without copying code if we don't have to
-        $validates = parent::validate($attributes, $clearErrors);
+        $validates = parent::validate($attributeNames, $clearErrors);
 
         if (!Craft::$app->getMatrix()->validateFieldSettings($this->getField())) {
             $validates = false;

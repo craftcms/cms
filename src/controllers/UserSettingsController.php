@@ -101,7 +101,7 @@ class UserSettingsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -121,6 +121,7 @@ class UserSettingsController extends Controller
     public function actionSaveUserSettings()
     {
         $this->requirePostRequest();
+        $settings = [];
 
         $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
         $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');

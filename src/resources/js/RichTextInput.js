@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     /**
      * Rich Text input class
      */
@@ -68,13 +68,13 @@
                         if ((index = $.inArray(oldListButtons[i], this.redactorConfig.buttons)) !== -1) {
                             this.redactorConfig.buttons.splice(index, 1);
 
-                            if (typeof lowestListButtonIndex == typeof undefined || index < lowestListButtonIndex) {
+                            if (lowestListButtonIndex === undefined || index < lowestListButtonIndex) {
                                 lowestListButtonIndex = index;
                             }
                         }
                     }
 
-                    if (typeof lowestListButtonIndex != typeof undefined) {
+                    if (lowestListButtonIndex !== undefined) {
                         this.redactorConfig.buttons.splice(lowestListButtonIndex, 0, 'lists');
                     }
                 }
@@ -86,7 +86,7 @@
                 if (typeof this.redactorConfig.callbacks == typeof []) {
                     // Merge them together
                     for (var i in callbacks) {
-                        if (typeof this.redactorConfig.callbacks[i] != typeof undefined) {
+                        if (this.redactorConfig.callbacks[i] !== undefined) {
                             this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
                         }
                     }
@@ -100,7 +100,7 @@
 
                 this.initRedactor();
 
-                if (typeof Craft.livePreview != 'undefined') {
+                if (Craft.livePreview !== undefined) {
                     // There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
                     Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function() {
                         this.redactor.core.destroy();
@@ -221,7 +221,7 @@
             onImageButtonClick: function() {
                 this.redactor.selection.save();
 
-                if (typeof this.assetSelectionModal == 'undefined') {
+                if (this.assetSelectionModal === undefined) {
                     this.assetSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
                         storageKey: 'RichTextFieldType.ChooseImage',
                         multiSelect: true,
@@ -256,7 +256,7 @@
             onFileButtonClick: function() {
                 this.redactor.selection.save();
 
-                if (typeof this.assetLinkSelectionModal == 'undefined') {
+                if (this.assetLinkSelectionModal === undefined) {
                     this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
                         storageKey: 'RichTextFieldType.LinkToAsset',
                         sources: this.volumes,
@@ -284,7 +284,7 @@
             onLinkOptionClick: function(key) {
                 this.redactor.selection.save();
 
-                if (typeof this.linkOptionModals[key] == typeof undefined) {
+                if (this.linkOptionModals[key] === undefined) {
                     var settings = this.linkOptions[key];
 
                     this.linkOptionModals[key] = Craft.createElementSelectorModal(settings.elementType, {
@@ -324,7 +324,7 @@
             },
 
             leaveFullscreetOnSaveShortcut: function() {
-                if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.fullscreen.disable == 'function') {
+                if (this.redactor.fullscreen !== undefined && typeof this.redactor.fullscreen.disable == 'function') {
                     Craft.cp.on('beforeSaveShortcut', $.proxy(function() {
                         if (this.redactor.fullscreen.isOpen) {
                             this.redactor.fullscreen.disable();
@@ -365,6 +365,4 @@
                 Craft.RichTextInput.currentInstance.onInitRedactor(this);
             }
         });
-
-
 })(jQuery);

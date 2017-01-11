@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use yii\base\Exception;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 
@@ -23,7 +24,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     // =========================================================================
 
     /**
-     * @var boolean Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
+     * @var bool|null Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
      */
     private $_renderAllCallStackItems;
 
@@ -47,7 +48,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
                 /** @var FileTarget $logTarget */
                 $logTarget = $logDispatcher->targets[0];
-                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
+
+                $logPath404 = Craft::getAlias('@storage/logs/web-404s.log');
+
+                if ($logPath404 === false) {
+                    throw new Exception('Could not find the 404 log file path.');
+                }
+
+                $logTarget->logFile = $logPath404;
             }
         }
 
@@ -90,13 +98,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
                 // $templateLine could be null or -1
                 if (is_int($templateLine) && $templateLine > 0) {
-                    $templateFile = $this->exception->getTemplateName();
-                    $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
-
-                    if ($resolvedTemplate !== false) {
-                        $file = $resolvedTemplate;
-                        $line = $templateLine;
-                        $this->_renderAllCallStackItems = false;
+                    $templateSource = $this->exception->getSourceContext();
+                    if ($templateSource !== null) {
+                        $templateFile = $templateSource->getName();
+                        $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
+                        if ($resolvedTemplate !== false) {
+                            $file = $resolvedTemplate;
+                            $line = $templateLine;
+                            $this->_renderAllCallStackItems = false;
+                        }
                     }
                 }
             } else if ($this->_renderAllCallStackItems === false) {
@@ -119,11 +129,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         if ($url === null) {
             if (strpos($class, '__TwigTemplate_') === 0) {
-                $class = 'Twig_Template';
+                $class = \Twig_Template::class;
             }
 
             if (strpos($class, 'Twig_') === 0) {
-                $url = "http://twig.sensiolabs.org/api/master/$class.html";
+                $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
                     $url .= "#method_$method";

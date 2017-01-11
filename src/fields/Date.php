@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -32,7 +33,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Date/Time');
     }
@@ -41,17 +42,17 @@ class Date extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether a datepicker should be shown as part of the input
+     * @var bool Whether a datepicker should be shown as part of the input
      */
     public $showDate = true;
 
     /**
-     * @var boolean Whether a timepicker should be shown as part of the input
+     * @var bool Whether a timepicker should be shown as part of the input
      */
     public $showTime = false;
 
     /**
-     * @var integer The number of minutes that the timepicker options should increment by
+     * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
 
@@ -66,24 +67,18 @@ class Date extends Field implements PreviewableFieldInterface
         // dateTime => showDate + showTime
         if (isset($config['dateTime'])) {
             switch ($config['dateTime']) {
-                case 'showBoth': {
+                case 'showBoth':
                     $config['showDate'] = true;
                     $config['showTime'] = true;
-
                     break;
-                }
-                case 'showDate': {
+                case 'showDate':
                     $config['showDate'] = true;
                     $config['showTime'] = false;
-
                     break;
-                }
-                case 'showTime': {
+                case 'showTime':
                     $config['showDate'] = false;
                     $config['showTime'] = true;
-
                     break;
-                }
             }
 
             unset($config['dateTime']);
@@ -120,7 +115,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_DATETIME;
     }
@@ -168,7 +163,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $variables = [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
@@ -201,7 +196,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
             $formatter = Craft::$app->getFormatter();
@@ -216,7 +211,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;

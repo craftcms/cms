@@ -27,7 +27,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Recent Entries');
     }
@@ -36,7 +36,7 @@ class RecentEntries extends Widget
     // =========================================================================
 
     /**
-     * @var string|integer[] The section IDs that the widget should pull entries from
+     * @var string|int[] The section IDs that the widget should pull entries from
      */
     public $section = '*';
 
@@ -46,7 +46,7 @@ class RecentEntries extends Widget
     public $siteId;
 
     /**
-     * integer The total number of entries that the widget should show
+     * int The total number of entries that the widget should show
      */
     public $limit = 10;
 
@@ -98,7 +98,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getSections()->getSectionById($this->section);
@@ -118,7 +118,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
+        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
@@ -167,11 +167,11 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEntries()
+    private function _getEntries(): array
     {
         $targetSiteId = $this->_getTargetSiteId();
 
-        if (!$targetSiteId) {
+        if ($targetSiteId === false) {
             // Hopeless
             return [];
         }
@@ -180,7 +180,7 @@ class RecentEntries extends Widget
         $editableSectionIds = $this->_getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
+        if (!$targetSectionId || $targetSectionId === '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
@@ -205,7 +205,7 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEditableSectionIds()
+    private function _getEditableSectionIds(): array
     {
         $sectionIds = [];
 
@@ -232,7 +232,7 @@ class RecentEntries extends Widget
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         // If they aren't allowed to edit *any* sites, return false
-        if (!$editableSiteIds) {
+        if (empty($editableSiteIds)) {
             return false;
         }
 

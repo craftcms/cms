@@ -32,7 +32,7 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstanceByName($name)
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return parent::getInstanceByName(static::_normalizeName($name));
+        return parent::getInstanceByName(self::_normalizeName($name));
     }
 
     /**
@@ -41,20 +41,20 @@ class UploadedFile extends \yii\web\UploadedFile
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
-     * @param string  $name                  The name of the array of files
-     * @param boolean $lookForSingleInstance If set to true, will look for a single instance of the given name.
+     * @param string $name                  The name of the array of files
+     * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
      *
      * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true)
+    public static function getInstancesByName($name, $lookForSingleInstance = true): array
     {
-        $name = static::_normalizeName($name);
+        $name = self::_normalizeName($name);
         $instances = parent::getInstancesByName($name);
 
-        if (!$instances && $lookForSingleInstance) {
-            $singleInstance = parent::getInstanceByName($name);
+        if (empty($instances) && $lookForSingleInstance) {
+            $singleInstance = static::getInstanceByName($name);
 
             if ($singleInstance) {
                 $instances[] = $singleInstance;
@@ -67,13 +67,13 @@ class UploadedFile extends \yii\web\UploadedFile
     /**
      * Saves the uploaded file to a temp location.
      *
-     * @param boolean $deleteTempFile whether to delete the temporary file after saving.
+     * @param bool $deleteTempFile    whether to delete the temporary file after saving.
      *                                If true, you will not be able to save the uploaded file again in the current request.
      *
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error
      */
-    public function saveAsTempFile($deleteTempFile = true)
+    public function saveAsTempFile(bool $deleteTempFile = true)
     {
         if ($this->error != UPLOAD_ERR_OK) {
             return false;
@@ -101,7 +101,7 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @return string
      */
-    private static function _normalizeName($name)
+    private static function _normalizeName(string $name): string
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]

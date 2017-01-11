@@ -41,7 +41,7 @@ class m160807_144858_sites extends Migration
     // =========================================================================
 
     /**
-     * @var string The CASE SQL used to set site column values
+     * @var string|null The CASE SQL used to set site column values
      */
     protected $caseSql;
 
@@ -306,7 +306,7 @@ class m160807_144858_sites extends Migration
 
             // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
             foreach ($fkInfo->fk->refColumns as $i => $refColumn) {
-                if ($refColumn == 'locale') {
+                if ($refColumn === 'locale') {
                     $table = $fkInfo->table->name;
                     $oldColumn = $fkInfo->fk->columns[$i];
                     $newColumn = $oldColumn.'__siteId';
@@ -438,9 +438,9 @@ class m160807_144858_sites extends Migration
                 $settings = [];
             }
 
-            $localized = ($field['translationMethod'] == 'site');
+            $localized = ($field['translationMethod'] === 'site');
 
-            if ($field['type'] == 'craft\fields\Matrix') {
+            if ($field['type'] === 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
                 $settings['localizeRelations'] = $localized;
@@ -486,7 +486,7 @@ class m160807_144858_sites extends Migration
      *
      * @return void
      */
-    public function updateRecentEntriesWidgets($siteIdsByLocale)
+    public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {
         // Fetch all the Recent Entries widgets that have a locale setting
         $widgetResults = (new Query())
@@ -519,12 +519,12 @@ class m160807_144858_sites extends Migration
     /**
      * Creates a new siteId column and migrates the locale data over
      *
-     * @param string  $table
-     * @param string  $column
-     * @param boolean $isNotNull
-     * @param string  $localeColumn
+     * @param string $table
+     * @param string $column
+     * @param bool   $isNotNull
+     * @param string $localeColumn
      */
-    protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
+    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
     {
         // Ignore NOT NULL for now
         $type = $this->integer();
@@ -547,7 +547,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2handle($locale)
+    protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
         if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
@@ -567,14 +567,14 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2language($locale)
+    protected function locale2language(string $locale): string
     {
         $foundMatch = false;
 
         // Get the individual words
         $localeParts = array_filter(preg_split('/[^a-zA-Z]+/', $locale));
 
-        if ($localeParts) {
+        if (!empty($localeParts)) {
             $language = $localeParts[0].(isset($localeParts[1]) ? '-'.strtoupper($localeParts[1]) : '');
             $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
 

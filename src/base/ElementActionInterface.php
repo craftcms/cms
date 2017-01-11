@@ -23,9 +23,9 @@ interface ElementActionInterface extends SavableComponentInterface
     /**
      * Returns whether this action is destructive in nature.
      *
-     * @return boolean Whether this action is destructive in nature.
+     * @return bool Whether this action is destructive in nature.
      */
-    public static function isDestructive();
+    public static function isDestructive(): bool;
 
     // Public Methods
     // =========================================================================
@@ -35,7 +35,7 @@ interface ElementActionInterface extends SavableComponentInterface
      *
      * @return string The action’s trigger label
      */
-    public function getTriggerLabel();
+    public function getTriggerLabel(): string;
 
     /**
      * Returns the action’s trigger HTML.
@@ -56,9 +56,9 @@ interface ElementActionInterface extends SavableComponentInterface
      *
      * @param ElementQueryInterface $query The element query defining which elements the action should affect.
      *
-     * @return boolean Whether the action was performed successfully.
+     * @return bool Whether the action was performed successfully.
      */
-    public function performAction(ElementQueryInterface $query);
+    public function performAction(ElementQueryInterface $query): bool;
 
     /**
      * Returns the message that should be displayed to the user after the action is performed.

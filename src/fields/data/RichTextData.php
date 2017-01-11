@@ -26,7 +26,7 @@ class RichTextData extends \Twig_Markup
     private $_pages;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_rawContent;
 
@@ -38,7 +38,7 @@ class RichTextData extends \Twig_Markup
      *
      * @param string $content
      */
-    public function __construct($content)
+    public function __construct(string $content)
     {
         // Save the raw content in case we need it later
         $this->_rawContent = $content;
@@ -54,7 +54,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getRawContent()
+    public function getRawContent(): string
     {
         return $this->_rawContent;
     }
@@ -64,9 +64,9 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getParsedContent()
+    public function getParsedContent(): string
     {
-        return $this->content;
+        return (string)$this;
     }
 
     /**
@@ -74,17 +74,17 @@ class RichTextData extends \Twig_Markup
      *
      * @return \Twig_Markup[]
      */
-    public function getPages()
+    public function getPages(): array
     {
         if ($this->_pages !== null) {
             return $this->_pages;
         }
 
         $this->_pages = [];
-        $pages = explode('<!--pagebreak-->', $this->content);
+        $pages = explode('<!--pagebreak-->', (string)$this);
 
         foreach ($pages as $page) {
-            $this->_pages[] = new \Twig_Markup($page, $this->charset);
+            $this->_pages[] = new \Twig_Markup($page, Craft::$app->charset);
         }
 
         return $this->_pages;
@@ -93,11 +93,11 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns a specific page.
      *
-     * @param integer $pageNumber
+     * @param int $pageNumber
      *
      * @return string|null
      */
-    public function getPage($pageNumber)
+    public function getPage(int $pageNumber)
     {
         $pages = $this->getPages();
 
@@ -111,9 +111,9 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns the total number of pages.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalPages()
+    public function getTotalPages(): int
     {
         return count($this->getPages());
     }

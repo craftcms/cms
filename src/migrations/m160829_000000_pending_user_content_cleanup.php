@@ -13,9 +13,9 @@ class m160829_000000_pending_user_content_cleanup extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return boolean
+     * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Find any orphaned entries.
         $ids = (new Query())
@@ -28,7 +28,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ])
             ->column();
 
-        if ($ids) {
+        if (!empty($ids)) {
             Craft::info('Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids));
 
             // Delete 'em

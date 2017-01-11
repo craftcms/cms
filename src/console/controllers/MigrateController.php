@@ -47,19 +47,19 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
-     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      *
      * If [[plugin]] is defined, this will automatically be set to 'plugin'. Otherwise defaults to 'app'.
      */
     public $type;
 
     /**
-     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
     /**
-     * @var MigrationManager The migration manager that will be used in this request
+     * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
 
@@ -120,12 +120,9 @@ class MigrateController extends BaseMigrateController
             case MigrationManager::TYPE_PLUGIN:
                 // Make sure $this->plugin in set to a plugin
                 if (is_string($this->plugin)) {
-                    $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
-
-                    if ($plugin === null) {
+                    if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
                         throw new Exception('Invalid plugin handle: '.$this->plugin);
                     }
-
                     $this->plugin = $plugin;
                 }
         }
@@ -149,7 +146,13 @@ class MigrateController extends BaseMigrateController
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
         if ($this->confirm("Create new migration '$file'?")) {
-            $content = $this->renderFile(Craft::getAlias($this->templateFile), [
+            $templateFile = Craft::getAlias($this->templateFile);
+
+            if ($templateFile === false) {
+                throw new Exception('There was a problem getting the template file path');
+            }
+
+            $content = $this->renderFile($templateFile, [
                 'namespace' => $this->getMigrator()->migrationNamespace,
                 'className' => $name
             ]);
@@ -167,7 +170,7 @@ class MigrateController extends BaseMigrateController
      *
      * @return MigrationManager
      */
-    protected function getMigrator()
+    protected function getMigrator(): MigrationManager
     {
         if ($this->_migrator === null) {
             switch ($this->type) {
@@ -207,7 +210,7 @@ class MigrateController extends BaseMigrateController
      */
     protected function getMigrationHistory($limit)
     {
-        return $this->getMigrator()->getMigrationHistory($limit);
+        return $this->getMigrator()->getMigrationHistory((int)$limit);
     }
 
     /**

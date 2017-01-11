@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.EntryTypeSwitcher = Garnish.Base.extend(
         {
             $typeSelect: null,
@@ -33,7 +33,7 @@
                         Craft.appendFootHtml(response.footHtml);
 
                         // Update the slug generator with the new title input
-                        if (typeof slugGenerator != "undefined") {
+                        if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
                     }
@@ -41,6 +41,4 @@
             }
 
         });
-
-
 })(jQuery);

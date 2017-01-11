@@ -107,7 +107,7 @@ class Plugins extends Component
     private $_pluginsLoaded = false;
 
     /**
-     * @var boolean Whether plugins are in the middle of being loaded
+     * @var bool Whether plugins are in the middle of being loaded
      */
     private $_loadingPlugins = false;
 
@@ -117,12 +117,12 @@ class Plugins extends Component
     private $_plugins = [];
 
     /**
-     * @var array Info for Composer-installed plugins, indexed by the plugins’ handles
+     * @var array|null Info for Composer-installed plugins, indexed by the plugins’ handles
      */
     private $_composerPluginInfo;
 
     /**
-     * @var array All of the stored info for enabled plugins, indexed by the plugins’ handles
+     * @var array|null All of the stored info for enabled plugins, indexed by the plugins’ handles
      */
     private $_installedPluginInfo;
 
@@ -143,9 +143,10 @@ class Plugins extends Component
             if (file_exists($path)) {
                 $plugins = require $path;
 
-                foreach ($plugins as $plugin) {
+                foreach ($plugins as $packageName => $plugin) {
                     $handle = strtolower($plugin['handle']);
                     unset($plugin['handle']);
+                    $plugin['packageName'] = $packageName;
                     $this->_composerPluginInfo[$handle] = $plugin;
                 }
             }
@@ -215,9 +216,9 @@ class Plugins extends Component
     /**
      * Returns whether plugins have been loaded yet for this request.
      *
-     * @return boolean
+     * @return bool
      */
-    public function arePluginsLoaded()
+    public function arePluginsLoaded(): bool
     {
         return $this->_pluginsLoaded;
     }
@@ -229,7 +230,7 @@ class Plugins extends Component
      *
      * @return PluginInterface|null The plugin, or null if it doesn’t exist
      */
-    public function getPlugin($handle)
+    public function getPlugin(string $handle)
     {
         $this->loadPlugins();
 
@@ -241,11 +242,32 @@ class Plugins extends Component
     }
 
     /**
+     * Returns an enabled plugin by its package name.
+     *
+     * @param string $packageName The plugin’s package name
+     *
+     * @return PluginInterface|null The plugin, or null if it doesn’t exist
+     */
+    public function getPluginByPackageName(string $packageName)
+    {
+        $this->loadPlugins();
+
+        foreach ($this->_plugins as $plugin) {
+            /** @var Plugin $plugin */
+            if ($plugin->packageName === $packageName) {
+                return $plugin;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns all the enabled plugins.
      *
      * @return PluginInterface[]
      */
-    public function getAllPlugins()
+    public function getAllPlugins(): array
     {
         $this->loadPlugins();
 
@@ -257,10 +279,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was enabled successfully
+     * @return bool Whether the plugin was enabled successfully
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function enablePlugin($handle)
+    public function enablePlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -307,10 +329,10 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was disabled successfully
+     * @return bool Whether the plugin was disabled successfully
      * @throws InvalidPluginException if the plugin isn’t installed
      */
-    public function disablePlugin($handle)
+    public function disablePlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -357,11 +379,11 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was installed successfully.
+     * @return bool Whether the plugin was installed successfully.
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function installPlugin($handle)
+    public function installPlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -430,11 +452,11 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was uninstalled successfully
+     * @return bool Whether the plugin was uninstalled successfully
      * @throws Exception if the plugin doesn’t exist
      * @throws \Exception if reasons
      */
-    public function uninstallPlugin($handle)
+    public function uninstallPlugin(string $handle): bool
     {
         $this->loadPlugins();
 
@@ -503,9 +525,9 @@ class Plugins extends Component
      * @param PluginInterface $plugin   The plugin
      * @param array           $settings The plugin’s new settings
      *
-     * @return boolean Whether the plugin’s settings were saved successfully
+     * @return bool Whether the plugin’s settings were saved successfully
      */
-    public function savePluginSettings(PluginInterface $plugin, $settings)
+    public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
         // Save the settings on the plugin
         $plugin->getSettings()->setAttributes($settings, false);
@@ -543,9 +565,9 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      *
-     * @return boolean Whether the plugin’s version number has changed from what we have recorded in the database
+     * @return bool Whether the plugin’s version number has changed from what we have recorded in the database
      */
-    public function hasPluginVersionNumberChanged(PluginInterface $plugin)
+    public function hasPluginVersionNumberChanged(PluginInterface $plugin): bool
     {
         /** @var Plugin $plugin */
         $this->loadPlugins();
@@ -565,9 +587,9 @@ class Plugins extends Component
      *
      * @param PluginInterface $plugin The plugin
      *
-     * @return boolean Whether the plugin’s local schema version is greater than the record we have in the database
+     * @return bool Whether the plugin’s local schema version is greater than the record we have in the database
      */
-    public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin)
+    public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
     {
         /** @var Plugin $plugin */
         $this->loadPlugins();
@@ -590,7 +612,7 @@ class Plugins extends Component
      *
      * @return array|null The stored info, if there is any
      */
-    public function getStoredPluginInfo($handle)
+    public function getStoredPluginInfo(string $handle)
     {
         $this->loadPlugins();
 
@@ -604,12 +626,12 @@ class Plugins extends Component
     /**
      * Creates and returns a new plugin instance based on its class handle.
      *
-     * @param string $handle The plugin’s handle
-     * @param array  $row    The plugin’s row in the plugins table, if any
+     * @param string     $handle The plugin’s handle
+     * @param array|null $row    The plugin’s row in the plugins table, if any
      *
      * @return PluginInterface|null
      */
-    public function createPlugin($handle, $row = null)
+    public function createPlugin(string $handle, array $row = null)
     {
         $config = $this->getConfig($handle);
 
@@ -673,7 +695,7 @@ class Plugins extends Component
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    public function getConfig($handle)
+    public function getConfig(string $handle)
     {
         // Was this plugin installed via Composer?
         if (isset($this->_composerPluginInfo[$handle])) {
@@ -695,11 +717,11 @@ class Plugins extends Component
     /**
      * Validates a plugin's config by ensuring it has a valid class, name, and version
      *
-     * @param array &$config
+     * @param array|null &$config
      *
-     * @return boolean Whether the config validates.
+     * @return bool Whether the config validates.
      */
-    public function validateConfig(&$config)
+    public function validateConfig(array &$config = null): bool
     {
         // Make sure it has the essentials
         if (!is_array($config) || !isset($config['class'], $config['name'], $config['version'])) {
@@ -769,7 +791,7 @@ class Plugins extends Component
      * @return string The given plugin’s SVG icon
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginIconSvg($handle)
+    public function getPluginIconSvg(string $handle): string
     {
         if (($plugin = $this->getPlugin($handle)) !== null) {
             /** @var Plugin $plugin */
@@ -783,7 +805,7 @@ class Plugins extends Component
 
         $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
-        if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
             $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
         }
 
@@ -798,7 +820,7 @@ class Plugins extends Component
      * @return string|null The plugin’s license key, or null if it isn’t known
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginLicenseKey($pluginHandle)
+    public function getPluginLicenseKey(string $pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -821,12 +843,12 @@ class Plugins extends Component
      * @param string      $pluginHandle The plugin’s class handle
      * @param string|null $licenseKey   The plugin’s license key
      *
-     * @return boolean Whether the license key was updated successfully
+     * @return bool Whether the license key was updated successfully
      *
      * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
-    public function setPluginLicenseKey($pluginHandle, $licenseKey)
+    public function setPluginLicenseKey(string $pluginHandle, string $licenseKey = null): bool
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -835,7 +857,7 @@ class Plugins extends Component
         }
 
         // Validate the license key
-        if ($licenseKey) {
+        if ($licenseKey !== null) {
             // Normalize to just uppercase numbers/letters
             $normalizedLicenseKey = mb_strtoupper($licenseKey);
             $normalizedLicenseKey = preg_replace('/[^A-Z0-9]/', '', $normalizedLicenseKey);
@@ -879,7 +901,7 @@ class Plugins extends Component
      * @return string|false
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function getPluginLicenseKeyStatus($pluginHandle)
+    public function getPluginLicenseKeyStatus(string $pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -903,7 +925,7 @@ class Plugins extends Component
      * @return void
      * @throws InvalidPluginException if the plugin isn't installed
      */
-    public function setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus)
+    public function setPluginLicenseKeyStatus(string $pluginHandle, string $licenseKeyStatus = null)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
@@ -938,7 +960,7 @@ class Plugins extends Component
      * @param string          $handle The plugin’s handle
      * @param PluginInterface $plugin The plugin
      */
-    private function _registerPlugin($handle, PluginInterface $plugin)
+    private function _registerPlugin(string $handle, PluginInterface $plugin)
     {
         /** @var Plugin $plugin */
         $plugin::setInstance($plugin);
@@ -951,7 +973,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      */
-    private function _unregisterPlugin($handle)
+    private function _unregisterPlugin(string $handle)
     {
         unset($this->_plugins[$handle]);
         Craft::$app->setModule($handle, null);
@@ -961,9 +983,9 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param integer         $id     The plugin’s ID
+     * @param int             $id     The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, $id)
+    private function _setPluginMigrator(PluginInterface $plugin, int $id)
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
@@ -983,7 +1005,7 @@ class Plugins extends Component
      * @return string[]
      * @throws Exception in case of failure
      */
-    private function _getManualPluginHandles()
+    private function _getManualPluginHandles(): array
     {
         $dir = Craft::$app->getPath()->getPluginsPath();
         if (!is_dir($dir)) {
@@ -1017,7 +1039,7 @@ class Plugins extends Component
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    private function _scrapeConfigFromComposerJson($handle)
+    private function _scrapeConfigFromComposerJson(string $handle)
     {
         // Make sure this plugin has a composer.json file
         $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
@@ -1037,12 +1059,19 @@ class Plugins extends Component
             return null;
         }
 
-        $extra = isset($composer['extra']) ? $composer['extra'] : [];
-        $packageName = isset($composer['name']) ? $composer['name'] : $handle;
+        // Validate the package name
+        if (!isset($composer['name']) || strpos($composer['name'], '/') === false) {
+            Craft::warning("Invalid package name in composer.json for the plugin '$handle'".(isset($composer['name']) ? ': '.$composer['name'] : '').'.');
+
+            return null;
+        }
+
+        list($vendor, $name) = explode('/', $composer['name'], 2);
+        $extra = $composer['extra'] ?? [];
 
         // class (required) + basePath + possibly set aliases
-        $class = isset($extra['class']) ? $extra['class'] : null;
-        $basePath = isset($extra['basePath']) ? $extra['basePath'] : null;
+        $class = $extra['class'] ?? null;
+        $basePath = $extra['basePath'] ?? null;
         $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class, $basePath);
 
         if ($class === null) {
@@ -1052,6 +1081,7 @@ class Plugins extends Component
         }
 
         $config = [
+            'packageName' => $composer['name'],
             'class' => $class,
         ];
 
@@ -1061,13 +1091,6 @@ class Plugins extends Component
 
         if ($aliases) {
             $config['aliases'] = $aliases;
-        }
-
-        if (strpos($packageName, '/') !== false) {
-            list($vendor, $name) = explode('/', $packageName);
-        } else {
-            $vendor = null;
-            $name = $packageName;
         }
 
         // name
@@ -1104,7 +1127,7 @@ class Plugins extends Component
             $config['developer'] = $extra['developer'];
         } else if ($authorName = $this->_getAuthorPropertyFromComposer($composer, 'name')) {
             $config['developer'] = $authorName;
-        } else if ($vendor !== null) {
+        } else {
             $config['developer'] = $vendor;
         }
 
@@ -1144,7 +1167,7 @@ class Plugins extends Component
      *
      * @return array|null
      */
-    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class, &$basePath)
+    private function _generateDefaultAliasesFromComposer(string $handle, array $composer, &$class = null, &$basePath = null)
     {
         if (empty($composer['autoload']['psr-4'])) {
             return null;
@@ -1197,7 +1220,7 @@ class Plugins extends Component
      *
      * @return string|null
      */
-    private function _getAuthorPropertyFromComposer(array $composer, $property)
+    private function _getAuthorPropertyFromComposer(array $composer, string $property)
     {
         if (empty($composer['authors'])) {
             return null;

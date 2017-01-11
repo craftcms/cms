@@ -9,8 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use craft\et\EtTransport;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
@@ -23,6 +25,7 @@ use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use GuzzleHttp\Client;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Et service.
@@ -57,7 +60,7 @@ class Et extends Component
     public $elliottBaseUrl = 'https://elliott.craftcms.com';
 
     /**
-     * @var string Query string to append to Elliott request URLs.
+     * @var string|null Query string to append to Elliott request URLs.
      */
     public $elliottQuery;
 
@@ -82,11 +85,11 @@ class Et extends Component
     /**
      * Checks if any new updates are available.
      *
-     * @param $updateInfo
+     * @param Update $updateInfo
      *
      * @return EtModel|null
      */
-    public function checkForUpdates($updateInfo)
+    public function checkForUpdates(Update $updateInfo)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_CHECK_FOR_UPDATES);
         $et->setData($updateInfo);
@@ -94,49 +97,37 @@ class Et extends Component
 
         if ($etResponse) {
             // Populate the base Update model
-            $updateModel = new Update();
-            $updateModel->setAttributes($etResponse->data, false);
+            $updateData = array_merge($etResponse->data);
+            ArrayHelper::rename($updateData, 'errors', 'responseErrors');
+            $appUpdateData = (array)ArrayHelper::remove($updateData, 'app');
+            $pluginsUpdateData = (array)ArrayHelper::remove($updateData, 'plugins');
+            $update = new Update($updateData);
 
-            // Populate any Craft specific attributes.
-            $appUpdateModel = new AppUpdate();
-            $appUpdateModel->setAttributes($etResponse->data['app'], false);
-            $updateModel->app = $appUpdateModel;
+            // Populate the AppUpdate model
+            $appReleasesData = (array)ArrayHelper::remove($appUpdateData, 'releases');
+            $update->app = new AppUpdate($appUpdateData);
 
-            // Populate any new Craft release information.
-            $appUpdateModel->releases = [];
-
-            foreach ($etResponse->data['app']['releases'] as $key => $appReleaseInfo) {
-                /** @var array $appReleaseInfo */
-                $appReleaseModel = new AppNewRelease();
-                $appReleaseModel->setAttributes($appReleaseInfo, false);
-
-                $appUpdateModel->releases[$key] = $appReleaseModel;
+            // Populate AppNewRelease models
+            $update->app->releases = [];
+            foreach ($appReleasesData as $appReleaseData) {
+                $update->app->releases[] = new AppNewRelease($appReleaseData);
             }
 
-            // For every plugin, populate their base information.
-            $updateModel->plugins = [];
+            // Populate PluginUpdate models
+            $update->plugins = [];
+            foreach ($pluginsUpdateData as $packageName => $pluginUpdateData) {
+                $pluginReleasesData = (array)ArrayHelper::remove($pluginUpdateData, 'releases');
+                $update->plugins[$packageName] = new PluginUpdate($pluginUpdateData);
 
-            foreach ($etResponse->data['plugins'] as $pluginHandle => $pluginUpdateInfo) {
-                /** @var array $pluginUpdateInfo */
-                $pluginUpdateModel = new PluginUpdate();
-                $pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
-
-                // Now populate a plugin’s release information.
-                $pluginUpdateModel->releases = [];
-
-                foreach ($pluginUpdateInfo['releases'] as $key => $pluginReleaseInfo) {
-                    /** @var array $pluginReleaseInfo */
-                    $pluginReleaseModel = new PluginNewRelease();
-                    $pluginReleaseModel->setAttributes($pluginReleaseInfo, false);
-
-                    $pluginUpdateModel->releases[$key] = $pluginReleaseModel;
+                // Populate PluginNewRelease models
+                $update->plugins[$packageName]->releases = [];
+                foreach ($pluginReleasesData as $pluginReleaseData) {
+                    $update->plugins[$packageName]->releases[] = new PluginNewRelease($pluginReleaseData);
                 }
-
-                $updateModel->plugins[$pluginHandle] = $pluginUpdateModel;
             }
 
             // Put it all back on Et.
-            $etResponse->data = $updateModel;
+            $etResponse->data = $update;
 
             return $etResponse;
         }
@@ -145,25 +136,25 @@ class Et extends Component
     }
 
     /**
-     * @param string $handle
+     * @param string $handle "craft" or a plugin's package name
      *
      * @return string|null The update's md5
      */
-    public function getUpdateFileInfo($handle)
+    public function getUpdateFileInfo(string $handle)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_GET_UPDATE_FILE_INFO);
 
         if ($handle !== 'craft') {
             $et->setHandle($handle);
             /** @var Plugin $plugin */
-            $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            $plugin = Craft::$app->getPlugins()->getPluginByPackageName($handle);
 
             if ($plugin) {
-                $pluginUpdateModel = new PluginUpdate();
-                $pluginUpdateModel->class = $plugin->getHandle();
-                $pluginUpdateModel->localVersion = $plugin->version;
+                $pluginUpdate = new PluginUpdate();
+                $pluginUpdate->packageName = $plugin->packageName;
+                $pluginUpdate->localVersion = $plugin->version;
 
-                $et->setData($pluginUpdateModel);
+                $et->setData($pluginUpdate);
             }
         }
 
@@ -182,38 +173,33 @@ class Et extends Component
      * @param string $handle
      *
      * @return string|false The name of the update file, or false if a problem occurred
+     * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
+     * @throws Exception if $handle is a plugin handle but no update info is known for it
      */
-    public function downloadUpdate($downloadPath, $md5, $handle)
+    public function downloadUpdate(string $downloadPath, string $md5, string $handle)
     {
         if (is_dir($downloadPath)) {
             $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
         }
 
-        $updateModel = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
-        if ($handle == 'craft') {
-            $localVersion = $updateModel->app->localVersion;
-            $targetVersion = $updateModel->app->latestVersion;
+        if ($handle === 'craft') {
+            $localVersion = $update->app->localVersion;
+            $targetVersion = $update->app->latestVersion;
             $uriPrefix = 'craft';
         } else {
-            // Find the plugin whose class matches the handle
-            $localVersion = null;
-            $targetVersion = null;
+            // Find the plugin whose package name matches the handle
+            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                throw new InvalidPluginException($handle);
+            }
+            /** @var Plugin $plugin */
+            if (!isset($update->plugins[$plugin->packageName])) {
+                throw new Exception("No update info is known for the plugin \"{$handle}\".");
+            }
+            $localVersion = $update->plugins[$plugin->packageName]->localVersion;
+            $targetVersion = $update->plugins[$plugin->packageName]->latestVersion;
             $uriPrefix = 'plugins/'.$handle;
-
-            foreach ($updateModel->plugins as $plugin) {
-                if (strtolower($plugin->class) == $handle) {
-                    $localVersion = $plugin->localVersion;
-                    $targetVersion = $plugin->latestVersion;
-                    break;
-                }
-            }
-
-            if ($localVersion === null) {
-                Craft::warning('Couldn’t find the plugin "'.$handle.'" in the update model.');
-
-                return false;
-            }
         }
 
         $xy = App::majorMinorVersion($targetVersion);
@@ -299,12 +285,12 @@ class Et extends Component
     /**
      * Fetches the price of an upgrade with a coupon applied to it.
      *
-     * @param integer $edition
-     * @param string  $couponCode
+     * @param int    $edition
+     * @param string $couponCode
      *
      * @return EtModel|null
      */
-    public function fetchCouponPrice($edition, $couponCode)
+    public function fetchCouponPrice(int $edition, string $couponCode)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_GET_COUPON_PRICE);
         $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
@@ -317,9 +303,9 @@ class Et extends Component
      *
      * @param UpgradePurchase $model
      *
-     * @return boolean
+     * @return bool
      */
-    public function purchaseUpgrade(UpgradePurchase $model)
+    public function purchaseUpgrade(UpgradePurchase $model): bool
     {
         if ($model->validate()) {
             $et = $this->_createEtTransport(self::ENDPOINT_PURCHASE_UPGRADE);
@@ -402,15 +388,15 @@ class Et extends Component
     /**
      * Registers a given plugin with the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be registered
+     * @param string $packageName The plugin package name that should be registered
      *
      * @return EtModel
      */
-    public function registerPlugin($pluginHandle)
+    public function registerPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
 
         return $et->phoneHome();
@@ -419,15 +405,15 @@ class Et extends Component
     /**
      * Transfers a given plugin to the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be transferred
+     * @param string $packageName The plugin package name that should be transferred
      *
      * @return EtModel
      */
-    public function transferPlugin($pluginHandle)
+    public function transferPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
 
         return $et->phoneHome();
@@ -436,21 +422,25 @@ class Et extends Component
     /**
      * Unregisters a given plugin from the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be unregistered
+     * @param string $packageName The plugin packageName that should be unregistered
      *
      * @return EtModel
      */
-    public function unregisterPlugin($pluginHandle)
+    public function unregisterPlugin(string $packageName): EtModel
     {
         $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
         $etResponse = $et->phoneHome();
 
         if (!empty($etResponse->data['success'])) {
             // Remove our record of the license key
-            Craft::$app->getPlugins()->setPluginLicenseKey($pluginHandle, null);
+            $pluginsService = Craft::$app->getPlugins();
+            $plugin = $pluginsService->getPluginByPackageName($packageName);
+            if ($plugin) {
+                $pluginsService->setPluginLicenseKey($plugin->getHandle(), null);
+            }
         }
 
         return $etResponse;
@@ -480,22 +470,17 @@ class Et extends Component
     /**
      * Creates a new EtModel with provided JSON, and returns it if it's valid.
      *
-     * @param array $attributes
+     * @param string $attributes
      *
      * @return EtModel|null
      */
-    public function decodeEtModel($attributes)
+    public function decodeEtModel(string $attributes)
     {
         if ($attributes) {
             $attributes = Json::decode($attributes);
 
             if (is_array($attributes)) {
-                // errors => responseErrors
-                if (array_key_exists('errors', $attributes)) {
-                    $attributes['responseErrors'] = $attributes['errors'];
-                    unset($attributes['errors']);
-                }
-
+                ArrayHelper::rename($attributes, 'errors', 'responseErrors');
                 $etModel = new EtModel($attributes);
 
                 // Make sure it's valid.
@@ -518,7 +503,7 @@ class Et extends Component
      *
      * @return EtTransport
      */
-    private function _createEtTransport($endpoint)
+    private function _createEtTransport(string $endpoint): EtTransport
     {
         $url = $this->elliottBaseUrl.'/actions/elliott/'.$endpoint;
 

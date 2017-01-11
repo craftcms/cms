@@ -847,8 +847,6 @@ class UtilitiesController extends Controller
      */
     private function _getRequirementResults()
     {
-        require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
-
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
 

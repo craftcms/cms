@@ -19,7 +19,7 @@
   },
   "minimum-stability": "stable",
   "require": {
-    "php": ">=5.6.0",
+    "php": ">=7.0.0",
     "yiisoft/yii2": "2.0.10",
     "yiisoft/yii2-debug": "2.0.7",
     "yiisoft/yii2-swiftmailer": "2.0.6",
@@ -30,17 +30,18 @@
     "league/flysystem": "1.0.32",
     "league/flysystem-ziparchive": "1.0.2",
     "mikehaertl/php-shellcommand": "1.2.2",
-    "twig/twig": "1.28.2",
+    "twig/twig": "2.0.0",
     "bower-asset/d3": "3.5.17",
-    "bower-asset/element-resize-detector": "1.1.9",
-    "bower-asset/garnishjs": "0.1.9",
+    "bower-asset/element-resize-detector": "1.1.10",
+    "bower-asset/garnishjs": "0.1.11",
     "bower-asset/jquery.payment": "3.0.0",
     "bower-asset/picturefill": "3.0.2",
     "bower-asset/selectize": "0.12.4",
     "bower-asset/timepicker": "1.11.8",
     "bower-asset/velocity": "1.4.1",
     "zendframework/zend-feed": "2.7.0",
-    "roave/security-advisories": "dev-master"
+    "roave/security-advisories": "dev-master",
+    "craftcms/server-check": "1.0.5"
   },
   "autoload": {
     "psr-4": {
@@ -48,8 +49,8 @@
     }
   },
   "repositories": [
-    {
-      "type": "composer",
+        {
+        "type": "composer",
       "url": "https://asset-packagist.org"
     }
   ]

@@ -23,21 +23,21 @@ interface ToolInterface extends ComponentInterface
      *
      * @return string The tool’s icon value
      */
-    public static function iconValue();
+    public static function iconValue(): string;
 
     /**
      * Returns the tool’s options HTML.
      *
      * @return string The tool’s options HTML
      */
-    public static function optionsHtml();
+    public static function optionsHtml(): string;
 
     /**
      * Returns the tool’s button label.
      *
      * @return string The tool’s button label
      */
-    public static function buttonLabel();
+    public static function buttonLabel(): string;
 
     // Public Methods
     // =========================================================================
@@ -49,5 +49,5 @@ interface ToolInterface extends ComponentInterface
      *
      * @return array The response array
      */
-    public function performAction(array $params);
+    public function performAction(array $params): array;
 }

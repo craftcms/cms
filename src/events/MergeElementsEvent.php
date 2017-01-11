@@ -21,12 +21,12 @@ class MergeElementsEvent extends Event
     // =========================================================================
 
     /**
-     * @var int The ID of the element that just got merged into the other.
+     * @var int|null The ID of the element that just got merged into the other.
      */
     public $mergedElementId;
 
     /**
-     * @var int The ID of the element that prevailed in the merge.
+     * @var int|null The ID of the element that prevailed in the merge.
      */
     public $prevailingElementId;
 }

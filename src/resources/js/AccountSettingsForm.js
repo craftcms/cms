@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.AccountSettingsForm = Garnish.Base.extend(
         {
             userId: null,
@@ -67,6 +67,4 @@
                 deleteModalRedirect: null
             }
         });
-
-
 })(jQuery);

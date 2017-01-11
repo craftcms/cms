@@ -39,42 +39,42 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_imageSourcePath;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_extension;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_isAnimatedGif = false;
 
     /**
-     * @var integer
+     * @var int
      */
     private $_quality = 0;
 
     /**
-     * @var ImagickImage|GdImage
+     * @var ImagickImage|GdImage|null
      */
     private $_image;
 
     /**
-     * @var Imagine
+     * @var Imagine|null
      */
     private $_instance;
 
     /**
-     * @var RGB
+     * @var RGB|null
      */
     private $_palette;
 
     /**
-     * @var Font
+     * @var Font|null
      */
     private $_font;
 
@@ -114,7 +114,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->_image->getSize()->getWidth();
     }
@@ -122,7 +122,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->_image->getSize()->getHeight();
     }
@@ -130,7 +130,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return $this->_extension;
     }
@@ -138,7 +138,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage($path)
+    public function loadImage(string $path)
     {
         $imageService = Craft::$app->getImages();
 
@@ -168,7 +168,7 @@ class Raster extends Image
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (!Craft::$app->getImages()->getIsGd()
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
-            && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK
+            && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
         ) {
             $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
@@ -180,7 +180,7 @@ class Raster extends Image
         $this->_imageSourcePath = $path;
         $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if ($this->_extension == 'gif') {
+        if ($this->_extension === 'gif') {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
                 $this->_isAnimatedGif = true;
             }
@@ -192,7 +192,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function crop($x1, $x2, $y1, $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2)
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -226,7 +226,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -241,7 +241,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -258,42 +258,35 @@ class Raster extends Image
             // Now crop.
             if ($newWidth - $targetWidth > 0) {
                 switch ($horizontalPosition) {
-                    case 'left': {
+                    case 'left':
                         $x1 = 0;
                         $x2 = $x1 + $targetWidth;
                         break;
-                    }
-                    case 'right': {
+                    case 'right':
                         $x2 = $newWidth;
                         $x1 = $newWidth - $targetWidth;
                         break;
-                    }
-                    default: {
+                    default:
                         $x1 = round(($newWidth - $targetWidth) / 2);
                         $x2 = $x1 + $targetWidth;
                         break;
-                    }
                 }
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
             } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
-                    case 'top': {
+                    case 'top':
                         $y1 = 0;
                         $y2 = $y1 + $targetHeight;
                         break;
-                    }
-                    case 'bottom': {
+                    case 'bottom':
                         $y2 = $newHeight;
                         $y1 = $newHeight - $targetHeight;
                         break;
-                    }
-                    default: {
+                    default:
                         $y1 = round(($newHeight - $targetHeight) / 2);
                         $y2 = $y1 + $targetHeight;
-                        break;
-                    }
                 }
 
                 $x1 = 0;
@@ -314,7 +307,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize($targetWidth, $targetHeight = null)
+    public function resize(int $targetWidth, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -352,11 +345,11 @@ class Raster extends Image
     /**
      * Rotates the image by the given degrees.
      *
-     * @param integer $degrees
+     * @param int $degrees
      *
      * @return static Self reference
      */
-    public function rotate($degrees)
+    public function rotate(int $degrees)
     {
         $this->_image->rotate($degrees);
 
@@ -366,11 +359,11 @@ class Raster extends Image
     /**
      * Sets the image quality.
      *
-     * @param integer $quality
+     * @param int $quality
      *
      * @return static Self reference
      */
-    public function setQuality($quality)
+    public function setQuality(int $quality)
     {
         $this->_quality = $quality;
 
@@ -380,11 +373,11 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function saveAs($targetPath, $autoQuality = false)
+    public function saveAs(string $targetPath, bool $autoQuality = false): bool
     {
         $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-        $options = $this->_getSaveOptions(false, $extension);
+        $options = $this->_getSaveOptions(null, $extension);
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
@@ -410,12 +403,12 @@ class Raster extends Image
     /**
      * Loads an image from an SVG string.
      *
-     * @param $svgContent
+     * @param string $svgContent
      *
      * @return static Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
-    public function loadFromSVG($svgContent)
+    public function loadFromSVG(string $svgContent)
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
@@ -435,9 +428,9 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function getIsTransparent()
+    public function getIsTransparent(): bool
     {
-        if (Craft::$app->getImages()->getIsImagick() && method_exists('Imagick', 'getImageAlphaChannel')) {
+        if (Craft::$app->getImages()->getIsImagick() && method_exists(\Imagick::class, 'getImageAlphaChannel')) {
             return $this->_image->getImagick()->getImageAlphaChannel();
         }
 
@@ -451,7 +444,7 @@ class Raster extends Image
      *
      * @return array
      */
-    public function getExifMetadata($filePath)
+    public function getExifMetadata(string $filePath): array
     {
         try {
             $exifReader = new ExifMetadataReader();
@@ -469,13 +462,13 @@ class Raster extends Image
     /**
      * Sets properties for text drawing on the image.
      *
-     * @param string  $fontFile path to the font file on server
-     * @param integer $size     font size to use
-     * @param string  $color    font color to use in hex format
+     * @param string $fontFile path to the font file on server
+     * @param int    $size     font size to use
+     * @param string $color    font color to use in hex format
      *
      * @return void
      */
-    public function setFontProperties($fontFile, $size, $color)
+    public function setFontProperties(string $fontFile, int $size, string $color)
     {
         if ($this->_palette === null) {
             $this->_palette = new RGB();
@@ -487,13 +480,13 @@ class Raster extends Image
     /**
      * Returns the bounding text box for a text string and an angle
      *
-     * @param string  $text
-     * @param integer $angle
+     * @param string $text
+     * @param int    $angle
      *
      * @return \Imagine\Image\BoxInterface
      * @throws ImageException if attempting to create text box with no font properties
      */
-    public function getTextBox($text, $angle = 0)
+    public function getTextBox(string $text, int $angle = 0)
     {
         if ($this->_font === null) {
             throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
@@ -505,15 +498,15 @@ class Raster extends Image
     /**
      * Writes text on an image.
      *
-     * @param string  $text
-     * @param integer $x
-     * @param integer $y
-     * @param integer $angle
+     * @param string $text
+     * @param int    $x
+     * @param int    $y
+     * @param int    $angle
      *
      * @return void
      * @throws ImageException If attempting to create text box with no font properties et.
      */
-    public function writeText($text, $x, $y, $angle = 0)
+    public function writeText(string $text, int $x, int $y, int $angle = 0)
     {
 
         if ($this->_font === null) {
@@ -528,21 +521,21 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @param         $tempFileName
-     * @param         $originalSize
-     * @param         $extension
-     * @param         $minQuality
-     * @param         $maxQuality
-     * @param integer $step
+     * @param string $tempFileName
+     * @param int    $originalSize
+     * @param string $extension
+     * @param int    $minQuality
+     * @param int    $maxQuality
+     * @param int    $step
      *
      * @return string the resulting file path
      */
-    private function _autoGuessImageQuality($tempFileName, $originalSize, $extension, $minQuality, $maxQuality, $step = 0)
+    private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
         // Give ourselves some extra time.
         @set_time_limit(30);
 
-        if ($step == 0) {
+        if ($step === 0) {
             $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
 
@@ -593,67 +586,55 @@ class Raster extends Image
     /**
      * Returns save options.
      *
-     * @param integer|null $quality
-     * @param string       $extension
+     * @param int|null    $quality
+     * @param string|null $extension
      *
      * @return array
      */
-    private function _getSaveOptions($quality = null, $extension = null)
+    private function _getSaveOptions(int $quality = null, string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
-        $quality = ($quality === null || $quality === false ? $this->_quality : $quality);
+        $quality = ($quality === null ? $this->_quality : $quality);
         $extension = (!$extension ? $this->getExtension() : $extension);
 
         switch ($extension) {
             case 'jpeg':
-            case 'jpg': {
+            case 'jpg':
                 return ['jpeg_quality' => $quality, 'flatten' => true];
-            }
 
-            case 'gif': {
-                $options = ['animated' => $this->_isAnimatedGif];
+            case 'gif':
+                return ['animated' => $this->_isAnimatedGif];
 
-                return $options;
-            }
-
-            case 'png': {
+            case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
                 // levels, not quality, like jpg and gif.
                 $normalizedQuality = round(($quality * 9) / 100);
                 $normalizedQuality = 9 - $normalizedQuality;
-
                 if ($normalizedQuality < 0) {
                     $normalizedQuality = 0;
                 }
-
                 if ($normalizedQuality > 9) {
                     $normalizedQuality = 9;
                 }
-
                 $options = [
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
                 $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php
                 // So 2 channel PNGs get converted to 4 channel.
-
                 if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
                     $format = 'png'.(8 * $pngInfo['channels']);
                 } else {
                     $format = 'png32';
                 }
-
                 $options['png_format'] = $format;
 
                 return $options;
-            }
 
-            default: {
+            default:
                 return [];
-            }
         }
     }
 }

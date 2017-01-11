@@ -34,17 +34,17 @@ class ElementIndexesController extends BaseElementsController
     // =========================================================================
 
     /**
-     * @var ElementInterface
+     * @var string|null
      */
     private $_elementType;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_context;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_sourceKey;
 
@@ -54,17 +54,17 @@ class ElementIndexesController extends BaseElementsController
     private $_source;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_viewState;
 
     /**
-     * @var ElementQueryInterface
+     * @var ElementQueryInterface|null
      */
     private $_elementQuery;
 
     /**
-     * @var ElementActionInterface[]
+     * @var ElementActionInterface[]|null
      */
     private $_actions;
 
@@ -80,15 +80,15 @@ class ElementIndexesController extends BaseElementsController
     {
         parent::init();
 
-        $this->_elementType = $this->getElementType();
-        $this->_context = $this->getContext();
+        $this->_elementType = $this->elementType();
+        $this->_context = $this->context();
         $this->_sourceKey = Craft::$app->getRequest()->getParam('source');
-        $this->_source = $this->_getSource();
-        $this->_viewState = $this->_getViewState();
-        $this->_elementQuery = $this->_getElementQuery();
+        $this->_source = $this->_source();
+        $this->_viewState = $this->_viewState();
+        $this->_elementQuery = $this->_elementQuery();
 
         if ($this->_context === 'index') {
-            $this->_actions = $this->_getAvailableActions();
+            $this->_actions = $this->_availableActions();
         }
     }
 
@@ -103,7 +103,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    public function getElementQuery()
+    public function getElementQuery(): ElementQueryInterface
     {
         return $this->_elementQuery;
     }
@@ -113,10 +113,10 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetElements()
+    public function actionGetElements(): Response
     {
         $includeActions = ($this->_context === 'index');
-        $responseData = $this->_getElementResponseData(true, $includeActions);
+        $responseData = $this->_elementResponseData(true, $includeActions);
 
         return $this->asJson($responseData);
     }
@@ -126,9 +126,9 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetMoreElements()
+    public function actionGetMoreElements(): Response
     {
-        $responseData = $this->_getElementResponseData(false, false);
+        $responseData = $this->_elementResponseData(false, false);
 
         return $this->asJson($responseData);
     }
@@ -139,7 +139,7 @@ class ElementIndexesController extends BaseElementsController
      * @return Response
      * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
-    public function actionPerformAction()
+    public function actionPerformAction(): Response
     {
         $this->requirePostRequest();
 
@@ -150,7 +150,7 @@ class ElementIndexesController extends BaseElementsController
         $elementIds = $requestService->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
-        if ($this->_actions) {
+        if (!empty($this->_actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
@@ -221,7 +221,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($success) {
             // Send a new set of elements
-            $responseData = array_merge($responseData, $this->_getElementResponseData(true, true));
+            $responseData = array_merge($responseData, $this->_elementResponseData(true, true));
         }
 
         return $this->asJson($responseData);
@@ -249,10 +249,10 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @return array|null
+     * @return array
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    private function _getSource()
+    private function _source(): array
     {
         if (!$this->_sourceKey) {
             return null;
@@ -273,7 +273,7 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array
      */
-    private function _getViewState()
+    private function _viewState(): array
     {
         $viewState = Craft::$app->getRequest()->getParam('viewState', []);
 
@@ -289,8 +289,9 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return ElementQueryInterface
      */
-    private function _getElementQuery()
+    private function _elementQuery(): ElementQueryInterface
     {
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
         $query = $elementType::find();
 
@@ -322,7 +323,7 @@ class ElementIndexesController extends BaseElementsController
                 ->positionedBefore(null)
                 ->all();
 
-            if ($collapsedElements) {
+            if (!empty($collapsedElements)) {
                 $descendantIds = [];
 
                 $descendantQuery = clone $query;
@@ -345,7 +346,7 @@ class ElementIndexesController extends BaseElementsController
                     }
                 }
 
-                if ($descendantIds) {
+                if (!empty($descendantIds)) {
                     $query->andWhere(['not', ['element.id' => $descendantIds]]);
                 }
             }
@@ -357,12 +358,12 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element data to be returned to the client.
      *
-     * @param boolean $includeContainer Whether the element container should be included in the response data
-     * @param boolean $includeActions   Whether info about the available actions should be included in the response data
+     * @param bool $includeContainer Whether the element container should be included in the response data
+     * @param bool $includeActions   Whether info about the available actions should be included in the response data
      *
      * @return array
      */
-    private function _getElementResponseData($includeContainer, $includeActions)
+    private function _elementResponseData(bool $includeContainer, bool $includeActions): array
     {
         $responseData = [];
 
@@ -370,13 +371,14 @@ class ElementIndexesController extends BaseElementsController
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
         if ($includeActions) {
-            $responseData['actions'] = $this->_getActionData();
+            $responseData['actions'] = $this->_actionData();
             $responseData['actionsHeadHtml'] = $view->getHeadHtml();
             $responseData['actionsFootHtml'] = $view->getBodyHtml();
         }
 
         $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->_actions);
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
 
         $responseData['html'] = $elementType::indexHtml(
@@ -398,34 +400,30 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the available actions for the current source.
      *
-     * @return ElementActionInterface[]|null
+     * @return ElementActionInterface[]
      */
-    private function _getAvailableActions()
+    private function _availableActions(): array
     {
         if (Craft::$app->getRequest()->isMobileBrowser()) {
             return null;
         }
 
-        /** @var Element $elementType */
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->_elementType;
         $actions = $elementType::actions($this->_sourceKey);
 
-        if ($actions) {
-            foreach ($actions as $i => $action) {
-                // $action could be a string or config array
-                if (!$action instanceof ElementActionInterface) {
-                    $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
+        foreach ($actions as $i => $action) {
+            // $action could be a string or config array
+            if (!$action instanceof ElementActionInterface) {
+                $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
 
-                    if ($actions[$i] === null) {
-                        unset($actions[$i]);
-                    }
+                if ($actions[$i] === null) {
+                    unset($actions[$i]);
                 }
             }
-
-            return array_values($actions);
         }
 
-        return null;
+        return array_values($actions);
     }
 
     /**
@@ -433,25 +431,25 @@ class ElementIndexesController extends BaseElementsController
      *
      * @return array|null
      */
-    private function _getActionData()
+    private function _actionData()
     {
-        if ($this->_actions) {
-            $actionData = [];
-
-            /** @var ElementAction $action */
-            foreach ($this->_actions as $action) {
-                $actionData[] = [
-                    'type' => get_class($action),
-                    'destructive' => $action->isDestructive(),
-                    'name' => $action->getTriggerLabel(),
-                    'trigger' => $action->getTriggerHtml(),
-                    'confirm' => $action->getConfirmationMessage(),
-                ];
-            }
-
-            return $actionData;
+        if (empty($this->_actions)) {
+            return null;
         }
 
-        return null;
+        $actionData = [];
+
+        /** @var ElementAction $action */
+        foreach ($this->_actions as $action) {
+            $actionData[] = [
+                'type' => get_class($action),
+                'destructive' => $action->isDestructive(),
+                'name' => $action->getTriggerLabel(),
+                'trigger' => $action->getTriggerHtml(),
+                'confirm' => $action->getConfirmationMessage(),
+            ];
+        }
+
+        return $actionData;
     }
 }

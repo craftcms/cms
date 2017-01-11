@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\events\RegisterAssetFileKindsEvent;
@@ -56,7 +57,7 @@ class Assets
      * @return string The temporary file path
      * @throws Exception in case of failure
      */
-    public static function tempFilePath($extension = 'tmp')
+    public static function tempFilePath(string $extension = 'tmp'): string
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
@@ -72,12 +73,12 @@ class Assets
     /**
      * Generate a URL for a given Assets file in a Source Type.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function generateUrl(Volume $volume, Asset $file)
+    public static function generateUrl(VolumeInterface $volume, Asset $file): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
@@ -90,15 +91,16 @@ class Assets
     /**
      * Get appendix for an URL based on it's Source caching settings.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function urlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(VolumeInterface $volume, Asset $file): string
     {
         $appendix = '';
 
+        /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
             $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
@@ -109,14 +111,14 @@ class Assets
     /**
      * Clean an Asset's filename.
      *
-     * @param         $name
-     * @param boolean $isFilename                 if set to true (default), will separate extension
+     * @param string $name
+     * @param bool   $isFilename                  if set to true (default), will separate extension
      *                                            and clean the filename separately.
-     * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
+     * @param bool   $preventPluginModifications  if set to true, will prevent plugins from modify
      *
      * @return mixed
      */
-    public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
@@ -162,7 +164,7 @@ class Assets
      *
      * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = [])
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
@@ -174,7 +176,7 @@ class Assets
             $relativePath = substr($sourceFolder->path, $sourcePrefixLength);
 
             // If we have a target tree map, try to see if we should just point to an existing folder.
-            if ($targetTreeMap && isset($targetTreeMap[$relativePath])) {
+            if (!empty($targetTreeMap) && isset($targetTreeMap[$relativePath])) {
                 $folderIdChanges[$sourceFolder->id] = $targetTreeMap[$relativePath];
             } else {
                 $folder = new VolumeFolder();
@@ -183,7 +185,7 @@ class Assets
                 $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
-                $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
+                $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
 
                 $assets->createFolder($folder);
 
@@ -204,7 +206,7 @@ class Assets
      *
      * @return array
      */
-    public static function fileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false): array
     {
         $fileTransferList = [];
 
@@ -239,7 +241,7 @@ class Assets
      *
      * @return array
      */
-    public static function periodList()
+    public static function periodList(): array
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
@@ -256,7 +258,7 @@ class Assets
      *
      * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(&$tree)
+    public static function sortFolderTree(array &$tree)
     {
         $sort = [];
 
@@ -274,7 +276,7 @@ class Assets
      *
      * @return array The supported file kinds
      */
-    public static function getFileKinds()
+    public static function getFileKinds(): array
     {
         self::_buildFileKinds();
 
@@ -286,9 +288,9 @@ class Assets
      *
      * @param string $kind
      *
-     * @return array
+     * @return string
      */
-    public static function getFileKindLabel($kind)
+    public static function getFileKindLabel(string $kind): string
     {
         self::_buildFileKinds();
 
@@ -306,7 +308,7 @@ class Assets
      *
      * @return string The file kind, or "unknown" if unknown.
      */
-    public static function getFileKindByExtension($file)
+    public static function getFileKindByExtension(string $file): string
     {
         if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
             $ext = strtolower($ext);

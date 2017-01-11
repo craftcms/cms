@@ -12,7 +12,7 @@ use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -37,7 +37,7 @@ class TagsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $this->requireAdmin();
 
@@ -51,13 +51,13 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param integer       $tagGroupId The tag group’s ID, if any.
+     * @param int|null      $tagGroupId The tag group’s ID, if any.
      * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
+    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): string
     {
         $this->requireAdmin();
 
@@ -83,11 +83,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Tags'),
-                'url' => Url::url('settings/tags')
+                'url' => UrlHelper::url('settings/tags')
             ]
         ];
 
@@ -156,7 +156,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTagGroup()
+    public function actionDeleteTagGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +174,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionSearchForTags()
+    public function actionSearchForTags(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -236,7 +236,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionCreateTag()
+    public function actionCreateTag(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();

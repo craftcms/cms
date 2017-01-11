@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     var EmailMessages = Garnish.Base.extend(
         {
             messages: null,
@@ -87,7 +87,7 @@
                 };
 
                 // If CSRF protection isn't enabled, these won't be defined.
-                if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+                if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                     // Add the CSRF token
                     data[Craft.csrfTokenName] = Craft.csrfTokenValue;
                 }
@@ -195,6 +195,4 @@
 
 
     new EmailMessages();
-
-
 })(jQuery);

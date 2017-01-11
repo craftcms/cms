@@ -7,8 +7,6 @@
 
 namespace craft\web\twig\nodes;
 
-use Twig_Node;
-
 /**
  * Class SwitchNode
  *
@@ -17,30 +15,10 @@ use Twig_Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SwitchNode extends Twig_Node
+class SwitchNode extends \Twig_Node
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $value,
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $cases,
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $default = null,
-        $lineno,
-        $tag = null
-    ) {
-        parent::__construct([
-            'value' => $value,
-            'cases' => $cases,
-            'default' => $default
-        ], [], $lineno, $tag);
-    }
 
     /**
      * @inheritdoc
@@ -55,7 +33,7 @@ class SwitchNode extends Twig_Node
             ->indent();
 
         foreach ($this->getNode('cases') as $case) {
-            /** @var Twig_Node $case */
+            /** @var \Twig_Node $case */
             // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
             // outside of any blocks
             if (!$case->hasNode('body')) {
@@ -78,7 +56,7 @@ class SwitchNode extends Twig_Node
                 ->write("}\n");
         }
 
-        if ($this->hasNode('default') && $this->getNode('default') !== null) {
+        if ($this->hasNode('default')) {
             $compiler
                 ->write("default:\n")
                 ->write("{\n")

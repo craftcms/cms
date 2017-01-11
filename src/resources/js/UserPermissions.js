@@ -1,6 +1,6 @@
 (function($) {
-
-
+    /** global: Craft */
+    /** global: Garnish */
     Craft.UserPermissions = Garnish.Base.extend(
         {
             $wrapper: null,
@@ -62,5 +62,4 @@
     $.each(userPermissions, function() {
         new Craft.UserPermissions(this);
     });
-
 })(jQuery);

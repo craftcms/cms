@@ -13,10 +13,10 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class CategoryGroup_SiteSettings record.
  *
- * @property integer       $id                       ID
- * @property integer       $groupId                  Group ID
- * @property integer       $siteId                   Site ID
- * @property boolean       $hasUrls                  Has URLs
+ * @property int           $id                       ID
+ * @property int           $groupId                  Group ID
+ * @property int           $siteId                   Site ID
+ * @property bool          $hasUrls                  Has URLs
  * @property string        $uriFormat                URI format
  * @property string        $template                 Template
  * @property CategoryGroup $group                    Group
@@ -35,7 +35,7 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%categorygroups_i18n}}';
     }
@@ -45,7 +45,7 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(CategoryGroup::class, ['id' => 'groupId']);
     }
@@ -55,7 +55,7 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

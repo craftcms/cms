@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -29,7 +29,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         return (static::allowMultipleInstances() || !Craft::$app->getDashboard()->doesUserHaveWidget(static::class));
     }
@@ -37,9 +37,9 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * Returns whether the widget can be selected more than once.
      *
-     * @return boolean Whether the widget can be selected more than once
+     * @return bool Whether the widget can be selected more than once
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return true;
     }
@@ -65,7 +65,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         // Default to the widget's display name
         return static::displayName();
@@ -85,7 +85,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function getBodyHtml()
     {
         return '<div style="margin: 0 -30px -30px;">'.
-            '<img style="display: block; width: 100%;" src="'.Url::getResourceUrl('images/prg.jpg').'">'.
+            '<img style="display: block; width: 100%;" src="'.UrlHelper::resourceUrl('images/prg.jpg').'">'.
             '</div>';
     }
 

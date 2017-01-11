@@ -52,15 +52,15 @@ class Feeds extends Component
      * - **summary** – The item’s summary content.
      * - **title** – The item’s title.
      *
-     * @param string  $url           The feed’s URL.
-     * @param integer $limit         The maximum number of items to return. Default is 0 (no limit).
-     * @param integer $offset        The number of items to skip. Defaults to 0.
-     * @param string  $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * @param string $url           The feed’s URL.
+     * @param int|null    $limit         The maximum number of items to return. Default is 0 (no limit).
+     * @param int|null    $offset        The number of items to skip. Defaults to 0.
+     * @param string|null $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
      * @return array|string The list of feed items.
      * @throws \Zend\Feed\Reader\Exception\RuntimeException
      */
-    public function getFeedItems($url, $limit = null, $offset = null, $cacheDuration = null)
+    public function getFeedItems(string $url, int $limit = null, int $offset = null, string $cacheDuration = null)
     {
         // Prevent $limit and $offset from being any empty value besides 0
         $limit = ($limit ?: 0);
@@ -73,13 +73,16 @@ class Feeds extends Component
 
         // See if we have this cached already.
         if (Craft::$app->getCache()->get($key) === false) {
-
-            if (!$cacheDuration) {
+            if ($cacheDuration === null) {
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
             } else {
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
+
+                if ($cacheDuration === null) {
+                    $cacheDuration = 0;
+                }
             }
 
             // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
@@ -151,16 +154,16 @@ class Feeds extends Component
      *
      * @return array
      */
-    private function _getItemAuthors($objects)
+    private function _getItemAuthors($objects): array
     {
         $authors = [];
 
-        if ($objects) {
+        if (!empty($objects)) {
             foreach ($objects as $object) {
                 $authors[] = [
-                    'name' => isset($object['name']) ? $object['name'] : '',
-                    'url' => isset($object['uri']) ? $object['uri'] : '',
-                    'email' => isset($object['email']) ? $object['email'] : '',
+                    'name' => $object['name'] ?? '',
+                    'url' => $object['uri'] ?? '',
+                    'email' => $object['email'] ?? '',
                 ];
             }
         }
@@ -171,20 +174,20 @@ class Feeds extends Component
     /**
      * Returns an array of categories.
      *
-     * @param \stdClass[] $objects
+     * @param mixed $objects
      *
      * @return array
      */
-    private function _getItemCategories($objects)
+    private function _getItemCategories($objects): array
     {
         $categories = [];
 
-        if ($objects) {
+        if (!empty($objects)) {
             foreach ($objects as $object) {
                 $categories[] = [
-                    'term' => isset($object['term']) ? $object['term'] : '',
-                    'scheme' => isset($object['scheme']) ? $object['scheme'] : '',
-                    'label' => isset($object['label']) ? $object['label'] : '',
+                    'term' => $object['term'] ?? '',
+                    'scheme' => $object['scheme'] ?? '',
+                    'label' => $object['label'] ?? '',
                 ];
             }
         }

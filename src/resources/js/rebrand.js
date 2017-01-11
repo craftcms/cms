@@ -1,4 +1,6 @@
 (function($) {
+    /** global: Craft */
+    /** global: Garnish */
     var settings = {
         uploadAction: 'rebrand/upload-site-image',
         deleteAction: 'rebrand/delete-site-image',
@@ -18,7 +20,7 @@
         containerSelector: '.cp-image-icon',
 
         onAfterRefreshImage: function(response) {
-            if (typeof response.html != "undefined") {
+            if (response.html !== undefined) {
                 $('#site-icon').find('> img').attr('src', ($('.cp-image-icon .cp-current-image').data('url')));
             }
 

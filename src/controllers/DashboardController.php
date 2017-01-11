@@ -44,7 +44,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $dashboardService = Craft::$app->getDashboard();
         $view = Craft::$app->getView();
@@ -64,21 +64,22 @@ class DashboardController extends Controller
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
-            $settingsJs = $view->clearJsBuffer(false);
+            $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+            $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
                 'maxColspan' => $widget->getMaxColspan(),
-                'settingsHtml' => (string)$settingsHtml,
-                'settingsJs' => (string)$settingsJs,
+                'settingsHtml' => $settingsHtml,
+                'settingsJs' => $settingsJs,
                 'selectable' => true,
             ];
         }
 
         $view->setNamespace($namespace);
+        $variables = [];
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
@@ -112,7 +113,7 @@ class DashboardController extends Controller
                 'function(){'.$info['settingsJs'].'}'.
                 ");\n";
 
-            if ($widgetJs) {
+            if (!empty($widgetJs)) {
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance
                 $allWidgetJs .= $widgetJs."\n";
             }
@@ -142,7 +143,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionCreateWidget()
+    public function actionCreateWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +175,7 @@ class DashboardController extends Controller
      *
      * @throws BadRequestHttpException
      */
-    public function actionSaveWidgetSettings()
+    public function actionSaveWidgetSettings(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -211,7 +212,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteUserWidget()
+    public function actionDeleteUserWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -227,7 +228,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionChangeWidgetColspan()
+    public function actionChangeWidgetColspan(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -246,7 +247,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionReorderUserWidgets()
+    public function actionReorderUserWidgets(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -262,7 +263,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionGetFeedItems()
+    public function actionGetFeedItems(): Response
     {
         $this->requireAcceptsJson();
 
@@ -295,7 +296,7 @@ class DashboardController extends Controller
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\base\InvalidParamException
      */
-    public function actionSendSupportRequest()
+    public function actionSendSupportRequest(): string
     {
         $this->requirePostRequest();
 
@@ -332,7 +333,7 @@ class DashboardController extends Controller
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-        if ($plugins) {
+        if (!empty($plugins)) {
             $pluginNames = [];
 
             foreach ($plugins as $plugin) {
@@ -510,14 +511,14 @@ class DashboardController extends Controller
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
 
-        if (!$widgetBodyHtml) {
+        if ($widgetBodyHtml === false) {
             return false;
         }
 
         // Get the settings HTML + JS
         $view->setNamespace('widget'.$widget->id.'-settings');
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
+        $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
@@ -548,11 +549,11 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getWidgetIconSvg(WidgetInterface $widget)
+    private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
         $iconPath = $widget->getIconPath();
 
-        if (!$iconPath) {
+        if ($iconPath === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
@@ -578,7 +579,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getDefaultWidgetIconSvg(WidgetInterface $widget)
+    private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
@@ -592,7 +593,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    private function _saveAndReturnWidget(WidgetInterface $widget)
+    private function _saveAndReturnWidget(WidgetInterface $widget): Response
     {
         /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();

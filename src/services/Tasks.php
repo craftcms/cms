@@ -16,7 +16,7 @@ use craft\events\TaskEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Header;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\records\Task as TaskRecord;
 use craft\tasks\MissingTask;
 use yii\base\Component;
@@ -27,7 +27,7 @@ use yii\web\Response;
  *
  * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
  *
- * @property boolean $isTaskRunning Whether there is a task that is currently running
+ * @property bool $isTaskRunning Whether there is a task that is currently running
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -91,7 +91,7 @@ class Tasks extends Component
      * @throws \Exception
      * @return TaskInterface The task
      */
-    public function queueTask($task)
+    public function queueTask($task): TaskInterface
     {
         if (!$task instanceof TaskInterface) {
             $task = $this->createTask($task);
@@ -115,7 +115,7 @@ class Tasks extends Component
      *
      * @return TaskInterface The task
      */
-    public function createTask($config)
+    public function createTask($config): TaskInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -139,12 +139,12 @@ class Tasks extends Component
      * Saves a task.
      *
      * @param TaskInterface $task          The task to be saved
-     * @param boolean       $runValidation Whether the task should be validated
+     * @param bool          $runValidation Whether the task should be validated
      *
-     * @return boolean Whether the task was saved successfully
+     * @return bool Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, $runValidation = true)
+    public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
         /** @var Task $task */
         if ($runValidation && !$task->validate()) {
@@ -238,11 +238,11 @@ class Tasks extends Component
     /**
      * Re-runs a task by a given ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task
      */
-    public function rerunTaskById($taskId)
+    public function rerunTaskById(int $taskId)
     {
         /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
@@ -296,9 +296,9 @@ class Tasks extends Component
      *
      * @param TaskInterface $task
      *
-     * @return boolean
+     * @return bool
      */
-    public function runTask(TaskInterface $task)
+    public function runTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -352,7 +352,7 @@ class Tasks extends Component
             return true;
         }
 
-        $this->fail($task, $error);
+        $this->fail($task, is_string($error) ? $error : null);
 
         return false;
     }
@@ -365,7 +365,7 @@ class Tasks extends Component
      *
      * @return void
      */
-    public function fail(TaskInterface $task, $error = null)
+    public function fail(TaskInterface $task, string $error = null)
     {
         /** @var Task $task */
         $task->status = Task::STATUS_ERROR;
@@ -382,7 +382,7 @@ class Tasks extends Component
             }
         }
 
-        if ($error && is_string($error)) {
+        if ($error !== null) {
             $logMessage .= ': '.$error;
         } else {
             $logMessage .= '.';
@@ -394,11 +394,11 @@ class Tasks extends Component
     /**
      * Returns a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task, or null if it doesn’t exist
      */
-    public function getTaskById($taskId)
+    public function getTaskById(int $taskId)
     {
         $result = $this->_createTaskQuery()
             ->where(['id' => $taskId])
@@ -416,7 +416,7 @@ class Tasks extends Component
      *
      * @return TaskInterface[] All the tasks
      */
-    public function getAllTasks()
+    public function getAllTasks(): array
     {
         $tasks = $this->_createTaskQuery()
             ->all();
@@ -461,9 +461,9 @@ class Tasks extends Component
     /**
      * Returns whether there is a task that is currently running.
      *
-     * @return boolean Whether there is a task that is currently running
+     * @return bool Whether there is a task that is currently running
      */
-    public function getIsTaskRunning()
+    public function getIsTaskRunning(): bool
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
         return $this->_createTaskQuery()
@@ -480,9 +480,9 @@ class Tasks extends Component
      *
      * @param string|null $type The task type to check for, if any
      *
-     * @return boolean Whether there are any pending tasks
+     * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending($type = null)
+    public function areTasksPending(string $type = null): bool
     {
         $query = $this->_createTaskQuery()
             ->where([
@@ -490,7 +490,7 @@ class Tasks extends Component
                 'status' => Task::STATUS_PENDING
             ]);
 
-        if ($type) {
+        if ($type !== null) {
             $query->andWhere(['type' => $type]);
         }
 
@@ -500,21 +500,21 @@ class Tasks extends Component
     /**
      * Returns any pending tasks, optionally by a given type.
      *
-     * @param string|null  $type  The task type to check for, if any
-     * @param integer|null $limit The maximum number of tasks to return
+     * @param string|null $type  The task type to check for, if any
+     * @param int|null    $limit The maximum number of tasks to return
      *
      * @return TaskInterface[] The pending tasks
      */
-    public function getPendingTasks($type = null, $limit = null)
+    public function getPendingTasks(string $type = null, int $limit = null): array
     {
         $query = $this->_createTaskQuery()
             ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
 
-        if ($type) {
+        if ($type !== null) {
             $query->andWhere(['type' => $type]);
         }
 
-        if ($limit) {
+        if ($limit !== null) {
             $query->limit($limit);
         }
 
@@ -530,9 +530,9 @@ class Tasks extends Component
     /**
      * Returns whether any tasks that have failed.
      *
-     * @return boolean Whether any tasks have failed
+     * @return bool Whether any tasks have failed
      */
-    public function getHaveTasksFailed()
+    public function getHaveTasksFailed(): bool
     {
         return $this->_createTaskQuery()
             ->where(['level' => 0, 'status' => Task::STATUS_ERROR])
@@ -542,9 +542,9 @@ class Tasks extends Component
     /**
      * Returns the total number of active tasks.
      *
-     * @return integer The total number of active tasks
+     * @return int The total number of active tasks
      */
-    public function getTotalTasks()
+    public function getTotalTasks(): int
     {
         return $this->_createTaskQuery()
             ->where([
@@ -562,13 +562,13 @@ class Tasks extends Component
      *
      * @return TaskInterface|null The next pending task, if any
      */
-    public function getNextPendingTask($type = null)
+    public function getNextPendingTask(string $type = null)
     {
         // If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
-        if ($type) {
+        if ($type !== null) {
             $pendingTasks = $this->getPendingTasks($type, 1);
 
-            if ($pendingTasks) {
+            if (!empty($pendingTasks)) {
                 return $pendingTasks[0];
             }
         } else {
@@ -612,11 +612,11 @@ class Tasks extends Component
     /**
      * Deletes a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      */
-    public function deleteTaskById($taskId)
+    public function deleteTaskById(int $taskId): bool
     {
         $task = $this->getTaskById($taskId);
 
@@ -632,10 +632,10 @@ class Tasks extends Component
      *
      * @param TaskInterface $task The task
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTask(TaskInterface $task)
+    public function deleteTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -708,7 +708,7 @@ class Tasks extends Component
             in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
-            $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
+            $url = Json::encode(UrlHelper::actionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
             $js = <<<EOD
@@ -756,7 +756,7 @@ EOD;
      *
      * @return Query
      */
-    private function _createTaskQuery()
+    private function _createTaskQuery(): Query
     {
         return (new Query())
             ->select([
@@ -778,11 +778,11 @@ EOD;
     /**
      * Returns a TaskRecord by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskRecord|null The TaskRecord, or null if it doesn’t exist
      */
-    private function _getTaskRecordById($taskId)
+    private function _getTaskRecordById(int $taskId)
     {
         if (!isset($this->_taskRecordsById[$taskId])) {
             $this->_taskRecordsById[$taskId] = TaskRecord::findOne($taskId);

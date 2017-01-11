@@ -35,37 +35,37 @@ class Section extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Structure ID
+     * @var int|null Structure ID
      */
     public $structureId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 
     /**
-     * @var integer Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 
     /**
-     * @var boolean Enable versioning
+     * @var bool Enable versioning
      */
     public $enableVersioning = true;
 
@@ -120,7 +120,7 @@ class Section extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -130,7 +130,7 @@ class Section extends Model
      *
      * @return Section_SiteSettings[]
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): array
     {
         if ($this->_siteSettings !== null) {
             return $this->_siteSettings;
@@ -153,7 +153,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 
@@ -165,12 +165,12 @@ class Section extends Model
     /**
      * Adds site-specific errors to the model.
      *
-     * @param array   $errors
-     * @param integer $siteId
+     * @param array $errors
+     * @param int   $siteId
      *
      * @return void
      */
-    public function addSiteSettingsErrors($errors, $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute.'-'.$siteId;
@@ -185,7 +185,7 @@ class Section extends Model
      *
      * @return EntryType[]
      */
-    public function getEntryTypes()
+    public function getEntryTypes(): array
     {
         if ($this->_entryTypes !== null) {
             return $this->_entryTypes;

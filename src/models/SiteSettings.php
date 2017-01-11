@@ -22,12 +22,12 @@ class SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var string Site name
+     * @var string|null Site name
      */
     public $siteName;
 
     /**
-     * @var string Site URL
+     * @var string|null Site URL
      */
     public $siteUrl;
 

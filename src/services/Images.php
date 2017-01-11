@@ -21,8 +21,8 @@ use yii\base\Component;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
- * @property boolean $isGd      Whether image manipulations will be performed using GD or not
- * @property boolean $isImagick Whether image manipulations will be performed using Imagick or not
+ * @property bool $isGd      Whether image manipulations will be performed using GD or not
+ * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -49,7 +49,7 @@ class Images extends Component
     /**
      * Imagick version being used, if any.
      *
-     * @var string
+     * @var string|null
      */
     private $_imagickVersion;
 
@@ -63,7 +63,7 @@ class Images extends Component
      */
     public function init()
     {
-        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
+        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) === 'gd') {
             $this->_driver = self::DRIVER_GD;
         } else if ($this->getIsImagickAtLeast(self::MINIMUM_IMAGICK_VERSION)) {
             $this->_driver = self::DRIVER_IMAGICK;
@@ -77,7 +77,7 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return boolean|null
+     * @return bool|null
      */
     public function getIsGd()
     {
@@ -88,9 +88,9 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsImagick()
+    public function getIsImagick(): bool
     {
         return $this->_driver == self::DRIVER_IMAGICK;
     }
@@ -100,9 +100,9 @@ class Images extends Component
      *
      * @param string $requiredVersion version string
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsImagickAtLeast($requiredVersion)
+    public function getIsImagickAtLeast(string $requiredVersion): bool
     {
         if (!extension_loaded('imagick')) {
             return false;
@@ -114,8 +114,7 @@ class Images extends Component
             $imagick = new \Imagick();
             /** @noinspection PhpStaticAsDynamicMethodCallInspection */
             $v = $imagick::getVersion();
-            /** @noinspection PhpUnusedLocalVariableInspection */
-            list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
+            list($version, , , , ,) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 
             $this->_imagickVersion = $version;
         }
@@ -126,15 +125,15 @@ class Images extends Component
     /**
      * Loads an image from a file system path.
      *
-     * @param string  $path
-     * @param boolean $rasterize Whether the image should be rasterized if it's an SVG
-     * @param integer $svgSize   The size SVG should be scaled up to, if rasterized
+     * @param string $path
+     * @param bool   $rasterize Whether the image should be rasterized if it's an SVG
+     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
      *
      * @return Image
      */
-    public function loadImage($path, $rasterize = false, $svgSize = 1000)
+    public function loadImage(string $path, bool $rasterize = false, int $svgSize = 1000): Image
     {
-        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -160,14 +159,14 @@ class Images extends Component
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
      * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
-     * @param string  $filePath The path to the image file.
-     * @param boolean $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
+     * @param string $filePath The path to the image file.
+     * @param bool   $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
      *
-     * @return boolean
+     * @return bool
      */
-    public function checkMemoryForImage($filePath, $toTheMax = false)
+    public function checkMemoryForImage(string $filePath, bool $toTheMax = false): bool
     {
-        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'svg') {
             return true;
         }
 
@@ -184,8 +183,8 @@ class Images extends Component
         $imageInfo = getimagesize($filePath);
         $K64 = 65536;
         $tweakFactor = 1.7;
-        $bits = isset($imageInfo['bits']) ? $imageInfo['bits'] : 8;
-        $channels = isset($imageInfo['channels']) ? $imageInfo['channels'] : 4;
+        $bits = $imageInfo['bits'] ?? 8;
+        $channels = $imageInfo['channels'] ?? 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
         $memoryLimit = App::phpConfigValueInBytes('memory_limit');
@@ -207,9 +206,9 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
-    public function cleanImage($filePath)
+    public function cleanImage(string $filePath): bool
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
@@ -237,16 +236,16 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
-    public function rotateImageByExifData($filePath)
+    public function rotateImageByExifData(string $filePath): bool
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return false;
         }
 
         // Quick and dirty, if possible
-        if (!($this->getIsImagick() && method_exists('Imagick', 'getImageOrientation'))) {
+        if (!($this->getIsImagick() && method_exists(\Imagick::class, 'getImageOrientation'))) {
             return false;
         }
 
@@ -256,18 +255,15 @@ class Images extends Component
         $degrees = false;
 
         switch ($orientation) {
-            case ImageHelper::EXIF_IFD0_ROTATE_180: {
+            case ImageHelper::EXIF_IFD0_ROTATE_180:
                 $degrees = 180;
                 break;
-            }
-            case ImageHelper::EXIF_IFD0_ROTATE_90: {
+            case ImageHelper::EXIF_IFD0_ROTATE_90:
                 $degrees = 90;
                 break;
-            }
-            case ImageHelper::EXIF_IFD0_ROTATE_270: {
+            case ImageHelper::EXIF_IFD0_ROTATE_270:
                 $degrees = 270;
                 break;
-            }
         }
 
         if ($degrees === false) {
@@ -288,7 +284,7 @@ class Images extends Component
      *
      * @return array
      */
-    public function getExifData($filePath)
+    public function getExifData(string $filePath): array
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;
@@ -304,16 +300,16 @@ class Images extends Component
      *
      * @param string $filePath
      *
-     * @return boolean
+     * @return bool
      */
-    public function stripOrientationFromExifData($filePath)
+    public function stripOrientationFromExifData(string $filePath): bool
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return false;
         }
 
         // Quick and dirty, if possible
-        if (!($this->getIsImagick() && method_exists('Imagick', 'setImageOrientation'))) {
+        if (!($this->getIsImagick() && method_exists(\Imagick::class, 'setImageOrientation'))) {
             return false;
         }
 

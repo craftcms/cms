@@ -23,12 +23,12 @@ class ResaveAllElements extends Task
     // =========================================================================
 
     /**
-     * @var integer The site ID to fetch the elements in
+     * @var int|null The site ID to fetch the elements in
      */
     public $siteId;
 
     /**
-     * @var string Whether only localizable elements should be resaved
+     * @var string|null Whether only localizable elements should be resaved
      */
     public $localizableOnly;
 
@@ -55,7 +55,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_elementType = [];
         $localizableOnly = $this->localizableOnly;
@@ -73,7 +73,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         return $this->runSubTask([
             'type' => ResaveElements::class,
@@ -92,7 +92,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');

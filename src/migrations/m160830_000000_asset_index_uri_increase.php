@@ -12,9 +12,9 @@ class m160830_000000_asset_index_uri_increase extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return boolean
+     * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         Craft::info('Changing asset index data table uri column to text.');
         $this->alterColumn('{{%assetindexdata}}', 'uri', 'text');

@@ -12,7 +12,7 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
@@ -49,8 +49,9 @@ class VolumesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionVolumeIndex()
+    public function actionVolumeIndex(): string
     {
+        $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
         return $this->renderTemplate('settings/assets/volumes/_index', $variables);
@@ -59,14 +60,14 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param integer|null         $volumeId The volume’s ID, if editing an existing volume.
+     * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
      * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume($volumeId = null, VolumeInterface $volume = null)
+    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): string
     {
         $this->requireAdmin();
 
@@ -133,15 +134,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
         ];
 
@@ -174,7 +175,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): Response
     {
         $this->requirePostRequest();
 
@@ -226,7 +227,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderVolumes()
+    public function actionReorderVolumes(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -242,7 +243,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteVolume()
+    public function actionDeleteVolume(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -261,7 +262,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionLoadVolumeTypeData()
+    public function actionLoadVolumeTypeData(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

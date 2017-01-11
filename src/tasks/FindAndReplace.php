@@ -26,17 +26,17 @@ class FindAndReplace extends Task
     // =========================================================================
 
     /**
-     * @var string The search text
+     * @var string|null The search text
      */
     public $find;
 
     /**
-     * @var string The replacement text
+     * @var string|null The replacement text
      */
     public $replace;
 
     /**
-     * @var integer The Matrix field ID, if searching against a Matrix field’s content
+     * @var int|null The Matrix field ID, if searching against a Matrix field’s content
      */
     public $matrixFieldId;
 
@@ -62,7 +62,7 @@ class FindAndReplace extends Task
      * @inheritdoc
      * @throws Exception
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_textColumns = [];
         $this->_matrixFieldIds = [];
@@ -105,7 +105,7 @@ class FindAndReplace extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         // If replace is null, there is invalid settings JSON in the database. Guard against it so we don't
         // inadvertently nuke textual content in the database.
@@ -152,7 +152,7 @@ class FindAndReplace extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
@@ -171,7 +171,7 @@ class FindAndReplace extends Task
      *
      * @return void
      */
-    private function _checkField(FieldInterface $field, $fieldColumnPrefix)
+    private function _checkField(FieldInterface $field, string $fieldColumnPrefix)
     {
         /** @var Field $field */
         if ($field instanceof Matrix) {

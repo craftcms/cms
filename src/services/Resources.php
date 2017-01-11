@@ -14,7 +14,7 @@ use craft\events\ResolveResourcePathEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use Exception;
 use yii\base\Component;
 use yii\web\ForbiddenHttpException;
@@ -54,7 +54,7 @@ class Resources extends Component
      *
      * @return string|null
      */
-    public function getCachedResourcePath($uri)
+    public function getCachedResourcePath(string $uri)
     {
         $path = Craft::$app->getCache()->get('resourcePath:'.$uri);
 
@@ -68,14 +68,14 @@ class Resources extends Component
     /**
      * Caches a file system path for a given resource.
      *
-     * @param string $uri
-     * @param string $path
+     * @param string       $uri
+     * @param string|false $path
      *
      * @return void
      */
-    public function cacheResourcePath($uri, $path)
+    public function cacheResourcePath(string $uri, $path)
     {
-        if (!$path) {
+        if ($path === false) {
             $path = ':(';
         }
 
@@ -87,98 +87,76 @@ class Resources extends Component
      *
      * @param string $uri
      *
-     * @return string
+     * @return string|false
      * @throws NotFoundHttpException if the requested image transform cannot be found
      * @throws ServerErrorHttpException if reasons
      */
-    public function resolveResourcePath($uri)
+    public function resolveResourcePath(string $uri)
     {
         $segs = explode('/', $uri);
 
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'defaultuserphoto': {
+                case 'defaultuserphoto':
                     return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
-                }
-
-                case 'tempuploads': {
+                case 'tempuploads':
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getTempUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
-                }
-
-                case 'tempassets': {
+                case 'tempassets':
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
-                }
-
-                case 'resized': {
+                case 'resized':
                     if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
                         return $this->_getBrokenImageThumbPath();
                     }
-
                     $fileModel = Craft::$app->getAssets()->getAssetById($segs[1]);
-
                     if (empty($fileModel)) {
                         return $this->_getBrokenImageThumbPath();
                     }
-
                     $size = $segs[2];
-
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
-
                     try {
-                        return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
+                        $path = Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
                     } catch (\Exception $e) {
-                        return $this->_getBrokenImageThumbPath();
+                        $path = $this->_getBrokenImageThumbPath();
                     }
-                }
 
-                case 'icons': {
+                    return $path;
+                case 'icons':
                     if (empty($segs[1]) || !preg_match('/^\w+/i', $segs[1])) {
                         return false;
                     }
 
                     return $this->_getIconPath($segs[1]);
-                }
-
-                case 'rebrand': {
+                case 'rebrand':
                     if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
                     }
 
                     return Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$segs[1].DIRECTORY_SEPARATOR.$segs[2];
-                }
-
-                case 'transforms': {
+                case 'transforms':
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
-
                     try {
                         if (!empty($segs[1])) {
                             $transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndexModelById((int)$segs[1]);
                         }
-
                         if (empty($transformIndexModel)) {
                             throw new NotFoundHttpException(Craft::t('app', 'Image transform not found'));
                         }
-
                         $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
                     } catch (Exception $exception) {
                         throw new ServerErrorHttpException($exception->getMessage());
                     }
-
                     Craft::$app->getResponse()->redirect($url);
                     Craft::$app->end();
                     break;
-                }
-
-                case '404': {
+                case '404':
                     throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
-                }
             }
         }
 
@@ -223,7 +201,7 @@ class Resources extends Component
      * @throws ForbiddenHttpException if the requested resource URI is not contained within the allowed directories
      * @throws NotFoundHttpException if the requested resource cannot be found
      */
-    public function sendResource($uri)
+    public function sendResource(string $uri)
     {
         if (PathHelper::ensurePathIsContained($uri) === false) {
             throw new ForbiddenHttpException(Craft::t('app', 'Resource path not contained within allowed directories'));
@@ -231,8 +209,8 @@ class Resources extends Component
 
         $cachedPath = $this->getCachedResourcePath($uri);
 
-        if ($cachedPath) {
-            if ($cachedPath == ':(') {
+        if ($cachedPath !== null) {
+            if ($cachedPath === ':(') {
                 // 404
                 $path = false;
             } else {
@@ -281,7 +259,7 @@ class Resources extends Component
         }
 
         // Is this a CSS file?
-        if ($mimeType == 'text/css') {
+        if ($mimeType === 'text/css') {
             // Normalize the URLs
             $contents = file_get_contents($path);
             $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);
@@ -299,11 +277,11 @@ class Resources extends Component
     // =========================================================================
 
     /**
-     * @param $match
+     * @param array $match
      *
      * @return string
      */
-    private function _normalizeCssUrl($match)
+    private function _normalizeCssUrl(array $match): string
     {
         // Ignore root-relative, absolute, and data: URLs
         if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3])) {
@@ -315,24 +293,24 @@ class Resources extends Component
         $requestFolderParts = array_filter(explode('/', $requestFolder));
         $cssUrlParts = array_filter(explode('/', $match[3]));
 
-        while (isset($cssUrlParts[0]) && $cssUrlParts[0] == '..' && $requestFolderParts) {
+        while (isset($cssUrlParts[0]) && $cssUrlParts[0] === '..' && !empty($requestFolderParts)) {
             array_pop($requestFolderParts);
             array_shift($cssUrlParts);
         }
 
         $pathParts = array_merge($requestFolderParts, $cssUrlParts);
         $path = implode('/', $pathParts);
-        $url = Url::url($path);
+        $url = UrlHelper::url($path);
 
         // Is this going to be a resource URL?
-        $rootResourceUrl = Url::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
+        $rootResourceUrl = UrlHelper::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
 
         if (strpos($url, $rootResourceUrl) === 0) {
             // Isolate the relative resource path
             $resourcePath = substr($url, strlen($rootResourceUrl));
 
             // Give Url a chance to add the timestamp
-            $url = Url::getResourceUrl($resourcePath);
+            $url = UrlHelper::resourceUrl($resourcePath);
         }
 
         // Return the normalized CSS URL declaration
@@ -342,11 +320,11 @@ class Resources extends Component
     /**
      * Returns the icon path for a given extension
      *
-     * @param $ext
+     * @param string $ext
      *
      * @return string
      */
-    private function _getIconPath($ext)
+    private function _getIconPath(string $ext): string
     {
         $pathService = Craft::$app->getPath();
         $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
@@ -386,7 +364,7 @@ class Resources extends Component
      *
      * @return string
      */
-    private function _getBrokenImageThumbPath()
+    private function _getBrokenImageThumbPath(): string
     {
         //http_response_code(404);
         return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';

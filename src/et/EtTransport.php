@@ -8,6 +8,7 @@
 namespace craft\et;
 
 use Craft;
+use craft\base\Plugin;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
 use craft\helpers\DateTimeHelper;
@@ -30,45 +31,28 @@ class EtTransport
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_endpoint;
 
     /**
-     * @var int
-     */
-    private $_timeout;
-
-    /**
-     * @var EtModel
+     * @var EtModel|null
      */
     private $_model;
-
-    /**
-     * @var bool
-     */
-    private $_allowRedirects = true;
-
-    /**
-     * @var string
-     */
-    private $_userAgent;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * @param         $endpoint
-     * @param integer $timeout
-     * @param integer $connectTimeout
+     * Constructor
+     *
+     * @param string $endpoint
      */
-    public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
+    public function __construct($endpoint)
     {
         $endpoint .= Craft::$app->getConfig()->get('endpointSuffix');
 
         $this->_endpoint = $endpoint;
-        $this->_timeout = $timeout;
-        $this->_connectTimeout = $connectTimeout;
 
         // There can be a race condition after an update from older Craft versions where they lose session
         // and another call to elliott is made during cleanup.
@@ -94,43 +78,12 @@ class EtTransport
                 'proc' => function_exists('proc_open') ? 1 : 0,
             ],
         ]);
-
-        $this->_userAgent = 'Craft/'.Craft::$app->version;
-    }
-
-    /**
-     * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait
-     * indefinitely.
-     *
-     * @return integer
-     */
-    public function getTimeout()
-    {
-        return $this->_timeout;
-    }
-
-    /**
-     * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
-     *
-     * @return integer
-     */
-    public function getConnectTimeout()
-    {
-        return $this->_connectTimeout;
-    }
-
-    /**
-     * @return EtModel
-     */
-    public function getModel()
-    {
-        return $this->_model;
     }
 
     /**
      * Sets custom data on the EtModel.
      *
-     * @param $data
+     * @param mixed $data
      *
      * @return void
      */
@@ -142,11 +95,11 @@ class EtTransport
     /**
      * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
      *
-     * @param $handle
+     * @param string $handle
      *
      * @return void
      */
-    public function setHandle($handle)
+    public function setHandle(string $handle)
     {
         $this->_model->handle = $handle;
     }
@@ -224,8 +177,10 @@ class EtTransport
                             if (is_array($etModel->pluginLicenseKeyStatuses)) {
                                 $pluginsService = Craft::$app->getPlugins();
 
-                                foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus) {
-                                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+                                foreach ($etModel->pluginLicenseKeyStatuses as $packageName => $licenseKeyStatus) {
+                                    if ($plugin = $pluginsService->getPluginByPackageName($packageName)) {
+                                        $pluginsService->setPluginLicenseKeyStatus($plugin->getHandle(), $licenseKeyStatus);
+                                    }
                                 }
                             }
 
@@ -236,6 +191,7 @@ class EtTransport
                     // If we made it here something, somewhere went wrong.
                     Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
 
+                    /** @noinspection NotOptimalIfConditionsInspection */
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
                         $cacheService->delete('etConnectFailure');
@@ -243,6 +199,7 @@ class EtTransport
                 } catch (RequestException $e) {
                     Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
+                    /** @noinspection NotOptimalIfConditionsInspection */
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
                         $cacheService->delete('etConnectFailure');
@@ -285,7 +242,7 @@ class EtTransport
         }
 
         $contents = file_get_contents($keyFile);
-        if (empty($contents) || $contents == 'temp') {
+        if (empty($contents) || $contents === 'temp') {
             return null;
         }
 
@@ -295,26 +252,26 @@ class EtTransport
     /**
      * @return array
      */
-    private function _getPluginLicenseKeys()
+    private function _getPluginLicenseKeys(): array
     {
         $pluginLicenseKeys = [];
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            $pluginHandle = $plugin->getHandle();
-            $pluginLicenseKeys[$pluginHandle] = $pluginsService->getPluginLicenseKey($pluginHandle);
+            /** @var Plugin $plugin */
+            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->getHandle());
         }
 
         return $pluginLicenseKeys;
     }
 
     /**
-     * @param $key
+     * @param string $key
      *
-     * @return boolean
+     * @return bool
      * @throws Exception|EtException
      */
-    private function _setLicenseKey($key)
+    private function _setLicenseKey(string $key): bool
     {
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.
@@ -340,9 +297,9 @@ class EtTransport
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
-    private function _isConfigFolderWritable()
+    private function _isConfigFolderWritable(): bool
     {
         return FileHelper::isWritable(Craft::$app->getPath()->getConfigPath());
     }
