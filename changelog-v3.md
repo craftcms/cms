@@ -172,6 +172,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\Connection::columnExists()`’s `$table` argument can now be a \`craft\yii\db\TableSchema` object.
 - `craft\elements\Asset::getFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
 - `craft\elements\Asset::getVolume()` now throws a `yii\base\InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID.
+- `craft\elements\Tag::getGroup()` now throws a `yii\base\InvalidConfigException` if its `$groupId` property is set to an invalid tag group ID.
 - `craft\elements\User::getAuthor()` now throws a `yii\base\InvalidConfigException` if its `$authorId` property is set to an invalid user ID.
 - `craft\elements\User::getPhoto()` now throws a `yii\base\InvalidConfigException` if its `$photoId` property is set to an invalid asset ID.
 - `craft\models\FieldLayoutTab::getLayout()` now throws a `yii\base\InvalidConfigException` if its `$layoutId` property is set to an invalid field layout ID.
