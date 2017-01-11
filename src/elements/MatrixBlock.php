@@ -142,7 +142,7 @@ class MatrixBlock extends Element
     private $_owner;
 
     /**
-     * @var
+     * @var ElementInterface[]|null
      */
     private $_eagerLoadedBlockTypeElements;
 

@@ -126,13 +126,17 @@ class Db
      */
     public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
+        $type = '';
+
         // Normalize the arguments
         if (!is_numeric($min)) {
             $min = -self::$_intColumnSizes[ColumnType::Int];
         }
+
         if (!is_numeric($max)) {
             $max = self::$_intColumnSizes[ColumnType::Int] - 1;
         }
+
         $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
         // Unsigned?

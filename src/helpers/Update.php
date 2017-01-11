@@ -245,7 +245,6 @@ class Update
 
         $manifestData = array_filter(array_map('trim', $manifestData));
         $update = Craft::$app->getUpdates()->getUpdates();
-        $localVersion = null;
 
         if ($handle === 'craft') {
             $localVersion = $update->app->localVersion;
