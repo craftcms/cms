@@ -26,6 +26,7 @@ use craft\records\Session as SessionRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
+use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -576,6 +577,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
         $rules[] = [['username', 'email'], 'required'];
+        $rules[] = [['username'], UsernameValidator::class];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         $rules[] = [
@@ -1064,27 +1066,6 @@ class User extends Element implements IdentityInterface
         }
 
         return null;
-    }
-
-    /**
-     * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-     * logged to the `craft/storage/logs` folder as a warning.
-     *
-     * In addition, we check that the username does not have any whitespace in it.
-     *
-     * @param array|null $attributeNames
-     * @param bool       $clearErrors
-     *
-     * @return bool|null
-     */
-    public function validate($attributeNames = null, $clearErrors = true)
-    {
-        // Don't allow whitespace in the username.
-        if (preg_match('/\s+/', $this->username)) {
-            $this->addError('username', Craft::t('app', 'Spaces are not allowed in the username.'));
-        }
-
-        return parent::validate($attributeNames, false);
     }
 
     /**

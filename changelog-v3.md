@@ -54,6 +54,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\MailerHelper`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
+- Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
