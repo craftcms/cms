@@ -358,6 +358,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\events\UserEvent`.
 - Removed `craft\helpers\Io`.
 - Removed `craft\log\EmailTarget`.
+- Removed `craft\models\Username`.
 - Removed `craft\io\BaseIO`.
 - Removed `craft\io\File`.
 - Removed `craft\io\Folder`.
