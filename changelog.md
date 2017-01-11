@@ -6,10 +6,12 @@ Craft CMS Changelog
 ### Changed
 - Increased the minimum width of HUD element editors to `380px`.
 - Increased the size of number fields to `10`.
+- Improved the way the height of sidebars is calculated for panes with no tabs
 
 ### Fixed
 - Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
 - Fixed a deprecation error that was getting logged whenever a tag was saved within the Control Panel.
+- Fixed `Plugins::validateConfig()`’s nulls.
 
 ## 2.6.2958 - 2017-01-03
 
