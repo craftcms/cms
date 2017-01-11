@@ -717,11 +717,11 @@ class Plugins extends Component
     /**
      * Validates a plugin's config by ensuring it has a valid class, name, and version
      *
-     * @param array &$config
+     * @param array|null &$config
      *
      * @return bool Whether the config validates.
      */
-    public function validateConfig(array &$config): bool
+    public function validateConfig(array &$config = null): bool
     {
         // Make sure it has the essentials
         if (!is_array($config) || !isset($config['class'], $config['name'], $config['version'])) {
