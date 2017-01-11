@@ -336,11 +336,11 @@ class ElementsController extends BaseElementsController
 
         $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
 
-        if ($element->id) {
+        if ($element->id !== null) {
             $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
         }
 
-        if ($element->siteId) {
+        if ($element->siteId !== null) {
             $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
         }
 

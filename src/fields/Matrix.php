@@ -86,7 +86,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $this->_blockTypes;
         }
 
-        if (!$this->id) {
+        if ($this->id === null) {
             return [];
         }
 

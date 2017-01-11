@@ -707,7 +707,7 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if (!$this->siteId) {
+        if ($this->siteId === null) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
     }
@@ -1183,7 +1183,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasDescendants(): bool
     {
-        return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
+        return ($this->lft !== null && $this->rgt !== null && $this->rgt > $this->lft + 1);
     }
 
     /**
@@ -1240,7 +1240,7 @@ abstract class Element extends Component implements ElementInterface
     public function isSiblingOf(ElementInterface $element): bool
     {
         /** @var Element $element */
-        if ($this->root == $element->root && $this->level && $this->level == $element->level) {
+        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
             }
@@ -1460,7 +1460,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHasFreshContent(): bool
     {
-        return (!$this->contentId && !$this->hasErrors());
+        return ($this->contentId === null && !$this->hasErrors());
     }
 
     // Indexes, etc.
@@ -1745,7 +1745,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSite(): Site
     {
-        if ($this->siteId) {
+        if ($this->siteId !== null) {
             $site = Craft::$app->getSites()->getSiteById($this->siteId);
         }
 
@@ -1874,7 +1874,7 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _getRelativeElement($criteria, int $dir)
     {
-        if ($this->id) {
+        if ($this->id !== null) {
             if ($criteria instanceof ElementQueryInterface) {
                 $query = $criteria;
             } else {

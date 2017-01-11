@@ -137,7 +137,7 @@ class EntriesController extends BaseEntriesController
                 $variables['parentOptionCriteria']['level'] = '< '.$section->maxLevels;
             }
 
-            if ($entry->id) {
+            if ($entry->id !== null) {
                 // Prevent the current entry, or any of its descendants, from being options
                 $excludeIds = Entry::find()
                     ->descendantOf($entry)
@@ -156,9 +156,9 @@ class EntriesController extends BaseEntriesController
             // Get the initially selected parent
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
-            if ($parentId === null && $entry->id) {
+            if ($parentId === null && $entry->id !== null) {
                 // Is it already set on the model (e.g. if we're loading a draft)?
-                if ($entry->newParentId) {
+                if ($entry->newParentId !== null) {
                     $parentId = $entry->newParentId;
                 } else {
                     $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
@@ -178,7 +178,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (Craft::$app->getIsMultiSite()) {
-            if ($entry->id) {
+            if ($entry->id !== null) {
                 $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($entry->id);
             } else {
                 // Set defaults based on the section settings
@@ -209,7 +209,7 @@ class EntriesController extends BaseEntriesController
                 $variables['revisionLabel'] = Craft::t('app', 'Current');
         }
 
-        if (!$entry->id) {
+        if ($entry->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new entry');
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
@@ -286,7 +286,7 @@ class EntriesController extends BaseEntriesController
             $variables['showPreviewBtn'] = true;
 
             // Should we show the Share button too?
-            if ($entry->id) {
+            if ($entry->id !== null) {
                 $className = get_class($entry);
 
                 // If we're looking at the live version of an entry, just use
@@ -329,7 +329,7 @@ class EntriesController extends BaseEntriesController
             (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id ? '/'.$site->handle : '');
 
         // Can the user delete the entry?
-        $variables['canDeleteEntry'] = $entry->id && (
+        $variables['canDeleteEntry'] = $entry->id !== null && (
                 ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
             );

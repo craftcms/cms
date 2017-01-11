@@ -30,38 +30,27 @@ class ElementRelationParamParser
     // =========================================================================
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $_joinSourceMatrixBlocksCount;
+    private $_joinSourceMatrixBlocksCount = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $_joinTargetMatrixBlocksCount;
+    private $_joinTargetMatrixBlocksCount = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $_joinSourcesCount;
+    private $_joinSourcesCount = 0;
 
     /**
-     * @var int|null
+     * @var int
      */
-    private $_joinTargetsCount;
+    private $_joinTargetsCount = 0;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->_joinSourceMatrixBlocksCount = 0;
-        $this->_joinTargetMatrixBlocksCount = 0;
-        $this->_joinSourcesCount = 0;
-        $this->_joinTargetsCount = 0;
-    }
 
     /**
      * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
@@ -142,9 +131,9 @@ class ElementRelationParamParser
     {
         return (
             $this->_joinSourcesCount === 1 &&
-            !$this->_joinTargetsCount &&
-            !$this->_joinSourceMatrixBlocksCount &&
-            !$this->_joinTargetMatrixBlocksCount
+            $this->_joinTargetsCount === 0 &&
+            $this->_joinSourceMatrixBlocksCount === 0 &&
+            $this->_joinTargetMatrixBlocksCount === 0
         );
     }
 

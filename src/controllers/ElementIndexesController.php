@@ -254,7 +254,7 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _source(): array
     {
-        if (!$this->_sourceKey) {
+        if ($this->_sourceKey === null) {
             return null;
         }
 

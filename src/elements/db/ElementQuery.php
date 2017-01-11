@@ -1344,7 +1344,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
 
                 // Set the field's column prefix on the Content service.
-                if ($field->columnPrefix) {
+                if ($field->columnPrefix !== null) {
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 

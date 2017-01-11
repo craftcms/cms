@@ -177,7 +177,7 @@ class MatrixBlock extends Element
         // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
         // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
 
-        if ($this->ownerSiteId) {
+        if ($this->ownerSiteId !== null) {
             return [$this->ownerSiteId];
         }
 
@@ -205,7 +205,7 @@ class MatrixBlock extends Element
      */
     public function getType()
     {
-        if (!$this->typeId) {
+        if ($this->typeId === null) {
             throw new InvalidConfigException('Matrix block is missing its type ID');
         }
 
@@ -229,7 +229,7 @@ class MatrixBlock extends Element
             return $this->_owner !== false ? $this->_owner : null;
         }
 
-        if (!$this->ownerId) {
+        if ($this->ownerId === null) {
             return null;
         }
 

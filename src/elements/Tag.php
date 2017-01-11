@@ -137,7 +137,7 @@ class Tag extends Element
      */
     public function getGroup()
     {
-        if ($this->groupId) {
+        if ($this->groupId !== null) {
             return Craft::$app->getTags()->getTagGroupById($this->groupId);
         }
 
