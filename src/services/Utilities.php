@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use yii\base\Component;
 use craft\helpers\UrlHelper;
+use yii\base\Component;
 
 /**
  * The Utilities service provides APIs for managing utilties.
@@ -35,10 +35,8 @@ class Utilities extends Component
 
         $allItems = $this->getAllNavItems();
 
-        foreach($allItems as $handle => $item)
-        {
-            if (Craft::$app->getUser()->checkPermission('viewUtility:'.$handle))
-            {
+        foreach ($allItems as $handle => $item) {
+            if (Craft::$app->getUser()->checkPermission('viewUtility:'.$handle)) {
                 $items[$handle] = $item;
             }
         }
@@ -76,8 +74,7 @@ class Utilities extends Component
 
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
-        if (count($volumes) > 0)
-        {
+        if (count($volumes) > 0) {
             $items['assetIndex'] = [
                 'label' => "Update Asset Indexes",
                 'url' => UrlHelper::url('utilities/asset-index'),

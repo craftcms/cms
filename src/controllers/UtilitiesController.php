@@ -48,8 +48,7 @@ class UtilitiesController extends Controller
     {
         $utilities = Craft::$app->getUtilities()->getNavItems();
 
-        if(count($utilities) > 0)
-        {
+        if (count($utilities) > 0) {
             $utility = array_shift($utilities);
 
             return $this->redirect($utility['url']);
@@ -65,12 +64,11 @@ class UtilitiesController extends Controller
      */
     public function actionSystemReport()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:systemReport'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:systemReport')) {
             throw new ForbiddenHttpException('User not permitted to view System Report');
         }
 
-        return $this->renderTemplate('utilities/system-report', array(
+        return $this->renderTemplate('utilities/system-report', [
             'navItems' => Craft::$app->getUtilities()->getNavItems(),
             'craftVersion' => Craft::$app->version,
             'craftEdition' => 'Craft '.App::editionName(Craft::$app->getEdition()),
@@ -82,7 +80,7 @@ class UtilitiesController extends Controller
             ],
             'plugins' => $this->_getPlugins(),
             'requirements' => $this->_getRequirementResults(),
-        ));
+        ]);
     }
 
     /**
@@ -92,8 +90,7 @@ class UtilitiesController extends Controller
      */
     public function actionPhpInfo()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:phpInfo'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:phpInfo')) {
             throw new ForbiddenHttpException('User not permitted to view PHP Info');
         }
 
@@ -110,8 +107,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeprecationErrors()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors')) {
             throw new ForbiddenHttpException('User not permitted to view Deprecation Errors');
         }
 
@@ -131,8 +127,7 @@ class UtilitiesController extends Controller
      */
     public function actionGetDeprecationErrorTracesModal()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors')) {
             throw new ForbiddenHttpException('User not permitted to view Deprecation Errors');
         }
 
@@ -143,8 +138,8 @@ class UtilitiesController extends Controller
         $log = Craft::$app->deprecator->getLogById($logId);
 
         $html = $this->renderTemplate('utilities/deprecation-errors/_tracesmodal',
-            array('log' => $log)
-        , true);
+            ['log' => $log]
+            , true);
 
         return $this->asJson([
             'html' => $html
@@ -158,8 +153,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteAllDeprecationErrors()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors')) {
             throw new ForbiddenHttpException('User not permitted to view Deprecation Errors');
         }
 
@@ -178,8 +172,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteDeprecationError()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:deprecationErrors')) {
             throw new ForbiddenHttpException('User not permitted to view Deprecation Errors');
         }
 
@@ -189,6 +182,7 @@ class UtilitiesController extends Controller
         $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
 
         Craft::$app->deprecator->deleteLogById($logId);
+
         /*Craft::$app->end();*/
 
         return $this->asJson(['success' => true]);
@@ -201,8 +195,7 @@ class UtilitiesController extends Controller
      */
     public function actionAssetIndex()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:assetIndex'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:assetIndex')) {
             throw new ForbiddenHttpException('User not permitted to view Asset Index');
         }
 
@@ -238,8 +231,7 @@ class UtilitiesController extends Controller
      */
     public function actionAssetIndexPerformAction()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:assetIndex'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:assetIndex')) {
             throw new ForbiddenHttpException('User not permitted to view Asset Index');
         }
 
@@ -312,7 +304,6 @@ class UtilitiesController extends Controller
                 'batches' => $batches,
                 'total' => $grandTotal
             ]);
-
         } else if (!empty($params['process'])) {
             // Index the file
             Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'],
@@ -404,15 +395,13 @@ class UtilitiesController extends Controller
      */
     public function actionClearCaches()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:clearCaches'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:clearCaches')) {
             throw new ForbiddenHttpException('User not permitted to view Clear Caches');
         }
 
         $options = [];
 
-        foreach ($this->_getAllCacheOptions() as $cacheOption)
-        {
+        foreach ($this->_getAllCacheOptions() as $cacheOption) {
             $options[] = [
                 'label' => $cacheOption['label'],
                 'value' => $cacheOption['key']
@@ -434,44 +423,32 @@ class UtilitiesController extends Controller
      */
     public function actionClearCachesPerformAction()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:clearCaches'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:clearCaches')) {
             throw new ForbiddenHttpException('User not permitted to view Clear Caches');
         }
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
-        if (!isset($params['caches']))
-        {
+        if (!isset($params['caches'])) {
             return $this->asJson(['success' => true]);
         }
 
-        foreach (self::_getAllCacheOptions() as $cacheOption)
-        {
-            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true))
-            {
+        foreach (self::_getAllCacheOptions() as $cacheOption) {
+            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
                 continue;
             }
 
             $action = $cacheOption['action'];
 
-            if (is_string($action))
-            {
-                try
-                {
+            if (is_string($action)) {
+                try {
                     FileHelper::clearDirectory($action);
-                }
-                catch (\Exception $e)
-                {
+                } catch (\Exception $e) {
                     Craft::warning("Could not clear the directory {$action}: ".$e->getMessage());
                 }
-            }
-            else if (isset($cacheOption['params']))
-            {
+            } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
-            }
-            else
-            {
+            } else {
                 call_user_func($action);
             }
         }
@@ -486,8 +463,7 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackup()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup')) {
             throw new ForbiddenHttpException('User not permitted to view DB Backup');
         }
 
@@ -505,8 +481,7 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackupPerformAction()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup')) {
             throw new ForbiddenHttpException('User not permitted to view DB Backup');
         }
 
@@ -559,16 +534,14 @@ class UtilitiesController extends Controller
      */
     public function actionDownloadBackupFile()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup')) {
             throw new ForbiddenHttpException('User not permitted to view DB Backup');
         }
 
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
 
-        if (!is_file($filePath))
-        {
+        if (!is_file($filePath)) {
             throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
                 'filename' => $filename
             ]));
@@ -584,8 +557,7 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplace()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:findAndReplace'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:findAndReplace')) {
             throw new ForbiddenHttpException('User not permitted to view Find and Replace');
         }
 
@@ -603,8 +575,7 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplacePerformAction()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:findAndReplace'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:findAndReplace')) {
             throw new ForbiddenHttpException('User not permitted to view Find and Replace');
         }
 
@@ -628,8 +599,7 @@ class UtilitiesController extends Controller
      */
     public function actionSearchIndex()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:searchIndex'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:searchIndex')) {
             throw new ForbiddenHttpException('User not permitted to view Search Index');
         }
 
@@ -647,15 +617,13 @@ class UtilitiesController extends Controller
      */
     public function actionSearchIndexPerformAction()
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:searchIndex'))
-        {
+        if (!Craft::$app->getUser()->checkPermission('viewUtility:searchIndex')) {
             throw new ForbiddenHttpException('User not permitted to view Search Index');
         }
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
-        if (!empty($params['start']))
-        {
+        if (!empty($params['start'])) {
             // Truncate the searchindex table
             Craft::$app->getDb()->createCommand()
                 ->truncateTable('{{%searchindex}}')
@@ -669,26 +637,20 @@ class UtilitiesController extends Controller
 
             $batch = [];
 
-            foreach ($elements as $element)
-            {
+            foreach ($elements as $element) {
                 $batch[] = ['params' => $element];
             }
 
             return $this->asJson([
                 'batches' => [$batch]
             ]);
-        }
-        else
-        {
+        } else {
             /** @var ElementInterface $class */
             $class = $params['type'];
 
-            if ($class::isLocalized())
-            {
+            if ($class::isLocalized()) {
                 $siteIds = Craft::$app->getSites()->getAllSiteIds();
-            }
-            else
-            {
+            } else {
                 $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
             }
 
@@ -697,23 +659,19 @@ class UtilitiesController extends Controller
                 ->status(null)
                 ->enabledForSite(false);
 
-            foreach ($siteIds as $siteId)
-            {
+            foreach ($siteIds as $siteId) {
                 $query->siteId($siteId);
                 $element = $query->one();
 
-                if ($element)
-                {
+                if ($element) {
                     /** @var Element $element */
                     Craft::$app->getSearch()->indexElementAttributes($element);
 
-                    if ($class::hasContent())
-                    {
+                    if ($class::hasContent()) {
                         $fieldLayout = $element->getFieldLayout();
                         $keywords = [];
 
-                        foreach ($fieldLayout->getFields() as $field)
-                        {
+                        foreach ($fieldLayout->getFields() as $field) {
                             /** @var Field $field */
                             // Set the keywords for the content's site
                             $fieldValue = $element->getFieldValue($field->handle);

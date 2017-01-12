@@ -127,8 +127,7 @@ class Cp extends Component
 
         $utilities = Craft::$app->getUtilities()->getNavItems();
 
-        if(count($utilities) > 0)
-        {
+        if (count($utilities) > 0) {
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
