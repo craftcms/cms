@@ -172,8 +172,10 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .readable { font-size: 16px; line-height: 22px; }
 .readable h2 { margin: 24px 0 16px; padding-bottom: 7px; font-size: 24px; line-height: 30px; font-weight: 600; border-bottom: 1px solid $hairlineColor; }
 .readable h3 { margin: 24px 0 16px; font-size: 20px; line-height: 24px; font-weight: 600; }
-.readable ul { @include padding-left(2em); }
+.readable ul,
+.readable ol { @include padding-left(2em); }
 .readable ul li { list-style-type: disc; }
+.readable li + li { margin-top: 0.25em; }
 
 /* text styles */
 .topalign { vertical-align: top; }
