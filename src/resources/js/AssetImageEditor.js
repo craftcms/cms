@@ -796,7 +796,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // If there's no vertex set after loop, it means that all of them are inside the image rectangle
             if (!vertex) {
-                return 1
+                return 1;
             } else {
                 // Find out which edge got crossed by the vertex
                 var edge = this._getEdgeCrossed(containingVertices, vertex);
