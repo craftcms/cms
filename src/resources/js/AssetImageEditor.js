@@ -296,20 +296,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         // Make sure we have the correct current image size
                         this._setFittedImageVerticeCoordinates();
                         var currentArea = this._getBoundingRectangle(this.imageVerticeCoords);
+                        var areaFactor = currentArea.width / state.imageArea.width;
 
                         // Calculate by what factor the stored cropper state has to be adjusted
-                        // * Image area factor accounts for image editing area size changes
-                        // * combined zoom factor accounts for the image zoom from "fit in viewport" to "cover the viewport"
-                        var sizeFactor = currentArea.width / state.imageArea.width * this.getCombinedZoomRatio(this.getScaledImageDimensions());
+                        var sizeFactor = areaFactor * this.zoomRatio;
 
                         // Set the viewport dimensions
-                        dimensions.width = state.clipperData.width * sizeFactor;
-                        dimensions.height = state.clipperData.height * sizeFactor;
+                        dimensions.width = state.width * sizeFactor;
+                        dimensions.height = state.height * sizeFactor;
 
                         // Adjust the image position to show the correct part of the image in the viewport
                         this.image.set({
-                            left: (this.editorWidth / 2) - (state.clipperData.deltaX * sizeFactor),
-                            top: (this.editorHeight / 2) - (state.clipperData.deltaY * sizeFactor)
+                            left: (this.editorWidth / 2) - (state.offsetX * sizeFactor),
+                            top: (this.editorHeight / 2) - (state.offsetY * sizeFactor)
                         });
                     } else {
                         $.extend(dimensions, this.getScaledImageDimensions());
@@ -334,23 +333,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var editorRatio = this.editorHeight / this.editorWidth;
 
             var dimensions = {};
-            if (this.hasOrientationChanged()) {
-                imageRatio = 1 / imageRatio;
-                if (imageRatio > editorRatio) {
-                    dimensions.width = this.editorHeight;
-                    dimensions.height = Math.round(this.originalHeight * (this.editorHeight / this.originalWidth));
-                } else {
-                    dimensions.height = this.editorWidth;
-                    dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorWidth));
-                }
+            if (imageRatio > editorRatio) {
+                dimensions.height = this.editorHeight;
+                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorHeight));
             } else {
-                if (imageRatio > editorRatio) {
-                    dimensions.height = this.editorHeight;
-                    dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorHeight));
-                } else {
-                    dimensions.width = this.editorWidth;
-                    dimensions.height = Math.round(this.originalHeight * (this.editorWidth / this.originalWidth));
-                }
+                dimensions.width = this.editorWidth;
+                dimensions.height = Math.round(this.originalHeight * (this.editorWidth / this.originalWidth));
             }
 
             return dimensions;
@@ -478,6 +466,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Store the current cropper state.
          *
+         * Cropper state is always assumed to be saved at a zoom ratio of 1 t be used
+         * as the basis for recalculating the cropper position and dimensions.
+         *
          * @param [state]
          */
         storeCropperState: function(state) {
@@ -485,15 +476,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             if (state) {
                 this.cropperState = state;
             } else if (this.clipper) {
+                var zoomFactor = 1 / this.zoomRatio;
+
                 this.cropperState = {
-                    clipperData: {
-                        deltaX: this.clipper.left - this.image.left,
-                        deltaY: this.clipper.top - this.image.top,
-                        height: this.clipper.height,
-                        width: this.clipper.width
-                    },
-                    imageArea: this._getBoundingRectangle(this.imageVerticeCoords),
-                    zoom: this.zoomRatio
+                    offsetX: (this.clipper.left - this.image.left) * zoomFactor,
+                    offsetY: (this.clipper.top - this.image.top)  * zoomFactor,
+                    height: this.clipper.height * zoomFactor,
+                    width: this.clipper.width * zoomFactor,
+                    imageArea: this._getBoundingRectangle(this.imageVerticeCoords)
                 };
             }
         },
@@ -524,6 +514,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
                 var state = this.cropperState;
 
+                // In cases when the cropper was positioned along the edge and then
+                // by straightening the image, the zoom was forced to become larger
+                // than just zoom to cover.
                 if (this.zoomRatio > imageZoomRatio) {
                     imageZoomRatio = this.zoomRatio;
                 }
@@ -539,9 +532,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 // Make sure we reposition the image as well to focus on the same image area
-                if (this.cropperState) {
-                    var deltaX = state.clipperData.deltaX;
-                    var deltaY = state.clipperData.deltaY;
+                if (state) {
+                    var deltaX = state.offsetX;
+                    var deltaY = state.offsetY;
                     var angleInRadians = degrees * (Math.PI / 180);
 
                     // Calculate how the cropper would need to move in a circle to maintain
@@ -549,22 +542,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
                     newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
 
-                    var zoomFactor = imageZoomRatio / state.zoom;
                     var currentArea = this._getBoundingRectangle(this.getImageVerticeCoords());
                     var areaFactor = currentArea.width / state.imageArea.width;
 
-                    var modifiedDeltaX = newDeltaX * areaFactor * zoomFactor;
-                    var modifiedDeltaY = newDeltaY * areaFactor * zoomFactor;
+                    var modifiedDeltaX = newDeltaX * areaFactor * this.zoomRatio;
+                    var modifiedDeltaY = newDeltaY * areaFactor * this.zoomRatio;
 
                     imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
                     imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
 
-                    state.clipperData.deltaX = newDeltaX;
-                    state.clipperData.deltaY = newDeltaY;
+                    state.offsetX = newDeltaX;
+                    state.offsetY = newDeltaY;
 
-                    var temp = state.clipperData.width;
-                    state.clipperData.width = state.clipperData.height;
-                    state.clipperData.height = temp;
+                    var temp = state.width;
+                    state.width = state.height;
+                    state.height = temp;
 
                     if (state)
                     {
@@ -633,14 +625,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         properties.left = editorCenter.x - deltaX;
 
                         if (state) {
-                            state.clipperData.deltaX = -state.clipperData.deltaX;
+                            state.offsetX = -state.offsetX;
                         }
                     } else {
                         deltaY = this.image.top - editorCenter.y;
                         properties.top = editorCenter.y - deltaY;
 
                         if (state) {
-                            state.clipperData.deltaY = -state.clipperData.deltaY;
+                            state.offsetY = -state.offsetY;
                         }
                     }
                 } else {
@@ -652,14 +644,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         properties.top = editorCenter.y - deltaY;
 
                         if (state) {
-                            state.clipperData.deltaY = -state.clipperData.deltaY;
+                            state.offsetY = -state.offsetY;
                         }
                     } else {
                         deltaX = this.image.left - editorCenter.x;
                         properties.left = editorCenter.x - deltaX;
 
                         if (state) {
-                            state.clipperData.deltaX = -state.clipperData.deltaX;
+                            state.offsetX = -state.offsetX;
                         }
                     }
                 }
@@ -726,12 +718,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var currentZoomRatio = this.zoomRatio;
             var adjustmentRatio = 1;
 
-            var deltaX, deltaY, newCenterX, newCenterY, areaFactor, currentZoomToFit, zoomToFitRatioDifferential, currentArea;
+            var deltaX, deltaY, newCenterX, newCenterY, areaFactor, currentZoomToFit, currentArea;
 
             do {
                 // Get the cropper center coordinates
-                var cropperCenterX = state.clipperData.deltaX;
-                var cropperCenterY = state.clipperData.deltaY;
+                var cropperCenterX = state.offsetX;
+                var cropperCenterY = state.offsetY;
                 var angleInRadians = angleDelta * (Math.PI / 180);
 
                 // Calculate how the cropper would need to move in a circle to maintain
@@ -739,28 +731,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 newCenterX = cropperCenterX * Math.cos(angleInRadians) - cropperCenterY * Math.sin(angleInRadians);
                 newCenterY = cropperCenterX * Math.sin(angleInRadians) + cropperCenterY * Math.cos(angleInRadians);
 
-                // Figure out how the crop-mode image zoom would have changed with the rotation
-                currentZoomToFit = this.getZoomToFitRatio(scaledImageDimensions);
-                zoomToFitRatioDifferential = currentZoomToFit / state.zoom;
-
-                // The areaFactor adjusts for image area changes such as browser window resize
-                // and the appearance and disappearance of the image slider.
-                var coords = this.getImageVerticeCoords('fit');
-                currentArea = this._getBoundingRectangle(coords);
+                var imageVertices = this.getImageVerticeCoords(currentZoomRatio);
+                currentArea = this._getBoundingRectangle(imageVertices);
                 areaFactor = currentArea.width / state.imageArea.width;
 
-                // Remember how three comments above we did some "zoom intact" calculations?
-                // No get the zoom change ratio to break free of that cage.
-                var zoomDifferential = currentZoomRatio / state.zoom;
+                currentZoomToFit = this.getZoomToFitRatio(scaledImageDimensions);
 
                 // Figure out the final image offset to keep the viewport focused where we need it
-                deltaX = newCenterX * zoomDifferential * areaFactor;
-                deltaY = newCenterY * zoomDifferential * areaFactor;
+                deltaX = newCenterX * areaFactor * currentZoomToFit;
+                deltaY = newCenterY * areaFactor * currentZoomToFit;
 
-                // Get the vertices of the image for the zoom-ratio-to-be
-                var imageVertices = this.getImageVerticeCoords(currentZoomRatio);
-
-                // Get the viewport vertices
                 var rectangle = {
                     width: this.viewport.width,
                     height: this.viewport.height,
@@ -768,6 +748,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     top: this.editorHeight / 2 - this.viewport.height / 2 + deltaY
                 };
 
+                // If the image would creep in the viewport, figure out how to math around it.
                 adjustmentRatio = this._getZoomRatioToFitRectangle(rectangle, imageVertices);
                 currentZoomRatio = currentZoomRatio * adjustmentRatio;
 
@@ -781,18 +762,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             });
 
             // Finally, store the new cropper state to reflect the rotation change.
+            state.offsetX = newCenterX;
+            state.offsetY = newCenterY;
+            state.width = this.viewport.width / currentZoomToFit / areaFactor;
+            state.height = this.viewport.height / currentZoomToFit / areaFactor;
 
-            // Since new angle changes the zoom, take that into account.
-            state.clipperData.deltaX = newCenterX * zoomToFitRatioDifferential * areaFactor;
-            state.clipperData.deltaY = newCenterY * zoomToFitRatioDifferential * areaFactor;
-
-            // Recalculate how tall and wide the cropper would have to be to be accurate.
-            state.clipperData.width = this.viewport.width / this.getCombinedZoomRatio(scaledImageDimensions) * areaFactor / adjustmentRatio;
-            state.clipperData.height = this.viewport.height / this.getCombinedZoomRatio(scaledImageDimensions) * areaFactor / adjustmentRatio;
-
-            // Store the image area that was used for calculations and the current zoom to fit.
-            state.imageArea = currentArea;
-            state.zoom = currentZoomToFit;
             this.storeCropperState(state);
 
             // Zoom the image in and we're done.
@@ -1069,7 +1043,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var callback = $.noop;
 
                 if (mode == 'crop') {
-                    var previousZoomRatio = this.zoomRatio;
                     this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
                     viewportDimensions = {
                         width: this.editorWidth,
@@ -1080,39 +1053,42 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this._setFittedImageVerticeCoordinates();
 
                         // Restore cropper
-                        var clipperData = null;
+                        var cropperData = null;
                         if (this.cropperState) {
                             var state = this.cropperState;
                             var currentArea = this._getBoundingRectangle(this.imageVerticeCoords);
+                            // TODO verify that one dimension is OK
                             var areaFactor = currentArea.width / state.imageArea.width;
-
-                            // Restore based on the stored offset and multiply by area factor
-                            // if the editor was resized between storing and restoring the cropper
-                            clipperData = {
-                                left: this.image.left + (state.clipperData.deltaX * areaFactor),
-                                top: this.image.top + (state.clipperData.deltaY * areaFactor),
-                                width: state.clipperData.width * areaFactor,
-                                height: state.clipperData.height * areaFactor
+                            // Restore based on the stored information
+                            cropperData = {
+                                left: this.image.left + (state.offsetX * areaFactor * this.zoomRatio),
+                                top: this.image.top + (state.offsetY * areaFactor * this.zoomRatio),
+                                width: state.width * areaFactor * this.zoomRatio,
+                                height: state.height * areaFactor * this.zoomRatio
                             };
                         }
-                        this._showCropper(clipperData);
+                        this._showCropper(cropperData);
                     }.bind(this);
                 } else {
                     this._hideCropper();
                     this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 
-                    // Currently the image is zoomed out, so we have to calculate what the offset is going to be
-                    // after it is zoomed in.
-                    clipperDeltaX = this.clipper.left - this.image.left;
-                    clipperDeltaY = this.clipper.top - this.image.top;
-                    imageDeltaX = clipperDeltaX * this.getCombinedZoomRatio(imageDimensions);
-                    imageDeltaY = clipperDeltaY * this.getCombinedZoomRatio(imageDimensions);
-                    imageCoords.left = (this.editorWidth / 2) - imageDeltaX;
-                    imageCoords.top = (this.editorHeight / 2) - imageDeltaY;
+                    offsetX = this.clipper.left - this.image.left;
+                    offsetY = this.clipper.top - this.image.top;
+
+                    // Image is currently in "fit viewport" mode which was used to position the cropper.
+                    // We're now zooming in to "cover viewport" mode and applying the crop,
+                    // so that means we have to adjust our calculations from "fit" to "cover", which
+                    // is why we're using the combined zoom ratio.
+                    var combinedZoomRatio = this.getCombinedZoomRatio(imageDimensions);
+                    imageOffsetX = offsetX * combinedZoomRatio;
+                    imageOffsetY = offsetY * combinedZoomRatio;
+                    imageCoords.left = (this.editorWidth / 2) - imageOffsetX;
+                    imageCoords.top = (this.editorHeight / 2) - imageOffsetY;
 
                     // Calculate the cropper dimensions after all the zooming
-                    viewportDimensions.height = this.clipper.height * this.getCombinedZoomRatio(imageDimensions);
-                    viewportDimensions.width = this.clipper.width * this.getCombinedZoomRatio(imageDimensions);
+                    viewportDimensions.height = this.clipper.height * combinedZoomRatio;
+                    viewportDimensions.width = this.clipper.width * combinedZoomRatio;
                 }
 
                 // Animate image and viewport
