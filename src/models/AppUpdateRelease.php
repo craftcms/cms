@@ -7,9 +7,6 @@
 
 namespace craft\models;
 
-use craft\base\Model;
-use craft\validators\DateTimeValidator;
-
 /**
  * Stores the info for a Craft update release.
  *

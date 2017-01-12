@@ -52,7 +52,7 @@ class Feeds extends Component
      * - **summary** – The item’s summary content.
      * - **title** – The item’s title.
      *
-     * @param string $url           The feed’s URL.
+     * @param string      $url           The feed’s URL.
      * @param int|null    $limit         The maximum number of items to return. Default is 0 (no limit).
      * @param int|null    $offset        The number of items to skip. Defaults to 0.
      * @param string|null $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).

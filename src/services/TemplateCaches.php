@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;

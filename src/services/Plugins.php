@@ -17,7 +17,6 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;

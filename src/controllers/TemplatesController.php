@@ -44,7 +44,7 @@ class TemplatesController extends Controller
      * Renders a template.
      *
      * @param string $template
-     * @param array $variables
+     * @param array  $variables
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested template cannot be found
