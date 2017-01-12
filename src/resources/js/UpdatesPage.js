@@ -95,6 +95,9 @@
             $pane: null,
             $paneHeader: null,
             $downloadBtn: null,
+            $paneContents: null,
+            $releaseContainer: null,
+            $showAllLink: null,
 
             licenseHud: null,
             $licenseSubmitBtn: null,
@@ -116,6 +119,8 @@
             createPane: function() {
                 this.$pane = $('<div class="pane update"/>').appendTo(Craft.cp.$main);
                 this.$paneHeader = $('<div class="header"/>').appendTo(this.$pane);
+                this.$paneContents = $('<div class="readable"/>').appendTo(this.$pane);
+                this.$releaseContainer = $('<div class="releases"/>').appendTo(this.$paneContents);
             },
 
             createHeading: function() {
@@ -172,6 +177,36 @@
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
                     new Release(this, this.updateInfo.releases[i]);
                 }
+
+                if (this.$releaseContainer.height() > Release.maxInitialUpdateHeight + 50) {
+                    this.$releaseContainer.addClass('fade-out');
+                    this.$showAllLink = $('<a/>', {'class': 'show-all-notes', text: Craft.t('app', 'Show all')}).appendTo(this.$paneContents);
+                    this.addListener(this.$showAllLink, 'click', 'showAll');
+                }
+            },
+
+            showAll: function() {
+                var collapsedHeight = this.$releaseContainer.height();
+                this.$releaseContainer.css('max-height', 'none');
+                var expandedHeight = this.$releaseContainer.height();
+                this.$releaseContainer
+                    .height(collapsedHeight)
+                    .velocity({height: expandedHeight}, {
+                        duration: 'fast',
+                        complete: $.proxy(function() {
+                            this.$releaseContainer
+                                .removeClass('fade-out')
+                                .css('max-height', '');
+                            this.$showAllLink.remove();
+                        }, this)
+                    });
+
+                this.$showAllLink.velocity({opacity: 0, 'margin-top': -18}, {
+                    duration: 'fast',
+                    complete: $.proxy(function() {
+                        this.$showAllLink.remove();
+                    })
+                });
             },
 
             showLicenseForm: function(originalEvent) {
@@ -229,7 +264,6 @@
 
             $container: null,
             $releaseNotes: null,
-            $showMoreLink: null,
 
             init: function(update, releaseInfo) {
                 this.update = update;
@@ -241,61 +275,25 @@
             },
 
             createContainer: function() {
-                this.$container = $('<div class="release"/>').appendTo(this.update.$pane);
+                this.$container = $('<div class="release"/>').appendTo(this.update.$releaseContainer);
             },
 
             createHeading: function() {
-                var heading = this.releaseInfo.version;
-
-                if (this.releaseInfo.build) {
-                    heading += '.' + this.releaseInfo.build;
-                }
+                var heading = this.releaseInfo.version +
+                    ' <span class="light">– '+Craft.formatDate(this.releaseInfo.date)+'</span>';
 
                 if (this.releaseInfo.critical) {
                     heading += ' <span class="critical">' + Craft.t('app', 'Critical') + '</span>';
                 }
 
                 $('<h2/>', {html: heading}).appendTo(this.$container);
-                $('<p/>', {'class': 'release-date light', text: Craft.t('app', 'Released on {date}', {date: Craft.formatDate(this.releaseInfo.date)})}).appendTo(this.$container);
             },
 
             createReleaseNotes: function() {
                 this.$releaseNotes = $('<div class="release-notes"/>').appendTo(this.$container).html(this.releaseInfo.notes);
-
-                var totalNotes = this.$releaseNotes.children('ul').children().length;
-
-                if (totalNotes > Release.maxInitialReleaseNotes) {
-                    this.$releaseNotes.addClass('fade-out');
-                    this.$showMoreLink = $('<a/>', {'class': 'show-full-notes', text: Craft.t('app', 'Show more')}).appendTo(this.$container);
-                    this.addListener(this.$showMoreLink, 'click', 'showMoreReleaseNotes');
-                }
-            },
-
-            showMoreReleaseNotes: function() {
-                var collapsedHeight = this.$releaseNotes.height();
-                this.$releaseNotes.css('max-height', 'none');
-                var expandedHeight = this.$releaseNotes.height();
-                this.$releaseNotes
-                    .height(collapsedHeight)
-                    .velocity({height: expandedHeight}, {
-                        duration: 'fast',
-                        complete: $.proxy(function() {
-                            this.$releaseNotes
-                                .removeClass('fade-out')
-                                .css('max-height', '');
-                            this.$showMoreLink.remove();
-                        }, this)
-                    });
-
-                this.$showMoreLink.velocity({opacity: 0, 'margin-top': -18}, {
-                    duration: 'fast',
-                    complete: $.proxy(function() {
-                        this.$showMoreLink.remove();
-                    })
-                });
             }
         },
         {
-            maxInitialReleaseNotes: 5
+            maxInitialUpdateHeight: 500
         });
 })(jQuery);

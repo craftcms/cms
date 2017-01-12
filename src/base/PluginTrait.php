@@ -59,54 +59,38 @@ trait PluginTrait
     public $documentationUrl;
 
     /**
-     * @var string The plugin’s releases JSON feed
+     * The plugin’s changelog URL.
      *
-     * If the plugin wants to have its updates included in the Updates page, it should provide a JSON feed in the
-     * following format:
+     * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
      *
-     * ```javascript
-     * [
-     *     {
-     *         "version": "0.9.0",
-     *         "downloadUrl": "https://download.craftcommerce.com/0.9/Commerce0.9.0.zip",
-     *         "date": "2015-12-01T10:00:00-08:00",
-     *         "notes": [
-     *             "# Big Stuff",
-     *             "[Added] It’s now possible to create new products right from Product Selector Modals (like the ones used by Products fields).",
-     *             "[Improved] Variants are now defined in a new Variant Matrix field, right on the main Edit Product pages.",
-     *             "# Bug Fixes",
-     *             "[Fixed] Fixed a Twig error that occurred if you manually went to /commerce/orders/new. You now receive a 404 error instead."
-     *         ]
-     *     },
-     *     {
-     *         "version": "0.9.1",
-     *         "downloadUrl": "https://download.craftcommerce.com/0.9/Commerce0.9.1.zip",
-     *         "date": "2015-12-01T11:00:00-08:00",
-     *         "notes": [
-     *             "[Fixed] Fixed a PHP error that occurred when creating a new produt when the current user’s username was ‘null’."
-     *         ]
-     *     }
-     * ]
+     * Version headers must follow the general format:
+     *
+     * ```
+     * ## X.Y.Z - YYYY-DD-MM
      * ```
      *
-     * Notes:
+     * with the following possible deviations:
      *
-     * - The feed must be valid JSON.
-     * - The feed’s URL must begin with “https://” (so it is fetched over SSL).
-     * - Each release must contain `version`, `downloadUrl`, `date`, and `notes` attributes.
-     * - Each release’s `downloadUrl` must begin with “https://” (so it is downloaded over SSL).
-     * - Each release’s `date` must be an ISO-8601-formatted date, as defined by either
-     *   {@link http://php.net/manual/en/class.datetime.php#datetime.constants.atom DateTime::ATOM} or
-     *   {@link http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601 DateTime::ISO8601} (with or without
-     *   the colon between the hours and minutes of the timezone offset).
-     * - `notes` can either be a string (with each release note separated by a newline character), or an array.
-     * - Release note lines that begin with `#` will be treated as headings.
-     * - Release note lines that begin with `[Added]`, `[Improved]`, or `[Fixed]` will be given `added`, `improved`,
-     *   and `fixed` classes within the Updates page.
-     * - Release note lines can contain Markdown code, but not HTML.
-     * - Releases can contain a `critical` attribute which can be set to `true` if the release is critical.
+     * - a 4th version number is allowed (e.g. `1.2.3.4`)
+     * - pre-release versions are allowed (e.g. `1.0.0-alpha.1`)
+     * - the version can start with `v` (e.g. `v1.2.3`)
+     * - the version can be hyperlinked (e.g. `[1.2.3]`)
+     * - a `[CRITICAL]` flag can be appended after the date to indicate a critical release
+     *
+     * More notes:
+     *
+     * - Releases should be listed in descending order (newest on top). Craft will stop parsing the changelog as soon as it hits a version that is older than or equal to the installed version.
+     * - Any content that does not follow a version header line will be ignored.
+     * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
+     *
+     * @var string|null The plugin’s changelog URL
      */
-    public $releaseFeedUrl;
+    public $changelogUrl;
+
+    /**
+     * @var string|null The plugin’s download URL
+     */
+    public $downloadUrl;
 
     /**
      * @var string The language that the plugin’s messages were written in

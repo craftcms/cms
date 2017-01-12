@@ -15,10 +15,10 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\models\AppNewRelease;
+use craft\models\AppUpdateRelease;
 use craft\models\AppUpdate;
 use craft\models\Et as EtModel;
-use craft\models\PluginNewRelease;
+use craft\models\UpdateRelease;
 use craft\models\PluginUpdate;
 use craft\models\Update;
 use craft\models\UpgradeInfo;
@@ -107,10 +107,10 @@ class Et extends Component
             $appReleasesData = (array)ArrayHelper::remove($appUpdateData, 'releases');
             $update->app = new AppUpdate($appUpdateData);
 
-            // Populate AppNewRelease models
+            // Populate AppUpdateRelease models
             $update->app->releases = [];
             foreach ($appReleasesData as $appReleaseData) {
-                $update->app->releases[] = new AppNewRelease($appReleaseData);
+                $update->app->releases[] = new AppUpdateRelease($appReleaseData);
             }
 
             // Populate PluginUpdate models
@@ -119,10 +119,10 @@ class Et extends Component
                 $pluginReleasesData = (array)ArrayHelper::remove($pluginUpdateData, 'releases');
                 $update->plugins[$packageName] = new PluginUpdate($pluginUpdateData);
 
-                // Populate PluginNewRelease models
+                // Populate PluginUpdateRelease models
                 $update->plugins[$packageName]->releases = [];
                 foreach ($pluginReleasesData as $pluginReleaseData) {
-                    $update->plugins[$packageName]->releases[] = new PluginNewRelease($pluginReleaseData);
+                    $update->plugins[$packageName]->releases[] = new UpdateRelease($pluginReleaseData);
                 }
             }
 

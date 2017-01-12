@@ -72,6 +72,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Field::beforeElementDelete()`, which is called by an element before it is deleted.
 - Added `craft\base\Field::getElementValidationRules()`, which field types can override to return their element-level validation rules.
 - Added `craft\base\MissingComponentTrait::createFallback()`.
+- Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
+- Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
@@ -196,6 +198,8 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\mail\transportadaptors\Sendmail` to `craft\mail\transportadapters\Sendmail`.
 - Renamed `craft\mail\transportadaptors\Smtp` to `craft\mail\transportadapters\Smtp`.
 - Renamed `craft\mail\transportadaptors\TransportAdaptorInterface` to `craft\mail\transportadapters\TransportAdapterInterface`.
+- Renamed `craft\models\AppNewRelease` to `AppUpdateRelease`.
+- Renamed `craft\models\PluginNewRelease` to `UpdateRelease`.
 - Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
@@ -385,6 +389,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Model::create()`.
 - Removed `craft\base\Model::getAllErrors()`.
 - Removed `craft\base\Model::populateModel()`.
+- Removed `craft\base\Plugin::$releaseFeedUrl`. Plugins that wish to have update notifications should now set `$changelogUrl`.
 - Removed `craft\base\Plugin::getClassesInSubpath()`.
 - Removed `craft\base\Plugin::getFieldTypes()`.
 - Removed `craft\base\Plugin::getVolumeTypes()`.

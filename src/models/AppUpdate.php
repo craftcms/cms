@@ -82,7 +82,7 @@ class AppUpdate extends Model
     public $manualDownloadEndpoint;
 
     /**
-     * @var AppNewRelease[] Releases
+     * @var AppUpdateRelease[] Releases
      */
     public $releases = [];
 
@@ -98,8 +98,8 @@ class AppUpdate extends Model
 
         if ($this->releases !== null) {
             foreach ($this->releases as $key => $value) {
-                if (!$value instanceof AppNewRelease) {
-                    $this->releases[$key] = new AppNewRelease($value);
+                if (!$value instanceof AppUpdateRelease) {
+                    $this->releases[$key] = new AppUpdateRelease($value);
                 }
             }
         }
