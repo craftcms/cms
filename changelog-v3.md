@@ -777,7 +777,7 @@ Craft CMS 3.0 Working Changelog
 - Structure sections and category groups no longer have Nested URL Format settings. (It's still possible to achieve the same result with a single URI Format setting.)
 - Fields that are translatable now have a chat bubble icon, replacing the locale ID badge.
 - `craft\elements\Category::getGroup()` now throws an `yii\base\InvalidConfigException` if the category group type cannot be determined, rather than returning `null`.
-- Renamed `craft\base\PluginTrait::releasesFeedUrl` to releaseFeedUrl.
+- Renamed `craft\base\PluginTrait::$releasesFeedUrl` to `$releaseFeedUrl`.
 - `craft\mail\Message::setTo()` will now set a 'user' variable on the message, if it was passed a User model.
 - `Craft.ui.createSelect()` and `createLightswitch()` now initialize the `Craft.FieldToggle` class on the returned elements.
 
