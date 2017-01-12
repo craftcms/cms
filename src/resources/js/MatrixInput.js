@@ -223,7 +223,7 @@
 
                 for (var i = 0; i < this.blockTypes.length; i++) {
                     var blockType = this.blockTypes[i];
-                    html += '<li><a data-icon="+" data-action="add" data-type="' + blockType.handle + '">' + Craft.t('app', 'Add {type} above', {type: blockType.name}) + '</a></li>';
+                    html += '<li><a data-icon="plus" data-action="add" data-type="' + blockType.handle + '">' + Craft.t('app', 'Add {type} above', {type: blockType.name}) + '</a></li>';
                 }
 
                 html +=

@@ -132,7 +132,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             var $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="+"/>').appendTo($li).text(data.search);
+                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');
