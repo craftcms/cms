@@ -471,7 +471,7 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
-        if (!$this->id && !$this->title) {
+        if ($this->id !== null && !$this->title) {
             // Don't validate the title
             $key = array_search([['title'], 'required'], $rules, true);
             if ($key !== -1) {
@@ -507,7 +507,7 @@ class Asset extends Element
         /** @var Volume $volume */
         $volume = $this->getVolume();
 
-        if ($volume->id) {
+        if ($volume->id !== null) {
             return $volume->getFieldLayout();
         }
 
@@ -570,7 +570,7 @@ class Asset extends Element
      */
     public function getFolder(): VolumeFolder
     {
-        if (!$this->folderId) {
+        if ($this->folderId === null) {
             throw new InvalidConfigException('Asset is missing its folder ID');
         }
 
@@ -593,7 +593,7 @@ class Asset extends Element
             return $this->_volume;
         }
 
-        if (!$this->volumeId) {
+        if ($this->volumeId === null) {
             throw new InvalidConfigException('Asset is missing its volume ID');
         }
 
@@ -933,7 +933,7 @@ class Asset extends Element
         $record->dateModified = $this->dateModified;
         $record->save(false);
 
-        if ($this->newFilename) {
+        if ($this->newFilename !== null) {
             if ($this->newFilename === $this->filename) {
                 $this->newFilename = null;
             } else {

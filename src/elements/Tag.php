@@ -14,6 +14,7 @@ use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Tag represents a tag element.
@@ -133,15 +134,20 @@ class Tag extends Element
     /**
      * Returns the tag's group.
      *
-     * @return TagGroup|null
+     * @return TagGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
     public function getGroup()
     {
-        if ($this->groupId) {
-            return Craft::$app->getTags()->getTagGroupById($this->groupId);
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Tag is missing its group ID');
         }
 
-        return null;
+        if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
     // Indexes, etc.

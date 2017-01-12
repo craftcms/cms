@@ -283,7 +283,7 @@ class CategoriesController extends Controller
                 $variables['parentOptionCriteria']['level'] = '< '.$variables['group']->maxLevels;
             }
 
-            if ($category->id) {
+            if ($category->id !== null) {
                 // Prevent the current category, or any of its descendants, from being options
                 $excludeIds = Category::find()
                     ->descendantOf($category)
@@ -302,7 +302,7 @@ class CategoriesController extends Controller
             // Get the initially selected parent
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
-            if ($parentId === null && $category->id) {
+            if ($parentId === null && $category->id !== null) {
                 $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
                 if (!empty($parentIds)) {
@@ -319,7 +319,7 @@ class CategoriesController extends Controller
         // ---------------------------------------------------------------------
 
         // Page title
-        if (!$category->id) {
+        if ($category->id === null) {
             $variables['title'] = Craft::t('app', 'Create a new category');
         } else {
             $variables['docTitle'] = $variables['title'] = $category->title;
@@ -362,7 +362,7 @@ class CategoriesController extends Controller
             $variables['showPreviewBtn'] = true;
 
             // Should we show the Share button too?
-            if ($category->id) {
+            if ($category->id !== null) {
                 // If the category is enabled, use its main URL as its share URL.
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();

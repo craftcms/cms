@@ -259,7 +259,7 @@ class Assets extends BaseRelationField
                     ->id(array_filter($value))
                     ->fixedOrder();
 
-                if ($this->allowLimit && $this->limit) {
+                if ($this->allowLimit === true && $this->limit) {
                     $query->limit($this->limit);
                 } else {
                     $query->limit(null);

@@ -11,12 +11,12 @@ use craft\base\Model;
 use craft\validators\DateTimeValidator;
 
 /**
- * Stores the info for a plugin release.
+ * Stores the info for an update release.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PluginNewRelease extends Model
+class UpdateRelease extends Model
 {
     // Properties
     // =========================================================================
@@ -32,11 +32,6 @@ class PluginNewRelease extends Model
     public $date;
 
     /**
-     * @var \DateTime|null Date
-     */
-    public $localizedDate;
-
-    /**
      * @var string|null Notes
      */
     public $notes;
@@ -45,11 +40,6 @@ class PluginNewRelease extends Model
      * @var bool Critical
      */
     public $critical = false;
-
-    /**
-     * @var string|null Manual Download Endpoint
-     */
-    public $manualDownloadEndpoint;
 
     // Public Methods
     // =========================================================================

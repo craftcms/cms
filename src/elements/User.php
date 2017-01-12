@@ -586,7 +586,7 @@ class User extends Element implements IdentityInterface
             'targetClass' => UserRecord::class
         ];
 
-        if ($this->id && $this->passwordResetRequired) {
+        if ($this->id !== null && $this->passwordResetRequired) {
             // Get the current password hash
             $currentPassword = (new Query())
                 ->select(['password'])
@@ -720,27 +720,27 @@ class User extends Element implements IdentityInterface
                 $request = Craft::$app->getRequest();
                 if (!$request->getIsConsoleRequest()) {
                     if ($request->getIsCpRequest()) {
-                        if (!$this->can('accessCp') && !$this->authError) {
+                        if (!$this->can('accessCp') && $this->authError === null) {
                             $this->authError = self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            !Craft::$app->getIsSystemOn() &&
-                            !$this->can('accessCpWhenSystemIsOff') &&
-                            !$this->authError
+                            Craft::$app->getIsSystemOn() === false &&
+                            $this->can('accessCpWhenSystemIsOff') === false &&
+                            $this->authError === null
                         ) {
                             $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } else if (
-                        !Craft::$app->getIsSystemOn() &&
-                        !$this->can('accessSiteWhenSystemIsOff') &&
-                        !$this->authError
+                        Craft::$app->getIsSystemOn() === false &&
+                        $this->can('accessSiteWhenSystemIsOff') === false &&
+                        $this->authError === null
                     ) {
                         $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
                     }
                 }
         }
 
-        if (!$this->authError) {
+        if ($this->authError === null) {
             return true;
         }
 
@@ -958,7 +958,7 @@ class User extends Element implements IdentityInterface
      */
     public function getIsCurrent(): bool
     {
-        if ($this->id) {
+        if ($this->id !== null) {
             $currentUser = Craft::$app->getUser()->getIdentity();
 
             if ($currentUser) {
@@ -983,7 +983,7 @@ class User extends Element implements IdentityInterface
                 return true;
             }
 
-            if ($this->id) {
+            if ($this->id !== null) {
                 return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
             }
 
@@ -1002,7 +1002,7 @@ class User extends Element implements IdentityInterface
      */
     public function hasShunned(string $message): bool
     {
-        if ($this->id) {
+        if ($this->id !== null) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
         }
 
@@ -1273,7 +1273,7 @@ class User extends Element implements IdentityInterface
             $record->lastPasswordChangeDate = $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
             // If it's an existing user, reset the passwordResetRequired bit.
-            if ($this->id) {
+            if ($this->id !== null) {
                 $record->passwordResetRequired = $this->passwordResetRequired = false;
             }
 

@@ -87,10 +87,10 @@ class TemplatesController extends Controller
     }
 
     /**
-     * @return string The rendering result
+     * @return string|null The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
-    public function actionRequirementsCheck(): string
+    public function actionRequirementsCheck()
     {
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();

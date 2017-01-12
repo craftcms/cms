@@ -112,8 +112,7 @@ class AssetQuery extends ElementQuery
         if ($value instanceof Volume) {
             $this->volumeId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->volumeId = $query
+            $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from(['{{%volumes}}'])
                 ->where(Db::parseParam('handle', $value))
@@ -303,7 +302,7 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if (!$this->asArray && !empty($this->withTransforms)) {
+        if ($this->asArray === false && !empty($this->withTransforms)) {
             $transforms = ArrayHelper::toArray($this->withTransforms);
 
             Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
@@ -362,15 +361,15 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind));
         }
 
-        if ($this->width) {
+        if ($this->width !== null) {
             $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
         }
 
-        if ($this->height) {
+        if ($this->height !== null) {
             $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
         }
 
-        if ($this->size) {
+        if ($this->size !== null) {
             $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
         }
 

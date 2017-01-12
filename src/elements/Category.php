@@ -319,7 +319,7 @@ class Category extends Element
      */
     public function getGroup(): CategoryGroup
     {
-        if (!$this->groupId) {
+        if ($this->groupId === null) {
             throw new InvalidConfigException('Category is missing its group ID');
         }
 
@@ -381,7 +381,7 @@ class Category extends Element
     public function beforeSave(bool $isNew): bool
     {
         if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
+            if ($this->newParentId !== null) {
                 $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
 
                 if (!$parentCategory) {
@@ -422,7 +422,7 @@ class Category extends Element
 
         // Has the parent changed?
         if ($this->_hasNewParent()) {
-            if (!$this->newParentId) {
+            if ($this->newParentId === null) {
                 Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
             } else {
                 Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
@@ -528,7 +528,7 @@ class Category extends Element
     private function _checkForNewParent(): bool
     {
         // Is it a brand new category?
-        if (!$this->id) {
+        if ($this->id === null) {
             return true;
         }
 

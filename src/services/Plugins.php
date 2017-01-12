@@ -1226,7 +1226,7 @@ class Plugins extends Component
             return null;
         }
 
-        $firstAuthor = ArrayHelper::firstValue($composer['authors']);
+        $firstAuthor = reset($composer['authors']);
 
         if (!isset($firstAuthor[$property])) {
             return null;

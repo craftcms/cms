@@ -195,6 +195,7 @@ require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Set aliases
+Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@plugins', $pluginsPath);

@@ -102,10 +102,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var bool|null Whether to return each element as an array. If false (default), an object
+     * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      */
-    public $asArray;
+    public $asArray = false;
 
     // General parameters
     // -------------------------------------------------------------------------
@@ -121,9 +121,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $uid;
 
     /**
-     * @var bool|null Whether results should be returned in the order specified by [[id]].
+     * @var bool Whether results should be returned in the order specified by [[id]].
      */
-    public $fixedOrder;
+    public $fixedOrder = false;
 
     /**
      * @var string|string[]|null The status(es) that the resulting elements must have.
@@ -131,9 +131,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $status = 'enabled';
 
     /**
-     * @var bool|null Whether to return only archived elements.
+     * @var bool Whether to return only archived elements.
      */
-    public $archived;
+    public $archived = false;
 
     /**
      * @var mixed When the resulting elements must have been created.
@@ -311,7 +311,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         switch ($name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-                if ($this->siteId && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
+                if ($this->siteId !== null && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
                     return $site->handle;
                 }
 
@@ -833,7 +833,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$class::isLocalized()) {
             // The criteria *must* be set to the primary site ID
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else if (!$this->siteId) {
+        } else if ($this->siteId === null) {
             // Default to the current site
             $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
@@ -896,7 +896,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
         }
 
-        if ($this->archived) {
+        if ($this->archived === true) {
             $this->subQuery->andWhere(['elements.archived' => '1']);
         } else {
             $this->subQuery->andWhere(['elements.archived' => '0']);
@@ -1344,7 +1344,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
 
                 // Set the field's column prefix on the Content service.
-                if ($field->columnPrefix) {
+                if ($field->columnPrefix !== null) {
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 
@@ -1458,7 +1458,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['structureelements.root' => $ancestorOf->root]
                 ]);
 
-                if ($this->ancestorDist) {
+                if ($this->ancestorDist !== null) {
                     $this->subQuery->andWhere(['>=', 'structureelements.level', $ancestorOf->level - $this->ancestorDist]);
                 }
             }
@@ -1474,7 +1474,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['structureelements.root' => $descendantOf->root]
                 ]);
 
-                if ($this->descendantDist) {
+                if ($this->descendantDist !== null) {
                     $this->subQuery->andWhere(['<=', 'structureelements.level', $descendantOf->level + $this->descendantDist]);
                 }
             }
@@ -1552,7 +1552,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->level) {
+            if ($this->level !== null) {
                 $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
             }
         }
@@ -1664,7 +1664,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->orderBy === null) {
-            if ($this->fixedOrder) {
+            if ($this->fixedOrder === true) {
                 $ids = ArrayHelper::toArray($this->id);
 
                 if (empty($ids)) {
@@ -1743,7 +1743,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         $elements = [];
 
-        if ($this->asArray) {
+        if ($this->asArray === true) {
             if ($this->indexBy === null) {
                 return $rows;
             }

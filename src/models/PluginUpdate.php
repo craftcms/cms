@@ -70,7 +70,7 @@ class PluginUpdate extends Model
     public $manualDownloadEndpoint;
 
     /**
-     * @var PluginNewRelease[]|null Releases
+     * @var UpdateRelease[]|null Releases
      */
     public $releases;
 
@@ -91,8 +91,8 @@ class PluginUpdate extends Model
 
         if ($this->releases !== null) {
             foreach ($this->releases as $key => $value) {
-                if (!$value instanceof PluginNewRelease) {
-                    $this->releases[$key] = new PluginNewRelease($value);
+                if (!$value instanceof UpdateRelease) {
+                    $this->releases[$key] = new UpdateRelease($value);
                 }
             }
         }

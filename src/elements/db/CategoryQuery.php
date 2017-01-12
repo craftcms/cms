@@ -88,8 +88,7 @@ class CategoryQuery extends ElementQuery
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = $value->id;
         } else if ($value !== null) {
-            $query = new Query();
-            $this->groupId = $query
+            $this->groupId = (new Query())
                 ->select(['id'])
                 ->from('{{%categorygroups}}')
                 ->where(Db::parseParam('handle', $value))
@@ -167,12 +166,12 @@ class CategoryQuery extends ElementQuery
         if ($this->groupId) {
             // Should we set the structureId param?
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
-                $query = new Query();
-                $this->structureId = $query
+                $structureId = (new Query())
                     ->select(['structureId'])
                     ->from(['{{%categorygroups}}'])
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
+                $this->structureId = $structureId ? (int)$structureId : false;
             }
 
             $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId));

@@ -98,7 +98,7 @@ class MigrateController extends BaseMigrateController
         }
 
         // Validate $type
-        if ($this->type) {
+        if ($this->type !== null) {
             if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
                 throw new Exception('Invalid migration type: '.$this->type);
             }

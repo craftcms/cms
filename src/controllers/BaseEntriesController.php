@@ -48,7 +48,7 @@ abstract class BaseEntriesController extends Controller
         $this->requirePermission('editEntries'.$permissionSuffix);
 
         // Is it a new entry?
-        if (!$entry->id) {
+        if ($entry->id === null) {
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {

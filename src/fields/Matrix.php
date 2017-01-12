@@ -86,7 +86,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $this->_blockTypes;
         }
 
-        if (!$this->id) {
+        if ($this->id === null) {
             return [];
         }
 
@@ -652,12 +652,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * Creates an array of blocks based on the given serialized data.
      *
-     * @param array                 $value   The raw field value
+     * @param array|string          $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromSerializedData(array $value, ElementInterface $element = null): array
+    private function _createBlocksFromSerializedData($value, ElementInterface $element = null): array
     {
         /** @var Element $element */
         // Get the possible block types for this field

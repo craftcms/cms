@@ -646,7 +646,7 @@ class Entry extends Element
      */
     public function getSection(): Section
     {
-        if (!$this->sectionId) {
+        if ($this->sectionId === null) {
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
@@ -665,7 +665,7 @@ class Entry extends Element
      */
     public function getType(): EntryType
     {
-        if (!$this->typeId) {
+        if ($this->typeId === null) {
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
@@ -690,7 +690,7 @@ class Entry extends Element
             return $this->_author;
         }
 
-        if (!$this->authorId) {
+        if ($this->authorId === null) {
             return null;
         }
 
@@ -814,7 +814,7 @@ class Entry extends Element
         $view = Craft::$app->getView();
 
         // Show the Entry Type field?
-        if (!$this->id) {
+        if ($this->id === null) {
             $entryTypes = $this->getSection()->getEntryTypes();
 
             if (count($entryTypes) > 1) {
@@ -876,7 +876,7 @@ EOD;
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
+            if ($this->newParentId !== null) {
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
@@ -944,7 +944,7 @@ EOD;
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?
             if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
+                if ($this->newParentId === null) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
                     Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
@@ -1022,7 +1022,7 @@ EOD;
         }
 
         // Is it a brand new entry?
-        if (!$this->id) {
+        if ($this->id === null) {
             return true;
         }
 

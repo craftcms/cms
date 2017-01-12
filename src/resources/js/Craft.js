@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-01-11 */
+/*! Craft 3.0.0 - 2017-01-12 */
 (function($){
 
 /** global: Craft */
@@ -2021,11 +2021,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          */
         getViewParams: function() {
             var criteria = $.extend({
-                status: this.status,
-                siteId: this.siteId,
-                search: this.searchText,
                 limit: this.settings.batchSize
             }, this.settings.criteria);
+
+            if (this.status) {
+                criteria.status = this.status;
+            }
+            if (this.siteId) {
+                criteria.siteId = this.siteId;
+            }
+            if (this.searchText) {
+                criteria.search = this.searchText;
+            }
 
             var params = {
                 context: this.settings.context,
@@ -16050,7 +16057,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (!response.exactMatch) {
                             var $li = $('<li/>').appendTo($ul);
-                            $('<a data-icon="+"/>').appendTo($li).text(data.search);
+                            $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
                         $ul.find('> li:first-child > a').addClass('hover');

@@ -72,6 +72,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Field::beforeElementDelete()`, which is called by an element before it is deleted.
 - Added `craft\base\Field::getElementValidationRules()`, which field types can override to return their element-level validation rules.
 - Added `craft\base\MissingComponentTrait::createFallback()`.
+- Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
+- Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
@@ -118,6 +120,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `setFilename` event to `craft\helpers\Assets`.
 - Added the `setRoute` event to `craft\base\Element`.
 - Added the `setTableAttributeHtml` event to `craft\base\Element`.
+- Added support for a `.readable` CSS class for views that are primarily textual content.
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - It is now possible to override the default Guzzle settings from `craft/config/guzzle.php`.
@@ -172,6 +175,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\Connection::columnExists()`’s `$table` argument can now be a \`craft\yii\db\TableSchema` object.
 - `craft\elements\Asset::getFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
 - `craft\elements\Asset::getVolume()` now throws a `yii\base\InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID.
+- `craft\elements\Tag::getGroup()` now throws a `yii\base\InvalidConfigException` if its `$groupId` property is set to an invalid tag group ID.
 - `craft\elements\User::getAuthor()` now throws a `yii\base\InvalidConfigException` if its `$authorId` property is set to an invalid user ID.
 - `craft\elements\User::getPhoto()` now throws a `yii\base\InvalidConfigException` if its `$photoId` property is set to an invalid asset ID.
 - `craft\models\FieldLayoutTab::getLayout()` now throws a `yii\base\InvalidConfigException` if its `$layoutId` property is set to an invalid field layout ID.
@@ -194,6 +198,8 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\mail\transportadaptors\Sendmail` to `craft\mail\transportadapters\Sendmail`.
 - Renamed `craft\mail\transportadaptors\Smtp` to `craft\mail\transportadapters\Smtp`.
 - Renamed `craft\mail\transportadaptors\TransportAdaptorInterface` to `craft\mail\transportadapters\TransportAdapterInterface`.
+- Renamed `craft\models\AppNewRelease` to `AppUpdateRelease`.
+- Renamed `craft\models\PluginNewRelease` to `UpdateRelease`.
 - Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
@@ -244,7 +250,6 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\App::getPhpConfigValueAsBool()` to `phpConfigValueAsBool()`.
 - Renamed `craft\helpers\App::getPhpConfigValueInBytes()` to `phpConfigValueInBytes()`.
 - Renamed `craft\helpers\ArrayHelper::getFirstKey()` to `firstKey()`.
-- Renamed `craft\helpers\ArrayHelper::getFirstValue()` to `firstValue()`.
 - Renamed `craft\helpers\Assets::getFileTransferList()` to `fileTransferList()`.
 - Renamed `craft\helpers\Assets::getPeriodList()` to `periodList()`.
 - Renamed `craft\helpers\Assets::getTempFilePath()` to `tempFilePath()`.
@@ -309,7 +314,7 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
-- Updated Twig to 2.0.0.
+- Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
 - Updated Garnish to 0.1.11.
@@ -384,6 +389,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Model::create()`.
 - Removed `craft\base\Model::getAllErrors()`.
 - Removed `craft\base\Model::populateModel()`.
+- Removed `craft\base\Plugin::$releaseFeedUrl`. Plugins that wish to have update notifications should now set `$changelogUrl`.
 - Removed `craft\base\Plugin::getClassesInSubpath()`.
 - Removed `craft\base\Plugin::getFieldTypes()`.
 - Removed `craft\base\Plugin::getVolumeTypes()`.
@@ -402,6 +408,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\db\Query::column()`.
 - Removed `craft\elements\db\ElementQuery::configure()`.
 - Removed `craft\elements\Tag::getName()`. Use the `title` property instead.
+- Removed `craft\helpers\ArrayHelper::getFirstValue()`.
 - Removed `craft\helpers\Json::removeComments()`.
 - Removed `craft\helpers\MigrationHelper::makeElemental()`.
 - Removed `craft\helpers\MigrationHelper::refresh()`.
@@ -775,7 +782,7 @@ Craft CMS 3.0 Working Changelog
 - Structure sections and category groups no longer have Nested URL Format settings. (It's still possible to achieve the same result with a single URI Format setting.)
 - Fields that are translatable now have a chat bubble icon, replacing the locale ID badge.
 - `craft\elements\Category::getGroup()` now throws an `yii\base\InvalidConfigException` if the category group type cannot be determined, rather than returning `null`.
-- Renamed `craft\base\PluginTrait::releasesFeedUrl` to releaseFeedUrl.
+- Renamed `craft\base\PluginTrait::$releasesFeedUrl` to `$releaseFeedUrl`.
 - `craft\mail\Message::setTo()` will now set a 'user' variable on the message, if it was passed a User model.
 - `Craft.ui.createSelect()` and `createLightswitch()` now initialize the `Craft.FieldToggle` class on the returned elements.
 

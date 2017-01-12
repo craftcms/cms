@@ -21,7 +21,7 @@ trait SavableComponentTrait
     // =========================================================================
 
     /**
-     * @var int|null The component’s ID
+     * @var int|string|null The component’s ID (could be a temporary one: "new:X")
      */
     public $id;
 

@@ -90,7 +90,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar .bottombar #account-info > div { padding: 7px; }
 #global-sidebar .bottombar #account-info .username { width: 108px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 16px; }
 #global-sidebar .bottombar #account-info #account-menu-anchor { padding: 7px 0; width: 28px; text-align: center; }
-#global-sidebar .bottombar #account-info #account-menu-anchor:after { @include icon; content: '\25bd'; font-size: 24px; }
+#global-sidebar .bottombar #account-info #account-menu-anchor:after { @include icon; content: 'upangle'; font-size: 24px; }
 
 /* container */
 
@@ -438,7 +438,7 @@ $fldGuideColor: #f4f3fb;
 
 .show-sidebar { background: #fafafa; border-bottom: 1px solid #eee; display: block; position: relative; top: -24px; margin: 0 -24px; padding: 14px 24px; color: $secondarySubmitColor; z-index: 11; line-height: 21px; }
 .show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
-.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: '▼'; @include floatright; @include margin-right(-24px); }
+.show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: 'downangle'; @include floatright; @include margin-right(-24px); }
 
 .sidebar { position: absolute; top: 0; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
 .sidebar { @include margin(-24px, 0, -24px, -242px); }
