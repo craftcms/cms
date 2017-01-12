@@ -118,6 +118,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `setFilename` event to `craft\helpers\Assets`.
 - Added the `setRoute` event to `craft\base\Element`.
 - Added the `setTableAttributeHtml` event to `craft\base\Element`.
+- Added support for a `.readable` CSS class for views that are primarily textual content.
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - It is now possible to override the default Guzzle settings from `craft/config/guzzle.php`.
