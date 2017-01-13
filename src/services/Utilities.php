@@ -11,7 +11,7 @@ use Craft;
 use yii\base\Component;
 
 /**
- * The Utilities service provides APIs for managing utilties.
+ * The Utilities service provides APIs for managing utilities.
  *
  * An instance of the Utilities service is globally accessible in Craft via [[Application::utilities `Craft::$app->getUtilities()`]].
  *
