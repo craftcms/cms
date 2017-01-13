@@ -87,6 +87,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\UserGroups      $userGroups         The user groups service
  * @property \craft\services\UserPermissions $userPermissions    The user permissions service
  * @property \craft\services\Users           $users              The users service
+ * @property \craft\services\Utilities       $utilities          The utilities service
  * @property View                            $view               The view component
  * @property \craft\services\Volumes         $volumes            The volumes service
  *
@@ -1181,17 +1182,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the volumes service.
-     *
-     * @return \craft\services\Volumes The volumes service
-     */
-    public function getVolumes()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('volumes');
-    }
-
-    /**
      * Returns the utilities service.
      *
      * @return \craft\services\Utilities The utilities service
@@ -1200,6 +1190,17 @@ trait ApplicationTrait
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
         return $this->get('utilities');
+    }
+
+    /**
+     * Returns the volumes service.
+     *
+     * @return \craft\services\Volumes The volumes service
+     */
+    public function getVolumes()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('volumes');
     }
 
     // Private Methods
