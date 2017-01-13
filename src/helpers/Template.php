@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\web\twig\variables\Paginate;
+use yii\base\Object;
 
 /**
  * Class Template
