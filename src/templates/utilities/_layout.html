@@ -6,6 +6,29 @@
 
 {% block sidebar %}
 	<nav>
-		{% include "utilities/_nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+		<ul>
+			{% for itemId, item in navItems %}
+				{% if item %}
+					{% set itemIsSelected = ((selectedNavItem is not defined and loop.first) or (selectedNavItem is defined and selectedNavItem == itemId)) -%}
+					{% spaceless %}
+						<li>
+							<a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">
+								{% if item.icon is defined %}
+									<span class="icon">
+										<span data-icon="{{ item.icon }}"></span>
+									</span>
+								{% endif %}
+
+								<span class="label">{{ item.label }}</span>
+
+								{% if item.badgeCount is defined %}
+									<span class="badge"><span class="count">{{ item.badgeCount }}</span></span>
+								{% endif %}
+							</a>
+						</li>
+					{% endspaceless %}
+				{% endif %}
+			{% endfor %}
+		</ul>
 	</nav>
 {% endblock %}
