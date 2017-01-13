@@ -326,7 +326,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
-         * Return the current image dimensions that would be used in the current image area with no straightening applied.
+         * Return the current image dimensions that would be used in the current image area with no straightening or rotation applied.
          */
         getScaledImageDimensions: function() {
             var imageRatio = this.originalHeight / this.originalWidth;
@@ -511,12 +511,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var newAngle = this.image.angle + degrees;
                 var scaledImageDimensions = this.getScaledImageDimensions();
-                var imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
+                var imageZoomRatio;
+
+                if (this.hasOrientationChanged()) {
+                    imageZoomRatio = this.getZoomToCoverRatio({height: scaledImageDimensions.width, width: scaledImageDimensions.height});
+                } else {
+                    imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
+                }
                 var state = this.cropperState;
 
-                // In cases when the cropper was positioned along the edge and then
-                // by straightening the image, the zoom was forced to become larger
-                // than just zoom to cover.
+                // In cases when for some reason we've already zoomed in on the image,
+                // use existing zoom.
                 if (this.zoomRatio > imageZoomRatio) {
                     imageZoomRatio = this.zoomRatio;
                 }
@@ -562,19 +567,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     {
                         this.storeCropperState(state);
                     }
-                } else {
-                    viewportProperties.width = imageProperties.width;
-                    viewportProperties.height = imageProperties.height;
                 }
 
                 this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration,
                     onComplete: function () {
-                        if (this.viewport.angle % 180 != 0) {
-                            var temp = this.viewport.height;
-                            this.viewport.height = this.viewport.width;
-                            this.viewport.width = temp;
-                        }
+                        var temp = this.viewport.height;
+                        this.viewport.height = this.viewport.width;
+                        this.viewport.width = temp;
                         this.viewport.set({angle: 0});
                     }.bind(this)
                 });
