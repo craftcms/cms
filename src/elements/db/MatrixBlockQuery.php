@@ -42,7 +42,7 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
      */
     public $fieldId;
 
@@ -140,7 +140,7 @@ class MatrixBlockQuery extends ElementQuery
         if ($value && strtolower($value) !== ':empty:') {
             // A block will never exist in a site that is different than its ownerSiteId,
             // so let's set the siteId param here too.
-            $this->siteId = $value;
+            $this->siteId = (int)$value;
         }
 
         return $this;

@@ -24,8 +24,8 @@ class MigrationHelper
     /**
      * Returns whether a foreign key exists.
      *
-     * @param string       $tableName
-     * @param string|array $columns
+     * @param string          $tableName
+     * @param string|string[] $columns
      *
      * @return bool
      */
@@ -73,9 +73,9 @@ class MigrationHelper
     /**
      * Returns whether an index exists.
      *
-     * @param string       $tableName
-     * @param string|array $columns
-     * @param bool         $unique
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param bool            $unique
      *
      * @return bool
      */
@@ -96,10 +96,10 @@ class MigrationHelper
     /**
      * Drops an index if it exists.
      *
-     * @param string         $tableName
-     * @param string|array   $columns
-     * @param bool           $unique
-     * @param Migration|null $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param bool            $unique
+     * @param Migration|null  $migration
      *
      * @return void
      */
@@ -575,9 +575,9 @@ class MigrationHelper
     /**
      * Drops a foreign key.
      *
-     * @param string         $tableName
-     * @param string|array   $columns
-     * @param Migration|null $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param Migration|null  $migration
      */
     public static function dropForeignKey(string $tableName, $columns, Migration $migration = null)
     {
@@ -663,12 +663,12 @@ class MigrationHelper
     /**
      * Restores an index.
      *
-     * @param string         $tableName
-     * @param array          $columns
-     * @param bool           $unique
-     * @param Migration|null $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param bool            $unique
+     * @param Migration|null  $migration
      */
-    public static function restoreIndex(string $tableName, array $columns, bool $unique = false, Migration $migration = null)
+    public static function restoreIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);
@@ -686,15 +686,15 @@ class MigrationHelper
     /**
      * Restores a foreign key.
      *
-     * @param string         $tableName
-     * @param array          $columns
-     * @param string         $refTable
-     * @param array          $refColumns
-     * @param string         $onUpdate
-     * @param string         $onDelete
-     * @param Migration|null $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param string          $refTable
+     * @param array           $refColumns
+     * @param string          $onUpdate
+     * @param string          $onDelete
+     * @param Migration|null  $migration
      */
-    public static function restoreForeignKey(string $tableName, array $columns, string $refTable, array $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
+    public static function restoreForeignKey(string $tableName, $columns, string $refTable, $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {
         $db = Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);
