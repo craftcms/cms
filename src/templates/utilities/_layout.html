@@ -12,7 +12,7 @@
 					{% set itemIsSelected = ((selectedNavItem is not defined and loop.first) or (selectedNavItem is defined and selectedNavItem == itemId)) -%}
 					{% spaceless %}
 						<li>
-							<a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">
+							<a{% if itemIsSelected %} class="sel"{% endif %} href="{{ url(item.url) }}">
 								{% if item.icon is defined %}
 									<span class="icon">
 										<span data-icon="{{ item.icon }}"></span>

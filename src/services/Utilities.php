@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\UrlHelper;
 use yii\base\Component;
 
 /**
@@ -55,19 +54,19 @@ class Utilities extends Component
 
         $items['systemReport'] = [
             'label' => "System Report",
-            'url' => UrlHelper::url('utilities/system-report'),
+            'url' => 'utilities/system-report',
             'icon' => 'section',
         ];
 
         $items['phpInfo'] = [
             'label' => "PHP Info",
-            'url' => UrlHelper::url('utilities/php-info'),
+            'url' => 'utilities/php-info',
             'icon' => 'info',
         ];
 
         $items['deprecationErrors'] = [
             'label' => "Deprecation Errors",
-            'url' => UrlHelper::url('utilities/deprecation-errors'),
+            'url' => 'utilities/deprecation-errors',
             'icon' => 'alert',
             'badgeCount' => Craft::$app->deprecator->getTotalLogs(),
         ];
@@ -77,32 +76,32 @@ class Utilities extends Component
         if (count($volumes) > 0) {
             $items['assetIndex'] = [
                 'label' => "Update Asset Indexes",
-                'url' => UrlHelper::url('utilities/asset-index'),
+                'url' => 'utilities/asset-index',
                 'icon' => 'assets'
             ];
         }
 
         $items['clearCaches'] = [
             'label' => "Clear Caches",
-            'url' => UrlHelper::url('utilities/clear-caches'),
+            'url' => 'utilities/clear-caches',
             'icon' => 'trash'
         ];
 
         $items['dbBackup'] = [
             'label' => "Backup Database",
-            'url' => UrlHelper::url('utilities/db-backup'),
+            'url' => 'utilities/db-backup',
             'icon' => 'database'
         ];
 
         $items['findAndReplace'] = [
             'label' => "Find and Replace",
-            'url' => UrlHelper::url('utilities/find-and-replace'),
+            'url' => 'utilities/find-and-replace',
             'icon' => 'wand'
         ];
 
         $items['searchIndex'] = [
             'label' => "Rebuild Search Index",
-            'url' => UrlHelper::url('utilities/search-index'),
+            'url' => 'utilities/search-index',
             'icon' => 'search'
         ];
 
