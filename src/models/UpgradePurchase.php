@@ -123,7 +123,7 @@ class UpgradePurchase extends Model
             [['edition', 'expectedPrice', 'name', 'email'], 'required'],
         ];
 
-        if ($this->expectedPrice != 0) {
+        if ($this->expectedPrice !== 0) {
             // CC info is also required
             $rules[] = [['ccTokenId', 'expMonth', 'expYear'], 'required'];
         }
