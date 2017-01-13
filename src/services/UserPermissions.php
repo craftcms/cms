@@ -548,7 +548,7 @@ class UserPermissions extends Component
         $permissions = [];
 
         foreach ($utilities as $handle => $utility) {
-            $permissions['viewUtility:'.$handle] = [
+            $permissions['utility:'.$handle] = [
                 'label' => $utility['label']
             ];
         }

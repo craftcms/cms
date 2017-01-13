@@ -70,7 +70,7 @@ class UtilitiesController extends Controller
      */
     public function actionSystemReport(): string
     {
-        $this->requirePermission('viewUtility:systemReport');
+        $this->requirePermission('utility:systemReport');
 
         return $this->renderTemplate('utilities/system-report', [
             'navItems' => Craft::$app->getUtilities()->getNavItems(),
@@ -95,7 +95,7 @@ class UtilitiesController extends Controller
      */
     public function actionPhpInfo():string
     {
-        $this->requirePermission('viewUtility:phpInfo');
+        $this->requirePermission('utility:phpInfo');
 
         return $this->renderTemplate('utilities/php-info', [
             'navItems' => Craft::$app->getUtilities()->getNavItems(),
@@ -111,7 +111,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeprecationErrors():string
     {
-        $this->requirePermission('viewUtility:deprecationErrors');
+        $this->requirePermission('utility:deprecationErrors');
 
         $view = Craft::$app->getView();
         $view->registerCssResource('css/deprecator.css');
@@ -131,7 +131,7 @@ class UtilitiesController extends Controller
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
-        $this->requirePermission('viewUtility:deprecationErrors');
+        $this->requirePermission('utility:deprecationErrors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -153,7 +153,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
-        $this->requirePermission('viewUtility:deprecationErrors');
+        $this->requirePermission('utility:deprecationErrors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -172,7 +172,7 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteDeprecationError(): Response
     {
-        $this->requirePermission('viewUtility:deprecationErrors');
+        $this->requirePermission('utility:deprecationErrors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -192,7 +192,7 @@ class UtilitiesController extends Controller
      */
     public function actionAssetIndex(): string
     {
-        $this->requirePermission('viewUtility:assetIndex');
+        $this->requirePermission('utility:assetIndex');
 
         /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -227,7 +227,7 @@ class UtilitiesController extends Controller
      */
     public function actionAssetIndexPerformAction(): Response
     {
-        $this->requirePermission('viewUtility:assetIndex');
+        $this->requirePermission('utility:assetIndex');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -390,7 +390,7 @@ class UtilitiesController extends Controller
      */
     public function actionClearCaches(): string
     {
-        $this->requirePermission('viewUtility:clearCaches');
+        $this->requirePermission('utility:clearCaches');
 
         $options = [];
 
@@ -417,7 +417,7 @@ class UtilitiesController extends Controller
      */
     public function actionClearCachesPerformAction(): Response
     {
-        $this->requirePermission('viewUtility:clearCaches');
+        $this->requirePermission('utility:clearCaches');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -460,7 +460,7 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackup(): string
     {
-        if (!Craft::$app->getUser()->checkPermission('viewUtility:dbBackup')) {
+        if (!Craft::$app->getUser()->checkPermission('utility:dbBackup')) {
             throw new ForbiddenHttpException('User not permitted to view DB Backup');
         }
 
@@ -480,7 +480,7 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackupPerformAction(): Response
     {
-        $this->requirePermission('viewUtility:dbBackup');
+        $this->requirePermission('utility:dbBackup');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -532,7 +532,7 @@ class UtilitiesController extends Controller
      */
     public function actionDownloadBackupFile(): Response
     {
-        $this->requirePermission('viewUtility:dbBackup');
+        $this->requirePermission('utility:dbBackup');
 
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
@@ -554,7 +554,7 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplace(): string
     {
-        $this->requirePermission('viewUtility:findAndReplace');
+        $this->requirePermission('utility:findAndReplace');
 
         Craft::$app->getView()->registerJsResource('js/FindAndReplaceUtility.js');
 
@@ -571,7 +571,7 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplacePerformAction(): Response
     {
-        $this->requirePermission('viewUtility:findAndReplace');
+        $this->requirePermission('utility:findAndReplace');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -596,7 +596,7 @@ class UtilitiesController extends Controller
      */
     public function actionSearchIndex(): string
     {
-        $this->requirePermission('viewUtility:searchIndex');
+        $this->requirePermission('utility:searchIndex');
 
         Craft::$app->getView()->registerJsResource('js/SearchIndexUtility.js');
 
@@ -613,7 +613,7 @@ class UtilitiesController extends Controller
      */
     public function actionSearchIndexPerformAction(): Response
     {
-        $this->requirePermission('viewUtility:searchIndex');
+        $this->requirePermission('utility:searchIndex');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 

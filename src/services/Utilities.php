@@ -36,7 +36,7 @@ class Utilities extends Component
         $allItems = $this->getAllNavItems();
 
         foreach ($allItems as $handle => $item) {
-            if (Craft::$app->getUser()->checkPermission('viewUtility:'.$handle)) {
+            if (Craft::$app->getUser()->checkPermission('utility:'.$handle)) {
                 $items[$handle] = $item;
             }
         }
