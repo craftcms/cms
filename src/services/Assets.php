@@ -574,7 +574,7 @@ class Assets extends Component
     /**
      * Get the folder tree for Assets by volume ids
      *
-     * @param array|int $allowedVolumeIds
+     * @param array $allowedVolumeIds
      * @param array     $additionalCriteria additional criteria for filtering the tree
      *
      * @return array

@@ -32,6 +32,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
 
 /**
  * Class AssetTransforms service.
@@ -299,19 +300,22 @@ class AssetTransforms extends Component
 
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
-            $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $transformCondition = ['and', ['location' => $location]];
+            if ($transform !== null) {
+                $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            if ($transform->format === null) {
-                $transformCondition[] = ['format' => null];
-            } else {
-                $transformCondition[] = ['format' => $transform->format];
-                $fingerprint .= ':'.$transform->format;
+                $transformCondition = ['and', ['location' => $location]];
+
+                if ($transform->format === null) {
+                    $transformCondition[] = ['format' => null];
+                } else {
+                    $transformCondition[] = ['format' => $transform->format];
+                    $fingerprint .= ':'.$transform->format;
+                }
+
+                $indexCondition[] = $transformCondition;
+                $transformsByFingerprint[$fingerprint] = $transform;
             }
-
-            $indexCondition[] = $transformCondition;
-            $transformsByFingerprint[$fingerprint] = $transform;
         }
 
         // Query for the indexes
@@ -382,6 +386,11 @@ class AssetTransforms extends Component
     public function getTransformIndex(Asset $asset, $transform): AssetTransformIndex
     {
         $transform = $this->normalizeTransform($transform);
+
+        if ($transform === null) {
+            throw new AssetTransformException('There was a problem finding the transform.');
+        }
+
         $transformLocation = $this->_getTransformFolderName($transform);
 
         // Was it eager-loaded?
