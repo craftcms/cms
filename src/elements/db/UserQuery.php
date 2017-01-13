@@ -46,7 +46,7 @@ class UserQuery extends ElementQuery
     public $client = false;
 
     /**
-     * @var string|int|null The permission that the resulting users must have.
+     * @var string|int|false|null The permission that the resulting users must have.
      */
     public $can;
 

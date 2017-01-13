@@ -42,7 +42,7 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
      */
     public $fieldId;
 
