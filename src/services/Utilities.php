@@ -53,19 +53,19 @@ class Utilities extends Component
         $items = [];
 
         $items['systemReport'] = [
-            'label' => "System Report",
+            'label' => 'System Report',
             'url' => 'utilities/system-report',
             'icon' => 'section',
         ];
 
         $items['phpInfo'] = [
-            'label' => "PHP Info",
+            'label' => 'PHP Info',
             'url' => 'utilities/php-info',
             'icon' => 'info',
         ];
 
         $items['deprecationErrors'] = [
-            'label' => "Deprecation Errors",
+            'label' => 'Deprecation Errors',
             'url' => 'utilities/deprecation-errors',
             'icon' => 'alert',
             'badgeCount' => Craft::$app->deprecator->getTotalLogs(),
@@ -75,32 +75,32 @@ class Utilities extends Component
 
         if (count($volumes) > 0) {
             $items['assetIndex'] = [
-                'label' => "Update Asset Indexes",
+                'label' => 'Update Asset Indexes',
                 'url' => 'utilities/asset-index',
                 'icon' => 'assets'
             ];
         }
 
         $items['clearCaches'] = [
-            'label' => "Clear Caches",
+            'label' => 'Clear Caches',
             'url' => 'utilities/clear-caches',
             'icon' => 'trash'
         ];
 
         $items['dbBackup'] = [
-            'label' => "Backup Database",
+            'label' => 'Backup Database',
             'url' => 'utilities/db-backup',
             'icon' => 'database'
         ];
 
         $items['findAndReplace'] = [
-            'label' => "Find and Replace",
+            'label' => 'Find and Replace',
             'url' => 'utilities/find-and-replace',
             'icon' => 'wand'
         ];
 
         $items['searchIndex'] = [
-            'label' => "Rebuild Search Index",
+            'label' => 'Rebuild Search Index',
             'url' => 'utilities/search-index',
             'icon' => 'search'
         ];
