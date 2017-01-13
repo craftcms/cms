@@ -32,7 +32,6 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
-use yii\base\Exception;
 
 /**
  * Class AssetTransforms service.
@@ -529,6 +528,7 @@ class AssetTransforms extends Component
      * @param AssetTransformIndex $index
      *
      * @return bool true if transform exists for the index
+     * @throws AssetTransformException
      */
     private function _generateTransform(AssetTransformIndex $index): bool
     {
@@ -544,6 +544,10 @@ class AssetTransforms extends Component
         } else {
             // Load the dimensions for named transforms and merge with file-specific information.
             $transform = $this->normalizeTransform(mb_substr($index->location, 1));
+
+            if ($transform === null) {
+                throw new AssetTransformException('There was a problem finding the transform.');
+            }
         }
 
         $index->transform = $transform;
@@ -559,7 +563,7 @@ class AssetTransforms extends Component
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
-        if ($asset->getExtension() == $index->detectedFormat) {
+        if ($asset->getExtension() === $index->detectedFormat) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
             if ($transform->getIsNamedTransform()) {
