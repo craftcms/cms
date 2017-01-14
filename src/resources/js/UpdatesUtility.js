@@ -1,14 +1,17 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    Craft.UpdatesPage = Garnish.Base.extend(
+    Craft.UpdatesUtility = Garnish.Base.extend(
         {
+            $body: null,
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
             allowAutoUpdates: null,
 
             init: function(settings) {
-                this.setSettings(settings, Craft.UpdatesPage.defaults);
+                this.setSettings(settings, Craft.UpdatesUtility.defaults);
+
+                this.$body = Craft.cp.$content.children('.body');
 
                 var $graphic = $('#graphic'),
                     $status = $('#status');
@@ -50,16 +53,13 @@
                             var headingText;
 
                             if (this.totalAvailableUpdates == 1) {
-                                headingText = Craft.t('app', '1 update available');
+                                headingText = Craft.t('app', '1 Available Update');
                             }
                             else {
-                                headingText = Craft.t('app', '{num} updates available', {num: this.totalAvailableUpdates});
+                                headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
                             }
 
-                            $('<div id="page-title"/>')
-                                .appendTo(Craft.cp.$pageHeader)
-                                .append($('<h1/>').text(headingText));
-
+                            $('#page-title h1').text(headingText);
                         } else {
                             $graphic.addClass('success');
                             $status.text(Craft.t('app', 'You’re all up-to-date!'));
@@ -82,8 +82,8 @@
             defaults: {
                 isComposerInstall: false
             }
-        });
-
+        }
+    );
 
     var Update = Garnish.Base.extend(
         {
@@ -92,10 +92,10 @@
             displayName: null,
             manualUpdateRequired: null,
 
-            $pane: null,
-            $paneHeader: null,
+            $container: null,
+            $header: null,
             $downloadBtn: null,
-            $paneContents: null,
+            $contents: null,
             $releaseContainer: null,
             $showAllLink: null,
 
@@ -117,18 +117,20 @@
             },
 
             createPane: function() {
-                this.$pane = $('<div class="pane update"/>').appendTo(Craft.cp.$main);
-                this.$paneHeader = $('<div class="header"/>').appendTo(this.$pane);
-                this.$paneContents = $('<div class="readable"/>').appendTo(this.$pane);
-                this.$releaseContainer = $('<div class="releases"/>').appendTo(this.$paneContents);
+                this.$container = $('<div class="update"/>').appendTo(this.updatesPage.$body);
+                this.$header = $('<div class="update-header"/>').appendTo(this.$container);
+                this.$contents = $('<div class="readable"/>').appendTo(this.$container);
+                this.$releaseContainer = $('<div class="releases"/>').appendTo(this.$contents);
             },
 
             createHeading: function() {
-                $('<h1/>', {'class': 'left', text: this.displayName}).appendTo(this.$paneHeader);
+                $('<div class="readable left"/>').appendTo(this.$header).append(
+                    $('<h1/>', {text: this.displayName})
+                );
             },
 
             createDownloadButton: function() {
-                var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader),
+                var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header),
                     $updateBtn;
 
                 // Are auto updates disabled because this is a Composer install?
@@ -180,7 +182,7 @@
 
                 if (this.$releaseContainer.height() > Release.maxInitialUpdateHeight + 50) {
                     this.$releaseContainer.addClass('fade-out');
-                    this.$showAllLink = $('<a/>', {'class': 'show-all-notes', text: Craft.t('app', 'Show all')}).appendTo(this.$paneContents);
+                    this.$showAllLink = $('<a/>', {'class': 'show-all-notes', text: Craft.t('app', 'Show all')}).appendTo(this.$contents);
                     this.addListener(this.$showAllLink, 'click', 'showAll');
                 }
             },
@@ -254,8 +256,8 @@
             autoUpdateThat: function() {
                 window.location.href = Craft.getUrl('updates/go/' + (this.isPlugin ? this.updateInfo.class.toLowerCase() : 'craft'));
             }
-        });
-
+        }
+    );
 
     var Release = Garnish.Base.extend(
         {
@@ -295,5 +297,6 @@
         },
         {
             maxInitialUpdateHeight: 500
-        });
+        }
+    );
 })(jQuery);

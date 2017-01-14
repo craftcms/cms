@@ -108,6 +108,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\utilities\PhpInfo`.
 - Added `craft\utilities\SearchIndexes`.
 - Added `craft\utilities\SystemReport`.
+- Added `craft\utilities\Updates`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -459,6 +460,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::flushUpdateInfoFromCache()`.
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
+- Removed `craft\tools\*`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.

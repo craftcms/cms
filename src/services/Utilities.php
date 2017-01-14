@@ -18,6 +18,7 @@ use craft\utilities\FindAndReplace;
 use craft\utilities\PhpInfo;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemReport;
+use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
 
 /**
@@ -49,6 +50,7 @@ class Utilities extends Component
     public function getAllUtilityTypes(): array
     {
         $utilityTypes = [
+            UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
             DeprecationErrors::class,

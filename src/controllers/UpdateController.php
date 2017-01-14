@@ -61,44 +61,12 @@ class UpdateController extends Controller
     /**
      * Update Index
      *
-     * @return string
+     * @return Response
      */
-    public function actionIndex(): string
+    public function actionIndex(): Response
     {
-        $view = $this->getView();
-        $view->registerCssResource('css/updates.css');
-        $view->registerJsResource('js/UpdatesPage.js');
-        $view->registerTranslations('app', [
-            'You’ve got updates!',
-            'You’re all up-to-date!',
-            'Critical',
-            'Update',
-            'Download',
-            'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.',
-            'I agree.',
-            'Seriously, download.',
-            'Seriously, update.',
-            'Install',
-            '{app} update required',
-            'Released on {date}',
-            'Show more',
-            'Added',
-            'Improved',
-            'Fixed',
-            'Download',
-            'Use Composer to get this update.',
-        ]);
-
-        $isComposerInstallJs = Json::encode(App::isComposerInstall());
-        $js = <<<EOD
-//noinspection JSUnresolvedVariable
-new Craft.UpdatesPage({
-    isComposerInstall: {$isComposerInstallJs}
-});
-EOD;
-        $view->registerJs($js);
-
-        return $this->renderTemplate('_special/updates/index');
+        // Redirect to the utility page
+        return $this->redirect('utilities/updates');
     }
 
     /**

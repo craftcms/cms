@@ -75,7 +75,7 @@
                 }
 
                 // Update the CP header badge
-                Craft.cp.displayUpdateInfo(info);
+                Craft.cp.updateUtilitiesBadge();
             }
         });
 })(jQuery);

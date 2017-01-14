@@ -129,18 +129,18 @@ class Cp extends Component
         $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         if (!empty($utilities)) {
-            $totalBadgeCount = 0;
+            $badgeCount = 0;
 
             foreach ($utilities as $class) {
                 /** @var UtilityInterface $class */
-                $totalBadgeCount += $class::badgeCount();
+                $badgeCount += $class::badgeCount();
             }
 
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
                 'icon' => 'tool',
-                'badgeCount' => $totalBadgeCount
+                'badgeCount' => $badgeCount
             ];
         }
 

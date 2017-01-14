@@ -17,6 +17,7 @@ use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
+use craft\utilities\Updates;
 use craft\web\Controller;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -42,6 +43,11 @@ class UtilitiesController extends Controller
 
         if (empty($utilities)) {
             throw new ForbiddenHttpException('User not permitted to view Utilities');
+        }
+
+        // Don't go to the Updates utility by default if there are any others
+        if (($key = array_search(Updates::class, $utilities, true)) !== false && count($utilities) > 1) {
+            array_splice($utilities, $key, 1);
         }
 
         /** @var string|UtilityInterface $firstUtility */
