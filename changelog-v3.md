@@ -363,8 +363,11 @@ Craft CMS 3.0 Working Changelog
 - Removed the SimplePie library.
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
 - Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
+- Removed `craft\base\Tool`.
+- Removed `craft\base\ToolInterface`.
 - Removed `craft\cache\FileCache`.
 - Removed `craft\cache\adapters\GuzzleCacheAdapter`.
+- Removed `craft\controllers\ToolsController`.
 - Removed `craft\dates\DateTime`.
 - Removed `craft\dates\DateInterval`.
 - Removed `craft\db\DbBackup`.
