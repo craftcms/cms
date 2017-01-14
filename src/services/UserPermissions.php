@@ -10,6 +10,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\events\RegisterUserPermissionsEvent;
@@ -187,9 +188,7 @@ class UserPermissions extends Component
         // Utilities
         // ---------------------------------------------------------------------
 
-        $utilities = Craft::$app->getUtilities()->getAllNavItems();
-
-        $permissions[Craft::t('app', 'Utilities')] = $this->_getUtilityPermissions($utilities);
+        $permissions[Craft::t('app', 'Utilities')] = $this->_getUtilityPermissions();
 
         // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
@@ -539,17 +538,16 @@ class UserPermissions extends Component
     /**
      * Returns the permissions for the utilities.
      *
-     * @param array $utilities
-     *
      * @return array
      */
-    private function _getUtilityPermissions($utilities)
+    private function _getUtilityPermissions()
     {
         $permissions = [];
 
-        foreach ($utilities as $handle => $utility) {
-            $permissions['utility:'.$handle] = [
-                'label' => $utility['label']
+        foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
+            /** @var UtilityInterface $class */
+            $permissions['utility:'.$class::id()] = [
+                'label' => $class::displayName()
             ];
         }
 
