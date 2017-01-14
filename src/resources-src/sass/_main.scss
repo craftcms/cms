@@ -602,7 +602,7 @@ h2 + .actions { margin-top: -54px; }
 /*  Tables
 /* ----------------------------------------*/
 
-table thead th { font-weight: bold; @include alignleft; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
+table thead th { font-weight: bold; @include alignleft; vertical-align: top; line-height: 1.2; color: rgba(0,0,0,0.5); }
 table thead th.ordered { @include padding-right(26px); background: #f2f2f2 url(../images/listview_sort.png) no-repeat;
     body.ltr & { background-position: 100% -3px; }
     body.rtl & { background-position: 0 -3px; }
