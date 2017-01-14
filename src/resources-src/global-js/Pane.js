@@ -158,9 +158,8 @@ Craft.Pane = Garnish.Base.extend(
             this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
             this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
 
-			if($pageHeader.hasClass('fixed'))
-            {
-				this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
+            if ($pageHeader.hasClass('fixed')) {
+                this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
             }
 
             this.updateSidebarStyles._windowHeight = Garnish.$win.height();

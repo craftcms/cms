@@ -280,7 +280,7 @@
 
             createHeading: function() {
                 var heading = this.releaseInfo.version +
-                    ' <span class="light">– '+Craft.formatDate(this.releaseInfo.date)+'</span>';
+                    ' <span class="light">– ' + Craft.formatDate(this.releaseInfo.date) + '</span>';
 
                 if (this.releaseInfo.critical) {
                     heading += ' <span class="critical">' + Craft.t('app', 'Critical') + '</span>';
