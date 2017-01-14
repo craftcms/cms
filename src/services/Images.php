@@ -15,6 +15,7 @@ use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Service for image operations.
@@ -65,7 +66,7 @@ class Images extends Component
     {
         if (strtolower(Craft::$app->getConfig()->get('imageDriver')) === 'gd') {
             $this->_driver = self::DRIVER_GD;
-        } else if ($this->getIsImagickAtLeast(self::MINIMUM_IMAGICK_VERSION)) {
+        } else if ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
         } else {
             $this->_driver = self::DRIVER_GD;
@@ -81,7 +82,7 @@ class Images extends Component
      */
     public function getIsGd()
     {
-        return $this->_driver == self::DRIVER_GD;
+        return $this->_driver === self::DRIVER_GD;
     }
 
 
@@ -92,34 +93,51 @@ class Images extends Component
      */
     public function getIsImagick(): bool
     {
-        return $this->_driver == self::DRIVER_IMAGICK;
+        return $this->_driver === self::DRIVER_IMAGICK;
+    }
+
+    /**
+     * Returns the installed ImageMagick API version.
+     *
+     * @return string
+     * @throws Exception if the Imagick extension isn’t installed
+     */
+    public function getImageMagickApiVersion(): string
+    {
+        if ($this->_imagickVersion !== null) {
+            return $this->_imagickVersion;
+        }
+
+        if (!extension_loaded('imagick')) {
+            throw new Exception('The Imagick extension isn\'t loaded.');
+        }
+
+        // Taken from Imagick\Imagine() constructor.
+        // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
+        /** @noinspection PhpStaticAsDynamicMethodCallInspection */
+        $versionString = (new \Imagick)::getVersion()['versionString'];
+        list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
+
+        return $this->_imagickVersion;
     }
 
     /**
      * Returns whether Imagick is installed and meets version requirements
      *
-     * @param string $requiredVersion version string
-     *
      * @return bool
      */
-    public function getIsImagickAtLeast(string $requiredVersion): bool
+    public function getCanUseImagick(): bool
     {
         if (!extension_loaded('imagick')) {
             return false;
         }
 
-        if ($this->_imagickVersion === null) {
-            // Taken from Imagick\Imagine() constructor.
-            // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
-            $imagick = new \Imagick();
-            /** @noinspection PhpStaticAsDynamicMethodCallInspection */
-            $v = $imagick::getVersion();
-            list($version, , , , ,) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
-
-            $this->_imagickVersion = $version;
+        // Make sure it meets the minimum API version requirement
+        if (version_compare($this->getImageMagickApiVersion(), self::MINIMUM_IMAGICK_VERSION) === -1) {
+            return false;
         }
 
-        return version_compare($requiredVersion, $this->_imagickVersion) <= 0;
+        return true;
     }
 
     /**

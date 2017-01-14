@@ -93,6 +93,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getUseWriteFileLock()`.
 - Added `craft\services\Config::isExtensionAllowed()`.
 - Added `craft\services\Elements::deleteElement()`.
+- Added `craft\services\Images::getCanUseImagick()`.
+- Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
@@ -430,6 +432,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Entries::saveEntry()`.
 - Removed `craft\services\Globals::deleteSetById()`.
 - Removed `craft\services\Globals::saveContent()`.
+- Removed `craft\services\Images::getIsImagickAtLeast()`.
 - Removed `craft\services\Matrix::deleteBlockById()`.
 - Removed `craft\services\Matrix::saveBlock()`.
 - Removed `craft\services\Matrix::validateBlock()`.
