@@ -12,7 +12,7 @@ module.exports = function(grunt) {
 				tasks: ['concat', 'uglify:globaljs'],
 			},
 			otherjs: {
-				files: ['src/resources/js/*.js', '!src/resources/js/Craft.js'],
+				files: ['src/resources/js/*.js', '!src/resources/js/Craft.js', '!src/resources/js/*.min.js'],
 				tasks: ['uglify:otherjs']
 			}
 		},
