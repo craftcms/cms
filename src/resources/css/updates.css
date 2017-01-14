@@ -22,7 +22,7 @@
 
 #main .update .releases.fade-out:after { display: block; position: absolute; left: 0; bottom: 0; content: '.'; font-size: 0; width: 100%; height: 250px; background-image: -webkit-linear-gradient(top, rgba(255, 255, 255, 0), #fff); background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0), #fff); background-image: -ms-linear-gradient(top, rgba(255, 255, 255, 0), #fff); background-image: -o-linear-gradient(top, rgba(255, 255, 255, 0), #fff); background-image: linear-gradient(top, rgba(255, 255, 255, 0), #fff); }
 
-#main .update .releases .release + .release { margin-top: 24px; }
+#main .update .releases .release + .release { margin-top: 24px; border-top: 1px solid #e3e5e8; padding-top: 24px; }
 
 #main .update .releases .release h2 .critical { display: inline-block; vertical-align: text-bottom; border-radius: 3px; padding: 0 5px; border: 2px solid #d6301a; font-size: 16px; line-height: 22px; color: #d6301a; text-transform: uppercase; }
 body.ltr #main .update .releases .release h2 .critical { margin-left: 5px; }

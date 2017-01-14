@@ -2,24 +2,9 @@
 /* Other */
 /* RTL stuff */
 /* Global */
-table.fixed-layout { table-layout: fixed; }
+.sidebar nav li a.has-badge { padding-right: 40px; }
 
-/* Sidebar with badge */
-.sidebar nav li a { display: flex; }
-body.ltr .sidebar nav li a { padding-right: 7px; }
-body.rtl .sidebar nav li a { padding-left: 7px; }
-
-body.ltr .sidebar nav li a .icon { margin-right: 7px; }
-body.rtl .sidebar nav li a .icon { margin-left: 7px; }
-
-.sidebar nav li a span.label { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; display: block; }
-
-body.ltr .sidebar nav li a span.badge { margin-left: 5px; }
-body.rtl .sidebar nav li a span.badge { margin-right: 5px; }
-
-.sidebar nav li a span.badge span.count { background: #da5a47; border-radius: 50px; border: 0px solid #fff; padding: 2px 7px; min-width: 7px; color: #fff; position: relative; }
-
-.sidebar nav li a.sel span.badge span.count { background: #fff; color: #737f8c; }
+.sidebar nav li a.has-badge span.badge { display: block; position: absolute; top: 10px; right: 5px; background: #da5a47; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; }
 
 /* Utilities */
 form.utility .utility-status { display: inline-block; position: relative; width: 60px; height: 40px; }
@@ -34,18 +19,5 @@ body.rtl form.utility .utility-status .progressbar { right: 0; }
 
 /* Asset Index */
 .confirmmodal .body { max-height: 200px; overflow: auto; }
-
-/* PHP Info */
-.phpinfo-menu { max-width: 300px; padding: 24px; }
-
-.phpinfo-menu ul li { display: inline; }
-
-.phpinfo-menu ul li a { display: inline !important; margin: 0; padding: 0; color: #0d78f2; }
-
-.phpinfo-menu ul li a:hover { background: none !important; text-decoration: underline; color: #0d78f2 !important; }
-
-.phpinfo-menu ul li:after { content: ' | '; }
-
-.phpinfo-section:not(:first-child) { padding-top: 100px; margin-top: -40px; }
 
 /*# sourceMappingURL=utilities.css.map */

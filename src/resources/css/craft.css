@@ -196,7 +196,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 /* readable blocks */
 .readable { font-size: 16px; line-height: 22px; }
 
-.readable h2 { margin: 24px 0 16px; padding-bottom: 7px; font-size: 24px; line-height: 30px; font-weight: 600; border-bottom: 1px solid #e3e5e8; }
+.readable h2 { margin: 24px 0 16px; font-size: 24px; line-height: 30px; font-weight: 600; }
 
 .readable h3 { margin: 24px 0 16px; font-size: 20px; line-height: 24px; font-weight: 600; }
 
@@ -632,7 +632,7 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/
-table thead th { font-weight: bold; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0, 0, 0, 0.5); }
+table thead th { font-weight: bold; vertical-align: top; line-height: 1.2; color: rgba(0, 0, 0, 0.5); }
 body.ltr table thead th { text-align: left; }
 body.rtl table thead th { text-align: right; }
 
@@ -679,6 +679,8 @@ body.rtl table.data td.timestamp { text-align: left; }
 table.data td form { height: 22px; }
 
 table.data td .btngroup { display: inline; }
+
+table.fixed-layout { table-layout: fixed; }
 
 /* collapsable data tables for small screens based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
 table.collapsed { width: auto; }
@@ -2578,6 +2580,20 @@ body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right:
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { left: 60px; }
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 60px; }
+
+.sidebar nav.has-icons li a { position: relative; }
+body.ltr .sidebar nav.has-icons li a { padding-left: 40px; }
+body.rtl .sidebar nav.has-icons li a { padding-right: 40px; }
+
+.sidebar nav.has-icons li a .icon { display: block; position: absolute; top: 10px; width: 16px; height: 16px; }
+body.ltr .sidebar nav.has-icons li a .icon { left: 14px; }
+body.rtl .sidebar nav.has-icons li a .icon { right: 14px; }
+
+.sidebar nav.has-icons li a .icon svg { width: 16px; height: 16px; }
+
+.sidebar nav.has-icons li a:not(.sel) .icon svg rect, .sidebar nav.has-icons li a:not(.sel) .icon svg circle, .sidebar nav.has-icons li a:not(.sel) .icon svg ellipse, .sidebar nav.has-icons li a:not(.sel) .icon svg line, .sidebar nav.has-icons li a:not(.sel) .icon svg polyline, .sidebar nav.has-icons li a:not(.sel) .icon svg polygon, .sidebar nav.has-icons li a:not(.sel) .icon svg path, .sidebar nav.has-icons li a:not(.sel) .icon svg text { fill: #8f98a3; stroke-width: 0; }
+
+.sidebar nav.has-icons li a.sel .icon svg rect, .sidebar nav.has-icons li a.sel .icon svg circle, .sidebar nav.has-icons li a.sel .icon svg ellipse, .sidebar nav.has-icons li a.sel .icon svg line, .sidebar nav.has-icons li a.sel .icon svg polyline, .sidebar nav.has-icons li a.sel .icon svg polygon, .sidebar nav.has-icons li a.sel .icon svg path, .sidebar nav.has-icons li a.sel .icon svg text { fill: #fff; stroke-width: 0; }
 
 body.ltr > .sidebar { padding: 0 0 0 0; }
 body.rtl > .sidebar { padding: 0 0 0 0; }
