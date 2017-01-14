@@ -25,8 +25,8 @@ body { font-size: 13px; line-height: 18px; color: $textcolor; }
 body.rtl { direction: rtl; }
 body, input, select, textarea { @include sans-serif-font; }
 
-.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
-.last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
+.first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
+.last,  h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
 
 body.rtl .ltr { text-align: left; direction: rtl; }
 
@@ -170,7 +170,8 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* readable blocks */
 .readable { font-size: 16px; line-height: 22px; }
-.readable h2 { margin: 24px 0 16px; padding-bottom: 7px; font-size: 24px; line-height: 30px; font-weight: 600; border-bottom: 1px solid $hairlineColor; }
+.readable h1 { margin: 24px 0 16px; font-size: 32px; line-height: 40px; font-weight: 600; color: #000; }
+.readable h2 { margin: 24px 0 16px; font-size: 24px; line-height: 30px; font-weight: 600; }
 .readable h3 { margin: 24px 0 16px; font-size: 20px; line-height: 24px; font-weight: 600; }
 .readable ul,
 .readable ol { @include padding-left(2em); }
@@ -602,7 +603,7 @@ h2 + .actions { margin-top: -54px; }
 /*  Tables
 /* ----------------------------------------*/
 
-table thead th { font-weight: bold; @include alignleft; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0,0,0,0.5); }
+table thead th { font-weight: bold; @include alignleft; vertical-align: top; line-height: 1.2; color: rgba(0,0,0,0.5); }
 table thead th.ordered { @include padding-right(26px); background: #f2f2f2 url(../images/listview_sort.png) no-repeat;
     body.ltr & { background-position: 100% -3px; }
     body.rtl & { background-position: 0 -3px; }
@@ -637,6 +638,8 @@ table.data thead th { white-space: nowrap; }
 table.data td.timestamp { @include alignright; vertical-align: bottom; white-space: nowrap; color: $lighttextcolor; }
 table.data td form { height: 22px; }
 table.data td .btngroup { display: inline; }
+
+table.fixed-layout { table-layout: fixed; }
 
 /* collapsable data tables for small screens
    based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */

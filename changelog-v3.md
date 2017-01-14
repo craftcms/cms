@@ -24,10 +24,15 @@ Craft CMS 3.0 Working Changelog
 - Added the `|atom` and `|rss` Twig filters, for formatting dates in Atom and RSS date formats, respectively.
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
+- Added the “Utilities” section to the Control Panel, replacing the Tools area of the Settings page.
+- Added the Utility API, which enables plugins to provide custom utilities.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
 - Added method paramater and return types everywhere possible.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
+- Added `craft\base\Utility`.
+- Added `craft\base\UtilityInterface`.
+- Added `craft\controllers\UtilitiesController`.
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
 - Added `craft\db\TableSchema`.
@@ -52,6 +57,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\SetElementTableAttributeHtmlEvent`.
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
+- Added `craft\services\Utilities`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
@@ -93,7 +99,18 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getUseWriteFileLock()`.
 - Added `craft\services\Config::isExtensionAllowed()`.
 - Added `craft\services\Elements::deleteElement()`.
+- Added `craft\services\Images::getCanUseImagick()`.
+- Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
+- Added `craft\utilities\AssetIndexes`.
+- Added `craft\utilities\ClearCaches`.
+- Added `craft\utilities\DbBackup`.
+- Added `craft\utilities\DeprecationErrors`.
+- Added `craft\utilities\FindAndReplace`.
+- Added `craft\utilities\PhpInfo`.
+- Added `craft\utilities\SearchIndexes`.
+- Added `craft\utilities\SystemReport`.
+- Added `craft\utilities\Updates`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -349,8 +366,11 @@ Craft CMS 3.0 Working Changelog
 - Removed the SimplePie library.
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
 - Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
+- Removed `craft\base\Tool`.
+- Removed `craft\base\ToolInterface`.
 - Removed `craft\cache\FileCache`.
 - Removed `craft\cache\adapters\GuzzleCacheAdapter`.
+- Removed `craft\controllers\ToolsController`.
 - Removed `craft\dates\DateTime`.
 - Removed `craft\dates\DateInterval`.
 - Removed `craft\db\DbBackup`.
@@ -430,6 +450,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Entries::saveEntry()`.
 - Removed `craft\services\Globals::deleteSetById()`.
 - Removed `craft\services\Globals::saveContent()`.
+- Removed `craft\services\Images::getIsImagickAtLeast()`.
 - Removed `craft\services\Matrix::deleteBlockById()`.
 - Removed `craft\services\Matrix::saveBlock()`.
 - Removed `craft\services\Matrix::validateBlock()`.
@@ -441,6 +462,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::flushUpdateInfoFromCache()`.
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
+- Removed `craft\tools\*`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.

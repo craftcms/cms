@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-01-12 */
+/*! Craft 3.0.0 - 2017-01-14 */
 (function($){
 
 /** global: Craft */
@@ -8950,7 +8950,7 @@ Craft.CP = Garnish.Base.extend(
 
         checkForUpdates: function(forceRefresh, callback) {
             // If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
-            // then just seta new callback that re-checks for updates when the current one is done.
+            // then just set a new callback that re-checks for updates when the current one is done.
             if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck) {
                 var realCallback = callback;
 
@@ -8977,7 +8977,7 @@ Craft.CP = Garnish.Base.extend(
                 };
 
                 Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info) {
-                    this.displayUpdateInfo(info);
+                    this.updateUtilitiesBadge();
                     this.checkingForUpdates = false;
 
                     if (Garnish.isArray(this.checkForUpdatesCallbacks)) {
@@ -8996,30 +8996,27 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        displayUpdateInfo: function(info) {
-            // Remove the existing header badge, if any
-            this.$globalSidebarTopbar.children('a.updates').remove();
+        updateUtilitiesBadge: function() {
+            var $utilitiesLink = $('#nav-utilities > a:not(.sel)');
 
-            if (info.total) {
-                var updateText;
-
-                if (info.total == 1) {
-                    updateText = Craft.t('app', '1 update available');
-                }
-                else {
-                    updateText = Craft.t('app', '{num} updates available', {num: info.total});
-                }
-
-                // Topbar badge
-                $('<a class="updates' + (info.critical ? ' critical' : '') + '" href="' + Craft.getUrl('updates') + '" title="' + updateText + '">' +
-                    '<span data-icon="newstamp">' +
-                    '<span>' + info.total + '</span>' +
-                    '</span>' +
-                    '</span>').insertAfter(this.$siteNameLink);
-
-                // Footer link
-                $('#footer-updates').text(updateText);
+            // Ignore if there is no (non-selected) Utilities nav item
+            if (!$utilitiesLink.length) {
+                return;
             }
+
+            Craft.queueActionRequest('app/get-utilities-badge-count', $.proxy(function(response) {
+                // Get the existing utility nav badge, if any
+                var $badge = $utilitiesLink.children('.badge');
+
+                if (response.badgeCount) {
+                    if (!$badge.length) {
+                        $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
+                    }
+                    $badge.text(response.badgeCount);
+                } else if ($badge.length) {
+                    $badge.remove();
+                }
+            }, this));
         },
 
         runPendingTasks: function() {
@@ -13909,9 +13906,8 @@ Craft.Pane = Garnish.Base.extend(
             this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
             this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
 
-			if($pageHeader.hasClass('fixed'))
-            {
-				this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
+            if ($pageHeader.hasClass('fixed')) {
+                this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
             }
 
             this.updateSidebarStyles._windowHeight = Garnish.$win.height();

@@ -207,9 +207,9 @@ class Schema extends \yii\db\pgsql\Schema
             $this->findConstraints($table);
 
             return $table;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

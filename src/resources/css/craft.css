@@ -41,9 +41,9 @@ body.rtl { direction: rtl; }
 
 body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
-.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
+.first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 
-.last, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child, .grid:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child { margin-bottom: 0 !important; }
+.last, h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child, .grid:last-child, .field:last-child, .toolbar:last-child, .buttons:last-child { margin-bottom: 0 !important; }
 
 body.rtl .ltr { text-align: left; direction: rtl; }
 
@@ -196,7 +196,9 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 /* readable blocks */
 .readable { font-size: 16px; line-height: 22px; }
 
-.readable h2 { margin: 24px 0 16px; padding-bottom: 7px; font-size: 24px; line-height: 30px; font-weight: 600; border-bottom: 1px solid #e3e5e8; }
+.readable h1 { margin: 24px 0 16px; font-size: 32px; line-height: 40px; font-weight: 600; color: #000; }
+
+.readable h2 { margin: 24px 0 16px; font-size: 24px; line-height: 30px; font-weight: 600; }
 
 .readable h3 { margin: 24px 0 16px; font-size: 20px; line-height: 24px; font-weight: 600; }
 
@@ -632,7 +634,7 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/
-table thead th { font-weight: bold; vertical-align: top; font-size: 11px; line-height: 1.2; color: rgba(0, 0, 0, 0.5); }
+table thead th { font-weight: bold; vertical-align: top; line-height: 1.2; color: rgba(0, 0, 0, 0.5); }
 body.ltr table thead th { text-align: left; }
 body.rtl table thead th { text-align: right; }
 
@@ -679,6 +681,8 @@ body.rtl table.data td.timestamp { text-align: left; }
 table.data td form { height: 22px; }
 
 table.data td .btngroup { display: inline; }
+
+table.fixed-layout { table-layout: fixed; }
 
 /* collapsable data tables for small screens based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
 table.collapsed { width: auto; }
@@ -1971,18 +1975,6 @@ body.rtl #global-sidebar .topbar a.site-name .photo-container { margin-left: 14p
 
 #global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 
-#global-sidebar .topbar a.updates { position: relative; color: #5286d9; }
-
-#global-sidebar .topbar a.updates.critical { color: #da5a47; }
-
-#global-sidebar .topbar a.updates:hover { color: #fff !important; }
-
-#global-sidebar .topbar a.updates > span { position: relative; }
-
-#global-sidebar .topbar a.updates > span:before { font-size: 22px; }
-
-#global-sidebar .topbar a.updates > span > span { display: block; position: absolute; left: 0; top: 0; width: 100%; text-align: center; color: #333f4d; font-weight: bold; font-size: 11px; line-height: 22px; }
-
 body.ltr #global-sidebar .topbar .settings { padding-right: 0; }
 body.rtl #global-sidebar .topbar .settings { padding-left: 0; }
 
@@ -2094,8 +2086,6 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
 
 #nav li:not(.has-subnav) a.sel { color: #fff; background: rgba(255, 255, 255, 0.1); border-color: #da5a47; opacity: 1; }
 
-#nav li a:not(.sel) .badge { color: #333 !important; }
-
 #nav li a.menubtn { line-height: 26px; }
 
 body.ltr #nav li ul li a { padding-left: 60px; }
@@ -2114,9 +2104,9 @@ body.rtl #nav li a .icon { margin-left: 10px; }
 
 #nav li:not(.has-subnav) a.sel .icon { opacity: 1; }
 
-#global-sidebar #nav li a .badge, #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: #da5a47; }
+#nav li a .label { flex-grow: 1; -ms-flex: 1; }
 
-#overflow-nav li a:hover .badge { color: #333f4d; }
+#nav li a .badge { display: block; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 
 /* notifications */
 #notifications-wrapper { position: fixed; z-index: 101; width: 100%; }
@@ -2578,6 +2568,20 @@ body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right:
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { left: 60px; }
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 60px; }
+
+.sidebar nav.has-icons li a { position: relative; }
+body.ltr .sidebar nav.has-icons li a { padding-left: 40px; }
+body.rtl .sidebar nav.has-icons li a { padding-right: 40px; }
+
+.sidebar nav.has-icons li a .icon { display: block; position: absolute; top: 10px; width: 16px; height: 16px; }
+body.ltr .sidebar nav.has-icons li a .icon { left: 14px; }
+body.rtl .sidebar nav.has-icons li a .icon { right: 14px; }
+
+.sidebar nav.has-icons li a .icon svg { width: 16px; height: 16px; }
+
+.sidebar nav.has-icons li a:not(.sel) .icon svg rect, .sidebar nav.has-icons li a:not(.sel) .icon svg circle, .sidebar nav.has-icons li a:not(.sel) .icon svg ellipse, .sidebar nav.has-icons li a:not(.sel) .icon svg line, .sidebar nav.has-icons li a:not(.sel) .icon svg polyline, .sidebar nav.has-icons li a:not(.sel) .icon svg polygon, .sidebar nav.has-icons li a:not(.sel) .icon svg path, .sidebar nav.has-icons li a:not(.sel) .icon svg text { fill: #8f98a3; stroke-width: 0; }
+
+.sidebar nav.has-icons li a.sel .icon svg rect, .sidebar nav.has-icons li a.sel .icon svg circle, .sidebar nav.has-icons li a.sel .icon svg ellipse, .sidebar nav.has-icons li a.sel .icon svg line, .sidebar nav.has-icons li a.sel .icon svg polyline, .sidebar nav.has-icons li a.sel .icon svg polygon, .sidebar nav.has-icons li a.sel .icon svg path, .sidebar nav.has-icons li a.sel .icon svg text { fill: #fff; stroke-width: 0; }
 
 body.ltr > .sidebar { padding: 0 0 0 0; }
 body.rtl > .sidebar { padding: 0 0 0 0; }

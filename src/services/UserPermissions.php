@@ -10,6 +10,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\UtilityInterface;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\events\RegisterUserPermissionsEvent;
@@ -183,6 +184,11 @@ class UserPermissions extends Component
             $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
+
+        // Utilities
+        // ---------------------------------------------------------------------
+
+        $permissions[Craft::t('app', 'Utilities')] = $this->_getUtilityPermissions();
 
         // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
@@ -527,6 +533,25 @@ class UserPermissions extends Component
                 ]
             ]
         ];
+    }
+
+    /**
+     * Returns the permissions for the utilities.
+     *
+     * @return array
+     */
+    private function _getUtilityPermissions()
+    {
+        $permissions = [];
+
+        foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
+            /** @var UtilityInterface $class */
+            $permissions['utility:'.$class::id()] = [
+                'label' => $class::displayName()
+            ];
+        }
+
+        return $permissions;
     }
 
     /**

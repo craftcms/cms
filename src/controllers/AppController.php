@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -39,6 +40,7 @@ class AppController extends Controller
      */
     public function actionCheckForUpdates(): Response
     {
+        $this->requireAcceptsJson();
         $this->requirePermission('performUpdates');
 
         $forceRefresh = (bool)Craft::$app->getRequest()->getBodyParam('forceRefresh');
@@ -47,6 +49,28 @@ class AppController extends Controller
         return $this->asJson([
             'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
             'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
+        ]);
+    }
+
+    /**
+     * Returns the badge count for the Utilities nav item.
+     *
+     * @return Response
+     */
+    public function actionGetUtilitiesBadgeCount(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $badgeCount = 0;
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+
+        foreach ($utilities as $class) {
+            /** @var UtilityInterface $class */
+            $badgeCount += $class::badgeCount();
+        }
+
+        return $this->asJson([
+            'badgeCount' => $badgeCount
         ]);
     }
 
