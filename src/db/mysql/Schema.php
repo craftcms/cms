@@ -203,9 +203,9 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $name table name
      *
-     * @return TableSchema driver dependent table metadata. Null if the table does not exist.
+     * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
-    protected function loadTableSchema($name): TableSchema
+    protected function loadTableSchema($name)
     {
         $table = new TableSchema;
         $this->resolveTableNames($table, $name);
@@ -214,9 +214,9 @@ class Schema extends \yii\db\mysql\Schema
             $this->findConstraints($table);
 
             return $table;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
