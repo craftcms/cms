@@ -170,7 +170,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* readable blocks */
 .readable { font-size: 16px; line-height: 22px; }
-.readable h2 { margin: 24px 0 16px; padding-bottom: 7px; font-size: 24px; line-height: 30px; font-weight: 600; border-bottom: 1px solid $hairlineColor; }
+.readable h2 { margin: 24px 0 16px; font-size: 24px; line-height: 30px; font-weight: 600; }
 .readable h3 { margin: 24px 0 16px; font-size: 20px; line-height: 24px; font-weight: 600; }
 .readable ul,
 .readable ol { @include padding-left(2em); }
