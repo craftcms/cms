@@ -166,9 +166,7 @@ body.mobile #container {
 #nav li a .icon svg { width: 16px; max-height: 16px; @include svg-mask(#fff); }
 #nav li:not(.has-subnav) a.sel  .icon { opacity: 1; }
 
-#global-sidebar #nav li a .badge,
-#overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
-#overflow-nav li a:hover .badge { color: $headerBgColor; }
+#nav li a .badge { color: #333 !important; }
 
 /* notifications */
 #notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; }
