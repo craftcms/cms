@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
@@ -127,11 +128,19 @@ class Cp extends Component
 
         $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
-        if (count($utilities) > 0) {
+        if (!empty($utilities)) {
+            $totalBadgeCount = 0;
+
+            foreach ($utilities as $class) {
+                /** @var UtilityInterface $class */
+                $totalBadgeCount += $class::badgeCount();
+            }
+
             $navItems[] = [
                 'url' => 'utilities',
                 'label' => Craft::t('app', 'Utilities'),
-                'icon' => 'tool'
+                'icon' => 'tool',
+                'badgeCount' => $totalBadgeCount
             ];
         }
 
@@ -164,6 +173,10 @@ class Cp extends Component
             }
 
             $item['url'] = UrlHelper::url($item['url']);
+
+            if (!isset($item['badgeCount'])) {
+                $item['badgeCount'] = 0;
+            }
         }
 
         return $navItems;

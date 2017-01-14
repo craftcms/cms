@@ -198,8 +198,8 @@
 								{{- item.label -}}
 							</span>
 
-							{%- if item.badge is defined and item.badge -%}
-								<span class="badge">{{ item.badge }}</span>
+							{%- if not item.sel and item.badgeCount -%}
+								<span class="badge">{{ item.badgeCount }}</span>
 							{%- endif -%}
 						</a>
 						{% if item.sel and hasSubnav  %}
