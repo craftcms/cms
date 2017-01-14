@@ -31,7 +31,6 @@ return [
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
-                'info' => craft\debug\InfoPanel::class,
                 'request' => yii\debug\panels\RequestPanel::class,
                 'log' => yii\debug\panels\LogPanel::class,
                 'deprecated' => craft\debug\DeprecatedPanel::class,
