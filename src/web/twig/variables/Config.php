@@ -41,9 +41,9 @@ class Config
      *
      * @param string $name
      *
-     * @return string
+     * @return mixed
      */
-    public function __get(string $name): string
+    public function __get(string $name)
     {
         Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
 
