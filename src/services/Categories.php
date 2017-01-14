@@ -309,7 +309,7 @@ class Categories extends Component
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-        if ($group->maxLevels == 0) {
+        if ($group->maxLevels === 0) {
             $group->maxLevels = null;
         }
 

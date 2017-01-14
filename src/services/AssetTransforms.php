@@ -299,19 +299,22 @@ class AssetTransforms extends Component
 
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
-            $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $transformCondition = ['and', ['location' => $location]];
+            if ($transform !== null) {
+                $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            if ($transform->format === null) {
-                $transformCondition[] = ['format' => null];
-            } else {
-                $transformCondition[] = ['format' => $transform->format];
-                $fingerprint .= ':'.$transform->format;
+                $transformCondition = ['and', ['location' => $location]];
+
+                if ($transform->format === null) {
+                    $transformCondition[] = ['format' => null];
+                } else {
+                    $transformCondition[] = ['format' => $transform->format];
+                    $fingerprint .= ':'.$transform->format;
+                }
+
+                $indexCondition[] = $transformCondition;
+                $transformsByFingerprint[$fingerprint] = $transform;
             }
-
-            $indexCondition[] = $transformCondition;
-            $transformsByFingerprint[$fingerprint] = $transform;
         }
 
         // Query for the indexes
@@ -382,6 +385,11 @@ class AssetTransforms extends Component
     public function getTransformIndex(Asset $asset, $transform): AssetTransformIndex
     {
         $transform = $this->normalizeTransform($transform);
+
+        if ($transform === null) {
+            throw new AssetTransformException('There was a problem finding the transform.');
+        }
+
         $transformLocation = $this->_getTransformFolderName($transform);
 
         // Was it eager-loaded?
@@ -520,6 +528,7 @@ class AssetTransforms extends Component
      * @param AssetTransformIndex $index
      *
      * @return bool true if transform exists for the index
+     * @throws AssetTransformException
      */
     private function _generateTransform(AssetTransformIndex $index): bool
     {
@@ -535,6 +544,10 @@ class AssetTransforms extends Component
         } else {
             // Load the dimensions for named transforms and merge with file-specific information.
             $transform = $this->normalizeTransform(mb_substr($index->location, 1));
+
+            if ($transform === null) {
+                throw new AssetTransformException('There was a problem finding the transform.');
+            }
         }
 
         $index->transform = $transform;
@@ -550,7 +563,7 @@ class AssetTransforms extends Component
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
-        if ($asset->getExtension() == $index->detectedFormat) {
+        if ($asset->getExtension() === $index->detectedFormat) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
             if ($transform->getIsNamedTransform()) {

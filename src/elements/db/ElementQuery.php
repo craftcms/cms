@@ -1031,7 +1031,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $select = $this->select;
-        $this->select = ['elements.column'];
+        $this->select = ['elements.id'];
         $result = $this->column($db);
         $this->select($select);
 

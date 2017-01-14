@@ -28,8 +28,20 @@ use yii\base\InvalidParamException;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property bool $omitScriptNameInUrls Whether generated URLs should omit “index.php”
- * @property bool $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
+ * @property bool           $omitScriptNameInUrls Whether generated URLs should omit “index.php”
+ * @property int            $cacheDuration
+ * @property bool           $useFileLocks
+ * @property int            $dbPort
+ * @property string         $cpSetPasswordPath
+ * @property bool|int       $elevatedSessionDuration
+ * @property string         $loginPath
+ * @property string         $dbTablePrefix
+ * @property string         $cpLogoutPath
+ * @property string         $logoutPath
+ * @property string         $cpLoginPath
+ * @property string         $resourceTrigger
+ * @property array|string[] $allowedFileExtensions
+ * @property bool           $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -644,6 +656,7 @@ class Config extends Component
      */
     public function parseEnvironmentString(string $str): string
     {
+        /** @noinspection ForeachSourceInspection */
         foreach ($this->get('environmentVariables') as $key => $value) {
             $str = str_replace('{'.$key.'}', $value, $str);
         }
@@ -691,12 +704,12 @@ class Config extends Component
 
         if ($configVal === 'patch-only') {
             // Return true if the major and minor versions are still the same
-            return (App::majorMinorVersion($update->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
+            return (App::majorMinorVersion($update->app->latestVersion) === App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
             // Return true if the major version is still the same
-            return (App::majorVersion($update->app->latestVersion) == App::majorVersion(Craft::$app->version));
+            return (App::majorVersion($update->app->latestVersion) === App::majorVersion(Craft::$app->version));
         }
 
         return false;
@@ -870,7 +883,7 @@ class Config extends Component
         }
 
         // Little extra logic for the general config category.
-        if ($category == self::CATEGORY_GENERAL) {
+        if ($category === self::CATEGORY_GENERAL) {
             // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
             $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 

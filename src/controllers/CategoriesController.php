@@ -744,7 +744,7 @@ class CategoriesController extends Controller
             $parentId = $parentId[0] ?? null;
         }
 
-        $category->newParentId = $parentId;
+        $category->newParentId = $parentId ?: null;
     }
 
     /**

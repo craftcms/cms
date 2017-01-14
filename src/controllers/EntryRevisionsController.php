@@ -328,6 +328,6 @@ class EntryRevisionsController extends BaseEntriesController
             $parentId = $parentId[0] ?? null;
         }
 
-        $draft->newParentId = $parentId;
+        $draft->newParentId = $parentId ?: null;
     }
 }
