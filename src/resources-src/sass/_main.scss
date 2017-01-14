@@ -638,6 +638,8 @@ table.data td.timestamp { @include alignright; vertical-align: bottom; white-spa
 table.data td form { height: 22px; }
 table.data td .btngroup { display: inline; }
 
+table.fixed-layout { table-layout: fixed; }
+
 /* collapsable data tables for small screens
    based on Aaron Gustafson's technique: http://blog.easy-designs.net/archives/2013/02/02/responsive-tables/ */
 table.collapsed { width: auto; }

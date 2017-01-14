@@ -68,13 +68,6 @@ return [
             ]
         ]
     ],
-    'utilities' => 'utilities/index',
-    'utilities/system-report' => 'utilities/system-report',
-    'utilities/php-info' => 'utilities/php-info',
-    'utilities/deprecation-errors' => 'utilities/deprecation-errors',
-    'utilities/asset-index' => 'utilities/asset-index',
-    'utilities/clear-caches' => 'utilities/clear-caches',
-    'utilities/db-backup' => 'utilities/db-backup',
-    'utilities/find-and-replace' => 'utilities/find-and-replace',
-    'utilities/search-index' => 'utilities/search-index',
+    'utilities' => 'utilities',
+    'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
 ];

@@ -125,7 +125,7 @@ class Cp extends Component
             ];
         }
 
-        $utilities = Craft::$app->getUtilities()->getNavItems();
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         if (count($utilities) > 0) {
             $navItems[] = [

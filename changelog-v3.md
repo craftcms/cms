@@ -28,6 +28,9 @@ Craft CMS 3.0 Working Changelog
 - Added method paramater and return types everywhere possible.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
+- Added `craft\base\Utility`.
+- Added `craft\base\UtilityInterface`.
+- Added `craft\controllers\UtilitiesController`.
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
 - Added `craft\db\TableSchema`.
@@ -52,6 +55,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\SetElementTableAttributeHtmlEvent`.
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
+- Added `craft\services\Utilities`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
@@ -96,6 +100,14 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Images::getCanUseImagick()`.
 - Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
+- Added `craft\utilities\AssetIndexes`.
+- Added `craft\utilities\ClearCaches`.
+- Added `craft\utilities\DbBackup`.
+- Added `craft\utilities\DeprecationErrors`.
+- Added `craft\utilities\FindAndReplace`.
+- Added `craft\utilities\PhpInfo`.
+- Added `craft\utilities\SearchIndexes`.
+- Added `craft\utilities\SystemReport`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.

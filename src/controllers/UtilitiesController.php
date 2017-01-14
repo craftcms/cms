@@ -11,19 +11,14 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\Plugin;
-use craft\base\Volume;
+use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
-use craft\events\RegisterCacheOptionsEvent;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\utilities\ClearCaches;
 use craft\web\Controller;
-use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
 use yii\base\ErrorException;
-use yii\base\Event;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -32,14 +27,6 @@ use ZipArchive;
 
 class UtilitiesController extends Controller
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event RegisterCacheOptionsEvent The event that is triggered when registering cache options.
-     */
-    const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
-
     // Public Methods
     // =========================================================================
 
@@ -51,75 +38,48 @@ class UtilitiesController extends Controller
      */
     public function actionIndex(): Response
     {
-        $utilities = Craft::$app->getUtilities()->getNavItems();
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         if (empty($utilities)) {
             throw new ForbiddenHttpException('User not permitted to view Utilities');
         }
 
+        /** @var string|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
-        return $this->redirect($firstUtility['url']);
+        return $this->redirect('utilities/'.$firstUtility::id());
     }
 
     /**
-     * System Report
+     * Show a utility page.
+     *
+     * @param string $id
      *
      * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to the system report
+     * @throws NotFoundHttpException if $id is invalid
+     * @throws ForbiddenHttpException if the user doesn't have access to the requested utility
+     * @throws Exception in case of failure
      */
-    public function actionSystemReport(): string
+    public function actionShowUtility(string $id): string
     {
-        $this->requirePermission('utility:systemReport');
+        $utilitiesService = Craft::$app->getUtilities();
 
-        return $this->renderTemplate('utilities/system-report', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-            'craftVersion' => Craft::$app->version,
-            'craftEdition' => 'Craft '.App::editionName(Craft::$app->getEdition()),
-            'packages' => [
-                'Yii' => \Yii::getVersion(),
-                'Twig' => \Twig_Environment::VERSION,
-                'Guzzle' => Client::VERSION,
-                'Imagine' => Imagine::VERSION,
-            ],
-            'plugins' => $this->_getPluginInfo(),
-            'requirements' => $this->_getRequirementResults(),
-        ]);
-    }
+        if (($class = $utilitiesService->getUtilityTypeById($id)) === null) {
+            throw new NotFoundHttpException('Invalid utility ID: '.$id);
+        }
 
-    /**
-     * PHP info
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to the PHP info
-     */
-    public function actionPhpInfo():string
-    {
-        $this->requirePermission('utility:phpInfo');
+        /** @var UtilityInterface $class */
+        if ($utilitiesService->checkAuthorization($class) === false) {
+            throw new ForbiddenHttpException('User not permitted to access the "'.$class::displayName().'".');
+        }
 
-        return $this->renderTemplate('utilities/php-info', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-            'phpInfo' => $this->_getPhpInfo(),
-        ]);
-    }
+        Craft::$app->getView()->registerCssResource('css/utilities.css');
 
-    /**
-     * Deprecation Errors
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to deprecation errors
-     */
-    public function actionDeprecationErrors():string
-    {
-        $this->requirePermission('utility:deprecationErrors');
-
-        $view = Craft::$app->getView();
-        $view->registerCssResource('css/deprecator.css');
-        $view->registerJsResource('js/deprecator.js');
-
-        return $this->renderTemplate('utilities/deprecation-errors/index', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-            'logs' => Craft::$app->deprecator->getLogs(),
+        return $this->renderTemplate('utilities/_index', [
+            'id' => $id,
+            'displayName' => $class::displayName(),
+            'contentHtml' => $class::contentHtml(),
+            'utilities' => $this->_utilityInfo(),
         ]);
     }
 
@@ -127,16 +87,16 @@ class UtilitiesController extends Controller
      * View stack trace for a deprecator log entry.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to deprecation errors
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
-        $this->requirePermission('utility:deprecationErrors');
+        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
         $logId = Craft::$app->request->getRequiredParam('logId');
-        $html = Craft::$app->getView()->renderTemplate('utilities/deprecation-errors/_tracesmodal', [
+        $html = Craft::$app->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
             'log' => Craft::$app->deprecator->getLogById($logId)
         ]);
 
@@ -149,11 +109,11 @@ class UtilitiesController extends Controller
      * Deletes all deprecation errors.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to deprecation errors
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
-        $this->requirePermission('utility:deprecationErrors');
+        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -168,11 +128,11 @@ class UtilitiesController extends Controller
      * Deletes a deprecation error.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to deprecation errors
+     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Errors utility
      */
     public function actionDeleteDeprecationError(): Response
     {
-        $this->requirePermission('utility:deprecationErrors');
+        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -185,49 +145,14 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Asset Index
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to asset indexing
-     */
-    public function actionAssetIndex(): string
-    {
-        $this->requirePermission('utility:assetIndex');
-
-        /** @var Volume[] $volumes */
-        $volumes = Craft::$app->getVolumes()->getAllVolumes();
-        $sourceOptions = [];
-
-        foreach ($volumes as $volume) {
-            $sourceOptions[] = [
-                'label' => $volume->name,
-                'value' => $volume->id
-            ];
-        }
-
-        $view = Craft::$app->getView();
-        $html = $view->renderTemplate('_includes/forms/checkboxSelect', [
-            'name' => 'sources',
-            'options' => $sourceOptions
-        ]);
-
-        $view->registerJsResource('js/AssetIndexUtility.js');
-
-        return $this->renderTemplate('utilities/asset-index', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-            'html' => $html,
-        ]);
-    }
-
-    /**
      * Performs an Asset Index action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to asset indexing
+     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
      */
     public function actionAssetIndexPerformAction(): Response
     {
-        $this->requirePermission('utility:assetIndex');
+        $this->requirePermission('utility:asset-indexes');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -300,8 +225,7 @@ class UtilitiesController extends Controller
             ]);
         } else if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'],
-                $params['offset'], $params['sourceId']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
 
             return $this->asJson([
                 'success' => true
@@ -383,41 +307,14 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Clear Caches
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to cache clearing
-     */
-    public function actionClearCaches(): string
-    {
-        $this->requirePermission('utility:clearCaches');
-
-        $options = [];
-
-        foreach ($this->_getAllCacheOptions() as $cacheOption) {
-            $options[] = [
-                'label' => $cacheOption['label'],
-                'value' => $cacheOption['key']
-            ];
-        }
-
-        Craft::$app->getView()->registerJsResource('js/ClearCachesUtility.js');
-
-        return $this->renderTemplate('utilities/clear-caches', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-            'options' => $options,
-        ]);
-    }
-
-    /**
      * Performs a Clear Caches action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to cache clearing
+     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
      */
     public function actionClearCachesPerformAction(): Response
     {
-        $this->requirePermission('utility:clearCaches');
+        $this->requirePermission('utility:clear-caches');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -427,7 +324,7 @@ class UtilitiesController extends Controller
             ]);
         }
 
-        foreach ($this->_getAllCacheOptions() as $cacheOption) {
+        foreach (ClearCaches::cacheOptions() as $cacheOption) {
             if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
                 continue;
             }
@@ -453,34 +350,15 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * DB Backup
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to database backups
-     */
-    public function actionDbBackup(): string
-    {
-        if (!Craft::$app->getUser()->checkPermission('utility:dbBackup')) {
-            throw new ForbiddenHttpException('User not permitted to view DB Backup');
-        }
-
-        Craft::$app->getView()->registerJsResource('js/DbBackupUtility.js');
-
-        return $this->renderTemplate('utilities/db-backup', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-        ]);
-    }
-
-    /**
      * Performs a DB Backup action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to database backups
+     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
      * @throws Exception if the backup could not be created
      */
     public function actionDbBackupPerformAction(): Response
     {
-        $this->requirePermission('utility:dbBackup');
+        $this->requirePermission('utility:db-backup');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -527,12 +405,12 @@ class UtilitiesController extends Controller
      * Returns a database backup zip file to the browser.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to database backups
+     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
      * @throws NotFoundHttpException if the requested backup cannot be found
      */
     public function actionDownloadBackupFile(): Response
     {
-        $this->requirePermission('utility:dbBackup');
+        $this->requirePermission('utility:db-backup');
 
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
@@ -547,31 +425,14 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Find And Replace
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to the find and replace utility
-     */
-    public function actionFindAndReplace(): string
-    {
-        $this->requirePermission('utility:findAndReplace');
-
-        Craft::$app->getView()->registerJsResource('js/FindAndReplaceUtility.js');
-
-        return $this->renderTemplate('utilities/find-and-replace', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-        ]);
-    }
-
-    /**
      * Performs a Find And Replace action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the find and replace utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Find an Replace utility
      */
     public function actionFindAndReplacePerformAction(): Response
     {
-        $this->requirePermission('utility:findAndReplace');
+        $this->requirePermission('utility:find-replace');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -589,31 +450,14 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Search Index
-     *
-     * @return string
-     * @throws ForbiddenHttpException if the user doesn't have access to the search index utility
-     */
-    public function actionSearchIndex(): string
-    {
-        $this->requirePermission('utility:searchIndex');
-
-        Craft::$app->getView()->registerJsResource('js/SearchIndexUtility.js');
-
-        return $this->renderTemplate('utilities/search-index', [
-            'navItems' => Craft::$app->getUtilities()->getNavItems(),
-        ]);
-    }
-
-    /**
      * Performs a Search Index action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the search index utility
+     * @throws ForbiddenHttpException if the user doesn't have access to the Search Indexes utility
      */
     public function actionSearchIndexPerformAction(): Response
     {
-        $this->requirePermission('utility:searchIndex');
+        $this->requirePermission('utility:search-indexes');
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
@@ -684,191 +528,42 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    // Private Methods
+    // Public Methods
     // =========================================================================
 
     /**
-     * Parses and returns the PHP info.
+     * Returns info about all of the utilities.
      *
      * @return array
+     * @throws Exception in case of failure
      */
-    private function _getPhpInfo(): array
+    private function _utilityInfo()
     {
-        Craft::$app->getConfig()->maxPowerCaptain();
+        $info = [];
 
-        ob_start();
-        phpinfo(-1);
-        $phpInfoStr = ob_get_clean();
+        foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
+            /** @var UtilityInterface $class */
+            $iconPath = $class::iconPath();
 
-        $phpInfoStr = preg_replace(
-            [
-                '#^.*<body>(.*)</body>.*$#ms',
-                '#<h2>PHP License</h2>.*$#ms',
-                '#<h1>Configuration</h1>#',
-                "#\r?\n#",
-                '#</(h1|h2|h3|tr)>#',
-                '# +<#',
-                "#[ \t]+#",
-                '#&nbsp;#',
-                '#  +#',
-                '# class=".*?"#',
-                '%&#039;%',
-                '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#',
-                '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#',
-                '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#',
-                '# +#',
-                '#<tr>#',
-                '#</tr>#'
-            ],
-            [
-                '$1',
-                '',
-                '',
-                '',
-                '</$1>'."\n",
-                '<',
-                ' ',
-                ' ',
-                ' ',
-                '',
-                ' ',
-                '<h2>PHP Configuration</h2>'."\n".'<tr><td>PHP Version</td><td>$2</td></tr>'."\n".'<tr><td>PHP Egg</td><td>$1</td></tr>',
-                '<tr><td>PHP Credits Egg</td><td>$1</td></tr>',
-                '<tr><td>Zend Engine</td><td>$2</td></tr>'."\n".'<tr><td>Zend Egg</td><td>$1</td></tr>',
-                ' ',
-                '%S%',
-                '%E%'
-            ],
-            $phpInfoStr
-        );
-
-        $sections = explode('<h2>', strip_tags($phpInfoStr, '<h2><th><td>'));
-        unset($sections[0]);
-
-        $phpInfo = [];
-        foreach ($sections as $section) {
-            $heading = substr($section, 0, strpos($section, '</h2>'));
-
-            if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) !== 0) {
-                /** @var array[] $matches */
-                foreach ($matches as $row) {
-                    if (!isset($row[2])) {
-                        continue;
-                    } else if (!isset($row[3]) || $row[2] === $row[3]) {
-                        $value = $row[2];
-                    } else {
-                        $value = array_slice($row, 2);
-                    }
-
-                    $phpInfo[$heading][$row[1]] = $value;
-                }
+            if (!is_file($iconPath)) {
+                throw new Exception("Utility icon file doesn't exist: {$iconPath}");
             }
-        }
 
-        return $phpInfo;
-    }
+            if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+                throw new Exception("Utility icon file is not an SVG: {$iconPath}");
+            }
 
-    /**
-     * Returns info about the installed plugins
-     *
-     * @return array
-     */
-    private function _getPluginInfo(): array
-    {
-        $plugins = [];
+            $iconSvg = file_get_contents($iconPath);
 
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
-            $plugins[] = [
-                'name' => $plugin->name,
-                'version' => $plugin->version,
-                'developer' => $plugin->developer,
-                'developerUrl' => $plugin->developerUrl,
+            $info[] = [
+                'id' => $class::id(),
+                'iconSvg' => $iconSvg,
+                'displayName' => $class::displayName(),
+                'iconPath' => $class::iconPath(),
+                'badgeCount' => $class::badgeCount(),
             ];
         }
 
-        return $plugins;
-    }
-
-    /**
-     * Runs the requirements checker and returns its results.
-     *
-     * @return array
-     */
-    private function _getRequirementResults(): array
-    {
-        $reqCheck = new \RequirementsChecker();
-        $reqCheck->checkCraft();
-
-        return $reqCheck->getResult()['requirements'];
-    }
-
-    /**
-     * Returns all cache options
-     *
-     * @return array
-     */
-    private function _getAllCacheOptions(): array
-    {
-        $runtimePath = Craft::$app->getPath()->getRuntimePath();
-
-        $options = [
-            [
-                'key' => 'data',
-                'label' => Craft::t('app', 'Data caches'),
-                'action' => [Craft::$app->getCache(), 'flush']
-            ],
-            [
-                'key' => 'asset',
-                'label' => Craft::t('app', 'Asset caches'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'cache'
-            ],
-            [
-                'key' => 'rss',
-                'label' => Craft::t('app', 'RSS caches'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'cache'
-            ],
-            [
-                'key' => 'compiled-templates',
-                'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'compiled_templates'
-            ],
-            [
-                'key' => 'temp-files',
-                'label' => Craft::t('app', 'Temp files'),
-                'action' => $runtimePath.DIRECTORY_SEPARATOR.'temp'
-            ],
-            [
-                'key' => 'transform-indexes',
-                'label' => Craft::t('app', 'Asset transform index'),
-                'action' => function() {
-                    Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assettransformindex}}')
-                        ->execute();
-                }
-            ],
-            [
-                'key' => 'asset-indexing-data',
-                'label' => Craft::t('app', 'Asset indexing data'),
-                'action' => function() {
-                    Craft::$app->getDb()->createCommand()
-                        ->truncateTable('{{%assetindexdata}}')
-                        ->execute();
-                }
-            ],
-            [
-                'key' => 'template-caches',
-                'label' => Craft::t('app', 'Template caches'),
-                'action' => [Craft::$app->getTemplateCaches(), 'deleteAllCaches']
-            ],
-        ];
-
-        $event = new RegisterCacheOptionsEvent([
-            'options' => $options
-        ]);
-
-        Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $event);
-
-        return $options;
+        return $info;
     }
 }

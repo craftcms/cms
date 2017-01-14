@@ -473,6 +473,12 @@ $fldGuideColor: #f4f3fb;
 .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { @include left(40px); }
 .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { @include left(60px); }
 
+.sidebar nav.has-icons li a { position: relative; @include padding-left(40px); }
+.sidebar nav.has-icons li a .icon { display: block; position: absolute; top: 10px; @include left(14px); width: 16px; height: 16px; }
+.sidebar nav.has-icons li a .icon svg { width: 16px; height: 16px; }
+.sidebar nav.has-icons li a:not(.sel) .icon svg { @include svg-mask($mediumtextcolor); }
+.sidebar nav.has-icons li a.sel .icon svg { @include svg-mask(#fff); }
+
 > .sidebar { @include padding(0, 0, 0, 0); @include margin(0, 0, 0, 0); }
 > .sidebar nav li a { @include margin-left(0); }
 

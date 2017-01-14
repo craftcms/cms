@@ -1,10 +1,14 @@
 (function($) {
 
-	Craft.AssetIndexUtility = Garnish.Base.extend(
+	Craft.SearchIndexesUtility = Garnish.Base.extend(
 	{
 		$trigger: null,
 		$form: null,
+		$innerProgressBar: null,
 
+		optionsHtml: null,
+		buttonLabel: null,
+		hud: null,
 		totalActions: null,
 		completedActions: null,
 		loadingActions: null,
@@ -18,7 +22,6 @@
 
 			this.addListener(this.$form, 'submit', 'onSubmit');
 		},
-
 
 		onSubmit: function(ev)
 		{
@@ -40,25 +43,28 @@
 				this.loadingActions = 0;
 				this.currentBatchQueue = [];
 
-				this.progressBar.$progressBar.removeClass('hidden');
+				this.progressBar.$progressBar.css({
+					top: Math.round(this.$status.outerHeight() / 2) - 6
+				})
+					.removeClass('hidden');
 
 				this.progressBar.$progressBar.velocity('stop').velocity(
-				{
-					opacity: 1
-				},
-				{
-					complete: $.proxy(function()
 					{
-						var postData = Garnish.getPostData(this.$form),
-							params = Craft.expandPostArray(postData);
-						params.start = true;
+						opacity: 1
+					},
+					{
+						complete: $.proxy(function()
+						{
+							var postData = Garnish.getPostData(this.$form),
+								params = Craft.expandPostArray(postData);
+							params.start = true;
 
-						this.loadAction({
-							params: params
-						});
+							this.loadAction({
+								params: params
+							});
 
-					}, this)
-				});
+						}, this)
+					});
 
 				if(this.$allDone)
 				{
@@ -80,50 +86,7 @@
 		{
 			this.loadingActions++;
 
-			if (typeof data.confirm != 'undefined' && data.confirm)
-			{
-				this.showConfirmDialog(data);
-			}
-			else
-			{
-				this.postActionRequest(data.params);
-			}
-		},
-
-		showConfirmDialog: function(data)
-		{
-			var $modal = $('<form class="modal fitted confirmmodal"/>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
-				$footer = $('<footer class="footer"/>').appendTo($modal),
-				$buttons = $('<div class="buttons right"/>').appendTo($footer),
-				$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons),
-				$okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'OK') + '"/>').appendTo($buttons);
-
-			Craft.initUiElements($body);
-
-			var modal = new Garnish.Modal($modal, {
-				onHide: $.proxy(this, 'onActionResponse')
-			});
-
-			this.addListener($cancelBtn, 'click', function()
-			{
-				modal.hide();
-			});
-
-			this.addListener($modal, 'submit', function(ev)
-			{
-				ev.preventDefault();
-
-				modal.settings.onHide = $.noop;
-				modal.hide();
-
-				var postData = Garnish.getPostData($body);
-				var params = Craft.expandPostArray(postData);
-
-				$.extend(params, data.params);
-
-				this.postActionRequest(params);
-			});
+			this.postActionRequest(data.params);
 		},
 
 		postActionRequest: function(params)
@@ -132,7 +95,7 @@
 				params: params
 			};
 
-			Craft.postActionRequest('utilities/asset-index-perform-action', data, $.proxy(this, 'onActionResponse'),
+			Craft.postActionRequest('utilities/search-index-perform-action', data, $.proxy(this, 'onActionResponse'),
 			{
 				complete: $.noop
 			});
@@ -164,7 +127,7 @@
 			this.updateProgressBar();
 
 			// Load as many additional items in the current batch as possible
-			while (this.loadingActions < Craft.AssetIndexUtility.maxConcurrentActions && this.currentBatchQueue.length) {
+			while (this.loadingActions < Craft.SearchIndexesUtility.maxConcurrentActions && this.currentBatchQueue.length) {
 				this.loadNextAction();
 			}
 

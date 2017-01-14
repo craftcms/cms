@@ -1,26 +1,23 @@
-{% extends "utilities/_layout" %}
+{% if logs %}
+	<div class="buttons first">
+		<div id="clearall" class="btn submit">{{ "Clear All"|t }}</div>
+	</div>
+{% endif %}
 
-{% import "_includes/forms" as forms %}
 
-{% set title = "Deprecation Errors"|t('app') %}
-
-{% set selectedNavItem = 'deprecationErrors' %}
-
-{% block content %}
+<div class="readable">
 	<p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t }}</p>
 
 	{% if logs %}
-		<div class="buttons first">
-			<div id="clearall" class="btn submit">{{ "Clear All"|t }}</div>
-		</div>
-
 		<table id="deprecationerrors" class="data fullwidth">
 			<thead>
-			<th>{{ "Message"|t }}</th>
-			<th>{{ "Origin"|t }}</th>
-			<th class="centeralign">{{ "Last Occurrence"|t }}</th>
-			<th class="thin nowrap centeralign">{{ "Stack Trace"|t }}</th>
-			<td class="thin"></td>
+				<tr>
+					<th>{{ "Message"|t }}</th>
+					<th>{{ "Origin"|t }}</th>
+					<th class="centeralign">{{ "Last Occurrence"|t }}</th>
+					<th class="thin nowrap centeralign">{{ "Stack Trace"|t }}</th>
+					<th class="thin"></th>
+				</tr>
 			</thead>
 			<tbody>
 			{% for log in logs %}
@@ -36,4 +33,4 @@
 			</tbody>
 		</table>
 	{% endif %}
-{% endblock %}
+</div>
