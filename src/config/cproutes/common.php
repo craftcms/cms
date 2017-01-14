@@ -19,7 +19,6 @@ return [
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'updates' => 'update/index',
     'updates/go/<handle:[^/]*>' => 'update/go',
-    'settings' => 'system-settings/settings-index',
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',

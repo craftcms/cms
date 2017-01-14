@@ -54,30 +54,6 @@ class SystemSettingsController extends Controller
     }
 
     /**
-     * Shows the settings index.
-     *
-     * @return string The rendering result
-     */
-    public function actionSettingsIndex(): string
-    {
-        $tools = [];
-
-        // Only include the Update Asset Indexes tool if there are any asset volumes
-        if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0) {
-            $tools[] = new AssetIndex();
-        }
-
-        $tools[] = new ClearCaches();
-        $tools[] = new DbBackup();
-        $tools[] = new FindAndReplace();
-        $tools[] = new SearchIndex();
-
-        return $this->renderTemplate('settings/_index', [
-            'tools' => $tools
-        ]);
-    }
-
-    /**
      * Shows the general settings form.
      *
      * @param Info|null $info The info being edited, if there were any validation errors.
