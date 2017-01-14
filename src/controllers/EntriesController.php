@@ -869,7 +869,7 @@ class EntriesController extends BaseEntriesController
             $parentId = $parentId[0] ?? null;
         }
 
-        $entry->newParentId = $parentId;
+        $entry->newParentId = $parentId ?: null;
 
         // Revision notes
         $entry->revisionNotes = Craft::$app->getRequest()->getBodyParam('revisionNotes');
