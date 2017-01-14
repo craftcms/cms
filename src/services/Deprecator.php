@@ -154,11 +154,11 @@ class Deprecator extends Component
     /**
      * Get 'em all.
      *
-     * @param int $limit
+     * @param int|null $limit
      *
      * @return DeprecationError[]
      */
-    public function getLogs(int $limit = 100): array
+    public function getLogs(int $limit = null): array
     {
         if ($this->_allLogs !== null) {
             return $this->_allLogs;

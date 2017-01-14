@@ -809,12 +809,12 @@ class Assets extends Component
     /**
      * Get URL for a file.
      *
-     * @param Asset       $asset
-     * @param string|null $transform
+     * @param Asset                            $asset
+     * @param AssetTransform|string|array|null $transform
      *
      * @return string
      */
-    public function getUrlForAsset(Asset $asset, string $transform = null): string
+    public function getUrlForAsset(Asset $asset, $transform = null): string
     {
         if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
@@ -824,8 +824,7 @@ class Assets extends Component
 
         // Get the transform index model
         $assetTransforms = Craft::$app->getAssetTransforms();
-        $index = $assetTransforms->getTransformIndex($asset,
-            $transform);
+        $index = $assetTransforms->getTransformIndex($asset, $transform);
 
         // Does the file actually exist?
         if ($index->fileExists) {
