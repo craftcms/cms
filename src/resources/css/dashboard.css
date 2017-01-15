@@ -61,7 +61,7 @@ body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
 body.ltr .newwidgetmenu ul li a { padding-left: 40px; }
 body.rtl .newwidgetmenu ul li a { padding-right: 40px; }
 
-.newwidgetmenu ul li a .icon { position: absolute; top: 8px; width: 16px; }
+.newwidgetmenu ul li a .icon { position: absolute; top: 11px; width: 16px; }
 body.ltr .newwidgetmenu ul li a .icon { left: 14px; }
 body.rtl .newwidgetmenu ul li a .icon { right: 14px; }
 
