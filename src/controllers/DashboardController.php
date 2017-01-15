@@ -71,7 +71,7 @@ class DashboardController extends Controller
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
-                'maxColspan' => $widget->getMaxColspan(),
+                'maxColspan' => $widget::maxColspan(),
                 'settingsHtml' => $settingsHtml,
                 'settingsJs' => $settingsJs,
                 'selectable' => true,
@@ -101,7 +101,7 @@ class DashboardController extends Controller
                 $widgetTypeInfo[$info['type']] = [
                     'iconSvg' => $this->_getWidgetIconSvg($widget),
                     'name' => $widget::displayName(),
-                    'maxColspan' => $widget->getMaxColspan(),
+                    'maxColspan' => $widget::maxColspan(),
                     'selectable' => false,
                 ];
             }
@@ -524,7 +524,7 @@ class DashboardController extends Controller
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = ($widget->colspan ?: 1);
 
-        if (($maxColspan = $widget->getMaxColspan()) && $colspan > $maxColspan) {
+        if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
         }
 

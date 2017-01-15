@@ -242,6 +242,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\base\Volume::getAdapter()` to `adapter()`.
 - Renamed `craft\base\Volume::getFilesystem()` to `filesystem()`.
 - Renamed `craft\base\Volume::getVisibilitySetting()` to `visibility()`.
+- Renamed `craft\base\WidgetInterface::getMaxColspan()` to `maxColspan()` (now static).
 - Renamed `craft\base\WidgetInterface::getIconPath()` to `iconPath()` (now static).
 - Renamed `craft\controllers\BaseElementsController::getContext()` to `context()`.
 - Renamed `craft\controllers\BaseElementsController::getElementType()` to `elementType()`.

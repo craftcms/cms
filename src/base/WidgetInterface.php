@@ -27,6 +27,13 @@ interface WidgetInterface extends SavableComponentInterface
      */
     public static function iconPath();
 
+    /**
+     * Returns the widget’s maximum colspan.
+     *
+     * @return int|null The widget’s maximum colspan, if it has one
+     */
+    public static function maxColspan();
+
     // Public Methods
     // =========================================================================
 
@@ -45,11 +52,4 @@ interface WidgetInterface extends SavableComponentInterface
      *                      to be selectable in the first place, use {@link isSelectable()}.)
      */
     public function getBodyHtml();
-
-    /**
-     * Returns the widget’s maximum colspan.
-     *
-     * @return int|null The widget’s maximum colspan, if it has one
-     */
-    public function getMaxColspan();
 }

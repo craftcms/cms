@@ -52,6 +52,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return null;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function maxColspan()
+    {
+        return null;
+    }
+
     // Public Methods
     // =========================================================================
 
@@ -87,13 +95,5 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return '<div style="margin: 0 -30px -30px;">'.
             '<img style="display: block; width: 100%;" src="'.UrlHelper::resourceUrl('images/prg.jpg').'">'.
             '</div>';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getMaxColspan()
-    {
-        return null;
     }
 }
