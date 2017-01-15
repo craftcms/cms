@@ -349,9 +349,11 @@ class Elements extends Component
         // Set a dummy title if there isn't one already and the element type has titles
         if ($element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
             if ($isNewElement) {
-                $element->title = 'New '.$element->classHandle();
+                $element->title = Craft::t('app', 'New Element');
             } else {
-                $element->title = $element->classHandle().' '.$element->id;
+                $element->title = Craft::t('app', 'Element {id}', [
+                    'id' => $element->id
+                ]);
             }
         }
 
@@ -849,10 +851,11 @@ class Elements extends Component
             }
 
             // Update any reference tags
+            /** @var ElementInterface|null $elementType */
             $elementType = $this->getElementTypeById($prevailingElementId);
 
-            if ($elementType !== null && ($elementTypeHandle = $elementType::classHandle())) {
-                $refTagPrefix = "{{$elementTypeHandle}:";
+            if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
+                $refTagPrefix = "{{$refHandle}:";
 
                 Craft::$app->getTasks()->queueTask([
                     'type' => FindAndReplace::class,
@@ -1061,15 +1064,18 @@ class Elements extends Component
     /**
      * Returns an element class by its handle.
      *
-     * @param string $handle The element class handle
+     * @param string $refHandle The element class handle
      *
      * @return string|null The element class, or null if it could not be found
      */
-    public function getElementTypeByHandle(string $handle)
+    public function getElementTypeByRefHandle(string $refHandle)
     {
         foreach ($this->getAllElementTypes() as $class) {
-            /** @var string|Element $class */
-            if (strcasecmp($class::classHandle(), $handle) === 0) {
+            /** @var string|ElementInterface $class */
+            if (
+                ($elementRefHandle = $class::refHandle()) !== null &&
+                strcasecmp($elementRefHandle, $refHandle) === 0
+            ) {
                 return $class;
             }
         }
@@ -1119,7 +1125,7 @@ class Elements extends Component
                 $things = ['id', 'ref'];
 
                 foreach ($refTagsByElementHandle as $elementTypeHandle => $refTags) {
-                    $elementType = $this->getElementTypeByHandle($elementTypeHandle);
+                    $elementType = $this->getElementTypeByRefHandle($elementTypeHandle);
 
                     if ($elementType === null) {
                         // Just put the ref tags back the way they were

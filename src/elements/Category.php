@@ -46,6 +46,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'category';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

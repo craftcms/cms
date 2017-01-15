@@ -60,6 +60,14 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

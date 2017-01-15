@@ -94,6 +94,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'user';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

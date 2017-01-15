@@ -29,15 +29,4 @@ abstract class Component extends Model implements ComponentInterface
 
         return array_pop($classNameParts);
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function classHandle(): string
-    {
-        $classNameParts = explode('\\', static::class);
-        $handle = array_pop($classNameParts);
-
-        return strtolower($handle);
-    }
 }

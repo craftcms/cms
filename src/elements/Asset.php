@@ -72,6 +72,14 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'asset';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

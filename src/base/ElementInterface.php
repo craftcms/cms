@@ -25,6 +25,13 @@ interface ElementInterface extends ComponentInterface
     // =========================================================================
 
     /**
+     * Returns the handle that should be used to refer to this element type from reference tags.
+     *
+     * @return string|null The reference handle, or null if the elemnet type doesn’t support reference tags
+     */
+    public static function refHandle();
+
+    /**
      * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
      *
      * @return bool Whether elements of this type will be storing any data in the `content` table.

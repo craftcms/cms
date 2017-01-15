@@ -74,6 +74,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::getSerializedFieldValues()`.
 - Added `craft\base\Element::route()`.
 - Added `craft\base\Element::tableAttributeHtml()`.
+- Added `craft\base\ElementInterface::refHandle()`.
 - Added `craft\base\Field::afterElementDelete()`, which is called by an element after it is deleted.
 - Added `craft\base\Field::beforeElementDelete()`, which is called by an element before it is deleted.
 - Added `craft\base\Field::getElementValidationRules()`, which field types can override to return their element-level validation rules.
@@ -402,6 +403,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\models\Password`.
 - Removed `craft\web\twig\StringTemplate`.
 - Removed `craft\base\Component::getType()`. It was only really there for objects that implement `craft\base\MissingComponentInterface`, and now they have an `$expectedType` property.
+- Removed `craft\base\ComponentInterface::classHandle()`.
 - Removed `craft\base\Element::getContentFromPost()`.
 - Removed `craft\base\Element::getSourceByKey()`.
 - Removed `craft\base\Element::saveElement()`.

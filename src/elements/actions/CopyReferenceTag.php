@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\helpers\Json;
+use yii\base\Exception;
 
 /**
  * CopyReferenceTag represents a Copy Reference Tag element action.
@@ -48,7 +49,12 @@ class CopyReferenceTag extends ElementAction
         $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $elementTypeHandle = Json::encode($elementType::classHandle());
+
+        if (($refHandle = $elementType::refHandle()) === null) {
+            throw new Exception("Element type \"{$elementType}\" doesn't have a reference handle.");
+        }
+
+        $refHandleJs = Json::encode($refHandle);
 
         $js = <<<EOD
 (function()
@@ -62,7 +68,7 @@ class CopyReferenceTag extends ElementAction
                 ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
             });
 
-            prompt(message, '{'+{$elementTypeHandle}+':'+\$selectedItems.find('.element').data('id')+'}');
+            prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');
         }
     });
 })();
