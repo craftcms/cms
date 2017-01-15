@@ -311,7 +311,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         switch ($name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-                if ($this->siteId !== null && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
+                if ($this->siteId && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
                     return $site->handle;
                 }
 
@@ -833,7 +833,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$class::isLocalized()) {
             // The criteria *must* be set to the primary site ID
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else if ($this->siteId === null) {
+        } else if (!$this->siteId) {
             // Default to the current site
             $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
@@ -896,7 +896,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
         }
 
-        if ($this->archived === true) {
+        if ($this->archived) {
             $this->subQuery->andWhere(['elements.archived' => '1']);
         } else {
             $this->subQuery->andWhere(['elements.archived' => '0']);
@@ -1447,7 +1447,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
                 ->andWhere(['structureelements.structureId' => $this->structureId]);
 
-            if ($this->ancestorOf !== null) {
+            if ($this->ancestorOf) {
                 /** @var Element $ancestorOf */
                 $ancestorOf = $this->_normalizeStructureParamValue('ancestorOf', $class);
 
@@ -1458,12 +1458,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['structureelements.root' => $ancestorOf->root]
                 ]);
 
-                if ($this->ancestorDist !== null) {
+                if ($this->ancestorDist) {
                     $this->subQuery->andWhere(['>=', 'structureelements.level', $ancestorOf->level - $this->ancestorDist]);
                 }
             }
 
-            if ($this->descendantOf !== null) {
+            if ($this->descendantOf) {
                 /** @var Element $descendantOf */
                 $descendantOf = $this->_normalizeStructureParamValue('descendantOf', $class);
 
@@ -1474,12 +1474,12 @@ class ElementQuery extends Query implements ElementQueryInterface
                     ['structureelements.root' => $descendantOf->root]
                 ]);
 
-                if ($this->descendantDist !== null) {
+                if ($this->descendantDist) {
                     $this->subQuery->andWhere(['<=', 'structureelements.level', $descendantOf->level + $this->descendantDist]);
                 }
             }
 
-            if ($this->siblingOf !== null) {
+            if ($this->siblingOf) {
                 /** @var Element $siblingOf */
                 $siblingOf = $this->_normalizeStructureParamValue('siblingOf', $class);
 
@@ -1508,7 +1508,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
 
-            if ($this->prevSiblingOf !== null) {
+            if ($this->prevSiblingOf) {
                 /** @var Element $prevSiblingOf */
                 $prevSiblingOf = $this->_normalizeStructureParamValue('prevSiblingOf', $class);
 
@@ -1519,7 +1519,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->nextSiblingOf !== null) {
+            if ($this->nextSiblingOf) {
                 /** @var Element $nextSiblingOf */
                 $nextSiblingOf = $this->_normalizeStructureParamValue('nextSiblingOf', $class);
 
@@ -1530,7 +1530,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->positionedBefore !== null) {
+            if ($this->positionedBefore) {
                 /** @var Element $positionedBefore */
                 $positionedBefore = $this->_normalizeStructureParamValue('positionedBefore', $class);
 
@@ -1541,7 +1541,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->positionedAfter !== null) {
+            if ($this->positionedAfter) {
                 /** @var Element $positionedAfter */
                 $positionedAfter = $this->_normalizeStructureParamValue('positionedAfter', $class);
 
@@ -1552,7 +1552,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             }
 
-            if ($this->level !== null) {
+            if ($this->level) {
                 $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
             }
         }
@@ -1663,8 +1663,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        if ($this->orderBy === null) {
-            if ($this->fixedOrder === true) {
+        if (!$this->orderBy) {
+            if ($this->fixedOrder) {
                 $ids = ArrayHelper::toArray($this->id);
 
                 if (empty($ids)) {

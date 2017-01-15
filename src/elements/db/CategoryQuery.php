@@ -150,7 +150,7 @@ class CategoryQuery extends ElementQuery
      */
     private function _applyEditableParam()
     {
-        if ($this->editable === true) {
+        if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
             $this->subQuery->andWhere([
                 'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()

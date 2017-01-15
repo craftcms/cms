@@ -361,15 +361,15 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind));
         }
 
-        if ($this->width !== null) {
+        if ($this->width) {
             $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
         }
 
-        if ($this->height !== null) {
+        if ($this->height) {
             $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
         }
 
-        if ($this->size !== null) {
+        if ($this->size) {
             $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
         }
 

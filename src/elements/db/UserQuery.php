@@ -319,13 +319,13 @@ class UserQuery extends ElementQuery
             $this->query->addSelect(['users.photoId']);
         }
 
-        if ($this->withPassword === true) {
+        if ($this->withPassword) {
             $this->query->addSelect(['users.password']);
         }
 
-        if ($this->admin === true) {
+        if ($this->admin) {
             $this->subQuery->andWhere(['users.admin' => '1']);
-        } else if ($this->client === true) {
+        } else if ($this->client) {
             $this->subQuery->andWhere(['users.client' => '1']);
         } else {
             $this->_applyCanParam();
