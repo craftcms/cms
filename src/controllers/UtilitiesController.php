@@ -547,7 +547,6 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
