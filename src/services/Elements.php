@@ -236,6 +236,23 @@ class Elements extends Component
     }
 
     /**
+     * Returns the classes of elements with the given IDs.
+     *
+     * @param int[] $elementIds The elements’ IDs
+     *
+     * @return string[]
+     */
+    public function getElementTypesByIds(array $elementIds): array
+    {
+        return (new Query())
+            ->select(['type'])
+            ->distinct(true)
+            ->from(['{{%elements}}'])
+            ->where(['id' => $elementIds])
+            ->column();
+    }
+
+    /**
      * Returns an element’s URI for a given site.
      *
      * @param int $elementId The element’s ID.

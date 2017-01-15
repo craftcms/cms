@@ -67,7 +67,11 @@ class DeleteStaleTemplateCaches extends Task
     public function getTotalSteps(): int
     {
         // What type of element(s) are we dealing with?
-        $this->_elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
+        if (is_array($this->elementId)) {
+            $this->_elementType = Craft::$app->getElements()->getElementTypesByIds($this->elementId);
+        } else {
+            $this->_elementType = Craft::$app->getElements()->getElementTypeById($this->elementId);
+        }
 
         if ($this->_elementType === null) {
             return 0;
