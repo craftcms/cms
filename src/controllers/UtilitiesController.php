@@ -568,7 +568,6 @@ class UtilitiesController extends Controller
      */
     private function _getUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
         $iconPath = $class::iconPath();
 
         if ($iconPath === null) {

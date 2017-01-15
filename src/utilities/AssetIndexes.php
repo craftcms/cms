@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\base\Volume;
+use yii\base\Exception;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
@@ -43,7 +44,13 @@ class AssetIndexes extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/photo.svg');
+        $iconPath = Craft::getAlias('@app/icons/photo.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     /**

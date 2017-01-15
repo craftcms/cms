@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
 use yii\base\Event;
+use yii\base\Exception;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
@@ -52,7 +53,13 @@ class ClearCaches extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/trash.svg');
+        $iconPath = Craft::getAlias('@app/icons/trash.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     /**
