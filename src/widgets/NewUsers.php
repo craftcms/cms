@@ -39,6 +39,14 @@ class NewUsers extends Widget
         return (Craft::$app->getEdition() === Craft::Pro);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        return Craft::getAlias('@app/icons/users.svg');
+    }
+
     // Properties
     // =========================================================================
 
@@ -99,13 +107,5 @@ class NewUsers extends Widget
             [
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'new-users.svg';
     }
 }

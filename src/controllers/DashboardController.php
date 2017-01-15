@@ -551,7 +551,7 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $iconPath = $widget->getIconPath();
+        $iconPath = $widget::iconPath();
 
         if ($iconPath === null) {
             return $this->_getDefaultWidgetIconSvg($widget);

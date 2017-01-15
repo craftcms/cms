@@ -46,16 +46,16 @@ class Updates extends Widget
         return false;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getIconPath()
+    public static function iconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'updates.svg';
+        return Craft::getAlias('@app/icons/excite.svg');
     }
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

@@ -46,16 +46,16 @@ class CraftSupport extends Widget
         return false;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getIconPath()
+    public static function iconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'craft-support.svg';
+        return Craft::getAlias('@app/icons/chat-bubbles.svg');
     }
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

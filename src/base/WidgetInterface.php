@@ -17,6 +17,16 @@ namespace craft\base;
  */
 interface WidgetInterface extends SavableComponentInterface
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null The path to the widget’s SVG icon
+     */
+    public static function iconPath();
+
     // Public Methods
     // =========================================================================
 
@@ -26,13 +36,6 @@ interface WidgetInterface extends SavableComponentInterface
      * @return string The widget’s title.
      */
     public function getTitle(): string;
-
-    /**
-     * Returns the path to the widget’s SVG icon.
-     *
-     * @return string|null The path to the widget’s SVG icon, if it has one
-     */
-    public function getIconPath();
 
     /**
      * Returns the widget's body HTML.

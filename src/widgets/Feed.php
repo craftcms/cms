@@ -30,6 +30,14 @@ class Feed extends Widget
         return Craft::t('app', 'Feed');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        return Craft::getAlias('@app/icons/feed.svg');
+    }
+
     // Properties
     // =========================================================================
 
@@ -73,14 +81,6 @@ class Feed extends Widget
             [
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'feed.svg';
     }
 
     /**

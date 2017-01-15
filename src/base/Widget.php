@@ -44,6 +44,17 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        // Default to a circle with the first letter of the widget’s display name
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+            'label' => static::displayName()
+        ]);
+    }
+
     // Public Methods
     // =========================================================================
 
@@ -69,14 +80,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     {
         // Default to the widget's display name
         return static::displayName();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return null;
     }
 
     /**

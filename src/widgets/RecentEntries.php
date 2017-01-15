@@ -32,6 +32,14 @@ class RecentEntries extends Widget
         return Craft::t('app', 'Recent Entries');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        return Craft::getAlias('@app/icons/clock.svg');
+    }
+
     // Properties
     // =========================================================================
 
@@ -85,14 +93,6 @@ class RecentEntries extends Widget
             [
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'recent-entries.svg';
     }
 
     /**

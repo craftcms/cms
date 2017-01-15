@@ -32,6 +32,14 @@ class QuickPost extends Widget
         return Craft::t('app', 'Quick Post');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        return Craft::getAlias('@app/icons/newspaper.svg');
+    }
+
     // Properties
     // =========================================================================
 
@@ -111,14 +119,6 @@ class QuickPost extends Widget
                 'sections' => $sections,
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'quick-post.svg';
     }
 
     /**
