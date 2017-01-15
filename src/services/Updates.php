@@ -417,7 +417,13 @@ class Updates extends Component
                     // Prep the new release
                     $currentRelease = $releases[] = new UpdateRelease();
                     $currentRelease->version = $match[1];
-                    $currentRelease->date = DateTimeHelper::toDateTime($match[2]);
+                    $releaseDate = DateTimeHelper::toDateTime($match[2]);
+
+                    if ($releaseDate === false) {
+                        $releaseDate = null;
+                    }
+
+                    $currentRelease->date = $releaseDate;
                     $currentRelease->critical = !empty($match[3]);
 
                     $currentNotes = '';
