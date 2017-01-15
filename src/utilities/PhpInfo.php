@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use yii\base\Exception;
 
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
@@ -42,7 +43,13 @@ class PhpInfo extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/info-circle.svg');
+        $iconPath = Craft::getAlias('@app/icons/info-circle.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     /**

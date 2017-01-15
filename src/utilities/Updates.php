@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Utility;
 use craft\helpers\App;
 use craft\helpers\Json;
+use yii\base\Exception;
 
 /**
  * Updates represents a Updates dashboard widget.
@@ -44,7 +45,13 @@ class Updates extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/excite.svg');
+        $iconPath = Craft::getAlias('@app/icons/excite.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     /**
