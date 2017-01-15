@@ -30,9 +30,9 @@ interface UtilityInterface extends ComponentInterface
     /**
      * Returns the path to the utility’s SVG icon.
      *
-     * @return string
+     * @return string|null
      */
-    public static function iconPath(): string;
+    public static function iconPath();
 
     /**
      * Returns the number that should be shown in the utility’s nav item badge.

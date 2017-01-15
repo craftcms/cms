@@ -23,12 +23,9 @@ abstract class Utility extends Component implements UtilityInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath(): string
+    public static function iconPath()
     {
-        // Default to a circle with the first letter of the utility’s display name
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => static::displayName()
-        ]);
+        return null;
     }
 
     /**

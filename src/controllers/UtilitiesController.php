@@ -541,7 +541,6 @@ class UtilitiesController extends Controller
      * Returns info about all of the utilities.
      *
      * @return array
-     * @throws Exception in case of failure
      */
     private function _utilityInfo()
     {
@@ -549,21 +548,9 @@ class UtilitiesController extends Controller
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
             /** @var UtilityInterface $class */
-            $iconPath = $class::iconPath();
-
-            if (!is_file($iconPath)) {
-                throw new Exception("Utility icon file doesn't exist: {$iconPath}");
-            }
-
-            if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-                throw new Exception("Utility icon file is not an SVG: {$iconPath}");
-            }
-
-            $iconSvg = file_get_contents($iconPath);
-
             $info[] = [
                 'id' => $class::id(),
-                'iconSvg' => $iconSvg,
+                'iconSvg' => $this->_getUtilityIconSvg($class),
                 'displayName' => $class::displayName(),
                 'iconPath' => $class::iconPath(),
                 'badgeCount' => $class::badgeCount(),
@@ -571,5 +558,51 @@ class UtilitiesController extends Controller
         }
 
         return $info;
+    }
+
+    /**
+     * Returns a utility type’s SVG icon.
+     *
+     * @param string $class
+     *
+     * @return string
+     */
+    private function _getUtilityIconSvg(string $class): string
+    {
+        /** @var UtilityInterface $class */
+        $iconPath = $class::iconPath();
+
+        if ($iconPath === null) {
+            return $this->_getDefaultUtilityIconSvg($class);
+        }
+
+        if (!is_file($iconPath)) {
+            Craft::warning("Utility icon file doesn't exist: {$iconPath}");
+
+            return $this->_getDefaultUtilityIconSvg($class);
+        }
+
+        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
+            Craft::warning("Utility icon file is not an SVG: {$iconPath}");
+
+            return $this->_getDefaultUtilityIconSvg($class);
+        }
+
+        return file_get_contents($iconPath);
+    }
+
+    /**
+     * Returns the default icon SVG for a given utility type.
+     *
+     * @param string $class
+     *
+     * @return string
+     */
+    private function _getDefaultUtilityIconSvg(string $class): string
+    {
+        /** @var UtilityInterface $class */
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+            'label' => $class::displayName()
+        ]);
     }
 }

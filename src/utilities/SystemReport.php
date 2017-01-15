@@ -48,7 +48,7 @@ class SystemReport extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath(): string
+    public static function iconPath()
     {
         return Craft::getAlias('@app/icons/check.svg');
     }
