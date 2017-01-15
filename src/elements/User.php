@@ -139,6 +139,7 @@ class User extends Element implements IdentityInterface
             [
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
+                'criteria' => ['status' => null],
                 'hasThumbs' => true
             ]
         ];
