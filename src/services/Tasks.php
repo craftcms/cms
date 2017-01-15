@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use craft\records\Task as TaskRecord;
 use craft\tasks\MissingTask;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\web\Response;
 
 /**
@@ -188,6 +189,11 @@ class Tasks extends Component
                 $taskRecord->makeRoot(false);
             } else {
                 $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
+
+                if ($parentTaskRecord === null) {
+                    throw new Exception('There was a problem gettin the parent task record.');
+                }
+
                 $taskRecord->appendTo($parentTaskRecord, false);
             }
 
