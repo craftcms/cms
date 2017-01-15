@@ -7,8 +7,6 @@
 
 namespace craft\base;
 
-use Craft;
-
 /**
  * Utility is the base class for classes representing Control Panel utilities.
  *
