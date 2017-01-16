@@ -516,10 +516,12 @@ class Updates extends Component
                     if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
                         throw new InvalidPluginException($handle);
                     }
+
                     /** @var Plugin $plugin */
                     if (!isset($update->plugins[$plugin->packageName])) {
                         throw new Exception("No update info is known for the plugin \"{$handle}\".");
                     }
+
                     $pluginUpdate = $update->plugins[$plugin->packageName];
                     Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.");
                 }

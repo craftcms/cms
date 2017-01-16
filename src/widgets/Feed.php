@@ -10,6 +10,7 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use yii\base\Exception;
 
 /**
  * Feed represents a Feed dashboard widget.
@@ -35,7 +36,13 @@ class Feed extends Widget
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/feed.svg');
+        $iconPath = Craft::getAlias('@app/icons/feed.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties

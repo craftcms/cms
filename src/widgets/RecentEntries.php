@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Json;
 use craft\models\Section;
+use yii\base\Exception;
 
 /**
  * RecentEntries represents a Recent Entries dashboard widget.
@@ -37,7 +38,13 @@ class RecentEntries extends Widget
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/clock.svg');
+        $iconPath = Craft::getAlias('@app/icons/clock.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties

@@ -498,11 +498,11 @@ class Application extends \yii\web\Application
      * requirement checker again. This should catch the case where an install is deployed to another server that doesn’t
      * meet Craft’s minimum requirements.
      *
-     * @param Request|null $request
+     * @param Request $request
      *
      * @return Response|null
      */
-    private function _processRequirementsCheck(Request $request = null)
+    private function _processRequirementsCheck(Request $request)
     {
         // See if we're in the middle of an update.
         $update = false;
