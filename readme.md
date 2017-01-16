@@ -10,7 +10,7 @@ Learning Craft
 
 Several great learning resources are out there:
 
-- Craft’s [official documentation](https://craftcms.com/docs) is the best place to start.
+- Craft’s [official documentation](https://github.com/craftcms/docs) is the best place to start.
 - The official [demo site](https://demo.craftcms.com/) offers a quick and effortless way to start exploring a pre-built Craft site.
 - [Mijingo](https://mijingo.com/craft) offers a collection of video courses, covering the full spectrum from beginner to advanced.
 - [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) offers a collection of video courses as well.
