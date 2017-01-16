@@ -1146,6 +1146,27 @@ class Plugins extends Component
             $config['documentationUrl'] = $composer['support']['docs'];
         }
 
+        // changelogUrl
+        // todo: check $extra['support']['changelog'] if that becomes a thing - https://github.com/composer/composer/issues/6079
+        if (isset($extra['changelogUrl'])) {
+            $config['changelogUrl'] = $extra['changelogUrl'];
+        }
+
+        // downloadUrl
+        if (isset($extra['downloadUrl'])) {
+            $config['downloadUrl'] = $extra['downloadUrl'];
+        }
+
+        // sourceLanguage
+        if (isset($extra['sourceLanguage'])) {
+            $config['sourceLanguage'] = $extra['sourceLanguage'];
+        }
+
+        // hasSettings
+        if (isset($extra['hasSettings'])) {
+            $config['hasSettings'] = (bool)$extra['hasSettings'];
+        }
+
         // components
         if (isset($extra['components'])) {
             $config['components'] = $extra['components'];
