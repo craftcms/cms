@@ -28,5 +28,5 @@ To install the Craft 3 Beta, follow these instructions.
         php composer.phar create-project craftcms/craft path
 
 3. Copy the `.env.example` file at the root of the project to a new `.env` file, and fill in your database connection settings within it.
-4. Create a new web server, setting its document root to the `public/` folder within the project.
+4. Create a new web server, setting its document root to the `web/` folder within the project.
 5. Point your web browser to `http://example.com/index.php?p=admin` (substituting `example.com` with your new web server’s host name) to access the Craft installer.
