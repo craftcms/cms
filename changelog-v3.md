@@ -176,7 +176,6 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Plugin` no longer automatically registers field types in the plugin’s `fields/` subfolder.
 - `craft\base\Plugin` no longer automatically registers widget types in the plugin’s `widgets/` subfolder.
 - `craft\base\Plugin` no longer automatically registers volume types in the plugin’s `volumes/` subfolder.
-- Mailer Transport Adapters’ `getTransportConfig()` methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - `craft\elements\User` now supports a `password` validation scenario, which only validates the `$newPassword` property.
 - `craft\elements\User` now supports a `registration` validation scenario, which only validates the `$username`, `$email`, and `$newPassword` properties.
 - It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
@@ -305,6 +304,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\UrlHelper::getUrlWithParams()` to `urlWithParams()`.
 - Renamed `craft\helpers\UrlHelper::getUrlWithProtocol()` to `urlWithProtocol()`.
 - Renamed `craft\helpers\UrlHelper::getUrlWithToken()` to `urlWithToken()`.
+- Renamed `craft\mail\transportadapters\TransportAdapterInterface::getTransportConfig()` to `defineTransport()`, and it is now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - Renamed `craft\models\AssetTransform::getTransformModes()` to `modes()`.
 - Renamed `craft\services\Assets::renameAsset()` to `renameFile()`, and replaced its `$newFilename` argument with `$runValidation`.
 - Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.

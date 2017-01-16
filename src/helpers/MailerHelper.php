@@ -101,7 +101,7 @@ class MailerHelper
             'messageClass' => Message::class,
             'from' => [$settings->fromEmail => $settings->fromName],
             'template' => $settings->template,
-            'transport' => $adapter->getTransportConfig(),
+            'transport' => $adapter->defineTransport(),
         ]);
 
         return $mailer;

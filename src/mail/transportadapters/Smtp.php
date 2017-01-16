@@ -117,7 +117,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getTransportConfig(): array
+    public function defineTransport()
     {
         $config = [
             'class' => \Swift_SmtpTransport::class,
