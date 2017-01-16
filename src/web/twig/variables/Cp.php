@@ -118,14 +118,6 @@ class Cp extends Component
             }
         }
 
-        if (Craft::$app->getUser()->getIsAdmin()) {
-            $navItems[] = [
-                'url' => 'settings',
-                'label' => Craft::t('app', 'Settings'),
-                'icon' => 'settings'
-            ];
-        }
-
         $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
 
         if (!empty($utilities)) {
@@ -141,6 +133,14 @@ class Cp extends Component
                 'label' => Craft::t('app', 'Utilities'),
                 'icon' => 'tool',
                 'badgeCount' => $badgeCount
+            ];
+        }
+
+        if (Craft::$app->getUser()->getIsAdmin()) {
+            $navItems[] = [
+                'url' => 'settings',
+                'label' => Craft::t('app', 'Settings'),
+                'icon' => 'settings'
             ];
         }
 
