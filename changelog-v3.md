@@ -143,7 +143,7 @@ Craft CMS 3.0 Working Changelog
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - It is now possible to override the default Guzzle settings from `craft/config/guzzle.php`.
-- Added a `size` setting to the `Number` field
+- Added a “Size” setting to Number fields.
 
 ### Changed
 - The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/craft/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
