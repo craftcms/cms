@@ -35,7 +35,7 @@ class User extends \yii\web\User
     // =========================================================================
 
     /**
-     * @var array|null The configuration of the username cookie.
+     * @var array The configuration of the username cookie.
      * @see Cookie
      */
     public $usernameCookie;
