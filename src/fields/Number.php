@@ -58,6 +58,19 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Normalize $max
+        if ($this->max !== null && empty($this->max)) {
+            $this->max = null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
