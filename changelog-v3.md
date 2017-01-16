@@ -5,7 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
-- Craft 3 now requires PHP 7.0.0 or later. 
+- Craft 3 now requires PHP 7.0.0 or later.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `craft/plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
@@ -143,6 +143,7 @@ Craft CMS 3.0 Working Changelog
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - It is now possible to override the default Guzzle settings from `craft/config/guzzle.php`.
+- Added a `size` setting to the `Number` field
 
 ### Changed
 - The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/craft/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
