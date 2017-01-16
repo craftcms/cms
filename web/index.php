@@ -1,5 +1,9 @@
 <?php
+/**
+ * Craft web bootstrap file
+ */
 
+// Project root path
 $root = dirname(__DIR__);
 
 // Composer autoloader
