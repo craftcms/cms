@@ -1259,10 +1259,6 @@ body #redactor-modal-overlay {
 .hud .elementeditor .hud-header { text-align: center; }
 .hud .elementeditor .main { padding: 0; }
 
-/* crop image modals */
-.image-chooser { margin: 0 auto; }
-.image-chooser img { display: block; margin: 0 auto;}
-
 /* element selector modals */
 .elementselectormodal { padding-bottom: 58px; @include user-select(none); }
 .elementselectormodal .body { position: relative; height: 100%; }

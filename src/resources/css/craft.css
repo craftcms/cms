@@ -1231,11 +1231,6 @@ body.rtl .hud .tip-right { left: -15px; }
 
 .hud .elementeditor .main { padding: 0; }
 
-/* crop image modals */
-.image-chooser { margin: 0 auto; }
-
-.image-chooser img { display: block; margin: 0 auto; }
-
 /* element selector modals */
 .elementselectormodal { padding-bottom: 58px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 
