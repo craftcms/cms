@@ -344,6 +344,7 @@ Craft CMS 3.0 Working Changelog
 - Updated element-resize-detector.js to 1.1.10.
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
+- Moved Utilities nav item to keep Settings as the last item
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
