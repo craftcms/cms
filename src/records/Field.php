@@ -35,7 +35,7 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @var
+     * @var string|null
      */
     private $_oldHandle;
 
@@ -68,9 +68,9 @@ class Field extends ActiveRecord
     /**
      * Returns the old handle.
      *
-     * @return string
+     * @return string|null
      */
-    public function getOldHandle(): string
+    public function getOldHandle()
     {
         return $this->_oldHandle;
     }
