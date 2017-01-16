@@ -71,6 +71,11 @@ class Number extends Field implements PreviewableFieldInterface
         if ($this->max !== null && empty($this->max)) {
             $this->max = null;
         }
+
+        // Normalize $size
+        if ($this->size !== null && empty($this->size)) {
+            $this->size = null;
+        }
     }
 
     /**
