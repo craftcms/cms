@@ -26,3 +26,12 @@
 	size: 1,
 	errors: field.getErrors('decimals')
 }) }}
+
+{{ forms.textField({
+	label: "Size"|t('app'),
+	id: 'size',
+	name: 'size',
+	value: field.size,
+	size: 2,
+	errors: field.getErrors('size')
+}) }}
