@@ -52,6 +52,11 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public $decimals = 0;
 
+    /**
+     * @var int|null The size of the field
+     */
+    public $size;
+
     // Public Methods
     // =========================================================================
 
@@ -66,6 +71,11 @@ class Number extends Field implements PreviewableFieldInterface
         if ($this->max !== null && empty($this->max)) {
             $this->max = null;
         }
+
+        // Normalize $size
+        if ($this->size !== null && empty($this->size)) {
+            $this->size = null;
+        }
     }
 
     /**
@@ -75,7 +85,7 @@ class Number extends Field implements PreviewableFieldInterface
     {
         $rules = parent::rules();
         $rules[] = [['min', 'max'], 'number'];
-        $rules[] = [['decimals'], 'integer'];
+        $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
             ['max'],
             'compare',
@@ -145,7 +155,7 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'name' => $this->handle,
             'value' => $value,
-            'size' => 10
+            'size' => $this->size
         ]);
     }
 }
