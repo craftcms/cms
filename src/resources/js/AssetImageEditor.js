@@ -2,7 +2,6 @@
  * Asset image editor class
  */
 
-//TODO either multiple vars or one var, but stick to one style!
 Craft.AssetImageEditor = Garnish.Modal.extend(
     {
         // jQuery objects
@@ -89,8 +88,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Set the max image size that is viewable in the editor currently
          */
         setMaxImageSize: function() {
-            var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth,
-                browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
+            var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth;
+            var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
             this.maxImageSize = Math.min(browserViewportHeight, browserViewportWidth);
         },
@@ -719,7 +718,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var currentZoomRatio = this.zoomRatio;
             var adjustmentRatio = 1;
 
-            var deltaX, deltaY, newCenterX, newCenterY, areaFactor, currentZoomToFit, currentArea;
+            var deltaX, deltaY, newCenterX, newCenterY, areaFactor;
 
             do {
                 // Get the cropper center coordinates
@@ -877,8 +876,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Scale the bounding box to fit
             var scale = 1;
             if (boundingBox.height > this.editorHeight || boundingBox.width > this.editorWidth) {
-                var vertScale = this.editorHeight / boundingBox.height,
-                    horiScale = this.editorWidth / boundingBox.width;
+                var vertScale = this.editorHeight / boundingBox.height;
+                var horiScale = this.editorWidth / boundingBox.width;
                 scale = Math.min(horiScale, vertScale);
             }
 
@@ -904,11 +903,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     stroke: 'rgba(255,255,255,0.5)'
                 };
 
-                var lineCount = 8,
-                    gridWidth = this.viewport.width,
-                    gridHeight = this.viewport.height,
-                    xStep = gridWidth / (lineCount + 1),
-                    yStep = gridHeight / (lineCount + 1);
+                var lineCount = 8;
+                var gridWidth = this.viewport.width;
+                var gridHeight = this.viewport.height;
+                var xStep = gridWidth / (lineCount + 1);
+                var yStep = gridHeight / (lineCount + 1);
 
                 var grid = [
                     new fabric.Rect({
@@ -1197,9 +1196,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Calculate the cropping rectangle size
             var imageDimensions = this.getScaledImageDimensions();
-            var rectangleRatio = this.imageStraightenAngle == 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2,
-                rectWidth = imageDimensions.width / rectangleRatio,
-                rectHeight = imageDimensions.height / rectangleRatio;
+            var rectangleRatio = this.imageStraightenAngle == 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2;
+            var rectWidth = imageDimensions.width / rectangleRatio;
+            var rectHeight = imageDimensions.height / rectangleRatio;
 
             if (this.hasOrientationChanged()) {
                 var temp = rectHeight;
@@ -1684,6 +1683,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var imageDimensions = this.getScaledImageDimensions();
 
             var ratio;
+
             if (typeof zoomMode == "number") {
                 ratio = zoomMode;
             } else if (zoomMode == "cover") {
