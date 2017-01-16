@@ -53,7 +53,7 @@ class Number extends Field implements PreviewableFieldInterface
     public $decimals = 0;
 
     /**
-     * @var int The size of the field
+     * @var int|null The size of the field
      */
     public $size;
 
