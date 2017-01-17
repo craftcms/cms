@@ -21,7 +21,7 @@ use craft\models\MailSettings;
 use yii\base\Event;
 
 /**
- * Class DateTimeHelper
+ * Class MailerHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
