@@ -218,9 +218,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 height: this.editorHeight
             };
 
-            // Take note what the used image size was before resizing editor
-            var previousScaledDimensions = this.getScaledImageDimensions();
-
             this.editorHeight = this.$editorContainer.innerHeight();
             this.editorWidth = this.$editorContainer.innerWidth();
 
