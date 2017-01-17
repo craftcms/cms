@@ -1301,11 +1301,12 @@ trait ApplicationTrait
     private function _getFallbackLanguage(): string
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this instanceof WebApplication) {
-            // See if we have the CP translated in one of the user's browsers preferred language(s)
-            if (($language = $this->getTranslatedBrowserLanguage()) !== false) {
-                return $language;
-            }
+        // See if we have the CP translated in one of the user's browsers preferred language(s)
+        if (
+            $this instanceof WebApplication &&
+            ($language = $this->getTranslatedBrowserLanguage()) !== false
+        ) {
+            return $language;
         }
 
         // Default to the source language.
