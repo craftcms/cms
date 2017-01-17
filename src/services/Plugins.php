@@ -802,7 +802,7 @@ class Plugins extends Component
             throw new InvalidPluginException($handle);
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg' : false;
+        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
             $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
