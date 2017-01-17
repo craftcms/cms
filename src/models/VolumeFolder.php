@@ -73,7 +73,7 @@ class VolumeFolder extends Model
      */
     public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**

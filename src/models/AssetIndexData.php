@@ -92,6 +92,6 @@ class AssetIndexData extends Model
      */
     public function __toString(): string
     {
-        return $this->uri;
+        return (string)$this->uri;
     }
 }

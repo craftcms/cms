@@ -96,7 +96,7 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**
