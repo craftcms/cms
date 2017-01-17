@@ -390,7 +390,7 @@ class Install extends Migration
             'timezone' => $this->string(30),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
+            'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),

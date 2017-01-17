@@ -589,11 +589,13 @@ class User extends Element implements IdentityInterface
         $rules[] = [['username'], UsernameValidator::class];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
-        $rules[] = [
-            ['username', 'email'],
-            UniqueValidator::class,
-            'targetClass' => UserRecord::class
-        ];
+        if (Craft::$app->getIsInstalled()) {
+            $rules[] = [
+                ['username', 'email'],
+                UniqueValidator::class,
+                'targetClass' => UserRecord::class
+            ];
+        }
 
         if ($this->id !== null && $this->passwordResetRequired) {
             // Get the current password hash

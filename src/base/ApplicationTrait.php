@@ -485,9 +485,9 @@ trait ApplicationTrait
     /**
      * Returns the system's UID.
      *
-     * @return string
+     * @return string|null
      */
-    public function getSystemUid(): string
+    public function getSystemUid()
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->getInfo()->uid;
@@ -1245,7 +1245,7 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         // Defend against an infinite _setLanguage() loop
-        if (!$this->_gettingLanguage) {
+        if ($this->_gettingLanguage === false) {
             $this->_gettingLanguage = true;
             $request = $this->getRequest();
             $useUserLanguage = $request->getIsConsoleRequest() || $request->getIsCpRequest();

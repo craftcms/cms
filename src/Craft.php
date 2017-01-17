@@ -121,10 +121,10 @@ class Craft extends Yii
     public static function autoload($className)
     {
         if (
-            $className === \craft\behaviors\ContentBehavior::class ||
-            $className === \craft\behaviors\ContentTrait::class ||
-            $className === \craft\behaviors\ElementQueryBehavior::class ||
-            $className === \craft\behaviors\ElementQueryTrait::class
+            $className === 'craft\behaviors\ContentBehavior' ||
+            $className === 'craft\behaviors\ContentTrait' ||
+            $className === 'craft\behaviors\ElementQueryBehavior' ||
+            $className === 'craft\behaviors\ElementQueryTrait'
         ) {
             $storedFieldVersion = static::$app->getInfo()->fieldVersion;
             $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
@@ -143,27 +143,28 @@ class Craft extends Yii
                 return;
             }
 
-            // Get the field handles
-            $fieldHandles = (new Query())
-                ->select(['handle'])
-                ->distinct(true)
-                ->from(['{{%fields}}'])
-                ->column();
-
             $properties = [];
             $methods = [];
             $propertyDocs = [];
             $methodDocs = [];
 
-            foreach ($fieldHandles as $handle) {
-                $properties[] = <<<EOD
+            if (Craft::$app->getIsInstalled()) {
+                // Get the field handles
+                $fieldHandles = (new Query())
+                    ->select(['handle'])
+                    ->distinct(true)
+                    ->from(['{{%fields}}'])
+                    ->column();
+
+                foreach ($fieldHandles as $handle) {
+                    $properties[] = <<<EOD
     /**
      * @var mixed Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
 
-                $methods[] = <<<EOD
+                    $methods[] = <<<EOD
     /**
      * Sets the [[{$handle}]] property.
      * @param mixed \$value The property value
@@ -176,8 +177,9 @@ EOD;
     }
 EOD;
 
-                $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
-                $methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
+                    $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
+                    $methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
+                }
             }
 
             self::_writeFieldAttributesFile(

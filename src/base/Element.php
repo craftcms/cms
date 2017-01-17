@@ -715,7 +715,7 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if ($this->siteId === null) {
+        if ($this->siteId === null && Craft::$app->getIsInstalled()) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
     }

@@ -61,9 +61,9 @@ class Info extends Model
     public $uid;
 
     /**
-     * @var string|null Field version
+     * @var string Field version
      */
-    public $fieldVersion;
+    public $fieldVersion = '000000000000';
 
     /**
      * @var \DateTime|null Date updated
