@@ -101,7 +101,7 @@ class Cp extends Component
                 $pluginHandle = $plugin->getHandle();
 
                 if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon-mask.svg';
+                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
 
                     if (is_file($iconPath)) {
                         $iconSvg = file_get_contents($iconPath);
