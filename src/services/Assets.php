@@ -33,6 +33,7 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
