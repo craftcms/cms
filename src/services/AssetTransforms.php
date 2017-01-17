@@ -876,7 +876,7 @@ class AssetTransforms extends Component
                 try {
                     FileHelper::removeFile($imageSourcePath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage());
+                    Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage(), __METHOD__);
                 }
 
                 $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
@@ -888,7 +888,7 @@ class AssetTransforms extends Component
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
                     throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));
@@ -901,7 +901,7 @@ class AssetTransforms extends Component
                 try {
                     FileHelper::removeFile($tempPath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                 }
             }
         }
@@ -1112,7 +1112,7 @@ class AssetTransforms extends Component
         try {
             $handle = opendir($dir);
             if ($handle === false) {
-                Craft::warning("Unable to open directory: $dir");
+                Craft::warning("Unable to open directory: $dir", __METHOD__);
 
                 return;
             }
@@ -1128,7 +1128,7 @@ class AssetTransforms extends Component
             }
             closedir($handle);
         } catch (ErrorException $e) {
-            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage());
+            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
         }
     }
 

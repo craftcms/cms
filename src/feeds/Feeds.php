@@ -108,7 +108,7 @@ class Feeds extends Component
                     $urlModel->url = $permalink;
 
                     if (!$urlModel->validate()) {
-                        Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, 'application');
+                        Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, __METHOD__);
                         continue;
                     }
                 }

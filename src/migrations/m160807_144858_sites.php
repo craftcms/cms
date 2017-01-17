@@ -434,7 +434,7 @@ class m160807_144858_sites extends Migration
             try {
                 $settings = Json::decode($field['settings']);
             } catch (InvalidParamException $e) {
-                Craft::error('Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']);
+                Craft::error('Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings'], __METHOD__);
                 $settings = [];
             }
 

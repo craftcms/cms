@@ -19,7 +19,7 @@ class m151016_133600_delete_asset_thumbnails extends Migration
      */
     public function safeUp()
     {
-        Craft::info('Deleting Asset thumbnails');
+        Craft::info('Deleting Asset thumbnails', __METHOD__);
         $folder = Craft::$app->getPath()->getAssetsPath().DIRECTORY_SEPARATOR.'thumbs';
         FileHelper::removeDirectory($folder);
     }

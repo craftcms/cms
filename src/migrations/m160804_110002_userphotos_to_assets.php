@@ -33,33 +33,33 @@ class m160804_110002_userphotos_to_assets extends Migration
         // Make sure the userphotos folder actually exists
         FileHelper::createDirectory($this->_basePath);
 
-        Craft::info('Removing __default__ folder');
+        Craft::info('Removing __default__ folder', __METHOD__);
         FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
 
-        Craft::info('Changing the relative path from username/original.ext to original.ext');
+        Craft::info('Changing the relative path from username/original.ext to original.ext', __METHOD__);
         $affectedUsers = $this->_moveUserphotos();
 
-        Craft::info('Creating a private Yii Volume as default for Users');
+        Craft::info('Creating a private Volume as default for Users', __METHOD__);
         $volumeId = $this->_createUserphotoVolume();
 
-        Craft::info('Setting the Volume as the default one for userphoto uploads');
+        Craft::info('Setting the Volume as the default one for userphoto uploads', __METHOD__);
         $this->_setUserphotoVolume($volumeId);
 
-        Craft::info('Converting photos to Assets');
+        Craft::info('Converting photos to Assets', __METHOD__);
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
-        Craft::info('Updating Users table to drop the photo column and add photoId column.');
+        Craft::info('Updating Users table to drop the photo column and add photoId column.', __METHOD__);
         $this->dropColumn('{{%users}}', 'photo');
         $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
-        Craft::info('Setting the photoId value');
+        Craft::info('Setting the photoId value', __METHOD__);
         $this->_setPhotoIdValues($affectedUsers);
 
-        Craft::info('Removing all the subfolders.');
+        Craft::info('Removing all the subfolders.', __METHOD__);
         $this->_removeSubdirectories();
 
-        Craft::info('All done');
+        Craft::info('All done', __METHOD__);
 
         return true;
     }

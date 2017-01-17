@@ -318,14 +318,14 @@ class Tasks extends Component
                 $task->totalSteps = $task->getTotalSteps();
                 $task->status = Task::STATUS_RUNNING;
 
-                Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
+                Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.', __METHOD__);
 
                 for ($step = 0; $step < $task->totalSteps; $step++) {
                     // Update the task
                     $task->currentStep = $step + 1;
                     $this->saveTask($task);
 
-                    Craft::info('Starting step '.($step + 1).' of '.$task->totalSteps.' total steps.');
+                    Craft::info('Starting step '.($step + 1).' of '.$task->totalSteps.' total steps.', __METHOD__);
 
                     // Run it.
                     if (($result = $task->runStep($step)) !== true) {

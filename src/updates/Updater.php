@@ -302,7 +302,7 @@ class Updater
                 try {
                     FileHelper::removeFile($fileToDelete);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$fileToDelete}\": ".$e->getMessage());
+                    Craft::warning("Unable to delete the file \"{$fileToDelete}\": ".$e->getMessage(), __METHOD__);
                 }
 
                 // Delete empty directories
@@ -319,7 +319,7 @@ class Updater
         try {
             FileHelper::clearDirectory($tempDir);
         } catch (\Exception $e) {
-            Craft::warning("Could not clear the directory {$tempDir}: ".$e->getMessage());
+            Craft::warning("Could not clear the directory {$tempDir}: ".$e->getMessage(), __METHOD__);
         }
     }
 
@@ -360,7 +360,7 @@ class Updater
             // Clear out any existing files in the source directory
             FileHelper::clearDirectory($unzipFolder);
         } catch (\Exception $e) {
-            Craft::error("Could not clear the directory {$unzipFolder}: ".$e->getMessage());
+            Craft::error("Could not clear the directory {$unzipFolder}: ".$e->getMessage(), __METHOD__);
 
             return false;
         }

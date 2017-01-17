@@ -134,7 +134,7 @@ class MigrationManager extends Component
         $migrationNames = $this->getNewMigrations();
 
         if (empty($migrationNames)) {
-            Craft::info('No new migration found. Your system is up-to-date.');
+            Craft::info('No new migration found. Your system is up-to-date.', __METHOD__);
 
             return true;
         }
@@ -157,17 +157,17 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage);
+        Craft::info($logMessage, __METHOD__);
 
         foreach ($migrationNames as $migrationName) {
             if (!$this->migrateUp($migrationName)) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.');
+                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
 
                 return false;
             }
         }
 
-        Craft::info('Migrated up successfully.');
+        Craft::info('Migrated up successfully.', __METHOD__);
 
         return true;
     }
@@ -188,7 +188,7 @@ class MigrationManager extends Component
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
-            Craft::info('No migration has been done before.');
+            Craft::info('No migration has been done before.', __METHOD__);
 
             return true;
         }
@@ -200,17 +200,17 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage);
+        Craft::info($logMessage, __METHOD__);
 
         foreach ($migrationNames as $migrationName) {
             if (!$this->migrateDown($migrationName)) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.');
+                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
 
                 return false;
             }
         }
 
-        Craft::info('Migrated down successfully.');
+        Craft::info('Migrated down successfully.', __METHOD__);
 
         return true;
     }
@@ -235,7 +235,7 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
-        Craft::info("Applying $migrationName");
+        Craft::info("Applying $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -248,19 +248,19 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
             $this->addMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
         }
 
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
 
             if ($success) {
-                Craft::info($output);
+                Craft::info($output, __METHOD__);
             } else {
-                Craft::error($output);
+                Craft::error($output, __METHOD__);
             }
         }
 
@@ -287,7 +287,7 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
-        Craft::info("Reverting $migrationName");
+        Craft::info("Reverting $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -300,19 +300,19 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Reverted $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::info("Reverted $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
             $this->removeMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to revert $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::error("Failed to revert $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
         }
 
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
 
             if ($success) {
-                Craft::info($output);
+                Craft::info($output, __METHOD__);
             } else {
-                Craft::error($output);
+                Craft::error($output, __METHOD__);
             }
         }
 

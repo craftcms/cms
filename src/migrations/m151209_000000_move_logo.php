@@ -20,7 +20,7 @@ class m151209_000000_move_logo extends Migration
         try {
             rename($pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo', $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo');
         } catch (ErrorException $e) {
-            Craft::warning('Unable to rename the logo path: '.$e->getMessage());
+            Craft::warning('Unable to rename the logo path: '.$e->getMessage(), __METHOD__);
         }
     }
 

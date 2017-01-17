@@ -341,7 +341,7 @@ class UtilitiesController extends Controller
                 try {
                     FileHelper::clearDirectory($action);
                 } catch (\Exception $e) {
-                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage());
+                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
@@ -388,7 +388,7 @@ class UtilitiesController extends Controller
             try {
                 FileHelper::removeFile($zipPath);
             } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage());
+                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage(), __METHOD__);
             }
         }
 
@@ -575,13 +575,13 @@ class UtilitiesController extends Controller
         }
 
         if (!is_file($iconPath)) {
-            Craft::warning("Utility icon file doesn't exist: {$iconPath}");
+            Craft::warning("Utility icon file doesn't exist: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultUtilityIconSvg($class);
         }
 
         if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-            Craft::warning("Utility icon file is not an SVG: {$iconPath}");
+            Craft::warning("Utility icon file is not an SVG: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultUtilityIconSvg($class);
         }

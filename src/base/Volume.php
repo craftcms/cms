@@ -184,7 +184,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             $result = $this->filesystem()->delete($path);
         } catch (FileNotFoundException $exception) {
             // Make a note of it, but otherwise - mission accomplished!
-            Craft::info($exception->getMessage());
+            Craft::info($exception->getMessage(), __METHOD__);
             $result = true;
         }
 

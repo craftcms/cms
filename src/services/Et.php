@@ -216,7 +216,7 @@ class Et extends Component
         $response = $client->request('get', $url);
 
         if ($response->getStatusCode() != 200) {
-            Craft::warning('Error in downloading '.$url.' Response: '.$response->getBody());
+            Craft::warning('Error in downloading '.$url.' Response: '.$response->getBody(), __METHOD__);
 
             return false;
         }

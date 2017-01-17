@@ -226,7 +226,7 @@ class Config extends Component
      * ```php
      * if (Craft::$app->getConfig()->exists('myConfigSetting', 'myplugin'))
      * {
-     *     Craft::info('This site has some pretty useless config settings.');
+     *     Craft::info('This site has some pretty useless config settings.', __METHOD__);
      * }
      * ```
      *
@@ -749,7 +749,7 @@ class Config extends Component
             }
             $this->_useFileLocks = true;
         } catch (\Exception $e) {
-            Craft::warning('Write lock test failed: '.$e->getMessage());
+            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
         }
 
         // Cache for two months

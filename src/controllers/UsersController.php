@@ -1129,7 +1129,7 @@ class UsersController extends Controller
                 FileHelper::removeFile($fileLocation);
             }
 
-            Craft::error('There was an error uploading the photo: '.$exception->getMessage());
+            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
 
             return $this->asErrorJson(Craft::t('app',
                 'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));

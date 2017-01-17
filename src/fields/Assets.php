@@ -405,7 +405,7 @@ class Assets extends BaseRelationField
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
                 }
 

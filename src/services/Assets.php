@@ -835,7 +835,7 @@ class Assets extends Component
                 try {
                     return $assetTransforms->ensureTransformUrlByIndexModel($index);
                 } catch (ImageException $exception) {
-                    Craft::warning($exception->getMessage());
+                    Craft::warning($exception->getMessage(), __METHOD__);
                     $assetTransforms->deleteTransformIndex($index->id);
 
                     return UrlHelper::resourceUrl('404');

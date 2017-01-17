@@ -340,7 +340,7 @@ class Updates extends Component
 
         // Make sure it's HTTPS
         if (false && strpos($plugin->changelogUrl, 'https://') !== 0) {
-            Craft::warning('The “'.$plugin->name.'” plugin has a changelog URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->changelogUrl.').');
+            Craft::warning('The “'.$plugin->name.'” plugin has a changelog URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->changelogUrl.').', __METHOD__);
 
             return null;
         }
@@ -363,14 +363,14 @@ class Updates extends Component
             $response = $client->get($plugin->changelogUrl, []);
 
             if ($response->getStatusCode() !== 200) {
-                Craft::warning('Error in calling '.$plugin->changelogUrl.'. Response: '.$response->getBody());
+                Craft::warning('Error in calling '.$plugin->changelogUrl.'. Response: '.$response->getBody(), __METHOD__);
 
                 return null;
             }
 
             return (string)$response->getBody();
         } catch (\Exception $e) {
-            Craft::error('There was a problem getting the update feed for “'.$plugin->name.'”, so it was skipped: '.$e->getMessage());
+            Craft::error('There was a problem getting the update feed for “'.$plugin->name.'”, so it was skipped: '.$e->getMessage(), __METHOD__);
 
             return null;
         }
@@ -511,7 +511,7 @@ class Updates extends Component
                 $update = $this->getUpdates();
 
                 if ($handle === 'craft') {
-                    Craft::info('Updating from '.$update->app->localVersion.' to '.$update->app->latestVersion.'.');
+                    Craft::info('Updating from '.$update->app->localVersion.' to '.$update->app->latestVersion.'.', __METHOD__);
                 } else {
                     if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
                         throw new InvalidPluginException($handle);
@@ -523,7 +523,7 @@ class Updates extends Component
                     }
 
                     $pluginUpdate = $update->plugins[$plugin->packageName];
-                    Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.");
+                    Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.", __METHOD__);
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);
@@ -558,11 +558,11 @@ class Updates extends Component
 
             return $result;
         } catch (UserException $e) {
-            Craft::error('Error processing the update download: '.$e->getMessage());
+            Craft::error('Error processing the update download: '.$e->getMessage(), __METHOD__);
 
             return ['success' => false, 'message' => $e->getMessage()];
         } catch (\Exception $e) {
-            Craft::error('Error processing the update download: '.$e->getMessage());
+            Craft::error('Error processing the update download: '.$e->getMessage(), __METHOD__);
 
             return [
                 'success' => false,
@@ -585,7 +585,7 @@ class Updates extends Component
             $updater = new Updater();
             $updater->backupFiles($uid, $handle);
 
-            Craft::info('Finished backing up files.');
+            Craft::info('Finished backing up files.', __METHOD__);
 
             return ['success' => true];
         } catch (\Exception $e) {

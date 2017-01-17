@@ -1186,7 +1186,7 @@ class Elements extends Component
                                                     $replace[] = $this->parseRefs((string)$value);
                                                 } catch (\Exception $e) {
                                                     // Log it
-                                                    Craft::error('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage());
+                                                    Craft::error('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage(), __METHOD__);
 
                                                     // Replace the token with the original ref tag
                                                     $replace[] = $refTag['matches'][0];

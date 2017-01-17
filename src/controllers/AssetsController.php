@@ -168,7 +168,7 @@ class AssetsController extends Controller
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
                 } catch (AssetConflictException $exception) {
                     // Okay, get a replacement name and re-save Asset.
@@ -180,7 +180,7 @@ class AssetsController extends Controller
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
 
                     return $this->asJson([
@@ -193,7 +193,7 @@ class AssetsController extends Controller
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
                     }
                     throw $exception;
                 }

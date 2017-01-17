@@ -705,7 +705,7 @@ class Plugins extends Component
 
         // Make sure it's valid
         if (!$this->validateConfig($config)) {
-            Craft::warning("Missing 'class', 'name', or 'version' keys for plugin \"{$handle}\".");
+            Craft::warning("Missing 'class', 'name', or 'version' keys for plugin \"{$handle}\".", __METHOD__);
 
             return null;
         }
@@ -1045,7 +1045,7 @@ class Plugins extends Component
         $composerPath = $pluginPath.DIRECTORY_SEPARATOR.'composer.json';
 
         if (!is_file($composerPath)) {
-            Craft::warning("Could not find a composer.json file for the plugin '$handle'.");
+            Craft::warning("Could not find a composer.json file for the plugin '$handle'.", __METHOD__);
 
             return null;
         }
@@ -1053,14 +1053,14 @@ class Plugins extends Component
         try {
             $composer = Json::decode(file_get_contents($composerPath));
         } catch (\Exception $e) {
-            Craft::warning("Could not decode {$composerPath}: ".$e->getMessage());
+            Craft::warning("Could not decode {$composerPath}: ".$e->getMessage(), __METHOD__);
 
             return null;
         }
 
         // Validate the package name
         if (!isset($composer['name']) || strpos($composer['name'], '/') === false) {
-            Craft::warning("Invalid package name in composer.json for the plugin '$handle'".(isset($composer['name']) ? ': '.$composer['name'] : '').'.');
+            Craft::warning("Invalid package name in composer.json for the plugin '$handle'".(isset($composer['name']) ? ': '.$composer['name'] : '').'.', __METHOD__);
 
             return null;
         }
@@ -1074,7 +1074,7 @@ class Plugins extends Component
         $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class, $basePath);
 
         if ($class === null) {
-            Craft::warning("Unable to determine the Plugin class for {$handle}.");
+            Craft::warning("Unable to determine the Plugin class for {$handle}.", __METHOD__);
 
             return null;
         }

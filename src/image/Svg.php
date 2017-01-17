@@ -83,7 +83,7 @@ class Svg extends Image
     public function loadImage(string $path)
     {
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
+            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -92,7 +92,7 @@ class Svg extends Image
         $svg = file_get_contents($path);
 
         if ($svg === false) {
-            Craft::error('Tried to read the SVG contents at '.$path.', but could not.');
+            Craft::error('Tried to read the SVG contents at '.$path.', but could not.', __METHOD__);
             throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
         }
 

@@ -143,7 +143,7 @@ class Raster extends Image
         $imageService = Craft::$app->getImages();
 
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
+            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -388,7 +388,7 @@ class Raster extends Image
                 try {
                     rename($tempFile, $targetPath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": ".$e->getMessage());
+                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": ".$e->getMessage(), __METHOD__);
                 }
             } else {
                 $this->_image->save($targetPath, $options);
@@ -453,7 +453,7 @@ class Raster extends Image
 
             return $exif->toArray();
         } catch (NotSupportedException $exception) {
-            Craft::error($exception->getMessage());
+            Craft::error($exception->getMessage(), __METHOD__);
 
             return [];
         }

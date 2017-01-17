@@ -382,7 +382,7 @@ class DashboardController extends Controller
                             'recursive' => false
                         ]);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }
 
@@ -558,13 +558,13 @@ class DashboardController extends Controller
         }
 
         if (!is_file($iconPath)) {
-            Craft::warning("Widget icon file doesn't exist: {$iconPath}");
+            Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
         if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-            Craft::warning("Widget icon file is not an SVG: {$iconPath}");
+            Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultWidgetIconSvg($widget);
         }
