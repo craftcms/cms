@@ -457,6 +457,11 @@ class Updates extends Component
     {
         // Encode any HTML within the notes
         $notes = htmlentities($notes, null, 'UTF-8');
+
+        // Except for `> blockquotes`
+        $notes = preg_replace('/^(\s*)&gt;/m', '$1>', $notes);
+
+        // Parse as Markdown
         $release->notes = Markdown::process($notes, 'gfm');
     }
 
