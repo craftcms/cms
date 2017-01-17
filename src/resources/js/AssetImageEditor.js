@@ -528,7 +528,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 } else {
                     imageZoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
                 }
-                var state = this.cropperState;
 
                 // In cases when for some reason we've already zoomed in on the image,
                 // use existing zoom.
@@ -546,37 +545,52 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     height: scaledImageDimensions.height * imageZoomRatio
                 };
 
-                // Make sure we reposition the image as well to focus on the same image area
-                if (state) {
-                    var deltaX = state.offsetX;
-                    var deltaY = state.offsetY;
-                    var angleInRadians = degrees * (Math.PI / 180);
+                var scaleFactor = 1;
 
-                    // Calculate how the cropper would need to move in a circle to maintain
-                    // the focus on the same region if the image was rotated with zoom intact.
-                    newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
-                    newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
-
-                    var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
-
-                    var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio;
-                    var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio;
-
-                    imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
-                    imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
-
-                    state.offsetX = newDeltaX;
-                    state.offsetY = newDeltaY;
-
-                    var temp = state.width;
-                    state.width = state.height;
-                    state.height = temp;
-
-                    if (state)
-                    {
-                        this.storeCropperState(state);
-                    }
+                // It's possible that the rotated image won't fit the editor.
+                // Since viewport's width will become height and vice-versa,
+                // we're looking at the inverse property
+                if (this.editorHeight < this.viewport.width) {
+                    scaleFactor = this.editorHeight / this.viewport.width;
+                } else if (this.editorWidth < this.viewport.height) {
+                    scaleFactor = this.editorWidth / this.viewport.height;
+                } else if (this.editorWidth > this.viewport.height && this.editorHeight > this.viewport.width) {
+                    // What if we had downsized before and we have the chance to upsize?
+                    scaleFactor = Math.min(this.editorHeight / this.viewport.width, this.editorWidth / this.viewport.height);
                 }
+
+                if (scaleFactor < 1) {
+                    imageProperties.width *= scaleFactor;
+                    imageProperties.height *= scaleFactor;
+                }
+
+                var state = this.cropperState;
+                // Make sure we reposition the image as well to focus on the same image area
+                var deltaX = state.offsetX;
+                var deltaY = state.offsetY;
+                var angleInRadians = degrees * (Math.PI / 180);
+
+                // Calculate how the cropper would need to move in a circle to maintain
+                // the focus on the same region if the image was rotated with zoom intact.
+                newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
+                newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
+
+                var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio;
+                var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio;
+
+                imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
+                imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
+
+                state.offsetX = newDeltaX;
+                state.offsetY = newDeltaY;
+
+                var temp = state.width;
+                state.width = state.height;
+                state.height = temp;
+
+                this.storeCropperState(state);
 
                 this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration,
