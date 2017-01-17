@@ -462,7 +462,13 @@ class Updates extends Component
         $notes = preg_replace('/^(\s*)&gt;/m', '$1>', $notes);
 
         // Parse as Markdown
-        $release->notes = Markdown::process($notes, 'gfm');
+        $notes = Markdown::process($notes, 'gfm');
+
+        // Notes/tips
+        $notes = preg_replace('/<blockquote><p>\{(note|tip)\}/', '<blockquote class="note $1"><p>', $notes);
+
+        // Set them on the release model
+        $release->notes = $notes;
     }
 
     /**
