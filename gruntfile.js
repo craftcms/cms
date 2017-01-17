@@ -58,7 +58,7 @@ module.exports = function(grunt) {
             otherjs: {
 				expand: true,
 				cwd: 'src/resources/js',
-				src: ['*.js', '!Craft.js'],
+				src: ['*.js', '!*.min.js', '!Craft.js'],
 				dest: 'src/resources/js',
 				ext: '.min.js'
 			}
