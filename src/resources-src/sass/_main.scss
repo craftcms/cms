@@ -25,8 +25,8 @@ body { font-size: 13px; line-height: 18px; color: $textcolor; }
 body.rtl { direction: rtl; }
 body, input, select, textarea { @include sans-serif-font; }
 
-.first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
-.last,  h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
+.first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, blockquote:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
+.last,  h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  blockquote:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
 
 body.rtl .ltr { text-align: left; direction: rtl; }
 
@@ -177,6 +177,14 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .readable ol { @include padding-left(2em); }
 .readable ul li { list-style-type: disc; }
 .readable li + li { margin-top: 0.25em; }
+.readable blockquote { margin: 16px 0; }
+.readable blockquote:not(.note) { padding: 0 16px; color: $mediumtextcolor; @include border-left(4px solid $hairlineColor); }
+.readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; @include padding-left(56px); border: 1px solid; }
+.readable blockquote.note:not(.tip) { color: $errorcolor; border-color: $errorcolor; }
+.readable blockquote.note.tip { color: $linkcolor; border-color: $linkcolor; }
+.readable blockquote.note:before { @include icon; position: absolute; top: 12px; @include left(16px); font-size: 30px; width: 24px; }
+.readable blockquote.note:not(.tip):before { content: 'alert'; color: $errorcolor; }
+.readable blockquote.note.tip:before { content: 'lightbulb'; color: $linkcolor; }
 
 /* text styles */
 .topalign { vertical-align: top; }
