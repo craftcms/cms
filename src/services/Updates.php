@@ -286,6 +286,8 @@ class Updates extends Component
      */
     public function checkPluginChangelogs(Update $update)
     {
+        $pluginsService = Craft::$app->getPlugins();
+
         foreach ($update->plugins as $pluginUpdate) {
             // Only check plugins where the update status isn't already known from the ET response
             if ($pluginUpdate->status !== PluginUpdateStatus::Unknown) {
@@ -294,7 +296,7 @@ class Updates extends Component
 
             // Get the plugin
             /** @var Plugin $plugin */
-            if (($plugin = Craft::$app->getPlugins()->getPluginByPackageName($pluginUpdate->packageName)) === null) {
+            if (($plugin = $pluginsService->getPluginByPackageName($pluginUpdate->packageName)) === null) {
                 continue;
             }
 
