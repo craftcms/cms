@@ -1096,31 +1096,34 @@ class AssetTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset)
     {
         $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
-        $dir = Craft::$app->getPath()->getResizedAssetsPath();
+        $dirs = [
+            Craft::$app->getPath()->getResizedAssetsPath(),
+            Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
+        ];
 
-        try {
-            $handle = opendir($dir);
-            if ($handle === false) {
-                Craft::warning("Unable to open directory: $dir");
+        foreach ($dirs as $dir) {
+            try {
+                $handle = opendir($dir);
+                if ($handle === false) {
+                    Craft::warning("Unable to open directory: $dir");
 
-                return;
-            }
-            while (($subDir = readdir($handle)) !== false) {
-                if ($subDir === '.' || $subDir === '..') {
-                    continue;
+                    return;
                 }
-                $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
-                if (!is_file($path)) {
-                    continue;
+                while (($subDir = readdir($handle)) !== false) {
+                    if ($subDir === '.' || $subDir === '..') {
+                        continue;
+                    }
+                    $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
+                    if (!is_file($path)) {
+                        continue;
+                    }
+                    FileHelper::removeFile($path);
                 }
-                FileHelper::removeFile($path);
+                closedir($handle);
+            } catch (ErrorException $e) {
+                Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage());
             }
-            closedir($handle);
-        } catch (ErrorException $e) {
-            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage());
         }
-
-        Io::deleteFolder(Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id, true);
     }
 
     /**
