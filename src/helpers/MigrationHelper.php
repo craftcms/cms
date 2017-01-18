@@ -76,15 +76,16 @@ class MigrationHelper
      * @param string          $tableName
      * @param string|string[] $columns
      * @param bool            $unique
+     * @param bool            $foreignKey
      *
      * @return bool
      */
-    public static function doesIndexExist(string $tableName, $columns, bool $unique = false): bool
+    public static function doesIndexExist(string $tableName, $columns, bool $unique = false, bool $foreignKey = false): bool
     {
         $columns = ArrayHelper::toArray($columns);
 
         $allIndexes = Craft::$app->getDb()->getSchema()->findIndexes($tableName);
-        $needleIndex = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique);
+        $needleIndex = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique, $foreignKey);
 
         if (array_key_exists($needleIndex, $allIndexes)) {
             return true;
@@ -137,12 +138,7 @@ class MigrationHelper
                     continue;
                 }
 
-                $columns = [];
-                foreach ($fkInfo as $count => $value) {
-                    if ($count !== 0) {
-                        $columns[] = $count;
-                    }
-                }
+                $columns = self::_getColumnsForFK($fkInfo, true);
 
                 static::dropForeignKey($sourceTable, $columns, $migration);
             }
@@ -167,7 +163,7 @@ class MigrationHelper
             if ($sourceTable === $rawOldName) {
                 $oldValue = $fks[$sourceTable];
                 unset($fks[$sourceTable]);
-                $fks[$newName] = $oldValue;
+                $fks[$rawNewName] = $oldValue;
             }
         }
 
@@ -182,43 +178,20 @@ class MigrationHelper
 
         // Restore foreign keys pointing to this table.
         foreach ($fks as $sourceTable => $fk) {
-
-            // Load up extended FK information for the source table.
-            $sourceTableSchema = Craft::$app->getDb()->getSchema()->getTableSchema($sourceTable);
-
             foreach ($fk as $num => $row) {
 
                 // Skip if this FK is from *and* to this table
-                if ($sourceTable === $rawOldName && $row[0] === $rawOldName) {
+                if ($sourceTable === $rawNewName && $row[0] === $rawNewName) {
                     continue;
                 }
 
-                $index = 0;
-
-                foreach ($sourceTableSchema->foreignKeys as $index => $value) {
-                    if ($value[0] === $rawOldName) {
-                        $value[0] = $rawNewName;
-                    }
-
-                    if ($fk[$num] === $value) {
-                        break;
-                    }
-                }
-
                 $refColumns = self::_getColumnsForFK($row);
-
-                $sourceColumns = [];
-                foreach ($row as $key => $column) {
-                    if ($key !== 0) {
-                        $sourceColumns[] = $key;
-                    }
-                }
+                $sourceColumns = self::_getColumnsForFK($row, true);
 
                 $refTable = $row[0];
 
-                $extendedForeignKeys = $sourceTableSchema->getExtendedForeignKeys();
-                $onUpdate = $extendedForeignKeys[$index]['updateType'];
-                $onDelete = $extendedForeignKeys[$index]['deleteType'];
+                $onUpdate = $row['updateType'];
+                $onDelete = $row['deleteType'];
 
                 static::restoreForeignKey($sourceTable, $sourceColumns, $refTable, $refColumns, $onUpdate, $onDelete, $migration);
             }
@@ -296,7 +269,7 @@ class MigrationHelper
         // Drop all the FKs because any one of them might be relying on an index we're about to drop
         foreach ($table->foreignKeys as $key => $fkInfo) {
 
-            $columns = self::_getColumnsForFK($fkInfo);
+            $columns = self::_getColumnsForFK($fkInfo, true);
 
             // Save something to restore later.
             $columnFks[] = [$fkInfo, $key];
@@ -327,30 +300,11 @@ class MigrationHelper
 
         foreach ($allOtherTableFks as $refTableName => $fkInfo) {
 
-            // Load up extended FK information for the reference table.
-            $refTable = Craft::$app->getDb()->getSchema()->getTableSchema($refTableName);
-
-            $index = 0;
-
             // Figure out the reference columns.
             foreach ($fkInfo as $number => $fk) {
-
-                foreach ($refTable->foreignKeys as $index => $value) {
-                    if ($fkInfo[$number] === $value) {
-                        break;
-                    }
-                }
-
-                $extendedForeignKeys = $refTable->getExtendedForeignKeys();
-                $allOtherTableFks[$refTableName][$number]['updateType'] = $extendedForeignKeys[$index]['updateType'];
-                $allOtherTableFks[$refTableName][$number]['deleteType'] = $extendedForeignKeys[$index]['deleteType'];
-
-                $columns = [];
-                foreach ($fk as $count => $row) {
-                    if ($count !== 0) {
-                        $columns[] = $count;
-                    }
-                }
+                $allOtherTableFks[$refTableName][$number]['updateType'] = $fk['updateType'];
+                $allOtherTableFks[$refTableName][$number]['deleteType'] = $fk['deleteType'];
+                $columns = self::_getColumnsForFK($fk, true);
 
                 static::dropForeignKey($refTableName, $columns, $migration);
             }
@@ -394,11 +348,10 @@ class MigrationHelper
                         if ($fk[$count] === $oldName) {
                             unset($fk[$count]);
                             $fk[$count] = $newName;
-                            $count = $newName;
                         }
 
                         // Save the ref column.
-                        $refColumns[] = $count;
+                        $refColumns[] = $row;
                     }
                 }
 
@@ -476,8 +429,10 @@ class MigrationHelper
         $fks = [];
 
         foreach ($allTables as $otherTable) {
-            foreach ($otherTable->foreignKeys as $fk) {
+            foreach ($otherTable->foreignKeys as $key => $fk) {
                 if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
+                    $fk['updateType'] = $otherTable->getExtendedForeignKeys()[$key]['updateType'];
+                    $fk['deleteType'] = $otherTable->getExtendedForeignKeys()[$key]['deleteType'];
                     $fks[$otherTable->name][] = $fk;
                 }
             }
@@ -649,7 +604,13 @@ class MigrationHelper
     public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
-        $indexName = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique);
+
+        if (MigrationHelper::doesIndexExist($tableName, $columns, $unique)) {
+            $indexName = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique);
+        } else {
+            // Maybe it's a FK index?
+            $indexName = Craft::$app->getDb()->getIndexName($tableName, $columns, $unique, true);
+        }
 
         if ($migration !== null) {
             $migration->dropIndex($indexName, $rawTableName);
@@ -716,16 +677,17 @@ class MigrationHelper
 
     /**
      * @param array $foreignKey
+     * @param bool  $useKey
      *
      * @return array
      */
-    private static function _getColumnsForFK(array $foreignKey): array
+    private static function _getColumnsForFK(array $foreignKey, bool $useKey = false): array
     {
         $columns = [];
 
         foreach ($foreignKey as $key => $fk) {
             if ($key !== 0 && $key !== 'updateType' && $key !== 'deleteType') {
-                $columns[] = $fk;
+                $columns[] = $useKey ? $key : $fk;
             }
         }
 

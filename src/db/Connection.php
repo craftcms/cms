@@ -311,14 +311,15 @@ class Connection extends \yii\db\Connection
      * @param string       $table
      * @param string|array $columns
      * @param bool         $unique
+     * @param bool         $foreignKey
      *
      * @return string
      */
-    public function getIndexName(string $table, $columns, bool $unique = false): string
+    public function getIndexName(string $table, $columns, bool $unique = false, bool $foreignKey = false): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         $columns = ArrayHelper::toArray($columns);
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
+        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
 
         return $this->trimObjectName($name);
     }
