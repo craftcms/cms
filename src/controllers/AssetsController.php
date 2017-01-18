@@ -17,6 +17,7 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\image\Raster ;
 use craft\models\VolumeFolder;
@@ -611,8 +612,8 @@ class AssetsController extends Controller
         $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
-        $filter = $request->getBodyParam('filter');
-        $cropping = $request->getBodyParam('cropData');
+        $cropData = $request->getBodyParam('cropData');
+        $flipData = $request->getBodyParam('flipData');
 
         $asset = $assets->getAssetById($assetId);
 
@@ -634,23 +635,24 @@ class AssetsController extends Controller
             $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
         }
 
+        // Verify parameter adequacy
         if (!in_array($viewportRotation, [0, 90, 180, 270])) {
             throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
         }
 
-        if (is_array($cropping) && array_diff(['width', 'height', 'cornerLeft', 'cornerTop', 'scaledWidth', 'scaledHeight', 'zoomRatio'], array_keys($cropping))) {
-            throw new BadRequestHttpException('Invalid cropping parameters passed');
+        if (is_array($cropData)) {
+            if (array_diff(['x', 'y', 'height', 'width', 'imageDimensions'], array_keys($cropData))) {
+                throw new BadRequestHttpException('Invalid cropping parameters passed');
+            }
+
+            if (!is_array($cropData['imageDimensions'])
+                || empty($cropData['imageDimensions']['width'])
+                || empty($cropData['imageDimensions']['height'])) {
+                throw new BadRequestHttpException('Invalid cropping parameters passed');
+            }
         }
 
         $imageCopy = $asset->getCopyOfFile();
-
-        // If filter is set, apply that
-        if (!empty($filter)) {
-            $className = StringHelper::replace($filter, '-', '\\');
-            $filter = Craft::$app->getImageEffects()->getFilter($className);
-            $filterOptions = $request->getBodyParam('filterOptions', []);
-            $filter->applyAndStore($imageCopy, $filterOptions);
-        }
 
         $imageSize = Image::imageSize($imageCopy);
 
@@ -661,65 +663,37 @@ class AssetsController extends Controller
         $originalImageWidth = $imageSize[0];
         $originalImageHeight = $imageSize[1];
 
-        // Deal with straighten rotation first.
-        if ($imageRotation) {
-            $image->rotate($imageRotation);
+        if (!empty($flipData['x'])) {
+            $image->flipHorizontally();
         }
 
-        if ($cropping) {
-            $baseWidth = $cropping['width'];
-            $baseHeight = $cropping['height'];
-            $scale = $originalImageHeight / $cropping['scaledHeight'] / $cropping['zoomRatio'];
-            $cropAreaHeight = $baseHeight * $scale;
-            $cropAreaWidth = $baseWidth * $scale;
-            $leftOffset = $cropping['cornerLeft'] * $scale;
-            $topOffset = $cropping['cornerTop'] * $scale;
-
-            $image->crop($leftOffset, $leftOffset + $cropAreaWidth, $topOffset, $topOffset + $cropAreaHeight);
-        } elseif ($imageRotation) {
-
-            // If we're not cropping, we're due for some trigonometry!
-            // Convert the angle to radians
-            $angleInRadians = abs(deg2rad($imageRotation));
-
-            // When the image is rotated and scaled up, it forms four right angled
-            // triangles on the viewport sides. The adjacency is in relation to the
-            // rotation angle.
-            $sideTriangleAdjacentLeg = cos($angleInRadians) * $originalImageHeight;
-            $sideTriangleOppositeLeg = sin($angleInRadians) * $originalImageHeight;
-            $bottomTriangleAdjacentLeg = cos($angleInRadians) * $originalImageWidth;
-            $bottomTriangleOppositeLeg = sin($angleInRadians) * $originalImageWidth;
-
-            // For the rotated image, the side and top/bottom edges are composed like this
-            $scaledHeight = $sideTriangleAdjacentLeg + $bottomTriangleOppositeLeg;
-            $scaledWidth = $bottomTriangleAdjacentLeg + $sideTriangleOppositeLeg;
-
-            // Now use that to calculate the zoom factor and zoom in.
-            $zoomFactor = max($scaledHeight / $originalImageHeight, $scaledWidth / $originalImageWidth);
-            $image->resize($image->getWidth() * $zoomFactor, $image->getHeight() * $zoomFactor);
-
-            // In all likelihood this part will change as we implement more cropping tools,
-            // but for now the cropping takes place in the center.
-            $leftOffset = ($image->getWidth() - $originalImageWidth) / 2;
-            $topOffset = ($image->getHeight() - $originalImageHeight) / 2;
-
-            $image->crop($leftOffset, $leftOffset + $originalImageWidth, $topOffset, $topOffset + $originalImageHeight);
+        if (!empty($flipData['y'])) {
+            $image->flipVertically();
         }
 
-        // Now, rotate by viewport rotation degrees. We do this after so that the actual aspect ratio of the
-        // image changes as well, if it was not square.
+        $image->rotate($imageRotation);
         $image->rotate($viewportRotation);
+
+        if ($cropData) {
+            $sizeFactor = $originalImageWidth / $cropData['imageDimensions']['width'];
+            $width = $cropData['width'] * $sizeFactor;
+            $height = $cropData['height'] * $sizeFactor;
+            $x = $cropData['x'] * $sizeFactor;
+            $y = $cropData['y'] * $sizeFactor;
+
+            $image->crop($x, $x + $width, $y, $y + $height);
+        }
         $image->saveAs($imageCopy);
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-            $asset->dateModified = Io::getLastTimeModified($imageCopy);
+            $asset->dateModified = filemtime($imageCopy);
             $assetToSave = $asset;
         } else {
             $newAsset = new Asset();
             // Make sure there are no double spaces, if the filename had a space followed by a
             // capital letter because of Yii's "word" logic.
-            $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($asset->filename, false)));
+            $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($asset->filename, PATHINFO_BASENAME)));
 
             $newAsset->newFilePath = $imageCopy;
             $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
@@ -731,10 +705,10 @@ class AssetsController extends Controller
 
         try {
             $assets->saveAsset($assetToSave);
-            Io::deleteFile($imageCopy, true);
+            FileHelper::removeFile($imageCopy);
         } // No matter what happened, delete the file on server.
         catch (\Exception $exception) {
-            Io::deleteFile($imageCopy, true);
+            FileHelper::removeFile($imageCopy);
             throw $exception;
         }
 

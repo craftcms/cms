@@ -372,6 +372,28 @@ class Raster extends Image
     }
 
     /**
+     * Flips the image horizontally.
+     *
+     * @return static Self reference
+     */
+    public function flipHorizontally(){
+        $this->_image->flipHorizontally();
+
+        return $this;
+    }
+
+    /**
+     * Flips the image vertically.
+     *
+     * @return static Self reference
+     */
+    public function flipVertically(){
+        $this->_image->flipVertically();
+
+        return $this;
+    }
+
+    /**
      * Sets the image quality.
      *
      * @param integer $quality

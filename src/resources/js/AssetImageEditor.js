@@ -49,6 +49,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         editorHeight: 0,
         editorWidth: 0,
         cropperState: false,
+        flipData: {},
 
         // Rendering proxy functions
         renderImage: null,
@@ -60,6 +61,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
             this.assetId = assetId;
+            this.flipData = {x: 0, y: 0};
 
             // Build the modal
             this.$container = $('<form class="modal fitted imageeditor"></form>').appendTo(Garnish.$bod);
@@ -425,9 +427,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param view
          */
         showView: function(view) {
-            // Give the editor a chance of storing something before any dimensions change
-            this.onBeforeViewChange(view);
-
             this.$views.addClass('hidden');
             var $view = this.$views.filter('[data-view="' + view + '"]');
             $view.removeClass('hidden');
@@ -450,18 +449,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Mark the current view
             this.currentView = view;
-        },
-
-        /**
-         * Called right before current view is being changed
-         *
-         * @param view
-         */
-        onBeforeViewChange: function(view) {
-            // If we're switching away from crop mode, store the cropper state.
-            if (this.currentView == 'crop' && view != 'crop') {
-                this.storeCropperState();
-            }
         },
 
         /**
@@ -565,6 +552,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
 
                 var state = this.cropperState;
+
                 // Make sure we reposition the image as well to focus on the same image area
                 var deltaX = state.offsetX;
                 var deltaY = state.offsetY;
@@ -641,6 +629,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 if (axis == 'y') {
                     properties.scaleY = this.image.scaleY * -1;
+                    this.flipData.y = 1 - this.flipData.y;
 
                     // That awkward moment when you flip by one axis and re-position by the other
                     if (this.hasOrientationChanged()) {
@@ -660,6 +649,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     }
                 } else {
                     properties.scaleX = this.image.scaleX * -1;
+                    this.flipData.x = 1 - this.flipData.x;
 
                     // That awkward moment when you flip by one axis and re-position by the other
                     if (this.hasOrientationChanged()) {
@@ -843,8 +833,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         saveImage: function(ev) {
-
-            // TODO TODO
             $button = $(ev.currentTarget);
             if ($button.hasClass('disabled')) {
                 return false;
@@ -861,14 +849,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             };
 
             if (this.cropperState) {
-                postData.cropData = this.cropperState;
+                var cropData = {};
+
+                // Let's keep all the image-editing state logic in JS and modify the data
+                // before sending it off.
+                cropData.height = this.cropperState.height;
+                cropData.width = this.cropperState.width;
+
+                // Translate from center-based coordinates
+                cropData.x = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.height / 2 : this.cropperState.imageDimensions.width / 2) + this.cropperState.offsetX - cropData.width / 2;
+                cropData.y = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.width / 2 : this.cropperState.imageDimensions.height / 2) + this.cropperState.offsetY - cropData.height / 2;
+
+                cropData.imageDimensions = this.cropperState.imageDimensions;
+
+                postData.cropData = cropData;
             }
 
+            postData.flipData = this.flipData;
 
             Craft.postActionRequest('assets/save-image', postData, function(data) {
                 this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
                 this.onSave();
-                this.hide();
+                //this.hide();
             }.bind(this));
         },
 
@@ -1418,6 +1420,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 clipperDeltaX = this.clipper.left - this.image.left;
                 clipperDeltaY = this.clipper.top - this.image.top;
 
+                this.storeCropperState();
                 this.renderCropper();
             } else {
                 this._setMouseCursor(ev);
