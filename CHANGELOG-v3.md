@@ -105,6 +105,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Images::getCanUseImagick()`.
 - Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
+- Added `craft\services\Plugins::isComposerInstall()`.
 - Added `craft\utilities\AssetIndexes`.
 - Added `craft\utilities\ClearCaches`.
 - Added `craft\utilities\DbBackup`.

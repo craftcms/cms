@@ -274,6 +274,18 @@ class Plugins extends Component
     }
 
     /**
+     * Returns whether a plugin was installed via Composer.
+     *
+     * @param string $handle The plugin’s handle
+     *
+     * @return bool
+     */
+    public function isComposerInstall(string $handle): bool
+    {
+        return isset($this->_composerPluginInfo[$handle]);
+    }
+
+    /**
      * Enables a plugin by its handle.
      *
      * @param string $handle The plugin’s handle
@@ -646,7 +658,7 @@ class Plugins extends Component
         }
 
         // If the plugin was manually installed, see if it has a Composer autoloader
-        if (!isset($this->_composerPluginInfo[$handle])) {
+        if ($this->isComposerInstall($handle) === false) {
             $autoloadPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
             if (is_file($autoloadPath)) {
                 require_once $autoloadPath;
@@ -697,7 +709,7 @@ class Plugins extends Component
     public function getConfig(string $handle)
     {
         // Was this plugin installed via Composer?
-        if (isset($this->_composerPluginInfo[$handle])) {
+        if ($this->isComposerInstall($handle) === true) {
             $config = $this->_composerPluginInfo[$handle];
         } else {
             $config = $this->_scrapeConfigFromComposerJson($handle);
