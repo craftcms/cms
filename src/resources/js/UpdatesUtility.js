@@ -8,9 +8,7 @@
             criticalUpdateAvailable: false,
             allowAutoUpdates: null,
 
-            init: function(settings) {
-                this.setSettings(settings, Craft.UpdatesUtility.defaults);
-
+            init: function() {
                 this.$body = Craft.cp.$content.children('.body');
 
                 var $graphic = $('#graphic'),
@@ -77,11 +75,6 @@
 
                 new Update(this, updateInfo, isPlugin);
             }
-        },
-        {
-            defaults: {
-                isComposerInstall: false
-            }
         }
     );
 
@@ -134,13 +127,17 @@
                     $updateBtn;
 
                 // Are auto updates disabled because this is a Composer install?
-                if (this.updatesPage.settings.isComposerInstall) {
-                    $('<div class="btn submit disabled" title="' + Craft.t('app', 'Use Composer to get this update.') + '">' + Craft.t('app', 'Update') + '</div>').appendTo($buttonContainer);
+                if (this.updateInfo.composer) {
                     return;
                 }
 
                 // Is a manual update required?
                 if (this.manualUpdateRequired) {
+                    // Make sure it actually has a download URL
+                    if (!this.updateInfo.manualDownloadEndpoint) {
+                        return;
+                    }
+
                     this.$downloadBtn = $('<div class="btn submit">' + Craft.t('app', 'Download') + '</div>').appendTo($buttonContainer);
                 }
                 else {
@@ -254,7 +251,7 @@
             },
 
             autoUpdateThat: function() {
-                window.location.href = Craft.getUrl('updates/go/' + (this.isPlugin ? this.updateInfo.class.toLowerCase() : 'craft'));
+                window.location.href = Craft.getUrl('updates/go/' + (this.isPlugin ? this.updateInfo.handle.toLowerCase() : 'craft'));
             }
         }
     );

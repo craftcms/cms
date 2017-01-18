@@ -132,6 +132,23 @@ EOD;
         if ($updates) {
             $response = $updates->toArray();
             ArrayHelper::rename($response, 'responseErrors', 'errors');
+
+            // Include whether Craft was Composer-installed
+            if (!empty($response['app'])) {
+                $response['app']['composer'] = App::isComposerInstall();
+            }
+
+            // Include plugin handles and whether they're Composer-installed
+            if (!empty($response['plugins'])) {
+                $pluginsService = Craft::$app->getPlugins();
+                foreach ($response['plugins'] as &$pluginInfo) {
+                    $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
+                    $pluginInfo['handle'] = $plugin->getHandle();
+                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->getHandle());
+                }
+                unset($pluginInfo);
+            }
+
             $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
             return $this->asJson($response);

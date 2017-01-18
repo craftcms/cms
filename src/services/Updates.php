@@ -70,6 +70,11 @@ class Updates extends Component
     // =========================================================================
 
     /**
+     * @var bool Whether to require changelog URLs to begin with https://
+     */
+    public $requireHttpsForChangelogUrls = true;
+
+    /**
      * @var Update|null
      */
     private $_updateModel;
@@ -341,7 +346,7 @@ class Updates extends Component
         }
 
         // Make sure it's HTTPS
-        if (false && strpos($plugin->changelogUrl, 'https://') !== 0) {
+        if ($this->requireHttpsForChangelogUrls && strpos($plugin->changelogUrl, 'https://') !== 0) {
             Craft::warning('The “'.$plugin->name.'” plugin has a changelog URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->changelogUrl.').', __METHOD__);
 
             return null;

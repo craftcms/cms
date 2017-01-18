@@ -94,17 +94,9 @@ class Updates extends Utility
             'Improved',
             'Fixed',
             'Download',
-            'Use Composer to get this update.',
         ]);
 
-        $isComposerInstallJs = Json::encode(App::isComposerInstall());
-        $js = <<<EOD
-//noinspection JSUnresolvedVariable
-new Craft.UpdatesUtility({
-    isComposerInstall: {$isComposerInstallJs}
-});
-EOD;
-        $view->registerJs($js);
+        $view->registerJs('new Craft.UpdatesUtility();');
 
         return $view->renderTemplate('_components/utilities/Updates');
     }
