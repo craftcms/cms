@@ -201,13 +201,16 @@ class MigrationHelper
         // Restore this table's indexes
         foreach ($droppedIndexes as $tableName => $indexInfo) {
             foreach ($indexInfo as $indexName => $columns) {
-                $unique = StringHelper::contains($indexName, '_unq_');
+                // If it's a foreign key index, restoring the FK will restore it.
+                if (!StringHelper::endsWith($indexName, '_fk')) {
+                    $unique = StringHelper::contains($indexName, '_unq_');
 
-                if ($tableName === $rawOldName) {
-                    $tableName = $rawNewName;
+                    if ($tableName === $rawOldName) {
+                        $tableName = $rawNewName;
+                    }
+
+                    static::restoreIndex($tableName, $columns, $unique, $migration);
                 }
-
-                static::restoreIndex($tableName, $columns, $unique, $migration);
             }
         }
 
@@ -267,7 +270,6 @@ class MigrationHelper
 
         // Temporarily drop any FKs and indexes that include this column
         $columnFks = [];
-        $columnIndexes = [];
 
         // Drop all the FKs because any one of them might be relying on an index we're about to drop
         foreach ($table->foreignKeys as $key => $fkInfo) {
@@ -287,9 +289,6 @@ class MigrationHelper
         foreach ($allIndexes as $indexName => $indexColumns) {
             // Check if this was a unique index.
             $unique = StringHelper::contains($indexName, '_unq_');
-
-            // Save something for later to restore.
-            $columnIndexes[] = [$indexColumns, $unique];
 
             // Kill it.
             static::dropIndex($tableName, $indexColumns, $unique, $migration);
@@ -357,17 +356,25 @@ class MigrationHelper
             static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete);
         }
 
-        $columns = [];
-
         // Restore indexes.
-        foreach ($columnIndexes as list($indexColumns, $unique)) {
+        foreach ($allIndexes as $indexName => $indexColumns) {
+            $columns = [];
+
             foreach ($indexColumns as $key => $column) {
                 if ($column === $oldName) {
                     $columns[$key] = $newName;
+                } else {
+                    $columns[$key] = $column;
                 }
             }
 
-            static::restoreIndex($tableName, $columns, $unique, $migration);
+            // Check if this was a unique index.
+            $unique = StringHelper::contains($indexName, '_unq_');
+
+            // Could have already been restored from a FK restoration
+            if (!static::doesIndexExist($tableName, $columns, $unique, true)) {
+                static::restoreIndex($tableName, $columns, $unique, $migration);
+            }
         }
 
         // Restore FK's the column was linking to.
@@ -401,7 +408,10 @@ class MigrationHelper
             $onUpdate = $extendedForeignKeys[$key]['updateType'];
             $onDelete = $extendedForeignKeys[$key]['deleteType'];
 
-            static::restoreForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete);
+            // If this is a self referencing key, it might already exist.
+            if (!static::doesForeignKeyExist($tableName, $columns)) {
+                static::restoreForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete);
+            }
         }
 
 
