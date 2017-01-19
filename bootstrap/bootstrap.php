@@ -18,7 +18,7 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$getArg = function ($param, $unset = true) {
+$getArg = function($param, $unset = true) {
     if (isset($_SERVER['argv'])) {
         foreach ($_SERVER['argv'] as $key => $arg) {
             if (strpos($arg, "--{$param}=") !== false) {
@@ -37,7 +37,7 @@ $getArg = function ($param, $unset = true) {
     return null;
 };
 
-$createFolder = function ($path) {
+$createFolder = function($path) {
     // Code borrowed from Io...
     if (!is_dir($path)) {
         $oldumask = umask(0);
@@ -55,7 +55,7 @@ $createFolder = function ($path) {
     }
 };
 
-$ensureFolderIsReadable = function ($path, $writableToo = false) {
+$ensureFolderIsReadable = function($path, $writableToo = false) {
     $realPath = realpath($path);
 
     // !@file_exists('/.') is a workaround for the terrible is_executable()
