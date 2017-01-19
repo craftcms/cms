@@ -356,6 +356,7 @@ Craft CMS 3.0 Working Changelog
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the `vendor/` folder.
 - Removed support for Yii 1-style controller action paths (e.g. `entries/saveEntry`), which were previously deprecated. Use the Yii 2 style instead (e.g. `entries/save-entry`).
 - Removed the deprecated `activateAccountFailurePath` config setting.
+- Removed the `appId` config setting.
 - Removed the `collation` DB config setting.
 - Removed the `initSQLs` DB config setting.
 - Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.

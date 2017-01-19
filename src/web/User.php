@@ -59,8 +59,7 @@ class User extends \yii\web\User
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
-        $appId = Craft::$app->getConfig()->get('appId');
-        $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
+        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
         $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
         $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
         $config['idParam'] = $stateKeyPrefix.'__id';

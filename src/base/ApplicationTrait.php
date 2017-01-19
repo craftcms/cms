@@ -1213,11 +1213,6 @@ trait ApplicationTrait
     {
         $this->getLog();
 
-        // If there is a custom appId set, apply it here.
-        if ($appId = $this->getConfig()->get('appId')) {
-            $this->id = $appId;
-        }
-
         // Validate some basics on the database configuration file.
         $this->validateDbConfigFile();
 

@@ -39,8 +39,7 @@ class Session extends \yii\web\Session
     public function __construct($config = [])
     {
         // Set the state-based property names
-        $appId = Craft::$app->getConfig()->get('appId');
-        $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
+        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
         $config['flashParam'] = $stateKeyPrefix.'__flash';
         $config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
 
