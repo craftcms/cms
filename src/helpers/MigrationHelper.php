@@ -285,20 +285,14 @@ class MigrationHelper
 
         // Check on any indexes
         foreach ($allIndexes as $indexName => $indexColumns) {
-            // Is there an index that references our old column name?
-            $key = array_search($oldName, $indexColumns, true);
+            // Check if this was a unique index.
+            $unique = StringHelper::contains($indexName, '_unq_');
 
-            // Found a match.
-            if ($key !== false) {
-                // Check if this was a unique index.
-                $unique = StringHelper::contains($indexName, '_unq_');
+            // Save something for later to restore.
+            $columnIndexes[] = [$indexColumns, $unique];
 
-                // Save something for later to restore.
-                $columnIndexes[] = [$indexColumns, $unique];
-
-                // Kill it.
-                static::dropIndex($tableName, $indexColumns, $unique, $migration);
-            }
+            // Kill it.
+            static::dropIndex($tableName, $indexColumns, $unique, $migration);
         }
 
         foreach ($allOtherTableFks as $refTableName => $fkInfo) {
