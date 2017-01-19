@@ -1,33 +1,33 @@
 {
-    "name": "craftcms/craft",
-    "description": "Craft CMS",
-    "keywords": [
-        "craft",
-        "cms",
-        "craftcms",
-        "project"
-    ],
-    "homepage": "https://craftcms.com/",
-    "type": "project",
-    "support": {
-        "email": "support@craftcms.com",
-        "issues": "https://github.com/craftcms/cms/issues?state=open",
-        "forum": "https://craftcms.stackexchange.com/",
-        "source": "https://github.com/craftcms/cms",
-        "docs": "https://craftcms.com/docs",
-        "rss": "https://craftcms.com/changelog.rss"
-    },
-    "minimum-stability": "beta",
-    "require": {
-        "php": ">=7.0.0",
-        "craftcms/cms": "3.0.0-beta.1",
-        "vlucas/phpdotenv": "^2.4.0",
-        "roave/security-advisories": "dev-master"
-    },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://asset-packagist.org"
-        }
-    ]
+  "name": "craftcms/craft",
+  "description": "Craft CMS",
+  "keywords": [
+    "craft",
+    "cms",
+    "craftcms",
+    "project"
+  ],
+  "homepage": "https://craftcms.com/",
+  "type": "project",
+  "support": {
+    "email": "support@craftcms.com",
+    "issues": "https://github.com/craftcms/cms/issues?state=open",
+    "forum": "https://craftcms.stackexchange.com/",
+    "source": "https://github.com/craftcms/cms",
+    "docs": "https://craftcms.com/docs",
+    "rss": "https://craftcms.com/changelog.rss"
+  },
+  "minimum-stability": "beta",
+  "require": {
+    "php": ">=7.0.0",
+    "craftcms/cms": "3.0.0-beta.1",
+    "vlucas/phpdotenv": "^2.4.0",
+    "roave/security-advisories": "dev-master"
+  },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://asset-packagist.org"
+    }
+  ]
 }
