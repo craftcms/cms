@@ -93,10 +93,6 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
         // Validate $type
         if ($this->type !== null) {
             if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
@@ -129,6 +125,10 @@ class MigrateController extends BaseMigrateController
 
         $this->migrationPath = $this->getMigrator()->migrationPath;
         FileHelper::createDirectory($this->migrationPath);
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
         return true;
     }
