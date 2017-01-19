@@ -5,7 +5,7 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into craft/config/dbcache.php, and make your change there.
+ * If you want to change any of these settings, copy it into `config/dbcache.php`, and make your change there.
  */
 
 return [
@@ -16,7 +16,7 @@ return [
     'gcProbability' => 100,
     /**
      * The name of the cache table in the database.  Note that Craft will add the table prefix from your
-     * craft/config/db.php file.
+     * `config/db.php` file.
      */
     'cacheTableName' => '{{%cache}}',
 ];

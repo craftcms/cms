@@ -8,11 +8,11 @@ Craft CMS 3.0 Working Changelog
 - Craft 3 now requires PHP 7.0.0 or later.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
-- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `craft/plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
+- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
 - Plugin icons now must be stored at the root of the plugin’s source directory.
 - Craft now automatically loads the `vendor/autoload.php` file (if it exists) for plugins that were manually installed.
 - Added the `bootstrap/` folder alongside the `src/` folder, with new web.php and console.php bootstrap files.
-- Added PostgreSQL support, which can be enabled by setting the `driver` setting in `craft/config/db.php` to `'pgsql'`.
+- Added PostgreSQL support, which can be enabled by setting the `driver` setting in `config/db.php` to `'pgsql'`.
 - Added the `update/run-pending-migrations` controller action, which can be used as a post-deploy hook for deployment services like DeployBot, to get Craft to automatically run any pending migrations, minimizing site downtime.
 - Added the `backupCommand` config setting, which can be used to override the command Craft executes when creating a database backup.
 - Added the `restoreCommand` config setting, which can be used to override the command Craft executes when restoring a database backup.
@@ -144,11 +144,11 @@ Craft CMS 3.0 Working Changelog
 - Added support for a `.readable` CSS class for views that are primarily textual content.
 - Added php-shellcommand.
 - Added the ZendFeed library.
-- It is now possible to override the default Guzzle settings from `craft/config/guzzle.php`.
+- It is now possible to override the default Guzzle settings from `config/guzzle.php`.
 - Added a “Size” setting to Number fields.
 
 ### Changed
-- The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/craft/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
+- The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/cms/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
 - The default `port` DB config value is now either `3306` (if MySQL) or `5432` (if PostgreSQL).
 - The default `tablePrefix` DB config value is now empty.
 - Renamed the `defaultFilePermissions` config setting to `defaultFileMode`, and it is now `null` by default.
@@ -605,7 +605,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `loginFailure` event to `craft\controllers\UsersController` (replacing the like-named event on `craft\elements\User`).
 
 ### Changed
-- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in `craft/locales/`, you should [update them](https://github.com/craftcms/locales), too.
+- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in `locales/`, you should [update them](https://github.com/craftcms/locales), too.
 - Ported recent changes from Craft 2.
 - The `beforeSaveAssetTransform` event on `craft\services\AssetTransforms` no longer supports an `$isValid` property.
 - The `beforeDeleteAssetTransform` event on `craft\services\AssetTransforms` no longer supports a `$isValid` property.
@@ -771,7 +771,7 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-alpha.2937 - 2016-09-13
 
 ### Changed
-- It is now possible to override 'assetManager', 'cache', 'db', 'mailer', 'locale', 'formatter', and 'log' application components' configurations from `craft/config/app.php`.
+- It is now possible to override 'assetManager', 'cache', 'db', 'mailer', 'locale', 'formatter', and 'log' application components' configurations from `config/app.php`.
 - Renamed `craft\services\Plugins::getPluginInfo()` to `getAllPluginInfo()`.
 - `craft\elements\MatrixBlock::getType()` now throws an `yii\base\InvalidConfigException` if the block type cannot be determined, rather than returning `null`.
 
@@ -781,7 +781,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where fields weren't passing validation, with no visible validation errors, when there was only one Site.
 - Fixed a bug where elements' `afterSave()` functions and fields' `afterElementSave()` functions weren't getting called when saving new elements, which prevented Matrix and relationship fields' values from getting saved.
 - Fixed a PHP error that occurred when executing `migrate` commands from the CLI.
-- Fixed a bug where `craft/config/db.php` was not getting validated before attempting to establish a DB connection.
+- Fixed a bug where `config/db.php` was not getting validated before attempting to establish a DB connection.
 
 ## 3.0.0-alpha.2933 - 2016-09-12
 
@@ -873,7 +873,7 @@ Craft CMS 3.0 Working Changelog
 ## 3.0.0-alpha.2915 - 2016-08-17
 
 ### Added
-- User photos are now assets. (Note that the `craft/storage/userphotos/` folder must be manually moved to a publicly accessible location, and the User Photos asset volume’s settings must be updated accordingly, for user photos to work properly.)
+- User photos are now assets. (Note that the `storage/userphotos/` folder must be manually moved to a publicly accessible location, and the User Photos asset volume’s settings must be updated accordingly, for user photos to work properly.)
 - Added `craft\elements\User::getPhoto()`, which returns the user’s photo asset, if they have one.
 - Added `craft\helpers\StringHelper::randomStringWithChars()`.
 - Added the `beforeSaveContent` event to `craft\services\Content`.
@@ -898,7 +898,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where element queries were not respecting the `offset` property.
 - Fixed a MySQL error that occurred when querying users with the `can` property.
 - Fixed a MySQL error that occurred when executing an element query that had custom query params.
-- Fixed a PHP error that occurred when rendering templates with a `{% paginate %}` tag. (Note that you may need to delete your `craft/storage/runtime/compiled_templates/` folder.)
+- Fixed a PHP error that occurred when rendering templates with a `{% paginate %}` tag. (Note that you may need to delete your `storage/runtime/compiled_templates/` folder.)
 - Fixed a PHP warning that occurred when using `craft\services\Feeds` on a server running PHP 7.
 - Fixed a few bugs related to saving elements on localized sites.
 - Fixed tag group saving and deleting.
@@ -1093,7 +1093,7 @@ Craft CMS 3.0 Working Changelog
 - Ported all new features and improvements that were introduced in [Craft 2.4](http://buildwithcraft.com/updates#build2664).
 - The codebase now follows the [PSR-2](http://www.php-fig.org/psr/psr-2/) coding style.
 - Added support for `config/app.php`, which can return an array that will be merged with Craft’s core application config array.
-- Craft now looks for translation files at `craft/translations/locale-ID/category.php`, where `category` can either be `'app'`, `'site'`, `'yii'`, or a plugin’s handle.
+- Craft now looks for translation files at `translations/locale-ID/category.php`, where `category` can either be `'app'`, `'site'`, `'yii'`, or a plugin’s handle.
 - All user-defined strings in the Control Panel (e.g. section names) are now translated using the `'site'` category, to prevent translation conflicts with Craft’s own Control Panel translations.
 - Craft now uses SwiftMailer to send emails.
 - Added the ability for plugins to provide custom SwiftMailer transport options.
@@ -1107,9 +1107,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The `translationDebugOutput` config setting will now wrap strings with `@` characters if the category is `'app'`, `$` if the category is `'site'`, and `%` for anything else.
-- Web requests are now logged to `craft/storage/logs/web.log`.
-- Web requests that result in 404 errors are now logged to `craft/storage/logs/web-404s.log`.
-- Console requests are now logged to `craft/storage/logs/console.log`.
+- Web requests are now logged to `storage/logs/web.log`.
+- Web requests that result in 404 errors are now logged to `storage/logs/web-404s.log`.
+- Console requests are now logged to `storage/logs/console.log`.
 - Template error handling now works similarly to how it does in Craft 2 when Craft is running in Dev Mode, where the template source is shown in the error view.
 - Twig class names now link to their respective class reference URLs in the error view’s stack trace.
 - The `registercss`, `registerhirescss`, and `registerjs` tags can now be used as tag pairs.
@@ -1197,7 +1197,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::getStructureId()`, `setStructureId()`, and `resolveStructureId()`.
 
 ### Changed
-- Drastically reduced the likelihood of importing a database backup with a falsely-identical schemaVersion as the files stored in `craft/storage/runtime/compiled_classes/`.
+- Drastically reduced the likelihood of importing a database backup with a falsely-identical schemaVersion as the files stored in `storage/runtime/compiled_classes/`.
 
 ### Fixed
 - Updated the sample config files to use PHP 5.4’s short array syntax.
@@ -1209,7 +1209,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when searching for tags within a Tags field.
 - Fixed a PHP error that occurred when using Date/Time fields configured to only show the timepicker.
 - Fixed a bug where asset bundles wouldn’t get re-published if a file within one of its subdirectories was created or updated.
-- Fixed a bug where database backups would get stored in `craft/storagebackups/` instead of `craft/storage/backups/`.
+- Fixed a bug where database backups would get stored in `storagebackups/` instead of `storage/backups/`.
 - Fixed a bug where the Min Build Required error message had encoded HTML.
 
 ## 3.0.0-alpha.2657 - 2015-05-19

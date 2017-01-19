@@ -213,7 +213,7 @@ EOD;
     }
 
     /**
-     * Creates a Guzzle client configured with the given array merged with any default values in craft/config/guzzle.php.
+     * Creates a Guzzle client configured with the given array merged with any default values in config/guzzle.php.
      *
      * @param array $config Guzzle client config settings
      *
@@ -228,7 +228,7 @@ EOD;
             ],
         ];
 
-        // Grab the config from craft/config/guzzle.php that is used on every Guzzle request.
+        // Grab the config from config/guzzle.php that is used on every Guzzle request.
         $guzzleConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GUZZLE);
 
         // Merge default into guzzle config.

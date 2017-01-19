@@ -115,9 +115,9 @@ class EtTransport
         try {
             $missingLicenseKey = empty($this->_model->licenseKey);
 
-            // No craft/config/license.key file and we can't write to the config folder. Don't even make the call home.
+            // No config/license.key file and we can't write to the config folder. Don't even make the call home.
             if ($missingLicenseKey && !$this->_isConfigFolderWritable()) {
-                throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
+                throw new EtException('Craft needs to be able to write to your config/ folder and it can’t.', 10001);
             }
 
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
@@ -281,7 +281,7 @@ class EtTransport
 
         // Make sure we can write to the file
         if (!$this->_isConfigFolderWritable()) {
-            throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
+            throw new EtException('Craft needs to be able to write to your config/ folder and it can’t.', 10001);
         }
 
         // Format the license key into lines of 50 chars

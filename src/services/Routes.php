@@ -52,7 +52,7 @@ class Routes extends Component
     // =========================================================================
 
     /**
-     * Returns the routes defined in craft/config/routes.php
+     * Returns the routes defined in `config/routes.php`
      *
      * @return array
      */

@@ -752,9 +752,9 @@ class Plugins extends Component
     }
 
     /**
-     * Returns info about all of the plugins saved in craft/plugins, whether they’re installed or not.
+     * Returns info about all of the plugins we can find, whether they’re installed or not.
      *
-     * @return array Info about all of the plugins saved in craft/plugins
+     * @return array
      */
     public function getAllPluginInfo()
     {
@@ -1011,7 +1011,7 @@ class Plugins extends Component
     }
 
     /**
-     * Returns an array of folder names that live within the craft/plugins/ folder.
+     * Returns an array of folder names that live within the `plugins/` folder.
      *
      * @return string[]
      * @throws Exception in case of failure

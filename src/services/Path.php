@@ -60,20 +60,20 @@ class Path extends Component
     // =========================================================================
 
     /**
-     * Returns the path to the craft/app/ folder.
+     * Returns the path to the `app/` directory, for manual Craft installs.
      *
-     * @return string The path to the craft/app/ folder.
+     * @return string
      * @throws Exception if Craft was installed via Composer
      */
-    public function getAppPath()
+    public function getAppPath(): string
     {
         if ($this->_appPath !== null) {
             return $this->_appPath;
         }
 
-        // "craft/app" is only a thing for manual installs
+        // app/ is only a thing for manual installs
         if (App::isComposerInstall()) {
-            throw new Exception('There is no "app" folder when Craft is installed via Composer.');
+            throw new Exception('There is no app/ directory when Craft is installed via Composer.');
         }
 
         $basePath = Craft::$app->getBasePath();
@@ -82,12 +82,12 @@ class Path extends Component
     }
 
     /**
-     * Retursn the path to the craft/config/ folder.
+     * Returns the path to the `config/` directory.
      *
-     * @return string The path to the craft/config/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getConfigPath()
+    public function getConfigPath(): string
     {
         if ($this->_configPath !== null) {
             return $this->_configPath;
@@ -103,12 +103,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/plugins/ folder.
+     * Returns the path to the `plugins/` directory.
      *
-     * @return string The path to the craft/plugins/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getPluginsPath()
+    public function getPluginsPath(): string
     {
         if ($this->_pluginsPath !== null) {
             return $this->_pluginsPath;
@@ -124,12 +124,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/ folder.
+     * Returns the path to the `storage/` directory.
      *
-     * @return string The path to the craft/storage/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getStoragePath()
+    public function getStoragePath(): string
     {
         if ($this->_storagePath !== null) {
             return $this->_storagePath;
@@ -145,7 +145,7 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/rebrand/ folder.
+     * Returns the path to the `storage/rebrand/` directory.
      *
      * @return string
      */
@@ -158,12 +158,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/app/vendor/ folder.
+     * Returns the path to the `vendor/` directory.
      *
-     * @return string The path to the craft/app/vendor/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getVendorPath()
+    public function getVendorPath(): string
     {
         if ($this->_vendorPath !== null) {
             return $this->_vendorPath;
@@ -179,11 +179,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/ folder.
+     * Returns the path to the `storage/runtime/` directory.
      *
-     * @return string The path to the craft/storage/runtime/ folder.
+     * @return string
      */
-    public function getRuntimePath()
+    public function getRuntimePath(): string
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'runtime';
         FileHelper::createDirectory($path);
@@ -199,11 +199,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/backups/ folder.
+     * Returns the path to the `storage/backups/` directory.
      *
-     * @return string The path to the craft/storage/backups/ folder.
+     * @return string
      */
-    public function getDbBackupPath()
+    public function getDbBackupPath(): string
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'backups';
         FileHelper::createDirectory($path);
@@ -212,11 +212,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/temp/ folder.
+     * Returns the path to the `storage/runtime/temp/` directory.
      *
-     * @return string The path to the craft/storage/runtime/temp/ folder.
+     * @return string
      */
-    public function getTempPath()
+    public function getTempPath(): string
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'temp';
         FileHelper::createDirectory($path);
@@ -225,11 +225,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/temp/uploads/ folder.
+     * Returns the path to the `storage/runtime/temp/uploads/` directory.
      *
-     * @return string The path to the craft/storage/runtime/temp/uploads/ folder.
+     * @return string
      */
-    public function getTempUploadsPath()
+    public function getTempUploadsPath(): string
     {
         $path = $this->getTempPath().DIRECTORY_SEPARATOR.'uploads';
         FileHelper::createDirectory($path);
@@ -238,11 +238,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/ folder.
+     * Returns the path to the `storage/runtime/assets/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/ folder.
+     * @return string
      */
-    public function getAssetsPath()
+    public function getAssetsPath(): string
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'assets';
         FileHelper::createDirectory($path);
@@ -251,11 +251,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/cache/ folder.
+     * Returns the path to the `storage/runtime/assets/cache/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/cache/ folder.
+     * @return string
      */
-    public function getAssetsCachePath()
+    public function getAssetsCachePath(): string
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'cache';
         FileHelper::createDirectory($path);
@@ -264,11 +264,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/tempuploads/ folder.
+     * Returns the path to the `storage/runtime/assets/tempuploads/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/tempuploads/ folder.
+     * @return string
      */
-    public function getAssetsTempVolumePath()
+    public function getAssetsTempVolumePath(): string
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads';
         FileHelper::createDirectory($path);
@@ -277,11 +277,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/sources/ folder.
+     * Returns the path to the `storage/runtime/assets/sources/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/sources/ folder.
+     * @return string
      */
-    public function getAssetsImageSourcePath()
+    public function getAssetsImageSourcePath(): string
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'sources';
         FileHelper::createDirectory($path);
@@ -290,11 +290,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/cache/resized/ folder.
+     * Returns the path to the `storage/runtime/assets/cache/resized/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/cache/resized/ folder.
+     * @return string
      */
-    public function getResizedAssetsPath()
+    public function getResizedAssetsPath(): string
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'resized';
         FileHelper::createDirectory($path);
@@ -303,11 +303,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/icons/ folder.
+     * Returns the path to the `storage/runtime/assets/icons/` directory.
      *
-     * @return string The path to the craft/storage/runtime/assets/icons/ folder.
+     * @return string
      */
-    public function getAssetsIconsPath()
+    public function getAssetsIconsPath(): string
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'icons';
         FileHelper::createDirectory($path);
@@ -316,11 +316,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/pluginicons/ folder.
+     * Returns the path to the `storage/runtime/pluginicons/` directory.
      *
-     * @return string The path to the craft/storage/runtime/pluginicons/ folder.
+     * @return string
      */
-    public function getPluginIconsPath()
+    public function getPluginIconsPath(): string
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'pluginicons';
         FileHelper::createDirectory($path);
@@ -329,11 +329,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/logs/ folder.
+     * Returns the path to the `storage/logs/` directory.
      *
-     * @return string The path to the craft/storage/logs/ folder.
+     * @return string
      */
-    public function getLogPath()
+    public function getLogPath(): string
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'logs';
         FileHelper::createDirectory($path);
@@ -342,32 +342,32 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/app/resources/ folder.
+     * Returns the path to the `app/resources/` directory.
      *
-     * @return string The path to the craft/app/resources/ folder.
+     * @return string
      */
-    public function getResourcesPath()
+    public function getResourcesPath(): string
     {
         return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'resources';
     }
 
     /**
-     * Returns the path to the craft/app/translations/ folder.
+     * Returns the path to the `app/translations/` directory.
      *
-     * @return string The path to the craft/app/translations/ folder.
+     * @return string
      */
-    public function getCpTranslationsPath()
+    public function getCpTranslationsPath(): string
     {
         return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'translations';
     }
 
     /**
-     * Returns the path to the craft/translations/ folder.
+     * Returns the path to the `translations/` directory.
      *
-     * @return string The path to the craft/translations/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getSiteTranslationsPath()
+    public function getSiteTranslationsPath(): string
     {
         if ($this->_siteTranslationsPath !== null) {
             return $this->_siteTranslationsPath;
@@ -383,22 +383,22 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/app/templates/ folder.
+     * Returns the path to the `app/templates/` directory.
      *
-     * @return string The path to the craft/app/templates/ folder.
+     * @return string
      */
-    public function getCpTemplatesPath()
+    public function getCpTemplatesPath(): string
     {
         return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'templates';
     }
 
     /**
-     * Returns the path to the craft/templates/ folder.
+     * Returns the path to the `templates/` directory.
      *
-     * @return string The path to the craft/templates/ folder.
+     * @return string
      * @throws Exception
      */
-    public function getSiteTemplatesPath()
+    public function getSiteTemplatesPath(): string
     {
         $siteTemplatesPath = Craft::getAlias('@templates');
 
@@ -410,11 +410,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/compiled_templates/ folder.
+     * Returns the path to the `storage/runtime/compiled_templates/` directory.
      *
-     * @return string The path to the craft/storage/runtime/compiled_templates/ folder.
+     * @return string
      */
-    public function getCompiledTemplatesPath()
+    public function getCompiledTemplatesPath(): string
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_templates';
         FileHelper::createDirectory($path);
@@ -423,11 +423,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/sessions/ folder.
+     * Returns the path to the `storage/runtime/sessions/` directory.
      *
-     * @return string The path to the craft/storage/runtime/sessions/ folder.
+     * @return string
      */
-    public function getSessionPath()
+    public function getSessionPath(): string
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'sessions';
         FileHelper::createDirectory($path);
@@ -436,12 +436,12 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the file cache folder.
+     * Returns the path to the file cache directory.
      *
-     * This will be located at craft/storage/runtime/cache/ by default, but that can be overridden with the 'cachePath'
-     * config setting in craft/config/filecache.php.
+     * This will be located at `storage/runtime/cache/` by default, but that can be overridden with the 'cachePath'
+     * config setting in `config/filecache.php`.
      *
-     * @return string The path to the file cache folder.
+     * @return string
      */
     public function getCachePath(): string
     {
@@ -458,11 +458,11 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to craft/config/license.key.
+     * Returns the path to `config/license.key`.
      *
-     * @return string The path to craft/config/license.key.
+     * @return string
      */
-    public function getLicenseKeyPath()
+    public function getLicenseKeyPath(): string
     {
         return $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
     }

@@ -499,9 +499,9 @@ class Updater
             throw new MissingFileException(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
         }
 
-        // Make sure we can write to craft/app/requirements
+        // Make sure we can write to vendor/craftcms/cms/src/requirements
         if (!FileHelper::isWritable(Craft::$app->getPath()->getAppPath().DIRECTORY_SEPARATOR.'requirements')) {
-            throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft CMS needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
+            throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft CMS needs to be able to write to your vendor/craftcms/cms/src/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
         }
 
         // Make a dupe of the requirements file and give it a random file name.

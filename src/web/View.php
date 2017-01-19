@@ -414,15 +414,15 @@ class View extends \yii\web\View
      * - TemplateName/default.htm
      *
      * The actual directory that those files will depend on the current [[setTemplateMode() template mode]]
-     * (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
+     * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/src/templates/` if it’s a Control
      * Panel request).
      *
      * If this is a front-end site request, a folder named after the current site handle will be checked first.
      *
-     * - craft/templates/SiteHandle/...
-     * - craft/templates/...
+     * - templates/SiteHandle/...
+     * - templates/...
      *
-     * And finaly, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
+     * And finally, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
      * segment of the template name matches a plugin’s handle, then Craft will look for a template named with the
      * remaining segments within that plugin’s templates/ subfolder.
      *
@@ -431,29 +431,29 @@ class View extends \yii\web\View
      *
      * - Front-end site requests:
      *
-     *     - craft/templates/SiteHandle/foo/bar
-     *     - craft/templates/SiteHandle/foo/bar.html
-     *     - craft/templates/SiteHandle/foo/bar.twig
-     *     - craft/templates/SiteHandle/foo/bar/index.html
-     *     - craft/templates/SiteHandle/foo/bar/index.twig
-     *     - craft/templates/foo/bar
-     *     - craft/templates/foo/bar.html
-     *     - craft/templates/foo/bar.twig
-     *     - craft/templates/foo/bar/index.html
-     *     - craft/templates/foo/bar/index.twig
+     *     - templates/SiteHandle/foo/bar
+     *     - templates/SiteHandle/foo/bar.html
+     *     - templates/SiteHandle/foo/bar.twig
+     *     - templates/SiteHandle/foo/bar/index.html
+     *     - templates/SiteHandle/foo/bar/index.twig
+     *     - templates/foo/bar
+     *     - templates/foo/bar.html
+     *     - templates/foo/bar.twig
+     *     - templates/foo/bar/index.html
+     *     - templates/foo/bar/index.twig
      *
      * - Control Panel requests:
      *
-     *     - craft/app/templates/foo/bar
-     *     - craft/app/templates/foo/bar.html
-     *     - craft/app/templates/foo/bar.twig
-     *     - craft/app/templates/foo/bar/index.html
-     *     - craft/app/templates/foo/bar/index.twig
-     *     - craft/plugins/foo/templates/bar
-     *     - craft/plugins/foo/templates/bar.html
-     *     - craft/plugins/foo/templates/bar.twig
-     *     - craft/plugins/foo/templates/bar/index.html
-     *     - craft/plugins/foo/templates/bar/index.twig
+     *     - vendor/craftcms/cms/src/templates/foo/bar
+     *     - vendor/craftcms/cms/src/templates/foo/bar.html
+     *     - vendor/craftcms/cms/src/templates/foo/bar.twig
+     *     - vendor/craftcms/cms/src/templates/foo/bar/index.html
+     *     - vendor/craftcms/cms/src/templates/foo/bar/index.twig
+     *     - path/to/fooplugin/templates/bar
+     *     - path/to/fooplugin/templates/bar.html
+     *     - path/to/fooplugin/templates/bar.twig
+     *     - path/to/fooplugin/templates/bar/index.html
+     *     - path/to/fooplugin/templates/bar/index.twig
      *
      * @param string $name The name of the template.
      *
@@ -1191,7 +1191,7 @@ class View extends \yii\web\View
 
         $sourcePath = Craft::getAlias('@app/resources');
 
-        // If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
+        // If the resource doesn't exist in vendor/craftcms/cms/src/resources, check plugins' resources/ subfolders
         if (!is_file($sourcePath.DIRECTORY_SEPARATOR.$path)) {
             $pathParts = explode('/', $path);
 

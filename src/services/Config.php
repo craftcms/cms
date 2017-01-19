@@ -101,9 +101,9 @@ class Config extends Component
      * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked and returned.
      *
-     * By default, `get()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `get()` will check `config/general.php`, and fall back on the default values specified in
+     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that
+     * Craft will check for.
      *
      * ```php
      * $isDevMode = Craft::$app->getConfig()->get('devMode');
@@ -111,7 +111,7 @@ class Config extends Component
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
      * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
+     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
      * $myConfigSetting = Craft::$app->getConfig()->get('myConfigSetting', 'myplugin');
@@ -136,9 +136,9 @@ class Config extends Component
     /**
      * Overrides the value of a config setting to a given value.
      *
-     * By default, `set()` will update the config array that came from craft/config/general.php.
-     * See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `set()` will update the config array that came from `config/general.php`.
+     * See `vendor/craftcms/cms/src/config/defaults/general.php` for a full list of config settings that Craft
+     * will check for.
      *
      * ```php
      * Craft::$app->getConfig()->set('devMode', true);
@@ -215,13 +215,13 @@ class Config extends Component
      * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked.
      *
-     * By default, `exists()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `exists()` will check `config/general.php`, and fall back on the default values specified in
+     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that Craft
+     * will check for.
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
      * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
+     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
      * if (Craft::$app->getConfig()->exists('myConfigSetting', 'myplugin'))
@@ -884,7 +884,7 @@ class Config extends Component
 
         // Little extra logic for the general config category.
         if ($category === self::CATEGORY_GENERAL) {
-            // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
+            // Does config/general.php exist? (It used to be called blocks.php so maybe not.)
             $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {

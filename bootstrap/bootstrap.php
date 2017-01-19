@@ -82,21 +82,21 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 // Set the vendor path. By default assume that Craft is located as a Composer dependency.
 $vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(__DIR__, 3));
 
-// Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
-$craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
+// Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$basePath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath)));
 
-// By default the remaining folders will be in craft/
-$configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $craftPath.'/config');
-$contentMigrationsPath = realpath(defined('CRAFT_CONTENT_MIGRATIONS_PATH') ? CRAFT_CONTENT_MIGRATIONS_PATH : $getArg('contentMigrationsPath') ?: $craftPath.'/migrations');
-$pluginsPath = realpath(defined('CRAFT_PLUGINS_PATH') ? CRAFT_PLUGINS_PATH : $getArg('pluginsPath') ?: $craftPath.'/plugins');
-$storagePath = realpath(defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $getArg('storagePath') ?: $craftPath.'/storage');
-$templatesPath = realpath(defined('CRAFT_TEMPLATES_PATH') ? CRAFT_TEMPLATES_PATH : $getArg('templatesPath') ?: $craftPath.'/templates');
-$translationsPath = realpath(defined('CRAFT_TRANSLATIONS_PATH') ? CRAFT_TRANSLATIONS_PATH : $getArg('translationsPath') ?: $craftPath.'/translations');
+// By default the remaining directories will be in the base directory
+$configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $basePath.'/config');
+$contentMigrationsPath = realpath(defined('CRAFT_CONTENT_MIGRATIONS_PATH') ? CRAFT_CONTENT_MIGRATIONS_PATH : $getArg('contentMigrationsPath') ?: $basePath.'/migrations');
+$pluginsPath = realpath(defined('CRAFT_PLUGINS_PATH') ? CRAFT_PLUGINS_PATH : $getArg('pluginsPath') ?: $basePath.'/plugins');
+$storagePath = realpath(defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $getArg('storagePath') ?: $basePath.'/storage');
+$templatesPath = realpath(defined('CRAFT_TEMPLATES_PATH') ? CRAFT_TEMPLATES_PATH : $getArg('templatesPath') ?: $basePath.'/templates');
+$translationsPath = realpath(defined('CRAFT_TRANSLATIONS_PATH') ? CRAFT_TRANSLATIONS_PATH : $getArg('translationsPath') ?: $basePath.'/translations');
 
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on craft/config/ and craft/storage/
+// Validate permissions on config/ and storage/
 $ensureFolderIsReadable($configPath);
 
 if ($appType === 'web') {
@@ -119,15 +119,15 @@ if ($appType === 'web') {
 
 $ensureFolderIsReadable($storagePath, true);
 
-// Create the craft/storage/runtime/ folder if it doesn't already exist
+// Create the storage/runtime/ folder if it doesn't already exist
 $createFolder($storagePath.'/runtime');
 $ensureFolderIsReadable($storagePath.'/runtime', true);
 
-// Create the craft/storage/logs/ folder if it doesn't already exist
+// Create the storage/logs/ folder if it doesn't already exist
 $createFolder($storagePath.'/logs');
 $ensureFolderIsReadable($storagePath.'/logs', true);
 
-// Log errors to craft/storage/logs/phperrors.log
+// Log errors to storage/logs/phperrors.log
 ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 

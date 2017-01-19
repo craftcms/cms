@@ -12,7 +12,7 @@ use yii\caching\Cache;
 use yii\caching\Dependency;
 
 /**
- * AppPathDependency is used to determine if the path to the `craft/app` folder has changed.
+ * AppPathDependency is used to determine if Craft’s base path has changed.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -20,8 +20,7 @@ use yii\caching\Dependency;
 class AppPathDependency extends Dependency
 {
     /**
-     * @var string The path to the `craft/app` folder used to check if the
-     *             dependency has been changed.
+     * @var string Craft’s base path
      */
     public $appPath;
 

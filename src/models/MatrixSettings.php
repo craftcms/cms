@@ -105,7 +105,7 @@ class MatrixSettings extends Model
 
     /**
      * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-     * logged to the `craft/storage/logs` folder as a warning.
+     * logged to the `storage/logs/` folder as a warning.
      *
      * In addition, we validate the block type settings.
      *

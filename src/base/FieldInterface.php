@@ -66,7 +66,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * For more complex inputs, you might prefer to create a template, and render it via
      * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
-     * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
+     * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
      * return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [

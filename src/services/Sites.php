@@ -159,7 +159,7 @@ class Sites extends Component
             $siteUrl = Craft::$app->getConfig()->get('siteUrl');
 
             if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in craft/config/general.php instead.');
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
                 $siteUrl = CRAFT_SITE_URL;
             }
 

@@ -114,7 +114,7 @@ class MigrateController extends BaseMigrateController
             case MigrationManager::TYPE_CONTENT:
                 // Verify that a content migrations folder exists
                 if (Craft::getAlias('@contentMigrations') === false) {
-                    throw new Exception('You must create a migrations/ folder within your craft/ folder before managing content migrations');
+                    throw new Exception('You must create a migrations/ directory within your base directory before managing content migrations');
                 }
                 break;
             case MigrationManager::TYPE_PLUGIN:

@@ -84,7 +84,7 @@ class I18N extends \yii\i18n\I18N
      *
      * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
      * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
-     * craft/app/config/locales/ and craft/config/locales/.
+     * `vendor/craftcms/cms/src/config/locales/` and `config/locales/`.
      *
      * @return array An array of locale IDs.
      * @link http://php.net/manual/en/resourcebundle.locales.php
@@ -149,7 +149,7 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
-     * in craft/app/translations/.
+     * in `vendor/craftcms/cms/src/translations/`.
      *
      * @return Locale[] An array of [[Locale]] objects.
      * @throws Exception in case of failure
@@ -185,7 +185,7 @@ class I18N extends \yii\i18n\I18N
 
     /**
      * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
-     * files exist in craft/app/translations/.
+     * files exist in `vendor/craftcms/cms/src/translations/`.
      *
      * @return array An array of locale IDs.
      */
