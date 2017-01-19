@@ -79,14 +79,14 @@ abstract class Image extends Object
     /**
      * Scale and crop image to exactly fit the specified size.
      *
-     * @param int      $targetWidth
+     * @param int|null $targetWidth
      * @param int|null $targetHeight
      * @param bool     $scaleIfSmaller
      * @param string   $cropPositions
      *
      * @return static Self reference
      */
-    abstract public function scaleAndCrop(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center');
+    abstract public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center');
 
     /**
      * Resizes the image.
