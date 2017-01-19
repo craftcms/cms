@@ -25,7 +25,9 @@ class m160817_161600_move_assets_cache extends Migration
         Craft::info('Moving Assets cache folder to their new homes!', __METHOD__);
 
         foreach ($folders as $folder) {
-            rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
+            if (is_dir($basePath.DIRECTORY_SEPARATOR.$folder)) {
+                rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
+            }
         }
 
         Craft::info('All done', __METHOD__);

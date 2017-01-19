@@ -300,19 +300,28 @@ class m160807_144858_sites extends Migration
         Craft::$app->getDb()->getSchema()->refresh();
         $fks = MigrationHelper::findForeignKeysTo('{{%locales}}', 'locale');
 
-        foreach ($fks as $fkInfo) {
-            // Drop the old FK
-            MigrationHelper::dropForeignKey($fkInfo->fk, $this);
+        foreach ($fks as $refTable => $fkInfo) {
+            foreach ($fkInfo as $num => $fkData) {
+                $columns = [];
 
-            // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
-            foreach ($fkInfo->fk->refColumns as $i => $refColumn) {
-                if ($refColumn === 'locale') {
-                    $table = $fkInfo->table->name;
-                    $oldColumn = $fkInfo->fk->columns[$i];
-                    $newColumn = $oldColumn.'__siteId';
-                    $isNotNull = (stripos($fkInfo->table->columns[$oldColumn]->type, 'not null') !== false);
-                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn);
-                    $this->addForeignKey($this->db->getForeignKeyName($table, $newColumn), $table, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+                foreach ($fkData as $key => $fk) {
+                    if ($key !== 0 && $key !== 'updateType' && $key !== 'deleteType') {
+                        $columns[] = $key;
+                    }
+                }
+
+                // Drop the old FK
+                MigrationHelper::dropForeignKey($refTable, $columns, $this);
+
+                $originalRefTable = StringHelper::removeLeft($refTable, Craft::$app->getConfig()->getDbTablePrefix());
+                $originalRefTable = Craft::$app->getDb()->getTableSchema('{{%'.$originalRefTable.'}}');
+
+                // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
+                foreach ($columns as $refColumn) {
+                    $newColumn = $refColumn.'__siteId';
+                    $isNotNull = $originalRefTable->getColumn($refColumn)->allowNull;
+                    $this->addSiteColumn($refTable, $newColumn, $isNotNull, $refColumn);
+                    $this->addForeignKey($this->db->getForeignKeyName($refTable, $newColumn), $refTable, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
             }
         }
