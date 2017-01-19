@@ -72,7 +72,7 @@ class MigrateController extends BaseMigrateController
     public function init()
     {
         parent::init();
-        $this->templateFile = Craft::getAlias('@app/updates/migrationtemplate').'.php';
+        $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
 
     /**
