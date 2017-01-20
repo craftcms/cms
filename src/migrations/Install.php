@@ -441,16 +441,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%rackspaceaccess}}', [
-            'id' => $this->primaryKey(),
-            'connectionKey' => $this->string()->notNull(),
-            'token' => $this->string()->notNull(),
-            'storageUrl' => $this->string()->notNull(),
-            'cdnUrl' => $this->string()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
         $this->createTable('{{%relations}}', [
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),
@@ -803,7 +793,6 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%migrations}}', 'pluginId', false), '{{%migrations}}', 'pluginId', false);
         $this->createIndex($this->db->getIndexName('{{%migrations}}', 'type,pluginId', false), '{{%migrations}}', 'type,pluginId', false);
         $this->createIndex($this->db->getIndexName('{{%plugins}}', 'handle', true), '{{%plugins}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%rackspaceaccess}}', 'connectionKey', true), '{{%rackspaceaccess}}', 'connectionKey', true);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false), '{{%relations}}', 'sourceId', false);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false), '{{%relations}}', 'targetId', false);
