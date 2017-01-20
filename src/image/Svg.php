@@ -170,7 +170,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
