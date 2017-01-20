@@ -613,7 +613,9 @@ class AssetsController extends Controller
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
         $cropData = $request->getBodyParam('cropData');
+        $imageDimensions = $request->getBodyParam('imageDimensions');
         $flipData = $request->getBodyParam('flipData');
+        $zoom = $request->getBodyParam('zoom', 1);
 
         $asset = $assets->getAssetById($assetId);
 
@@ -641,13 +643,7 @@ class AssetsController extends Controller
         }
 
         if (is_array($cropData)) {
-            if (array_diff(['x', 'y', 'height', 'width', 'imageDimensions'], array_keys($cropData))) {
-                throw new BadRequestHttpException('Invalid cropping parameters passed');
-            }
-
-            if (!is_array($cropData['imageDimensions'])
-                || empty($cropData['imageDimensions']['width'])
-                || empty($cropData['imageDimensions']['height'])) {
+            if (array_diff(['x', 'y', 'height', 'width'], array_keys($cropData))) {
                 throw new BadRequestHttpException('Invalid cropping parameters passed');
             }
         }
@@ -671,18 +667,20 @@ class AssetsController extends Controller
             $image->flipVertically();
         }
 
-        $image->rotate($imageRotation);
-        $image->rotate($viewportRotation);
+        $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+
+        $image->rotate($imageRotation + $viewportRotation);
 
         if ($cropData) {
-            $sizeFactor = $originalImageWidth / $cropData['imageDimensions']['width'];
-            $width = $cropData['width'] * $sizeFactor;
-            $height = $cropData['height'] * $sizeFactor;
-            $x = $cropData['x'] * $sizeFactor;
-            $y = $cropData['y'] * $sizeFactor;
+            $adjustmentRatio = $originalImageWidth / $imageDimensions['width'];
+            $width = $cropData['width'] * $zoom * $adjustmentRatio;
+            $height = $cropData['height'] * $zoom * $adjustmentRatio;
+            $x = $cropData['x'] * $zoom * $adjustmentRatio;
+            $y = $cropData['y'] * $zoom * $adjustmentRatio;
 
             $image->crop($x, $x + $width, $y, $y + $height);
         }
+
         $image->saveAs($imageCopy);
 
         if ($replace) {

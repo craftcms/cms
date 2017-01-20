@@ -860,17 +860,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 cropData.x = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.height / 2 : this.cropperState.imageDimensions.width / 2) + this.cropperState.offsetX - cropData.width / 2;
                 cropData.y = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.width / 2 : this.cropperState.imageDimensions.height / 2) + this.cropperState.offsetY - cropData.height / 2;
 
-                cropData.imageDimensions = this.cropperState.imageDimensions;
+                postData.imageDimensions = this.cropperState.imageDimensions;
 
                 postData.cropData = cropData;
+            } else {
+                postData.imageDimensions = this.getScaledImageDimensions();
             }
 
             postData.flipData = this.flipData;
+            postData.zoom = this.zoomRatio;
 
             Craft.postActionRequest('assets/save-image', postData, function(data) {
                 this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
                 this.onSave();
-                //this.hide();
+                this.hide();
             }.bind(this));
         },
 
