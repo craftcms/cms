@@ -22,7 +22,7 @@ class m160817_161600_move_assets_cache extends Migration
 
         $folders = ['icons', 'resized', 'sources'];
 
-        echo 'Moving Assets cache folder to their new homes ... ';
+        echo '    > Moving Assets cache folder to their new homes ... ';
 
         foreach ($folders as $folder) {
             if (is_dir($basePath.DIRECTORY_SEPARATOR.$folder)) {

@@ -17,11 +17,11 @@ class m161109_000000_index_shuffle extends Migration
     public function safeUp()
     {
         // Order is important
-        echo "Dropping `expiryDate,cacheKey,siteId,path` index on the templatecaches table.\n";
+        echo "    > Dropping `expiryDate,cacheKey,siteId,path` index on the templatecaches table.\n";
         MigrationHelper::dropIndexIfExists('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false, $this);
         MigrationHelper::dropIndexIfExists('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate', false, $this);
 
-        echo "Creating `siteId,cacheKey,path,expiryDate` index on the templatecaches table.\n";
+        echo "    > Creating `siteId,cacheKey,path,expiryDate` index on the templatecaches table.\n";
         $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate'), '{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate');
     }
 

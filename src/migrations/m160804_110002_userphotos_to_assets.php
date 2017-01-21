@@ -33,30 +33,30 @@ class m160804_110002_userphotos_to_assets extends Migration
         // Make sure the userphotos folder actually exists
         FileHelper::createDirectory($this->_basePath);
 
-        echo "Removing __default__ folder\n";
+        echo "    > Removing __default__ folder\n";
         FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
 
-        echo "Changing the relative path from username/original.ext to original.ext\n";
+        echo "    > Changing the relative path from username/original.ext to original.ext\n";
         $affectedUsers = $this->_moveUserphotos();
 
-        echo "Creating a private Volume as default for Users\n";
+        echo "    > Creating a private Volume as default for Users\n";
         $volumeId = $this->_createUserphotoVolume();
 
-        echo "Setting the Volume as the default one for userphoto uploads\n";
+        echo "    > Setting the Volume as the default one for userphoto uploads\n";
         $this->_setUserphotoVolume($volumeId);
 
-        echo "Converting photos to Assets\n";
+        echo "    > Converting photos to Assets\n";
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
-        echo "Updating Users table to drop the photo column and add photoId column.\n";
+        echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
         $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
-        echo "Setting the photoId value\n";
+        echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);
 
-        echo "Removing all the subfolders.\n";
+        echo "    > Removing all the subfolders.\n";
         $this->_removeSubdirectories();
 
         return true;
