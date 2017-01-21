@@ -69,7 +69,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeDown()
     {
-        echo 'm160804_110002_userphotos_to_assets cannot be reverted.\n';
+        echo "m160804_110002_userphotos_to_assets cannot be reverted.\n";
 
         return false;
     }

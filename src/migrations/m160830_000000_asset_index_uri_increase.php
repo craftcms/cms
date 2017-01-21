@@ -28,7 +28,7 @@ class m160830_000000_asset_index_uri_increase extends Migration
      */
     public function safeDown()
     {
-        echo 'm160830_000000_asset_index_uri_increase cannot be reverted.\n';
+        echo "m160830_000000_asset_index_uri_increase cannot be reverted.\n";
 
         return false;
     }
