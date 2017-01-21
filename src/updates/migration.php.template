@@ -34,7 +34,11 @@ class <?= $className ?> extends Migration
      */
     public function safeUp()
     {
+<?php if ($isInstall) { ?>
+        // Place installation code here...
+<?php } else { ?>
         // Place migration code here...
+<?php } ?>
     }
 
     /**
@@ -42,7 +46,11 @@ class <?= $className ?> extends Migration
      */
     public function safeDown()
     {
+<?php if ($isInstall) { ?>
+        // Place uninstallation code here...
+<?php } else { ?>
         echo "<?= $className ?> cannot be reverted.\n";
         return false;
+<?php } ?>
     }
 }
