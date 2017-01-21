@@ -63,7 +63,7 @@ class m160912_230520_require_entry_type_id extends Migration
 
         if (!empty($typelessEntryIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
-            Craft::warning("Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds), __METHOD__);
+            echo "Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds)."\n";
         }
 
         // Make typeId required

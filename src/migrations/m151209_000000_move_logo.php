@@ -17,11 +17,11 @@ class m151209_000000_move_logo extends Migration
     public function safeUp()
     {
         $pathService = Craft::$app->getPath();
-        try {
-            rename($pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo', $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo');
-        } catch (ErrorException $e) {
-            Craft::warning('Unable to rename the logo path: '.$e->getMessage(), __METHOD__);
-        }
+        $from = $pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo';
+        $to = $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo';
+        echo "Moving {$from} to {$to} ... ";
+        rename($from, $to);
+        echo "done\n";
     }
 
     /**

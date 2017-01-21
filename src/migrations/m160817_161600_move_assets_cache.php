@@ -22,7 +22,7 @@ class m160817_161600_move_assets_cache extends Migration
 
         $folders = ['icons', 'resized', 'sources'];
 
-        Craft::info('Moving Assets cache folder to their new homes!', __METHOD__);
+        echo 'Moving Assets cache folder to their new homes ... ';
 
         foreach ($folders as $folder) {
             if (is_dir($basePath.DIRECTORY_SEPARATOR.$folder)) {
@@ -30,7 +30,7 @@ class m160817_161600_move_assets_cache extends Migration
             }
         }
 
-        Craft::info('All done', __METHOD__);
+        echo "done\n";
 
         return true;
     }
