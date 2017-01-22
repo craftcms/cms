@@ -1093,7 +1093,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     }.bind(this);
                 } else {
                     this._hideCropper();
-                    this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
+                    this.zoomRatio = this.getZoomToCoverRatio(imageDimensions)  * this.scaleFactor;
 
                     var offsetX = this.clipper.left - this.image.left;
                     var offsetY = this.clipper.top - this.image.top;
@@ -1102,7 +1102,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     // We're now zooming in to "cover viewport" mode and applying the crop,
                     // so that means we have to adjust our calculations from "fit" to "cover", which
                     // is why we're using the combined zoom ratio.
-                    var combinedZoomRatio = this.getCombinedZoomRatio(imageDimensions);
+                    var combinedZoomRatio = this.getCombinedZoomRatio(imageDimensions) * this.scaleFactor;
                     var imageOffsetX = offsetX * combinedZoomRatio;
                     var imageOffsetY = offsetY * combinedZoomRatio;
                     imageCoords.left = (this.editorWidth / 2) - imageOffsetX;
@@ -1111,7 +1111,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     // Calculate the cropper dimensions after all the zooming
                     viewportDimensions.height = this.clipper.height * combinedZoomRatio;
                     viewportDimensions.width = this.clipper.width * combinedZoomRatio;
-                    this.scaleFactor = 1;
                 }
 
                 // Animate image and viewport
