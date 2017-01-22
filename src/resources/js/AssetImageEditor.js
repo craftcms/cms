@@ -2,7 +2,6 @@
  * Asset image editor class
  */
 
-// TODO Take a landscape image, rotate->crop->back to rotate and notice how it's zoomed in now. Fix.
 Craft.AssetImageEditor = Garnish.Modal.extend(
     {
         // jQuery objects
