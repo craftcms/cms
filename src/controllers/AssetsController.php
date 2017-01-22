@@ -643,7 +643,7 @@ class AssetsController extends Controller
         }
 
         if (is_array($cropData)) {
-            if (array_diff(['x', 'y', 'height', 'width'], array_keys($cropData))) {
+            if (array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))) {
                 throw new BadRequestHttpException('Invalid cropping parameters passed');
             }
         }

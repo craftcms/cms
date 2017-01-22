@@ -2,6 +2,7 @@
  * Asset image editor class
  */
 
+// TODO Take non-square image, rotate right, straighten and notice the zoom botch up. Fix.
 Craft.AssetImageEditor = Garnish.Modal.extend(
     {
         // jQuery objects
@@ -468,7 +469,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 this.cropperState = {
                     offsetX: (this.clipper.left - this.image.left) * zoomFactor,
-                    offsetY: (this.clipper.top - this.image.top)  * zoomFactor,
+                    offsetY: (this.clipper.top - this.image.top) * zoomFactor,
                     height: this.clipper.height * zoomFactor,
                     width: this.clipper.width * zoomFactor,
                     imageDimensions: this.getScaledImageDimensions()
@@ -532,21 +533,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     height: scaledImageDimensions.height * imageZoomRatio
                 };
 
-                var scaleFactor = 1;
-
-                // It's possible that the rotated image won't fit the editor.
-                // Since viewport's width will become height and vice-versa,
-                // we're looking at the inverse property
-                if (this.imageStraightenAngle == 0) {
-                    if (this.editorHeight < this.viewport.width) {
-                        scaleFactor = this.editorHeight / this.viewport.width;
-                    } else if (this.editorWidth < this.viewport.height) {
-                        scaleFactor = this.editorWidth / this.viewport.height;
-                    } else if (this.editorWidth > this.viewport.height && this.editorHeight > this.viewport.width) {
-                        // What if we had downsized before and we have the chance to upsize?
-                        scaleFactor = Math.min(this.editorHeight / this.viewport.width, this.editorWidth / this.viewport.height);
-                    }
-                }
+                var scaleFactor = this.viewport.height/this.viewport.width;
 
                 if (scaleFactor < 1) {
                     imageProperties.width *= scaleFactor;
@@ -570,8 +557,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio;
                 var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio;
 
-                imageProperties.left = this.editorWidth/2 - modifiedDeltaX;
-                imageProperties.top = this.editorHeight/2 - modifiedDeltaY;
+                imageProperties.left = this.editorWidth / 2 - modifiedDeltaX;
+                imageProperties.top = this.editorHeight / 2 - modifiedDeltaY;
 
                 state.offsetX = newDeltaX;
                 state.offsetY = newDeltaY;
@@ -584,9 +571,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration,
-                    onComplete: function () {
-                        var temp = this.viewport.height;
-                        this.viewport.height = this.viewport.width;
+                    onComplete: function() {
+                        // If we're zooming the image in or out, better do the same to viewport
+                        var temp = this.viewport.height * scaleFactor;
+                        this.viewport.height = this.viewport.width * scaleFactor;
                         this.viewport.width = temp;
                         this.viewport.set({angle: 0});
                     }.bind(this)
@@ -619,7 +607,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
 
                 // TODO So many nested if's. Make it cleaner.
-                var editorCenter = {x: this.editorWidth/2, y: this.editorHeight/2};
+                var editorCenter = {x: this.editorWidth / 2, y: this.editorHeight / 2};
                 this.straighteningInput.setValue(-this.imageStraightenAngle);
                 this.imageStraightenAngle = -this.imageStraightenAngle;
                 var properties = {
@@ -723,7 +711,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param {integer} previousAngle integer the previous image angle before straightening
          */
-        _adjustViewportOnStraighten: function (previousAngle) {
+        _adjustViewportOnStraighten: function(previousAngle) {
             // This is some complicated stuff, you've been warned!
 
             var scaledImageDimensions = this.getScaledImageDimensions();
@@ -792,14 +780,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param rectangle
          * @param containingVertices
          */
-        _getZoomRatioToFitRectangle: function (rectangle, containingVertices) {
+        _getZoomRatioToFitRectangle: function(rectangle, containingVertices) {
             var rectangleVertices = this._getRectangleVertices(rectangle);
             var vertex;
 
             // Check if any of the viewport vertices end up out of bounds
             for (var verticeIndex = 0; verticeIndex < rectangleVertices.length; verticeIndex++) {
                 vertex = rectangleVertices[verticeIndex];
-                if (!this.arePointsInsideRectangle([vertex], containingVertices)){
+                if (!this.arePointsInsideRectangle([vertex], containingVertices)) {
                     break;
                 }
                 vertex = false;
@@ -819,8 +807,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 // Calculate how much further that edge needs to be.
                 // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
-                var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
-                var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * rectangleCenter.x - (edge[1].x - edge[0].x) * rectangleCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
+                var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y - edge[0].y, 2) + Math.pow(edge[1].x - edge[0].x, 2));
+                var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * rectangleCenter.x - (edge[1].x - edge[0].x) * rectangleCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y - edge[0].y, 2) + Math.pow(edge[1].x - edge[0].x, 2));
 
                 // Adjust the zoom ratio
                 adjustmentRatio = ((distanceFromVertexToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge);
@@ -1097,16 +1085,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this._hideCropper();
                     this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 
-                    offsetX = this.clipper.left - this.image.left;
-                    offsetY = this.clipper.top - this.image.top;
+                    var offsetX = this.clipper.left - this.image.left;
+                    var offsetY = this.clipper.top - this.image.top;
 
                     // Image is currently in "fit viewport" mode which was used to position the cropper.
                     // We're now zooming in to "cover viewport" mode and applying the crop,
                     // so that means we have to adjust our calculations from "fit" to "cover", which
                     // is why we're using the combined zoom ratio.
                     var combinedZoomRatio = this.getCombinedZoomRatio(imageDimensions);
-                    imageOffsetX = offsetX * combinedZoomRatio;
-                    imageOffsetY = offsetY * combinedZoomRatio;
+                    var imageOffsetX = offsetX * combinedZoomRatio;
+                    var imageOffsetY = offsetY * combinedZoomRatio;
                     imageCoords.left = (this.editorWidth / 2) - imageOffsetX;
                     imageCoords.top = (this.editorHeight / 2) - imageOffsetY;
 
@@ -1307,10 +1295,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.cropperGrid = new fabric.Group(
                 [
-                    new fabric.Line([this.clipper.width*0.33, 0, this.clipper.width*0.33, this.clipper.height], gridOptions),
-                    new fabric.Line([this.clipper.width*0.66, 0, this.clipper.width*0.66, this.clipper.height], gridOptions),
-                    new fabric.Line([0, this.clipper.height*0.33, this.clipper.width, this.clipper.height*0.33], gridOptions),
-                    new fabric.Line([0, this.clipper.height*0.66, this.clipper.width, this.clipper.height*0.66], gridOptions)
+                    new fabric.Line([this.clipper.width * 0.33, 0, this.clipper.width * 0.33, this.clipper.height], gridOptions),
+                    new fabric.Line([this.clipper.width * 0.66, 0, this.clipper.width * 0.66, this.clipper.height], gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.33, this.clipper.width, this.clipper.height * 0.33], gridOptions),
+                    new fabric.Line([0, this.clipper.height * 0.66, this.clipper.width, this.clipper.height * 0.66], gridOptions)
                 ], {
                     left: this.clipper.left,
                     top: this.clipper.top,
