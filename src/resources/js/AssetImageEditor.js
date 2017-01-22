@@ -533,7 +533,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     height: scaledImageDimensions.height * imageZoomRatio
                 };
 
-                var scaleFactor = this.viewport.height/this.viewport.width;
+                var scaleFactor = 1;
+                if (this.viewport.width > this.editorHeight || this.editorHeight > this.editorWidth) {
+                    if (this.originalHeight < this.originalWidth) {
+                        scaleFactor = this.viewport.height / this.viewport.width;
+                    } else {
+                        scaleFactor = this.viewport.width / this.viewport.height;
+                    }
+                }
 
                 if (scaleFactor < 1) {
                     imageProperties.width *= scaleFactor;
