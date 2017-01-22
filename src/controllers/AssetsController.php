@@ -671,12 +671,15 @@ class AssetsController extends Controller
 
         $image->rotate($imageRotation + $viewportRotation);
 
+        $imageCenterX = $image->getWidth() / 2;
+        $imageCenterY = $image->getHeight() / 2;
+
         if ($cropData) {
-            $adjustmentRatio = $originalImageWidth / $imageDimensions['width'];
+            $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
             $width = $cropData['width'] * $zoom * $adjustmentRatio;
             $height = $cropData['height'] * $zoom * $adjustmentRatio;
-            $x = $cropData['x'] * $zoom * $adjustmentRatio;
-            $y = $cropData['y'] * $zoom * $adjustmentRatio;
+            $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width/2;
+            $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height/2;
 
             $image->crop($x, $x + $width, $y, $y + $height);
         }

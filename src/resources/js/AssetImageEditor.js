@@ -537,13 +537,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 // It's possible that the rotated image won't fit the editor.
                 // Since viewport's width will become height and vice-versa,
                 // we're looking at the inverse property
-                if (this.editorHeight < this.viewport.width) {
-                    scaleFactor = this.editorHeight / this.viewport.width;
-                } else if (this.editorWidth < this.viewport.height) {
-                    scaleFactor = this.editorWidth / this.viewport.height;
-                } else if (this.editorWidth > this.viewport.height && this.editorHeight > this.viewport.width) {
-                    // What if we had downsized before and we have the chance to upsize?
-                    scaleFactor = Math.min(this.editorHeight / this.viewport.width, this.editorWidth / this.viewport.height);
+                if (this.imageStraightenAngle == 0) {
+                    if (this.editorHeight < this.viewport.width) {
+                        scaleFactor = this.editorHeight / this.viewport.width;
+                    } else if (this.editorWidth < this.viewport.height) {
+                        scaleFactor = this.editorWidth / this.viewport.height;
+                    } else if (this.editorWidth > this.viewport.height && this.editorHeight > this.viewport.width) {
+                        // What if we had downsized before and we have the chance to upsize?
+                        scaleFactor = Math.min(this.editorHeight / this.viewport.width, this.editorWidth / this.viewport.height);
+                    }
                 }
 
                 if (scaleFactor < 1) {
@@ -855,10 +857,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 // before sending it off.
                 cropData.height = this.cropperState.height;
                 cropData.width = this.cropperState.width;
-
-                // Translate from center-based coordinates
-                cropData.x = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.height / 2 : this.cropperState.imageDimensions.width / 2) + this.cropperState.offsetX - cropData.width / 2;
-                cropData.y = (this.hasOrientationChanged() ? this.cropperState.imageDimensions.width / 2 : this.cropperState.imageDimensions.height / 2) + this.cropperState.offsetY - cropData.height / 2;
+                cropData.offsetX = this.cropperState.offsetX;
+                cropData.offsetY = this.cropperState.offsetY;
 
                 postData.imageDimensions = this.cropperState.imageDimensions;
 
