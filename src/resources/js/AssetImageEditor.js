@@ -2,7 +2,7 @@
  * Asset image editor class
  */
 
-// TODO Take non-square image, rotate right, straighten and notice the zoom botch up. Fix.
+// TODO Take a landscape image, rotate->crop->back to rotate and notice how it's zoomed in now. Fix.
 Craft.AssetImageEditor = Garnish.Modal.extend(
     {
         // jQuery objects
@@ -50,6 +50,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         editorHeight: 0,
         editorWidth: 0,
         cropperState: false,
+        scaleFactor: 1,
         flipData: {},
 
         // Rendering proxy functions
@@ -547,6 +548,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     imageProperties.height *= scaleFactor;
                 }
 
+                this.scaleFactor = scaleFactor;
                 var state = this.cropperState;
 
                 // Make sure we reposition the image as well to focus on the same image area
@@ -698,7 +700,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 });
 
                 // Set the new zoom ratio
-                this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
+                this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
                 this._zoomImage();
 
                 if (this.cropperState) {
@@ -1052,6 +1054,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param mode
          */
         _setEditorMode: function(mode) {
+            // TODO perhaps move more of this code out to disable/enableCropMode methods to clean this up.
             if (!this.animationInProgress) {
                 this.animationInProgress = true;
 
@@ -1108,6 +1111,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     // Calculate the cropper dimensions after all the zooming
                     viewportDimensions.height = this.clipper.height * combinedZoomRatio;
                     viewportDimensions.width = this.clipper.width * combinedZoomRatio;
+                    this.scaleFactor = 1;
                 }
 
                 // Animate image and viewport
