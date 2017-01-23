@@ -535,7 +535,7 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    public function actionMigrationsrUp()
+    public function actionMigrationsUp()
     {
         $limit = Craft::$app->getRequest()->getParam('limit', 0);
 
