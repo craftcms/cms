@@ -18,6 +18,7 @@ use craft\utilities\FindAndReplace;
 use craft\utilities\PhpInfo;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemReport;
+use craft\utilities\ContentMigrationManager;
 use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
 
@@ -54,6 +55,7 @@ class Utilities extends Component
             SystemReport::class,
             PhpInfo::class,
             DeprecationErrors::class,
+            ContentMigrationManager::class,
         ];
 
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {

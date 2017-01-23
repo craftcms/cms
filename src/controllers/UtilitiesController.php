@@ -15,6 +15,7 @@ use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -534,7 +535,121 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    // Public Methods
+    public function actionContentMigrationManangerCreateMigration()
+    {
+        $name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+
+        try {
+            if (empty($name)) {
+                throw new Exception('There was a problem getting the template file path');
+            }
+
+            if (!preg_match('/^\w+$/', $name)) {
+                throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
+            }
+
+            $migrator = Craft::$app->getContentMigrator();
+
+            $migrationPath = $migrator->migrationPath;
+
+            $name = 'm'.gmdate('ymd_His').'_'.$name;
+            $file = $migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+
+            $templateFile = Craft::getAlias('@app/updates/migration.php.template');
+            $templateFile = Craft::getAlias($templateFile);
+
+            if ($templateFile === false) {
+                throw new Exception('There was a problem getting the template file path');
+            }
+
+            $content = $this->renderFile($templateFile, [
+                'namespace' => $migrator->migrationNamespace,
+                'className' => $name
+            ]);
+
+            FileHelper::writeToFile($file, $content);
+
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'New migration created successfully.'.$name));
+        } catch(Exception $e) {
+            Craft::$app->getSession()->setError(Craft::t('app', $e->getMessage()));
+        }
+
+        return $this->redirectToPostedUrl();
+    }
+
+    public function actionContentMigrationManagerUp()
+    {
+        $limit = Craft::$app->getRequest()->getParam('limit', 0);
+
+        $migrator = Craft::$app->getContentMigrator();
+
+        if($migrator->up($limit))
+        {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Migrated up successfully.'));
+        }
+        else
+        {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
+        }
+
+        return $this->redirect('utilities/content-migration-manager');
+    }
+    
+    public function actionContentMigrationManagerDown()
+    {
+        $limit = Craft::$app->getRequest()->getParam('limit', 0);
+
+        $migrator = Craft::$app->getContentMigrator();
+
+        if($migrator->down($limit))
+        {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Migrated down successfully.'));
+        }
+        else
+        {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
+        }
+        
+        return $this->redirect('utilities/content-migration-manager');
+    }
+
+    public function actionContentMigrationManagerMigrateUp()
+    {
+        $name = Craft::$app->getRequest()->getRequiredParam('name');
+
+        $migrator = Craft::$app->getContentMigrator();
+
+        if($migrator->migrateUp($name))
+        {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied '.$name));
+        }
+        else
+        {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Failed to apply '.$name));
+        }
+
+        return $this->redirect('utilities/content-migration-manager');
+    }
+
+    public function actionContentMigrationManagerMigrateDown()
+    {
+        $name = Craft::$app->getRequest()->getRequiredParam('name');
+
+        $migrator = Craft::$app->getContentMigrator();
+
+        if($migrator->migrateDown($name))
+        {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Reverted '.$name));
+        }
+        else
+        {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Failed to revert '.$name));
+        }
+
+        return $this->redirect('utilities/content-migration-manager');
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**

@@ -1,0 +1,102 @@
+{% import "_includes/forms" as forms %}
+
+<h2>{{ 'Create a new migration'|t('app') }}</h2>
+
+<form id="clear-caches" class="utility" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="utilities/content-migration-mananger-create-migration">
+	{{ csrfInput() }}
+
+	{{ forms.text({
+		name: 'name',
+	}) }}
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Create Migration'|t('app') }}" />
+	</div>
+</form>
+
+<hr>
+
+<h2>{{ 'Pending Migrations'|t('app') }}</h2>
+
+{% if newMigrations|length > 0 %}
+	<table class="data fullwidth">
+		<thead>
+		<tr>
+			<th>{{ 'Migration Name'|t('app') }}</th>
+			<th>{{ 'Apply Migration'|t('app') }}</th>
+			<th>{{ 'Apply this migration and the ones above'|t('app') }}</th>
+		</tr>
+		</thead>
+		<tbody>
+
+			{% for newMigration in newMigrations %}
+				<tr>
+					<td>{{ newMigration }}</td>
+					<td>
+						<a href="{{ actionUrl('utilities/content-migration-manager-migrate-up', {
+							name: newMigration
+						}) }}">{{ 'Apply Migration'|t('app') }}</a>
+					</td>
+					<td>
+						{% if not loop.first %}
+							<a href="{{ actionUrl('utilities/content-migration-manager-up', {
+								limit: loop.index
+							}) }}">{{ 'Apply this migration and the ones above'|t('app') }}</a>
+						{% endif %}
+					</td>
+				</tr>
+			{% endfor %}
+
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<a href="{{ actionUrl('utilities/content-migration-manager-up') }}" class="btn submit">{{ 'Apply All Migrations'|t('app') }}</a>
+	</div>
+{% else %}
+	<p>{{ 'No migrations.'|t('app') }}</p>
+{% endif %}
+
+<hr>
+
+<h2>{{ 'Migration History'|t('app') }}</h2>
+
+{% if migrationHistory|length > 0 %}
+	<table class="data fullwidth">
+		<thead>
+		<tr>
+			<th>{{ 'Migration Name'|t('app') }}</th>
+			<th>{{ 'Revert Migration'|t('app') }}</th>
+			<th>{{ 'Revert this migration and the ones above'|t('app') }}</th>
+		</tr>
+		</thead>
+		<tbody>
+
+		{% for migrationName, migration in migrationHistory %}
+			<tr>
+				<td>{{ migrationName }}</td>
+				<td>
+					<a href="{{ actionUrl('utilities/content-migration-manager-migrate-down', {
+						name: migrationName
+					}) }}">{{ 'Revert Migration'|t('app') }}</a>
+				</td>
+				<td>
+					{% if not loop.first %}
+						<a href="{{ actionUrl('utilities/content-migration-manager-down', {
+							limit: loop.index
+						}) }}">{{ 'Revert this migration and the ones above'|t('app') }}</a>
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+
+		</tbody>
+	</table>
+
+	<div class="buttons">
+		<a href="{{ actionUrl('utilities/content-migration-manager-down') }}" class="btn submit">{{ 'Revert All Migrations'|t('app') }}</a>
+	</div>
+{% else %}
+	<p>{{ 'No migrations.'|t('app') }}</p>
+{% endif %}
