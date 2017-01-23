@@ -552,60 +552,6 @@ class UtilitiesController extends Controller
 
         return $this->redirect('utilities/migrations');
     }
-    
-    public function actionMigrationsrDown()
-    {
-        $limit = Craft::$app->getRequest()->getParam('limit', 0);
-
-        $migrator = Craft::$app->getContentMigrator();
-
-        if($migrator->down($limit))
-        {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Migrated down successfully.'));
-        }
-        else
-        {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
-        }
-        
-        return $this->redirect('utilities/migrations');
-    }
-
-    public function actionMigrationsrMigrateUp()
-    {
-        $name = Craft::$app->getRequest()->getRequiredParam('name');
-
-        $migrator = Craft::$app->getContentMigrator();
-
-        if($migrator->migrateUp($name))
-        {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied '.$name));
-        }
-        else
-        {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Failed to apply '.$name));
-        }
-
-        return $this->redirect('utilities/migrations');
-    }
-
-    public function actionMigrationsrMigrateDown()
-    {
-        $name = Craft::$app->getRequest()->getRequiredParam('name');
-
-        $migrator = Craft::$app->getContentMigrator();
-
-        if($migrator->migrateDown($name))
-        {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Reverted '.$name));
-        }
-        else
-        {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Failed to revert '.$name));
-        }
-
-        return $this->redirect('utilities/migrations');
-    }
 
     // Private Methods
     // =========================================================================
