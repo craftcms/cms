@@ -139,7 +139,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%assets}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'volumeId' => $this->integer(),
             'folderId' => $this->integer()->notNull(),
             'filename' => $this->string()->notNull(),
@@ -151,6 +151,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -182,11 +183,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%categories}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -274,7 +276,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%entries}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
@@ -283,6 +285,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -396,7 +399,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%matrixblocks}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
             'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
@@ -405,6 +408,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -552,11 +556,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%tags}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%tasks}}', [
             'id' => $this->primaryKey(),
@@ -647,7 +652,7 @@ class Install extends Migration
             'preferences' => $this->text(),
         ]);
         $this->createTable('{{%users}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
             'firstName' => $this->string(100),
@@ -674,6 +679,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),

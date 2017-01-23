@@ -28,7 +28,6 @@
     "creocoder/yii2-nested-sets": "0.9.0",
     "pixelandtonic/imagine": "0.6.3.2",
     "league/flysystem": "1.0.32",
-    "league/flysystem-ziparchive": "1.0.2",
     "mikehaertl/php-shellcommand": "1.2.2",
     "twig/twig": "2.1.0",
     "bower-asset/d3": "3.5.17",
