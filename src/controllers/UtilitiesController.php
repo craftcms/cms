@@ -535,7 +535,7 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    public function actionContentMigrationManagerUp()
+    public function actionMigrationsrUp()
     {
         $limit = Craft::$app->getRequest()->getParam('limit', 0);
 
@@ -553,7 +553,7 @@ class UtilitiesController extends Controller
         return $this->redirect('utilities/content-migration-manager');
     }
     
-    public function actionContentMigrationManagerDown()
+    public function actionMigrationsrDown()
     {
         $limit = Craft::$app->getRequest()->getParam('limit', 0);
 
@@ -571,7 +571,7 @@ class UtilitiesController extends Controller
         return $this->redirect('utilities/content-migration-manager');
     }
 
-    public function actionContentMigrationManagerMigrateUp()
+    public function actionMigrationsrMigrateUp()
     {
         $name = Craft::$app->getRequest()->getRequiredParam('name');
 
@@ -589,7 +589,7 @@ class UtilitiesController extends Controller
         return $this->redirect('utilities/content-migration-manager');
     }
 
-    public function actionContentMigrationManagerMigrateDown()
+    public function actionMigrationsrMigrateDown()
     {
         $name = Craft::$app->getRequest()->getRequiredParam('name');
 

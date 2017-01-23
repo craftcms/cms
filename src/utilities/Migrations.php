@@ -13,12 +13,12 @@ use craft\base\Utility;
 use yii\base\Exception;
 
 /**
- * ContentMigrationManager represents a ContentMigrationManager dashboard widget.
+ * Migrations represents a Migrations utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ContentMigrationManager extends Utility
+class Migrations extends Utility
 {
     // Static
     // =========================================================================
@@ -28,7 +28,7 @@ class ContentMigrationManager extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Content Migration Manager');
+        return Craft::t('app', 'Migrations');
     }
 
     /**
@@ -36,7 +36,7 @@ class ContentMigrationManager extends Utility
      */
     public static function id(): string
     {
-        return 'content-migration-manager';
+        return 'migrations';
     }
 
     /**
@@ -65,7 +65,7 @@ class ContentMigrationManager extends Utility
         $migrationHistory = $migrator->getMigrationHistory();
         $newMigrations = $migrator->getNewMigrations();
 
-        return $view->renderTemplate('_components/utilities/ContentMigrationManager', [
+        return $view->renderTemplate('_components/utilities/Migrations', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations
         ]);
