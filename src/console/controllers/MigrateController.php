@@ -72,7 +72,14 @@ class MigrateController extends BaseMigrateController
     public function init()
     {
         parent::init();
-        $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
+
+        $path = Craft::getAlias('@app/updates/migration.php.template');
+
+        if ($path === false) {
+            throw new Exception('There was a problem getting the migration template path.');
+        }
+
+        $this->templateFile = $path;
     }
 
     /**
@@ -142,7 +149,12 @@ class MigrateController extends BaseMigrateController
             throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
         }
 
-        $name = 'm'.gmdate('ymd_His').'_'.$name;
+        if ($isInstall = (strcasecmp($name, 'install') === 0)) {
+            $name = 'Install';
+        } else {
+            $name = 'm'.gmdate('ymd_His').'_'.$name;
+        }
+
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
         if ($this->confirm("Create new migration '$file'?")) {
@@ -153,6 +165,7 @@ class MigrateController extends BaseMigrateController
             }
 
             $content = $this->renderFile($templateFile, [
+                'isInstall' => $isInstall,
                 'namespace' => $this->getMigrator()->migrationNamespace,
                 'className' => $name
             ]);
@@ -210,7 +223,12 @@ class MigrateController extends BaseMigrateController
      */
     protected function getMigrationHistory($limit)
     {
-        return $this->getMigrator()->getMigrationHistory((int)$limit);
+        $history = $this->getMigrator()->getMigrationHistory((int)$limit);
+
+        // Convert values to unix timestamps
+        $history = array_map('strtotime', $history);
+
+        return $history;
     }
 
     /**

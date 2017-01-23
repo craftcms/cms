@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
 - Plugin icons now must be stored at the root of the plugin’s source directory.
+- Plugin IDs are now `kebab-case` versions of their handles.
 - Craft now automatically loads the `vendor/autoload.php` file (if it exists) for plugins that were manually installed.
 - Added the `bootstrap/` folder alongside the `src/` folder, with new web.php and console.php bootstrap files.
 - Added PostgreSQL support, which can be enabled by setting the `driver` setting in `config/db.php` to `'pgsql'`.
