@@ -535,19 +535,25 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    public function actionMigrationsUp()
+    /**
+     * Applies all new migrations
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
+     */
+    public function actionMigrationsApplyNewMigrations()
     {
-        $limit = Craft::$app->getRequest()->getParam('limit', 0);
+        $this->requirePermission('utility:migrations');
 
         $migrator = Craft::$app->getContentMigrator();
 
-        if($migrator->up($limit))
+        if($migrator->up(0))
         {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Migrated up successfully.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
         }
         else
         {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
         return $this->redirect('utilities/migrations');
