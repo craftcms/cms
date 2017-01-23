@@ -19,9 +19,14 @@ class m151209_000000_move_logo extends Migration
         $pathService = Craft::$app->getPath();
         $from = $pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo';
         $to = $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo';
-        echo "    > Moving {$from} to {$to} ... ";
-        rename($from, $to);
-        echo "done\n";
+
+        if (is_dir($to) && is_dir($from)) {
+            echo "    > Moving {$from} to {$to} ... ";
+            rename($from, $to);
+            echo "done\n";
+        }
+
+        return true;
     }
 
     /**
