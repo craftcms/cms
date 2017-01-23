@@ -550,7 +550,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
         }
 
-        return $this->redirect('utilities/content-migration-manager');
+        return $this->redirect('utilities/migrations');
     }
     
     public function actionMigrationsrDown()
@@ -568,7 +568,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app', 'Migration failed. The rest of the migrations are canceled.'));
         }
         
-        return $this->redirect('utilities/content-migration-manager');
+        return $this->redirect('utilities/migrations');
     }
 
     public function actionMigrationsrMigrateUp()
@@ -586,7 +586,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app', 'Failed to apply '.$name));
         }
 
-        return $this->redirect('utilities/content-migration-manager');
+        return $this->redirect('utilities/migrations');
     }
 
     public function actionMigrationsrMigrateDown()
@@ -604,7 +604,7 @@ class UtilitiesController extends Controller
             Craft::$app->getSession()->setError(Craft::t('app', 'Failed to revert '.$name));
         }
 
-        return $this->redirect('utilities/content-migration-manager');
+        return $this->redirect('utilities/migrations');
     }
 
     // Private Methods

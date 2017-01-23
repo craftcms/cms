@@ -8,7 +8,6 @@
 namespace craft\utilities;
 
 use Craft;
-use craft\db\MigrationManager;
 use craft\base\Utility;
 use yii\base\Exception;
 
