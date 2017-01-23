@@ -559,9 +559,10 @@ class AssetsController extends Controller
      */
     public function actionImageEditor()
     {
+        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
         $html = Craft::$app->getView()->renderTemplate('_components/tools/image_editor');
 
-        return $this->asJson(['html' => $html]);
+        return $this->asJson(['html' => $html, 'focalPoint' => null]);
     }
 
     /**
