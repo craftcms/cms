@@ -51,7 +51,7 @@
     "autoload": {
         "psr-4": {
             "craft\\": "src/"
-        },
+        }
     },
     "repositories": [
     {
