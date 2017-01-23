@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -674,7 +675,9 @@ class Plugins extends Component
 
         // Create the plugin
         /** @var Plugin $plugin */
-        $plugin = Craft::createObject($config, [$handle, Craft::$app]);
+        $handleParts = preg_split('/(?=[\p{Lu}])+/u', $handle);
+        $id = StringHelper::toLowerCase(implode('-', $handleParts));
+        $plugin = Craft::createObject($config, [$id, Craft::$app]);
 
         // Set its settings
         if (isset($row['settings'])) {
