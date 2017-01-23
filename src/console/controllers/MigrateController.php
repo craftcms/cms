@@ -216,7 +216,13 @@ class MigrateController extends BaseMigrateController
      */
     protected function getMigrationHistory($limit)
     {
-        return $this->getMigrator()->getMigrationHistory((int)$limit);
+        $history = $this->getMigrator()->getMigrationHistory((int)$limit);
+
+        foreach ($history as $name => $applyTime) {
+            $history[$name] = strtotime($applyTime);
+        }
+
+        return $history;
     }
 
     /**
