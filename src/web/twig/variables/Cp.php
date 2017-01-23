@@ -97,24 +97,23 @@ class Cp extends Component
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if ($plugin::hasCpSection()) {
-                $pluginHandle = $plugin->getHandle();
+            if (
+                $plugin::hasCpSection() &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle)
+            ) {
+                $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
 
-                if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
-
-                    if (is_file($iconPath)) {
-                        $iconSvg = file_get_contents($iconPath);
-                    } else {
-                        $iconSvg = false;
-                    }
-
-                    $navItems[] = [
-                        'label' => $plugin->name,
-                        'url' => StringHelper::toLowerCase($pluginHandle),
-                        'iconSvg' => $iconSvg
-                    ];
+                if (is_file($iconPath)) {
+                    $iconSvg = file_get_contents($iconPath);
+                } else {
+                    $iconSvg = false;
                 }
+
+                $navItems[] = [
+                    'label' => $plugin->name,
+                    'url' => $plugin->id,
+                    'iconSvg' => $iconSvg
+                ];
             }
         }
 
@@ -255,12 +254,10 @@ class Cp extends Component
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            if ($plugin->hasSettings) {
-                $pluginHandle = $plugin->getHandle();
-
-                $settings[$label][$pluginHandle] = [
-                    'url' => 'settings/plugins/'.StringHelper::toLowerCase($pluginHandle),
-                    'iconSvg' => $pluginsService->getPluginIconSvg($pluginHandle),
+            if ($plugin::hasSettings()) {
+                $settings[$label][$plugin->id] = [
+                    'url' => 'settings/plugins/'.$plugin->id,
+                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->handle),
                     'label' => $plugin->name
                 ];
             }

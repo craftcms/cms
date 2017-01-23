@@ -21,6 +21,13 @@ interface PluginInterface
     // =========================================================================
 
     /**
+     * Returns whether the plugin has settings.
+     *
+     * @return bool
+     */
+    public static function hasSettings(): bool;
+
+    /**
      * Returns whether the plugin has its own section in the CP.
      *
      * @return bool Whether the plugin has its own section in the CP.
@@ -29,13 +36,6 @@ interface PluginInterface
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns the plugin’s handle.
-     *
-     * @return string The plugin’s handle
-     */
-    public function getHandle(): string;
 
     /**
      * Installs the plugin.
@@ -73,7 +73,7 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[PluginsController::actionRThe rendered settings page HTML
+     * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings()]]
      */
     public function getSettingsResponse();
 

@@ -142,9 +142,10 @@ EOD;
             if (!empty($response['plugins'])) {
                 $pluginsService = Craft::$app->getPlugins();
                 foreach ($response['plugins'] as &$pluginInfo) {
+                    /** @var Plugin $plugin */
                     $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
-                    $pluginInfo['handle'] = $plugin->getHandle();
-                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->getHandle());
+                    $pluginInfo['handle'] = $plugin->handle;
+                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->handle);
                 }
                 unset($pluginInfo);
             }
@@ -618,6 +619,8 @@ EOD;
 
         $updateCraft = $updatesService->getIsCraftDbMigrationNeeded();
         $updatePlugin = $updatesService->getIsPluginDbUpdateNeeded();
+
+        /** @var Plugin[] $pluginsToUpdate */
         $pluginsToUpdate = [];
 
         // Make sure either Craft or a plugin needs a migration run.
@@ -668,11 +671,10 @@ EOD;
 
             // Run any plugin updates.
             foreach ($pluginsToUpdate as $plugin) {
-
-                $return = $updatesService->updateDatabase($plugin->getHandle());
+                $return = $updatesService->updateDatabase($plugin->handle);
 
                 if (!$return['success']) {
-                    $this->_rollbackUpdate($plugin->getHandle(), $return['message'], $dbBackupPath);
+                    $this->_rollbackUpdate($plugin->handle, $return['message'], $dbBackupPath);
                 }
             }
 

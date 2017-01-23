@@ -179,7 +179,8 @@ class EtTransport
 
                                 foreach ($etModel->pluginLicenseKeyStatuses as $packageName => $licenseKeyStatus) {
                                     if ($plugin = $pluginsService->getPluginByPackageName($packageName)) {
-                                        $pluginsService->setPluginLicenseKeyStatus($plugin->getHandle(), $licenseKeyStatus);
+                                        /** @var Plugin $plugin */
+                                        $pluginsService->setPluginLicenseKeyStatus($plugin->handle, $licenseKeyStatus);
                                     }
                                 }
                             }
@@ -259,7 +260,7 @@ class EtTransport
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->getHandle());
+            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->handle);
         }
 
         return $pluginLicenseKeys;

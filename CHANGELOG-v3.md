@@ -83,6 +83,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\MissingComponentTrait::createFallback()`.
 - Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
 - Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
+- Added `craft\base\PluginInterface::hasSettings()` (static).
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
@@ -420,6 +421,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Model::create()`.
 - Removed `craft\base\Model::getAllErrors()`.
 - Removed `craft\base\Model::populateModel()`.
+- Removed `craft\base\Plugin::$hasSettings`. Plugins that have settings should implement the static `hasSettings()` method instead.
 - Removed `craft\base\Plugin::$releaseFeedUrl`. Plugins that wish to have update notifications should now set `$changelogUrl`.
 - Removed `craft\base\Plugin::getClassesInSubpath()`.
 - Removed `craft\base\Plugin::getFieldTypes()`.

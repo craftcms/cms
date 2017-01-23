@@ -35,6 +35,14 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public static function hasSettings(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasCpSection(): bool
     {
         return false;
@@ -61,25 +69,16 @@ class Plugin extends Module implements PluginInterface
 
         // Set up a translation message source for the plugin
         $i18n = Craft::$app->getI18n();
-        $handle = $this->getHandle();
 
         /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
-            $i18n->translations[$handle] = [
+        if (!isset($i18n->translations[$this->handle]) && !isset($i18n->translations[$this->handle.'*'])) {
+            $i18n->translations[$this->handle] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => "@plugins/$handle/translations",
+                'basePath' => "@plugins/{$this->handle}/translations",
                 'allowOverrides' => true,
             ];
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getHandle(): string
-    {
-        return $this->id;
     }
 
     /**
@@ -286,9 +285,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
      *
-     * @return string The rendered settings HTML
+     * @return string|null The rendered settings HTML
      */
-    protected function settingsHtml(): string
+    protected function settingsHtml()
     {
         return null;
     }

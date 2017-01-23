@@ -69,7 +69,7 @@
 						</td>
 						<td>
 							{% if config.hasSettings %}
-								<a href="{{ url('settings/plugins/'~handle) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
+								<a href="{{ url('settings/plugins/'~config.moduleId) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
 							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">
