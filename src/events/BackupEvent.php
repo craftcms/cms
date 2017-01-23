@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Backup event class.
  *
@@ -19,7 +21,7 @@ class BackupEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The file path to the backup.
+     * @var string|null The file path to the backup.
      */
     public $file;
 }

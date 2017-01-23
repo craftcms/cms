@@ -5,7 +5,7 @@
 	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
 {% endif %}
 
-{% do craft.app.view.registerTranslations('app', [
+{% do view.registerTranslations('app', [
 	"Show",
 	"Hide",
 ]) %}
@@ -22,7 +22,7 @@
 		</div>
 	</noscript>
 
-	{% registerjs at head %}
+	{% js at head %}
 		// Create the Craft object
 		window.Craft = {
 			systemUid:             "{{ craft.app.getSystemUid()|e('js') }}",
@@ -50,7 +50,7 @@
 			Pro:                   {{ CraftPro }},
 			edition:               {{ CraftEdition }},
 			isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},
-			translations:          {{ craft.app.view.getTranslations()|json_encode|raw }},
+			translations:          {{ view.getTranslations()|json_encode|raw }},
 			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
 			{% if craft.app.config.get('enableCsrfProtection') %}
@@ -112,5 +112,5 @@
 
 		// Picture element HTML5 shiv
 		document.createElement('picture');
-	{% endregisterjs %}
+	{% endjs %}
 {% endblock %}

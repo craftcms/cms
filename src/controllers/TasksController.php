@@ -12,6 +12,8 @@ use craft\helpers\Json;
 use craft\web\Controller;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
  * status, re-running and deleting tasks.
@@ -37,9 +39,9 @@ class TasksController extends Controller
     /**
      * Runs any pending tasks.
      *
-     * @return void
+     * @return string
      */
-    public function actionRunPendingTasks()
+    public function actionRunPendingTasks(): string
     {
         $tasksService = Craft::$app->getTasks();
 
@@ -68,7 +70,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetRunningTaskInfo()
+    public function actionGetRunningTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
@@ -105,7 +107,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionRerunTask()
+    public function actionRerunTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -137,7 +139,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTask()
+    public function actionDeleteTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -156,7 +158,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetTaskInfo()
+    public function actionGetTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');

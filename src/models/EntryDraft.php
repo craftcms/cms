@@ -21,12 +21,12 @@ class EntryDraft extends BaseEntryRevisionModel
     // =========================================================================
 
     /**
-     * @var integer Draft ID
+     * @var int|null Draft ID
      */
     public $draftId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
@@ -41,7 +41,7 @@ class EntryDraft extends BaseEntryRevisionModel
         if (isset($config['data'])) {
             // Merge the draft and entry data
             $entryData = $config['data'];
-            $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
+            $fieldContent = $entryData['fields'] ?? null;
             $config['draftId'] = $config['id'];
             $config['id'] = $config['entryId'];
             $config['revisionNotes'] = $config['notes'];

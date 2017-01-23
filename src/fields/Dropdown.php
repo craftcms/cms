@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -23,7 +24,7 @@ class Dropdown extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Dropdown');
     }
@@ -34,13 +35,13 @@ class Dropdown extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->getTranslatedOptions();
+        $options = $this->translatedOptions();
 
         // If this is a new entry, look for a default option
         if ($this->isFresh($element)) {
-            $value = $this->getDefaultValue();
+            $value = $this->defaultValue();
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/select',
@@ -57,7 +58,7 @@ class Dropdown extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function getOptionsSettingsLabel()
+    protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Dropdown Options');
     }

@@ -10,7 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\helpers\Io;
+use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use yii\base\Module;
 
@@ -35,7 +35,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public static function hasCpSection()
+    public static function hasCpSection(): bool
     {
         return false;
     }
@@ -44,15 +44,10 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     /**
-     * @var Model|boolean The model used to store the plugin’s settings
+     * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
-
-    /**
-     * @var string The plugin’s base path
-     */
-    private $_basePath;
 
     // Public Methods
     // =========================================================================
@@ -68,9 +63,10 @@ class Plugin extends Module implements PluginInterface
         $i18n = Craft::$app->getI18n();
         $handle = $this->getHandle();
 
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => \craft\i18n\PhpMessageSource::class,
+                'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,
@@ -81,7 +77,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getHandle()
+    public function getHandle(): string
     {
         return $this->id;
     }
@@ -100,10 +96,8 @@ class Plugin extends Module implements PluginInterface
         // Run the install migration, if there is one
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($migrator->migrateUp($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $migrator->migrateUp($migration) === false) {
+            return false;
         }
 
         // Mark all existing migrations as applied
@@ -119,7 +113,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update($fromVersion)
+    public function update(string $fromVersion)
     {
         if ($this->beforeUpdate() === false) {
             return false;
@@ -145,10 +139,8 @@ class Plugin extends Module implements PluginInterface
 
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($this->getMigrator()->migrateDown($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
+            return false;
         }
 
         $this->afterUninstall();
@@ -183,7 +175,7 @@ class Plugin extends Module implements PluginInterface
         return $controller->renderTemplate('settings/plugins/_settings',
             [
                 'plugin' => $this,
-                'settingsHtml' => $this->getSettingsHtml()
+                'settingsHtml' => $this->settingsHtml()
             ]);
     }
 
@@ -192,32 +184,18 @@ class Plugin extends Module implements PluginInterface
      *
      * @return MigrationManager The plugin’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
     /**
      * @inheritdoc
      */
-    public function getVariableDefinition()
+    public function defineTemplateComponent()
     {
         return null;
-    }
-
-    /**
-     * Returns the root directory of the module.
-     * It defaults to the directory containing the module class file.
-     *
-     * @return string the root directory of the module.
-     */
-    public function getBasePath()
-    {
-        if ($this->_basePath === null) {
-            $this->_basePath = Craft::$app->getPath()->getPluginsPath().'/'.$this->id;
-        }
-
-        return $this->_basePath;
     }
 
     // Protected Methods
@@ -232,25 +210,24 @@ class Plugin extends Module implements PluginInterface
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.'/Install.php';
+        $path = $migrator->migrationPath.DIRECTORY_SEPARATOR.'Install.php';
 
-        if (Io::fileExists($path)) {
-            require_once($path);
-
-            $class = $migrator->migrationNamespace.'\\Install';
-
-            return new $class;
+        if (!is_file($path)) {
+            return null;
         }
 
-        return null;
+        require_once $path;
+        $class = $migrator->migrationNamespace.'\\Install';
+
+        return new $class;
     }
 
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall()
+    protected function beforeInstall(): bool
     {
         return true;
     }
@@ -265,9 +242,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is updated.
      *
-     * @return boolean Whether the plugin should be updated
+     * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate()
+    protected function beforeUpdate(): bool
     {
         return true;
     }
@@ -282,9 +259,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeUninstall()
+    protected function beforeUninstall(): bool
     {
         return true;
     }
@@ -311,7 +288,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string The rendered settings HTML
      */
-    protected function getSettingsHtml()
+    protected function settingsHtml(): string
     {
         return null;
     }

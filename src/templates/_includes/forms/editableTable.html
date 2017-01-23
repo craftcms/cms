@@ -70,10 +70,10 @@
 {% endif %}
 
 {% if not static and (initJs is not defined or initJs) %}
-	{% registerjs %}
+	{% js %}
 		new Craft.EditableTable(
 			"{{ id   | namespaceInputId   | e('js') }}",
 			"{{ name | namespaceInputName | e('js') }}",
 			{{ cols|json_encode|raw }});
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}

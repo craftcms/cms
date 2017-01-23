@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\helpers\DateTimeHelper;
 use craft\models\EntryDraft;
 use craft\models\Section;
@@ -107,7 +106,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionUpdateDraftMeta()
+    public function actionUpdateDraftMeta(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -142,7 +141,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionDeleteDraft()
+    public function actionDeleteDraft(): Response
     {
         $this->requirePostRequest();
 
@@ -194,12 +193,11 @@ class EntryRevisionsController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->authorId != $userSessionService->getIdentity()->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE
+            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->enabled
         ) {
-            if ($entry->enabled) {
-                // Make sure they have permission to make live changes to those
-                $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-            }
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         // Is this another user's draft?
@@ -267,12 +265,11 @@ class EntryRevisionsController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->authorId != $userSessionService->getIdentity()->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE
+            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->enabled
         ) {
-            if ($entry->enabled) {
-                // Make sure they have permission to make live changes to those
-                $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-            }
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         if ($entry->enabled) {
@@ -316,10 +313,10 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
-            $authorId = isset($authorId[0]) ? $authorId[0] : null;
+            $authorId = $authorId[0] ?? null;
         }
 
         $draft->authorId = $authorId;
@@ -328,9 +325,9 @@ class EntryRevisionsController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = isset($parentId[0]) ? $parentId[0] : null;
+            $parentId = $parentId[0] ?? null;
         }
 
-        $draft->newParentId = $parentId;
+        $draft->newParentId = $parentId ?: null;
     }
 }

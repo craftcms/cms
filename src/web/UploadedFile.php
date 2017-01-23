@@ -7,6 +7,8 @@
 
 namespace craft\web;
 
+use Craft;
+
 /**
  * UploadedFile represents the information for an uploaded file.
  *
@@ -29,9 +31,8 @@ class UploadedFile extends \yii\web\UploadedFile
      */
     public static function getInstanceByName($name)
     {
-        $name = static::_normalizeName($name);
-
-        return parent::getInstanceByName($name);
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return parent::getInstanceByName(self::_normalizeName($name));
     }
 
     /**
@@ -40,20 +41,20 @@ class UploadedFile extends \yii\web\UploadedFile
      * If multiple files were uploaded and saved as 'Files[0]', 'Files[1]', 'Files[n]'..., you can have them all by
      * passing 'Files' as array name.
      *
-     * @param string  $name                  The name of the array of files
-     * @param boolean $lookForSingleInstance If set to true, will look for a single instance of the given name.
+     * @param string $name                  The name of the array of files
+     * @param bool   $lookForSingleInstance If set to true, will look for a single instance of the given name.
      *
      * @return UploadedFile[] The array of UploadedFile objects. Empty array is returned if no adequate upload was
      *                        found. Please note that this array will contain all files from all subarrays regardless
      *                        how deeply nested they are.
      */
-    public static function getInstancesByName($name, $lookForSingleInstance = true)
+    public static function getInstancesByName($name, $lookForSingleInstance = true): array
     {
-        $name = static::_normalizeName($name);
+        $name = self::_normalizeName($name);
         $instances = parent::getInstancesByName($name);
 
-        if (!$instances && $lookForSingleInstance) {
-            $singleInstance = parent::getInstanceByName($name);
+        if (empty($instances) && $lookForSingleInstance) {
+            $singleInstance = static::getInstanceByName($name);
 
             if ($singleInstance) {
                 $instances[] = $singleInstance;
@@ -61,6 +62,31 @@ class UploadedFile extends \yii\web\UploadedFile
         }
 
         return $instances;
+    }
+
+    /**
+     * Saves the uploaded file to a temp location.
+     *
+     * @param bool $deleteTempFile    whether to delete the temporary file after saving.
+     *                                If true, you will not be able to save the uploaded file again in the current request.
+     *
+     * @return string|false the path to the temp file, or false if the file wasn't saved successfully
+     * @see error
+     */
+    public function saveAsTempFile(bool $deleteTempFile = true)
+    {
+        if ($this->error != UPLOAD_ERR_OK) {
+            return false;
+        }
+
+        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true).'.'.pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+
+        if (!$this->saveAs($tempPath, $deleteTempFile)) {
+            return false;
+        }
+
+        return $tempPath;
     }
 
     // Private Methods
@@ -75,12 +101,11 @@ class UploadedFile extends \yii\web\UploadedFile
      *
      * @return string
      */
-    private static function _normalizeName($name)
+    private static function _normalizeName(string $name): string
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][',
-                    substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
         }
 
         return $name;

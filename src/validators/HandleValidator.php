@@ -68,10 +68,7 @@ class HandleValidator extends Validator
     // =========================================================================
 
     /**
-     * @param $object
-     * @param $attribute
-     *
-     * @return void
+     * @inheritdoc
      */
     public function validateAttribute($object, $attribute)
     {
@@ -80,13 +77,10 @@ class HandleValidator extends Validator
         // Handles are always required, so if it's blank, the required validator will catch this.
         if ($handle) {
             $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-            $reservedWords = array_map([
-                '\craft\helpers\StringHelper',
-                'toLowerCase'
-            ], $reservedWords);
+            $reservedWords = array_map([StringHelper::class, 'toLowerCase'], $reservedWords);
             $lcHandle = StringHelper::toLowerCase($handle);
 
-            if (in_array($lcHandle, $reservedWords)) {
+            if (in_array($lcHandle, $reservedWords, true)) {
                 $message = Craft::t('app', '“{handle}” is a reserved word.',
                     ['handle' => $handle]);
                 $this->addError($object, $attribute, $message);

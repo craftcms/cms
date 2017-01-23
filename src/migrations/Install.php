@@ -9,9 +9,11 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Connection;
-use craft\elements\User;
 use craft\db\Migration;
+use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\mail\Mailer;
+use craft\mail\transportadapters\Php;
 use craft\models\Info;
 use craft\models\Site;
 use craft\services\Config;
@@ -28,27 +30,27 @@ class Install extends Migration
     // =========================================================================
 
     /**
-     * @var string The admin user’s username
+     * @var string|null The admin user’s username
      */
     public $username;
 
     /**
-     * @var string The admin user’s password
+     * @var string|null The admin user’s password
      */
     public $password;
 
     /**
-     * @var string The database driver to use
+     * @var string|null The database driver to use
      */
     public $driver;
 
     /**
-     * @var string The admin user’s email
+     * @var string|null The admin user’s email
      */
     public $email;
 
     /**
-     * @var Site The default site
+     * @var Site|null The default site
      */
     public $site;
 
@@ -73,7 +75,7 @@ class Install extends Migration
         Craft::$app->language = $this->site->language;
 
         // Save the first user
-        echo "    > save the first user ...";
+        echo '    > save the first user ...';
         $user = new User([
             'username' => $this->username,
             'newPassword' => $this->password,
@@ -89,17 +91,17 @@ class Install extends Migration
         }
 
         // Save the default email settings
-        echo "    > save the email settings ...";
+        echo '    > save the email settings ...';
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\mail\transportadapters\Php::class
+            'transportType' => Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => \craft\mail\Mailer::class,
+            'class' => Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
-                'class' => 'Swift_MailTransport'
+                'class' => \Swift_MailTransport::class
             ]
         ]);
         echo " done\n";
@@ -137,7 +139,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%assets}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'volumeId' => $this->integer(),
             'folderId' => $this->integer()->notNull(),
             'filename' => $this->string()->notNull(),
@@ -149,6 +151,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -180,11 +183,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%categories}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -272,7 +276,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%entries}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
@@ -281,6 +285,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -302,7 +307,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
-            'titleLabel' => $this->string(),
+            'titleLabel' => $this->string()->defaultValue('Title'),
             'titleFormat' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -388,13 +393,13 @@ class Install extends Migration
             'timezone' => $this->string(30),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
+            'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%matrixblocks}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
             'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
@@ -403,6 +408,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -435,16 +441,6 @@ class Install extends Migration
             'enabled' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-        ]);
-        $this->createTable('{{%rackspaceaccess}}', [
-            'id' => $this->primaryKey(),
-            'connectionKey' => $this->string()->notNull(),
-            'token' => $this->string()->notNull(),
-            'storageUrl' => $this->string()->notNull(),
-            'cdnUrl' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -560,11 +556,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%tags}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%tasks}}', [
             'id' => $this->primaryKey(),
@@ -655,7 +652,7 @@ class Install extends Migration
             'preferences' => $this->text(),
         ]);
         $this->createTable('{{%users}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
             'firstName' => $this->string(100),
@@ -682,6 +679,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(userId)',
         ]);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),
@@ -729,23 +727,23 @@ class Install extends Migration
     protected function createIndexes()
     {
         $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId,offset', true), '{{%assetindexdata}}', 'sessionId,volumeId,offset', true);
-        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'volumeId', false), '{{%assetindexdata}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'volumeId', false, true), '{{%assetindexdata}}', 'volumeId', false);
         $this->createIndex($this->db->getIndexName('{{%assets}}', 'filename,folderId', true), '{{%assets}}', 'filename,folderId', true);
-        $this->createIndex($this->db->getIndexName('{{%assets}}', 'folderId', false), '{{%assets}}', 'folderId', false);
-        $this->createIndex($this->db->getIndexName('{{%assets}}', 'volumeId', false), '{{%assets}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%assets}}', 'folderId', false, true), '{{%assets}}', 'folderId', false);
+        $this->createIndex($this->db->getIndexName('{{%assets}}', 'volumeId', false, true), '{{%assets}}', 'volumeId', false);
         $this->createIndex($this->db->getIndexName('{{%assettransformindex}}', 'volumeId,assetId,location', false), '{{%assettransformindex}}', 'volumeId,assetId,location', false);
         $this->createIndex($this->db->getIndexName('{{%assettransforms}}', 'name', true), '{{%assettransforms}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%assettransforms}}', 'handle', true), '{{%assettransforms}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%categories}}', 'groupId', false), '{{%categories}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%categories}}', 'groupId', false, true), '{{%categories}}', 'groupId', false);
         $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'name', true), '{{%categorygroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'handle', true), '{{%categorygroups}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'structureId', false), '{{%categorygroups}}', 'structureId', false);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'fieldLayoutId', false), '{{%categorygroups}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'structureId', false, true), '{{%categorygroups}}', 'structureId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'fieldLayoutId', false, true), '{{%categorygroups}}', 'fieldLayoutId', false);
         $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'groupId,siteId', true), '{{%categorygroups_i18n}}', 'groupId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'siteId', false), '{{%categorygroups_i18n}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'siteId', false, true), '{{%categorygroups_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%content}}', 'elementId,siteId', true), '{{%content}}', 'elementId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'siteId', false), '{{%content}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'title', false), '{{%content}}', 'title', false);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'siteId', false, true), '{{%content}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'title', false, true), '{{%content}}', 'title', false);
         $this->createIndex($this->db->getIndexName('{{%deprecationerrors}}', 'key,fingerprint', true), '{{%deprecationerrors}}', 'key,fingerprint', true);
         $this->createIndex($this->db->getIndexName('{{%elementindexsettings}}', 'type', true), '{{%elementindexsettings}}', 'type', true);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'type', false), '{{%elements}}', 'type', false);
@@ -753,70 +751,69 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'archived,dateCreated', false), '{{%elements}}', 'archived,dateCreated', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'elementId,siteId', true), '{{%elements_i18n}}', 'elementId,siteId', true);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,siteId', true), '{{%elements_i18n}}', 'uri,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false, true), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
         $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
         $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
-        $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false), '{{%entries}}', 'authorId', false);
-        $this->createIndex($this->db->getIndexName('{{%entries}}', 'sectionId', false), '{{%entries}}', 'sectionId', false);
-        $this->createIndex($this->db->getIndexName('{{%entries}}', 'typeId', false), '{{%entries}}', 'typeId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'sectionId', false), '{{%entrydrafts}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false, true), '{{%entries}}', 'authorId', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'sectionId', false, true), '{{%entries}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'typeId', false, true), '{{%entries}}', 'typeId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'sectionId', false, true), '{{%entrydrafts}}', 'sectionId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,siteId', false), '{{%entrydrafts}}', 'entryId,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false), '{{%entrydrafts}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'creatorId', false), '{{%entrydrafts}}', 'creatorId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false, true), '{{%entrydrafts}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'creatorId', false, true), '{{%entrydrafts}}', 'creatorId', false);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'name,sectionId', true), '{{%entrytypes}}', 'name,sectionId', true);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'handle,sectionId', true), '{{%entrytypes}}', 'handle,sectionId', true);
-        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'sectionId', false), '{{%entrytypes}}', 'sectionId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'fieldLayoutId', false), '{{%entrytypes}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'sectionId', false), '{{%entryversions}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'sectionId', false, true), '{{%entrytypes}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'fieldLayoutId', false, true), '{{%entrytypes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'sectionId', false, true), '{{%entryversions}}', 'sectionId', false);
         $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,siteId', false), '{{%entryversions}}', 'entryId,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'siteId', false), '{{%entryversions}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'creatorId', false), '{{%entryversions}}', 'creatorId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'siteId', false, true), '{{%entryversions}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'creatorId', false, true), '{{%entryversions}}', 'creatorId', false);
         $this->createIndex($this->db->getIndexName('{{%fieldgroups}}', 'name', true), '{{%fieldgroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'layoutId,fieldId', true), '{{%fieldlayoutfields}}', 'layoutId,fieldId', true);
         $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'sortOrder', false), '{{%fieldlayoutfields}}', 'sortOrder', false);
-        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'tabId', false), '{{%fieldlayoutfields}}', 'tabId', false);
-        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'fieldId', false), '{{%fieldlayoutfields}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'tabId', false, true), '{{%fieldlayoutfields}}', 'tabId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'fieldId', false, true), '{{%fieldlayoutfields}}', 'fieldId', false);
         $this->createIndex($this->db->getIndexName('{{%fieldlayouts}}', 'type', false), '{{%fieldlayouts}}', 'type', false);
         $this->createIndex($this->db->getIndexName('{{%fieldlayouttabs}}', 'sortOrder', false), '{{%fieldlayouttabs}}', 'sortOrder', false);
-        $this->createIndex($this->db->getIndexName('{{%fieldlayouttabs}}', 'layoutId', false), '{{%fieldlayouttabs}}', 'layoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayouttabs}}', 'layoutId', false, true), '{{%fieldlayouttabs}}', 'layoutId', false);
         $this->createIndex($this->db->getIndexName('{{%fields}}', 'handle,context', true), '{{%fields}}', 'handle,context', true);
-        $this->createIndex($this->db->getIndexName('{{%fields}}', 'groupId', false), '{{%fields}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%fields}}', 'groupId', false, true), '{{%fields}}', 'groupId', false);
         $this->createIndex($this->db->getIndexName('{{%fields}}', 'context', false), '{{%fields}}', 'context', false);
         $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'name', true), '{{%globalsets}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'handle', true), '{{%globalsets}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'fieldLayoutId', false), '{{%globalsets}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerId', false), '{{%matrixblocks}}', 'ownerId', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'fieldId', false), '{{%matrixblocks}}', 'fieldId', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'typeId', false), '{{%matrixblocks}}', 'typeId', false);
+        $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'fieldLayoutId', false, true), '{{%globalsets}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerId', false, true), '{{%matrixblocks}}', 'ownerId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'fieldId', false, true), '{{%matrixblocks}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'typeId', false, true), '{{%matrixblocks}}', 'typeId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'sortOrder', false), '{{%matrixblocks}}', 'sortOrder', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerSiteId', false), '{{%matrixblocks}}', 'ownerSiteId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerSiteId', false, true), '{{%matrixblocks}}', 'ownerSiteId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'name,fieldId', true), '{{%matrixblocktypes}}', 'name,fieldId', true);
         $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'handle,fieldId', true), '{{%matrixblocktypes}}', 'handle,fieldId', true);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldId', false), '{{%matrixblocktypes}}', 'fieldId', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldLayoutId', false), '{{%matrixblocktypes}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%migrations}}', 'pluginId', false), '{{%migrations}}', 'pluginId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldId', false, true), '{{%matrixblocktypes}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldLayoutId', false, true), '{{%matrixblocktypes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%migrations}}', 'pluginId', false, true), '{{%migrations}}', 'pluginId', false);
         $this->createIndex($this->db->getIndexName('{{%migrations}}', 'type,pluginId', false), '{{%migrations}}', 'type,pluginId', false);
         $this->createIndex($this->db->getIndexName('{{%plugins}}', 'handle', true), '{{%plugins}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%rackspaceaccess}}', 'connectionKey', true), '{{%rackspaceaccess}}', 'connectionKey', true);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false), '{{%relations}}', 'sourceId', false);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false), '{{%relations}}', 'targetId', false);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false), '{{%relations}}', 'sourceSiteId', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false, true), '{{%relations}}', 'sourceId', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false, true), '{{%relations}}', 'targetId', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false, true), '{{%relations}}', 'sourceSiteId', false);
         $this->createIndex($this->db->getIndexName('{{%routes}}', 'uriPattern', true), '{{%routes}}', 'uriPattern', true);
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false), '{{%routes}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false, true), '{{%routes}}', 'siteId', false) ;
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'handle', true), '{{%sections}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'name', true), '{{%sections}}', 'name', true);
-        $this->createIndex($this->db->getIndexName('{{%sections}}', 'structureId', false), '{{%sections}}', 'structureId', false);
+        $this->createIndex($this->db->getIndexName('{{%sections}}', 'structureId', false, true), '{{%sections}}', 'structureId', false);
         $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'sectionId,siteId', true), '{{%sections_i18n}}', 'sectionId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'siteId', false), '{{%sections_i18n}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'siteId', false, true), '{{%sections_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'uid', false), '{{%sessions}}', 'uid', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'token', false), '{{%sessions}}', 'token', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'dateUpdated', false), '{{%sessions}}', 'dateUpdated', false);
-        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'userId', false), '{{%sessions}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'userId', false, true), '{{%sessions}}', 'userId', false);
         $this->createIndex($this->db->getIndexName('{{%shunnedmessages}}', 'userId,message', true), '{{%shunnedmessages}}', 'userId,message', true);
         $this->createIndex($this->db->getIndexName('{{%sites}}', 'handle', true), '{{%sites}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%sites}}', 'sortOrder', false), '{{%sites}}', 'sortOrder', false);
@@ -825,54 +822,53 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'lft', false), '{{%structureelements}}', 'lft', false);
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'rgt', false), '{{%structureelements}}', 'rgt', false);
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'level', false), '{{%structureelements}}', 'level', false);
-        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'elementId', false), '{{%structureelements}}', 'elementId', false);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'elementId', false, true), '{{%structureelements}}', 'elementId', false);
         $this->createIndex($this->db->getIndexName('{{%systemsettings}}', 'category', true), '{{%systemsettings}}', 'category', true);
         $this->createIndex($this->db->getIndexName('{{%taggroups}}', 'name', true), '{{%taggroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%taggroups}}', 'handle', true), '{{%taggroups}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%tags}}', 'groupId', false), '{{%tags}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%tags}}', 'groupId', false, true), '{{%tags}}', 'groupId', false);
         $this->createIndex($this->db->getIndexName('{{%tasks}}', 'root', false), '{{%tasks}}', 'root', false);
         $this->createIndex($this->db->getIndexName('{{%tasks}}', 'lft', false), '{{%tasks}}', 'lft', false);
         $this->createIndex($this->db->getIndexName('{{%tasks}}', 'rgt', false), '{{%tasks}}', 'rgt', false);
         $this->createIndex($this->db->getIndexName('{{%tasks}}', 'level', false), '{{%tasks}}', 'level', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'cacheId', false), '{{%templatecacheelements}}', 'cacheId', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'elementId', false), '{{%templatecacheelements}}', 'elementId', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'cacheId', false), '{{%templatecachequeries}}', 'cacheId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'cacheId', false, true), '{{%templatecacheelements}}', 'cacheId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'elementId', false, true), '{{%templatecacheelements}}', 'elementId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'cacheId', false, true), '{{%templatecachequeries}}', 'cacheId', false);
         $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'type', false), '{{%templatecachequeries}}', 'type', false);
         $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false), '{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId', false), '{{%templatecaches}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId', false, true), '{{%templatecaches}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'token', true), '{{%tokens}}', 'token', true);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'expiryDate', false), '{{%tokens}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'handle', true), '{{%usergroups}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'name', true), '{{%usergroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'groupId,userId', true), '{{%usergroups_users}}', 'groupId,userId', true);
-        $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'userId', false), '{{%usergroups_users}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'userId', false, true), '{{%usergroups_users}}', 'userId', false);
         $this->createIndex($this->db->getIndexName('{{%userpermissions}}', 'name', true), '{{%userpermissions}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%userpermissions_usergroups}}', 'permissionId,groupId', true), '{{%userpermissions_usergroups}}', 'permissionId,groupId', true);
-        $this->createIndex($this->db->getIndexName('{{%userpermissions_usergroups}}', 'groupId', false), '{{%userpermissions_usergroups}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_usergroups}}', 'groupId', false, true), '{{%userpermissions_usergroups}}', 'groupId', false);
         $this->createIndex($this->db->getIndexName('{{%userpermissions_users}}', 'permissionId,userId', true), '{{%userpermissions_users}}', 'permissionId,userId', true);
-        $this->createIndex($this->db->getIndexName('{{%userpermissions_users}}', 'userId', false), '{{%userpermissions_users}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_users}}', 'userId', false, true), '{{%userpermissions_users}}', 'userId', false);
         $this->createIndex($this->db->getIndexName('{{%users}}', 'username', true), '{{%users}}', 'username', true);
         $this->createIndex($this->db->getIndexName('{{%users}}', 'email', true), '{{%users}}', 'email', true);
         $this->createIndex($this->db->getIndexName('{{%users}}', 'uid', false), '{{%users}}', 'uid', false);
         $this->createIndex($this->db->getIndexName('{{%users}}', 'verificationCode', false), '{{%users}}', 'verificationCode', false);
         $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'name,parentId,volumeId', true), '{{%volumefolders}}', 'name,parentId,volumeId', true);
-        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'parentId', false), '{{%volumefolders}}', 'parentId', false);
-        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'volumeId', false), '{{%volumefolders}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'parentId', false, true), '{{%volumefolders}}', 'parentId', false);
+        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'volumeId', false, true), '{{%volumefolders}}', 'volumeId', false);
         $this->createIndex($this->db->getIndexName('{{%volumes}}', 'name', true), '{{%volumes}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%volumes}}', 'handle', true), '{{%volumes}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%volumes}}', 'fieldLayoutId', false), '{{%volumes}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%volumes}}', 'fieldLayoutId', false, true), '{{%volumes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false, true), '{{%widgets}}', 'userId', false);
 
         // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
-        switch ($this->driver)
-        {
+        switch ($this->driver) {
             case Connection::DRIVER_MYSQL:
                 $this->createTable('{{%searchindex}}', [
                     'elementId' => $this->integer()->notNull(),
                     'attribute' => $this->string(25)->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this-> text()->notNull(),
+                    'keywords' => $this->text()->notNull(),
                 ], ' ENGINE=MyISAM');
 
                 $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
@@ -967,6 +963,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%shunnedmessages}}', 'userId'), '{{%shunnedmessages}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'elementId'), '{{%structureelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'structureId'), '{{%structureelements}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldLayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'groupId'), '{{%tags}}', 'groupId', '{{%taggroups}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'id'), '{{%tags}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);
@@ -996,7 +993,7 @@ class Install extends Migration
     protected function insertDefaultData()
     {
         // Populate the info table
-        echo "    > populate the info table ...";
+        echo '    > populate the info table ...';
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->version,
             'schemaVersion' => Craft::$app->schemaVersion,

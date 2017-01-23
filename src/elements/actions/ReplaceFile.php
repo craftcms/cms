@@ -25,7 +25,7 @@ class ReplaceFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Replace file');
     }
@@ -37,34 +37,34 @@ class ReplaceFile extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			$('.replaceFile').remove();
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            $('.replaceFile').remove();
 
-			var \$element = \$selectedItems.find('.element'),
-				\$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod),
-				options = Craft.elementIndex._currentUploaderSettings;
+            var \$element = \$selectedItems.find('.element'),
+                \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod),
+                options = Craft.elementIndex._currentUploaderSettings;
 
-			options.url = Craft.getActionUrl('assets/replace-file');
-			options.dropZone = null;
-			options.fileInput = \$fileInput;
+            options.url = Craft.getActionUrl('assets/replace-file');
+            options.dropZone = null;
+            options.fileInput = \$fileInput;
 
-			var tempUploader = new Craft.Uploader(\$fileInput, options);
-			tempUploader.setParams({
-				assetId: \$element.data('id')
-			});
+            var tempUploader = new Craft.Uploader(\$fileInput, options);
+            tempUploader.setParams({
+                assetId: \$element.data('id')
+            });
 
-			\$fileInput.click();
-		}
-	});
+            \$fileInput.click();
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

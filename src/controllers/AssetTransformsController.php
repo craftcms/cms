@@ -42,8 +42,10 @@ class AssetTransformsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionTransformIndex()
+    public function actionTransformIndex(): string
     {
+        $variables = [];
+
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
         $variables['modes'] = AssetTransform::modes();
 
@@ -53,13 +55,13 @@ class AssetTransformsController extends Controller
     /**
      * Edit an asset transform.
      *
-     * @param string         $transformHandle The transform’s handle, if any.
-     * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
+     * @param string|null         $transformHandle The transform’s handle, if any.
+     * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
+    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): string
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -122,7 +124,7 @@ class AssetTransformsController extends Controller
             $transform->quality = null;
         }
 
-        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats())) {
+        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
             $session->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
@@ -152,7 +154,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTransform()
+    public function actionDeleteTransform(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

@@ -7,21 +7,19 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
-use Craft;
 use craft\db\ActiveRecord;
-use craft\validators\HandleValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Field record.
  *
- * @property integer    $id                   ID
- * @property integer    $groupId              Group ID
+ * @property int        $id                   ID
+ * @property int        $groupId              Group ID
  * @property string     $name                 Name
  * @property string     $handle               Handle
  * @property string     $context              Context
  * @property string     $instructions         Instructions
- * @property boolean    $translatable         Translatable
+ * @property bool       $translatable         Translatable
  * @property string     $translationMethod    Translation method
  * @property string     $translationKeyFormat Translation key format
  * @property string     $type                 Type
@@ -37,48 +35,7 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @var array Reserved field handles
-     *
-     * Some of these are element type-specific, but necessary to prevent 'order' criteria param conflicts
-     */
-    protected $reservedHandleWords = [
-        'archived',
-        'attributeLabel',
-        'children',
-        'contentTable',
-        'dateCreated',
-        'dateUpdated',
-        'enabled',
-        'id',
-        'level',
-        'lft',
-        'link',
-        'enabledForSite',
-        'name', // global set-specific
-        'next',
-        'next',
-        'owner',
-        'parents',
-        'postDate', // entry-specific
-        'prev',
-        'ref',
-        'rgt',
-        'root',
-        'searchScore',
-        'siblings',
-        'site',
-        'slug',
-        'sortOrder',
-        'status',
-        'title',
-        'uid',
-        'uri',
-        'url',
-        'username', // user-specific
-    ];
-
-    /**
-     * @var
+     * @var string|null
      */
     private $_oldHandle;
 
@@ -111,7 +68,7 @@ class Field extends ActiveRecord
     /**
      * Returns the old handle.
      *
-     * @return string
+     * @return string|null
      */
     public function getOldHandle()
     {
@@ -123,7 +80,7 @@ class Field extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fields}}';
     }
@@ -133,7 +90,7 @@ class Field extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }

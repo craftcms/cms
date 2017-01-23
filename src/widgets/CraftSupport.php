@@ -9,6 +9,7 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use yii\base\Exception;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
@@ -24,7 +25,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Craft Support');
     }
@@ -32,7 +33,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
         return (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin());
@@ -41,9 +42,23 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/chat-bubbles.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Public Methods
@@ -52,15 +67,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/craft-support.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return Craft::t('app', 'Send a message to Craft Support');
     }

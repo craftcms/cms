@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use yii\validators\Validator;
 
 /**
@@ -26,17 +25,17 @@ class AssetFilenameValidator extends Validator
     // =========================================================================
 
     /**
-     * @var string[] Allowed file extensions
+     * @var string[]|null Allowed file extensions
      */
     public $allowedExtensions;
 
     /**
-     * @var string User-defined error message used when the extension is disallowed.
+     * @var string|null User-defined error message used when the extension is disallowed.
      */
     public $badExtension;
 
     /**
-     * @var string User-defined error message used when a file already exists with the same name.
+     * @var string|null User-defined error message used when a file already exists with the same name.
      */
     public $alreadyExists;
 
@@ -51,10 +50,8 @@ class AssetFilenameValidator extends Validator
         parent::init();
 
         if ($this->allowedExtensions === null) {
-            $this->allowedExtensions = Io::getAllowedFileExtensions();
+            $this->allowedExtensions = Craft::$app->getConfig()->getAllowedFileExtensions();
         }
-
-        $this->allowedExtensions = array_map('strtolower', $this->allowedExtensions);
 
         if ($this->badExtension === null) {
             $this->badExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
@@ -74,8 +71,8 @@ class AssetFilenameValidator extends Validator
         $value = $model->$attribute;
 
         // Make sure the new filename has a valid extension
-        $extension = strtolower(Io::getExtension($value));
-        if (!in_array($extension, $this->allowedExtensions)) {
+        $extension = strtolower(pathinfo($value, PATHINFO_EXTENSION));
+        if (!in_array($extension, $this->allowedExtensions, true)) {
             $this->addError($model, $attribute, $this->badExtension, ['extension' => $extension]);
         }
 

@@ -23,22 +23,10 @@ abstract class Component extends Model implements ComponentInterface
      *
      * @return string The display name of this class.
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         $classNameParts = explode('\\', static::class);
-        $displayName = array_pop($classNameParts);
 
-        return $displayName;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function classHandle()
-    {
-        $classNameParts = explode('\\', static::class);
-        $handle = array_pop($classNameParts);
-
-        return strtolower($handle);
+        return array_pop($classNameParts);
     }
 }

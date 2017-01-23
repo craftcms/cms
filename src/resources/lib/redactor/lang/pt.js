@@ -46,7 +46,12 @@
     "accessibility-help-label": "Editor de Rich Text",
     "caption": "Caption",
     "bulletslist": "Bullets",
-    "numberslist": "Numbers"
+    "numberslist": "Numbers",
+    "image-position": "Position",
+    "none": "None",
+    "left": "Left",
+    "right": "Right",
+    "center": "Center"
 };
 
 })(jQuery);

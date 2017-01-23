@@ -8,13 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\helpers\ArrayHelper;
 use craft\models\RebrandEmail;
 use craft\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
-use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -50,11 +48,11 @@ class EmailMessages extends Component
     /**
      * Returns all of the system email messages.
      *
-     * @param integer|null $language
+     * @param string|null $language
      *
      * @return RebrandEmail[]
      */
-    public function getAllMessages($language = null)
+    public function getAllMessages(string $language = null): array
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -101,12 +99,12 @@ class EmailMessages extends Component
     /**
      * Returns a system email message by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return RebrandEmail
      */
-    public function getMessage($key, $language = null)
+    public function getMessage(string $key, string $language = null): RebrandEmail
     {
         if ($language === null) {
             $language = Craft::$app->language;
@@ -129,9 +127,9 @@ class EmailMessages extends Component
      *
      * @param RebrandEmail $message
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveMessage(RebrandEmail $message)
+    public function saveMessage(RebrandEmail $message): bool
     {
         $record = $this->_getMessageRecord($message->key, $message->language);
 
@@ -155,7 +153,7 @@ class EmailMessages extends Component
      *
      * @return array
      */
-    private function _getAllMessageKeys()
+    private function _getAllMessageKeys(): array
     {
         $this->_setAllMessageInfo();
 
@@ -169,7 +167,7 @@ class EmailMessages extends Component
      *
      * @return array|null
      */
-    private function _getMessageInfoByKey($key)
+    private function _getMessageInfoByKey(string $key)
     {
         $this->_setAllMessageInfo();
 
@@ -187,38 +185,40 @@ class EmailMessages extends Component
      */
     private function _setAllMessageInfo()
     {
-        if (!isset($this->_messagesInfo)) {
-            $messages = [
-                [
-                    'key' => 'account_activation',
-                    'category' => 'app',
-                    'sourceLanguage' => Craft::$app->sourceLanguage
-                ],
-                [
-                    'key' => 'verify_new_email',
-                    'category' => 'app',
-                    'sourceLanguage' => Craft::$app->sourceLanguage
-                ],
-                [
-                    'key' => 'forgot_password',
-                    'category' => 'app',
-                    'sourceLanguage' => Craft::$app->sourceLanguage
-                ],
-                [
-                    'key' => 'test_email',
-                    'category' => 'app',
-                    'sourceLanguage' => Craft::$app->sourceLanguage
-                ],
-            ];
-
-            // Give plugins a chance to add additional messages
-            $event = new RegisterEmailMessagesEvent([
-                'messages' => $messages
-            ]);
-            $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
-
-            $this->_messagesInfo = ArrayHelper::index($event->messages, 'key');
+        if ($this->_messagesInfo !== null) {
+            return;
         }
+
+        $messages = [
+            [
+                'key' => 'account_activation',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+            [
+                'key' => 'verify_new_email',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+            [
+                'key' => 'forgot_password',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+            [
+                'key' => 'test_email',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+        ];
+
+        // Give plugins a chance to add additional messages
+        $event = new RegisterEmailMessagesEvent([
+            'messages' => $messages
+        ]);
+        $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
+
+        $this->_messagesInfo = ArrayHelper::index($event->messages, 'key');
     }
 
     /**
@@ -230,7 +230,7 @@ class EmailMessages extends Component
      *
      * @return null|string
      */
-    private function _translateMessageString($key, $part, $language)
+    private function _translateMessageString(string $key, string $part, string $language)
     {
         $messageInfo = $this->_getMessageInfoByKey($key);
 
@@ -239,11 +239,11 @@ class EmailMessages extends Component
         }
 
         $combinedKey = $key.'_'.$part;
-        $t = Craft::t($messageInfo['category'], $combinedKey, null, $language);
+        $t = Craft::t($messageInfo['category'], $combinedKey, [], $language);
 
         // If a translation couldn't be found, default to the message's source language
-        if ($t == $combinedKey) {
-            $t = Craft::t($messageInfo['category'], $combinedKey, null, $messageInfo['sourceLanguage']);
+        if ($t === $combinedKey) {
+            $t = Craft::t($messageInfo['category'], $combinedKey, [], $messageInfo['sourceLanguage']);
         }
 
         return $t;
@@ -252,12 +252,12 @@ class EmailMessages extends Component
     /**
      * Gets a message record by its key.
      *
-     * @param string $key
-     * @param string $language
+     * @param string      $key
+     * @param string|null $language
      *
      * @return EmailMessageRecord
      */
-    private function _getMessageRecord($key, $language = null)
+    private function _getMessageRecord(string $key, string $language = null): EmailMessageRecord
     {
         if ($language === null) {
             $language = Craft::$app->language;

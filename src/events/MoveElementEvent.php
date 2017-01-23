@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use yii\base\Event;
 
 /**
  * Move element event class.
@@ -21,12 +22,12 @@ class MoveElementEvent extends Event
     // =========================================================================
 
     /**
-     * @var int The ID of the structure the element is being moved within.
+     * @var int|null The ID of the structure the element is being moved within.
      */
     public $structureId;
 
     /**
-     * @var ElementInterface The element being moved.
+     * @var ElementInterface|null The element being moved.
      */
     public $element;
 }

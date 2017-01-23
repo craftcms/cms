@@ -15,6 +15,8 @@ use yii\db\Exception;
 /**
  * @inheritdoc
  *
+ * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -47,7 +49,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db);
     }
@@ -55,11 +57,11 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Quotes a database name for use in a query.
      *
-     * @param $name
+     * @param string $name
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName(string $name): string
     {
         return '"'.$name.'"';
     }
@@ -78,7 +80,7 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -99,7 +101,7 @@ class Schema extends \yii\db\pgsql\Schema
             parent::rollBackSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -143,7 +145,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultRestoreCommand()
+    public function getDefaultRestoreCommand(): string
     {
         return 'psql'.
             ' --dbname={database}'.
@@ -168,7 +170,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return array All indexes for the given table.
      */
-    public function findIndexes($tableName)
+    public function findIndexes(string $tableName): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
@@ -205,8 +207,96 @@ class Schema extends \yii\db\pgsql\Schema
             $this->findConstraints($table);
 
             return $table;
-        } else {
-            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Collects extra foreign key information details for the given table.
+     *
+     * @param TableSchema $table the table metadata
+     */
+    protected function findConstraints($table)
+    {
+        parent::findConstraints($table);
+
+        // Modified from parent to get extended FK information.
+        $tableName = $this->quoteValue($table->name);
+        $tableSchema = $this->quoteValue($table->schemaName);
+
+        $sql = <<<SQL
+SELECT
+    ct.conname AS constraint_name,
+    a.attname AS column_name,
+    fc.relname AS foreign_table_name,
+    fns.nspname AS foreign_table_schema,
+    fa.attname AS foreign_column_name,
+    ct.confupdtype AS update_type,
+    ct.confdeltype AS delete_type
+from
+    (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey, generate_subscripts(ct.conkey, 1) AS s, ct.confupdtype, ct.confdeltype
+       FROM pg_constraint ct
+    ) AS ct
+    INNER JOIN pg_class c ON c.oid=ct.conrelid
+    INNER JOIN pg_namespace ns ON c.relnamespace=ns.oid
+    INNER JOIN pg_attribute a ON a.attrelid=ct.conrelid AND a.attnum = ct.conkey[ct.s]
+    LEFT JOIN pg_class fc ON fc.oid=ct.confrelid
+    LEFT JOIN pg_namespace fns ON fc.relnamespace=fns.oid
+    LEFT JOIN pg_attribute fa ON fa.attrelid=ct.confrelid AND fa.attnum = ct.confkey[ct.s]
+WHERE
+    ct.contype='f'
+    AND c.relname={$tableName}
+    AND ns.nspname={$tableSchema}
+ORDER BY 
+    fns.nspname, fc.relname, a.attnum
+SQL;
+
+        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+
+        foreach ($extendedConstraints as $key => $extendedConstraint) {
+            // Find out what to do on update.
+            switch ($extendedConstraint['update_type']) {
+                case 'a':
+                    $updateAction = 'NO ACTION';
+                    break;
+                case 'r':
+                    $updateAction = 'RESTRICT';
+                    break;
+                case 'c':
+                    $updateAction = 'CASCADE';
+                    break;
+                case 'n':
+                    $updateAction = 'SET NULL';
+                    break;
+                default:
+                    $updateAction = 'DEFAULT';
+                    break;
+            }
+
+            // Find out what to do on update.
+            switch ($extendedConstraint['delete_type']) {
+                case 'a':
+                    $deleteAction = 'NO ACTION';
+                    break;
+                case 'r':
+                    $deleteAction = 'RESTRICT';
+                    break;
+                case 'c':
+                    $deleteAction = 'CASCADE';
+                    break;
+                case 'n':
+                    $deleteAction = 'SET NULL';
+                    break;
+                default:
+                    $deleteAction = 'DEFAULT';
+                    break;
+            }
+
+            $table->addExtendedForeignKey($key, [
+                'updateType' => $updateAction,
+                'deleteType' => $deleteAction,
+            ]);
         }
     }
 
@@ -217,7 +307,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return array Index and column names
      */
-    protected function getIndexInformation($table)
+    protected function getIndexInformation(TableSchema $table): array
     {
         $sql = <<<SQL
 SELECT

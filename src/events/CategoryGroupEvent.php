@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\CategoryGroup;
+use yii\base\Event;
 
 /**
  * Category group event class.
@@ -21,12 +22,12 @@ class CategoryGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var CategoryGroup The category group model associated with the event.
+     * @var CategoryGroup|null The category group model associated with the event.
      */
     public $categoryGroup;
 
     /**
-     * @var boolean Whether the category group is brand new
+     * @var bool Whether the category group is brand new
      */
     public $isNew = false;
 }

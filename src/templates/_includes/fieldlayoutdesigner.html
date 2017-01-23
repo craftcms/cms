@@ -3,10 +3,9 @@
 	{% set pretendTabName = "Content"|t('app') %}
 {% endif %}
 
-{% set groups = craft.app.fields.getAllGroups('id') %}
-{% set fields = craft.app.fields.getAllFields('id') %}
+{% set groups = craft.app.fields.getAllGroups() %}
 
-{% do craft.app.view.registerTranslations('app', [
+{% do view.registerTranslations('app', [
 	"Rename",
 	"Delete",
 	"Make required",
@@ -15,7 +14,7 @@
 	"Give your tab a name.",
 ]) %}
 
-{% registercssfile "//fonts.googleapis.com/css?family=Coming+Soon" %}
+{% do view.registerCssFile("//fonts.googleapis.com/css?family=Coming+Soon") %}
 
 {% macro tab(customizableTabs, tabName, tabFields) %}
 	<div class="fld-tab">
@@ -98,7 +97,7 @@
 
 </div>
 
-{% registerjs %}
+{% js %}
 	var initFLD = function() {
 		new Craft.FieldLayoutDesigner('#{{ "fieldlayoutform"|namespaceInputId }}', {
 			customizableTabs: {{ customizableTabs ? 'true' : 'false' }},
@@ -128,4 +127,4 @@
 		initFLD();
 
 	{% endif %}
-{% endregisterjs %}
+{% endjs %}

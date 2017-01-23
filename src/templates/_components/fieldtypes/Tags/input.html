@@ -32,6 +32,6 @@
 	targetSiteId: targetSiteId
 } %}
 
-{% registerjs %}
+{% js %}
 	new Craft.TagSelectInput({{ jsSettings|json_encode|raw }});
-{% endregisterjs %}
+{% endjs %}

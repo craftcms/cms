@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\Section;
+use yii\base\Exception;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -27,26 +28,40 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Quick Post');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/newspaper.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The ID of the section that the widget should post to
+     * @var int|null The ID of the section that the widget should post to
      */
     public $section;
 
     /**
-     * @var integer The ID of the entry type that the widget should create
+     * @var int|null The ID of the entry type that the widget should create
      */
     public $entryType;
 
     /**
-     * @var integer[] The IDs of the fields that the widget should show
+     * @var int[]|null The IDs of the fields that the widget should show
      */
     public $fields;
 
@@ -116,15 +131,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         $section = $this->_getSection();
 
@@ -152,9 +159,9 @@ class QuickPost extends Widget
             return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
         }
 
-        $entryTypes = $section->getEntryTypes('id');
+        $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
-        if (!$entryTypes) {
+        if (empty($entryTypes)) {
             return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 

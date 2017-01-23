@@ -9,13 +9,15 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
 use Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -47,8 +49,9 @@ class VolumesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionVolumeIndex()
+    public function actionVolumeIndex(): string
     {
+        $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
         return $this->renderTemplate('settings/assets/volumes/_index', $variables);
@@ -57,13 +60,14 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param integer $volumeId The volume’s ID, if editing an existing volume.
-     * @param Volume  $volume   The volume being edited, if there were any validation errors.
+     * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
+     * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
+     * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume($volumeId = null, Volume $volume = null)
+    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): string
     {
         $this->requireAdmin();
 
@@ -80,6 +84,7 @@ class VolumesController extends Controller
 
                 if ($volume instanceof MissingVolume) {
                     $expectedType = $volume->expectedType;
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $volume = $volume->createFallback(Local::class);
                     $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
                         'type' => $expectedType
@@ -90,12 +95,12 @@ class VolumesController extends Controller
             }
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             /** @var Volume[] $allVolumeTypes */
             $allVolumeTypes = $volumes->getAllVolumeTypes();
 
             // Make sure the selected volume class is in there
-            if (!in_array(get_class($volume), $allVolumeTypes)) {
+            if (!in_array(get_class($volume), $allVolumeTypes, true)) {
                 $allVolumeTypes[] = get_class($volume);
             }
 
@@ -129,15 +134,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
         ];
 
@@ -170,14 +175,14 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): Response
     {
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
         $volumes = Craft::$app->getVolumes();
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $type = $request->getBodyParam('type');
         } else {
             $type = Local::class;
@@ -189,7 +194,7 @@ class VolumesController extends Controller
             'type' => $type,
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
-            'hasUrls' => $request->getBodyParam('hasUrls'),
+            'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
             'settings' => $request->getBodyParam('types.'.$type)
         ]);
@@ -222,7 +227,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderVolumes()
+    public function actionReorderVolumes(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -238,7 +243,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteVolume()
+    public function actionDeleteVolume(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -257,7 +262,7 @@ class VolumesController extends Controller
      *
      * @return Response
      */
-    public function actionLoadVolumeTypeData()
+    public function actionLoadVolumeTypeData(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

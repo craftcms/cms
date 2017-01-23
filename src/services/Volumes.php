@@ -6,18 +6,15 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
-use craft\errors\VolumeException;
 use craft\errors\MissingComponentException;
+use craft\errors\VolumeException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder;
-use craft\volumes\AwsS3;
-use craft\volumes\GoogleCloud;
-use craft\volumes\MissingVolume;
 use craft\volumes\Local;
-use craft\volumes\Rackspace;
+use craft\volumes\MissingVolume;
 use craft\volumes\Temp;
 use yii\base\Component;
 
@@ -110,19 +107,11 @@ class Volumes extends Component
      *
      * @return string[]
      */
-    public function getAllVolumeTypes()
+    public function getAllVolumeTypes(): array
     {
         $volumeTypes = [
             Local::class
         ];
-
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            $volumeTypes = array_merge($volumeTypes, [
-                AwsS3::class,
-                GoogleCloud::class,
-                Rackspace::class,
-            ]);
-        }
 
         $event = new RegisterComponentTypesEvent([
             'types' => $volumeTypes
@@ -137,20 +126,20 @@ class Volumes extends Component
      *
      * @return array
      */
-    public function getAllVolumeIds()
+    public function getAllVolumeIds(): array
     {
-        if (!isset($this->_allVolumeIds)) {
-            if ($this->_fetchedAllVolumes) {
-                $this->_allVolumeIds = array_keys($this->_volumesById);
-            } else {
-                $this->_allVolumeIds = (new Query())
-                    ->select(['id'])
-                    ->from(['{{%volumes}}'])
-                    ->column();
-            }
+        if ($this->_allVolumeIds !== null) {
+            return $this->_allVolumeIds;
         }
 
-        return $this->_allVolumeIds;
+        if ($this->_fetchedAllVolumes) {
+            return $this->_allVolumeIds = array_keys($this->_volumesById);
+        }
+
+        return $this->_allVolumeIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%volumes}}'])
+            ->column();
     }
 
     /**
@@ -158,15 +147,17 @@ class Volumes extends Component
      *
      * @return array
      */
-    public function getViewableVolumeIds()
+    public function getViewableVolumeIds(): array
     {
-        if (!isset($this->_viewableVolumeIds)) {
-            $this->_viewableVolumeIds = [];
+        if ($this->_viewableVolumeIds !== null) {
+            return $this->_viewableVolumeIds;
+        }
 
-            foreach ($this->getAllVolumeIds() as $volumeId) {
-                if (Craft::$app->user->checkPermission('viewVolume:'.$volumeId)) {
-                    $this->_viewableVolumeIds[] = $volumeId;
-                }
+        $this->_viewableVolumeIds = [];
+
+        foreach ($this->getAllVolumeIds() as $volumeId) {
+            if (Craft::$app->user->checkPermission('viewVolume:'.$volumeId)) {
+                $this->_viewableVolumeIds[] = $volumeId;
             }
         }
 
@@ -176,50 +167,43 @@ class Volumes extends Component
     /**
      * Returns all volumes that are viewable by the current user.
      *
-     * @param string|null $indexBy
-     *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
-    public function getViewableVolumes($indexBy = null)
+    public function getViewableVolumes(): array
     {
-        if (!isset($this->_viewableVolumes)) {
-            $this->_viewableVolumes = [];
-
-            foreach ($this->getAllVolumes() as $volume) {
-                if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
-                    $this->_viewableVolumes[] = $volume;
-                }
-            }
-        }
-
-        if (!$indexBy) {
+        if ($this->_viewableVolumes !== null) {
             return $this->_viewableVolumes;
         }
 
-        $volumes = [];
+        $this->_viewableVolumes = [];
 
-        foreach ($this->_viewableVolumes as $volume) {
-            $volumes[$volume->$indexBy] = $volume;
+        foreach ($this->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
+            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+                $this->_viewableVolumes[] = $volume;
+            }
         }
 
-        return $volumes;
+        return $this->_viewableVolumes;
     }
 
     /**
      * Returns all volume IDs that have public URLs.
      *
-     * @return array
+     * @return int[]
      */
-    public function getPublicVolumeIds()
+    public function getPublicVolumeIds(): array
     {
-        if (!isset($this->_publicVolumeIds)) {
-            $this->_publicVolumeIds = [];
+        if ($this->_publicVolumeIds !== null) {
+            return $this->_publicVolumeIds;
+        }
 
+        $this->_publicVolumeIds = [];
 
-            foreach ($this->getAllVolumes() as $volume) {
-                if ($volume->hasUrls) {
-                    $this->_publicVolumeIds[] = $volume->id;
-                }
+        foreach ($this->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
+            if ($volume->hasUrls) {
+                $this->_publicVolumeIds[] = $volume->id;
             }
         }
 
@@ -229,41 +213,32 @@ class Volumes extends Component
     /**
      * Returns all volumes that have public URLs.
      *
-     * @param string|null $indexBy
-     *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
-    public function getPublicVolumes($indexBy = null)
+    public function getPublicVolumes(): array
     {
-        if (!isset($this->_publicVolumes)) {
-            $this->_publicVolumes = [];
-
-            foreach ($this->getAllVolumes() as $volume) {
-                if ($volume->hasUrls) {
-                    $this->_publicVolumes[] = $volume;
-                }
-            }
-        }
-
-        if (!$indexBy) {
+        if ($this->_publicVolumes !== null) {
             return $this->_publicVolumes;
         }
 
-        $volumes = [];
+        $this->_publicVolumes = [];
 
-        foreach ($this->_publicVolumes as $volume) {
-            $volumes[$volume->$indexBy] = $volume;
+        foreach ($this->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
+            if ($volume->hasUrls) {
+                $this->_publicVolumes[] = $volume;
+            }
         }
 
-        return $volumes;
+        return $this->_publicVolumes;
     }
 
     /**
      * Returns the total number of volumes.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalVolumes()
+    public function getTotalVolumes(): int
     {
         return count($this->getAllVolumeIds());
     }
@@ -271,9 +246,9 @@ class Volumes extends Component
     /**
      * Returns the total number of volumes that are viewable by the current user.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalViewableVolumes()
+    public function getTotalViewableVolumes(): int
     {
         return count($this->getViewableVolumeIds());
     }
@@ -281,92 +256,74 @@ class Volumes extends Component
     /**
      * Returns all volumes.
      *
-     * @param string|null $indexBy
-     *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
-    public function getAllVolumes($indexBy = null)
+    public function getAllVolumes(): array
     {
-        if (!$this->_fetchedAllVolumes) {
-            $this->_volumesById = [];
-
-            $results = $this->_createVolumeQuery()
-                ->all();
-
-            foreach ($results as $result) {
-                /** @var Volume $volume */
-                $volume = $this->createVolume($result);
-                $this->_volumesById[$volume->id] = $volume;
-            }
-
-            $this->_fetchedAllVolumes = true;
-        }
-
-        if ($indexBy == 'id') {
-            return $this->_volumesById;
-        }
-
-        if (!$indexBy) {
+        if ($this->_fetchedAllVolumes) {
             return array_values($this->_volumesById);
         }
 
-        $volumes = [];
+        $this->_volumesById = [];
+        $results = $this->_createVolumeQuery()
+            ->all();
 
-        foreach ($this->_volumesById as $volume) {
-            $volumes[$volume->$indexBy] = $volume;
+        foreach ($results as $result) {
+            /** @var Volume $volume */
+            $volume = $this->createVolume($result);
+            $this->_volumesById[$volume->id] = $volume;
         }
 
-        return $volumes;
+        $this->_fetchedAllVolumes = true;
+
+        return array_values($this->_volumesById);
     }
 
     /**
      * Returns a volume by its ID.
      *
-     * @param integer $volumeId
+     * @param int|null $volumeId
      *
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
-    public function getVolumeById($volumeId)
+    public function getVolumeById(int $volumeId = null)
     {
         // TODO: Temp volumes should not be created here!
         // Temporary volume?
-        if (is_null($volumeId)) {
+        if ($volumeId === null) {
             return new Temp();
         }
 
-        // If we've already fetched all volumes, just use that.
-        if (!$this->_fetchedAllVolumes && (!isset($this->_volumesById) || !array_key_exists($volumeId, $this->_volumesById))) {
-            $result = $this->_createVolumeQuery()
-                ->where(['id' => $volumeId])
-                ->one();
-
-            if ($result) {
-                $volume = $this->createVolume($result);
-            } else {
-                $volume = null;
-            }
-
-            $this->_volumesById[$volumeId] = $volume;
-        }
-
-        if (!empty($this->_volumesById[$volumeId])) {
+        if ($this->_volumesById !== null && array_key_exists($volumeId, $this->_volumesById)) {
             return $this->_volumesById[$volumeId];
         }
 
-        return null;
+        if ($this->_fetchedAllVolumes) {
+            return null;
+        }
+
+        $result = $this->_createVolumeQuery()
+            ->where(['id' => $volumeId])
+            ->one();
+
+        if (!$result) {
+            return $this->_volumesById[$volumeId] = null;
+        }
+
+        return $this->_volumesById[$volumeId] = $this->createVolume($result);
     }
 
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface $volume        the Volume to be saved.
-     * @param boolean         $runValidation Whether the volume should be validated
+     * @param VolumeInterface $volume        the volume to be saved.
+     * @param bool            $runValidation Whether the volume should be validated
      *
-     * @return boolean Whether the field was saved successfully
+     * @return bool Whether the field was saved successfully
      * @throws \Exception
      */
 
-    public function saveVolume(VolumeInterface $volume, $runValidation = true)
+    public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
         /** @var Volume $volume */
         if ($runValidation && !$volume->validate()) {
@@ -462,10 +419,8 @@ class Volumes extends Component
             $this->_volumesById[$volume->id] = $volume;
         }
 
-        if (isset($this->_viewableVolumeIds)) {
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
-                $this->_viewableVolumeIds[] = $volume->id;
-            }
+        if ($this->_viewableVolumeIds !== null && Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+            $this->_viewableVolumeIds[] = $volume->id;
         }
 
         // Fire an 'afterSaveVolume' event
@@ -483,9 +438,9 @@ class Volumes extends Component
      * @param array $volumeIds
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
-    public function reorderVolumes($volumeIds)
+    public function reorderVolumes(array $volumeIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -513,7 +468,7 @@ class Volumes extends Component
      *
      * @return VolumeInterface The asset volume
      */
-    public function createVolume($config)
+    public function createVolume($config): VolumeInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -538,9 +493,9 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume
      *
-     * @return integer
+     * @return int
      */
-    public function ensureTopFolder(VolumeInterface $volume)
+    public function ensureTopFolder(VolumeInterface $volume): int
     {
         /** @var Volume $volume */
         $folder = VolumeFolder::findOne(
@@ -565,12 +520,12 @@ class Volumes extends Component
     /**
      * Deletes an asset volume by its ID.
      *
-     * @param integer $volumeId
+     * @param int $volumeId
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
-    public function deleteVolumeById($volumeId)
+    public function deleteVolumeById(int $volumeId): bool
     {
         $volume = $this->getVolumeById($volumeId);
 
@@ -584,13 +539,14 @@ class Volumes extends Component
     /**
      * Deletes an asset volume.
      *
-     * @param Volume $volume The volume to delete
+     * @param VolumeInterface $volume The volume to delete
      *
      * @throws \Exception
-     * @return boolean
+     * @return bool
      */
-    public function deleteVolume($volume)
+    public function deleteVolume(VolumeInterface $volume): bool
     {
+        /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
         $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
             'volume' => $volume
@@ -647,7 +603,7 @@ class Volumes extends Component
      *
      * @return Query
      */
-    private function _createVolumeQuery()
+    private function _createVolumeQuery(): Query
     {
         return (new Query())
             ->select([
@@ -670,18 +626,18 @@ class Volumes extends Component
     /**
      * Gets a volume's record.
      *
-     * @param integer $volumeId
+     * @param int|null $volumeId
      *
-     * @throws VolumeException If the Volume does not exist.
+     * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */
-    private function _getVolumeRecordById($volumeId = null)
+    private function _getVolumeRecordById(int $volumeId = null): AssetVolumeRecord
     {
-        if ($volumeId) {
+        if ($volumeId !== null) {
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);
 
             if (!$volumeRecord) {
-                throw new VolumeException(Craft::t('No volume exists with the ID “{id}”.',
+                throw new VolumeException(Craft::t('app', 'No volume exists with the ID “{id}”.',
                     ['id' => $volumeId]));
             }
         } else {

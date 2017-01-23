@@ -9,6 +9,7 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use yii\base\Exception;
 
 /**
  * Updates represents an Updates dashboard widget.
@@ -24,7 +25,7 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Updates');
     }
@@ -32,7 +33,7 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
         return (parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates'));
@@ -41,21 +42,27 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getIconPath()
+    public static function iconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/updates.svg';
+        $iconPath = Craft::getAlias('@app/icons/excite.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc

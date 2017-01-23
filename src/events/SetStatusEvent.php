@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\db\ElementQueryInterface;
+use yii\base\Event;
 
 /**
  * Set Status element action event class.
@@ -21,17 +22,17 @@ class SetStatusEvent extends Event
     // =========================================================================
 
     /**
-     * @var ElementQueryInterface The element query representing the elements that just got updated.
+     * @var ElementQueryInterface|null The element query representing the elements that just got updated.
      */
     public $elementQuery;
 
     /**
-     * @var array The element IDs that are getting updated.
+     * @var array|null The element IDs that are getting updated.
      */
     public $elementIds;
 
     /**
-     * @var string The status the elements are getting set to.
+     * @var string|null The status the elements are getting set to.
      */
     public $status;
 }

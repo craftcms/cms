@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use yii\db\Schema;
 
@@ -25,7 +26,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Position Select');
     }
@@ -35,7 +36,7 @@ class PositionSelect extends Field
      *
      * @return array
      */
-    private static function _getOptions()
+    private static function _getOptions(): array
     {
         return [
             'left' => Craft::t('app', 'Left'),
@@ -51,7 +52,7 @@ class PositionSelect extends Field
     // =========================================================================
 
     /**
-     * @var string[] The position options that should be shown in the field
+     * @var string[]|null The position options that should be shown in the field
      */
     public $options;
 
@@ -66,7 +67,7 @@ class PositionSelect extends Field
         parent::init();
 
         if ($this->options === null) {
-            $this->options = array_keys(static::_getOptions());
+            $this->options = array_keys(self::_getOptions());
         } else {
             $this->options = array_values(array_filter($this->options));
         }
@@ -75,7 +76,7 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING.'(100)';
     }
@@ -88,14 +89,14 @@ class PositionSelect extends Field
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/settings',
             [
                 'field' => $this,
-                'allOptions' => array_keys(static::_getOptions()),
+                'allOptions' => array_keys(self::_getOptions()),
             ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if (empty($this->options)) {
             return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
@@ -106,7 +107,7 @@ class PositionSelect extends Field
         $id = Craft::$app->getView()->formatInputId($this->handle);
         Craft::$app->getView()->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
 
-        if (!$value && $this->options) {
+        if (!$value && !empty($this->options)) {
             $value = $this->options[0];
         }
 

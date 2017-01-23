@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\dates\DateInterval;
+use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -38,8 +38,9 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionCheckForUpdates()
+    public function actionCheckForUpdates(): Response
     {
+        $this->requireAcceptsJson();
         $this->requirePermission('performUpdates');
 
         $forceRefresh = (bool)Craft::$app->getRequest()->getBodyParam('forceRefresh');
@@ -52,11 +53,33 @@ class AppController extends Controller
     }
 
     /**
+     * Returns the badge count for the Utilities nav item.
+     *
+     * @return Response
+     */
+    public function actionGetUtilitiesBadgeCount(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $badgeCount = 0;
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+
+        foreach ($utilities as $class) {
+            /** @var UtilityInterface $class */
+            $badgeCount += $class::badgeCount();
+        }
+
+        return $this->asJson([
+            'badgeCount' => $badgeCount
+        ]);
+    }
+
+    /**
      * Loads any CP alerts.
      *
      * @return Response
      */
-    public function actionGetCpAlerts()
+    public function actionGetCpAlerts(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
@@ -74,7 +97,7 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionShunCpAlert()
+    public function actionShunCpAlert(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
@@ -83,7 +106,7 @@ class AppController extends Controller
         $user = Craft::$app->getUser()->getIdentity();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
-        $tomorrow = $currentTime->add(new DateInterval('P1D'));
+        $tomorrow = $currentTime->add(new \DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([
@@ -99,7 +122,7 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionTransferLicenseToCurrentDomain()
+    public function actionTransferLicenseToCurrentDomain(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -121,12 +144,12 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionGetUpgradeModal()
+    public function actionGetUpgradeModal(): Response
     {
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 
@@ -137,7 +160,7 @@ class AppController extends Controller
         }
 
         // Make sure we've got a valid license key (mismatched domain is OK for these purposes)
-        if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid) {
+        if ($etResponse->licenseKeyStatus === LicenseKeyStatus::Invalid) {
             return $this->asErrorJson(Craft::t('app', 'Your license key is invalid.'));
         }
 
@@ -189,13 +212,13 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionGetCouponPrice()
+    public function actionGetCouponPrice(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 
@@ -226,13 +249,13 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionPurchaseUpgrade()
+    public function actionPurchaseUpgrade(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 
@@ -275,7 +298,7 @@ class AppController extends Controller
      * @return Response
      * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
      */
-    public function actionTestUpgrade()
+    public function actionTestUpgrade(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -305,7 +328,7 @@ class AppController extends Controller
      *
      * @return Response
      */
-    public function actionSwitchToLicensedEdition()
+    public function actionSwitchToLicensedEdition(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

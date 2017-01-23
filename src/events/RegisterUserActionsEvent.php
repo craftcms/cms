@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\User;
+use yii\base\Event;
 
 /**
  * RegisterUserActionsEvent class.
@@ -21,7 +22,7 @@ class RegisterUserActionsEvent extends Event
     // =========================================================================
 
     /**
-     * @var User The user associated with the event
+     * @var User|null The user associated with the event
      */
     public $user;
 

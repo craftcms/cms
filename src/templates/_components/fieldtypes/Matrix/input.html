@@ -32,7 +32,7 @@
 							<hr class="padded">
 							<ul class="padded">
 								{% for blockType in blockTypes %}
-									<li><a data-icon="+" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
+									<li><a data-icon="plus" data-action="add" data-type="{{ blockType.handle }}">{{ "Add {type} above"|t('app', { type: blockType.name|t('site') }) }}</a></li>
 								{% endfor %}
 							</ul>
 							<hr class="padded">

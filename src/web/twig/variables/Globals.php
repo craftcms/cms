@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\elements\GlobalSet;
+use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 
 /**
@@ -30,11 +31,13 @@ class Globals
      *
      * @return array
      */
-    public function getAllSets($indexBy = null)
+    public function getAllSets(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.getAllSets() instead.');
+        Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.allSets instead.');
 
-        return Craft::$app->getGlobals()->getAllSets($indexBy);
+        $globalSets = Craft::$app->getGlobals()->getAllSets();
+
+        return $indexBy ? ArrayHelper::index($globalSets, $indexBy) : $globalSets;
     }
 
     /**
@@ -44,19 +47,21 @@ class Globals
      *
      * @return array
      */
-    public function getEditableSets($indexBy = null)
+    public function getEditableSets(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.getEditableSets() instead.');
+        Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.editableSets instead.');
 
-        return Craft::$app->getGlobals()->getEditableSets($indexBy);
+        $globalSets = Craft::$app->getGlobals()->getEditableSets();
+
+        return $indexBy ? ArrayHelper::index($globalSets, $indexBy) : $globalSets;
     }
 
     /**
      * Returns the total number of global sets.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalSets()
+    public function getTotalSets(): int
     {
         Craft::$app->getDeprecator()->log('craft.globals.getTotalSets()', 'craft.globals.getTotalSets() has been deprecated. Use craft.app.globals.totalSets instead.');
 
@@ -66,9 +71,9 @@ class Globals
     /**
      * Returns the total number of global sets that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalEditableSets()
+    public function getTotalEditableSets(): int
     {
         Craft::$app->getDeprecator()->log('craft.globals.getTotalEditableSets()', 'craft.globals.getTotalEditableSets() has been deprecated. Use craft.app.globals.totalEditableSets instead.');
 
@@ -78,17 +83,17 @@ class Globals
     /**
      * Returns a global set by its ID.
      *
-     * @param integer     $globalSetId
+     * @param int         $globalSetId
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invlaid
+     * @throws Exception if|null $siteHandle is invlaid
      */
-    public function getSetById($globalSetId, $siteHandle = null)
+    public function getSetById(int $globalSetId, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetById()', 'craft.globals.getSetById() has been deprecated. Use craft.app.globals.getSetById() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -110,13 +115,13 @@ class Globals
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null
-     * @throws Exception if $siteHandle is invalid
+     * @throws Exception if|null $siteHandle is invalid
      */
-    public function getSetByHandle($globalSetHandle, $siteHandle = null)
+    public function getSetByHandle(string $globalSetHandle, string $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetByHandle()', 'craft.globals.getSetByHandle() has been deprecated. Use craft.app.globals.getSetByHandle() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {

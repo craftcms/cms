@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\WidgetInterface;
+use yii\base\Event;
 
 /**
  * WidgetEvent class.
@@ -21,12 +22,12 @@ class WidgetEvent extends Event
     // =========================================================================
 
     /**
-     * @var WidgetInterface The widget associated with this event.
+     * @var WidgetInterface|null The widget associated with this event.
      */
     public $widget;
 
     /**
-     * @var boolean Whether the widget is brand new
+     * @var bool Whether the widget is brand new
      */
     public $isNew = false;
 }

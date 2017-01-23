@@ -38,7 +38,7 @@ foreach ($log->traces as $i => $trace) {
         $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>', $trace['file']).' ('.$trace['line'].')';
     }
 
-    $values[] = [($totalTraces - $i), $info];
+    $values[] = [$totalTraces - $i, $info];
 }
 
 echo $this->render('../table', [

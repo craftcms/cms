@@ -4,7 +4,6 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\elements\Entry;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -14,9 +13,9 @@ class m160829_000000_pending_user_content_cleanup extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return boolean
+     * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         // Find any orphaned entries.
         $ids = (new Query())
@@ -29,15 +28,11 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ])
             ->column();
 
-        if ($ids) {
-            Craft::info('Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids));
+        if (!empty($ids)) {
+            echo '    > Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids)."\n";
 
             // Delete 'em
             $this->delete('{{%elements}}', ['id' => $ids]);
-
-            Craft::info('They have been murdered.');
-        } else {
-            Craft::info('All good here.');
         }
 
         return true;
@@ -48,7 +43,8 @@ class m160829_000000_pending_user_content_cleanup extends Migration
      */
     public function safeDown()
     {
-        echo 'm160829_000000_pending_user_content_cleanup cannot be reverted.\n';
+        echo "m160829_000000_pending_user_content_cleanup cannot be reverted.\n";
+
         return false;
     }
 }

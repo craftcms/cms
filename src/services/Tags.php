@@ -9,9 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\errors\TagGroupNotFoundException;
-use craft\errors\TagNotFoundException;
 use craft\elements\Tag;
+use craft\errors\TagGroupNotFoundException;
 use craft\events\TagGroupEvent;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
@@ -79,30 +78,28 @@ class Tags extends Component
      *
      * @return array
      */
-    public function getAllTagGroupIds()
+    public function getAllTagGroupIds(): array
     {
-        if (!isset($this->_allTagGroupIds)) {
-            if ($this->_fetchedAllTagGroups) {
-                $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
-            } else {
-                $this->_allTagGroupIds = (new Query())
-                    ->select(['id'])
-                    ->from(['{{%taggroups}}'])
-                    ->column();
-            }
+        if ($this->_allTagGroupIds !== null) {
+            return $this->_allTagGroupIds;
         }
 
-        return $this->_allTagGroupIds;
+        if ($this->_fetchedAllTagGroups) {
+            return $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
+        }
+
+        return $this->_allTagGroupIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%taggroups}}'])
+            ->column();
     }
 
     /**
      * Returns all tag groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return TagGroup[]
      */
-    public function getAllTagGroups($indexBy = null)
+    public function getAllTagGroups(): array
     {
         if (!$this->_fetchedAllTagGroups) {
             $this->_tagGroupsById = TagGroupRecord::find()
@@ -122,29 +119,15 @@ class Tags extends Component
             $this->_fetchedAllTagGroups = true;
         }
 
-        if ($indexBy == 'id') {
-            return $this->_tagGroupsById;
-        }
-
-        if (!$indexBy) {
-            return array_values($this->_tagGroupsById);
-        }
-
-        $tagGroups = [];
-
-        foreach ($this->_tagGroupsById as $group) {
-            $tagGroups[$group->$indexBy] = $group;
-        }
-
-        return $tagGroups;
+        return array_values($this->_tagGroupsById);
     }
 
     /**
      * Gets the total number of tag groups.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalTagGroups()
+    public function getTotalTagGroups(): int
     {
         return count($this->getAllTagGroupIds());
     }
@@ -152,30 +135,30 @@ class Tags extends Component
     /**
      * Returns a group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return TagGroup|null
      */
-    public function getTagGroupById($groupId)
+    public function getTagGroupById(int $groupId)
     {
-        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId,
-                $this->_tagGroupsById)
-        ) {
-            $groupRecord = TagGroupRecord::findOne($groupId);
-
-            if ($groupRecord) {
-                $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
-                    'id',
-                    'name',
-                    'handle',
-                    'fieldLayoutId',
-                ]));
-            } else {
-                $this->_tagGroupsById[$groupId] = null;
-            }
+        if ($this->_tagGroupsById !== null && array_key_exists($groupId, $this->_tagGroupsById)) {
+            return $this->_tagGroupsById;
         }
 
-        return $this->_tagGroupsById[$groupId];
+        if ($this->_fetchedAllTagGroups) {
+            return null;
+        }
+
+        if (($groupRecord = TagGroupRecord::findOne($groupId)) === null) {
+            return $this->_tagGroupsById[$groupId] = null;
+        }
+
+        return $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
+            'id',
+            'name',
+            'handle',
+            'fieldLayoutId',
+        ]));
     }
 
     /**
@@ -185,7 +168,7 @@ class Tags extends Component
      *
      * @return TagGroup|null
      */
-    public function getTagGroupByHandle($groupHandle)
+    public function getTagGroupByHandle(string $groupHandle)
     {
         $groupRecord = TagGroupRecord::findOne([
             'handle' => $groupHandle
@@ -207,13 +190,13 @@ class Tags extends Component
      * Saves a tag group.
      *
      * @param TagGroup $tagGroup      The tag group to be saved
-     * @param boolean  $runValidation Whether the tag group should be validated
+     * @param bool     $runValidation Whether the tag group should be validated
      *
-     * @return boolean Whether the tag group was saved successfully
+     * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTagGroup(TagGroup $tagGroup, $runValidation = true)
+    public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
         if ($runValidation && !$tagGroup->validate()) {
             Craft::info('Tag group not saved due to validation error.', __METHOD__);
@@ -299,12 +282,12 @@ class Tags extends Component
     /**
      * Deletes a tag group by its ID.
      *
-     * @param integer $tagGroupId
+     * @param int $tagGroupId
      *
-     * @return boolean Whether the tag group was deleted successfully
+     * @return bool Whether the tag group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTagGroupById($tagGroupId)
+    public function deleteTagGroupById(int $tagGroupId): bool
     {
         if (!$tagGroupId) {
             return false;
@@ -370,13 +353,14 @@ class Tags extends Component
     /**
      * Returns a tag by its ID.
      *
-     * @param integer      $tagId
-     * @param integer|null $siteId
+     * @param int      $tagId
+     * @param int|null $siteId
      *
      * @return Tag|null
      */
-    public function getTagById($tagId, $siteId)
+    public function getTagById(int $tagId, int $siteId = null)
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 }

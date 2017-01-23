@@ -67,7 +67,7 @@
 	</div>
 {% endblock %}
 
-{% registerjs %}
+{% js %}
 	{% if group is not defined or not group.handle %}
 		new Craft.HandleGenerator('#name', '#handle');
 	{% endif %}
@@ -77,4 +77,4 @@
 			'#permissions input[type="checkbox"]:not(:checked)'
 		]);
 	{% endif %}
-{% endregisterjs %}
+{% endjs %}

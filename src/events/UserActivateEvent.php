@@ -15,13 +15,13 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserActivateEvent extends Event
+class UserActivateEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var User|null The user model associated with the event.
      */
     public $user;
 }

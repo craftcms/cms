@@ -13,18 +13,18 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SiteEvent extends Event
+class SiteEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\models\Site The site model associated with the event.
+     * @var \craft\models\Site|null The site model associated with the event.
      */
     public $site;
 
     /**
-     * @var boolean Whether the site is brand new
+     * @var bool Whether the site is brand new
      */
     public $isNew = false;
 }

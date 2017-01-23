@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
+use yii\base\InvalidConfigException;
 
 /**
  * FieldLayoutTab model class.
@@ -24,32 +25,32 @@ class FieldLayoutTab extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Layout ID
+     * @var int|null Layout ID
      */
     public $layoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
     /**
-     * @var
+     * @var FieldLayout|null
      */
     private $_layout;
 
     /**
-     * @var
+     * @var FieldInterface[]|null
      */
     private $_fields;
 
@@ -72,22 +73,23 @@ class FieldLayoutTab extends Model
      * Returns the tab’s layout.
      *
      * @return FieldLayout|null The tab’s layout.
+     * @throws InvalidConfigException if [[groupId]] is set but invalid
      */
     public function getLayout()
     {
-        if (!isset($this->_layout)) {
-            if ($this->layoutId) {
-                $this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId);
-            } else {
-                $this->_layout = false;
-            }
-        }
-
-        if ($this->_layout) {
+        if ($this->_layout !== null) {
             return $this->_layout;
         }
 
-        return null;
+        if (!$this->layoutId) {
+            return null;
+        }
+
+        if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
+            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
+        }
+
+        return $this->_layout;
     }
 
     /**
@@ -107,21 +109,19 @@ class FieldLayoutTab extends Model
      *
      * @return FieldInterface[] The tab’s fields.
      */
-    public function getFields()
+    public function getFields(): array
     {
-        if (!isset($this->_fields)) {
-            $this->_fields = [];
+        if ($this->_fields !== null) {
+            return $this->_fields;
+        }
 
-            $layout = $this->getLayout();
+        $this->_fields = [];
 
-            if ($layout) {
-                /** @var Field[] $fields */
-                $fields = $layout->getFields();
-
-                foreach ($fields as $field) {
-                    if ($field->tabId == $this->id) {
-                        $this->_fields[] = $field;
-                    }
+        if ($layout = $this->getLayout()) {
+            foreach ($layout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field->tabId == $this->id) {
+                    $this->_fields[] = $field;
                 }
             }
         }
@@ -136,7 +136,7 @@ class FieldLayoutTab extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->_fields = $fields;
     }

@@ -7,11 +7,10 @@
 
 namespace craft\validators;
 
-use Aws\CloudFront\Exception\Exception;
 use Craft;
 use craft\db\Query;
-use craft\helpers\ElementHelper;
 use craft\models\Section_SiteSettings;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
@@ -31,7 +30,7 @@ class SingleSectionUriValidator extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        if (!($model instanceof Section_SiteSettings) || $attribute != 'uriFormat') {
+        if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 
@@ -59,7 +58,7 @@ class SingleSectionUriValidator extends Validator
                 throw new Exception('Invalid site ID: '.$model->siteId);
             }
 
-            if ($model->uriFormat == '__home__') {
+            if ($model->uriFormat === '__home__') {
                 $message = '{site} already has a homepage.';
             } else {
                 $message = '{site} already has an element with the URI “{value}”.';

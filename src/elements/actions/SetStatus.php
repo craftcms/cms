@@ -8,8 +8,8 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\ElementAction;
 use craft\base\Element;
+use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\SetStatusEvent;
@@ -26,7 +26,7 @@ class SetStatus extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The status elements should be set to
+     * @var string|null The status elements should be set to
      */
     public $status;
 
@@ -44,7 +44,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Set Status');
     }
@@ -79,7 +79,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var ElementQuery $query */
         // Figure out which element IDs we need to update

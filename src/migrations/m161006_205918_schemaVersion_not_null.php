@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\services\Config;
 
 /**
  * m161006_205918_schemaVersion_not_null migration.
@@ -27,9 +26,9 @@ class m161006_205918_schemaVersion_not_null extends Migration
 
         // Two statements here because of a Yii 2/PostgreSQL bug:
         // https://github.com/yiisoft/yii2/issues/12077
-        if ($database == 'mysql') {
+        if ($database === 'mysql') {
             $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string(15)->notNull());
-        } else if ($database == 'pgsql') {
+        } else if ($database === 'pgsql') {
             $pluginTable = $this->db->getSchema()->defaultSchema.'.'.$this->db->getSchema()->getRawTableName('plugins');
             $this->db->createCommand()->setSql('ALTER TABLE '.$pluginTable.' ALTER COLUMN "schemaVersion" TYPE varchar(15), ALTER COLUMN "schemaVersion" SET NOT NULL')->execute();
         }
@@ -41,6 +40,7 @@ class m161006_205918_schemaVersion_not_null extends Migration
     public function safeDown()
     {
         echo "m161006_205918_schemaVersion_not_null cannot be reverted.\n";
+
         return false;
     }
 }

@@ -54,7 +54,7 @@ class CraftVariable extends ServiceLocator
     // =========================================================================
 
     /**
-     * @var \craft\web\Application|\craft\console\Application The Craft application class
+     * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
 
@@ -67,51 +67,53 @@ class CraftVariable extends ServiceLocator
     public function __construct($config = [])
     {
         // Set the core components
+        /** @noinspection PhpDeprecationInspection */
         $config['components'] = [
-            'cp' => \craft\web\twig\variables\Cp::class,
-            'io' => \craft\web\twig\variables\Io::class,
-            'routes' => \craft\web\twig\variables\Routes::class,
+            'cp' => Cp::class,
+            'io' => Io::class,
+            'routes' => Routes::class,
 
             // Deprecated
-            'categoryGroups' => \craft\web\twig\variables\CategoryGroups::class,
-            'config' => \craft\web\twig\variables\Config::class,
-            'deprecator' => \craft\web\twig\variables\Deprecator::class,
-            'elementIndexes' => \craft\web\twig\variables\ElementIndexes::class,
-            'entryRevisions' => \craft\web\twig\variables\EntryRevisions::class,
-            'feeds' => \craft\web\twig\variables\Feeds::class,
-            'fields' => \craft\web\twig\variables\Fields::class,
-            'globals' => \craft\web\twig\variables\Globals::class,
-            'i18n' => \craft\web\twig\variables\I18N::class,
-            'request' => \craft\web\twig\variables\Request::class,
-            'sections' => \craft\web\twig\variables\Sections::class,
-            'systemSettings' => \craft\web\twig\variables\SystemSettings::class,
-            'tasks' => \craft\web\twig\variables\Tasks::class,
-            'session' => \craft\web\twig\variables\UserSession::class,
+            'categoryGroups' => CategoryGroups::class,
+            'config' => Config::class,
+            'deprecator' => Deprecator::class,
+            'elementIndexes' => ElementIndexes::class,
+            'entryRevisions' => EntryRevisions::class,
+            'feeds' => Feeds::class,
+            'fields' => Fields::class,
+            'globals' => Globals::class,
+            'i18n' => I18N::class,
+            'request' => Request::class,
+            'sections' => Sections::class,
+            'systemSettings' => SystemSettings::class,
+            'tasks' => Tasks::class,
+            'session' => UserSession::class,
         ];
 
         switch (Craft::$app->getEdition()) {
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case Craft::Pro: {
+            case Craft::Pro:
+                /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
-                    'userGroups' => \craft\web\twig\variables\UserGroups::class,
+                    'userGroups' => UserGroups::class,
                 ]);
-            }
-            case Craft::Client: {
+            // no break
+            case Craft::Client:
+                /** @noinspection PhpDeprecationInspection */
+                /** @noinspection SuspiciousAssignmentsInspection */
                 $config['components'] = array_merge($config['components'], [
-                    'rebrand' => \craft\web\twig\variables\Rebrand::class,
+                    'rebrand' => Rebrand::class,
 
                     // Deprecated
-                    'emailMessages' => \craft\web\twig\variables\EmailMessages::class,
-                    'userPermissions' => \craft\web\twig\variables\UserPermissions::class,
+                    'emailMessages' => EmailMessages::class,
+                    'userPermissions' => UserPermissions::class,
                 ]);
-            }
         }
 
         // Add plugin components
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
             if (!isset($config['components'][$handle])) {
-                $component = $plugin->getVariableDefinition();
+                $component = $plugin->defineTemplateComponent();
 
                 if ($component !== null) {
                     $config['components'][$handle] = $component;
@@ -139,7 +141,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
 
             return $this->get($name);
         }
@@ -169,30 +171,20 @@ class CraftVariable extends ServiceLocator
      * @return string
      * @deprecated in 3.0
      */
-    public function getLocale()
+    public function locale(): string
     {
-        Craft::$app->getDeprecator()->log('craft.locale', 'craft.locale has been deprecated. Use craft.app.language instead.');
+        Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
 
         return Craft::$app->language;
     }
 
     /**
-     * Returns the system timezone.
-     *
-     * @return string
-     */
-    public function getTimeZone()
-    {
-        return Craft::$app->getTimeZone();
-    }
-
-    /**
      * Returns whether this site has multiple locales.
      *
-     * @return boolean
+     * @return bool
      * @deprecated in 3.0. Use craft.app.isMultiSite instead
      */
-    public function isLocalized()
+    public function isLocalized(): bool
     {
         Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
 
@@ -209,9 +201,14 @@ class CraftVariable extends ServiceLocator
      *
      * @return AssetQuery
      */
-    public function getAssets($criteria = null)
+    public function assets($criteria = null): AssetQuery
     {
-        return Asset::find()->configure($criteria);
+        $query = Asset::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -221,9 +218,14 @@ class CraftVariable extends ServiceLocator
      *
      * @return CategoryQuery
      */
-    public function getCategories($criteria = null)
+    public function categories($criteria = null): CategoryQuery
     {
-        return Category::find()->configure($criteria);
+        $query = Category::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -233,9 +235,14 @@ class CraftVariable extends ServiceLocator
      *
      * @return EntryQuery
      */
-    public function getEntries($criteria = null)
+    public function entries($criteria = null): EntryQuery
     {
-        return Entry::find()->configure($criteria);
+        $query = Entry::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -245,9 +252,14 @@ class CraftVariable extends ServiceLocator
      *
      * @return TagQuery
      */
-    public function getTags($criteria = null)
+    public function tags($criteria = null): TagQuery
     {
-        return Tag::find()->configure($criteria);
+        $query = Tag::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -257,8 +269,13 @@ class CraftVariable extends ServiceLocator
      *
      * @return UserQuery
      */
-    public function getUsers($criteria = null)
+    public function users($criteria = null): UserQuery
     {
-        return User::find()->configure($criteria);
+        $query = User::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 }

@@ -7,20 +7,20 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Widget record.
  *
- * @property integer $id        ID
- * @property integer $userId    User ID
- * @property string  $type      Type
- * @property string  $sortOrder Sort order
- * @property integer $colspan   Colspan
- * @property array   $settings  Settings
- * @property boolean $enabled   Enabled
- * @property User    $user      User
+ * @property int    $id        ID
+ * @property int    $userId    User ID
+ * @property string $type      Type
+ * @property string $sortOrder Sort order
+ * @property int    $colspan   Colspan
+ * @property array  $settings  Settings
+ * @property bool   $enabled   Enabled
+ * @property User   $user      User
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -35,7 +35,7 @@ class Widget extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%widgets}}';
     }
@@ -45,7 +45,7 @@ class Widget extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getUser()
+    public function getUser(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }

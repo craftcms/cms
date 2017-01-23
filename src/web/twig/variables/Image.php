@@ -21,12 +21,12 @@ class Image
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $path;
 
     /**
-     * @var string
+     * @var string|null
      */
     protected $url;
 
@@ -43,10 +43,8 @@ class Image
      *
      * @param string $path
      * @param string $url
-     *
-     * @return Image
      */
-    public function __construct($path, $url = "")
+    public function __construct(string $path, string $url = '')
     {
         $this->path = $path;
         $this->url = $url;
@@ -57,14 +55,13 @@ class Image
      *
      * @return array
      */
-    public function getSize()
+    public function getSize(): array
     {
-        if (!isset($this->size)) {
-            $size = ImageHelper::imageSize($this->path);
-            $this->size = [$size[0], $size[1]];
+        if ($this->size !== null) {
+            return $this->size;
         }
 
-        return $this->size;
+        return $this->size = ImageHelper::imageSize($this->path);
     }
 
     /**
@@ -72,7 +69,7 @@ class Image
      *
      * @return int
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         $size = $this->getSize();
 
@@ -84,7 +81,7 @@ class Image
      *
      * @return int
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         $size = $this->getSize();
 
@@ -96,7 +93,7 @@ class Image
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }

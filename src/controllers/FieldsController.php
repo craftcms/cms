@@ -12,7 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -50,7 +50,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -82,7 +82,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -103,15 +103,15 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param integer        $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface $field   The field being edited, if there were any validation errors
-     * @param integer        $groupId The default group ID that the field should be saved in
+     * @param int|null            $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|null $field   The field being edited, if there were any validation errors
+     * @param int|null            $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
+    public function actionEditField(int $fieldId = null, FieldInterface $field = null, int $groupId = null): string
     {
         $this->requireAdmin();
 
@@ -130,6 +130,7 @@ class FieldsController extends Controller
 
             if ($field instanceof MissingField) {
                 $expectedType = $field->expectedType;
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $field = $field->createFallback(PlainText::class);
                 $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
                     'type' => $expectedType
@@ -147,7 +148,7 @@ class FieldsController extends Controller
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         // Make sure the selected field class is in there
-        if (!in_array(get_class($field), $allFieldTypes)) {
+        if (!in_array(get_class($field), $allFieldTypes, true)) {
             $allFieldTypes[] = get_class($field);
         }
 
@@ -196,15 +197,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => Url::url('settings/fields')
+                'url' => UrlHelper::url('settings/fields')
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => Url::url('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/'.$groupId)
             ],
         ];
 
@@ -273,7 +274,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteField()
+    public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

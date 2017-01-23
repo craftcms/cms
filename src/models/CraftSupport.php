@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\web\UploadedFile;
 
 /**
  * Class CraftSupport model.
@@ -22,32 +23,32 @@ class CraftSupport extends Model
     // =========================================================================
 
     /**
-     * @var string From email
+     * @var string|null From email
      */
     public $fromEmail;
 
     /**
-     * @var string Message
+     * @var string|null Message
      */
     public $message;
 
     /**
-     * @var boolean Attach logs
+     * @var bool Attach logs
      */
     public $attachLogs = false;
 
     /**
-     * @var boolean Attach db backup
+     * @var bool Attach db backup
      */
     public $attachDbBackup = false;
 
     /**
-     * @var boolean Attach templates
+     * @var bool Attach templates
      */
     public $attachTemplates = false;
 
     /**
-     * @var array Attachment
+     * @var UploadedFile|null Attachment
      */
     public $attachment;
 

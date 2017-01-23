@@ -2,10 +2,11 @@
 namespace craft\volumes;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -21,7 +22,7 @@ use League\Flysystem\FileNotFoundException;
  * @package    craft.app.volumes
  * @since      3.0
  */
-class Local extends Volume
+class Local extends Volume implements LocalVolumeInterface
 {
     // Static
     // =========================================================================
@@ -40,17 +41,9 @@ class Local extends Volume
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Local Folder');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isLocal()
-    {
-        return true;
     }
 
     // Properties
@@ -61,7 +54,7 @@ class Local extends Volume
      *
      * @var string
      */
-    public $path = "";
+    public $path = '';
 
     // Public Methods
     // =========================================================================
@@ -73,8 +66,8 @@ class Local extends Volume
     {
         parent::init();
 
-        if (isset($this->path)) {
-            $this->path = rtrim($this->path, '/');
+        if ($this->path !== null) {
+            $this->path = FileHelper::normalizePath($this->path);
         }
     }
 
@@ -92,7 +85,7 @@ class Local extends Volume
     /**
      * @inheritdoc
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
         return Craft::$app->getConfig()->parseEnvironmentString($this->path);
     }
@@ -105,15 +98,17 @@ class Local extends Volume
         return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
     }
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * @inheritdoc
      */
-    public function renameDir($path, $newName)
+    public function renameDir(string $path, string $newName): bool
     {
-        $newPath = Io::getParentFolderPath($path).$newName;
+        $parentDir = dirname($path);
+        $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
 
         try {
-            return $this->getFilesystem()->rename($path, $newPath);
+            return $this->filesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
@@ -129,7 +124,7 @@ class Local extends Volume
      *
      * @return LocalAdapter
      */
-    protected function createAdapter()
+    protected function createAdapter(): LocalAdapter
     {
         return new LocalAdapter($this->getRootPath());
     }

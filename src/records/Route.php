@@ -7,20 +7,20 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
 use craft\validators\SiteIdValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Route record.
  *
- * @property integer $id         ID
- * @property integer $siteId     Site ID
- * @property string  $uriParts   URI parts
- * @property string  $uriPattern URI pattern
- * @property string  $template   Template
- * @property string  $sortOrder  Sort order
- * @property Site    $site       Site
+ * @property int    $id         ID
+ * @property int    $siteId     Site ID
+ * @property string $uriParts   URI parts
+ * @property string $uriPattern URI pattern
+ * @property string $template   Template
+ * @property string $sortOrder  Sort order
+ * @property Site   $site       Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -47,7 +47,7 @@ class Route extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%routes}}';
     }
@@ -57,7 +57,7 @@ class Route extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

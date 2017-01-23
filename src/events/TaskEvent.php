@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\TaskInterface;
+use yii\base\Event;
 
 /**
  * TaskEvent class.
@@ -21,12 +22,12 @@ class TaskEvent extends Event
     // =========================================================================
 
     /**
-     * @var TaskInterface The task associated with this event.
+     * @var TaskInterface|null The task associated with this event.
      */
     public $task;
 
     /**
-     * @var boolean Whether the task is brand new
+     * @var bool Whether the task is brand new
      */
     public $isNew = false;
 }

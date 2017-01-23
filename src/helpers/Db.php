@@ -9,10 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use craft\dates\DateTime;
 use craft\db\Connection;
 use craft\enums\ColumnType;
-use craft\services\Config;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -42,7 +40,7 @@ class Db
      *
      * @return array The prepared values
      */
-    public static function prepareValuesForDb($values)
+    public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
         $values = ArrayHelper::toArray($values);
@@ -107,7 +105,7 @@ class Db
     /**
      * Integer column sizes.
      *
-     * @var array
+     * @var int[]
      */
     private static $_intColumnSizes = [
         ColumnType::TinyInt => 128,
@@ -120,24 +118,32 @@ class Db
     /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
-     * @param integer $min
-     * @param integer $max
-     * @param integer $decimals
+     * @param int|null $min
+     * @param int|null $max
+     * @param int|null $decimals
      *
-     * @return array
+     * @return string
      */
-    public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
+    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
+        $type = '';
+
         // Normalize the arguments
-        $min = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
-        $max = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int] - 1;
-        $decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+        if (!is_numeric($min)) {
+            $min = -self::$_intColumnSizes[ColumnType::Int];
+        }
+
+        if (!is_numeric($max)) {
+            $max = self::$_intColumnSizes[ColumnType::Int] - 1;
+        }
+
+        $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
         // Unsigned?
         $unsigned = ($min >= 0);
 
         // Figure out the max length
-        $maxAbsSize = intval($unsigned ? $max : max(abs($min), abs($max)));
+        $maxAbsSize = (int)($unsigned ? $max : max(abs($min), abs($max)));
         $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
@@ -145,7 +151,7 @@ class Db
             $type = Schema::TYPE_DECIMAL."($length,$decimals)";
         } else {
             // Figure out the smallest possible int column type that will fit our min/max
-            foreach (static::$_intColumnSizes as $type => $size) {
+            foreach (self::$_intColumnSizes as $type => $size) {
                 if ($unsigned) {
                     if ($max < $size * 2) {
                         break;
@@ -171,13 +177,13 @@ class Db
     /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
-     * @param string     $columnType The textual column type to check
-     * @param Connection $db         The database connection
+     * @param string          $columnType The textual column type to check
+     * @param Connection|null $db         The database connection
      *
-     * @return integer|null The storage capacity of the column type in bytes. If unlimited, null is returned.
+     * @return int|null The storage capacity of the column type in bytes. If unlimited, null is returned.
      * @throws Exception if given an unknown column type/database combination
      */
-    public static function getTextualColumnStorageCapacity($columnType, $db = null)
+    public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -201,7 +207,6 @@ class Db
                     default:
                         throw new Exception('Unknown textual column type: '.$columnType);
                 }
-                break;
             case Connection::DRIVER_PGSQL:
                 return null;
             default:
@@ -212,13 +217,13 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param            $contentLength
-     * @param Connection $db The database connection
+     * @param int             $contentLength
+     * @param Connection|null $db The database connection
      *
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength($contentLength, $db = null)
+    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -256,7 +261,7 @@ class Db
      *
      * @return string The escaped param value.
      */
-    public static function escapeParam($value)
+    public static function escapeParam(string $value): string
     {
         return str_replace([',', '*'], ['\,', '\*'], $value);
     }
@@ -277,12 +282,12 @@ class Db
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string       $column The database column that the param is targeting.
-     * @param string|array $value  The param value(s).
+     * @param string           $column The database column that the param is targeting.
+     * @param string|int|array $value  The param value(s).
      *
      * @return mixed
      */
-    public static function parseParam($column, $value)
+    public static function parseParam(string $column, $value)
     {
         // Need to do a strict check here in case $value = true
         if ($value === 'not ') {
@@ -295,9 +300,9 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(ArrayHelper::firstValue($value));
+        $firstVal = StringHelper::toLowerCase(reset($value));
 
-        if ($firstVal == 'and' || $firstVal == 'or') {
+        if ($firstVal === 'and' || $firstVal === 'or') {
             $conditionOperator = array_shift($value);
         } else {
             $conditionOperator = 'or';
@@ -306,11 +311,11 @@ class Db
         $condition = [$conditionOperator];
 
         foreach ($value as $val) {
-            static::_normalizeEmptyValue($val);
-            $operator = static::_parseParamOperator($val);
+            self::_normalizeEmptyValue($val);
+            $operator = self::_parseParamOperator($val);
 
-            if (StringHelper::toLowerCase($val) == ':empty:') {
-                if ($operator == '=') {
+            if (StringHelper::toLowerCase($val) === ':empty:') {
+                if ($operator === '=') {
                     $condition[] = [
                         'or',
                         [$column => null],
@@ -331,7 +336,7 @@ class Db
                 $val = trim($val);
 
                 // This could be a LIKE condition
-                if ($operator == '=' || $operator == '!=') {
+                if ($operator === '=' || $operator === '!=') {
                     $val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
                     $like = (bool)$count;
                 } else {
@@ -343,7 +348,7 @@ class Db
 
                 if ($like) {
                     $condition[] = [
-                        ($operator == '=' ? 'like' : 'not like'),
+                        $operator === '=' ? 'like' : 'not like',
                         $column,
                         $val,
                         false
@@ -365,7 +370,7 @@ class Db
      *
      * @return mixed
      */
-    public static function parseDateParam($column, $value)
+    public static function parseDateParam(string $column, $value)
     {
         $normalizedValues = [];
 
@@ -375,16 +380,16 @@ class Db
             return '';
         }
 
-        if ($value[0] == 'and' || $value[0] == 'or') {
+        if ($value[0] === 'and' || $value[0] === 'or') {
             $normalizedValues[] = $value[0];
             array_shift($value);
         }
 
         foreach ($value as $val) {
             // Is this an empty value?
-            static::_normalizeEmptyValue($val);
+            self::_normalizeEmptyValue($val);
 
-            if ($val == ':empty:' || $val == 'not :empty:') {
+            if ($val === ':empty:' || $val === 'not :empty:') {
                 $normalizedValues[] = $val;
 
                 // Sneak out early
@@ -392,7 +397,7 @@ class Db
             }
 
             if (is_string($val)) {
-                $operator = static::_parseParamOperator($val);
+                $operator = self::_parseParamOperator($val);
             } else {
                 $operator = '=';
             }
@@ -409,12 +414,12 @@ class Db
     /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
-     * @param string     $type
-     * @param Connection $db
+     * @param string          $type
+     * @param Connection|null $db
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isTypeSupported($type, $db = null)
+    public static function isTypeSupported(string $type, Connection $db = null): bool
     {
         if ($db === null) {
             $db = Craft::$app->getDb();
@@ -434,11 +439,11 @@ class Db
      *
      * @param string &$value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(string &$value)
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (StringHelper::toLowerCase($value) == ':notempty:') {
+        } else if (StringHelper::toLowerCase($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }
@@ -450,18 +455,14 @@ class Db
      *
      * @return string The operator.
      */
-    private static function _parseParamOperator(&$value)
+    private static function _parseParamOperator(string &$value): string
     {
-        foreach (static::$_operators as $testOperator) {
+        foreach (self::$_operators as $testOperator) {
             // Does the value start with this operator?
-            $operatorLength = strlen($testOperator);
+            if (strpos(StringHelper::toLowerCase($value), $testOperator) === 0) {
+                $value = mb_substr($value, strlen($testOperator));
 
-            if (strncmp(StringHelper::toLowerCase($value), $testOperator,
-                    $operatorLength) == 0
-            ) {
-                $value = mb_substr($value, $operatorLength);
-
-                if ($testOperator == 'not ') {
+                if ($testOperator === 'not ') {
                     return '!=';
                 }
 

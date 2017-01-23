@@ -7,9 +7,9 @@
 
 namespace craft\tasks;
 
-use craft\base\Task;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
+use craft\base\Task;
 
 /**
  * MissingWidget represents a widget with an invalid class.
@@ -30,7 +30,7 @@ class MissingTask extends Task implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return $this->expectedType;
     }

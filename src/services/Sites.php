@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
@@ -26,11 +27,11 @@ use yii\base\InvalidConfigException;
  *
  * An instance of the Sites service is globally accessible in Craft via [[Application::sites `Craft::$app->getSites()`]].
  *
- * @property integer[] $allSiteIds         All of the site IDs
- * @property integer[] $editableSiteIds    All of the site IDs that are editable by the current user
- * @property Site      $primarySite        The primary site
- * @property integer   $totalSites         The total number of sites
- * @property integer   $totalEditableSites The total number of sites that are editable by the current user
+ * @property int[] $allSiteIds         All of the site IDs
+ * @property int[] $editableSiteIds    All of the site IDs that are editable by the current user
+ * @property Site  $primarySite        The primary site
+ * @property int   $totalSites         The total number of sites
+ * @property int   $totalEditableSites The total number of sites that are editable by the current user
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -88,27 +89,27 @@ class Sites extends Component
     public $currentSite;
 
     /**
-     * @var integer[]
+     * @var int[]|null
      */
     private $_editableSiteIds;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      */
     private $_sitesById;
 
     /**
-     * @var Site[]
+     * @var Site[]|null
      */
     private $_sitesByHandle;
 
     /**
-     * @var Site
+     * @var Site|null
      */
     private $_primarySite;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private $_fetchedAllSites = false;
 
@@ -133,7 +134,7 @@ class Sites extends Component
 
         // Set $this->currentSite to an actual Site model if it's not already
         if (!($this->currentSite instanceof Site)) {
-            if (isset($this->currentSite)) {
+            if ($this->currentSite !== null) {
                 if (is_numeric($this->currentSite)) {
                     $site = $this->getSiteById($this->currentSite);
                 } else {
@@ -158,7 +159,7 @@ class Sites extends Component
             $siteUrl = Craft::$app->getConfig()->get('siteUrl');
 
             if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in craft/config/general.php instead.');
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
                 $siteUrl = CRAFT_SITE_URL;
             }
 
@@ -183,9 +184,9 @@ class Sites extends Component
     /**
      * Returns all of the site IDs.
      *
-     * @return array All the sites’ IDs
+     * @return int[] All the sites’ IDs
      */
-    public function getAllSiteIds()
+    public function getAllSiteIds(): array
     {
         $this->_loadAllSites();
 
@@ -199,11 +200,11 @@ class Sites extends Component
      * @return Site The primary site
      * @throws SiteNotFoundException if no sites exist
      */
-    public function getPrimarySite()
+    public function getPrimarySite(): Site
     {
         $this->_loadAllSites();
 
-        if (!isset($this->_primarySite)) {
+        if ($this->_primarySite === null) {
             throw new SiteNotFoundException('No sites exist');
         }
 
@@ -215,15 +216,17 @@ class Sites extends Component
      *
      * @return array All the editable sites’ IDs
      */
-    public function getEditableSiteIds()
+    public function getEditableSiteIds(): array
     {
-        if (!isset($this->_editableSiteIds)) {
-            $this->_editableSiteIds = [];
+        if ($this->_editableSiteIds !== null) {
+            return $this->_editableSiteIds;
+        }
 
-            foreach ($this->getAllSiteIds() as $siteId) {
-                if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
-                    $this->_editableSiteIds[] = $siteId;
-                }
+        $this->_editableSiteIds = [];
+
+        foreach ($this->getAllSiteIds() as $siteId) {
+            if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
+                $this->_editableSiteIds[] = $siteId;
             }
         }
 
@@ -233,50 +236,28 @@ class Sites extends Component
     /**
      * Returns all sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the sites
      */
-    public function getAllSites($indexBy = null)
+    public function getAllSites(): array
     {
         $this->_loadAllSites();
 
-        if ($indexBy == 'id') {
-            $sites = $this->_sitesById;
-        } else if ($indexBy == 'handle') {
-            $sites = $this->_sitesByHandle;
-        } else if (!$indexBy) {
-            $sites = array_values($this->_sitesById);
-        } else {
-            $sites = [];
-
-            foreach ($this->_sitesById as $site) {
-                $sites[$site->$indexBy] = $site;
-            }
-        }
-
-        return $sites;
+        return array_values($this->_sitesById);
     }
 
     /**
      * Returns all editable sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the editable sites
      */
-    public function getEditableSites($indexBy = null)
+    public function getEditableSites(): array
     {
         $editableSiteIds = $this->getEditableSiteIds();
         $editableSites = [];
 
         foreach ($this->getAllSites() as $site) {
-            if (in_array($site->id, $editableSiteIds)) {
-                if ($indexBy) {
-                    $editableSites[$site->$indexBy] = $site;
-                } else {
-                    $editableSites[] = $site;
-                }
+            if (in_array($site->id, $editableSiteIds, false)) {
+                $editableSites[] = $site;
             }
         }
 
@@ -286,9 +267,9 @@ class Sites extends Component
     /**
      * Gets the total number of sites.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalSites()
+    public function getTotalSites(): int
     {
         return count($this->getAllSites());
     }
@@ -296,9 +277,9 @@ class Sites extends Component
     /**
      * Gets the total number of sites that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalEditableSites()
+    public function getTotalEditableSites(): int
     {
         return count($this->getEditableSiteIds());
     }
@@ -306,11 +287,11 @@ class Sites extends Component
     /**
      * Returns a site by its ID.
      *
-     * @param integer $siteId
+     * @param int $siteId
      *
      * @return Site|null
      */
-    public function getSiteById($siteId)
+    public function getSiteById(int $siteId)
     {
         if (!$siteId) {
             return null;
@@ -346,7 +327,7 @@ class Sites extends Component
      *
      * @return Site|null
      */
-    public function getSiteByHandle($siteHandle)
+    public function getSiteByHandle(string $siteHandle)
     {
         // If we've already fetched all sites we can save ourselves a trip to the DB for site handles that don't exist
         if (!$this->_fetchedAllSites && !array_key_exists($siteHandle, $this->_sitesByHandle)) {
@@ -374,14 +355,14 @@ class Sites extends Component
     /**
      * Saves a site.
      *
-     * @param Site    $site          The site to be saved
-     * @param boolean $runValidation Whether the site should be validated
+     * @param Site $site          The site to be saved
+     * @param bool $runValidation Whether the site should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSite(Site $site, $runValidation = true)
+    public function saveSite(Site $site, bool $runValidation = true): bool
     {
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
@@ -458,7 +439,7 @@ class Sites extends Component
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
-            if ($allSiteSettings) {
+            if (!empty($allSiteSettings)) {
                 $newSiteSettings = [];
 
                 foreach ($allSiteSettings as $siteSettings) {
@@ -499,12 +480,12 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param integer[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      *
-     * @return boolean Whether the sites were reordered successfthe sites are reorderedy
+     * @return bool Whether the sites were reordered successfthe sites are reorderedy
      * @throws \Exception if reasons
      */
-    public function reorderSites($siteIds)
+    public function reorderSites(array $siteIds): bool
     {
         // Fire a 'beforeSaveSite' event
         $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
@@ -547,13 +528,13 @@ class Sites extends Component
     /**
      * Deletes a site by its ID.
      *
-     * @param integer      $siteId            The site ID to be deleted
-     * @param integer|null $transferContentTo The site ID that should take over the deleted site’s contents
+     * @param int      $siteId            The site ID to be deleted
+     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
-     * @return boolean Whether the site was deleted successfully
+     * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSiteById($siteId, $transferContentTo = null)
+    public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
     {
         $site = $this->getSiteById($siteId);
 
@@ -567,13 +548,13 @@ class Sites extends Component
     /**
      * Deletes a site.
      *
-     * @param Site         $site              The site to be deleted
-     * @param integer|null $transferContentTo The site ID that should take over the deleted site’s contents
+     * @param Site     $site              The site to be deleted
+     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
-     * @return boolean Whether the site was deleted successfully
+     * @return bool Whether the site was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSite(Site $site, $transferContentTo = null)
+    public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
@@ -608,9 +589,9 @@ class Sites extends Component
         }
 
         // Did we find any?
-        if ($soloSectionIds) {
+        if (!empty($soloSectionIds)) {
             // Should we enable those for a different site?
-            if ($transferContentTo) {
+            if ($transferContentTo !== null) {
                 Craft::$app->getDb()->createCommand()
                     ->update(
                         '{{%sections_i18n}}',
@@ -625,7 +606,7 @@ class Sites extends Component
                     ->where(['sectionId' => $soloSectionIds])
                     ->column();
 
-                if ($entryIds) {
+                if (!empty($entryIds)) {
                     // Delete their template caches
                     Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
@@ -676,7 +657,7 @@ class Sites extends Component
                         ->where(['ownerId' => $entryIds])
                         ->column();
 
-                    if ($blockIds) {
+                    if (!empty($blockIds)) {
                         Craft::$app->getDb()->createCommand()
                             ->update(
                                 '{{%matrixblocks}}',
@@ -708,11 +689,10 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $matrixTablePrefixLength = strlen($matrixTablePrefix);
                         $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strncmp($tableName, $matrixTablePrefix, $matrixTablePrefixLength) === 0) {
+                            if (strpos($tableName, $matrixTablePrefix) === 0) {
                                 $tableName = substr($tableName, $tablePrefixLength);
 
                                 Craft::$app->getDb()->createCommand()
@@ -761,8 +741,9 @@ class Sites extends Component
         // Is the primary site ID getting deleted?
         if ($oldPrimarySiteId === $site->id) {
             $newPrimarySiteId = $this->_createSiteQuery()
+                ->select('id')
                 ->offset(1)
-                ->scalar('id');
+                ->scalar();
 
             if (!$newPrimarySiteId || $oldPrimarySiteId == $newPrimarySiteId) {
                 throw new Exception('Deleting the only site is not permitted');
@@ -816,7 +797,7 @@ class Sites extends Component
 
                 // Check for results because during installation, then transaction
                 // hasn't been committed yet.
-                if ($results) {
+                if (!empty($results)) {
                     foreach ($results as $i => $result) {
                         $site = new Site($result);
                         $this->_sitesById[$site->id] = $site;
@@ -831,7 +812,7 @@ class Sites extends Component
                 }
             } catch (\yii\db\Exception $e) {
                 // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] == '42S02' || $e->errorInfo[0] == '42P01')) {
+                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] === '42S02' || $e->errorInfo[0] === '42P01')) {
                     return;
                 }
 
@@ -852,7 +833,7 @@ class Sites extends Component
      *
      * @return Query
      */
-    private function _createSiteQuery()
+    private function _createSiteQuery(): Query
     {
         return (new Query())
             ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
@@ -863,10 +844,10 @@ class Sites extends Component
     /**
      * Handles things that happen when there's a new primary site
      *
-     * @param integer $oldPrimarySiteId
-     * @param integer $newPrimarySiteId
+     * @param int $oldPrimarySiteId
+     * @param int $newPrimarySiteId
      */
-    private function _processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId)
+    private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId)
     {
         // Set the new primary site
         $this->_primarySite = $this->getSiteById($newPrimarySiteId);
@@ -877,20 +858,20 @@ class Sites extends Component
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** Element $elementType */
+            /** @var Element|string $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType;
             }
         }
 
-        if ($nonLocalizedElementTypes) {
+        if (!empty($nonLocalizedElementTypes)) {
             $elementIds = (new Query())
                 ->select(['id'])
                 ->from(['{{%elements}}'])
                 ->where(['type' => $nonLocalizedElementTypes])
                 ->column();
 
-            if ($elementIds) {
+            if (!empty($elementIds)) {
                 // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
                 // these elements that don't currently use the old primary site ID
                 $deleteCondition = [

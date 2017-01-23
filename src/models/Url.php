@@ -22,7 +22,7 @@ class Url extends Model
     // =========================================================================
 
     /**
-     * @var string URL
+     * @var string|null URL
      */
     public $url;
 

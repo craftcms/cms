@@ -5,7 +5,9 @@ use craft\db\MigrationManager;
 use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\log\Logger;
 
 return [
@@ -25,7 +27,7 @@ return [
     'entries' => craft\services\Entries::class,
     'entryRevisions' => craft\services\EntryRevisions::class,
     'et' => craft\services\Et::class,
-    'feeds' => craft\services\Feeds::class,
+    'feeds' => craft\feeds\Feeds::class,
     'fields' => craft\services\Fields::class,
     'globals' => craft\services\Globals::class,
     'images' => craft\services\Images::class,
@@ -46,6 +48,7 @@ return [
     'users' => craft\services\Users::class,
     'view' => craft\web\View::class,
     'volumes' => craft\services\Volumes::class,
+    'utilities' => craft\services\Utilities::class,
 
     // Configured components
     // -------------------------------------------------------------------------
@@ -54,7 +57,7 @@ return [
         'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_CONTENT,
         'migrationNamespace' => 'craft\contentmigrations',
-        'migrationPath' => "@contentMigrations",
+        'migrationPath' => '@contentMigrations',
     ],
     'migrator' => [
         'class' => MigrationManager::class,
@@ -116,7 +119,9 @@ return [
         $config = [
             'class' => craft\web\AssetManager::class,
             'basePath' => $configService->get('resourceBasePath'),
-            'baseUrl' => $configService->get('resourceBaseUrl')
+            'baseUrl' => $configService->get('resourceBaseUrl'),
+            'fileMode' => $configService->get('defaultFileMode'),
+            'dirMode' => $configService->get('defaultDirMode'),
         ];
 
         return Craft::createObject($config);
@@ -142,9 +147,11 @@ return [
                 break;
             case 'file':
                 $config = [
-                    'class' => craft\cache\FileCache::class,
+                    'class' => \yii\caching\FileCache::class,
                     'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
+                    'fileMode' => $configService->get('defaultFileMode'),
+                    'dirMode' => $configService->get('defaultDirMode'),
                 ];
                 break;
             case 'memcache':
@@ -182,13 +189,13 @@ return [
         if (!in_array($driver, [
             Connection::DRIVER_MYSQL,
             Connection::DRIVER_PGSQL
-        ])
+        ], true)
         ) {
-            throw new Exception('Unsupported connection type: '.$driver);
+            throw new DbException('Unsupported connection type: '.$driver);
         }
 
         if ($dsn === '') {
-            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+            if ($driver === Connection::DRIVER_MYSQL && !empty($unixSocket)) {
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);
@@ -211,6 +218,7 @@ return [
                 'mysql' => craft\db\mysql\Schema::class,
                 'pgsql' => craft\db\pgsql\Schema::class,
             ],
+            'commandClass' => \craft\db\Command::class,
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];
 
@@ -233,6 +241,18 @@ return [
         return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
     },
 
+    'mutex' => function() {
+        $configService = Craft::$app->getConfig();
+
+        $config = [
+            'class' => craft\mutex\FileMutex::class,
+            'fileMode' => $configService->get('defaultFileMode'),
+            'dirMode' => $configService->get('defaultDirMode'),
+        ];
+
+        return Craft::createObject($config);
+    },
+
     'formatter' => function() {
         return Craft::$app->getLocale()->getFormatter();
     },
@@ -248,9 +268,21 @@ return [
         $fileTarget = new FileTarget();
 
         if ($isConsoleRequest) {
-            $fileTarget->logFile = Craft::getAlias('@storage/logs/console.log');
+            $logPath = Craft::getAlias('@storage/logs/console.log');
+
+            if ($logPath === false) {
+                throw new Exception('There was a problem getting the console log path.');
+            }
+
+            $fileTarget->logFile = $logPath;
         } else {
-            $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
+            $logPath = Craft::getAlias('@storage/logs/web.log');
+
+            if ($logPath === false) {
+                throw new Exception('There was a problem getting the web log path.');
+            }
+
+            $fileTarget->logFile = $logPath;
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
             if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {
@@ -258,8 +290,8 @@ return [
             }
         }
 
-        $fileTarget->fileMode = $configService->get('defaultFilePermissions');
-        $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
+        $fileTarget->fileMode = $configService->get('defaultFileMode');
+        $fileTarget->dirMode = $configService->get('defaultDirMode');
 
         $config = [
             'class' => yii\log\Dispatcher::class,

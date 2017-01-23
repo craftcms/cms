@@ -56,15 +56,12 @@ class UserGroups extends Component
     /**
      * Returns all user groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(): array
     {
         $groups = UserGroupRecord::find()
             ->orderBy(['name' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {
@@ -81,11 +78,11 @@ class UserGroups extends Component
     /**
      * Gets a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return UserGroup
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId): UserGroup
     {
         $groupRecord = UserGroupRecord::findOne($groupId);
 
@@ -103,11 +100,11 @@ class UserGroups extends Component
     /**
      * Gets a user group by its handle.
      *
-     * @param integer $groupHandle
+     * @param int $groupHandle
      *
      * @return UserGroup
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(int $groupHandle): UserGroup
     {
         $groupRecord = UserGroupRecord::findOne([
             'handle' => $groupHandle
@@ -127,12 +124,11 @@ class UserGroups extends Component
     /**
      * Gets user groups by a user ID.
      *
-     * @param integer     $userId
-     * @param string|null $indexBy
+     * @param int $userId
      *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getGroupsByUserId($userId, $indexBy = null)
+    public function getGroupsByUserId(int $userId): array
     {
         $groups = (new Query())
             ->select([
@@ -143,7 +139,6 @@ class UserGroups extends Component
             ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {
@@ -157,11 +152,11 @@ class UserGroups extends Component
      * Saves a user group.
      *
      * @param UserGroup $group         The user group to be saved
-     * @param boolean   $runValidation Whether the user group should be validated
+     * @param bool      $runValidation Whether the user group should be validated
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveGroup(UserGroup $group, $runValidation = true)
+    public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('User group not saved due to validation error.', __METHOD__);
@@ -201,11 +196,11 @@ class UserGroups extends Component
     /**
      * Deletes a user group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId): bool
     {
         $group = $this->getGroupById($groupId);
 
@@ -236,13 +231,13 @@ class UserGroups extends Component
     /**
      * Gets a group's record.
      *
-     * @param integer $groupId
+     * @param int|null $groupId
      *
      * @return UserGroupRecord
      */
-    private function _getGroupRecordById($groupId = null)
+    private function _getGroupRecordById(int $groupId = null): UserGroupRecord
     {
-        if ($groupId) {
+        if ($groupId !== null) {
             $groupRecord = UserGroupRecord::findOne($groupId);
 
             if (!$groupRecord) {
@@ -258,12 +253,12 @@ class UserGroups extends Component
     /**
      * Throws a "No group exists" exception.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return void
      * @throws UserGroupNotFoundException
      */
-    private function _noGroupExists($groupId)
+    private function _noGroupExists(int $groupId)
     {
         throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
     }

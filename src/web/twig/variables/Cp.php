@@ -9,11 +9,11 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
-use craft\helpers\Io as IoHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\base\Component;
 
 /**
@@ -40,7 +40,7 @@ class Cp extends Component
      *
      * @return array
      */
-    public function nav()
+    public function nav(): array
     {
         $navItems = [
             [
@@ -60,7 +60,7 @@ class Cp extends Component
 
         $globals = Craft::$app->getGlobals()->getEditableSets();
 
-        if ($globals) {
+        if (!empty($globals)) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals/'.$globals[0]->handle,
@@ -84,7 +84,7 @@ class Cp extends Component
             ];
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -101,22 +101,39 @@ class Cp extends Component
                 $pluginHandle = $plugin->getHandle();
 
                 if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $lcHandle = StringHelper::toLowerCase($pluginHandle);
-                    $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
+                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
 
-                    if (IoHelper::fileExists($iconPath)) {
-                        $iconSvg = IoHelper::getFileContents($iconPath);
+                    if (is_file($iconPath)) {
+                        $iconSvg = file_get_contents($iconPath);
                     } else {
                         $iconSvg = false;
                     }
 
                     $navItems[] = [
                         'label' => $plugin->name,
-                        'url' => $lcHandle,
+                        'url' => StringHelper::toLowerCase($pluginHandle),
                         'iconSvg' => $iconSvg
                     ];
                 }
             }
+        }
+
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+
+        if (!empty($utilities)) {
+            $badgeCount = 0;
+
+            foreach ($utilities as $class) {
+                /** @var UtilityInterface $class */
+                $badgeCount += $class::badgeCount();
+            }
+
+            $navItems[] = [
+                'url' => 'utilities',
+                'label' => Craft::t('app', 'Utilities'),
+                'icon' => 'tool',
+                'badgeCount' => $badgeCount
+            ];
         }
 
         if (Craft::$app->getUser()->getIsAdmin()) {
@@ -137,7 +154,7 @@ class Cp extends Component
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($path == 'myaccount') {
+        if ($path === 'myaccount') {
             $path = 'users';
         }
 
@@ -155,7 +172,11 @@ class Cp extends Component
                 $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
             }
 
-            $item['url'] = Url::url($item['url']);
+            $item['url'] = UrlHelper::url($item['url']);
+
+            if (!isset($item['badgeCount'])) {
+                $item['badgeCount'] = 0;
+            }
         }
 
         return $navItems;
@@ -166,8 +187,10 @@ class Cp extends Component
      *
      * @return array
      */
-    public function settings()
+    public function settings(): array
     {
+        $settings = [];
+
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
@@ -183,7 +206,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Routes')
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $settings[$label]['users'] = [
                 'icon' => 'users',
                 'label' => Craft::t('app', 'Users')
@@ -249,9 +272,9 @@ class Cp extends Component
     /**
      * Returns whether the CP alerts are cached.
      *
-     * @return boolean
+     * @return bool
      */
-    public function areAlertsCached()
+    public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Elliott request
         return (Craft::$app->getEt()->getLicenseKeyStatus() !== false);
@@ -262,7 +285,7 @@ class Cp extends Component
      *
      * @return array
      */
-    public function getAlerts()
+    public function getAlerts(): array
     {
         return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
     }

@@ -25,12 +25,5 @@ interface ComponentInterface
      *
      * @return string The display name of this class.
      */
-    public static function displayName();
-
-    /**
-     * Returns a unique handle that can be used to refer to this class.
-     *
-     * @return string The class handle.
-     */
-    public static function classHandle();
+    public static function displayName(): string;
 }

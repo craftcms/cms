@@ -40,7 +40,7 @@ class Deprecator extends Component
     private $_requestLogs = [];
 
     /**
-     * @var DeprecationError[] All the unique deprecation errors that have been logged
+     * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
     private $_allLogs;
 
@@ -53,12 +53,12 @@ class Deprecator extends Component
      * @param string $key
      * @param string $message
      *
-     * @return boolean
+     * @return bool
      */
-    public function log($key, $message)
+    public function log(string $key, string $message): bool
     {
         if (!Craft::$app->getIsInstalled()) {
-            Craft::warning($message, 'deprecationlog');
+            Craft::warning($message, 'deprecation-error');
 
             return false;
         }
@@ -96,7 +96,7 @@ class Deprecator extends Component
             // Do we already have this one logged?
             $existingId = (new Query())
                 ->select(['id'])
-                ->from([static::$_tableName])
+                ->from([self::$_tableName])
                 ->where([
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -106,21 +106,21 @@ class Deprecator extends Component
             if ($existingId === false) {
                 $db->createCommand()
                     ->insert(
-                        static::$_tableName,
+                        self::$_tableName,
                         array_merge($values, [
                             'key' => $log->key,
                             'fingerprint' => $log->fingerprint
                         ]))
                     ->execute();
-                $log->id = $db->getLastInsertID(static::$_tableName);
+                $log->id = $db->getLastInsertID(self::$_tableName);
             } else {
                 $db->createCommand()
                     ->update(
-                        static::$_tableName,
+                        self::$_tableName,
                         $values,
                         ['id' => $existingId])
                     ->execute();
-                $log->id = $existingId;
+                $log->id = (int)$existingId;
             }
 
             $this->_requestLogs[$key] = $log;
@@ -134,7 +134,7 @@ class Deprecator extends Component
      *
      * @return DeprecationError[]
      */
-    public function getRequestLogs()
+    public function getRequestLogs(): array
     {
         return $this->_requestLogs;
     }
@@ -142,35 +142,37 @@ class Deprecator extends Component
     /**
      * Returns the total number of deprecation errors that have been logged.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalLogs()
+    public function getTotalLogs(): int
     {
         return (new Query())
-            ->from([static::$_tableName])
+            ->from([self::$_tableName])
             ->count('[[id]]');
     }
 
     /**
      * Get 'em all.
      *
-     * @param integer $limit
+     * @param int|null $limit
      *
      * @return DeprecationError[]
      */
-    public function getLogs($limit = 100)
+    public function getLogs(int $limit = null): array
     {
-        if (!isset($this->_allLogs)) {
-            $this->_allLogs = [];
+        if ($this->_allLogs !== null) {
+            return $this->_allLogs;
+        }
 
-            $results = $this->_createDeprecationErrorQuery()
-                ->limit($limit)
-                ->orderBy(['lastOccurrence' => SORT_DESC])
-                ->all();
+        $this->_allLogs = [];
 
-            foreach ($results as $result) {
-                $this->_allLogs[] = new DeprecationError($result);
-            }
+        $results = $this->_createDeprecationErrorQuery()
+            ->limit($limit)
+            ->orderBy(['lastOccurrence' => SORT_DESC])
+            ->all();
+
+        foreach ($results as $result) {
+            $this->_allLogs[] = new DeprecationError($result);
         }
 
         return $this->_allLogs;
@@ -179,11 +181,11 @@ class Deprecator extends Component
     /**
      * Returns a log by its ID.
      *
-     * @param $logId
+     * @param int $logId
      *
      * @return DeprecationError|null
      */
-    public function getLogById($logId)
+    public function getLogById(int $logId)
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -199,14 +201,14 @@ class Deprecator extends Component
     /**
      * Deletes a log by its ID.
      *
-     * @param $id
+     * @param int $id
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteLogById($id)
+    public function deleteLogById(int $id): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName, ['id' => $id])
+            ->delete(self::$_tableName, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -215,12 +217,12 @@ class Deprecator extends Component
     /**
      * Deletes all logs.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteAllLogs()
+    public function deleteAllLogs(): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName)
+            ->delete(self::$_tableName)
             ->execute();
 
         return (bool)$affectedRows;
@@ -234,7 +236,7 @@ class Deprecator extends Component
      *
      * @return Query
      */
-    private function _createDeprecationErrorQuery()
+    private function _createDeprecationErrorQuery(): Query
     {
         return (new Query())
             ->select([
@@ -251,7 +253,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from([static::$_tableName]);
+            ->from([self::$_tableName]);
     }
 
     /**
@@ -289,15 +291,16 @@ class Deprecator extends Component
 
         foreach ($traces as $trace) {
             $logTrace = [
-                'objectClass' => (!empty($trace['object']) ? get_class($trace['object']) : null),
-                'file' => (!empty($trace['file']) ? $trace['file'] : null),
-                'line' => (!empty($trace['line']) ? $trace['line'] : null),
-                'class' => (!empty($trace['class']) ? $trace['class'] : null),
-                'method' => (!empty($trace['function']) ? $trace['function'] : null),
-                'args' => (!empty($trace['args']) ? $this->_argsToString($trace['args']) : null),
+                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'file' => !empty($trace['file']) ? $trace['file'] : null,
+                'line' => !empty($trace['line']) ? $trace['line'] : null,
+                'class' => !empty($trace['class']) ? $trace['class'] : null,
+                'method' => !empty($trace['function']) ? $trace['function'] : null,
+                'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
             ];
 
             // Is this a template?
+            /** @noinspection PhpInternalEntityUsedInspection */
             if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates')) {
                 /** @var Template $template */
                 $template = $trace['object'];
@@ -334,11 +337,11 @@ class Deprecator extends Component
      *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
-     * @param $args array
+     * @param array $args
      *
      * @return string
      */
-    private function _argsToString($args)
+    private function _argsToString(array $args): string
     {
         $strArgs = [];
         $isAssoc = ($args !== array_values($args));

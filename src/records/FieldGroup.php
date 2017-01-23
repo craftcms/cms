@@ -7,13 +7,13 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class FieldGroup record.
  *
- * @property integer $id     ID
+ * @property int     $id     ID
  * @property string  $name   Name
  * @property Field[] $fields Fields
  *
@@ -30,7 +30,7 @@ class FieldGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fieldgroups}}';
     }
@@ -40,7 +40,7 @@ class FieldGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFields()
+    public function getFields(): ActiveQueryInterface
     {
         return $this->hasMany(Field::class, ['groupId' => 'id']);
     }

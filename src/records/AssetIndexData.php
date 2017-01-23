@@ -7,21 +7,21 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
 use craft\validators\DateTimeValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class AssetIndexData record.
  *
- * @property integer   $id        ID
- * @property integer   $volumeId  Volume ID
+ * @property int       $id        ID
+ * @property int       $volumeId  Volume ID
  * @property string    $sessionId Session ID
- * @property integer   $offset    Offset
+ * @property int       $offset    Offset
  * @property string    $uri       URI
- * @property integer   $size      Size
+ * @property int       $size      Size
  * @property \DateTime $timestamp Timestamp
- * @property integer   $recordId  Record ID
+ * @property int       $recordId  Record ID
  * @property Volume    $volume    Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -52,7 +52,7 @@ class AssetIndexData extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%assetindexdata}}';
     }
@@ -62,7 +62,7 @@ class AssetIndexData extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }

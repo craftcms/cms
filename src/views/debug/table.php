@@ -16,8 +16,8 @@ use yii\helpers\Html;
 <?php else: ?>
     <div class="table-responsive">
         <table
-            class="table table-condensed table-bordered table-striped table-hover"
-            style="table-layout: fixed;">
+                class="table table-condensed table-bordered table-striped table-hover"
+                style="table-layout: fixed;">
             <?php if (!empty($headings)): ?>
                 <thead>
                 <tr>

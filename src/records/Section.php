@@ -7,18 +7,18 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Section record.
  *
- * @property integer                $id               ID
- * @property integer                $structureId      Structure ID
+ * @property int                    $id               ID
+ * @property int                    $structureId      Structure ID
  * @property string                 $name             Name
  * @property string                 $handle           Handle
  * @property string                 $type             Type
- * @property boolean                $enableVersioning Enable versioning
+ * @property bool                   $enableVersioning Enable versioning
  * @property Section_SiteSettings[] $siteSettings     Site settings
  * @property Structure              $structure        Structure
  *
@@ -35,7 +35,7 @@ class Section extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%sections}}';
     }
@@ -45,7 +45,7 @@ class Section extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): ActiveQueryInterface
     {
         return $this->hasMany(Section_SiteSettings::class, ['sectionId' => 'id']);
     }
@@ -55,7 +55,7 @@ class Section extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getStructure()
+    public function getStructure(): ActiveQueryInterface
     {
         return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }

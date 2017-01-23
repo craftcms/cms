@@ -1,179 +1,155 @@
 (function($) {
+    /** global: Craft */
+    /** global: Garnish */
+    Craft.EntryDraftEditor = Garnish.Base.extend(
+        {
+            $revisionBtn: null,
+            $editBtn: null,
+            $nameInput: null,
+            $saveBtn: null,
+            $spinner: null,
 
+            draftId: null,
+            draftName: null,
+            draftNotes: null,
+            hud: null,
+            loading: false,
 
-Craft.EntryDraftEditor = Garnish.Base.extend(
-{
-	$revisionBtn: null,
-	$editBtn: null,
-	$nameInput: null,
-	$saveBtn: null,
-	$spinner: null,
+            init: function(draftId, draftName, draftNotes) {
+                this.draftId = draftId;
+                this.draftName = draftName;
+                this.draftNotes = draftNotes;
 
-	draftId: null,
-	draftName: null,
-	draftNotes: null,
-	hud: null,
-	loading: false,
+                this.$revisionBtn = $('#revision-btn');
+                this.$editBtn = $('#editdraft-btn');
 
-	init: function(draftId, draftName, draftNotes)
-	{
-		this.draftId = draftId;
-		this.draftName = draftName;
-		this.draftNotes = draftNotes;
+                this.addListener(this.$editBtn, 'click', 'showHud');
+            },
 
-		this.$revisionBtn = $('#revision-btn');
-		this.$editBtn = $('#editdraft-btn');
+            showHud: function() {
+                if (!this.hud) {
+                    var $hudBody = $('<div/>');
 
-		this.addListener(this.$editBtn, 'click', 'showHud');
-	},
+                    // Add the Name field
+                    var $field = $('<div class="field"><div class="heading"><label for="draft-name">' + Craft.t('app', 'Draft Name') + '</label></div></div>').appendTo($hudBody),
+                        $inputContainer = $('<div class="input"/>').appendTo($field);
+                    this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
 
-	showHud: function()
-	{
-		if (!this.hud)
-		{
-			var $hudBody = $('<div/>');
+                    // Add the Notes field
+                    var $field = $('<div class="field"><div class="heading"><label for="draft-notes">' + Craft.t('app', 'Notes') + '</label></div></div>').appendTo($hudBody),
+                        $inputContainer = $('<div class="input"/>').appendTo($field);
+                    this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
-			// Add the Name field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('app', 'Draft Name')+'</label></div></div>').appendTo($hudBody),
-				$inputContainer = $('<div class="input"/>').appendTo($field);
-			this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
+                    // Add the button
+                    var $footer = $('<div class="hud-footer"/>').appendTo($hudBody),
+                        $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
+                    this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
+                    this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
-			// Add the Notes field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('app', 'Notes')+'</label></div></div>').appendTo($hudBody),
-				$inputContainer = $('<div class="input"/>').appendTo($field);
-			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
+                    this.hud = new Garnish.HUD(this.$editBtn, $hudBody, {
+                        onSubmit: $.proxy(this, 'save')
+                    });
 
-			// Add the button
-			var $footer = $('<div class="hud-footer"/>').appendTo($hudBody),
-				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Save')+'"/>').appendTo($buttonsContainer);
-			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
+                    new Garnish.NiceText(this.$notesInput);
 
-			this.hud = new Garnish.HUD(this.$editBtn, $hudBody, {
-				onSubmit: $.proxy(this, 'save')
-			});
+                    this.addListener(this.$notesInput, 'keydown', 'onNotesKeydown');
 
-			new Garnish.NiceText(this.$notesInput);
+                    this.addListener(this.$nameInput, 'textchange', 'checkValues');
+                    this.addListener(this.$notesInput, 'textchange', 'checkValues');
 
-			this.addListener(this.$notesInput, 'keydown', 'onNotesKeydown');
+                    this.hud.on('show', $.proxy(this, 'onHudShow'));
+                    this.hud.on('hide', $.proxy(this, 'onHudHide'));
+                    this.hud.on('escape', $.proxy(this, 'onHudEscape'));
 
-			this.addListener(this.$nameInput, 'textchange', 'checkValues');
-			this.addListener(this.$notesInput, 'textchange', 'checkValues');
+                    this.onHudShow();
+                }
+                else {
+                    this.hud.show();
+                }
 
-			this.hud.on('show', $.proxy(this, 'onHudShow'));
-			this.hud.on('hide', $.proxy(this, 'onHudHide'));
-			this.hud.on('escape', $.proxy(this, 'onHudEscape'));
+                if (!Garnish.isMobileBrowser(true)) {
+                    this.$nameInput.focus();
+                }
+            },
 
-			this.onHudShow();
-		}
-		else
-		{
-			this.hud.show();
-		}
+            onHudShow: function() {
+                this.$editBtn.addClass('active');
+            },
 
-		if (!Garnish.isMobileBrowser(true))
-		{
-			this.$nameInput.focus();
-		}
-	},
+            onHudHide: function() {
+                this.$editBtn.removeClass('active');
+            },
 
-	onHudShow: function()
-	{
-		this.$editBtn.addClass('active');
-	},
+            onHudEscape: function() {
+                this.$nameInput.val(this.draftName);
+            },
 
-	onHudHide: function()
-	{
-		this.$editBtn.removeClass('active');
-	},
+            onNotesKeydown: function(ev) {
+                if (ev.keyCode == Garnish.RETURN_KEY) {
+                    ev.preventDefault();
+                    this.hud.submit();
+                }
+            },
 
-	onHudEscape: function()
-	{
-		this.$nameInput.val(this.draftName);
-	},
+            hasAnythingChanged: function() {
+                return (this.$nameInput.val() != this.draftName || this.$notesInput.val() != this.draftNotes);
+            },
 
-	onNotesKeydown: function(ev)
-	{
-		if (ev.keyCode == Garnish.RETURN_KEY)
-		{
-			ev.preventDefault();
-			this.hud.submit();
-		}
-	},
+            checkValues: function() {
+                if (this.$nameInput.val() && this.hasAnythingChanged()) {
+                    this.$saveBtn.removeClass('disabled');
+                    return true;
+                }
+                else {
+                    this.$saveBtn.addClass('disabled');
+                    return false;
+                }
+            },
 
-	hasAnythingChanged: function()
-	{
-		return (this.$nameInput.val() != this.draftName || this.$notesInput.val() != this.draftNotes);
-	},
+            save: function() {
+                if (this.loading) {
+                    return;
+                }
 
-	checkValues: function()
-	{
-		if (this.$nameInput.val() && this.hasAnythingChanged())
-		{
-			this.$saveBtn.removeClass('disabled');
-			return true;
-		}
-		else
-		{
-			this.$saveBtn.addClass('disabled');
-			return false;
-		}
-	},
+                if (!this.checkValues()) {
+                    this.shakeHud();
+                    return;
+                }
 
-	save: function()
-	{
-		if (this.loading)
-		{
-			return;
-		}
+                this.loading = true;
+                this.$saveBtn.addClass('active');
+                this.$spinner.removeClass('hidden');
 
-		if (!this.checkValues())
-		{
-			this.shakeHud();
-			return;
-		}
+                var data = {
+                    draftId: this.draftId,
+                    name: this.$nameInput.val(),
+                    notes: this.$notesInput.val()
+                };
 
-		this.loading = true;
-		this.$saveBtn.addClass('active');
-		this.$spinner.removeClass('hidden');
+                Craft.postActionRequest('entry-revisions/update-draft-meta', data, $.proxy(function(response, textStatus) {
+                    this.loading = false;
+                    this.$saveBtn.removeClass('active');
+                    this.$spinner.addClass('hidden');
 
-		var data = {
-			draftId: this.draftId,
-			name:    this.$nameInput.val(),
-			notes:   this.$notesInput.val()
-		};
+                    if (textStatus == 'success') {
+                        if (response.success) {
+                            this.$revisionBtn.text(data.name);
+                            this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(data.name);
+                            this.draftName = data.name;
+                            this.draftNotes = data.notes;
+                            this.checkValues();
+                            this.hud.hide();
+                        }
+                        else {
+                            this.shakeHud();
+                        }
+                    }
+                }, this));
+            },
 
-		Craft.postActionRequest('entry-revisions/update-draft-meta', data, $.proxy(function(response, textStatus)
-		{
-			this.loading = false;
-			this.$saveBtn.removeClass('active');
-			this.$spinner.addClass('hidden');
+            shakeHud: function() {
+                Garnish.shake(this.hud.$hud);
+            }
 
-			if (textStatus == 'success')
-			{
-				if (response.success)
-				{
-					this.$revisionBtn.text(data.name);
-					this.$revisionBtn.data('menubtn').menu.$options.filter('.sel').text(data.name);
-					this.draftName = data.name;
-					this.draftNotes = data.notes;
-					this.checkValues();
-					this.hud.hide();
-				}
-				else
-				{
-					this.shakeHud();
-				}
-			}
-		}, this));
-	},
-
-	shakeHud: function()
-	{
-		Garnish.shake(this.hud.$hud);
-	}
-
-});
-
-
+        });
 })(jQuery);

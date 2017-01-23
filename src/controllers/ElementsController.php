@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
 use craft\errors\InvalidTypeException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
@@ -39,16 +39,16 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetModalBody()
+    public function actionGetModalBody(): Response
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
-        $elementType = $this->getElementType();
-        $context = $this->getContext();
+        $elementType = $this->elementType();
+        $context = $this->context();
 
         $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
-            $showSiteMenu = (bool) $showSiteMenu;
+            $showSiteMenu = (bool)$showSiteMenu;
         }
 
         if (is_array($sourceKeys)) {
@@ -66,7 +66,7 @@ class ElementsController extends BaseElementsController
         }
 
         if (!empty($sources) && count($sources) === 1) {
-            $firstSource = ArrayHelper::firstValue($sources);
+            $firstSource = reset($sources);
             $showSidebar = !empty($firstSource['nested']);
         } else {
             $showSidebar = !empty($sources);
@@ -90,21 +90,8 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionGetEditorHtml()
+    public function actionGetEditorHtml(): Response
     {
-        /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
-        $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
-
-        if (!$element) {
-            throw new NotFoundHttpException('Element could not be found');
-        }
-
-        if (!$element->getIsEditable()) {
-            throw new ForbiddenHttpException('User is not permitted to edit this element');
-        }*/
-
         $element = $this->_getEditorElement();
         $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
 
@@ -118,23 +105,24 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionSaveElement()
+    public function actionSaveElement(): Response
     {
         /** @var Element $element */
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
         $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
+        $element->setFieldParamNamespace($namespace.'.fields');
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
-            $element->setFieldValuesFromPost($fields);
+            $element->setFieldValues($fields);
             unset($params['fields']);
         }
 
         Craft::configure($element, $params);
 
         // Either way, at least tell the element where its content comes from
-        $element->setContentPostLocation($namespace.'.fields');
+        $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
         if (Craft::$app->getElements()->saveElement($element)) {
@@ -171,7 +159,7 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCategoriesInputHtml()
+    public function actionGetCategoriesInputHtml(): Response
     {
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
@@ -179,14 +167,15 @@ class ElementsController extends BaseElementsController
         // Fill in the gaps
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
-        if ($categoryIds) {
-            $categories = Category::find()
+        if (!empty($categoryIds)) {
+            /** @var CategoryQuery $categoryQuery */
+            $categoryQuery = Category::find()
                 ->id($categoryIds)
                 ->siteId($request->getParam('siteId'))
                 ->status(null)
                 ->enabledForSite(false)
-                ->limit($request->getParam('limit'))
-                ->all();
+                ->limit($request->getParam('limit'));
+            $categories = $categoryQuery->all();
         } else {
             $categories = [];
         }
@@ -214,7 +203,7 @@ class ElementsController extends BaseElementsController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _getEditorElement()
+    private function _getEditorElement(): ElementInterface
     {
         $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
@@ -267,7 +256,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
                     $newSiteId = $siteId;
                     break;
                 }
@@ -291,10 +280,7 @@ class ElementsController extends BaseElementsController
         // Populate it with any posted attributes
         $attributes = $request->getBodyParam('attributes', []);
         $attributes['siteId'] = $siteId;
-
-        if ($attributes) {
-            Craft::configure($element, $attributes);
-        }
+        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
@@ -309,19 +295,21 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param boolean          $includeSites
+     * @param bool             $includeSites
      *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
+    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
         /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
-        if (!$siteIds) {
+        if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
+
+        $response = [];
 
         if ($includeSites) {
             if (count($siteIds) > 1) {
@@ -347,16 +335,16 @@ class ElementsController extends BaseElementsController
 
         $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
 
-        if ($element->id) {
+        if ($element->id !== null) {
             $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
         }
 
-        if ($element->siteId) {
+        if ($element->siteId !== null) {
             $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs($element->getEditorHtml()).
+            Craft::$app->getView()->namespaceInputs((string)$element->getEditorHtml()).
             '</div>';
 
         $view = Craft::$app->getView();

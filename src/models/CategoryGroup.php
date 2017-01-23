@@ -9,7 +9,10 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Category;
+use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -33,32 +36,32 @@ class CategoryGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Structure ID
+     * @var int|null Structure ID
      */
     public $structureId;
 
     /**
-     * @var integer Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var integer Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 
@@ -77,8 +80,8 @@ class CategoryGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\Category::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Category::class
             ],
         ];
     }
@@ -104,7 +107,7 @@ class CategoryGroup extends Model
     {
         $validates = parent::validate($attributeNames, $clearErrors);
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
             foreach ($this->getSiteSettings() as $siteSettings) {
                 if (!$siteSettings->validate(null, $clearErrors)) {
                     $validates = false;
@@ -120,7 +123,7 @@ class CategoryGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -130,18 +133,18 @@ class CategoryGroup extends Model
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): array
     {
-        if (!isset($this->_siteSettings)) {
-            if ($this->id) {
-                $siteSettings = Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId');
-            } else {
-                $siteSettings = [];
-            }
-
-            // Set them with setSiteSettings() so setGroup() gets called on them
-            $this->setSiteSettings($siteSettings);
+        if ($this->_siteSettings !== null) {
+            return $this->_siteSettings;
         }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        // Set them with setSiteSettings() so setGroup() gets called on them
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getCategories()->getGroupSiteSettings($this->id), 'siteId'));
 
         return $this->_siteSettings;
     }
@@ -153,7 +156,7 @@ class CategoryGroup extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 

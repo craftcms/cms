@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\GlobalSet;
+use yii\base\Event;
 
 /**
  * Global Set content event class.
@@ -21,7 +22,7 @@ class GlobalSetContentEvent extends Event
     // =========================================================================
 
     /**
-     * @var GlobalSet The global set model associated with the event.
+     * @var GlobalSet|null The global set model associated with the event.
      */
     public $globalSet;
 }

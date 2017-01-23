@@ -21,7 +21,7 @@ class FieldElementEvent extends ModelEvent
     // =========================================================================
 
     /**
-     * @var ElementInterface The element associated with this event
+     * @var ElementInterface|null The element associated with this event
      */
     public $element;
 }

@@ -22,67 +22,67 @@ class AppUpdate extends Model
     // =========================================================================
 
     /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var string Latest version
+     * @var string|null Latest version
      */
     public $latestVersion;
 
     /**
-     * @var \DateTime Latest date
+     * @var \DateTime|null Latest date
      */
     public $latestDate;
 
     /**
-     * @var string Target version
+     * @var string|null Target version
      */
     public $targetVersion;
 
     /**
-     * @var string Real latest version
+     * @var string|null Real latest version
      */
     public $realLatestVersion;
 
     /**
-     * @var \DateTime Real latest date
+     * @var \DateTime|null Real latest date
      */
     public $realLatestDate;
 
     /**
-     * @var boolean Critical update available
+     * @var bool Critical update available
      */
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var boolean Manual update required
+     * @var bool Manual update required
      */
     public $manualUpdateRequired = false;
 
     /**
-     * @var boolean Breakpoint release
+     * @var bool Breakpoint release
      */
     public $breakpointRelease = false;
 
     /**
-     * @var string License updated
+     * @var string|null License updated
      */
     public $licenseUpdated;
 
     /**
-     * @var string Version update status
+     * @var string|null Version update status
      */
     public $versionUpdateStatus;
 
     /**
-     * @var string Manual download endpoint
+     * @var string|null Manual download endpoint
      */
     public $manualDownloadEndpoint;
 
     /**
-     * @var AppNewRelease[] Releases
+     * @var AppUpdateRelease[] Releases
      */
     public $releases = [];
 
@@ -96,10 +96,10 @@ class AppUpdate extends Model
     {
         parent::init();
 
-        if (isset($this->releases)) {
+        if ($this->releases !== null) {
             foreach ($this->releases as $key => $value) {
-                if (!$value instanceof AppNewRelease) {
-                    $this->releases[$key] = new AppNewRelease($value);
+                if (!$value instanceof AppUpdateRelease) {
+                    $this->releases[$key] = new AppUpdateRelease($value);
                 }
             }
         }
@@ -108,7 +108,7 @@ class AppUpdate extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';

@@ -169,7 +169,7 @@
 
 
 {% if not category.slug %}
-	{% registerjs %}
+	{% js %}
 		window.slugGenerator = new Craft.SlugGenerator('#title', '#slug');
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}

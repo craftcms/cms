@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\UserGroup;
+use yii\base\Event;
 
 /**
  * UserGroupEvent class.
@@ -21,12 +22,12 @@ class UserGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var UserGroup The user group associated with this event
+     * @var UserGroup|null The user group associated with this event
      */
     public $userGroup;
 
     /**
-     * @var boolean Whether the user group is brand new
+     * @var bool Whether the user group is brand new
      */
     public $isNew = false;
 }

@@ -6,7 +6,6 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
-use craft\volumes\AwsS3;
 
 /**
  * m151002_095935_volume_cache_settings migration.
@@ -32,7 +31,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
             $settings = Json::decode($volume['settings']);
 
             if (empty($settings['storageClass'])) {
-                $settings['storageClass'] = AwsS3::STORAGE_STANDARD;
+                $settings['storageClass'] = 'STANDARD'; // value of \craft\base\Volume::STORAGE_STANDARD
 
                 Craft::$app->getDb()->createCommand()
                     ->update(

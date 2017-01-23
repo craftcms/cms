@@ -25,13 +25,13 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     /**
      * @inheritdoc
      *
-     * @param string $table   the name of the table to be created. The name will be properly quoted by the method.
-     * @param array  $columns the columns (name => definition) in the new table.
-     * @param string $options additional SQL fragment that will be appended to the generated SQL.
+     * @param string      $table   the name of the table to be created. The name will be properly quoted by the method.
+     * @param array       $columns the columns (name => definition) in the new table.
+     * @param string|null $options additional SQL fragment that will be appended to the generated SQL.
      *
      * @return string the SQL statement for creating a new DB table.
      */
-    public function createTable($table, $columns, $options = null)
+    public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
         if ($options === null || strpos($options, 'ENGINE=') === false) {
@@ -53,7 +53,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for dropping a DB table.
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table): string
     {
         return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
     }
@@ -72,7 +72,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function upsert($table, $keyColumns, $updateColumns, &$params)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, array &$params): string
     {
         $schema = $this->db->getSchema();
 
@@ -98,7 +98,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
                     $params[$n] = $v;
                 }
             } else {
-                $phName = static::PARAM_PREFIX.count($params);
+                $phName = self::PARAM_PREFIX.count($params);
                 $placeholder = $phName;
                 $params[$phName] = !is_array($value) && isset($columnSchemas[$name]) ? $columnSchemas[$name]->dbTypecast($value) : $value;
             }
@@ -112,9 +112,9 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         return 'INSERT INTO '.$schema->quoteTableName($table).
-        ' ('.implode(', ', $names).') VALUES ('.
-        implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
-        implode(', ', $updates);
+            ' ('.implode(', ', $names).') VALUES ('.
+            implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
+            implode(', ', $updates);
     }
 
     /**
@@ -131,20 +131,20 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace($table, $column, $find, $replace, $condition, &$params)
+    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
     {
         $column = $this->db->quoteColumnName($column);
 
-        $findPhName = static::PARAM_PREFIX.count($params);
+        $findPhName = self::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
 
-        $replacePhName = static::PARAM_PREFIX.count($params);
+        $replacePhName = self::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
         $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
         $where = $this->buildWhere($condition, $params);
 
-        return $where === '' ? $sql : $sql . ' ' . $where;
+        return $where === '' ? $sql : $sql.' '.$where;
     }
 
     /**
@@ -155,7 +155,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL expression.
      */
-    public function fixedOrder($column, $values)
+    public function fixedOrder(string $column, array $values): string
     {
         $sql = 'FIELD('.$this->db->quoteColumnName($column);
         foreach ($values as $value) {

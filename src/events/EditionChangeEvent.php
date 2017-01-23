@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Edition Change event class.
  *
@@ -19,12 +21,12 @@ class EditionChangeEvent extends Event
     // =========================================================================
 
     /**
-     * @var integer The old edition
+     * @var int|null The old edition
      */
     public $oldEdition;
 
     /**
-     * @var integer The new edition
+     * @var int|null The new edition
      */
     public $newEdition;
 }

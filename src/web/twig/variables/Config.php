@@ -22,26 +22,28 @@ class Config
     // Public Methods
     // =========================================================================
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a config item exists.
      *
      * @param string $name
      *
-     * @return boolean
+     * @return bool
      */
-    public function __isset($name)
+    public function __isset(string $name): bool
     {
         return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
     }
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns a config item.
      *
      * @param string $name
      *
-     * @return string
+     * @return mixed
      */
-    public function __get($name)
+    public function __get(string $name)
     {
         Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
 
@@ -56,7 +58,7 @@ class Config
      *
      * @return mixed
      */
-    public function get($name, $file = 'general')
+    public function get(string $name, string $file = 'general')
     {
         Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.get() instead.');
 
@@ -66,25 +68,25 @@ class Config
     /**
      * Returns whether generated URLs should be formatted using PATH_INFO.
      *
-     * @return boolean
+     * @return bool
      */
-    public function usePathInfo()
+    public function usePathInfo(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo instead.');
 
-        return Craft::$app->getConfig()->usePathInfo();
+        return Craft::$app->getConfig()->getUsePathInfo();
     }
 
     /**
      * Returns whether generated URLs should omit 'index.php'.
      *
-     * @return boolean
+     * @return bool
      */
-    public function omitScriptNameInUrls()
+    public function omitScriptNameInUrls(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls instead.');
 
-        return Craft::$app->getConfig()->omitScriptNameInUrls();
+        return Craft::$app->getConfig()->getOmitScriptNameInUrls();
     }
 
     /**
@@ -92,9 +94,9 @@ class Config
      *
      * @return string
      */
-    public function getResourceTrigger()
+    public function getResourceTrigger(): string
     {
-        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.getResourceTrigger() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.resourceTrigger instead.');
 
         return Craft::$app->getConfig()->getResourceTrigger();
     }

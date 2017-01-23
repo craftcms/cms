@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Reorder Sites event class.
  *
@@ -19,7 +21,7 @@ class ReorderSitesEvent extends Event
     // =========================================================================
 
     /**
-     * @var integer[] The site IDs in their new order
+     * @var int[]|null The site IDs in their new order
      */
     public $siteIds;
 }

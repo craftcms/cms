@@ -1,80 +1,70 @@
 (function($) {
+    /** global: Craft */
+    /** global: Garnish */
+    Craft.AccountSettingsForm = Garnish.Base.extend(
+        {
+            userId: null,
+            isCurrent: null,
 
+            $copyPasswordResetUrlBtn: null,
+            $actionSpinner: null,
 
-Craft.AccountSettingsForm = Garnish.Base.extend(
-{
-	userId: null,
-	isCurrent: null,
+            confirmDeleteModal: null,
+            $deleteBtn: null,
 
-	$copyPasswordResetUrlBtn: null,
-	$actionSpinner: null,
+            init: function(userId, isCurrent, settings) {
+                this.userId = userId;
+                this.isCurrent = isCurrent;
 
-	confirmDeleteModal: null,
-	$deleteBtn: null,
+                this.setSettings(settings, Craft.AccountSettingsForm.defaults);
 
-	init: function(userId, isCurrent, settings)
-	{
-		this.userId = userId;
-		this.isCurrent = isCurrent;
+                this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
+                this.$actionSpinner = $('#action-spinner');
+                this.$deleteBtn = $('#delete-btn');
 
-		this.setSettings(settings, Craft.AccountSettingsForm.defaults);
+                this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
+                this.addListener(this.$deleteBtn, 'click', 'showConfirmDeleteModal');
+            },
 
-		this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
-		this.$actionSpinner = $('#action-spinner');
-		this.$deleteBtn = $('#delete-btn');
+            handleCopyPasswordResetUrlBtnClick: function() {
+                // Requires an elevated session
+                Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'getPasswordResetUrl'));
+            },
 
-		this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
-		this.addListener(this.$deleteBtn, 'click', 'showConfirmDeleteModal');
-	},
+            getPasswordResetUrl: function() {
+                this.$actionSpinner.removeClass('hidden');
 
-	handleCopyPasswordResetUrlBtnClick: function()
-	{
-		// Requires an elevated session
-		Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'getPasswordResetUrl'));
-	},
+                var data = {
+                    userId: this.userId
+                };
 
-	getPasswordResetUrl: function()
-	{
-		this.$actionSpinner.removeClass('hidden');
+                Craft.postActionRequest('users/get-password-reset-url', data, $.proxy(function(response, textStatus) {
+                    this.$actionSpinner.addClass('hidden');
 
-		var data = {
-			userId: this.userId
-		};
+                    if (textStatus == 'success') {
+                        var message = Craft.t('app', '{ctrl}C to copy.', {
+                            ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+                        });
 
-		Craft.postActionRequest('users/get-password-reset-url', data, $.proxy(function(response, textStatus)
-		{
-			this.$actionSpinner.addClass('hidden');
+                        prompt(message, response);
+                    }
+                }, this));
+            },
 
-			if (textStatus == 'success')
-			{
-				var message = Craft.t('app', '{ctrl}C to copy.', {
-					ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
-				});
-
-				prompt(message, response);
-			}
-		}, this));
-	},
-
-	showConfirmDeleteModal: function()
-	{
-		if (!this.confirmDeleteModal)
-		{
-			this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
-				redirect: this.settings.deleteModalRedirect
-			});
-		}
-		else
-		{
-			this.confirmDeleteModal.show();
-		}
-	}
-},
-{
-	defaults: {
-		deleteModalRedirect: null
-	}
-});
-
-
+            showConfirmDeleteModal: function() {
+                if (!this.confirmDeleteModal) {
+                    this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
+                        redirect: this.settings.deleteModalRedirect
+                    });
+                }
+                else {
+                    this.confirmDeleteModal.show();
+                }
+            }
+        },
+        {
+            defaults: {
+                deleteModalRedirect: null
+            }
+        });
 })(jQuery);

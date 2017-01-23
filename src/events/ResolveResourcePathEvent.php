@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * ResolveResourcePathEvent class.
  *
@@ -24,7 +26,7 @@ class ResolveResourcePathEvent extends Event
     public $uri;
 
     /**
-     * @var string The file path that the URI should resolve to.
+     * @var string|null The file path that the URI should resolve to.
      */
     public $path;
 }

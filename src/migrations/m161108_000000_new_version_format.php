@@ -5,7 +5,6 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\MigrationHelper;
 
 /**
  * m161108_000000_new_version_format migration.
@@ -55,6 +54,8 @@ class m161108_000000_new_version_format extends Migration
         // Update the info model
         $info = Craft::$app->getInfo();
         $info->version = $version;
+
+        return true;
     }
 
     /**

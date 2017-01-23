@@ -26,6 +26,7 @@ class Environment extends \Twig_Environment
     public function loadTemplate($name, $index = null)
     {
         try {
+            /** @noinspection PhpInternalEntityUsedInspection */
             return parent::loadTemplate($name, $index);
         } catch (\Twig_Error $e) {
             if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
@@ -42,11 +43,11 @@ class Environment extends \Twig_Environment
     /**
      * @inheritdoc
      */
-    public function compileSource($source, $name = null)
+    public function compileSource(\Twig_Source $source)
     {
-        Craft::beginProfile($name, __METHOD__);
-        $result = parent::compileSource($source, $name);
-        Craft::endProfile($name, __METHOD__);
+        Craft::beginProfile($source->getName(), __METHOD__);
+        $result = parent::compileSource($source);
+        Craft::endProfile($source->getName(), __METHOD__);
 
         return $result;
     }

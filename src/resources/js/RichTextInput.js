@@ -1,427 +1,368 @@
-(function($){
+(function($) {
+    /** global: Craft */
+    /** global: Garnish */
+    /**
+     * Rich Text input class
+     */
+    Craft.RichTextInput = Garnish.Base.extend(
+        {
+            id: null,
+            linkOptions: null,
+            volumes: null,
+            elementSiteId: null,
+            redactorConfig: null,
 
+            $textarea: null,
+            redactor: null,
+            linkOptionModals: null,
 
-	/**
-	 * Rich Text input class
-	 */
-	Craft.RichTextInput = Garnish.Base.extend(
-		{
-			id: null,
-			linkOptions: null,
-			volumes: null,
-			elementSiteId: null,
-			redactorConfig: null,
+            init: function(settings) {
+                this.id = settings.id;
+                this.linkOptions = settings.linkOptions;
+                this.volumes = settings.volumes;
+                this.transforms = settings.transforms;
+                this.elementSiteId = settings.elementSiteId;
+                this.redactorConfig = settings.redactorConfig;
 
-			$textarea: null,
-			redactor: null,
-			linkOptionModals: null,
+                this.linkOptionModals = [];
 
-			init: function(settings)
-			{
-				this.id = settings.id;
-				this.linkOptions = settings.linkOptions;
-				this.volumes = settings.volumes;
-				this.transforms = settings.transforms;
-				this.elementSiteId = settings.elementSiteId;
-				this.redactorConfig = settings.redactorConfig;
+                if (!this.redactorConfig.lang) {
+                    this.redactorConfig.lang = settings.redactorLang;
+                }
 
-				this.linkOptionModals = [];
+                if (!this.redactorConfig.direction) {
+                    this.redactorConfig.direction = (settings.direction || Craft.orientation);
+                }
 
-				if (!this.redactorConfig.lang)
-				{
-					this.redactorConfig.lang = settings.redactorLang;
-				}
+                this.redactorConfig.imageUpload = true;
+                this.redactorConfig.fileUpload = true;
+                this.redactorConfig.dragImageUpload = false;
+                this.redactorConfig.dragFileUpload = false;
+                this.redactorConfig.toolbarFixedTopOffset = 72;
 
-				if (!this.redactorConfig.direction)
-				{
-					this.redactorConfig.direction = (settings.direction || Craft.orientation);
-				}
+                // Prevent a JS error when calling core.destroy() when opts.plugins == false
+                if (typeof this.redactorConfig.plugins !== typeof []) {
+                    this.redactorConfig.plugins = [];
+                }
 
-				this.redactorConfig.imageUpload = true;
-				this.redactorConfig.fileUpload = true;
-				this.redactorConfig.dragImageUpload = false;
-				this.redactorConfig.dragFileUpload = false;
-				this.redactorConfig.toolbarFixedTopOffset = 72;
+                // Redactor I config setting normalization
+                if (this.redactorConfig.buttons) {
+                    var index;
 
-				// Prevent a JS error when calling core.destroy() when opts.plugins == false
-				if (typeof this.redactorConfig.plugins !== typeof [])
-				{
-					this.redactorConfig.plugins = [];
-				}
+                    // buttons.html => plugins.source
+                    if ((index = $.inArray('html', this.redactorConfig.buttons)) !== -1) {
+                        this.redactorConfig.buttons.splice(index, 1);
+                        this.redactorConfig.plugins.unshift('source');
+                    }
 
-				// Redactor I config setting normalization
-				if (this.redactorConfig.buttons)
-				{
-					var index;
+                    // buttons.formatting => buttons.format
+                    if ((index = $.inArray('formatting', this.redactorConfig.buttons)) !== -1) {
+                        this.redactorConfig.buttons.splice(index, 1, 'format');
+                    }
 
-					// buttons.html => plugins.source
-					if ((index = $.inArray('html', this.redactorConfig.buttons)) !== -1)
-					{
-						this.redactorConfig.buttons.splice(index, 1);
-						this.redactorConfig.plugins.unshift('source');
-					}
+                    // buttons.unorderedlist/orderedlist/undent/indent => buttons.lists
+                    var oldListButtons = ['unorderedlist', 'orderedlist', 'undent', 'indent'],
+                        lowestListButtonIndex;
 
-					// buttons.formatting => buttons.format
-					if ((index = $.inArray('formatting', this.redactorConfig.buttons)) !== -1)
-					{
-						this.redactorConfig.buttons.splice(index, 1, 'format');
-					}
+                    for (var i = 0; i < oldListButtons.length; i++) {
+                        if ((index = $.inArray(oldListButtons[i], this.redactorConfig.buttons)) !== -1) {
+                            this.redactorConfig.buttons.splice(index, 1);
 
-					// buttons.unorderedlist/orderedlist/undent/indent => buttons.lists
-					var oldListButtons = ['unorderedlist', 'orderedlist', 'undent', 'indent'],
-						lowestListButtonIndex;
+                            if (lowestListButtonIndex === undefined || index < lowestListButtonIndex) {
+                                lowestListButtonIndex = index;
+                            }
+                        }
+                    }
 
-					for (var i = 0; i < oldListButtons.length; i++)
-					{
-						if ((index = $.inArray(oldListButtons[i], this.redactorConfig.buttons)) !== -1)
-						{
-							this.redactorConfig.buttons.splice(index, 1);
+                    if (lowestListButtonIndex !== undefined) {
+                        this.redactorConfig.buttons.splice(lowestListButtonIndex, 0, 'lists');
+                    }
+                }
 
-							if (typeof lowestListButtonIndex == typeof undefined || index < lowestListButtonIndex)
-							{
-								lowestListButtonIndex = index;
-							}
-						}
-					}
+                var callbacks = {
+                    init: Craft.RichTextInput.handleRedactorInit
+                };
 
-					if (typeof lowestListButtonIndex != typeof undefined)
-					{
-						this.redactorConfig.buttons.splice(lowestListButtonIndex, 0, 'lists');
-					}
-				}
+                if (typeof this.redactorConfig.callbacks == typeof []) {
+                    // Merge them together
+                    for (var i in callbacks) {
+                        if (this.redactorConfig.callbacks[i] !== undefined) {
+                            this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
+                        }
+                    }
+                }
+                else {
+                    this.redactorConfig.callbacks = callbacks;
+                }
 
-				var callbacks = {
-					init: Craft.RichTextInput.handleRedactorInit
-				};
+                // Initialize Redactor
+                this.$textarea = $('#' + this.id);
 
-				if (typeof this.redactorConfig.callbacks == typeof [])
-				{
-					// Merge them together
-					for (var i in callbacks)
-					{
-						if (typeof this.redactorConfig.callbacks[i] != typeof undefined)
-						{
-							this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
-						}
-					}
-				}
-				else
-				{
-					this.redactorConfig.callbacks = callbacks;
-				}
+                this.initRedactor();
 
-				// Initialize Redactor
-				this.$textarea = $('#'+this.id);
+                if (Craft.livePreview !== undefined) {
+                    // There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
+                    Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function() {
+                        this.redactor.core.destroy();
+                    }, this));
 
-				this.initRedactor();
+                    Craft.livePreview.on('enter slideOut', $.proxy(function() {
+                        this.initRedactor();
+                    }, this));
+                }
+            },
 
-				if (typeof Craft.livePreview != 'undefined')
-				{
-					// There's a UI glitch if Redactor is in Code view when Live Preview is shown/hidden
-					Craft.livePreview.on('beforeEnter beforeExit', $.proxy(function()
-					{
-						this.redactor.core.destroy();
-					}, this));
+            mergeCallbacks: function(callback1, callback2) {
+                return function() {
+                    callback1.apply(this, arguments);
+                    callback2.apply(this, arguments);
+                };
+            },
 
-					Craft.livePreview.on('enter slideOut', $.proxy(function()
-					{
-						this.initRedactor();
-					}, this));
-				}
-			},
+            initRedactor: function() {
+                Craft.RichTextInput.currentInstance = this;
+                this.$textarea.redactor(this.redactorConfig);
+                delete Craft.RichTextInput.currentInstance;
+            },
 
-			mergeCallbacks: function(callback1, callback2)
-			{
-				return function() {
-					callback1.apply(this, arguments);
-					callback2.apply(this, arguments);
-				};
-			},
+            onInitRedactor: function(redactor) {
+                this.redactor = redactor;
 
-			initRedactor: function()
-			{
-				Craft.RichTextInput.currentInstance = this;
-				this.$textarea.redactor(this.redactorConfig);
-				delete Craft.RichTextInput.currentInstance;
-			},
+                // Only customize the toolbar if there is one,
+                // otherwise we get a JS error due to redactor.$toolbar being undefined
+                if (this.redactor.opts.toolbar) {
+                    this.customizeToolbar();
+                }
 
-			onInitRedactor: function(redactor)
-			{
-				this.redactor = redactor;
+                this.leaveFullscreetOnSaveShortcut();
 
-				// Only customize the toolbar if there is one,
-				// otherwise we get a JS error due to redactor.$toolbar being undefined
-				if (this.redactor.opts.toolbar)
-				{
-					this.customizeToolbar();
-				}
+                this.redactor.core.editor()
+                    .on('focus', $.proxy(this, 'onEditorFocus'))
+                    .on('blur', $.proxy(this, 'onEditorBlur'));
 
-				this.leaveFullscreetOnSaveShortcut();
+                if (this.redactor.opts.toolbarFixed && !Craft.RichTextInput.scrollPageOnReady) {
+                    Garnish.$doc.on('ready', function() {
+                        Garnish.$doc.trigger('scroll');
+                    });
 
-				this.redactor.core.editor()
-					.on('focus', $.proxy(this, 'onEditorFocus'))
-					.on('blur', $.proxy(this, 'onEditorBlur'));
+                    Craft.RichTextInput.scrollPageOnReady = true;
+                }
+            },
 
-				if (this.redactor.opts.toolbarFixed && !Craft.RichTextInput.scrollPageOnReady)
-				{
-					Garnish.$doc.on('ready', function() {
-						Garnish.$doc.trigger('scroll');
-					});
+            customizeToolbar: function() {
+                // Override the Image and File buttons?
+                if (this.volumes.length) {
+                    var $imageBtn = this.replaceRedactorButton('image', this.redactor.lang.get('image')),
+                        $fileBtn = this.replaceRedactorButton('file', this.redactor.lang.get('file'));
 
-					Craft.RichTextInput.scrollPageOnReady = true;
-				}
-			},
+                    if ($imageBtn) {
+                        this.redactor.button.addCallback($imageBtn, $.proxy(this, 'onImageButtonClick'));
+                    }
 
-			customizeToolbar: function()
-			{
-				// Override the Image and File buttons?
-				if (this.volumes.length)
-				{
-					var $imageBtn = this.replaceRedactorButton('image', this.redactor.lang.get('image')),
-						$fileBtn = this.replaceRedactorButton('file', this.redactor.lang.get('file'));
+                    if ($fileBtn) {
+                        this.redactor.button.addCallback($fileBtn, $.proxy(this, 'onFileButtonClick'));
+                    }
+                }
+                else {
+                    // Image and File buttons aren't supported
+                    this.redactor.button.remove('image');
+                    this.redactor.button.remove('file');
+                }
 
-					if ($imageBtn)
-					{
-						this.redactor.button.addCallback($imageBtn, $.proxy(this, 'onImageButtonClick'));
-					}
+                // Override the Link button?
+                if (this.linkOptions.length) {
+                    var $linkBtn = this.replaceRedactorButton('link', this.redactor.lang.get('link'));
 
-					if ($fileBtn)
-					{
-						this.redactor.button.addCallback($fileBtn, $.proxy(this, 'onFileButtonClick'));
-					}
-				}
-				else
-				{
-					// Image and File buttons aren't supported
-					this.redactor.button.remove('image');
-					this.redactor.button.remove('file');
-				}
+                    if ($linkBtn) {
+                        var dropdownOptions = {};
 
-				// Override the Link button?
-				if (this.linkOptions.length)
-				{
-					var $linkBtn = this.replaceRedactorButton('link', this.redactor.lang.get('link'));
+                        for (var i = 0; i < this.linkOptions.length; i++) {
+                            dropdownOptions['link_option' + i] = {
+                                title: this.linkOptions[i].optionTitle,
+                                func: $.proxy(this, 'onLinkOptionClick', i)
+                            };
+                        }
 
-					if ($linkBtn)
-					{
-						var dropdownOptions = {};
+                        // Add the default Link options
+                        $.extend(dropdownOptions, {
+                            link: {
+                                title: this.redactor.lang.get('link-insert'),
+                                func: 'link.show',
+                                observe: {
+                                    element: 'a',
+                                    in: {
+                                        title: this.redactor.lang.get('link-edit'),
+                                    },
+                                    out: {
+                                        title: this.redactor.lang.get('link-insert')
+                                    }
+                                }
+                            },
+                            unlink: {
+                                title: this.redactor.lang.get('unlink'),
+                                func: 'link.unlink',
+                                observe: {
+                                    element: 'a',
+                                    out: {
+                                        attr: {
+                                            'class': 'redactor-dropdown-link-inactive',
+                                            'aria-disabled': true
+                                        }
+                                    }
+                                }
+                            }
+                        });
 
-						for (var i = 0; i < this.linkOptions.length; i++)
-						{
-							dropdownOptions['link_option'+i] = {
-								title: this.linkOptions[i].optionTitle,
-								func: $.proxy(this, 'onLinkOptionClick', i)
-							};
-						}
+                        this.redactor.button.addDropdown($linkBtn, dropdownOptions);
+                    }
+                }
+            },
 
-						// Add the default Link options
-						$.extend(dropdownOptions, {
-							link:
-							{
-								title: this.redactor.lang.get('link-insert'),
-								func: 'link.show',
-								observe: {
-									element: 'a',
-									in: {
-										title: this.redactor.lang.get('link-edit'),
-									},
-									out: {
-										title: this.redactor.lang.get('link-insert')
-									}
-								}
-							},
-							unlink:
-							{
-								title: this.redactor.lang.get('unlink'),
-								func: 'link.unlink',
-								observe: {
-									element: 'a',
-									out: {
-										attr: {
-											'class': 'redactor-dropdown-link-inactive',
-											'aria-disabled': true
-										}
-									}
-								}
-							}
-						});
+            onImageButtonClick: function() {
+                this.redactor.selection.save();
 
-						this.redactor.button.addDropdown($linkBtn, dropdownOptions);
-					}
-				}
-			},
+                if (this.assetSelectionModal === undefined) {
+                    this.assetSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
+                        storageKey: 'RichTextFieldType.ChooseImage',
+                        multiSelect: true,
+                        sources: this.volumes,
+                        criteria: {siteId: this.elementSiteId, kind: 'image'},
+                        onSelect: $.proxy(function(assets, transform) {
+                            if (assets.length) {
+                                this.redactor.selection.restore();
+                                for (var i = 0; i < assets.length; i++) {
+                                    var asset = assets[i],
+                                        url = asset.url + '#asset:' + asset.id;
 
-			onImageButtonClick: function()
-			{
-				this.redactor.selection.save();
+                                    if (transform) {
+                                        url += ':' + transform;
+                                    }
 
-				if (typeof this.assetSelectionModal == 'undefined')
-				{
-					this.assetSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
-						storageKey: 'RichTextFieldType.ChooseImage',
-						multiSelect: true,
-						sources: this.volumes,
-						criteria: { siteId: this.elementSiteId, kind: 'image' },
-						onSelect: $.proxy(function(assets, transform)
-						{
-							if (assets.length)
-							{
-								this.redactor.selection.restore();
-								for (var i = 0; i < assets.length; i++)
-								{
-									var asset = assets[i],
-										url   = asset.url+'#asset:'+asset.id;
+                                    this.redactor.insert.node($('<img src="' + url + '" />')[0]);
+                                    this.redactor.code.sync();
+                                }
+                                this.redactor.observe.images();
+                            }
+                        }, this),
+                        closeOtherModals: false,
+                        transforms: this.transforms
+                    });
+                }
+                else {
+                    this.assetSelectionModal.show();
+                }
+            },
 
-									if (transform)
-									{
-										url += ':'+transform;
-									}
+            onFileButtonClick: function() {
+                this.redactor.selection.save();
 
-									this.redactor.insert.node($('<img src="'+url+'" />')[0]);
-									this.redactor.code.sync();
-								}
-								this.redactor.observe.images();
-							}
-						}, this),
-						closeOtherModals: false,
-						transforms: this.transforms
-					});
-				}
-				else
-				{
-					this.assetSelectionModal.show();
-				}
-			},
+                if (this.assetLinkSelectionModal === undefined) {
+                    this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
+                        storageKey: 'RichTextFieldType.LinkToAsset',
+                        sources: this.volumes,
+                        criteria: {siteId: this.elementSiteId},
+                        onSelect: $.proxy(function(assets) {
+                            if (assets.length) {
+                                this.redactor.selection.restore();
+                                var asset = assets[0],
+                                    url = asset.url + '#asset:' + asset.id,
+                                    selection = this.redactor.selection.text(),
+                                    title = selection.length > 0 ? selection : asset.label;
+                                this.redactor.insert.node($('<a href="' + url + '">' + title + '</a>')[0]);
+                                this.redactor.code.sync();
+                            }
+                        }, this),
+                        closeOtherModals: false,
+                        transforms: this.transforms
+                    });
+                }
+                else {
+                    this.assetLinkSelectionModal.show();
+                }
+            },
 
-			onFileButtonClick: function()
-			{
-				this.redactor.selection.save();
+            onLinkOptionClick: function(key) {
+                this.redactor.selection.save();
 
-				if (typeof this.assetLinkSelectionModal == 'undefined')
-				{
-					this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
-						storageKey: 'RichTextFieldType.LinkToAsset',
-						sources: this.volumes,
-						criteria: { siteId: this.elementSiteId },
-						onSelect: $.proxy(function(assets)
-						{
-							if (assets.length)
-							{
-								this.redactor.selection.restore();
-								var asset     = assets[0],
-									url       = asset.url+'#asset:'+asset.id,
-									selection = this.redactor.selection.text(),
-									title     = selection.length > 0 ? selection : asset.label;
-								this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-								this.redactor.code.sync();
-							}
-						}, this),
-						closeOtherModals: false,
-						transforms: this.transforms
-					});
-				}
-				else
-				{
-					this.assetLinkSelectionModal.show();
-				}
-			},
+                if (this.linkOptionModals[key] === undefined) {
+                    var settings = this.linkOptions[key];
 
-			onLinkOptionClick: function(key)
-			{
-				this.redactor.selection.save();
+                    this.linkOptionModals[key] = Craft.createElementSelectorModal(settings.elementType, {
+                        storageKey: (settings.storageKey || 'RichTextFieldType.LinkTo' + settings.elementType),
+                        sources: settings.sources,
+                        criteria: $.extend({siteId: this.elementSiteId}, settings.criteria),
+                        onSelect: $.proxy(function(elements) {
+                            if (elements.length) {
+                                this.redactor.selection.restore();
+                                var element = elements[0],
+                                    elementTypeHandle = settings.elementType.replace(/^\w|_\w/g, function(match) {
+                                        return match.toLowerCase();
+                                    }),
+                                    url = element.url + '#' + elementTypeHandle + ':' + element.id,
+                                    selection = this.redactor.selection.text(),
+                                    title = selection.length > 0 ? selection : element.label;
+                                this.redactor.insert.node($('<a href="' + url + '">' + title + '</a>')[0]);
+                                this.redactor.code.sync();
+                            }
+                        }, this),
+                        closeOtherModals: false
+                    });
+                }
+                else {
+                    this.linkOptionModals[key].show();
+                }
+            },
 
-				if (typeof this.linkOptionModals[key] == typeof undefined)
-				{
-					var settings = this.linkOptions[key];
-
-					this.linkOptionModals[key] = Craft.createElementSelectorModal(settings.elementType, {
-						storageKey: (settings.storageKey || 'RichTextFieldType.LinkTo'+settings.elementType),
-						sources: settings.sources,
-						criteria: $.extend({ siteId: this.elementSiteId }, settings.criteria),
-						onSelect: $.proxy(function(elements)
-						{
-							if (elements.length)
-							{
-								this.redactor.selection.restore();
-								var element   = elements[0],
-									elementTypeHandle = settings.elementType.replace(/^\w|_\w/g, function (match) { return match.toLowerCase(); }),
-									url       = element.url+'#'+elementTypeHandle+':'+element.id,
-									selection = this.redactor.selection.text(),
-									title = selection.length > 0 ? selection : element.label;
-								this.redactor.insert.node($('<a href="'+url+'">'+title+'</a>')[0]);
-								this.redactor.code.sync();
-							}
-						}, this),
-						closeOtherModals: false
-					});
-				}
-				else
-				{
-					this.linkOptionModals[key].show();
-				}
-			},
-
-            onEditorFocus: function()
-            {
+            onEditorFocus: function() {
                 this.redactor.core.box().addClass('focus');
                 this.redactor.core.box().trigger('focus');
             },
 
-            onEditorBlur: function()
-            {
+            onEditorBlur: function() {
                 this.redactor.core.box().removeClass('focus');
                 this.redactor.core.box().trigger('blur');
             },
 
-			leaveFullscreetOnSaveShortcut: function()
-			{
-				if (typeof this.redactor.fullscreen != 'undefined' && typeof this.redactor.fullscreen.disable == 'function')
-				{
-					Craft.cp.on('beforeSaveShortcut', $.proxy(function()
-					{
-						if (this.redactor.fullscreen.isOpen)
-						{
-							this.redactor.fullscreen.disable();
-						}
-					}, this));
-				}
-			},
+            leaveFullscreetOnSaveShortcut: function() {
+                if (this.redactor.fullscreen !== undefined && typeof this.redactor.fullscreen.disable == 'function') {
+                    Craft.cp.on('beforeSaveShortcut', $.proxy(function() {
+                        if (this.redactor.fullscreen.isOpen) {
+                            this.redactor.fullscreen.disable();
+                        }
+                    }, this));
+                }
+            },
 
-			replaceRedactorButton: function(key, title)
-			{
-				// Ignore if the button isn't in use
-				if (!this.redactor.button.get(key).length)
-				{
-					return;
-				}
+            replaceRedactorButton: function(key, title) {
+                // Ignore if the button isn't in use
+                if (!this.redactor.button.get(key).length) {
+                    return;
+                }
 
-				// Create a placeholder button
-				var placeholderKey = key+'_placeholder';
-				this.redactor.button.addAfter(key, placeholderKey);
+                // Create a placeholder button
+                var placeholderKey = key + '_placeholder';
+                this.redactor.button.addAfter(key, placeholderKey);
 
-				// Remove the original
-				this.redactor.button.remove(key);
+                // Remove the original
+                this.redactor.button.remove(key);
 
-				// Add the new one
-				var $btn = this.redactor.button.addAfter(placeholderKey, key, title);
+                // Add the new one
+                var $btn = this.redactor.button.addAfter(placeholderKey, key, title);
 
-				// Set the dropdown
-				//this.redactor.button.addDropdown($btn, dropdown);
+                // Set the dropdown
+                //this.redactor.button.addDropdown($btn, dropdown);
 
-				// Remove the placeholder
-				this.redactor.button.remove(placeholderKey);
+                // Remove the placeholder
+                this.redactor.button.remove(placeholderKey);
 
-				return $btn;
-			}
-		},
-		{
-			handleRedactorInit: function()
-			{
-				// `this` is the current Redactor instance.
-				// `Craft.RichTextInput.currentInstance` is the current RichTextInput instance
-				Craft.RichTextInput.currentInstance.onInitRedactor(this);
-			}
-		});
-
-
+                return $btn;
+            }
+        },
+        {
+            handleRedactorInit: function() {
+                // `this` is the current Redactor instance.
+                // `Craft.RichTextInput.currentInstance` is the current RichTextInput instance
+                Craft.RichTextInput.currentInstance.onInitRedactor(this);
+            }
+        });
 })(jQuery);

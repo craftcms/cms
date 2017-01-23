@@ -25,32 +25,32 @@ class RebrandEmail extends Model
     // =========================================================================
 
     /**
-     * @var string Key
+     * @var string|null Key
      */
     public $key;
 
     /**
-     * @var string Language
+     * @var string|null Language
      */
     public $language;
 
     /**
-     * @var string Subject
+     * @var string|null Subject
      */
     public $subject;
 
     /**
-     * @var string Body
+     * @var string|null Body
      */
     public $body;
 
     /**
-     * @var string Html body
+     * @var string|null Html body
      */
     public $htmlBody;
 
     /**
-     * @var string Heading
+     * @var string|null Heading
      */
     public $heading;
 

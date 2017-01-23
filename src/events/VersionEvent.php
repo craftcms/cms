@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Entry;
+use yii\base\Event;
 
 /**
  * Entry event class.
@@ -21,7 +22,7 @@ class VersionEvent extends Event
     // =========================================================================
 
     /**
-     * @var Entry The entry version associated with the event.
+     * @var Entry|null The entry version associated with the event.
      */
     public $version;
 }

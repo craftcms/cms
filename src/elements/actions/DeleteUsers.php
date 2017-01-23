@@ -26,7 +26,7 @@ class DeleteUsers extends ElementAction
     // =========================================================================
 
     /**
-     * @var integer The user ID that the deleted user’s content should be transferred to
+     * @var int|null The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
 
@@ -36,7 +36,7 @@ class DeleteUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Delete…');
     }
@@ -44,7 +44,7 @@ class DeleteUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return true;
     }
@@ -56,42 +56,42 @@ class DeleteUsers extends ElementAction
     {
         $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
-        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'));
+        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: true,
-		validateSelection: function(\$selectedItems)
-		{
-			for (var i = 0; i < \$selectedItems.length; i++)
-			{
-				if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
-				{
-					return false;
-				}
-			}
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: true,
+        validateSelection: function(\$selectedItems)
+        {
+            for (var i = 0; i < \$selectedItems.length; i++)
+            {
+                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
+                {
+                    return false;
+                }
+            }
 
-			return true;
-		},
-		activate: function(\$selectedItems)
-		{
-			var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
-				onSubmit: function()
-				{
-					Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
-					modal.hide();
+            return true;
+        },
+        activate: function(\$selectedItems)
+        {
+            var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
+                onSubmit: function()
+                {
+                    Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
+                    modal.hide();
 
-					return false;
-				},
-				redirect: {$redirect}
-			});
-		}
-	});
+                    return false;
+                },
+                redirect: {$redirect}
+            });
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }
@@ -99,7 +99,7 @@ EOT;
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var User[] $users */
         $users = $query->all();
@@ -122,7 +122,7 @@ EOT;
 
         // Delete the users
         foreach ($users as $user) {
-            if (!in_array($user->id, $undeletableIds)) {
+            if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
                 Craft::$app->getElements()->deleteElement($user);
             }
@@ -141,7 +141,7 @@ EOT;
      *
      * @return array
      */
-    private function _getUndeletableUserIds()
+    private function _getUndeletableUserIds(): array
     {
         if (!Craft::$app->getUser()->getIsAdmin()) {
             // Only admins can delete other admins

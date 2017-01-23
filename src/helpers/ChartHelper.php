@@ -10,8 +10,8 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Connection;
 use craft\db\Query;
-use craft\dates\DateTime;
 use craft\services\Config;
+use DateTime;
 use yii\base\Exception;
 
 
@@ -39,16 +39,16 @@ class ChartHelper
      *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
-     * @param Query      $query      The DB query that should be used
-     * @param DateTime   $startDate  The start of the time duration to select (inclusive)
-     * @param DateTime   $endDate    The end of the time duration to select (exclusive)
-     * @param string     $dateColumn The column that represents the date
-     * @param array|null $options    Any customizations that should be made over the default options
+     * @param Query    $query      The DB query that should be used
+     * @param DateTime $startDate  The start of the time duration to select (inclusive)
+     * @param DateTime $endDate    The end of the time duration to select (exclusive)
+     * @param string   $dateColumn The column that represents the date
+     * @param array    $options    Any customizations that should be made over the default options
      *
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, $options = [])
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, array $options = []): array
     {
         // Setup
         $options = array_merge([
@@ -62,7 +62,7 @@ class ChartHelper
 
         $craftTimezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
-        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'])) {
+        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
         } else {
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
@@ -182,7 +182,6 @@ class ChartHelper
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             // Do we have a record for this date?
-            // $formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
             $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
             if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate) {
@@ -199,7 +198,7 @@ class ChartHelper
         return [
             'columns' => [
                 [
-                    'type' => ($intervalUnit == 'hour' ? 'datetime' : 'date'),
+                    'type' => $intervalUnit === 'hour' ? 'datetime' : 'date',
                     'label' => $options['categoryLabel']
                 ],
                 [
@@ -219,10 +218,10 @@ class ChartHelper
      *
      * @return string The unit that the chart should use ('hour', 'day', 'month', or 'year')
      */
-    public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate)
+    public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate): string
     {
         // Get the total number of days between the two dates
-        $days = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / 86400);
+        $days = $endDate->diff($startDate)->format('%a');
 
         if ($days >= 730) {
             return 'year';
@@ -244,7 +243,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function formats()
+    public static function formats(): array
     {
         return [
             'shortDateFormats' => self::shortDateFormats(),
@@ -259,7 +258,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function shortDateFormats()
+    public static function shortDateFormats(): array
     {
         $format = Craft::$app->getLocale()->getDateFormat('short');
 
@@ -313,7 +312,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function decimalFormat()
+    public static function decimalFormat(): string
     {
         return ',.3f';
     }
@@ -323,7 +322,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function percentFormat()
+    public static function percentFormat(): string
     {
         return ',.2%';
     }
@@ -333,7 +332,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function currencyFormat()
+    public static function currencyFormat(): string
     {
         return '$,.2f';
     }
@@ -343,7 +342,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function dateRanges()
+    public static function dateRanges(): array
     {
         $dateRanges = [
             'd7' => ['label' => Craft::t('app', 'Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],

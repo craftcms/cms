@@ -1,29 +1,7 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Craft CMS Update"|t('app') %}
 
-{% do craft.app.view.registerTranslations('app', [
-	"Unable to determine what to update.",
-	"An unknown error occurred. Rolling back…",
-	"All done!",
-	"Craft CMS was unable to install this update :(",
-	"The site has been restored to the state it was in before the attempted update.",
-	"An error has occurred.  Please contact {email}.",
-	"No files have been updated and the database has not been touched.",
-]) %}
-
 {% block body %}
-	{% registercssresource "css/update.css" %}
-	{% registerjsresource "js/update.js" %}
-
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Preparing to update…"|t('app') }}</div>
 {% endblock %}
-
-{% set data = {
-	handle: handle|hash,
-	manualUpdate: craft.request.getSegment(1) == 'manualupdate' ? 1 : 0
-} %}
-
-{% registerjs %}
-	new Craft.Updater({{ data|json_encode|raw }});
-{% endregisterjs %}

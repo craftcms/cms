@@ -7,17 +7,17 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
 use craft\validators\DateTimeValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Plugin record.
  *
- * @property integer     $id          ID
+ * @property int         $id          ID
  * @property string      $class       Class
  * @property string      $version     Version
- * @property boolean     $enabled     Enabled
+ * @property bool        $enabled     Enabled
  * @property array       $settings    Settings
  * @property \DateTime   $installDate Install date
  * @property Migration[] $migrations  Migrations
@@ -48,7 +48,7 @@ class Plugin extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%plugins}}';
     }
@@ -58,7 +58,7 @@ class Plugin extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getMigrations()
+    public function getMigrations(): ActiveQueryInterface
     {
         return $this->hasMany(Migration::class, ['pluginId' => 'id']);
     }

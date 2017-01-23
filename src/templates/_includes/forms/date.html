@@ -10,12 +10,12 @@
 		value: (value ? value|date('short') : '')
 	} -%}
 	{% if name -%}
-		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">
+		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
 	{%- endif -%}
 </div>
 
-{%- registerjs %}
+{%- js %}
 	$('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
 	defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
 	}, Craft.datepickerOptions));
-{%- endregisterjs %}
+{%- endjs %}

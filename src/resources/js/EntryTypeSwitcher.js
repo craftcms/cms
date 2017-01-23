@@ -1,50 +1,44 @@
 (function($) {
+    /** global: Craft */
+    /** global: Garnish */
+    Craft.EntryTypeSwitcher = Garnish.Base.extend(
+        {
+            $typeSelect: null,
+            $spinner: null,
+            $fields: null,
 
+            init: function() {
+                this.$typeSelect = $('#entryType');
+                this.$spinner = $('<div class="spinner hidden"/>').insertAfter(this.$typeSelect.parent());
+                this.$fields = $('#fields');
 
-Craft.EntryTypeSwitcher = Garnish.Base.extend(
-{
-	$typeSelect: null,
-	$spinner: null,
-	$fields: null,
+                this.addListener(this.$typeSelect, 'change', 'onTypeChange');
+            },
 
-	init: function()
-	{
-		this.$typeSelect = $('#entryType');
-		this.$spinner = $('<div class="spinner hidden"/>').insertAfter(this.$typeSelect.parent());
-		this.$fields = $('#fields');
+            onTypeChange: function(ev) {
+                this.$spinner.removeClass('hidden');
 
-		this.addListener(this.$typeSelect, 'change', 'onTypeChange');
-	},
+                Craft.postActionRequest('entries/switch-entry-type', Craft.cp.$container.serialize(), $.proxy(function(response, textStatus) {
+                    this.$spinner.addClass('hidden');
 
-	onTypeChange: function(ev)
-	{
-		this.$spinner.removeClass('hidden');
+                    if (textStatus == 'success') {
+                        var fieldsPane = this.$fields.data('pane');
+                        fieldsPane.deselectTab();
+                        this.$fields.html(response.paneHtml);
+                        fieldsPane.destroy();
+                        this.$fields.pane();
+                        Craft.initUiElements(this.$fields);
 
-		Craft.postActionRequest('entries/switch-entry-type', Craft.cp.$container.serialize(), $.proxy(function(response, textStatus) {
-			this.$spinner.addClass('hidden');
+                        Craft.appendHeadHtml(response.headHtml);
+                        Craft.appendFootHtml(response.footHtml);
 
-			if (textStatus == 'success')
-			{
-				var fieldsPane = this.$fields.data('pane');
-				fieldsPane.deselectTab();
-				this.$fields.html(response.paneHtml);
-				fieldsPane.destroy();
-				this.$fields.pane();
-				Craft.initUiElements(this.$fields);
+                        // Update the slug generator with the new title input
+                        if (typeof slugGenerator !== 'undefined') {
+                            slugGenerator.setNewSource('#title');
+                        }
+                    }
+                }, this));
+            }
 
-				Craft.appendHeadHtml(response.headHtml);
-				Craft.appendFootHtml(response.footHtml);
-
-				// Update the slug generator with the new title input
-				if (typeof slugGenerator != "undefined")
-				{
-					slugGenerator.setNewSource('#title');
-				}
-			}
-		}, this));
-	}
-
-});
-
-
+        });
 })(jQuery);

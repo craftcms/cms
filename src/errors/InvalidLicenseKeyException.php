@@ -18,18 +18,18 @@ use yii\base\Exception;
 class InvalidLicenseKeyException extends Exception
 {
     /**
-     * @var string The license key
+     * @var string|null The license key
      */
     public $licenseKey;
 
     /**
      * Constructor.
      *
-     * @param string  $licenseKey The invalid license key
-     * @param string  $message    The error message
-     * @param integer $code       The error code
+     * @param string      $licenseKey The invalid license key
+     * @param string|null $message    The error message
+     * @param int         $code       The error code
      */
-    public function __construct($licenseKey, $message = null, $code = 0)
+    public function __construct(string $licenseKey, string $message = null, int $code = 0)
     {
         $this->licenseKey = $licenseKey;
 
@@ -43,7 +43,7 @@ class InvalidLicenseKeyException extends Exception
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Invalid License Key';
     }

@@ -17,5 +17,5 @@ use yii\base\Exception;
  */
 class EtException extends Exception
 {
-    // $code = 10001 is that the craft/config folder isn't writable.
+    // $code = 10001 is that the config/ folder isn't writable.
 }

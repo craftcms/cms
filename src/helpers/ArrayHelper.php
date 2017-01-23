@@ -19,45 +19,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     // =========================================================================
 
     /**
-     * Converts an object, an array of objects, or a comma-delimited string into an array.
-     *
-     *     ArrayHelper::toArray('one, two, three') => ['one', 'two', 'three']
-     *
-     * @param array|object|string $object     The object, array or string to be converted into an array.
-     * @param array               $properties A mapping from object class names to the properties that need to put into
-     *                                        the resulting arrays. The properties specified for each class is an array
-     *                                        of the following format:
-     *
-     * ~~~
-     * [
-     *     'app\models\Post' => [
-     *         'id',
-     *         'title',
-     *         // the key name in array result => property name
-     *         'createTime' => 'created_at',
-     *         // the key name in array result => anonymous function
-     *         'length' => function ($post) {
-     *             return strlen($post->content);
-     *         },
-     *     ],
-     * ]
-     * ~~~
-     *
-     * The result of `ArrayHelper::toArray($post, $properties)` could be like the following:
-     *
-     * ~~~
-     * [
-     *     'id' => 123,
-     *     'title' => 'test',
-     *     'createTime' => '2013-01-01 12:00AM',
-     *     'length' => 301,
-     * ]
-     * ~~~
-     * @param boolean             $recursive  Whether to recursively converts properties which are objects into arrays.
-     *
-     * @return array The array representation of the given object.
+     * @inheritdoc
      */
-    public static function toArray($object, $properties = [], $recursive = true)
+    public static function toArray($object, $properties = [], $recursive = true): array
     {
         if ($object === null) {
             return [];
@@ -90,17 +54,17 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends or appends a value to an array.
      *
-     * @param array   &$arr
-     * @param mixed   $value
+     * @param array &$arr
+     * @param mixed $value
      *
-     * @param boolean $prepend
+     * @param bool  $prepend
      */
-    public static function prependOrAppend(&$arr, $value, $prepend)
+    public static function prependOrAppend(array &$arr, $value, bool $prepend)
     {
         if ($prepend) {
             array_unshift($arr, $value);
         } else {
-            array_push($arr, $value);
+            $arr[] = $value;
         }
     }
 
@@ -111,10 +75,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return array
      */
-    public static function filterEmptyStringsFromArray($arr)
+    public static function filterEmptyStringsFromArray(array $arr): array
     {
-        return array_filter($arr,
-            ['\craft\helpers\ArrayHelper', '_isNotAnEmptyString']);
+        return array_filter($arr, function($value): bool {
+            return $value !== '';
+        });
     }
 
     /**
@@ -122,11 +87,12 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @param array $arr
      *
-     * @return string|integer|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
+     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
      */
-    public static function firstKey($arr)
+    public static function firstKey(array $arr)
     {
         if (is_array($arr)) {
+            /** @noinspection LoopWhichDoesNotLoopInspection */
             foreach ($arr as $key => $value) {
                 return $key;
             }
@@ -136,35 +102,20 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
-     * Returns the first value in a given array.
+     * Renames an item in an array. If the new key already exists in the array and the old key doesn’t,
+     * the array will be left unchanged.
      *
-     * @param array $arr
+     * @param array  $array   the array to extract value from
+     * @param string $oldKey  old key name of the array element
+     * @param string $newKey  new key name of the array element
+     * @param mixed  $default the default value to be set if the specified old key does not exist
      *
-     * @return mixed|null
+     * @return void
      */
-    public static function firstValue($arr)
+    public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
     {
-        if (is_array($arr)) {
-            foreach ($arr as $value) {
-                return $value;
-            }
+        if (is_array($array) && (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array))) {
+            $array[$newKey] = static::remove($array, $oldKey, $default);
         }
-
-        return null;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * The array_filter() callback function for filterEmptyStringsFromArray().
-     *
-     * @param string $val
-     *
-     * @return boolean
-     */
-    private static function _isNotAnEmptyString($val)
-    {
-        return (mb_strlen($val) != 0);
     }
 }

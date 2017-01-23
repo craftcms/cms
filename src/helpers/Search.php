@@ -40,13 +40,13 @@ class Search
     /**
      * Normalizes search keywords.
      *
-     * @param string  $str            The dirty keywords
-     * @param array   $ignore         Ignore words to strip out
-     * @param boolean $processCharMap Whether to remove punctuation and diacritics (default is true)
+     * @param string[]|string $str            The dirty keywords
+     * @param array           $ignore         Ignore words to strip out
+     * @param bool            $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, $ignore = [], $processCharMap = true)
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true): string
     {
         // Flatten
         if (is_array($str)) {
@@ -60,14 +60,14 @@ class Search
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
 
         // Get rid of entities
-        $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
+        $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
         // Normalize to lowercase
         $str = StringHelper::toLowerCase($str);
 
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, static::_getCharMap());
+            $str = strtr($str, self::_getCharMap());
         }
 
         // Remove ignore-words?
@@ -92,15 +92,15 @@ class Search
      * Returns the FULLTEXT minimum word length.
      *
      * @todo Get actual value from DB
-     * @return integer
+     * @return int
      */
-    public static function minWordLength()
+    public static function minWordLength(): int
     {
-        if (!isset(static::$_ftMinWordLength)) {
-            static::$_ftMinWordLength = 4;
+        if (self::$_ftMinWordLength !== null) {
+            return self::$_ftMinWordLength;
         }
 
-        return static::$_ftMinWordLength;
+        return self::$_ftMinWordLength = 4;
     }
 
     /**
@@ -109,19 +109,18 @@ class Search
      * @todo Make this customizable from the config settings
      * @return array
      */
-    public static function stopWords()
+    public static function stopWords(): array
     {
-        if (!isset(static::$_ftStopWords)) {
-            $words = explode(' ', static::DEFAULT_STOP_WORDS);
-
-            foreach ($words as &$word) {
-                $word = static::normalizeKeywords($word);
-            }
-
-            static::$_ftStopWords = $words;
+        if (self::$_ftStopWords !== null) {
+            return self::$_ftStopWords;
         }
 
-        return static::$_ftStopWords;
+        $words = explode(' ', self::DEFAULT_STOP_WORDS);
+        foreach ($words as &$word) {
+            $word = self::normalizeKeywords($word);
+        }
+
+        return self::$_ftStopWords = $words;
     }
 
     // Private Methods
@@ -132,7 +131,7 @@ class Search
      *
      * @return array
      */
-    private static function _getCharMap()
+    private static function _getCharMap(): array
     {
         // Keep local copy
         static $map = [];
@@ -146,7 +145,7 @@ class Search
             }
 
             // Replace punctuation with a space
-            foreach (static::_getPunctuation() as $value) {
+            foreach (self::_getPunctuation() as $value) {
                 $map[$value] = ' ';
             }
         }
@@ -160,7 +159,7 @@ class Search
      *
      * @return array
      */
-    private static function _getPunctuation()
+    private static function _getPunctuation(): array
     {
         // Keep local copy
         static $asciiPunctuation = [];

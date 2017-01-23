@@ -5,12 +5,12 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into craft/config/filecache.php, and make your change there.
+ * If you want to change any of these settings, copy it into `config/filecache.php`, and make your change there.
  */
 
 return [
     /**
-     * The file system path to use for caching. If empty, Craft will default to craft/app/storage/runtime/cache.
+     * The file system path to use for caching. If empty, Craft will default to `storage/runtime/cache/`.
      */
     'cachePath' => '@runtime/cache',
     /**

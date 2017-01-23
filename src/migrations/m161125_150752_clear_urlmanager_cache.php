@@ -24,6 +24,7 @@ class m161125_150752_clear_urlmanager_cache extends Migration
     public function safeDown()
     {
         echo "m161125_150752_clear_urlmanager_cache cannot be reverted.\n";
+
         return false;
     }
 }

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\User;
+use yii\base\Event;
 
 /**
  * User token event class.
@@ -21,7 +22,7 @@ class UserTokenEvent extends Event
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var User|null The user model associated with the event.
      */
     public $user;
 }

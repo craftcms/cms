@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Update event class.
  *
@@ -19,12 +21,12 @@ class UpdateEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The type of update ("manual" or "auto")
+     * @var string|null The type of update ("manual" or "auto")
      */
     public $type;
 
     /**
-     * @var string The handle of whatever initiated the update ("craft" or a plugin’s handle)
+     * @var string|null The handle of whatever initiated the update ("craft" or a plugin’s handle)
      */
     public $handle;
 }

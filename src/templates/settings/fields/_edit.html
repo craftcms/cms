@@ -114,12 +114,12 @@
 
 
 {% if field is empty or field.handle is empty %}
-	{% registerjs %}
+	{% js %}
 		new Craft.HandleGenerator('#name', '#handle');
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}
 
-{% registerjs %}
+{% js %}
 	Craft.fieldTypesWithContent = {{ craft.app.fields.getFieldTypesWithContent()|json_encode|raw }};
 
 	var $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}"),
@@ -133,4 +133,4 @@
         	$translationSettings.addClass('hidden');
 		}
     });
-{% endregisterjs %}
+{% endjs %}

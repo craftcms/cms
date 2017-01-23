@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
@@ -26,9 +25,9 @@ use craft\fields\Color as ColorField;
 use craft\fields\Date as DateField;
 use craft\fields\Dropdown as DropdownField;
 use craft\fields\Entries as EntriesField;
-use craft\fields\MissingField;
 use craft\fields\Lightswitch as LightswitchField;
 use craft\fields\Matrix as MatrixField;
+use craft\fields\MissingField;
 use craft\fields\MultiSelect as MultiSelectField;
 use craft\fields\Number as NumberField;
 use craft\fields\PlainText as PlainTextField;
@@ -195,75 +194,64 @@ class Fields extends Component
     /**
      * Returns all field groups.
      *
-     * @param string|null $indexBy The attribute to index the field groups by
-     *
      * @return FieldGroup[] The field groups
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(): array
     {
-        if (!$this->_fetchedAllGroups) {
-            $this->_groupsById = [];
-
-            $results = $this->_createGroupQuery()->all();
-
-            foreach ($results as $result) {
-                $group = new FieldGroup($result);
-                $this->_groupsById[$group->id] = $group;
-            }
-
-            $this->_fetchedAllGroups = true;
+        if ($this->_fetchedAllGroups) {
+            return array_values($this->_groupsById);
         }
 
-        if ($indexBy == 'id') {
-            $groups = $this->_groupsById;
-        } else if (!$indexBy) {
-            $groups = array_values($this->_groupsById);
-        } else {
-            $groups = [];
+        $this->_groupsById = [];
+        $results = $this->_createGroupQuery()->all();
 
-            foreach ($this->_groupsById as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
+        foreach ($results as $result) {
+            $group = new FieldGroup($result);
+            $this->_groupsById[$group->id] = $group;
         }
 
-        return $groups;
+        $this->_fetchedAllGroups = true;
+
+        return array_values($this->_groupsById);
     }
 
     /**
      * Returns a field group by its ID.
      *
-     * @param integer $groupId The field group’s ID
+     * @param int $groupId The field group’s ID
      *
      * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
-        if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById)) {
-            $result = $this->_createGroupQuery()
-                ->where(['id' => $groupId])
-                ->one();
-
-            if ($result) {
-                $group = new FieldGroup($result);
-            } else {
-                $group = null;
-            }
-
-            $this->_groupsById[$groupId] = $group;
+        if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
+            return $this->_groupsById[$groupId];
         }
 
-        return $this->_groupsById[$groupId];
+        if ($this->_fetchedAllGroups) {
+            return null;
+        }
+
+        $result = $this->_createGroupQuery()
+            ->where(['id' => $groupId])
+            ->one();
+
+        if (!$result) {
+            return $this->_groupsById[$groupId] = null;
+        }
+
+        return $this->_groupsById[$groupId] = new FieldGroup($result);
     }
 
     /**
      * Saves a field group.
      *
      * @param FieldGroup $group         The field group to be saved
-     * @param boolean    $runValidation Whether the group should be validated
+     * @param bool       $runValidation Whether the group should be validated
      *
-     * @return boolean Whether the field group was saved successfully
+     * @return bool Whether the field group was saved successfully
      */
-    public function saveGroup(FieldGroup $group, $runValidation = true)
+    public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('Field group not saved due to validation error.', __METHOD__);
@@ -300,11 +288,11 @@ class Fields extends Component
     /**
      * Deletes a field group by its ID.
      *
-     * @param integer $groupId The field group’s ID
+     * @param int $groupId The field group’s ID
      *
-     * @return boolean Whether the field group was deleted successfully
+     * @return bool Whether the field group was deleted successfully
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId): bool
     {
         $group = $this->getGroupById($groupId);
 
@@ -320,9 +308,9 @@ class Fields extends Component
      *
      * @param FieldGroup $group The field group
      *
-     * @return boolean Whether the field group was deleted successfully
+     * @return bool Whether the field group was deleted successfully
      */
-    public function deleteGroup(FieldGroup $group)
+    public function deleteGroup(FieldGroup $group): bool
     {
         /** @var FieldGroupRecord $groupRecord */
         $groupRecord = FieldGroupRecord::find()
@@ -371,7 +359,7 @@ class Fields extends Component
      *
      * @return string[] The available field type classes
      */
-    public function getAllFieldTypes()
+    public function getAllFieldTypes(): array
     {
         $fieldTypes = [
             AssetsField::class,
@@ -407,11 +395,12 @@ class Fields extends Component
      *
      * @return FieldInterface[] The field type classes
      */
-    public function getFieldTypesWithContent()
+    public function getFieldTypesWithContent(): array
     {
         $fieldTypes = [];
 
-        foreach (static::getAllFieldTypes() as $fieldType) {
+        foreach ($this->getAllFieldTypes() as $fieldType) {
+            /** @var Field|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }
@@ -427,7 +416,7 @@ class Fields extends Component
      *
      * @return FieldInterface The field
      */
-    public function createField($config)
+    public function createField($config): FieldInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -450,21 +439,21 @@ class Fields extends Component
     /**
      * Returns all fields within a field context(s).
      *
-     * @param string|null          $indexBy The field property to index the resulting fields by
      * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
      *
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($indexBy = null, $context = null)
+    public function getAllFields($context = null): array
     {
         if ($context === null) {
             $context = [Craft::$app->getContent()->fieldContext];
         } else if (!is_array($context)) {
-            $context = [$context];
+            $context = (array)$context;
         }
 
         $missingContexts = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
             if (!isset($this->_allFieldsInContext[$c])) {
                 $missingContexts[] = $c;
@@ -489,13 +478,10 @@ class Fields extends Component
 
         $fields = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
-            if (!$indexBy) {
-                $fields = array_merge($fields, $this->_allFieldsInContext[$c]);
-            } else {
-                foreach ($this->_allFieldsInContext[$c] as $field) {
-                    $fields[$field->$indexBy] = $field;
-                }
+            foreach ($this->_allFieldsInContext[$c] as $field) {
+                $fields[] = $field;
             }
         }
 
@@ -507,7 +493,7 @@ class Fields extends Component
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsWithContent()
+    public function getFieldsWithContent(): array
     {
         $context = Craft::$app->getContent()->fieldContext;
 
@@ -527,29 +513,30 @@ class Fields extends Component
     /**
      * Returns a field by its ID.
      *
-     * @param integer $fieldId The field’s ID
+     * @param int $fieldId The field’s ID
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldById($fieldId)
+    public function getFieldById(int $fieldId)
     {
-        if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById)) {
-            $result = $this->_createFieldQuery()
-                ->where(['fields.id' => $fieldId])
-                ->one();
-
-            if ($result) {
-                /** @var Field $field */
-                $field = $this->createField($result);
-
-                $this->_fieldsById[$fieldId] = $field;
-                $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
-            } else {
-                return null;
-            }
+        if ($this->_fieldsById !== null && array_key_exists($fieldId, $this->_fieldsById)) {
+            return $this->_fieldsById[$fieldId];
         }
 
-        return $this->_fieldsById[$fieldId];
+        $result = $this->_createFieldQuery()
+            ->where(['fields.id' => $fieldId])
+            ->one();
+
+        if (!$result) {
+            return $this->_fieldsById[$fieldId] = null;
+        }
+
+        /** @var Field $field */
+        $field = $this->createField($result);
+        $this->_fieldsById[$fieldId] = $field;
+        $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
+        return $field;
     }
 
     /**
@@ -559,7 +546,7 @@ class Fields extends Component
      *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle($handle)
+    public function getFieldByHandle(string $handle)
     {
         $context = Craft::$app->getContent()->fieldContext;
 
@@ -593,15 +580,15 @@ class Fields extends Component
      * @param string      $handle  The field handle
      * @param string|null $context The field context (defauts to ContentService::$fieldContext)
      *
-     * @return boolean Whether a field with that handle exists
+     * @return bool Whether a field with that handle exists
      */
-    public function doesFieldWithHandleExist($handle, $context = null)
+    public function doesFieldWithHandleExist(string $handle, string $context = null): bool
     {
         if ($context === null) {
             $context = Craft::$app->getContent()->fieldContext;
         }
 
-        if (!isset($this->_allFieldHandlesByContext)) {
+        if ($this->_allFieldHandlesByContext === null) {
             $this->_allFieldHandlesByContext = [];
 
             $results = (new Query())
@@ -614,18 +601,17 @@ class Fields extends Component
             }
         }
 
-        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context]));
+        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context], true));
     }
 
     /**
      * Returns all the fields in a given group.
      *
-     * @param integer     $groupId The field group’s ID
-     * @param string|null $indexBy The attribute to index the fields by
+     * @param int $groupId The field group’s ID
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByGroupId($groupId, $indexBy = null)
+    public function getFieldsByGroupId(int $groupId): array
     {
         $results = $this->_createFieldQuery()
             ->where(['fields.groupId' => $groupId])
@@ -634,13 +620,7 @@ class Fields extends Component
         $fields = [];
 
         foreach ($results as $result) {
-            $field = $this->createField($result);
-
-            if ($indexBy) {
-                $fields[$field->$indexBy] = $field;
-            } else {
-                $fields[] = $field;
-            }
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
@@ -649,12 +629,11 @@ class Fields extends Component
     /**
      * Returns all of the fields used by a given element type.
      *
-     * @param ElementInterface|string $elementType
-     * @param string|null             $indexBy
+     * @param string $elementType
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByElementType($elementType, $indexBy = null)
+    public function getFieldsByElementType(string $elementType): array
     {
         $results = $this->_createFieldQuery()
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
@@ -665,13 +644,7 @@ class Fields extends Component
         $fields = [];
 
         foreach ($results as $result) {
-            $field = $this->createField($result);
-
-            if ($indexBy) {
-                $fields[$field->$indexBy] = $field;
-            } else {
-                $fields[] = $field;
-            }
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
@@ -681,12 +654,12 @@ class Fields extends Component
      * Saves a field.
      *
      * @param FieldInterface $field         The Field to be saved
-     * @param boolean        $runValidation Whether the field should be validated
+     * @param bool           $runValidation Whether the field should be validated
      *
-     * @return boolean Whether the field was saved successfully
+     * @return bool Whether the field was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveField(FieldInterface $field, $runValidation = true)
+    public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
         /** @var Field $field */
         // Set the field context if it's not set
@@ -752,14 +725,14 @@ class Fields extends Component
                 }
             } else {
                 // Did the old field have a column we need to remove?
-                if (!$isNewField) {
-                    if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable,
-                            $oldColumnName)
-                    ) {
-                        Craft::$app->getDb()->createCommand()
-                            ->dropColumn($contentTable, $oldColumnName)
-                            ->execute();
-                    }
+                if (
+                    !$isNewField &&
+                    $fieldRecord->getOldHandle() &&
+                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+                ) {
+                    Craft::$app->getDb()->createCommand()
+                        ->dropColumn($contentTable, $oldColumnName)
+                        ->execute();
                 }
 
                 // Fields without a content column don't get translated
@@ -791,7 +764,7 @@ class Fields extends Component
                 if (
                     isset($this->_allFieldHandlesByContext[$field->context]) &&
                     $field->oldHandle != $field->handle &&
-                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context])) !== false
+                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context], true)) !== false
                 ) {
                     array_splice($this->_allFieldHandlesByContext[$field->context], $oldHandleIndex, 1);
                 }
@@ -801,12 +774,11 @@ class Fields extends Component
             $this->_fieldsById[$field->id] = $field;
             $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
 
-            if (isset($this->_allFieldHandlesByContext)) {
+            if ($this->_allFieldHandlesByContext !== null) {
                 $this->_allFieldHandlesByContext[$field->context][] = $field->handle;
             }
 
-            unset($this->_allFieldsInContext[$field->context]);
-            unset($this->_fieldsWithContent[$field->context]);
+            unset($this->_allFieldsInContext[$field->context], $this->_fieldsWithContent[$field->context]);
 
             $field->afterSave($isNewField);
 
@@ -834,11 +806,11 @@ class Fields extends Component
     /**
      * Deletes a field by its ID.
      *
-     * @param integer $fieldId The field’s ID
+     * @param int $fieldId The field’s ID
      *
-     * @return boolean Whether the field was deleted successfully
+     * @return bool Whether the field was deleted successfully
      */
-    public function deleteFieldById($fieldId)
+    public function deleteFieldById(int $fieldId): bool
     {
         $field = $this->getFieldById($fieldId);
 
@@ -854,10 +826,10 @@ class Fields extends Component
      *
      * @param FieldInterface $field The field
      *
-     * @return boolean Whether the field was deleted successfully
+     * @return bool Whether the field was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteField(FieldInterface $field)
+    public function deleteField(FieldInterface $field): bool
     {
         /** @var Field $field */
         // Fire a 'beforeDeleteField' event
@@ -915,27 +887,25 @@ class Fields extends Component
     /**
      * Returns a field layout by its ID.
      *
-     * @param integer $layoutId The field layout’s ID
+     * @param int $layoutId The field layout’s ID
      *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById($layoutId)
+    public function getLayoutById(int $layoutId)
     {
-        if (!isset($this->_layoutsById) || !array_key_exists($layoutId, $this->_layoutsById)) {
-            $result = $this->_createLayoutQuery()
-                ->where(['id' => $layoutId])
-                ->one();
-
-            if ($result) {
-                $layout = new FieldLayout($result);
-            } else {
-                $layout = null;
-            }
-
-            $this->_layoutsById[$layoutId] = $layout;
+        if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
+            return $this->_layoutsById[$layoutId];
         }
 
-        return $this->_layoutsById[$layoutId];
+        $result = $this->_createLayoutQuery()
+            ->where(['id' => $layoutId])
+            ->one();
+
+        if (!$result) {
+            return $this->_layoutsById[$layoutId] = null;
+        }
+
+        return $this->_layoutsById[$layoutId] = new FieldLayout($result);
     }
 
     /**
@@ -945,39 +915,36 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function getLayoutByType($type)
+    public function getLayoutByType(string $type): FieldLayout
     {
-        if (!isset($this->_layoutsByType) || !array_key_exists($type, $this->_layoutsByType)) {
-            $result = $this->_createLayoutQuery()
-                ->where(['type' => $type])
-                ->one();
-
-            if ($result) {
-                $id = $result['id'];
-
-                if (!isset($this->_layoutsById[$id])) {
-                    $this->_layoutsById[$id] = new FieldLayout($result);
-                }
-
-                $layout = $this->_layoutsById[$id];
-            } else {
-                $layout = new FieldLayout();
-            }
-
-            $this->_layoutsByType[$type] = $layout;
+        if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
+            return $this->_layoutsByType[$type];
         }
 
-        return $this->_layoutsByType[$type];
+        $result = $this->_createLayoutQuery()
+            ->where(['type' => $type])
+            ->one();
+
+        if (!$result) {
+            return $this->_layoutsByType[$type] = new FieldLayout();
+        }
+
+        $id = $result['id'];
+        if (!isset($this->_layoutsById[$id])) {
+            $this->_layoutsById[$id] = new FieldLayout($result);
+        }
+
+        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
     }
 
     /**
      * Returns a layout's tabs by its ID.
      *
-     * @param integer $layoutId The field layout’s ID
+     * @param int $layoutId The field layout’s ID
      *
      * @return FieldLayoutTab[] The field layout’s tabs
      */
-    public function getLayoutTabsById($layoutId)
+    public function getLayoutTabsById(int $layoutId): array
     {
         $tabs = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
@@ -993,11 +960,11 @@ class Fields extends Component
     /**
      * Returns the fields in a field layout, identified by its ID.
      *
-     * @param integer $layoutId The field layout’s ID
+     * @param int $layoutId The field layout’s ID
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByLayoutId($layoutId)
+    public function getFieldsByLayoutId(int $layoutId): array
     {
         $fields = [];
 
@@ -1028,7 +995,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayoutFromPost($namespace = null)
+    public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
         $postedFieldLayout = Craft::$app->getRequest()->getBodyParam($paramPrefix.'fieldLayout', []);
@@ -1045,7 +1012,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayout($postedFieldLayout, $requiredFields = [])
+    public function assembleLayout(array $postedFieldLayout, array $requiredFields = []): FieldLayout
     {
         $tabs = [];
         $fields = [];
@@ -1056,10 +1023,12 @@ class Fields extends Component
         $allFieldIds = [];
 
         foreach ($postedFieldLayout as $fieldIds) {
-            $allFieldIds = array_merge($allFieldIds, $fieldIds);
+            foreach ($fieldIds as $fieldId) {
+                $allFieldIds[] = $fieldId;
+            }
         }
 
-        if ($allFieldIds) {
+        if (!empty($allFieldIds)) {
             $allFieldsById = [];
 
             $results = $this->_createFieldQuery()
@@ -1081,7 +1050,7 @@ class Fields extends Component
                 }
 
                 $field = $allFieldsById[$fieldId];
-                $field->required = in_array($fieldId, $requiredFields);
+                $field->required = in_array($fieldId, $requiredFields, false);
                 $field->sortOrder = ($fieldSortOrder + 1);
 
                 $fields[] = $field;
@@ -1107,11 +1076,11 @@ class Fields extends Component
      * Saves a field layout.
      *
      * @param FieldLayout $layout        The field layout
-     * @param boolean     $runValidation Whether the layout should be validated
+     * @param bool        $runValidation Whether the layout should be validated
      *
-     * @return boolean Whether the field layout was saved successfully
+     * @return bool Whether the field layout was saved successfully
      */
-    public function saveLayout(FieldLayout $layout, $runValidation = true)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);
@@ -1168,21 +1137,17 @@ class Fields extends Component
     /**
      * Deletes a field layout(s) by its ID.
      *
-     * @param integer|integer[] $layoutId The field layout’s ID
+     * @param int|int[] $layoutId The field layout’s ID
      *
-     * @return boolean Whether the field layout was deleted successfully
+     * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById($layoutId)
+    public function deleteLayoutById($layoutId): bool
     {
         if (!$layoutId) {
             return false;
         }
 
-        if (!is_array($layoutId)) {
-            $layoutId = [$layoutId];
-        }
-
-        foreach ($layoutId as $thisLayoutId) {
+        foreach ((array)$layoutId as $thisLayoutId) {
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {
@@ -1198,9 +1163,9 @@ class Fields extends Component
      *
      * @param FieldLayout $layout The field layout
      *
-     * @return boolean Whether the field layout was deleted successfully
+     * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayout(FieldLayout $layout)
+    public function deleteLayout(FieldLayout $layout): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
         $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
@@ -1223,9 +1188,9 @@ class Fields extends Component
      *
      * @param string $type The element type
      *
-     * @return boolean Whether the field layouts were deleted successfully
+     * @return bool Whether the field layouts were deleted successfully
      */
-    public function deleteLayoutsByType($type)
+    public function deleteLayoutsByType(string $type): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete('{{%fieldlayouts}}', ['type' => $type])
@@ -1242,7 +1207,7 @@ class Fields extends Component
      *
      * @return Query
      */
-    private function _createGroupQuery()
+    private function _createGroupQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1258,7 +1223,7 @@ class Fields extends Component
      *
      * @return Query
      */
-    private function _createFieldQuery()
+    private function _createFieldQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1284,7 +1249,7 @@ class Fields extends Component
      *
      * @return Query
      */
-    private function _createLayoutQuery()
+    private function _createLayoutQuery(): Query
     {
         return (new Query)
             ->select([
@@ -1299,7 +1264,7 @@ class Fields extends Component
      *
      * @return Query
      */
-    private function _createLayoutTabQuery()
+    private function _createLayoutTabQuery(): Query
     {
         return (new Query())
             ->select([
@@ -1320,7 +1285,7 @@ class Fields extends Component
      * @return FieldGroupRecord
      * @throws FieldGroupNotFoundException if $group->id is invalid
      */
-    private function _getGroupRecord(FieldGroup $group)
+    private function _getGroupRecord(FieldGroup $group): FieldGroupRecord
     {
         if ($group->id) {
             $groupRecord = FieldGroupRecord::findOne($group->id);
@@ -1343,24 +1308,22 @@ class Fields extends Component
      * @return FieldRecord
      * @throws FieldNotFoundException if $field->id is invalid
      */
-    private function _getFieldRecord(FieldInterface $field)
+    private function _getFieldRecord(FieldInterface $field): FieldRecord
     {
         /** @var Field $field */
-        if (!$field->getIsNew()) {
-            if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id,
-                    $this->_fieldRecordsById)
-            ) {
-                $this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id);
+        if ($field->getIsNew()) {
+            return new FieldRecord();
+        }
 
-                if (!$this->_fieldRecordsById[$field->id]) {
-                    throw new FieldNotFoundException("No field exists with the ID '{$field->id}'");
-                }
-            }
-
+        if ($this->_fieldRecordsById !== null && array_key_exists($field->id, $this->_fieldRecordsById)) {
             return $this->_fieldRecordsById[$field->id];
         }
 
-        return new FieldRecord();
+        if (($this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id)) === null) {
+            throw new FieldNotFoundException('Invalid field ID: '.$field->id);
+        }
+
+        return $this->_fieldRecordsById[$field->id];
     }
 
     /**

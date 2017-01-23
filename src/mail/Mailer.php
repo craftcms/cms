@@ -36,17 +36,12 @@ class Mailer extends \yii\swiftmailer\Mailer
     // =========================================================================
 
     /**
-     * @var string The default message class name
-     */
-    public $messageClass = \craft\mail\Message::class;
-
-    /**
-     * @var string The email template that should be used
+     * @var string|null The email template that should be used
      */
     public $template;
 
     /**
-     * @var string|array|User|User[] $from The default sender’s email address, or their user model(s).
+     * @var string|array|User|User[]|null $from The default sender’s email address, or their user model(s).
      */
     public $from;
 
@@ -74,7 +69,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * @return Message The new email message
      * @throws InvalidConfigException if [[messageConfig]] or [[class]] is not configured to use [[Message]]
      */
-    public function composeFromKey($key, $variables = [])
+    public function composeFromKey(string $key, array $variables = []): Message
     {
         $message = $this->createMessage();
 
@@ -100,19 +95,17 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $subjectTemplate = $storedMessage->subject;
                 $textBodyTemplate = $storedMessage->body;
             } else {
-                $subjectTemplate = Craft::t('app', $message->key.'_subject', null, 'en_us');
-                $textBodyTemplate = Craft::t('app', $message->key.'_body', null, 'en_us');
+                $subjectTemplate = Craft::t('app', $message->key.'_subject', [], 'en_us');
+                $textBodyTemplate = Craft::t('app', $message->key.'_body', [], 'en_us');
             }
 
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
 
-            if (Craft::$app->getEdition() >= Craft::Client) {
-                // Is there a custom HTML template set?
-                if ($this->template !== null) {
-                    $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-                    $parentTemplate = $this->template;
-                }
+            // Is there a custom HTML template set?
+            if (Craft::$app->getEdition() >= Craft::Client && $this->template !== null) {
+                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+                $parentTemplate = $this->template;
             }
 
             if (empty($parentTemplate)) {
@@ -140,9 +133,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
 
             // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy(false);
+            /** @var \Twig_Extension_Escaper $ext */
+            $ext = Craft::$app->getView()->getTwig()->getExtension(\Twig_Extension_Escaper::class);
+            $ext->setDefaultStrategy(false);
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy('html');
+            $ext->setDefaultStrategy('html');
 
             Craft::$app->language = $language;
 
@@ -159,7 +154,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         $testToEmailAddress = Craft::$app->getConfig()->get('testToEmailAddress');
 
         if ($testToEmailAddress) {
-            $message->setTo($testToEmailAddress, 'Test Email');
+            $message->setTo([$testToEmailAddress, 'Test Email']);
             $message->setCc(null);
             $message->setBcc(null);
         }

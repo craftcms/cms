@@ -8,7 +8,6 @@
 namespace craft\validators;
 
 use Craft;
-use yii\validators\ValidationAsset;
 use yii\validators\Validator;
 
 /**
@@ -23,10 +22,10 @@ class ArrayValidator extends Validator
     // =========================================================================
 
     /**
-     * @var integer|array specifies the count limit of the value to be validated.
+     * @var int|array|null specifies the count limit of the value to be validated.
      * This can be specified in one of the following forms:
      *
-     * - an integer: the exact count that the value should be of;
+     * - an int: the exact count that the value should be of;
      * - an array of one element: the minimum count that the value should be of. For example, `[8]`.
      *   This will overwrite [[min]].
      * - an array of two elements: the minimum and maximum counts that the value should be of.
@@ -38,29 +37,29 @@ class ArrayValidator extends Validator
     public $count;
 
     /**
-     * @var integer maximum count. If not set, it means no maximum count limit.
+     * @var int|null maximum count. If not set, it means no maximum count limit.
      * @see tooMany for the customized message for a too long array.
      */
     public $max;
 
     /**
-     * @var integer minimum count. If not set, it means no minimum count limit.
+     * @var int|null minimum count. If not set, it means no minimum count limit.
      * @see tooFew for the customized message for a too short array.
      */
     public $min;
 
     /**
-     * @var string user-defined error message used when the count of the value is smaller than [[min]].
+     * @var string|null user-defined error message used when the count of the value is smaller than [[min]].
      */
     public $tooFew;
 
     /**
-     * @var string user-defined error message used when the count of the value is greater than [[max]].
+     * @var string|null user-defined error message used when the count of the value is greater than [[max]].
      */
     public $tooMany;
 
     /**
-     * @var string user-defined error message used when the count of the value is not equal to [[count]].
+     * @var string|null user-defined error message used when the count of the value is not equal to [[count]].
      */
     public $notEqual;
 
@@ -135,7 +134,7 @@ class ArrayValidator extends Validator
             return [$this->message, []];
         }
 
-        $count = count($value);
+        $count = count((array)$value);
 
         if ($this->min !== null && $count < $this->min) {
             return [$this->tooFew, ['min' => $this->min]];

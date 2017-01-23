@@ -1,14 +1,14 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Install Craft CMS"|t('app') %}
 
-{% do craft.app.view.registerTranslations('app', [
+{% do view.registerTranslations('app', [
 	"All done!",
 	"Go to {app}",
 ]) %}
 
 {% block body %}
-	{% registercssresource "css/install.css" %}
-	{% registerjsresource "js/install.js" %}
+	{% do view.registerCssResource("css/install.css") %}
+	{% do view.registerJsResource("js/install.js") %}
 
 	<div id="bg"></div>
 	<div class="beginbtncontainer">

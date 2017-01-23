@@ -10,6 +10,7 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use yii\base\Exception;
 
 /**
  * NewUsers represents a New Users dashboard widget.
@@ -25,7 +26,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'New Users');
     }
@@ -33,22 +34,36 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
-        return (Craft::$app->getEdition() == Craft::Pro);
+        return (Craft::$app->getEdition() === Craft::Pro);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/users.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The ID of the user group
+     * @var int|null The ID of the user group
      */
     public $userGroupId;
 
     /**
-     * @var string The date range
+     * @var string|null The date range
      */
     public $dateRange;
 
@@ -59,14 +74,12 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
-        if ($groupId = $this->userGroupId)
-        {
+        if ($groupId = $this->userGroupId) {
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
-            if ($userGroup)
-            {
+            if ($userGroup) {
                 return Craft::t('app', 'New Users').' – '.Craft::t('app', $userGroup->name);
             }
         }
@@ -79,8 +92,7 @@ class NewUsers extends Widget
      */
     public function getBodyHtml()
     {
-        if (Craft::$app->getEdition() != Craft::Pro)
-        {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
             return false;
         }
 
@@ -102,13 +114,5 @@ class NewUsers extends Widget
             [
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/new-users.svg';
     }
 }

@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Thanks for updating to Craft 2.5" %}
 {% set bodyClass = 'whats-new' %}
-{% registercssresource "css/whats-new.css" %}
+{% do view.registerCssResource("css/whats-new.css") %}
 
 {% block pageHeader %}{% endblock %}
 

@@ -20,5 +20,26 @@ class TableSchema extends \yii\db\TableSchema
      *
      * @var array
      */
-    public $extendedForeignKeys = [];
+    private $_extendedForeignKeys = [];
+
+    /**
+     * Returns the array of extended foreign keys.
+     *
+     * @return array
+     */
+    public function getExtendedForeignKeys(): array
+    {
+        return $this->_extendedForeignKeys;
+    }
+
+    /**
+     * Adds an extended foreign key to the internal array.
+     *
+     * @param int   $key
+     * @param array $extendedForeignKey
+     */
+    public function addExtendedForeignKey($key, $extendedForeignKey)
+    {
+        $this->_extendedForeignKeys[$key] = $extendedForeignKey;
+    }
 }

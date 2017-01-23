@@ -22,7 +22,7 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return 'Gmail';
     }
@@ -31,12 +31,12 @@ class Gmail extends BaseTransportAdapter
     // =========================================================================
 
     /**
-     * @var string The username that should be used
+     * @var string|null The username that should be used
      */
     public $username;
 
     /**
-     * @var string The password that should be used
+     * @var string|null The password that should be used
      */
     public $password;
 
@@ -84,10 +84,10 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getTransportConfig()
+    public function defineTransport()
     {
         return [
-            'class' => 'Swift_SmtpTransport',
+            'class' => \Swift_SmtpTransport::class,
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',

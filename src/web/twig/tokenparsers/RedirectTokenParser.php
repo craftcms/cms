@@ -27,22 +27,19 @@ class RedirectTokenParser extends \Twig_TokenParser
     {
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
-
-        $path = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'path' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
 
         if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
-            $httpStatusCode = $this->parser->getExpressionParser()->parseExpression();
+            $nodes['httpStatusCode'] = $this->parser->getExpressionParser()->parseExpression();
         } else {
-            /** @noinspection PhpParamsInspection */
-            $httpStatusCode = new \Twig_Node_Expression_Constant(302, 1);
+            $nodes['httpStatusCode'] = new \Twig_Node_Expression_Constant(302, 1);
         }
 
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new RedirectNode([
-            'path' => $path,
-            'httpStatusCode' => $httpStatusCode
-        ], [], $lineno, $this->getTag());
+        return new RedirectNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

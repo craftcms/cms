@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\FieldLayout;
+use yii\base\Event;
 
 /**
  * Field layout Event class.
@@ -21,12 +22,12 @@ class FieldLayoutEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldLayout The field layout associated with this event.
+     * @var FieldLayout|null The field layout associated with this event.
      */
     public $layout;
 
     /**
-     * @var boolean Whether the field is brand new
+     * @var bool Whether the field is brand new
      */
     public $isNew = false;
 }

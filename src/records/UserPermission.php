@@ -12,8 +12,8 @@ use craft\db\ActiveRecord;
 /**
  * Class UserPermission record.
  *
- * @property integer $id   ID
- * @property string  $name Name
+ * @property int    $id   ID
+ * @property string $name Name
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -40,7 +40,7 @@ class UserPermission extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%userpermissions}}';
     }

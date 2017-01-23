@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateTime;
+use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -16,27 +16,24 @@ use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
-use craft\errors\AssetMissingException;
+use craft\errors\FileException;
 use craft\errors\ImageException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\errors\ElementSaveException;
-use craft\errors\FileException;
-use craft\errors\ValidationException;
 use craft\events\AssetEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
+use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
@@ -44,8 +41,8 @@ use craft\records\Asset as AssetRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
+use DateTime;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Class Assets service.
@@ -91,33 +88,19 @@ class Assets extends Component
     // =========================================================================
 
     /**
-     * Returns all top-level files in a volume.
-     *
-     * @param integer     $volumeId
-     * @param string|null $indexBy
-     *
-     * @return array
-     */
-    public function getFilesByVolumeId($volumeId, $indexBy = null)
-    {
-        return Asset::find()
-            ->volumeId($volumeId)
-            ->indexBy($indexBy)
-            ->all();
-    }
-
-    /**
      * Returns a file by its ID.
      *
-     * @param integer      $assetId
-     * @param integer|null $siteId
+     * @param int      $assetId
+     * @param int|null $siteId
      *
      * @return Asset|null
      */
-    public function getAssetById($assetId, $siteId = null)
+    public function getAssetById(int $assetId, int $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($assetId,
-            Asset::class, $siteId);
+        /** @var Asset|null $asset */
+        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+
+        return $asset;
     }
 
     /**
@@ -125,14 +108,17 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalAssets($criteria = null)
+    public function getTotalAssets($criteria = null): int
     {
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
         } else {
-            $query = Asset::find()->configure($criteria);
+            $query = Asset::find();
+            if ($criteria) {
+                Craft::configure($query, $criteria);
+            }
         }
 
         return $query->count();
@@ -174,7 +160,7 @@ class Assets extends Component
 
         $extension = $asset->getExtension();
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -200,11 +186,11 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            if (Io::getFileKind(Io::getExtension($asset->newFilePath)) == 'image') {
+            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) === 'image') {
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
-            $stream = fopen($asset->newFilePath, 'r');
+            $stream = fopen($asset->newFilePath, 'rb');
 
             if (!$stream) {
                 throw new FileException(Craft::t('app',
@@ -219,12 +205,12 @@ class Assets extends Component
 
             // Explicitly re-throw VolumeFileExistsException
             try {
-                $result = $volume->createFileByStream($uriPath, $stream);
+                $result = $volume->createFileByStream($uriPath, $stream, []);
             } catch (VolumeObjectExistsException $exception) {
                 // Replace the file if this is the temporary Volume.
-                if (is_null($asset->volumeId)) {
+                if ($asset->volumeId === null) {
                     $volume->deleteFile($uriPath);
-                    $result = $volume->createFileByStream($uriPath, $stream);
+                    $result = $volume->createFileByStream($uriPath, $stream, []);
                 } else {
                     throw $exception;
                 }
@@ -239,10 +225,10 @@ class Assets extends Component
             }
 
             $asset->dateModified = new DateTime();
-            $asset->size = Io::getFileSize($asset->newFilePath);
-            $asset->kind = Io::getFileKind($asset->getExtension());
+            $asset->size = filesize($asset->newFilePath);
+            $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
 
-            if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
+            if ($asset->kind === 'image' && !empty($asset->newFilePath)) {
 
                 list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
             }
@@ -251,11 +237,10 @@ class Assets extends Component
         Craft::$app->getElements()->saveElement($asset);
 
         // Now that we have an ID, store the source
-        if (!$volume::isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
+        if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->newFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
             $assetTransforms = Craft::$app->getAssetTransforms();
-            $assetTransforms->storeLocalSource($asset->newFilePath,
-                $asset->getImageTransformSourcePath());
+            $assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
             $assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
         }
     }
@@ -263,13 +248,13 @@ class Assets extends Component
     /**
      * Replaces an Asset with another.
      *
-     * @param Asset   $assetToReplace
-     * @param Asset   $assetToReplaceWith
-     * @param boolean $mergeRelationships should the relations be merged for the conflicting Assets
+     * @param Asset $assetToReplace
+     * @param Asset $assetToReplaceWith
+     * @param bool  $mergeRelationships should the relations be merged for the conflicting Assets
      *
      * @return void
      */
-    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, $mergeRelationships = false)
+    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, bool $mergeRelationships = false)
     {
         $targetVolume = $assetToReplace->getVolume();
 
@@ -326,9 +311,9 @@ class Assets extends Component
      *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
-     * @param Asset $asset
-     * @param       $pathOnServer
-     * @param       $filename
+     * @param Asset  $asset
+     * @param string $pathOnServer
+     * @param string $filename
      *
      *
      * @throws ActionCancelledException If something prevented the Asset replacement via Event.
@@ -336,9 +321,9 @@ class Assets extends Component
      * @throws AssetLogicException      If the Asset to be replaced cannot be found.
      * @return void
      */
-    public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
+    public function replaceAssetFile(Asset $asset, string $pathOnServer, string $filename)
     {
-        if (Io::getFileKind(Io::getExtension($pathOnServer)) == 'image') {
+        if (AssetsHelper::getFileKindByExtension($pathOnServer) === 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
@@ -352,8 +337,7 @@ class Assets extends Component
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
-            throw new ActionCancelledException(Craft::t('app',
-                'Something prevented the Asset file from being replaced.'));
+            throw new ActionCancelledException(Craft::t('app', 'Something prevented the Asset file from being replaced.'));
         }
 
         $volume = $asset->getVolume();
@@ -364,7 +348,7 @@ class Assets extends Component
         }
 
         // Open the stream for, uhh, streaming
-        $stream = fopen($pathOnServer, 'r');
+        $stream = fopen($pathOnServer, 'rb');
 
         if (!$stream) {
             throw new FileException(Craft::t('app',
@@ -379,9 +363,9 @@ class Assets extends Component
                 // Delete old, change the name, upload the new
                 $volume->deleteFile($asset->getUri());
                 $asset->newFilename = $filename;
-                $volume->createFileByStream($asset->getUri(), $stream);
+                $volume->createFileByStream($asset->getUri(), $stream, []);
             } else {
-                $volume->updateFileByStream($asset->getUri(), $stream);
+                $volume->updateFileByStream($asset->getUri(), $stream, []);
             }
         } else {
             // Get an available name to avoid conflicts and upload the file
@@ -391,24 +375,24 @@ class Assets extends Component
             // Delete old, change the name, upload the new
             $volume->deleteFile($asset->getUri());
             $asset->newFilename = $filename;
-            $volume->createFileByStream($asset->getUri(), $stream);
+            $volume->createFileByStream($asset->getUri(), $stream, []);
 
-            $asset->kind = Io::getFileKind(Io::getExtension($filename));
+            $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
 
         if (is_resource($stream)) {
             fclose($stream);
         }
 
-        if ($asset->kind == "image") {
+        if ($asset->kind === 'image') {
             list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
         } else {
             $asset->width = null;
             $asset->height = null;
         }
 
-        $asset->size = Io::getFileSize($pathOnServer);
-        $asset->dateModified = Io::getLastTimeModified($pathOnServer);
+        $asset->size = filesize($pathOnServer);
+        $asset->dateModified = new DateTime('@'.filemtime($pathOnServer));
 
         $this->saveAsset($asset);
 
@@ -422,13 +406,13 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset        $asset         The asset whose file should be renamed
-     * @param boolean|null $runValidation Whether the filename should be validated
+     * @param Asset $asset         The asset whose file should be renamed
+     * @param bool  $runValidation Whether the filename should be validated
      *
-     * @return boolean Whether the asset was renamed successfully
+     * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameFile(Asset $asset, $runValidation = true)
+    public function renameFile(Asset $asset, bool $runValidation = true): bool
     {
         if ($runValidation && !$asset->validate(['newFilename'])) {
             Craft::info('Asset file not renamed due to validation error.', __METHOD__);
@@ -496,7 +480,7 @@ class Assets extends Component
             $volume->createDir(rtrim($folder->path, '/'));
         } catch (VolumeObjectExistsException $exception) {
             // Rethrow exception unless this is a temporary Volume.
-            if (!is_null($folder->volumeId)) {
+            if ($folder->volumeId !== null) {
                 throw $exception;
             }
         }
@@ -506,8 +490,8 @@ class Assets extends Component
     /**
      * Rename a folder by it's id.
      *
-     * @param $folderId
-     * @param $newName
+     * @param int    $folderId
+     * @param string $newName
      *
      * @throws AssetConflictException           If a folder already exists with such name in Assets Index
      * @throws AssetLogicException              If the folder to be renamed can't be found or trying to rename the top folder.
@@ -515,7 +499,7 @@ class Assets extends Component
      * @throws VolumeObjectNotFoundException    If the folder to be renamed can't be found in the Volume.
      * @return string The new folder name after cleaning it.
      */
-    public function renameFolderById($folderId, $newName)
+    public function renameFolderById(int $folderId, string $newName): string
     {
         $newName = AssetsHelper::prepareAssetName($newName, false);
         $folder = $this->getFolderById($folderId);
@@ -547,11 +531,11 @@ class Assets extends Component
         $volume->renameDir(rtrim($folder->path, '/'), $newName);
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
-        $newFullPath = Io::getParentFolderPath($folder->path).$newName.'/';
+        $parentPath = dirname($folder->path);
+        $newFullPath = ($parentPath && $parentPath !== '.' ? $parentPath.'/' : '').$newName;
 
         foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^'.$folder->path.'#',
-                $newFullPath, $descendantFolder->path);
+            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath.'/', $descendantFolder->path);
             $this->storeFolderRecord($descendantFolder);
         }
 
@@ -567,18 +551,14 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param boolean   $deleteFolder Should the folder be deleted along the record. Defaults to true.
+     * @param bool      $deleteFolder Should the folder be deleted along the record. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
      */
-    public function deleteFoldersByIds($folderIds, $deleteFolder = true)
+    public function deleteFoldersByIds($folderIds, bool $deleteFolder = true)
     {
-        if (!is_array($folderIds)) {
-            $folderIds = [$folderIds];
-        }
-
-        foreach ($folderIds as $folderId) {
+        foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
 
             if ($folder) {
@@ -595,12 +575,12 @@ class Assets extends Component
     /**
      * Get the folder tree for Assets by volume ids
      *
-     * @param array|int $allowedVolumeIds
-     * @param array     $additionalCriteria additional criteria for filtering the tree
+     * @param array $allowedVolumeIds
+     * @param array $additionalCriteria additional criteria for filtering the tree
      *
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds, $additionalCriteria = [])
+    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = []): array
     {
         static $volumeFolders = [];
 
@@ -633,15 +613,13 @@ class Assets extends Component
     /**
      * Get the folder tree for Assets by a folder id.
      *
-     * @param $folderId
+     * @param int $folderId
      *
      * @return array
      */
-    public function getFolderTreeByFolderId($folderId)
+    public function getFolderTreeByFolderId(int $folderId): array
     {
-        $folder = $this->getFolderById($folderId);
-
-        if (is_null($folder)) {
+        if (($folder = $this->getFolderById($folderId)) === null) {
             return [];
         }
 
@@ -651,27 +629,25 @@ class Assets extends Component
     /**
      * Returns a folder by its ID.
      *
-     * @param integer $folderId
+     * @param int $folderId
      *
      * @return VolumeFolder|null
      */
-    public function getFolderById($folderId)
+    public function getFolderById(int $folderId)
     {
-        if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById)) {
-            $result = $this->_createFolderQuery()
-                ->where(['id' => $folderId])
-                ->one();
-
-            if ($result) {
-                $folder = new VolumeFolder($result);
-            } else {
-                $folder = null;
-            }
-
-            $this->_foldersById[$folderId] = $folder;
+        if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
+            return $this->_foldersById[$folderId];
         }
 
-        return $this->_foldersById[$folderId];
+        $result = $this->_createFolderQuery()
+            ->where(['id' => $folderId])
+            ->one();
+
+        if (!$result) {
+            return $this->_foldersById[$folderId] = null;
+        }
+
+        return $this->_foldersById[$folderId] = new VolumeFolder($result);
     }
 
     /**
@@ -679,9 +655,9 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return array
+     * @return VolumeFolder[]
      */
-    public function findFolders($criteria = null)
+    public function findFolders($criteria = null): array
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -731,7 +707,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, $orderBy = 'path')
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /**
          * @var $query Query
@@ -794,11 +770,11 @@ class Assets extends Component
     /**
      * Returns the root folder for a given volume ID.
      *
-     * @param integer $volumeId The volume ID
+     * @param int $volumeId The volume ID
      *
      * @return VolumeFolder|null The root folder in that volume, or null if the volume doesn’t exist
      */
-    public function getRootFolderByVolumeId($volumeId)
+    public function getRootFolderByVolumeId(int $volumeId)
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
@@ -811,9 +787,9 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalFolders($criteria)
+    public function getTotalFolders($criteria): int
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);
@@ -834,14 +810,14 @@ class Assets extends Component
     /**
      * Get URL for a file.
      *
-     * @param Asset  $asset
-     * @param string $transform
+     * @param Asset                            $asset
+     * @param AssetTransform|string|array|null $transform
      *
      * @return string
      */
-    public function getUrlForAsset(Asset $asset, $transform = null)
+    public function getUrlForAsset(Asset $asset, $transform = null): string
     {
-        if (!$transform || !Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+        if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -849,8 +825,7 @@ class Assets extends Component
 
         // Get the transform index model
         $assetTransforms = Craft::$app->getAssetTransforms();
-        $index = $assetTransforms->getTransformIndex($asset,
-            $transform);
+        $index = $assetTransforms->getTransformIndex($asset, $transform);
 
         // Does the file actually exist?
         if ($index->fileExists) {
@@ -861,10 +836,10 @@ class Assets extends Component
                 try {
                     return $assetTransforms->ensureTransformUrlByIndexModel($index);
                 } catch (ImageException $exception) {
-                    Craft::warning($exception->getMessage());
+                    Craft::warning($exception->getMessage(), __METHOD__);
                     $assetTransforms->deleteTransformIndex($index->id);
 
-                    return Url::getResourceUrl('404');
+                    return UrlHelper::resourceUrl('404');
                 }
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
@@ -874,7 +849,7 @@ class Assets extends Component
                 }
 
                 // Return the temporary transform URL
-                return Url::getResourceUrl('transforms/'.$index->id);
+                return UrlHelper::resourceUrl('transforms/'.$index->id);
             }
         }
     }
@@ -882,13 +857,13 @@ class Assets extends Component
     /**
      * Find a replacement for a filename
      *
-     * @param string  $originalFilename the original filename for which to find a replacement.
-     * @param integer $folderId         THe folder in which to find the replacement
+     * @param string $originalFilename the original filename for which to find a replacement.
+     * @param int    $folderId         THe folder in which to find the replacement
      *
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
      * @return string
      */
-    public function getNameReplacementInFolder($originalFilename, $folderId)
+    public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
         if (!$folder) {
@@ -901,15 +876,13 @@ class Assets extends Component
         $existingFiles = [];
 
         foreach ($fileList as $file) {
-            if (StringHelper::toLowerCase(rtrim($folder->path,
-                    '/')) == StringHelper::toLowerCase($file['dirname'])
-            ) {
+            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) == StringHelper::toLowerCase($file['dirname'])) {
                 $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
             }
         }
 
         // Shorthand.
-        $canUse = function ($filenameToTest) use ($existingFiles) {
+        $canUse = function($filenameToTest) use ($existingFiles) {
             return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
         };
 
@@ -917,15 +890,15 @@ class Assets extends Component
             return $originalFilename;
         }
 
-        $extension = Io::getExtension($originalFilename);
-        $filename = Io::getFilename($originalFilename, false);
+        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+        $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.
-        if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches)) {
+        if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
             $base = $filename;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format("ymd_His");
+            $timestamp = DateTimeHelper::currentUTCDateTime()->format('ymd_His');
             $base = $filename.'_'.$timestamp;
         }
 
@@ -957,22 +930,22 @@ class Assets extends Component
     /**
      * Move an Asset.
      *
-     * @param Asset   $asset
-     * @param integer $folderId    Id of the folder of the destination
-     * @param string  $newFilename filename to use for the file at it's destination
+     * @param Asset  $asset
+     * @param int    $folderId    Id of the folder of the destination
+     * @param string $newFilename filename to use for the file at it's destination
      *
      * @throws AssetDisallowedExtensionException If the extension is not allowed.
      * @throws AssetConflictException            If there is a conflict.
      * @throws AssetLogicException               If the target folder does not exist.
      * @return void
      */
-    public function moveAsset(Asset $asset, $folderId, $newFilename = "")
+    public function moveAsset(Asset $asset, int $folderId, string $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
-        $extension = Io::getExtension($filename);
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -1009,50 +982,50 @@ class Assets extends Component
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
      *
-     * @param string  $fullPath The path to ensure the folder exists at.
-     * @param integer $volumeId
+     * @param string $fullPath The path to ensure the folder exists at.
+     * @param int    $volumeId
      *
-     * @return integer
+     * @return int
      */
-    public function ensureFolderByFullPathAndVolumeId($fullPath, $volumeId)
+    public function ensureFolderByFullPathAndVolumeId(string $fullPath, int $volumeId): int
     {
         $parameters = new FolderCriteria([
             'path' => $fullPath,
             'volumeId' => $volumeId
         ]);
 
-        $folderModel = $this->findFolder($parameters);
+        if (($folderModel = $this->findFolder($parameters)) !== null) {
+            return $folderModel->id;
+        }
 
         // If we don't have a folder matching these, create a new one
-        if (is_null($folderModel)) {
-            $parts = explode('/', rtrim($fullPath, '/'));
-            $folderName = array_pop($parts);
+        $parts = explode('/', rtrim($fullPath, '/'));
+        $folderName = array_pop($parts);
 
-            if (empty($parts)) {
-                // Looking for a top level folder, apparently.
-                $parameters->path = '';
-                $parameters->parentId = ':empty:';
-            } else {
-                $parameters->path = join('/', $parts).'/';
-            }
-
-            // Look up the parent folder
-            $parentFolder = $this->findFolder($parameters);
-
-            if (is_null($parentFolder)) {
-                $parentId = ':empty:';
-            } else {
-                $parentId = $parentFolder->id;
-            }
-
-            $folderModel = new VolumeFolder();
-            $folderModel->volumeId = $volumeId;
-            $folderModel->parentId = $parentId;
-            $folderModel->name = $folderName;
-            $folderModel->path = $fullPath;
-
-            $this->storeFolderRecord($folderModel);
+        if (empty($parts)) {
+            // Looking for a top level folder, apparently.
+            $parameters->path = '';
+            $parameters->parentId = ':empty:';
+        } else {
+            $parameters->path = implode('/', $parts).'/';
         }
+
+        // Look up the parent folder
+        $parentFolder = $this->findFolder($parameters);
+
+        if ($parentFolder === null) {
+            $parentId = ':empty:';
+        } else {
+            $parentId = $parentFolder->id;
+        }
+
+        $folderModel = new VolumeFolder();
+        $folderModel->volumeId = $volumeId;
+        $folderModel->parentId = $parentId;
+        $folderModel->name = $folderName;
+        $folderModel->path = $fullPath;
+
+        $this->storeFolderRecord($folderModel);
 
         return $folderModel->id;
     }
@@ -1084,7 +1057,7 @@ class Assets extends Component
     /**
      * Get the user's folder.
      *
-     * @param User $userModel
+     * @param User|null $userModel
      *
      * @return VolumeFolder|null
      */
@@ -1140,7 +1113,7 @@ class Assets extends Component
      * @throws FileException If there was a problem with the actual file.
      * @return void
      */
-    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, $newFilename = '')
+    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, string $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
@@ -1168,11 +1141,9 @@ class Assets extends Component
                 $toTransformPath = $fromTransformPath;
 
                 // In case we're changing the filename, make sure that we're not missing that.
-                $parts = explode("/", $toTransformPath);
+                $parts = explode('/', $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join("/",
-                        $parts).'/'.Io::getFilename($filename,
-                        false).'.'.Io::getExtension($transformName);
+                $toTransformPath = implode('/', $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;
@@ -1192,26 +1163,27 @@ class Assets extends Component
             }
         } // Move between volumes
         else {
-            $localPath = Io::getTempFilePath($asset->getExtension());
-            $sourceVolume->saveFileLocally($asset->getUri(), $localPath);
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $sourceVolume->saveFileLocally($asset->getUri(), $tempPath);
             $targetVolume = $targetFolder->getVolume();
-            $stream = fopen($localPath, 'r');
+            $stream = fopen($tempPath, 'rb');
 
             if (!$stream) {
-                Io::deleteFile($localPath);
+                FileHelper::removeFile($tempPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
                     ['path' => $asset->newFilePath]));
             }
 
-            $targetVolume->createFileByStream($toPath, $stream);
+            $targetVolume->createFileByStream($toPath, $stream, []);
             $sourceVolume->deleteFile($asset->getUri());
 
             if (is_resource($stream)) {
                 fclose($stream);
             }
 
-            Io::deleteFile($localPath);
+            FileHelper::removeFile($tempPath);
 
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);
@@ -1223,7 +1195,7 @@ class Assets extends Component
      *
      * @return Query
      */
-    private function _createFolderQuery()
+    private function _createFolderQuery(): Query
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
@@ -1237,7 +1209,7 @@ class Assets extends Component
      *
      * @return array
      */
-    private function _getFolderTreeByFolders($folders)
+    private function _getFolderTreeByFolders(array $folders): array
     {
         $tree = [];
         $referenceStore = [];
@@ -1267,7 +1239,7 @@ class Assets extends Component
      *
      * @return void
      */
-    private function _applyFolderConditions($query, FolderCriteria $criteria)
+    private function _applyFolderConditions(Query $query, FolderCriteria $criteria)
     {
         if ($criteria->id) {
             $query->andWhere(Db::parseParam('id', $criteria->id));
@@ -1285,7 +1257,7 @@ class Assets extends Component
             $query->andWhere(Db::parseParam('name', $criteria->name));
         }
 
-        if (!is_null($criteria->path)) {
+        if ($criteria->path !== null) {
             // Does the path have a comma in it?
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.

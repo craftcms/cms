@@ -9,8 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use yii\validators\StringValidator;
-use yii\validators\ValidationAsset;
-use yii\validators\Validator;
 
 /**
  * Class UserPasswordValidator.
@@ -24,32 +22,40 @@ class UserPasswordValidator extends StringValidator
     // =========================================================================
 
     /**
-     * @var boolean Whether the password must be different from the existing password.
+     * @var bool Whether the password must be different from the existing password.
      */
     public $forceDifferent = false;
 
     /**
-     * @var string The user's current (hashed) password.
+     * @var string|null The user's current (hashed) password.
      */
     public $currentPassword;
 
     /**
-     * @inheritdoc
-     */
-    public $min = 6;
-
-    /**
-     * @inheritdoc
-     */
-    public $max = 160;
-
-    /**
-     * @var string User-defined error message used when the new password is the same as [[currentPassword]].
+     * @var string|null User-defined error message used when the new password is the same as [[currentPassword]].
      */
     public $sameAsCurrent;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Default min
+        if (!isset($config['min'])) {
+            $config['min'] = 6;
+        }
+
+        // Default max
+        if (!isset($config['max'])) {
+            $config['max'] = 160;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

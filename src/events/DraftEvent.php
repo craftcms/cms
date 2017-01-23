@@ -7,6 +7,8 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Draft event class.
  *
@@ -19,12 +21,12 @@ class DraftEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\models\EntryDraft The draft model associated with the event.
+     * @var \craft\models\EntryDraft|null The draft model associated with the event.
      */
     public $draft;
 
     /**
-     * @var boolean Whether the draft is brand new
+     * @var bool Whether the draft is brand new
      */
     public $isNew = false;
 }

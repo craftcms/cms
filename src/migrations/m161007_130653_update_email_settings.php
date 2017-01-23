@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -26,6 +25,7 @@ class m161007_130653_update_email_settings extends Migration
     public function safeDown()
     {
         echo "m161007_130653_update_email_settings cannot be reverted.\n";
+
         return false;
     }
 }

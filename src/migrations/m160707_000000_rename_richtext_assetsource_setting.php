@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
@@ -23,8 +22,6 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
             ->from(['{{%fields}}'])
             ->where(['type' => 'craft\fields\RichText'])
             ->all();
-
-        echo '';
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);

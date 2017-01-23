@@ -21,17 +21,17 @@ class SearchQuery
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_query;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_termOptions;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_tokens;
 
@@ -43,10 +43,8 @@ class SearchQuery
      *
      * @param string $query
      * @param array  $termOptions
-     *
-     * @return SearchQuery
      */
-    public function __construct($query, $termOptions = [])
+    public function __construct(string $query, array $termOptions = [])
     {
         $this->_query = $query;
         $this->_termOptions = $termOptions;
@@ -59,7 +57,7 @@ class SearchQuery
      *
      * @return array
      */
-    public function getTokens()
+    public function getTokens(): array
     {
         return $this->_tokens;
     }
@@ -69,7 +67,7 @@ class SearchQuery
      *
      * @return string
      */
-    public function getQuery()
+    public function getQuery(): string
     {
         return $this->_query;
     }
@@ -87,7 +85,7 @@ class SearchQuery
         for ($token = strtok($this->_query, ' '); $token !== false; $token = strtok(' ')) {
             $appendToPrevious = false;
 
-            if ($token == 'OR') {
+            if ($token === 'OR') {
                 // Grab the next one or bail
                 if (($token = strtok(' ')) === false) {
                     break;
@@ -117,17 +115,15 @@ class SearchQuery
             }
 
             // Is this an exclude term?
-            if (StringHelper::first($token, 1) == '-') {
+            if (StringHelper::first($token, 1) === '-') {
                 $term->exclude = true;
                 $token = mb_substr($token, 1);
             }
 
             // Is this an attribute-specific term?
             if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match)) {
-                $term->attribute = $match[1];
-                $token = $match[3];
-
-                if ($match[2] == '::') {
+                list(, $term->attribute, $colons, $token) = $match;
+                if ($colons === '::') {
                     $term->exact = true;
                 }
             }
@@ -136,7 +132,7 @@ class SearchQuery
 
             if ($token && (StringHelper::startsWith($token, '\'') || StringHelper::startsWith($token, '"'))) {
                 // Is the end quote at the end of this very token?
-                if (StringHelper::last($token, 1) == StringHelper::first($token, 1)) {
+                if (StringHelper::last($token, 1) === StringHelper::first($token, 1)) {
                     $token = mb_substr($token, 1, -1);
                 } else {
                     $token = mb_substr($token, 1).' '.strtok(StringHelper::first($token, 1));
@@ -146,12 +142,12 @@ class SearchQuery
             }
 
             // Include sub-word matches?
-            if ($token && StringHelper::first($token, 1) == '*') {
+            if ($token && StringHelper::first($token, 1) === '*') {
                 $term->subLeft = true;
                 $token = mb_substr($token, 1);
             }
 
-            if ($token && substr($token, -1) == '*') {
+            if ($token && substr($token, -1) === '*') {
                 $term->subRight = true;
                 $token = mb_substr($token, 0, -1);
             }

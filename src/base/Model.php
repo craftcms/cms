@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use yii\base\UnknownMethodException;
 
@@ -52,7 +51,7 @@ abstract class Model extends \yii\base\Model
      * @param string $name
      * @param array  $arguments
      *
-     * @return $this
+     * @return static
      * @throws UnknownMethodException when calling an unknown method
      */
     public function __call($name, $arguments)
@@ -61,10 +60,10 @@ abstract class Model extends \yii\base\Model
             return parent::__call($name, $arguments);
         } catch (UnknownMethodException $e) {
             // Is this one of our attributes?
-            if (in_array($name, $this->attributes())) {
+            if (in_array($name, $this->attributes(), true)) {
                 $copy = $this->copy();
 
-                if (count($arguments) == 1) {
+                if (count($arguments) === 1) {
                     $copy->$name = $arguments[0];
                 } else {
                     $copy->$name = $arguments;
@@ -82,7 +81,7 @@ abstract class Model extends \yii\base\Model
      *
      * @return string[]
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $attributes = [];
 
@@ -106,7 +105,7 @@ abstract class Model extends \yii\base\Model
 
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($this->datetimeAttributes() as $attribute) {
-            $fields[$attribute] = function ($model, $attribute) {
+            $fields[$attribute] = function($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
                 }
@@ -121,7 +120,7 @@ abstract class Model extends \yii\base\Model
     /**
      * Returns a copy of this model.
      *
-     * @return $this
+     * @return static
      */
     public function copy()
     {
@@ -142,7 +141,7 @@ abstract class Model extends \yii\base\Model
      *
      * @deprecated in 3.0. Use [[getFirstError()]] instead.
      */
-    public function getError($attribute)
+    public function getError(string $attribute): string
     {
         Craft::$app->getDeprecator()->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
 

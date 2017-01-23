@@ -7,7 +7,6 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use yii\base\Component;
@@ -32,12 +31,12 @@ class Entries extends Component
      * $entry = Craft::$app->getEntries()->getEntryById($entryId);
      * ```
      *
-     * @param integer $entryId The entry’s ID.
-     * @param integer $siteId  The site to fetch the entry in. Defaults to the current site.
+     * @param int      $entryId The entry’s ID.
+     * @param int|null $siteId  The site to fetch the entry in. Defaults to the current site.
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById($entryId, $siteId = null)
+    public function getEntryById(int $entryId, int $siteId = null)
     {
         if (!$entryId) {
             return null;
@@ -51,12 +50,13 @@ class Entries extends Component
             ->where(['entries.id' => $entryId])
             ->scalar();
 
-        return Entry::find()
-            ->id($entryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
+        $query = Entry::find();
+        $query->id($entryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
+
+        return $query->one();
     }
 }

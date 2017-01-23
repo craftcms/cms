@@ -35,6 +35,6 @@
 	modalStorageKey: storageKey
 } %}
 
-{% registerjs %}
+{% js %}
 	new {{ jsClass }}({{ jsSettings|json_encode|raw }});
-{% endregisterjs %}
+{% endjs %}

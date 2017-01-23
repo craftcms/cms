@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\VolumeInterface;
+use yii\base\Event;
 
 /**
  * VolumeEvent class.
@@ -21,12 +22,12 @@ class VolumeEvent extends Event
     // =========================================================================
 
     /**
-     * @var VolumeInterface The volume associated with the event.
+     * @var VolumeInterface|null The volume associated with the event.
      */
     public $volume;
 
     /**
-     * @var boolean Whether the volume is brand new
+     * @var bool Whether the volume is brand new
      */
     public $isNew = false;
 }

@@ -7,18 +7,17 @@
 
 namespace craft\records;
 
-use craft\validators\LanguageValidator;
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use craft\validators\LanguageValidator;
 
 /**
  * Class EmailMessage record.
  *
- * @property integer $id      ID
- * @property string  $language Language
- * @property string  $key     Key
- * @property string  $subject Subject
- * @property string  $body    Body
+ * @property int    $id       ID
+ * @property string $language Language
+ * @property string $key      Key
+ * @property string $subject  Subject
+ * @property string $body     Body
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -47,7 +46,7 @@ class EmailMessage extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%emailmessages}}';
     }

@@ -9,9 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Field;
-use craft\helpers\ElementHelper;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\ElementHelper;
 
 /**
  * Class BaseEntryRevision model.
@@ -25,7 +25,7 @@ class BaseEntryRevisionModel extends Entry
     // =========================================================================
 
     /**
-     * @var integer The revision creator’s user ID
+     * @var int|null The revision creator’s user ID
      */
     public $creatorId;
 
@@ -50,7 +50,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return void
      */
-    public function setContentFromRevision($content)
+    public function setContentFromRevision(array $content)
     {
         // Swap the field IDs with handles
         $contentByFieldHandles = [];
@@ -83,7 +83,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         if ($this->uri === null) {
             ElementHelper::setUniqueUri($this);

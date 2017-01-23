@@ -8,19 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\Field;
 use craft\helpers\Json;
-use craft\helpers\Url;
-use craft\elements\Category;
-use craft\models\CategoryGroup;
-use craft\models\CategoryGroup_SiteSettings;
+use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\web\Controller;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
@@ -50,7 +43,7 @@ class SitesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionSettingsIndex()
+    public function actionSettingsIndex(): string
     {
         $allSites = Craft::$app->getSites()->getAllSites();
 
@@ -62,23 +55,25 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer $siteId The site’s ID, if editing an existing site
-     * @param Site    $site   The site being edited, if there were any validation errors
+     * @param int|null  $siteId The site’s ID, if editing an existing site
+     * @param Site|null $site   The site being edited, if there were any validation errors
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site cannot be found
      */
-    public function actionEditSite($siteId = null, Site $site = null)
+    public function actionEditSite(int $siteId = null, Site $site = null): string
     {
+        $variables = [];
+
         // Breadcrumbs
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => Url::url('settings/sites')
+                'url' => UrlHelper::url('settings/sites')
             ]
         ];
 
@@ -163,7 +158,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderSites()
+    public function actionReorderSites(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -179,7 +174,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSite()
+    public function actionDeleteSite(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

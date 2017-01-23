@@ -7,21 +7,21 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class EntryType record.
  *
- * @property integer     $id            ID
- * @property integer     $sectionId     Section ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $sectionId     Section ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
- * @property boolean     $hasTitleField Has title field
+ * @property bool        $hasTitleField Has title field
  * @property string      $titleLabel    Title label
  * @property string      $titleFormat   Title format
- * @property integer     $sortOrder     Sort order
+ * @property int         $sortOrder     Sort order
  * @property Section     $section       Section
  * @property FieldLayout $fieldLayout   Field layout
  *
@@ -38,7 +38,7 @@ class EntryType extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%entrytypes}}';
     }
@@ -48,7 +48,7 @@ class EntryType extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -58,7 +58,7 @@ class EntryType extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

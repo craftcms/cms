@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\UserGroup;
+use yii\db\Connection;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
@@ -21,7 +22,7 @@ use craft\models\UserGroup;
  *
  * @method User[]|array all($db = null)
  * @method User|array|null one($db = null)
- * @method User|array|null nth($n, $db = null)
+ * @method User|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -35,52 +36,42 @@ class UserQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * @var bool Whether to only return users that are admins.
      */
-    public $orderBy = 'users.username';
+    public $admin = false;
 
     /**
-     * @inheritdoc
+     * @var bool Whether to only return the client user.
      */
-    public $status = User::STATUS_ACTIVE;
+    public $client = false;
 
     /**
-     * @var boolean Whether to only return users that are admins.
-     */
-    public $admin;
-
-    /**
-     * @var boolean Whether to only return the client user.
-     */
-    public $client;
-
-    /**
-     * @var string|integer The permission that the resulting users must have.
+     * @var string|int|false|null The permission that the resulting users must have.
      */
     public $can;
 
     /**
-     * @var integer|integer[] The tag group ID(s) that the resulting users must be in.
+     * @var int|int[]|null The tag group ID(s) that the resulting users must be in.
      */
     public $groupId;
 
     /**
-     * @var string|string[] The email address that the resulting users must have.
+     * @var string|string[]|null The email address that the resulting users must have.
      */
     public $email;
 
     /**
-     * @var string|string[] The username that the resulting users must have.
+     * @var string|string[]|null The username that the resulting users must have.
      */
     public $username;
 
     /**
-     * @var string|string[] The first name that the resulting users must have.
+     * @var string|string[]|null The first name that the resulting users must have.
      */
     public $firstName;
 
     /**
-     * @var string|string[] The last name that the resulting users must have.
+     * @var string|string[]|null The last name that the resulting users must have.
      */
     public $lastName;
 
@@ -90,7 +81,7 @@ class UserQuery extends ElementQuery
     public $lastLoginDate;
 
     /**
-     * @var boolean Whether the users' passwords should be fetched.
+     * @var bool Whether the users' passwords should be fetched.
      */
     public $withPassword = false;
 
@@ -100,27 +91,41 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default orderBy
+        if (!isset($config['orderBy'])) {
+            $config['orderBy'] = 'users.username';
+        }
+
+        // Default status
+        if (!isset($config['status'])) {
+            $config['status'] = User::STATUS_ACTIVE;
+        }
+
+        parent::__construct($elementType, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
     /**
      * Sets the [[admin]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function admin($value = true)
+    public function admin(bool $value = true)
     {
         $this->admin = $value;
 
@@ -130,11 +135,11 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[client]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function client($value = true)
+    public function client(bool $value = true)
     {
         $this->client = $value;
 
@@ -144,13 +149,13 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[can]] property.
      *
-     * @param string|integer $value The property value
+     * @param string|int|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function can($value)
     {
-        $this->client = $value;
+        $this->can = $value;
 
         return $this;
     }
@@ -158,21 +163,22 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given tag group(s)’s handle(s).
      *
-     * @param string|string[]|UserGroup $value The property value
+     * @param string|string[]|UserGroup|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function group($value)
     {
         if ($value instanceof UserGroup) {
             $this->groupId = $value->id;
-        } else {
-            $query = new Query();
-            $this->groupId = $query
+        } else if ($value !== null) {
+            $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -181,9 +187,9 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function groupId($value)
     {
@@ -195,9 +201,9 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[email]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function email($value)
     {
@@ -209,9 +215,9 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[username]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function username($value)
     {
@@ -223,9 +229,9 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[firstName]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function firstName($value)
     {
@@ -237,9 +243,9 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[lastName]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function lastName($value)
     {
@@ -253,7 +259,7 @@ class UserQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function lastLoginDate($value)
     {
@@ -265,11 +271,11 @@ class UserQuery extends ElementQuery
     /**
      * Sets the [[withPassword]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function withPassword($value = true)
+    public function withPassword(bool $value = true)
     {
         $this->withPassword = $value;
 
@@ -282,7 +288,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
@@ -326,8 +332,7 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $query = new Query();
-            $userIds = $query
+            $userIds = (new Query())
                 ->select(['userId'])
                 ->from(['{{%usergroups_users}}'])
                 ->where(Db::parseParam('groupId', $this->groupId))
@@ -366,7 +371,7 @@ class UserQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition($status)
+    protected function statusCondition(string $status)
     {
         switch ($status) {
             case User::STATUS_ACTIVE:

@@ -19,12 +19,12 @@ class EntryVersion extends BaseEntryRevisionModel
     // =========================================================================
 
     /**
-     * @var integer Version ID
+     * @var int|null Version ID
      */
     public $versionId;
 
     /**
-     * @var integer Num
+     * @var int|null Num
      */
     public $num;
 
@@ -39,7 +39,7 @@ class EntryVersion extends BaseEntryRevisionModel
         if (isset($config['data'])) {
             // Merge the version and entry data
             $entryData = $config['data'];
-            $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
+            $fieldContent = $entryData['fields'] ?? null;
             $config['versionId'] = $config['id'];
             $config['id'] = $config['entryId'];
             $config['revisionNotes'] = $config['notes'];

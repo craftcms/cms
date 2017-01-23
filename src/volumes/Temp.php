@@ -2,7 +2,7 @@
 namespace craft\volumes;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume
@@ -23,61 +23,32 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function rules()
+    public static function displayName(): string
     {
-        $rules = parent::rules();
-        $rules[] = [['path'], 'required'];
-
-        return $rules;
+        return Craft::t('app', 'Temp Folder');
     }
-
-    /**
-     * @inheritdoc
-     */
-    public static function displayName()
-    {
-        return Craft::t('app', 'Local Folder');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isLocal()
-    {
-        return true;
-    }
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * Path to the root of this sources local folder.
-     *
-     * @var string
-     */
-    public $path = "";
 
     // Public Methods
     // =========================================================================
 
     /**
-     * Constructor
+     * @inheritdoc
      */
     public function init()
     {
         parent::init();
 
-        if (isset($this->path)) {
+        if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
             $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
         }
 
-        if (!isset($this->url)) {
-            $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
+        if ($this->url === null) {
+            $this->url = rtrim(UrlHelper::resourceUrl(), '/').'/tempassets/';
         }
 
-        if (!isset($this->name)) {
+        if ($this->name === null) {
             $this->name = Craft::t('app', 'Temporary source');
         }
     }
@@ -93,7 +64,7 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
         return $this->path;
     }

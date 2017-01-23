@@ -23,17 +23,17 @@ class NewChild extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 
     /**
-     * @var integer The maximum number of levels that the structure is allowed to have
+     * @var int|null The maximum number of levels that the structure is allowed to have
      */
     public $maxLevels;
 
     /**
-     * @var string The URL that the user should be taken to after clicking on this element action
+     * @var string|null The URL that the user should be taken to after clicking on this element action
      */
     public $newChildUrl;
 
@@ -53,7 +53,7 @@ class NewChild extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }
@@ -67,28 +67,28 @@ class NewChild extends ElementAction
         $maxLevels = Json::encode($this->maxLevels);
         $newChildUrl = Json::encode($this->newChildUrl);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		validateSelection: function(\$selectedItems)
-		{
-			return (!$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'));
-		},
-		activate: function(\$selectedItems)
-		{
-			Craft.redirectTo(Craft.getUrl($newChildUrl, 'parentId='+\$selectedItems.find('.element').data('id')));
-		}
-	});
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return (!$maxLevels || $maxLevels > \$selectedItems.find('.element').data('level'));
+        },
+        activate: function(\$selectedItems)
+        {
+            Craft.redirectTo(Craft.getUrl($newChildUrl, 'parentId='+\$selectedItems.find('.element').data('id')));
+        }
+    });
 
-	if (Craft.elementIndex.view.structureTableSort)
-	{
-		Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
-	}
+    if (Craft.elementIndex.view.structureTableSort)
+    {
+        Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+    }
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

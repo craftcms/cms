@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\MigrationHelper;
 use yii\db\Expression;
-use yii\helpers\ArrayHelper;
 
 /**
  * m160912_230520_require_entry_type_id migration.
@@ -35,7 +34,7 @@ class m160912_230520_require_entry_type_id extends Migration
             ->from(['{{%sections}} s'])
             ->all();
 
-        if ($results) {
+        if (!empty($results)) {
             // Build the mapping case SQL
             $caseSql = 'case';
 
@@ -62,9 +61,9 @@ class m160912_230520_require_entry_type_id extends Migration
             ->where(['typeId' => null])
             ->column();
 
-        if ($typelessEntryIds) {
+        if (!empty($typelessEntryIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
-            Craft::warning("Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds));
+            echo "    > Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds)."\n";
         }
 
         // Make typeId required
@@ -79,6 +78,7 @@ class m160912_230520_require_entry_type_id extends Migration
     public function safeDown()
     {
         echo "m160912_230520_require_entry_type_id cannot be reverted.\n";
+
         return false;
     }
 }

@@ -5,11 +5,13 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use yii\base\Exception;
 
 /**
  * m160804_110002_userphotos_to_assets migration.
@@ -17,7 +19,7 @@ use craft\helpers\StringHelper;
 class m160804_110002_userphotos_to_assets extends Migration
 {
     /**
-     * @var string
+     * @var string|null
      */
     private $_basePath;
 
@@ -26,34 +28,36 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeUp()
     {
-        $this->_basePath = Craft::$app->getPath()->getStoragePath().'/'.'userphotos';
-        Craft::info('Removing __default__ folder');
-        Io::deleteFolder($this->_basePath.'/__default__');
+        $this->_basePath = Craft::$app->getPath()->getStoragePath().DIRECTORY_SEPARATOR.'userphotos';
 
-        Craft::info('Changing the relative path from username/original.ext to original.ext');
+        // Make sure the userphotos folder actually exists
+        FileHelper::createDirectory($this->_basePath);
+
+        echo "    > Removing __default__ folder\n";
+        FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
+
+        echo "    > Changing the relative path from username/original.ext to original.ext\n";
         $affectedUsers = $this->_moveUserphotos();
 
-        Craft::info('Creating a private Yii Volume as default for Users');
+        echo "    > Creating a private Volume as default for Users\n";
         $volumeId = $this->_createUserphotoVolume();
 
-        Craft::info('Setting the Volume as the default one for userphoto uploads');
+        echo "    > Setting the Volume as the default one for userphoto uploads\n";
         $this->_setUserphotoVolume($volumeId);
 
-        Craft::info('Converting photos to Assets');
+        echo "    > Converting photos to Assets\n";
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
-        Craft::info('Updating Users table to drop the photo column and add photoId column.');
+        echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
         $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
-        Craft::info('Setting the photoId value');
+        echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);
 
-        Craft::info('Removing all the subfolders.');
-        $this->_removeSubfolders();
-
-        Craft::info('All done');
+        echo "    > Removing all the subfolders.\n";
+        $this->_removeSubdirectories();
 
         return true;
     }
@@ -63,7 +67,8 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeDown()
     {
-        echo 'm160804_110002_userphotos_to_assets cannot be reverted.\n';
+        echo "m160804_110002_userphotos_to_assets cannot be reverted.\n";
+
         return false;
     }
 
@@ -74,50 +79,65 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Move user photos from subfolders to root.
      *
      * @return array
+     * @throws Exception in case of failure
      */
-    private function _moveUserphotos()
+    private function _moveUserphotos(): array
     {
+        $handle = opendir($this->_basePath);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: {$this->_basePath}");
+        }
+
         $affectedUsers = [];
-        $subfolders = Io::getFolderContents($this->_basePath, false);
 
-        if ($subfolders) {
-            // Grab the users with photos
-            foreach ($subfolders as $subfolder) {
-                $usernameOrEmail = trim(StringHelper::replace($subfolder, $this->_basePath, ''), '/');
-
-                $user = (new Query())
-                    ->select(['id', 'photo'])
-                    ->from(['{{%users}}'])
-                    ->where(['username' => $usernameOrEmail])
-                    ->one();
-
-                $sourcePath = $subfolder.'original/'.$user['photo'];
-
-                // If the file actually exists
-                if (Io::fileExists($sourcePath)) {
-                    // Make sure that the filename is unique
-                    $counter = 0;
-
-                    $baseFilename = Io::getFilename($user['photo'], false);
-                    $extension = Io::getExtension($user['photo']);
-                    $filename = $baseFilename.'.'.$extension;
-
-                    while (Io::fileExists($this->_basePath.'/'.$filename)) {
-                        $filename = $baseFilename.'_'.++$counter.'.'.$extension;
-                    }
-
-                    // In case the filename changed
-                    $user['photo'] = $filename;
-
-                    // Store for reference
-                    $affectedUsers[] = $user;
-
-                    $targetPath = $this->_basePath.'/'.$filename;
-
-                    // Move the file to the new location
-                    Io::move($sourcePath, $targetPath);
-                }
+        // Grab the users with photos
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..') {
+                continue;
             }
+            $path = $this->_basePath.DIRECTORY_SEPARATOR.$subDir;
+            if (is_file($path)) {
+                continue;
+            }
+
+            $user = (new Query())
+                ->select(['id', 'photo'])
+                ->from(['{{%users}}'])
+                ->where(['username' => $subDir])
+                ->one();
+
+            // Make sure the user still exists and has a photo
+            if (!$user || empty($user['photo'])) {
+                continue;
+            }
+
+            // Make sure the original file still exists
+            $sourcePath = $this->_basePath.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.'original'.DIRECTORY_SEPARATOR.$user['photo'];
+            if (!is_file($sourcePath)) {
+                continue;
+            }
+
+            // Make sure that the filename is unique
+            $counter = 0;
+
+            $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
+            $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
+            $filename = $baseFilename.'.'.$extension;
+
+            while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
+                $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+            }
+
+            // In case the filename changed
+            $user['photo'] = $filename;
+
+            // Store for reference
+            $affectedUsers[] = $user;
+
+            $targetPath = $this->_basePath.DIRECTORY_SEPARATOR.$filename;
+
+            // Move the file to the new location
+            rename($sourcePath, $targetPath);
         }
 
         return $affectedUsers;
@@ -126,9 +146,9 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Create the user photo volume.
      *
-     * @return integer volume id
+     * @return int volume id
      */
-    private function _createUserphotoVolume()
+    private function _createUserphotoVolume(): int
     {
         // Safety first!
         $handle = 'userPhotos';
@@ -195,11 +215,11 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Set the photo volume setting for users.
      *
-     * @param integer $volumeId
+     * @param int $volumeId
      *
      * @return void
      */
-    private function _setUserphotoVolume($volumeId)
+    private function _setUserphotoVolume(int $volumeId)
     {
         $systemSettings = Craft::$app->getSystemSettings();
         $settings = $systemSettings->getSettings('users');
@@ -211,12 +231,12 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Convert matching user photos to Assets in a Volume and add that information
      * to the array passed in.
      *
-     * @param integer $volumeId
+     * @param int   $volumeId
      * @param array $userList
      *
      * @return array $userList
      */
-    private function _convertPhotosToAssets($volumeId, $userList)
+    private function _convertPhotosToAssets(int $volumeId, array $userList): array
     {
         $db = Craft::$app->getDb();
 
@@ -237,7 +257,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $changes = [];
 
         foreach ($userList as $user) {
-            $filePath = $this->_basePath.'/'.$user['photo'];
+            $filePath = $this->_basePath.DIRECTORY_SEPARATOR.$user['photo'];
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
@@ -249,7 +269,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ])
                 ->one();
 
-            if (!$assetExists && Io::fileExists($filePath)) {
+            if (!$assetExists && is_file($filePath)) {
                 $elementData = [
                     'type' => 'craft\elements\Asset',
                     'enabled' => 1,
@@ -276,7 +296,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(Io::getFilename($user['photo'], false))
+                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
                         ->insert('{{%content}}', $contentData)
@@ -290,10 +310,10 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
                     'kind' => 'image',
-                    'size' => Io::getFileSize($filePath),
+                    'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
-                    'dateModified' => Io::getLastTimeModified($filePath)
+                    'dateModified' => Db::prepareDateForDb(filemtime($filePath))
                 ];
                 $db->createCommand()
                     ->insert('{{%assets}}', $assetData)
@@ -313,7 +333,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return void
      */
-    private function _setPhotoIdValues($userlist)
+    private function _setPhotoIdValues(array $userlist)
     {
         if (is_array($userlist)) {
             $db = Craft::$app->getDb();
@@ -326,16 +346,14 @@ class m160804_110002_userphotos_to_assets extends Migration
     }
 
     /**
-     * Remove all the subfolders in the userphoto folder.
+     * Remove all the subdirectories in the userphotos folder.
      */
-    private function _removeSubfolders()
+    private function _removeSubdirectories()
     {
-        $folders = Io::getFolders($this->_basePath.'/');
+        $subDirs = glob($this->_basePath.DIRECTORY_SEPARATOR.'*', GLOB_ONLYDIR);
 
-        if (is_array($folders)) {
-            foreach ($folders as $folder) {
-                Io::deleteFolder($folder);
-            }
+        foreach ($subDirs as $dir) {
+            FileHelper::removeDirectory($dir);
         }
     }
 }

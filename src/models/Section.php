@@ -9,8 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\validators\HandleValidator;
+use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
+use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
 /**
@@ -34,37 +35,37 @@ class Section extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Structure ID
+     * @var int|null Structure ID
      */
     public $structureId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 
     /**
-     * @var integer Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 
     /**
-     * @var boolean Enable versioning
+     * @var bool Enable versioning
      */
     public $enableVersioning = true;
 
@@ -103,7 +104,7 @@ class Section extends Model
     {
         $validates = parent::validate($attributeNames, $clearErrors);
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
             foreach ($this->getSiteSettings() as $siteSettings) {
                 if (!$siteSettings->validate(null, $clearErrors)) {
                     $validates = false;
@@ -119,7 +120,7 @@ class Section extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -129,18 +130,18 @@ class Section extends Model
      *
      * @return Section_SiteSettings[]
      */
-    public function getSiteSettings()
+    public function getSiteSettings(): array
     {
-        if (!isset($this->_siteSettings)) {
-            if ($this->id) {
-                $siteSettings = Craft::$app->getSections()->getSectionSiteSettings($this->id, 'siteId');
-            } else {
-                $siteSettings = [];
-            }
-
-            // Set them with setSiteSettings() so setSection() gets called on them
-            $this->setSiteSettings($siteSettings);
+        if ($this->_siteSettings !== null) {
+            return $this->_siteSettings;
         }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        // Set them with setSiteSettings() so setSection() gets called on them
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getSections()->getSectionSiteSettings($this->id), 'siteId'));
 
         return $this->_siteSettings;
     }
@@ -152,7 +153,7 @@ class Section extends Model
      *
      * @return void
      */
-    public function setSiteSettings($siteSettings)
+    public function setSiteSettings(array $siteSettings)
     {
         $this->_siteSettings = $siteSettings;
 
@@ -164,12 +165,12 @@ class Section extends Model
     /**
      * Adds site-specific errors to the model.
      *
-     * @param array   $errors
-     * @param integer $siteId
+     * @param array $errors
+     * @param int   $siteId
      *
      * @return void
      */
-    public function addSiteSettingsErrors($errors, $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId)
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute.'-'.$siteId;
@@ -182,30 +183,20 @@ class Section extends Model
     /**
      * Returns the section's entry types.
      *
-     * @param string|null $indexBy
-     *
      * @return EntryType[]
      */
-    public function getEntryTypes($indexBy = null)
+    public function getEntryTypes(): array
     {
-        if (!isset($this->_entryTypes)) {
-            if ($this->id) {
-                $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
-            } else {
-                $this->_entryTypes = [];
-            }
-        }
-
-        if (!$indexBy) {
+        if ($this->_entryTypes !== null) {
             return $this->_entryTypes;
         }
 
-        $entryTypes = [];
-
-        foreach ($this->_entryTypes as $entryType) {
-            $entryTypes[$entryType->$indexBy] = $entryType;
+        if (!$this->id) {
+            return [];
         }
 
-        return $entryTypes;
+        $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
+
+        return $this->_entryTypes;
     }
 }

@@ -24,12 +24,12 @@ class FieldLayout extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Type
+     * @var string|null Type
      */
     public $type;
 
@@ -62,17 +62,17 @@ class FieldLayout extends Model
      *
      * @return FieldLayoutTab[] The layout’s tabs.
      */
-    public function getTabs()
+    public function getTabs(): array
     {
-        if (!isset($this->_tabs)) {
-            if ($this->id) {
-                $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
-            } else {
-                $this->_tabs = [];
-            }
+        if ($this->_tabs !== null) {
+            return $this->_tabs;
         }
 
-        return $this->_tabs;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
     }
 
     /**
@@ -80,17 +80,17 @@ class FieldLayout extends Model
      *
      * @return FieldInterface[] The layout’s fields.
      */
-    public function getFields()
+    public function getFields(): array
     {
-        if (!isset($this->_fields)) {
-            if ($this->id) {
-                $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
-            } else {
-                $this->_fields = [];
-            }
+        if ($this->_fields !== null) {
+            return $this->_fields;
         }
 
-        return $this->_fields;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
     }
 
     /**
@@ -98,7 +98,7 @@ class FieldLayout extends Model
      *
      * @return array The layout’s fields’ IDs.
      */
-    public function getFieldIds()
+    public function getFieldIds(): array
     {
         $ids = [];
 
@@ -141,7 +141,7 @@ class FieldLayout extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->_fields = $fields;
     }

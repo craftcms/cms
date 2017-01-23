@@ -9,7 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\helpers\App as AppHelper;
-use craft\helpers\Io as IoHelper;
+use craft\helpers\Assets;
 
 /**
  * Io variable.
@@ -25,9 +25,9 @@ class Io
     /**
      * Return max upload size in bytes.
      *
-     * @return integer
+     * @return int
      */
-    public function getMaxUploadSize()
+    public function getMaxUploadSize(): int
     {
         $maxUpload = AppHelper::phpConfigValueInBytes('upload_max_filesize');
         $maxPost = AppHelper::phpConfigValueInBytes('post_max_size');
@@ -53,8 +53,8 @@ class Io
      *
      * @return array
      */
-    public function getFileKinds()
+    public function getFileKinds(): array
     {
-        return IoHelper::getFileKinds();
+        return Assets::getFileKinds();
     }
 }

@@ -7,7 +7,6 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\helpers\ArrayHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;
@@ -33,7 +32,7 @@ class UniqueValidator extends YiiUniqueValidator
     public $pk;
 
     /**
-     * @var Model The model that is being validated
+     * @var Model|null The model that is being validated
      */
     protected $originalModel;
 

@@ -11,8 +11,9 @@ use Craft;
 use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -36,7 +37,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Global Set');
     }
@@ -44,7 +45,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -52,7 +53,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -62,7 +63,7 @@ class GlobalSet extends Element
      *
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new GlobalSetQuery(get_called_class());
     }
@@ -71,17 +72,17 @@ class GlobalSet extends Element
     // =========================================================================
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var integer Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
@@ -93,9 +94,9 @@ class GlobalSet extends Element
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**
@@ -105,8 +106,8 @@ class GlobalSet extends Element
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
-            'class' => \craft\behaviors\FieldLayoutBehavior::class,
-            'elementType' => \craft\elements\GlobalSet::class
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => GlobalSet::class
         ];
 
         return $behaviors;
@@ -153,7 +154,7 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        return Url::getCpUrl('globals/'.$this->handle);
+        return UrlHelper::cpUrl('globals/'.$this->handle);
     }
 
     // Events
@@ -162,9 +163,9 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function beforeDelete()
+    public function beforeDelete(): bool
     {
-        if ($this->fieldLayoutId) {
+        if ($this->fieldLayoutId !== null) {
             Craft::$app->getFields()->deleteLayoutById($this->fieldLayoutId);
         }
 

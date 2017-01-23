@@ -43,15 +43,15 @@ class SearchQueryTerm
     /**
      * @var null
      */
-    public $attribute = null;
+    public $attribute;
 
     /**
      * @var null
      */
-    public $term = null;
+    public $term;
 
     /**
-     * @var null
+     * @var bool|null
      */
-    public $phrase = null;
+    public $phrase;
 }

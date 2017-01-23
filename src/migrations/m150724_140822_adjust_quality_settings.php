@@ -12,9 +12,9 @@ class m150724_140822_adjust_quality_settings extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return boolean
+     * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $transforms = (new Query())
             ->select(['id', 'quality'])

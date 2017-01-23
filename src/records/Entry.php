@@ -7,16 +7,16 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Entry record.
  *
- * @property integer        $id         ID
- * @property integer        $sectionId  Section ID
- * @property integer        $typeId     Type ID
- * @property integer        $authorId   Author ID
+ * @property int            $id         ID
+ * @property int            $sectionId  Section ID
+ * @property int            $typeId     Type ID
+ * @property int            $authorId   Author ID
  * @property \DateTime      $postDate   Post date
  * @property \DateTime      $expiryDate Expiry date
  * @property Element        $element    Element
@@ -38,7 +38,7 @@ class Entry extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%entries}}';
     }
@@ -48,7 +48,7 @@ class Entry extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -58,7 +58,7 @@ class Entry extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -68,7 +68,7 @@ class Entry extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getType()
+    public function getType(): ActiveQueryInterface
     {
         return $this->hasOne(EntryType::class, ['id' => 'typeId']);
     }
@@ -78,7 +78,7 @@ class Entry extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getAuthor()
+    public function getAuthor(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'authorId']);
     }
@@ -88,7 +88,7 @@ class Entry extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVersions()
+    public function getVersions(): ActiveQueryInterface
     {
         return $this->hasMany(EntryVersion::class, ['elementId' => 'id']);
     }

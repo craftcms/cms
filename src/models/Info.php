@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\validators\DateTimeValidator;
 
 /**
  * Class Info model.
@@ -22,12 +21,12 @@ class Info extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
     public $version;
 
@@ -37,7 +36,7 @@ class Info extends Model
     public $schemaVersion = '0';
 
     /**
-     * @var integer Edition
+     * @var int Edition
      */
     public $edition = \Craft::Personal;
 
@@ -47,32 +46,32 @@ class Info extends Model
     public $timezone = 'America/Los_Angeles';
 
     /**
-     * @var boolean On
+     * @var bool On
      */
     public $on = false;
 
     /**
-     * @var boolean Maintenance
+     * @var bool Maintenance
      */
     public $maintenance = false;
 
     /**
-     * @var string Uid
+     * @var string|null Uid
      */
     public $uid;
 
     /**
      * @var string Field version
      */
-    public $fieldVersion;
+    public $fieldVersion = '000000000000';
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 
@@ -86,8 +85,8 @@ class Info extends Model
     {
         parent::init();
 
-        // Make sure $edition is going to be an integer
-        if (isset($this->edition)) {
+        // Make sure $edition is going to be an int
+        if (is_string($this->edition)) {
             $this->edition = (int)$this->edition;
         }
     }

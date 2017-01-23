@@ -23,7 +23,7 @@ class Session extends \yii\web\Session
     // =========================================================================
 
     /**
-     * @var string The session variable name used to store the authorization keys for the current session.
+     * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
      * @see deauthorize()
      * @see checkAuthorization()
@@ -39,8 +39,7 @@ class Session extends \yii\web\Session
     public function __construct($config = [])
     {
         // Set the state-based property names
-        $appId = Craft::$app->getConfig()->get('appId');
-        $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
+        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
         $config['flashParam'] = $stateKeyPrefix.'__flash';
         $config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
 
@@ -68,7 +67,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function setNotice($message)
+    public function setNotice(string $message)
     {
         $this->setFlash('notice', $message);
     }
@@ -85,7 +84,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function setError($message)
+    public function setError(string $message)
     {
         $this->setFlash('error', $message);
     }
@@ -100,11 +99,11 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function addJsResourceFlash($resource)
+    public function addJsResourceFlash(string $resource)
     {
         $resources = $this->getJsResourceFlashes(false);
 
-        if (!in_array($resource, $resources)) {
+        if (!in_array($resource, $resources, true)) {
             $resources[] = $resource;
             $this->setFlash('jsResources', $resources);
         }
@@ -113,11 +112,11 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS resource flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS resource flashes.
      */
-    public function getJsResourceFlashes($delete = true)
+    public function getJsResourceFlashes(bool $delete = true): array
     {
         return $this->getFlash('jsResources', [], $delete);
     }
@@ -132,7 +131,7 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function addJsFlash($js)
+    public function addJsFlash(string $js)
     {
         $scripts = $this->getJsFlashes();
         $scripts[] = $js;
@@ -142,11 +141,11 @@ class Session extends \yii\web\Session
     /**
      * Returns the stored JS flashes.
      *
-     * @param boolean $delete Whether to delete the stored flashes. Defaults to `true`.
+     * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS flashes.
      */
-    public function getJsFlashes($delete = true)
+    public function getJsFlashes(bool $delete = true): array
     {
         return $this->getFlash('js', [], $delete);
     }
@@ -161,11 +160,11 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function authorize($action)
+    public function authorize(string $action)
     {
         $access = $this->get($this->authAccessParam, []);
 
-        if (!in_array($action, $access)) {
+        if (!in_array($action, $access, true)) {
             $access[] = $action;
             $this->set($this->authAccessParam, $access);
         }
@@ -178,10 +177,10 @@ class Session extends \yii\web\Session
      *
      * @return void
      */
-    public function deauthorize($action)
+    public function deauthorize(string $action)
     {
         $access = $this->get($this->authAccessParam, []);
-        $index = array_search($action, $access);
+        $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
@@ -194,12 +193,12 @@ class Session extends \yii\web\Session
      *
      * @param string $action
      *
-     * @return boolean
+     * @return bool
      */
-    public function checkAuthorization($action)
+    public function checkAuthorization(string $action): bool
     {
         $access = $this->get($this->authAccessParam, []);
 
-        return in_array($action, $access);
+        return in_array($action, $access, true);
     }
 }

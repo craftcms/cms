@@ -2,9 +2,9 @@
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
-{% registercssresource "css/login.css" %}
-{% registerjsresource "js/login.js" %}
-{% do craft.app.view.registerTranslations('app', [
+{% do view.registerCssResource("css/login.css") %}
+{% do view.registerJsResource("js/login.js") %}
+{% do view.registerTranslations('app', [
 	"Reset Password",
 	"Check your email for instructions to reset your password.",
 ]) %}
@@ -25,7 +25,7 @@
 					'<form id="login-form" method="post" accept-charset="UTF-8" {% if hasLogo -%}
 			{%- set logo = craft.rebrand.logo -%}
 			{%- set padding = logo.height + 30 -%}
-		class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((353+padding)/2) }}px"
+		class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
 				{%- endif %}>' +
 			'{% if not hasLogo -%}<h1>{{ siteName }}</h1>{%- endif %}'+
 			'{% set placeHolderText = (craft.app.config.get('useEmailAsUsername') ? "Email"|t('app') : "Username or Email"|t('app')) %}' +

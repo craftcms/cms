@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Entry;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -49,7 +49,7 @@ class SectionsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionIndex(array $variables = [])
+    public function actionIndex(array $variables = []): string
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
@@ -59,14 +59,14 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param integer $sectionId The section’s id, if any.
-     * @param Section $section   The section being edited, if there were any validation errors.
+     * @param int|null     $sectionId The section’s id, if any.
+     * @param Section|null $section   The section being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection($sectionId = null, Section $section = null)
+    public function actionEditSection(int $sectionId = null, Section $section = null): string
     {
         $variables = [
             'sectionId' => $sectionId,
@@ -106,7 +106,7 @@ class SectionsController extends Controller
             $typeOptions[$type] = Craft::t('app', ucfirst($type));
         }
 
-        if (!$typeOptions) {
+        if (empty($typeOptions)) {
             throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
         }
 
@@ -120,11 +120,11 @@ class SectionsController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
         ];
 
@@ -215,7 +215,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSection()
+    public function actionDeleteSection(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -232,12 +232,12 @@ class SectionsController extends Controller
     /**
      * Entry types index
      *
-     * @param integer $sectionId The ID of the section whose entry types we’re listing
+     * @param int $sectionId The ID of the section whose entry types we’re listing
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section cannot be found
      */
-    public function actionEntryTypesIndex($sectionId)
+    public function actionEntryTypesIndex(int $sectionId): string
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
@@ -248,15 +248,15 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
             [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/'.$section->id)
             ],
         ];
 
@@ -274,15 +274,15 @@ class SectionsController extends Controller
     /**
      * Edit an entry type
      *
-     * @param integer   $sectionId   The section’s ID.
-     * @param integer   $entryTypeId The entry type’s ID, if any.
-     * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
+     * @param int            $sectionId   The section’s ID.
+     * @param int|null       $entryTypeId The entry type’s ID, if any.
+     * @param EntryType|null $entryType   The entry type being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
-    public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
+    public function actionEditEntryType(int $sectionId, int $entryTypeId = null, EntryType $entryType = null): string
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
@@ -317,19 +317,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
             [
                 'label' => $section->name,
-                'url' => Url::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/'.$section->id)
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => Url::url('settings/sections/'.$sectionId.'/entrytypes')
+                'url' => UrlHelper::url('settings/sections/'.$sectionId.'/entrytypes')
             ],
         ];
 
@@ -400,7 +400,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionReorderEntryTypes()
+    public function actionReorderEntryTypes(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -416,7 +416,7 @@ class SectionsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteEntryType()
+    public function actionDeleteEntryType(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
