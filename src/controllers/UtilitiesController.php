@@ -536,7 +536,7 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Applies all new migrations
+     * Applies new migrations
      *
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
