@@ -28,7 +28,7 @@
 				<tr>
 					<td>{{ migrationName }}</td>
 					<td>{{ 'Applied'|t('app') }}</td>
-					<td>{{ migration }}</td>
+					<td>{{ migration|datetime() }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
