@@ -1,22 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-<h2>{{ 'Create a new migration'|t('app') }}</h2>
-
-<form id="clear-caches" class="utility" method="post" accept-charset="UTF-8">
-	<input type="hidden" name="action" value="utilities/content-migration-mananger-create-migration">
-	{{ csrfInput() }}
-
-	{{ forms.text({
-		name: 'name',
-	}) }}
-
-	<div class="buttons">
-		<input type="submit" class="btn submit" value="{{ 'Create Migration'|t('app') }}" />
-	</div>
-</form>
-
-<hr>
-
 <h2>{{ 'Pending Migrations'|t('app') }}</h2>
 
 {% if newMigrations|length > 0 %}

@@ -535,48 +535,6 @@ class UtilitiesController extends Controller
         ]);
     }
 
-    public function actionContentMigrationManangerCreateMigration()
-    {
-        $name = Craft::$app->getRequest()->getRequiredBodyParam('name');
-
-        try {
-            if (empty($name)) {
-                throw new Exception('There was a problem getting the template file path');
-            }
-
-            if (!preg_match('/^\w+$/', $name)) {
-                throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
-            }
-
-            $migrator = Craft::$app->getContentMigrator();
-
-            $migrationPath = $migrator->migrationPath;
-
-            $name = 'm'.gmdate('ymd_His').'_'.$name;
-            $file = $migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
-
-            $templateFile = Craft::getAlias('@app/updates/migration.php.template');
-            $templateFile = Craft::getAlias($templateFile);
-
-            if ($templateFile === false) {
-                throw new Exception('There was a problem getting the template file path');
-            }
-
-            $content = $this->renderFile($templateFile, [
-                'namespace' => $migrator->migrationNamespace,
-                'className' => $name
-            ]);
-
-            FileHelper::writeToFile($file, $content);
-
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'New migration created successfully.'.$name));
-        } catch(Exception $e) {
-            Craft::$app->getSession()->setError(Craft::t('app', $e->getMessage()));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
     public function actionContentMigrationManagerUp()
     {
         $limit = Craft::$app->getRequest()->getParam('limit', 0);
