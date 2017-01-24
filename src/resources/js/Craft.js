@@ -6870,9 +6870,6 @@ Craft.charts.DataTable = Garnish.Base.extend(
         columns: null,
         rows: null,
 
-        formatLocale: null,
-        timeFormatLocale: null,
-
         init: function(data) {
             columns = data.columns;
             rows = data.rows;
@@ -6984,7 +6981,8 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         // dataTables: [],
         // isStacked: true,
 
-        locale: null,
+		formatLocale: null,
+		timeFormatLocale: null,
         orientation: null,
 
         svg: null,
