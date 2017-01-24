@@ -14,6 +14,9 @@ Craft.charts.DataTable = Garnish.Base.extend(
         columns: null,
         rows: null,
 
+        formatLocale: null,
+        timeFormatLocale: null,
+
         init: function(data) {
             columns = data.columns;
             rows = data.rows;
@@ -149,7 +152,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
             }
 
-            this.locale = d3.formatLocale(localeDefinition);
+            this.formatLocale = d3.formatLocale(localeDefinition);
             this.timeFormatLocale = d3.timeFormatLocale(localeDefinition);
         },
 
@@ -207,19 +210,19 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             }
         },
 
-        yTickFormat: function(locale) {
+        yTickFormat: function(formatLocale) {
             switch (this.dataTable.columns[1].type) {
                 case 'currency':
-                    return locale.format(this.settings.formats.currencyFormat);
+                    return formatLocale.format(this.settings.formats.currencyFormat);
 
                 case 'percent':
-                    return locale.format(this.settings.formats.percentFormat);
+                    return formatLocale.format(this.settings.formats.percentFormat);
 
                 case 'time':
                     return Craft.charts.utils.getDuration;
 
                 default:
-                    return locale.format("n");
+                    return formatLocale.format(".2");
             }
         },
 
@@ -431,7 +434,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             if (this.orientation == 'rtl') {
                 var yAxis = d3.axisLeft(y)
-                    .tickFormat(this.yTickFormat(this.locale))
+                    .tickFormat(this.yTickFormat(this.formatLocale))
                     .tickValues(this.yTickValues())
                     .ticks(this.yTicks());
 
@@ -449,7 +452,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             }
             else {
                 var yAxis = d3.axisRight(y)
-                    .tickFormat(this.yTickFormat(this.locale))
+                    .tickFormat(this.yTickFormat(this.formatLocale))
                     .tickValues(this.yTickValues())
                     .ticks(this.yTicks());
 
@@ -572,9 +575,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             if (this.settings.enableTips) {
                 var tipSettings = {
                     chart: this,
-                    locale: this.locale,
+                    locale: this.formatLocale,
                     xTickFormat: this.xTickFormat(this.timeFormatLocale),
-                    yTickFormat: this.yTickFormat(this.locale),
+                    yTickFormat: this.yTickFormat(this.formatLocale),
                     tipContentFormat: $.proxy(this, 'tipContentFormat'),
                     getPosition: $.proxy(this, 'getTipPosition')
                 };
