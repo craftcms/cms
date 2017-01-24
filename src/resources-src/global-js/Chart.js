@@ -145,15 +145,26 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             }, this));
         },
 
-        initLocale: function() {
-            var localeDefinition = window.d3_locale;
+        initFormatLocales: function() {
+            // Format Locale
 
-            if (this.settings.localeDefinition) {
-                localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
+            var formatLocaleDefinition = window.d3FormatLocaleDefinition;
+
+            if (this.settings.formatLocaleDefinition) {
+                formatLocaleDefinition = $.extend(true, {}, formatLocaleDefinition, this.settings.formatLocaleDefinition);
+            }
+			this.formatLocale = d3.formatLocale(formatLocaleDefinition);
+
+
+            // Time Format Locale
+
+			var timeFormatLocaleDefinition = window.d3TimeFormatLocaleDefinition;
+
+            if (this.settings.timeFormatLocaleDefinition) {
+                timeFormatLocaleDefinition = $.extend(true, {}, timeFormatLocaleDefinition, this.settings.timeFormatLocaleDefinition);
             }
 
-            this.formatLocale = d3.formatLocale(localeDefinition);
-            this.timeFormatLocale = d3.timeFormatLocale(localeDefinition);
+            this.timeFormatLocale = d3.timeFormatLocale(d3TimeFormatLocaleDefinition);
         },
 
         initChartElement: function() {
@@ -186,7 +197,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
             // chart
 
-            this.initLocale();
+            this.initFormatLocales();
             this.initChartElement();
 
             this.orientation = this.settings.orientation;
@@ -245,6 +256,8 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     },
     {
         defaults: {
+            formatLocaleDefinition: null,
+            timeFormatLocaleDefinition: null,
             margin: {top: 25, right: 25, bottom: 25, left: 25},
             chartClass: null,
             colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
