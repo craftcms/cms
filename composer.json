@@ -41,7 +41,9 @@
     "bower-asset/velocity": "1.4.1",
     "zendframework/zend-feed": "2.7.0",
     "roave/security-advisories": "dev-master",
-    "craftcms/server-check": "1.0.6"
+    "craftcms/server-check": "1.0.6",
+    "bower-asset/d3-format": "1.0.2.0",
+    "bower-asset/d3-time-format": "2.0.3.0"
   },
   "autoload": {
     "psr-4": {
