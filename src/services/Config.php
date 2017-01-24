@@ -856,6 +856,8 @@ class Config extends Component
      */
     private function _loadConfigSettings(string $category)
     {
+        $category = strtolower($category);
+
         // Have we already loaded this category?
         if (isset($this->_configSettings[$category])) {
             return;
