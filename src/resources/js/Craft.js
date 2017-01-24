@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-01-17 */
+/*! Craft 3.0.0 - 2017-01-24 */
 (function($){
 
 /** global: Craft */
@@ -6880,11 +6880,15 @@ Craft.charts.DataTable = Garnish.Base.extend(
 
                     switch (column.type) {
                         case 'date':
-                            d[cellIndex] = d3.time.format("%Y-%m-%d").parse(d[cellIndex]);
+							var parseTime = d3.timeParse("%Y-%m-%d");
+                            d[cellIndex] = parseTime(d[cellIndex]);
+
                             break;
 
                         case 'datetime':
-                            d[cellIndex] = d3.time.format("%Y-%m-%d %H:00:00").parse(d[cellIndex]);
+							var parseTime = d3.timeParse("%Y-%m-%d %H:00:00");
+							d[cellIndex] = parseTime(d[cellIndex]);
+
                             break;
 
                         case 'percent':
@@ -6896,7 +6900,7 @@ Craft.charts.DataTable = Garnish.Base.extend(
                             break;
 
                         default:
-                        // do nothing
+                            // do nothing
                     }
                 });
 
@@ -7003,7 +7007,8 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
             }
 
-            this.locale = d3.locale(localeDefinition);
+            this.locale = d3.formatLocale(localeDefinition);
+            this.timeFormatLocale = d3.timeFormatLocale(localeDefinition);
         },
 
         initChartElement: function() {
@@ -7044,35 +7049,35 @@ Craft.charts.BaseChart = Garnish.Base.extend(
             this.dataTable = dataTable;
         },
 
-        xTickFormat: function(locale) {
+        xTickFormat: function(timeFormatLocale) {
             switch (this.settings.dataScale) {
                 case 'year':
-                    return locale.timeFormat('%Y');
+                    return timeFormatLocale.format('%Y');
 
                 case 'month':
-                    return locale.timeFormat(this.settings.formats.shortDateFormats.month);
+                    return timeFormatLocale.format(this.settings.formats.shortDateFormats.month);
 
                 case 'hour':
-                    return locale.timeFormat(this.settings.formats.shortDateFormats.day + " %H:00:00");
+                    return timeFormatLocale.format(this.settings.formats.shortDateFormats.day + " %H:00:00");
 
                 default:
-                    return locale.timeFormat(this.settings.formats.shortDateFormats.day);
+                    return timeFormatLocale.format(this.settings.formats.shortDateFormats.day);
             }
         },
 
         yTickFormat: function(locale) {
             switch (this.dataTable.columns[1].type) {
                 case 'currency':
-                    return locale.numberFormat(this.settings.formats.currencyFormat);
+                    return locale.format(this.settings.formats.currencyFormat);
 
                 case 'percent':
-                    return locale.numberFormat(this.settings.formats.percentFormat);
+                    return locale.format(this.settings.formats.percentFormat);
 
                 case 'time':
                     return Craft.charts.utils.getDuration;
 
                 default:
-                    return locale.numberFormat("n");
+                    return locale.format("n");
             }
         },
 
@@ -7127,8 +7132,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
 
             // X & Y Scales & Domains
-            this.x = d3.time.scale().range([0, this.width]);
-            this.y = d3.scale.linear().range([this.height, 0]);
+            this.x = d3.scaleTime().range([0, this.width]);
+            this.y = d3.scaleLinear().range([this.height, 0]);
             this.x.domain(this.xDomain());
             this.y.domain(this.yDomain());
 
@@ -7154,8 +7159,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // Draw padded elements
             var chartMargin = this.getChartMargin();
-            this.paddedX = d3.time.scale().range([chartMargin.left, (this.width - chartMargin.right)]);
-            this.paddedY = d3.scale.linear().range([this.height, 0]);
+            this.paddedX = d3.scaleTime().range([chartMargin.left, (this.width - chartMargin.right)]);
+            this.paddedY = d3.scaleLinear().range([this.height, 0]);
             this.paddedX.domain(this.xDomain());
             this.paddedY.domain(this.yDomain());
 
@@ -7198,7 +7203,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // Line
 
-            var line = d3.svg.line()
+            var line = d3.line()
                 .x(function(d) {
                     return x(d[0]);
                 })
@@ -7211,15 +7216,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .attr("class", "chart-line")
                 .append("path")
                 .datum(this.dataTable.rows)
-                .style({
-                    'fill': 'none',
-                    'stroke': this.settings.colors[0],
-                    'stroke-width': '3px',
-                })
+                .style('fill', 'none')
+                .style('stroke', this.settings.colors[0])
+                .style('stroke-width', '3px')
                 .attr("d", line);
 
             // Area
-            var area = d3.svg.area()
+            var area = d3.area()
                 .x(function(d) {
                     return x(d[0]);
                 })
@@ -7234,18 +7237,16 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .attr("class", "chart-area")
                 .append("path")
                 .datum(this.dataTable.rows)
-                .style({
-                    'fill': this.settings.colors[0],
-                    'fill-opacity': '0.3'
-                })
+                .style('fill', this.settings.colors[0])
+                .style('fill-opacity', '0.3')
                 .attr("d", area);
         },
 
         drawAxes: function() {
-            var x = d3.time.scale().range([0, this.width]);
+            var x = d3.scaleTime().range([0, this.width]);
             var y = this.y;
 
-            var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(0).outerTickSize(0);
+            var xAxis = d3.axisBottom(x).ticks(0).tickSizeOuter(0);
 
             var xTranslateX = -0;
             var xTranslateY = this.height;
@@ -7262,7 +7263,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var yTranslateX = this.width - chartMargin.right;
                     var yTranslateY = 0;
 
-                    var yAxis = d3.svg.axis().scale(y).orient("left").ticks(0);
+                    var yAxis = d3.axisLeft(y).ticks(0);
 
                     this.svg.append("g")
                         .attr("class", "y axis")
@@ -7273,7 +7274,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var yTranslateX = chartMargin.left;
                     var yTranslateY = 0;
 
-                    var yAxis = d3.svg.axis().scale(y).orient("right").ticks(0);
+                    var yAxis = d3.axisRight(y).ticks(0);
 
                     this.svg.append("g")
                         .attr("class", "y axis")
@@ -7287,7 +7288,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var y = this.y;
 
             if (this.orientation == 'rtl') {
-                var yAxis = d3.svg.axis().scale(y).orient("left")
+                var yAxis = d3.axisLeft(y)
                     .tickFormat(this.yTickFormat(this.locale))
                     .tickValues(this.yTickValues())
                     .ticks(this.yTicks());
@@ -7298,15 +7299,14 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 this.svg.append("g")
                     .attr("class", "y ticks-axis")
                     .attr("transform", "translate(" + translateX + ",0)")
-                    .style(this.settings.ticksStyles)
+					.style('fill', this.settings.ticksStyles['fill'])
+					.style('font-size', this.settings.ticksStyles['font-size'])
                     .call(yAxis);
 
-                this.svg.selectAll('.y.ticks-axis text').style({
-                    'text-anchor': 'start',
-                });
+                this.svg.selectAll('.y.ticks-axis text').style('text-anchor', 'start');
             }
             else {
-                var yAxis = d3.svg.axis().scale(y).orient("right")
+                var yAxis = d3.axisRight(y)
                     .tickFormat(this.yTickFormat(this.locale))
                     .tickValues(this.yTickValues())
                     .ticks(this.yTicks());
@@ -7315,9 +7315,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 var translateY = 0;
 
                 this.svg.append("g")
+                    .style('fill', this.settings.ticksStyles['fill'])
+                    .style('font-size', this.settings.ticksStyles['font-size'])
                     .attr("class", "y ticks-axis")
                     .attr("transform", "translate(" + translateX + ", " + translateY + ")")
-                    .style(this.settings.ticksStyles)
                     .call(yAxis);
             }
         },
@@ -7325,14 +7326,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         drawXTicks: function() {
             var x = this.paddedX;
 
-            var xAxis = d3.svg.axis().scale(x).orient("bottom")
-                .tickFormat(this.xTickFormat(this.locale))
+            var xAxis = d3.axisBottom(x)
+                .tickFormat(this.xTickFormat(this.timeFormatLocale))
                 .ticks(this.xTicks());
 
             this.svg.append("g")
                 .attr("class", "x ticks-axis")
                 .attr("transform", "translate(0," + this.height + ")")
-                .style(this.settings.ticksStyles)
+				.style('fill', this.settings.ticksStyles['fill'])
+				.style('font-size', this.settings.ticksStyles['font-size'])
                 .call(xAxis);
         },
 
@@ -7341,7 +7343,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var y = this.y;
 
             if (this.settings.xAxisGridlines) {
-                var xLineAxis = d3.svg.axis().scale(x).orient("bottom");
+                var xLineAxis = d3.axisBottom(x);
 
                 // draw x lines
                 this.svg.append("g")
@@ -7354,19 +7356,19 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             }
 
             if (this.settings.yAxisGridlines) {
-                var yLineAxis = d3.svg.axis().scale(y).orient("left");
+                var yLineAxis = d3.axisLeft(y);
 
                 var translateX = 0;
                 var translateY = 0;
 
                 var innerTickSize = -(this.width);
-                var outerTickSize = 0;
+                var tickSizeOuter = 0;
 
                 this.svg.append("g")
                     .attr("class", "y grid-line")
                     .attr("transform", "translate(-" + translateX + " , " + translateY + ")")
                     .call(yLineAxis
-                        .tickSize(innerTickSize, outerTickSize)
+                        .tickSize(innerTickSize, tickSizeOuter)
                         .tickFormat("")
                         .tickValues(this.yTickValues())
                         .ticks(this.yTicks())
@@ -7385,9 +7387,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .data(this.dataTable.rows)
                     .enter()
                     .append("circle")
-                    .style({
-                        'fill': this.settings.colors[0],
-                    })
+                    .style('fill', this.settings.colors[0])
                     .attr("class", $.proxy(function(d, index) {
                         return 'plot plot-' + index;
                     }, this))
@@ -7417,8 +7417,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         xAxisTickInterval: function() {
             var chartMargin = this.getChartMargin();
 
-            var outerTickSize = 6;
-            var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
+            var tickSizeOuter = 6;
+            var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - tickSizeOuter * 2;
             var interval = length / (this.dataTable.rows.length - 1);
 
             return interval;
@@ -7431,7 +7431,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 var tipSettings = {
                     chart: this,
                     locale: this.locale,
-                    xTickFormat: this.xTickFormat(this.locale),
+                    xTickFormat: this.xTickFormat(this.timeFormatLocale),
                     yTickFormat: this.yTickFormat(this.locale),
                     tipContentFormat: $.proxy(this, 'tipContentFormat'),
                     getPosition: $.proxy(this, 'getTipPosition')
@@ -7450,10 +7450,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .data(this.dataTable.rows)
                     .enter().append("rect")
                     .attr("class", "tip-trigger")
-                    .style({
-                        'fill': 'transparent',
-                        'fill-opacity': '1',
-                    })
+                    .style('fill', 'transparent')
+                    .style('fill-opacity', '1')
                     .attr("width", this.getTipTriggerWidth())
                     .attr("height", this.height)
                     .attr("x", $.proxy(function(d) {
@@ -7679,6 +7677,7 @@ Craft.charts.utils = {
             .attr("in", "SourceGraphic");
     }
 };
+
 
 /** global: Craft */
 /** global: Garnish */
