@@ -58,6 +58,7 @@ class Config extends Component
     const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_APC = 'apc';
     const CATEGORY_GUZZLE = 'guzzle';
+    const CATEGORY_VOLUMES = 'volumes';
 
     // Properties
     // =========================================================================
@@ -874,6 +875,7 @@ class Config extends Component
             self::CATEGORY_MEMCACHE,
             self::CATEGORY_APC,
             self::CATEGORY_GUZZLE,
+            self::CATEGORY_VOLUMES,
         ], true)) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
