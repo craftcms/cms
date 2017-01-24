@@ -31,7 +31,7 @@
     "league/flysystem-ziparchive": "1.0.2",
     "mikehaertl/php-shellcommand": "1.2.2",
     "twig/twig": "2.1.0",
-    "bower-asset/d3": "3.5.17",
+    "bower-asset/d3": "4.4.4.0",
     "bower-asset/element-resize-detector": "1.1.10",
     "bower-asset/garnishjs": "0.1.11",
     "bower-asset/jquery.payment": "3.0.0",
