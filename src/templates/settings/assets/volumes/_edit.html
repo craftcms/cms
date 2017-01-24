@@ -29,6 +29,7 @@
                 label: "Handle"|t('app'),
                 id: 'handle',
                 name: 'handle',
+				class: 'code',
                 value: (volume is defined ? volume.handle : null),
                 errors: (volume is defined ? volume.getErrors('handle') : null),
                 required: true,
