@@ -814,7 +814,7 @@ class Plugins extends Component
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
             $config['isEnabled'] = ($plugin !== null);
             $config['moduleId'] = $plugin !== null ? $plugin->id : $this->generateModuleId($config['handle']);
-            $config['hasSettings'] = ($plugin !== null && $plugin::hasSettings());
+            $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings);
 
             $info[$lcHandle] = $config;
             $names[] = $config['name'];
@@ -1222,6 +1222,16 @@ class Plugins extends Component
         // sourceLanguage
         if (isset($extra['sourceLanguage'])) {
             $config['sourceLanguage'] = $extra['sourceLanguage'];
+        }
+
+        // hasSettings
+        if (isset($extra['hasSettings'])) {
+            $config['hasSettings'] = $extra['hasSettings'];
+        }
+
+        // hasCpSection
+        if (isset($extra['hasCpSection'])) {
+            $config['hasCpSection'] = $extra['hasCpSection'];
         }
 
         // components

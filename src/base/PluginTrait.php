@@ -101,4 +101,14 @@ trait PluginTrait
      * @var string The language that the plugin’s messages were written in
      */
     public $sourceLanguage = 'en-US';
+
+    /**
+     * @var bool Whether the plugin has settings
+     */
+    public $hasSettings = false;
+
+    /**
+     * @var bool Whether the plugin has its own section in the CP
+     */
+    public $hasCpSection = false;
 }

@@ -29,25 +29,6 @@ class Plugin extends Module implements PluginInterface
 
     use PluginTrait;
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasSettings(): bool
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasCpSection(): bool
-    {
-        return false;
-    }
-
     // Properties
     // =========================================================================
 

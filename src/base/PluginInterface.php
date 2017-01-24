@@ -17,23 +17,6 @@ namespace craft\base;
  */
 interface PluginInterface
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * Returns whether the plugin has settings.
-     *
-     * @return bool
-     */
-    public static function hasSettings(): bool;
-
-    /**
-     * Returns whether the plugin has its own section in the CP.
-     *
-     * @return bool Whether the plugin has its own section in the CP.
-     */
-    public static function hasCpSection(): bool;
-
     // Public Methods
     // =========================================================================
 

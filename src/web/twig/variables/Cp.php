@@ -98,7 +98,7 @@ class Cp extends Component
 
         foreach ($plugins as $plugin) {
             if (
-                $plugin::hasCpSection() &&
+                $plugin->hasCpSection &&
                 Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle)
             ) {
                 $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
@@ -254,7 +254,7 @@ class Cp extends Component
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            if ($plugin::hasSettings()) {
+            if ($plugin->hasSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/'.$plugin->id,
                     'iconSvg' => $pluginsService->getPluginIconSvg($plugin->handle),
