@@ -45,15 +45,6 @@ class UrlValidator extends YiiUrlValidator
      */
     public function validateValue($value)
     {
-        // Parse for environment variables if it looks like the URL might have one
-        if (StringHelper::contains($value, '{')) {
-            $envValue = Craft::$app->getConfig()->parseEnvironmentString($value);
-
-            if ($hasEnvVars = ($envValue !== $value)) {
-                $value = $envValue;
-            }
-        }
-
         // Add support for protocol-relative URLs
         if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
             $this->defaultScheme = null;

@@ -645,27 +645,6 @@ class Config extends Component
     }
 
     /**
-     * Parses a string for any [environment variables](http://craftcms.com/docs/multi-environment-configs#environment-specific-variables).
-     *
-     * This method simply loops through all of the elements in the
-     * [environmentVariables](http://craftcms.com/docs/config-settings#environmentVariables) config setting’s
-     * value, and replaces any {tag}s in the string that have matching keys with their corresponding values.
-     *
-     * @param string $str The string that should be parsed for environment variables.
-     *
-     * @return string The parsed string.
-     */
-    public function parseEnvironmentString(string $str): string
-    {
-        /** @noinspection ForeachSourceInspection */
-        foreach ($this->get('environmentVariables') as $key => $value) {
-            $str = str_replace('{'.$key.'}', $value, $str);
-        }
-
-        return $str;
-    }
-
-    /**
      * Returns the Resource Request trigger word based on the type of the current request.
      *
      * If it’s a front-end request, the [resourceTrigger](http://craftcms.com/docs/config-settings#resourceTrigger)

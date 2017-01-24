@@ -358,6 +358,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the `vendor/` folder.
+- Removed support for the `environmentVariables` config setting. Use the `siteUrl` config setting in `config/general.php` to set the site URL, and override volume settings with `config/volumes.php`.
 - Removed support for Yii 1-style controller action paths (e.g. `entries/saveEntry`), which were previously deprecated. Use the Yii 2 style instead (e.g. `entries/save-entry`).
 - Removed the deprecated `activateAccountFailurePath` config setting.
 - Removed the `appId` config setting.
