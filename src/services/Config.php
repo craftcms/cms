@@ -930,15 +930,20 @@ class Config extends Component
     {
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {
-            $mergedCustomConfig = [];
+            // If no environment was specified, just look in the '*' array
+            if (Craft::$app->env === null) {
+                $customConfig = $customConfig['*'];
+            } else {
+                $mergedCustomConfig = [];
 
-            foreach ($customConfig as $env => $envConfig) {
-                if ($env === '*' || StringHelper::contains(CRAFT_ENVIRONMENT, $env)) {
-                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                foreach ($customConfig as $env => $envConfig) {
+                    if ($env === '*' || StringHelper::contains(Craft::$app->env, $env)) {
+                        $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                    }
                 }
-            }
 
-            $customConfig = $mergedCustomConfig;
+                $customConfig = $mergedCustomConfig;
+            }
         }
 
         $baseConfig = array_merge($baseConfig, $customConfig);

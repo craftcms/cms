@@ -94,6 +94,9 @@ $storagePath = $findConfig('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/s
 $templatesPath = $findConfig('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
 $translationsPath = $findConfig('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
 
+// Set the environment
+$environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
+
 // Validate the paths
 // -----------------------------------------------------------------------------
 
@@ -138,14 +141,8 @@ ini_set('error_log', $storagePath.'/logs/phperrors.log');
 
 // We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
 if ($appType === 'console') {
-    // Set the environment
-    defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
-
     $devMode = true;
 } else {
-    // Set the environment
-    defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
-
     $devMode = false;
     $generalConfigPath = $configPath.'/general.php';
 
@@ -158,10 +155,16 @@ if ($appType === 'console') {
                 $generalConfig = ['*' => $generalConfig];
             }
 
-            // Loop through all of the environment configs, figuring out what the final word is on Dev Mode
-            foreach ($generalConfig as $env => $envConfig) {
-                if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false) {
-                    if (isset($envConfig['devMode'])) {
+            // If no environment was specified, just look in the '*' array
+            if ($environment === null) {
+                $devMode = $generalConfig['*']['devMode'] ?? false;
+            } else {
+                // Loop through all of the environment configs, figuring out what the final word is on Dev Mode
+                foreach ($generalConfig as $env => $envConfig) {
+                    if (
+                        ($env === '*' || strpos($environment, $env) !== false) &&
+                        isset($envConfig['devMode'])
+                    ) {
                         $devMode = $envConfig['devMode'];
                     }
                 }
@@ -212,6 +215,7 @@ $config = ArrayHelper::merge(
 );
 
 $config['vendorPath'] = $vendorPath;
+$config['env'] = $environment;
 
 // Set the current site
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {

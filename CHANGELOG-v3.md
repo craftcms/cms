@@ -65,6 +65,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
+- Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
