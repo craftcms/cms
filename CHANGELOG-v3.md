@@ -161,6 +161,7 @@ Craft CMS 3.0 Working Changelog
 - File-based data caching now respects the `defaultDirMode` config setting.
 - Redactor config files must now be valid JSON.
 - When a category is deleted, its nested categories are no longer deleted with it.
+- Craft Personal and Client editions are now allowed to have custom Volume types (e.g. Amazon S3).
 - Renamed the “Get Help” widget to “Craft Support”.
 - When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
 - When editing a volume whose type class cannot be found, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.

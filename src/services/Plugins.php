@@ -112,7 +112,7 @@ class Plugins extends Component
     private $_loadingPlugins = false;
 
     /**
-     * @var PluginInterface[] All the enabled plugins
+     * @var PluginInterface[] All the enabled plugins, indexed by handle
      */
     private $_plugins = [];
 
@@ -201,7 +201,7 @@ class Plugins extends Component
             $plugin = $this->createPlugin($lcHandle, $row);
 
             if ($plugin !== null) {
-                $this->_registerPlugin($lcHandle, $plugin);
+                $this->_registerPlugin($plugin);
             }
         }
         unset($row);
@@ -331,7 +331,7 @@ class Plugins extends Component
             ->execute();
 
         $this->_installedPluginInfo[$lcHandle]['enabled'] = true;
-        $this->_registerPlugin($lcHandle, $plugin);
+        $this->_registerPlugin($plugin);
 
         // Fire an 'afterEnablePlugin' event
         $this->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
@@ -382,7 +382,7 @@ class Plugins extends Component
             ->execute();
 
         $this->_installedPluginInfo[$lcHandle]['enabled'] = false;
-        $this->_unregisterPlugin($lcHandle);
+        $this->_unregisterPlugin($plugin);
 
         // Fire an 'afterDisablePlugin' event
         $this->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
@@ -456,7 +456,7 @@ class Plugins extends Component
         }
 
         $this->_installedPluginInfo[$lcHandle] = $info;
-        $this->_registerPlugin($lcHandle, $plugin);
+        $this->_registerPlugin($plugin);
 
         // Fire an 'afterInstallPlugin' event
         $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
@@ -528,7 +528,7 @@ class Plugins extends Component
             throw $e;
         }
 
-        $this->_unregisterPlugin($lcHandle);
+        $this->_unregisterPlugin($plugin);
         unset($this->_installedPluginInfo[$lcHandle]);
 
         // Fire an 'afterUninstallPlugin' event
@@ -1000,26 +1000,28 @@ class Plugins extends Component
      *
      * This should only be called for enabled plugins
      *
-     * @param string          $lcHandle The plugin’s handle (lowercase)
-     * @param PluginInterface $plugin   The plugin
+     * @param PluginInterface $plugin The plugin
      */
-    private function _registerPlugin(string $lcHandle, PluginInterface $plugin)
+    private function _registerPlugin(PluginInterface $plugin)
     {
         /** @var Plugin $plugin */
+        $lcHandle = strtolower($plugin->handle);
         $plugin::setInstance($plugin);
         $this->_plugins[$lcHandle] = $plugin;
-        Craft::$app->setModule($lcHandle, $plugin);
+        Craft::$app->setModule($plugin->id, $plugin);
     }
 
     /**
      * Unregisters a plugin internally and as an application module.
      *
-     * @param string $lcHandle The plugin’s handle (lowercase)
+     * @param PluginInterface $plugin The plugin
      */
-    private function _unregisterPlugin(string $lcHandle)
+    private function _unregisterPlugin(PluginInterface $plugin)
     {
+        /** @var Plugin $plugin */
+        $lcHandle = strtolower($plugin->handle);
         unset($this->_plugins[$lcHandle]);
-        Craft::$app->setModule($lcHandle, null);
+        Craft::$app->setModule($plugin->id, null);
     }
 
     /**

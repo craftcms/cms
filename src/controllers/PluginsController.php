@@ -124,10 +124,9 @@ class PluginsController extends Controller
     public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null): string
     {
         if ($plugin === null) {
-            $handle = str_replace('-', '', $pluginId);
-            $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            $plugin = Craft::$app->getModule($pluginId);
 
-            if ($plugin === null) {
+            if ($plugin === null || !$plugin instanceof PluginInterface) {
                 throw new NotFoundHttpException('Plugin not found');
             }
         }

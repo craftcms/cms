@@ -95,32 +95,26 @@ class VolumesController extends Controller
             }
         }
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            /** @var Volume[] $allVolumeTypes */
-            $allVolumeTypes = $volumes->getAllVolumeTypes();
+        /** @var Volume[] $allVolumeTypes */
+        $allVolumeTypes = $volumes->getAllVolumeTypes();
 
-            // Make sure the selected volume class is in there
-            if (!in_array(get_class($volume), $allVolumeTypes, true)) {
-                $allVolumeTypes[] = get_class($volume);
+        // Make sure the selected volume class is in there
+        if (!in_array(get_class($volume), $allVolumeTypes, true)) {
+            $allVolumeTypes[] = get_class($volume);
+        }
+
+        $volumeInstances = [];
+        $volumeTypeOptions = [];
+
+        foreach ($allVolumeTypes as $class) {
+            if ($class === get_class($volume) || $class::isSelectable()) {
+                $volumeInstances[$class] = $volumes->createVolume($class);
+
+                $volumeTypeOptions[] = [
+                    'value' => $class,
+                    'label' => $class::displayName()
+                ];
             }
-
-            $volumeInstances = [];
-            $volumeTypeOptions = [];
-
-            foreach ($allVolumeTypes as $class) {
-                if ($class === get_class($volume) || $class::isSelectable()) {
-                    $volumeInstances[$class] = $volumes->createVolume($class);
-
-                    $volumeTypeOptions[] = [
-                        'value' => $class,
-                        'label' => $class::displayName()
-                    ];
-                }
-            }
-        } else {
-            $volumeTypeOptions = [];
-            $volumeInstances = [];
-            $allVolumeTypes = null;
         }
 
         $isNewVolume = !$volume->id;
@@ -182,11 +176,7 @@ class VolumesController extends Controller
         $request = Craft::$app->getRequest();
         $volumes = Craft::$app->getVolumes();
 
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $type = $request->getBodyParam('type');
-        } else {
-            $type = Local::class;
-        }
+        $type = $request->getBodyParam('type');
 
         /** @var Volume $volume */
         $volume = $volumes->createVolume([

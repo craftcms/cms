@@ -15,7 +15,7 @@
 		<table id="volumes" class="data fullwidth collapsible">
 			<thead>
 				<th scope="col">{{ "Name"|t('app') }}</th>
-				{% if CraftEdition == CraftPro %}<th scope="col">{{ "Type"|t('app') }}</th>{% endif %}
+				<th scope="col">{{ "Type"|t('app') }}</th>
 				{% if sortable %}<td class="thin"></td>{% endif %}
 				<td class="thin"></td>
 			</thead>
@@ -23,15 +23,13 @@
 				{% for volume in volumes %}
 					<tr data-id="{{ volume.id }}" data-name="{{ volume.name|t('site') }}">
 						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/volumes/' ~ volume.id) }}">{{ volume.name|t('site') }}</a></th>
-						{% if CraftEdition == CraftPro %}
-							<td data-title="{{ 'Type'|t('app') }}">
-								{% if volume is missing %}
-									<span class="error">{{ volume.expectedType }}</span>
-								{% else %}
-									{{ volume.displayName() }}
-								{% endif %}
-							</td>
-						{% endif %}
+						<td data-title="{{ 'Type'|t('app') }}">
+							{% if volume is missing %}
+								<span class="error">{{ volume.expectedType }}</span>
+							{% else %}
+								{{ volume.displayName() }}
+							{% endif %}
+						</td>
 						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>

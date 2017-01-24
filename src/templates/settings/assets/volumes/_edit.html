@@ -34,38 +34,32 @@
                 required: true,
             }) }}
 
-            {% if CraftEdition == CraftPro %}
-				<hr>
+			<hr>
 
-				{{ forms.selectField({
-					label: "Volume Type"|t('app'),
-					instructions: "What type of volume is this?"|t('app'),
-					id: 'type',
-					name: 'type',
-					options: volumeTypeOptions,
-					value: className(volume),
-					errors: volume.getErrors('type') ?? null,
-					toggle: true
-				}) }}
+			{{ forms.selectField({
+				label: "Volume Type"|t('app'),
+				instructions: "What type of volume is this?"|t('app'),
+				id: 'type',
+				name: 'type',
+				options: volumeTypeOptions,
+				value: className(volume),
+				errors: volume.getErrors('type') ?? null,
+				toggle: true
+			}) }}
 
-				{% for volumeType in volumeTypes %}
-					{% set isCurrent = (volumeType == className(volume)) %}
+			{% for volumeType in volumeTypes %}
+				{% set isCurrent = (volumeType == className(volume)) %}
 
-					<div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% namespace 'types['~volumeType~']' %}
-							{% if isCurrent %}
-								{{ volume.getSettingsHtml()|raw }}
-							{% else %}
-								{{ volumeInstances[volumeType].getSettingsHtml()|raw }}
-							{% endif %}
-						{% endnamespace %}
-					</div>
-				{% endfor %}
-			{% else %}
-				{% namespace 'types[craft\\volumes\\Local]' %}
-					{{ volume.getSettingsHtml()|raw }}
-				{% endnamespace %}
-			{% endif %}
+				<div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+					{% namespace 'types['~volumeType~']' %}
+						{% if isCurrent %}
+							{{ volume.getSettingsHtml()|raw }}
+						{% else %}
+							{{ volumeInstances[volumeType].getSettingsHtml()|raw }}
+						{% endif %}
+					{% endnamespace %}
+				</div>
+			{% endfor %}
 
 			{{ forms.lightswitchField({
 				label: "Assets in this volume have public URLs"|t,
