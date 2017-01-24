@@ -35,6 +35,27 @@
                 required: true,
             }) }}
 
+			{{ forms.lightswitchField({
+				label: "Assets in this volume have public URLs"|t,
+				name: 'hasUrls',
+				on:   volume.hasUrls,
+				toggle: "url-field"
+			}) }}
+
+			<div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
+				{{ forms.textField({
+					label: "Base URL"|t('app'),
+					instructions: "The base URL to the assets in this volume."|t('app'),
+					id: 'url',
+					class: 'ltr volume-url',
+					name: 'url',
+					value: (volume is defined ? volume.url : null),
+					errors: (volume is defined ? volume.getErrors('url') : null),
+					required: true,
+					placeholder: "http://example.com/path/to/folder/"|t('app')
+				}) }}
+			</div>
+
 			<hr>
 
 			{{ forms.selectField({
@@ -61,28 +82,6 @@
 					{% endnamespace %}
 				</div>
 			{% endfor %}
-
-			{{ forms.lightswitchField({
-				label: "Assets in this volume have public URLs"|t,
-				name: 'hasUrls',
-				on:   volume.hasUrls,
-				toggle: "url-field"
-			}) }}
-
-			<div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-				{{ forms.textField({
-					label: "URL"|t('app'),
-					instructions: "The URL to your files."|t('app'),
-					id: 'url',
-					class: 'ltr volume-url',
-					name: 'url',
-					value: (volume is defined ? volume.url : null),
-					errors: (volume is defined ? volume.getErrors('url') : null),
-					required: true,
-					placeholder: "http://example.com/path/to/folder/"|t('app')
-				}) }}
-			</div>
-
 		</div>
 
 		<div id="assetvolume-fieldlayout" class="hidden">
