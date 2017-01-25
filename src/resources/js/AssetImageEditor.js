@@ -174,16 +174,25 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this._setFittedImageVerticeCoordinates();
                 this._repositionEditorElements();
 
+                // Set up the focal point
+                var focalState = {
+                    imageDimensions: this.getScaledImageDimensions()
+                };
+
                 if (focal) {
-                    this.focalPointState = {x: focal.x, y: focal.y};
-                    this._createFocalPoint();
+                    focalState.offsetX = focal.x;
+                    focalState.offsetY = focal.y;
                 } else {
-                    this.focalPointState = {x: 0, y: 0};
+                    focalState.offsetX = 0;
+                    focalState.offsetY = 0;
+                }
+                this.storeFocalPointState(focalState);
+
+                if (focal) {
+                    this._createFocalPoint();
                 }
 
                 this._createViewport();
-
-
                 this.storeCropperState();
 
                 // Add listeners to buttons
@@ -340,7 +349,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         toggleFocalPoint: function () {
             if (!this.focalPoint) {
-                this.focalPointState = {offsetX: 0, offsetY: 0};
                 this._createFocalPoint();
             } else {
                 this.canvas.remove(this.focalPoint);
@@ -586,8 +594,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
          */
-        storeFocalPointState: function () {
-            if (this.focalPoint) {
+        storeFocalPointState: function (state) {
+            // If we're asked to store a specific state.
+            if (state) {
+                this.focalPointState = state;
+            } else if (this.focalPoint) {
                 var zoomFactor = 1 / this.zoomRatio;
                 this.focalPointState = {
                     offsetX: (this.focalPoint.left - this.image.left) * zoomFactor,
@@ -1202,18 +1213,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var callback = $.noop;
 
+                // Without this it looks semi-broken during animation
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                    this.renderImage();
+                }
+
                 if (mode == 'crop') {
                     this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
                     viewportDimensions = {
                         width: this.editorWidth,
                         height: this.editorHeight
                     };
-
-                    // Without this it looks semi-broken during animation
-                    if (this.focalPoint) {
-                        this.canvas.remove(this.focalPoint);
-                        this.renderImage();
-                    }
 
                     callback = function() {
                         this._setFittedImageVerticeCoordinates();
@@ -1269,7 +1280,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                             this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
                             this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
                             this.canvas.add(this.focalPoint);
-                            this.renderImage();
                         }
                     }.bind(this);
                 }
