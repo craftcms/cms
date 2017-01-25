@@ -1296,8 +1296,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     imageCoords.top = (this.editorHeight / 2) - imageOffsetY;
 
                     // Calculate the cropper dimensions after all the zooming
-                    viewportDimensions.height = this.clipper.height;
-                    viewportDimensions.width = this.clipper.width;
+                    viewportDimensions.height = this.clipper.height / this.scaleFactor;
+                    viewportDimensions.width = this.clipper.width / this.scaleFactor;
                     this.scaleFactor = 1;
 
                     callback = function() {
