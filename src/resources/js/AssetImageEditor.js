@@ -744,6 +744,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     axis = axis == 'y' ? 'x' : 'y';
                 }
 
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                }
+
                 // TODO So many nested if's. Make it cleaner.
                 var editorCenter = {x: this.editorWidth / 2, y: this.editorHeight / 2};
                 this.straighteningInput.setValue(-this.imageStraightenAngle);
@@ -767,6 +771,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         if (state) {
                             state.offsetX = -state.offsetX;
                         }
+
+                        this.focalPointState.offsetX = -this.focalPointState.offsetX;
                     } else {
                         deltaY = this.image.top - editorCenter.y;
                         properties.top = editorCenter.y - deltaY;
@@ -774,6 +780,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         if (state) {
                             state.offsetY = -state.offsetY;
                         }
+                        this.focalPointState.offsetY = -this.focalPointState.offsetY;
                     }
                 } else {
                     properties.scaleX = this.image.scaleX * -1;
@@ -787,6 +794,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         if (state) {
                             state.offsetY = -state.offsetY;
                         }
+                        this.focalPointState.offsetY = -this.focalPointState.offsetY;
                     } else {
                         deltaX = this.image.left - editorCenter.x;
                         properties.left = editorCenter.x - deltaX;
@@ -794,6 +802,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         if (state) {
                             state.offsetX = -state.offsetX;
                         }
+                        this.focalPointState.offsetX = -this.focalPointState.offsetX;
                     }
                 }
 
@@ -805,6 +814,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     duration: this.settings.animationDuration,
                     onComplete: function() {
                         this.animationInProgress = false;
+                        if (this.focalPoint) {
+                            // Well this is handy
+                            this._adjustFocalPointByAngle(0);
+                            this.canvas.add(this.focalPoint);
+                        }
                     }.bind(this)
                 });
             }
