@@ -1198,7 +1198,7 @@ class View extends \yii\web\View
             if (count($pathParts) > 1) {
                 $pluginHandle = array_shift($pathParts);
                 $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-                if ($plugin) {
+                if ($plugin !== null) {
                     /** @var Plugin $plugin */
                     $pluginSourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources';
                     $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
