@@ -656,20 +656,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 var scaleFactor = 1;
-                if (this.viewport.width > this.editorHeight || this.viewport.height > this.editorWidth) {
-                    if (this.originalHeight < this.originalWidth) {
-                        scaleFactor = this.viewport.height / this.viewport.width;
-                    } else {
-                        scaleFactor = this.viewport.width / this.viewport.height;
+                if (this.scaleFactor < 1) {
+                    scaleFactor = 1 / this.scaleFactor;
+                    this.scaleFactor = 1;
+                } else {
+                    if (this.viewport.width > this.editorHeight){
+                        scaleFactor = this.editorHeight / this.viewport.width;
+                    } else if (this.viewport.height > this.editorWidth) {
+                        scaleFactor = this.editorWidth / this.viewport.height;
                     }
+                    this.scaleFactor = scaleFactor;
                 }
 
-                if (scaleFactor < 1) {
+                 if (scaleFactor < 1) {
                     imageProperties.width *= scaleFactor;
                     imageProperties.height *= scaleFactor;
-                }
+                 }
 
-                this.scaleFactor = scaleFactor;
+                console.log(this.scaleFactor);
                 var state = this.cropperState;
 
                 // Make sure we reposition the image as well to focus on the same image area
@@ -684,8 +688,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
 
-                var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio;
-                var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio;
+                var modifiedDeltaX = newDeltaX * sizeFactor * this.zoomRatio * this.scaleFactor;
+                var modifiedDeltaY = newDeltaY * sizeFactor * this.zoomRatio * this.scaleFactor;
 
                 imageProperties.left = this.editorWidth / 2 - modifiedDeltaX;
                 imageProperties.top = this.editorHeight / 2 - modifiedDeltaY;
