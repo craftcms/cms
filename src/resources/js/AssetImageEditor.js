@@ -814,7 +814,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this._zoomImage();
 
                 if (this.cropperState) {
-                    this._adjustViewportOnStraighten(previousAngle);
+                    this._adjustEditorElementsOnStraighten(previousAngle);
                 }
 
                 this.renderImage();
@@ -830,7 +830,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param {integer} previousAngle integer the previous image angle before straightening
          */
-        _adjustViewportOnStraighten: function(previousAngle) {
+        _adjustEditorElementsOnStraighten: function(previousAngle) {
             // This is some complicated stuff, you've been warned!
 
             var scaledImageDimensions = this.getScaledImageDimensions();
@@ -889,6 +889,31 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Zoom the image in and we're done.
             this.zoomRatio = currentZoomRatio;
+
+            if (this.focalPoint) {
+                state = this.focalPointState;
+
+                var focalX = state.offsetX;
+                var focalY = state.offsetY;
+                sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                // Calculate how the cropper would need to move in a circle to maintain
+                // the focus on the same region if the image was rotated with zoom intact.
+                var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
+                var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
+                sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                var adjustedFocalX = newFocalX * sizeFactor * this.zoomRatio;
+                var adjustedFocalY = newFocalY * sizeFactor * this.zoomRatio;
+
+                this.focalPoint.left = this.image.left + adjustedFocalX;
+                this.focalPoint.top = this.image.top + adjustedFocalY;
+
+                state.offsetX = newFocalX;
+                state.offsetY = newFocalY;
+                this.storeFocalPointState(state);
+            }
+
             this._zoomImage();
         },
 
@@ -1187,6 +1212,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     // Without this it looks semi-broken during animation
                     if (this.focalPoint) {
                         this.canvas.remove(this.focalPoint);
+                        this.renderImage();
                     }
 
                     callback = function() {
@@ -1236,13 +1262,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     viewportDimensions.height = this.clipper.height * combinedZoomRatio;
                     viewportDimensions.width = this.clipper.width * combinedZoomRatio;
 
-                    // No attēla vai editora centra, hombre?
-                    if (this.focalPoint) {
-                        sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
-                        this.focalPoint.left = imageCoords.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
-                        this.focalPoint.top = imageCoords.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
-                        this.canvas.add(this.focalPoint);
-                    }
+                    callback = function() {
+                        // Reposition focal point correctly
+                        if (this.focalPoint) {
+                            sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+                            this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
+                            this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                            this.canvas.add(this.focalPoint);
+                            this.renderImage();
+                        }
+                    }.bind(this);
                 }
 
                 // Animate image and viewport
