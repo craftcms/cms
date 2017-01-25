@@ -728,6 +728,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
+                            // TODO revisit this after beta goes live
+                            // Let me just cheat a little and fix my incorrectly positioned focal point.
+                            this.straighten(this.straighteningInput);
                             this.canvas.add(this.focalPoint);
                         }
                     }.bind(this)
