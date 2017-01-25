@@ -951,7 +951,10 @@ class User extends Element implements IdentityInterface
             );
         }
 
-        return UrlHelper::resourceUrl('defaultuserphoto');
+        // Make sure the resources/ folder is published
+        list(, $baseUrl) = Craft::$app->getAssetManager()->publish('@app/resources');
+
+        return $baseUrl.'/images/user.svg';
     }
 
     /**
