@@ -1,12 +1,14 @@
 build:
   environment:
+    timezone: UTC
     php:
       version: 7.1.0
       ini:
-        'date.timezone': 'US/Pacific'
+        date.timezone: 'US/Pacific'
+        memory_limit: '-1'
   tests:
     override:
       command: 'php codeception.php run unit --coverage --coverage-xml --coverage-html'
-      coverage:
-        file: 'tests/output/coverage.xml'
-        format: 'clover'
+      #coverage:
+      #  file: 'tests/output/coverage.xml'
+      #  format: 'clover'
