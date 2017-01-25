@@ -29,6 +29,7 @@
 			baseUrl:               "{{ url()|e('js') }}",
 			baseCpUrl:             "{{ cpUrl()|e('js') }}",
 			baseSiteUrl:           "{{ siteUrl()|e('js') }}",
+            baseCpResourcesUrl:    "{{ view.getAssetManager().getPublishedUrl('@app/resources', true)|e('js') }}",
 			actionUrl:             "{{ actionUrl()|e('js') }}",
 			resourceUrl:           "{{ resourceUrl()|e('js') }}",
 			scriptName:            "{{ craft.app.request.getScriptFilename()|e('js') }}",

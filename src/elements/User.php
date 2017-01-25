@@ -943,12 +943,9 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return UrlHelper::resourceUrl(
-                'resized/'.$this->photoId.'/'.$size,
-                [
-                    Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
-                ]
-            );
+            return UrlHelper::resourceUrl('resized/'.$this->photoId.'/'.$size, [
+                Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
+            ]);
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/resources', true).'/images/user.svg';

@@ -10,6 +10,7 @@
 ]) %}
 
 {% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.app.user.getRememberedUsername(): '') %}
+{% set resourcesUrl = view.getAssetManager().getPublishedUrl('@app/resources', true) %}
 
 {% block body %}
 	<script type="text/javascript">
@@ -44,7 +45,7 @@
 			'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t('app') }}">' +
 			'<div id="spinner" class="spinner hidden"></div>' +
 			'</div>' +
-			'<a id="poweredby" href="http://craftcms.com/" title="{{ "Powered by Craft CMS"|t('app') }}"><img src="{{ resourceUrl("images/craftcms.svg") }}" /></a>'+
+			'<a id="poweredby" href="http://craftcms.com/" title="{{ "Powered by Craft CMS"|t('app') }}"><img src="{{ resourcesUrl }}/images/craftcms.svg" /></a>'+
 			'</form>'
 		);
 

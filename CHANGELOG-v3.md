@@ -176,6 +176,7 @@ Craft CMS 3.0 Working Changelog
 - Element indexes now remember which sources were expanded across multiple requests.
 - Element indexes now remember if a nested source was selected across multiple requests.
 - Plugin schema versions now default to `'1.0.0'`, and plugins absolutely must increment their schema version if they want any pending migrations to be noticed.
+- Resource requests no longer serve files within Craft’s or plugins’ `resources/` folders.
 - Renamed the `{% registercss %}` Twig tag to `{% css %}`.
 - Renamed the `{% registerjs %}` Twig tag to `{% js %}`.
 - `craft\base\Plugin` no longer automatically registers field types in the plugin’s `fields/` subfolder.
