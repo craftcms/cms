@@ -1280,31 +1280,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 } else {
 
                     this._hideCropper();
-                    this.zoomRatio = this.getZoomToCoverRatio(imageDimensions)  * this.scaleFactor;
+                    var zoomFactor = 1 / this.zoomRatio;
+                    this.zoomRatio = 1;
 
                     var offsetX = this.clipper.left - this.image.left;
                     var offsetY = this.clipper.top - this.image.top;
 
-                    // Image is currently in "fit viewport" mode which was used to position the cropper.
-                    // We're now zooming in to "cover viewport" mode and applying the crop,
-                    // so that means we have to adjust our calculations from "fit" to "cover", which
-                    // is why we're using the combined zoom ratio.
-                    var combinedZoomRatio = this.getCombinedZoomRatio(imageDimensions) * this.scaleFactor;
-                    var imageOffsetX = offsetX * combinedZoomRatio;
-                    var imageOffsetY = offsetY * combinedZoomRatio;
+                    var imageOffsetX = offsetX * zoomFactor;
+                    var imageOffsetY = offsetY * zoomFactor;
                     imageCoords.left = (this.editorWidth / 2) - imageOffsetX;
                     imageCoords.top = (this.editorHeight / 2) - imageOffsetY;
 
                     // Calculate the cropper dimensions after all the zooming
-                    viewportDimensions.height = this.clipper.height * combinedZoomRatio;
-                    viewportDimensions.width = this.clipper.width * combinedZoomRatio;
+                    viewportDimensions.height = this.clipper.height;
+                    viewportDimensions.width = this.clipper.width;
+                    this.scaleFactor = 1;
 
                     callback = function() {
                         // Reposition focal point correctly
                         if (this.focalPoint) {
                             sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
-                            this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
-                            this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                            this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor);
+                            this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor);
                             this.canvas.add(this.focalPoint);
                         }
                     }.bind(this);
