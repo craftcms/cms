@@ -656,7 +656,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 var scaleFactor = 1;
-                if (this.viewport.width > this.editorHeight || this.editorHeight > this.editorWidth) {
+                if (this.viewport.width > this.editorHeight || this.viewport.height > this.editorWidth) {
                     if (this.originalHeight < this.originalWidth) {
                         scaleFactor = this.viewport.height / this.viewport.width;
                     } else {
@@ -699,6 +699,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 this.storeCropperState(state);
 
+                if (this.focalPoint) {
+                    this.canvas.remove(this.focalPoint);
+                }
+
                 this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration,
                     onComplete: function() {
@@ -718,6 +722,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         var cleanAngle = parseInt((this.image.angle + 360) % 360, 10);
                         this.image.set({angle: cleanAngle});
                         this.animationInProgress = false;
+                        if (this.focalPoint) {
+                            this._adjustFocalPointByAngle(degrees);
+                            this.canvas.add(this.focalPoint);
+                        }
                     }.bind(this)
                 });
             }
@@ -902,30 +910,34 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.zoomRatio = currentZoomRatio;
 
             if (this.focalPoint) {
-                state = this.focalPointState;
-
-                var focalX = state.offsetX;
-                var focalY = state.offsetY;
-                sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
-
-                // Calculate how the cropper would need to move in a circle to maintain
-                // the focus on the same region if the image was rotated with zoom intact.
-                var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
-                var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
-                sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
-
-                var adjustedFocalX = newFocalX * sizeFactor * this.zoomRatio;
-                var adjustedFocalY = newFocalY * sizeFactor * this.zoomRatio;
-
-                this.focalPoint.left = this.image.left + adjustedFocalX;
-                this.focalPoint.top = this.image.top + adjustedFocalY;
-
-                state.offsetX = newFocalX;
-                state.offsetY = newFocalY;
-                this.storeFocalPointState(state);
+                this._adjustFocalPointByAngle(angleDelta);
             }
 
             this._zoomImage();
+        },
+
+        _adjustFocalPointByAngle: function (angle) {
+            var angleInRadians = angle * (Math.PI / 180);
+            state = this.focalPointState;
+
+            var focalX = state.offsetX;
+            var focalY = state.offsetY;
+
+            // Calculate how the cropper would need to move in a circle to maintain
+            // the focus on the same region if the image was rotated with zoom intact.
+            var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
+            var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
+            sizeFactor = this.getScaledImageDimensions().width / state.imageDimensions.width;
+
+            var adjustedFocalX = newFocalX * sizeFactor * this.zoomRatio;
+            var adjustedFocalY = newFocalY * sizeFactor * this.zoomRatio;
+
+            this.focalPoint.left = this.image.left + adjustedFocalX;
+            this.focalPoint.top = this.image.top + adjustedFocalY;
+
+            state.offsetX = newFocalX;
+            state.offsetY = newFocalY;
+            this.storeFocalPointState(state);
         },
 
         /**
