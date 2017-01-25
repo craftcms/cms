@@ -119,6 +119,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\utilities\SearchIndexes`.
 - Added `craft\utilities\SystemReport`.
 - Added `craft\utilities\Updates`.
+- Added `craft\web\AssetManager::getPublishedPath()`.
+- Added `craft\web\AssetManager::getPublishedUrl()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
