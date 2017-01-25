@@ -158,23 +158,6 @@ class Resources extends Component
             }
         }
 
-        // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.$uri;
-
-        if (file_exists($appResourcePath)) {
-            return $appResourcePath;
-        }
-
-        // See if the first segment is a plugin handle.
-        if (isset($segs[0]) && ($plugin = Craft::$app->getPlugins()->getPlugin($segs[0])) !== null) {
-            /** @var Plugin $plugin */
-            $pluginResourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, array_splice($segs, 1));
-
-            if (is_file($pluginResourcePath)) {
-                return $pluginResourcePath;
-            }
-        }
-
         // Maybe a plugin wants to do something custom with this URL
         Craft::$app->getPlugins()->loadPlugins();
         $event = new ResolveResourcePathEvent([
