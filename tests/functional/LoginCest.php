@@ -15,6 +15,6 @@ class LoginCest
     public function seeTemplateHomepageTest(FunctionalTester $I)
     {
         $I->amOnPage('/');
-        $I->see('Hello','h1');
+        $I->see('Hello', 'h1');
     }
 }

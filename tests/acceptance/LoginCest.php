@@ -2,7 +2,6 @@
 
 namespace tests\functional;
 
-use Yii;
 use FunctionalTester;
 
 class LoginCest
