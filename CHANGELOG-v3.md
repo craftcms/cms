@@ -76,6 +76,50 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
 - Added `craft\web\AssetBundle`.
+- Added `craft\web\assets\assetindexes\AssetIndexesAsset`.
+- Added `craft\web\assets\clearcaches\ClearCachesAsset`.
+- Added `craft\web\assets\colorpicker\ColorpickerAsset`.
+- Added `craft\web\assets\craftsupport\CraftSupportAsset`.
+- Added `craft\web\assets\dashboard\DashboardAsset`.
+- Added `craft\web\assets\datepickeri18n\DatepickerI18nAsset`.
+- Added `craft\web\assets\dbbackup\DbBackupAsset`.
+- Added `craft\web\assets\deprecationerrors\DeprecationErrorsAsset`.
+- Added `craft\web\assets\editcategory\EditCategoryAsset`.
+- Added `craft\web\assets\editentry\EditEntryAsset`.
+- Added `craft\web\assets\edittransform\EditTransformAsset`.
+- Added `craft\web\assets\edituser\EditUserAsset`.
+- Added `craft\web\assets\emailmessages\EmailMessagesAsset`.
+- Added `craft\web\assets\feed\FeedAsset`.
+- Added `craft\web\assets\fields\FieldsAsset`.
+- Added `craft\web\assets\fileupload\FileUploadAsset`.
+- Added `craft\web\assets\findreplace\FindReplaceAsset`.
+- Added `craft\web\assets\generalsettings\GeneralSettingsAsset`.
+- Added `craft\web\assets\installer\InstallerAsset`.
+- Added `craft\web\assets\jcrop\JcropAsset`.
+- Added `craft\web\assets\jqueryui\JqueryUiAsset`.
+- Added `craft\web\assets\login\LoginAsset`.
+- Added `craft\web\assets\matrix\MatrixAsset`.
+- Added `craft\web\assets\matrixsettings\MatrixSettingsAsset`.
+- Added `craft\web\assets\newusers\NewUsersAsset`.
+- Added `craft\web\assets\plugins\PluginsAsset`.
+- Added `craft\web\assets\positionselect\PositionSelectAsset`.
+- Added `craft\web\assets\quickpost\QuickPostAsset`.
+- Added `craft\web\assets\qunit\QunitAsset`.
+- Added `craft\web\assets\recententries\RecentEntriesAsset`.
+- Added `craft\web\assets\redactor\RedactorAsset`.
+- Added `craft\web\assets\richtext\RichTextAsset`.
+- Added `craft\web\assets\routes\RoutesAsset`.
+- Added `craft\web\assets\searchindexes\SearchIndexesAsset`.
+- Added `craft\web\assets\sites\SitesAsset`.
+- Added `craft\web\assets\tablesettings\TableSettingsAsset`.
+- Added `craft\web\assets\tests\TestsAsset`.
+- Added `craft\web\assets\updater\UpdaterAsset`.
+- Added `craft\web\assets\updates\UpdatesAsset`.
+- Added `craft\web\assets\updateswidget\UpdatesWidgetAsset`.
+- Added `craft\web\assets\userpermissions\UserPermissionsAsset`.
+- Added `craft\web\assets\utilities\UtilitiesAsset`.
+- Added `craft\web\assets\whatsnew\WhatsNewAsset`.
+- Added `craft\web\assets\xregexp\XregexpAsset`.
 - Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
@@ -328,6 +372,16 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.
 - Renamed `craft\volumes\Rackspace::getClient()` to `client()`.
+- Renamed `craft\web\assets\AppAsset` to `craft\web\assets\cp\CpAsset`.
+- Renamed `craft\web\assets\D3Asset` to `craft\web\assets\d3\D3Asset`.
+- Renamed `craft\web\assets\ElementResizeDetectorAsset` to `craft\web\assets\elementresizedetector\ElementResizeDetectorAsset`.
+- Renamed `craft\web\assets\GarnishAsset` to `craft\web\assets\garnish\GarnishAsset`.
+- Renamed `craft\web\assets\JqueryPaymentAsset` to `craft\web\assets\jquerypayment\JqueryPaymentAsset`.
+- Renamed `craft\web\assets\JqueryTouchEventsAsset` to `craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset`.
+- Renamed `craft\web\assets\PicturefillAsset` to `craft\web\assets\picturefill\PicturefillAsset`.
+- Renamed `craft\web\assets\SelectizeAsset` to `craft\web\assets\selectize\SelectizeAsset`.
+- Renamed `craft\web\assets\TimepickerAsset` to `craft\web\assets\timepicker\TimepickerAsset`.
+- Renamed `craft\web\assets\VelocityAsset` to `craft\web\assets\velocity\VelocityAsset`.
 - Renamed `craft\web\twig\variables\CraftVariable::getLocale()` back to `locale()`.
 - Moved `craft\volumes\VolumeInterface::getRootPath()` to `craft\volumes\LocalVolumeInterface::getRootPath()`.
 - `craft\base\Element::getEditorHtml()` is no longer static, and no longer has an `$element` argument.
