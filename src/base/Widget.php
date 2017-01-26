@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\UrlHelper;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
