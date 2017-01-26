@@ -1,7 +1,7 @@
 @charset "UTF-8";
 @import "../../shared";
 
-#traces.loading { background-image: url(../images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
+#traces.loading { background-image: url(images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
 
 #traces .body { width: 100%; height: 100%; overflow: auto; }
 #traces .body strong { color: $mediumtextcolor; }
@@ -12,5 +12,5 @@
 	   only screen and (        min-device-pixel-ratio: 1.5),
 	   only screen and (        min-resolution: 1.5dppx)
 {
-	#traces.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+	#traces.loading { background-image: url(images/spinner_big_2x.gif); background-size: 48px; }
 }
