@@ -24,6 +24,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\validators\HandleValidator;
+use craft\web\assets\redactor\RedactorAsset;
 use craft\web\assets\richtext\RichTextAsset;
 use yii\db\Schema;
 use yii\validators\StringValidator;
@@ -635,7 +636,9 @@ class RichText extends Field
                 $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
             }
 
-            $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js");
+            $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
+                'depends' => RedactorAsset::class
+            ]);
         }
     }
 
