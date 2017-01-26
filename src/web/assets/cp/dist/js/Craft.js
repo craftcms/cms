@@ -16067,7 +16067,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
                         this.states = response.states;
 
                         this.$container.append(response.modalHtml);
-                        this.$container.append('<script type="text/javascript" src="' + Craft.baseCpResourcesUrl + '/lib/jquery.payment' + (Craft.useCompressedJs ? '.min' : '') + '.js"></script>');
+                        this.$container.append('<script type="text/javascript" src="' + Craft.jqueryPaymentUrl + '"></script>');
 
                         this.$compareScreen = this.$container.children('#upgrademodal-compare');
                         this.$checkoutScreen = this.$container.children('#upgrademodal-checkout');
