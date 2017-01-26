@@ -253,23 +253,6 @@ class Raster extends Image
 
             $this->resize($newWidth, $newHeight);
 
-            // Now crop.
-            if ($newWidth - $targetWidth > 0) {
-                switch ($horizontalPosition) {
-                    case 'left':
-                        $x1 = 0;
-                        $x2 = $x1 + $targetWidth;
-                        break;
-                    case 'right':
-                        $x2 = $newWidth;
-                        $x1 = $newWidth - $targetWidth;
-                        break;
-                    default:
-                        $x1 = round(($newWidth - $targetWidth) / 2);
-                        $x2 = $x1 + $targetWidth;
-                        break;
-                }
-
             if (is_array($cropPosition)) {
                 $centerX = $cropPosition['x'] / $factor;
                 $centerY = $cropPosition['y'] / $factor;
@@ -277,20 +260,6 @@ class Raster extends Image
                 $y1 = $centerY - $targetHeight/2;
                 $x2 = $x1 + $targetWidth;
                 $y2 = $y1 + $targetHeight;
-            } elseif ($newHeight - $targetHeight > 0) {
-                switch ($verticalPosition) {
-                    case 'top':
-                        $y1 = 0;
-                        $y2 = $y1 + $targetHeight;
-                        break;
-                    case 'bottom':
-                        $y2 = $newHeight;
-                        $y1 = $newHeight - $targetHeight;
-                        break;
-                    default:
-                        $y1 = round(($newHeight - $targetHeight) / 2);
-                        $y2 = $y1 + $targetHeight;
-                }
 
                 // Now see if we have to bump this around to make it fit the image.
                 if ($x1 < 0) {

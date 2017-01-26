@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-01-25 */
+/*! Craft 3.0.0 - 2017-01-27 */
 (function($){
 
 /** global: Craft */
@@ -12359,6 +12359,7 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
 
 /** global: Craft */
 /** global: Garnish */
+
 /**
  * Image upload class for user photos, site icon and logo.
  */
@@ -12477,6 +12478,7 @@ Craft.ImageUpload = Garnish.Base.extend(
         }
     }
 );
+
 /** global: Craft */
 /** global: Garnish */
 /**

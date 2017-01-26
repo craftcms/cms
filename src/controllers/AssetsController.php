@@ -577,7 +577,7 @@ class AssetsController extends Controller
             $focal = ['x' => $focalX, 'y' => $focalY];
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_components/tools/image_editor');
+        $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }

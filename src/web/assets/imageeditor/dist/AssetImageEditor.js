@@ -1,3 +1,6 @@
+/** global: Craft */
+/** global: Garnish */
+
 /**
  * Asset image editor class
  */
@@ -592,7 +595,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     height: dimensions.height,
                     width: dimensions.width,
                     imageDimensions: dimensions
-                }
+                };
             }
         },
 

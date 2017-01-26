@@ -1,3 +1,5 @@
+/** global: Garnish */
+
 SlideRuleInput = Garnish.Base.extend({
 
     $container: null,

@@ -13,21 +13,21 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 .imageeditor .btn:not(.submit):not(.noborder):hover { background: #3e3e3e; }
 
 .imageeditor .icon::before { width: 24px; height:24px; margin-top: -4px; margin-left: -3px; display: inline-block; content: ' '; }
-.imageeditor .icon.rotate-left::before { background: url("../images/rotate-left.svg"); }
-.imageeditor .icon.rotate-right::before { background-image: url("../images/rotate-right.svg"); }
-.imageeditor .icon.flip-vertical::before { background: url("../images/flip-vertical.svg"); }
-.imageeditor .icon.flip-horizontal::before { background-image: url("../images/flip-horizontal.svg"); }
-.imageeditor .icon.unconstrained::before { background-image: url("../images/unconstrained.svg"); }
-.imageeditor .icon.focal-point::before { background-image: url("../images/focal-point.svg"); }
+.imageeditor .icon.rotate-left::before { background: url("images/rotate-left.svg"); }
+.imageeditor .icon.rotate-right::before { background-image: url("images/rotate-right.svg"); }
+.imageeditor .icon.flip-vertical::before { background: url("images/flip-vertical.svg"); }
+.imageeditor .icon.flip-horizontal::before { background-image: url("images/flip-horizontal.svg"); }
+.imageeditor .icon.unconstrained::before { background-image: url("images/unconstrained.svg"); }
+.imageeditor .icon.focal-point::before { background-image: url("images/focal-point.svg"); }
 
 .imageeditor .body { display: flex; padding: 0; }
 .imageeditor .body .tabs { border-right: 1px solid #000; }
 .imageeditor .body .tabs ul { width:100px; }
 .imageeditor .body .tabs ul li { padding: 14px; text-align: center; border-bottom:1px solid #000; }
 .imageeditor .body .tabs ul li i { background-repeat: no-repeat; background-position: top center; display: block; height: 24px; }
-.imageeditor .body .tabs ul li[data-view="rotate"] i { background-image: url("../images/rotate-left.svg"); }
-.imageeditor .body .tabs ul li[data-view="crop"] i { background-image: url("../images/crop.svg"); }
-.imageeditor .body .tabs ul li[data-view="filters"] i { background-image: url("../images/filters.svg"); }
+.imageeditor .body .tabs ul li[data-view="rotate"] i { background-image: url("images/rotate-left.svg"); }
+.imageeditor .body .tabs ul li[data-view="crop"] i { background-image: url("images/crop.svg"); }
+.imageeditor .body .tabs ul li[data-view="filters"] i { background-image: url("images/filters.svg"); }
 .imageeditor .body .tabs ul li.selected { background-color: #444; }
 .imageeditor .body .tabs ul li:hover { cursor: pointer; }
 
