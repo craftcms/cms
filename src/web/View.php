@@ -1189,7 +1189,7 @@ class View extends \yii\web\View
             CpAsset::class
         ]);
 
-        $sourcePath = Craft::getAlias('@app/resources');
+        $sourcePath = Craft::getAlias('@app/web/assets/cp/dist');
 
         // If the resource doesn't exist in vendor/craftcms/cms/src/resources, check plugins' resources/ subfolders
         if (!is_file($sourcePath.DIRECTORY_SEPARATOR.$path)) {
