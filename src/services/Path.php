@@ -342,16 +342,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `app/resources/` directory.
-     *
-     * @return string
-     */
-    public function getResourcesPath(): string
-    {
-        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'resources';
-    }
-
-    /**
      * Returns the path to the `app/translations/` directory.
      *
      * @return string

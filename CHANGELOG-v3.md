@@ -477,6 +477,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Matrix::saveBlock()`.
 - Removed `craft\services\Matrix::validateBlock()`.
 - Removed `craft\services\Path::getMigrationsPath()`.
+- Removed `craft\services\Path::getResourcesPath()`.
 - Removed `craft\services\Plugins::call()`.
 - Removed `craft\services\Plugins::callFirst()`.
 - Removed `craft\services\SystemSettings::getCategoryTimeUpdated()`.

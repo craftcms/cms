@@ -849,7 +849,7 @@ class Plugins extends Component
         $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-            $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
+            $iconPath = Craft::getAlias('@app/icons/default-icon.svg');
         }
 
         return file_get_contents($iconPath);

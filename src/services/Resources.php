@@ -308,7 +308,7 @@ class Resources extends Component
     private function _getIconPath(string $ext): string
     {
         $pathService = Craft::$app->getPath();
-        $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
+        $sourceIconPath = Craft::getAlias('@app/icons/file.svg');
         $extLength = mb_strlen($ext);
 
         if ($extLength > 5) {
@@ -348,6 +348,6 @@ class Resources extends Component
     private function _getBrokenImageThumbPath(): string
     {
         //http_response_code(404);
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';
+        return Craft::getAlias('@app/icons/broken-image.svg');
     }
 }
