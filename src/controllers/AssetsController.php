@@ -591,6 +591,7 @@ class AssetsController extends Controller
         $assetId = $request->getRequiredQueryParam('assetId');
         $size = $request->getRequiredQueryParam('size');
 
+        // TODO the method name needs some work.
         $filePath = Assets::getEditorImagePath($assetId, $size);
 
         if (!$filePath) {

@@ -443,11 +443,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             var dimensions = {};
             if (imageRatio > editorRatio) {
-                dimensions.height = this.editorHeight;
-                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorHeight));
+                dimensions.height = Math.min(this.editorHeight, this.originalHeight);
+                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / dimensions.height));
             } else {
-                dimensions.width = this.editorWidth;
-                dimensions.height = Math.round(this.originalHeight * (this.editorWidth / this.originalWidth));
+                dimensions.width = Math.min(this.editorWidth, this.originalWidth);
+                dimensions.height = Math.round(this.originalHeight * (dimensions.width / this.originalWidth));
             }
 
             return dimensions;

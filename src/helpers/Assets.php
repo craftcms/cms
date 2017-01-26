@@ -572,6 +572,9 @@ class Assets
             return false;
         }
 
+        /**
+         * @var Volume $volume
+         */
         $volume = $asset->getVolume();
 
         $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
@@ -601,7 +604,7 @@ class Assets
                 $existingAsset = $assetSourcesDirectory.DIRECTORY_SEPARATOR.$subDir.'/'.$assetId.'.'.$asset->getExtension();
                 if ($existingSize >= $size && is_file($existingAsset)) {
                     Craft::$app->getImages()->loadImage($existingAsset)
-                        ->scaleToFit($size, $size)
+                        ->scaleToFit($size, $size, false)
                         ->saveAs($targetFilePath);
 
                     return $targetFilePath;
@@ -618,11 +621,11 @@ class Assets
         if (!$volume::isLocal() && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = $asset->getTransformSource();
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
         } else {
             // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
             $localSource = $asset->getCopyOfFile();
-            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
             FileHelper::removeFile($localSource);
         }
 
