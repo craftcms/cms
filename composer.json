@@ -1,56 +1,62 @@
 {
-  "name": "craftcms/cms",
-  "description": "Craft CMS",
-  "keywords": [
-    "craft",
-    "cms",
-    "craftcms",
-    "content management system"
-  ],
-  "homepage": "https://craftcms.com",
-  "license": "proprietary",
-  "support": {
-    "email": "support@craftcms.com",
-    "issues": "https://github.com/craftcms/cms/issues?state=open",
-    "forum": "https://craftcms.stackexchange.com/",
-    "source": "https://github.com/craftcms/cms",
-    "docs": "https://craftcms.com/docs",
-    "rss": "https://craftcms.com/changelog.rss"
-  },
-  "minimum-stability": "stable",
-  "require": {
-    "php": ">=7.0.0",
-    "yiisoft/yii2": "2.0.10",
-    "yiisoft/yii2-debug": "2.0.7",
-    "yiisoft/yii2-swiftmailer": "2.0.6",
-    "guzzlehttp/guzzle": "6.2.2",
-    "danielstjules/stringy": "2.3.2",
-    "creocoder/yii2-nested-sets": "0.9.0",
-    "pixelandtonic/imagine": "0.6.3.2",
-    "league/flysystem": "1.0.32",
-    "mikehaertl/php-shellcommand": "1.2.2",
-    "twig/twig": "2.1.0",
-    "bower-asset/d3": "3.5.17",
-    "bower-asset/element-resize-detector": "1.1.10",
-    "bower-asset/garnishjs": "0.1.11",
-    "bower-asset/jquery.payment": "3.0.0",
-    "bower-asset/picturefill": "3.0.2",
-    "bower-asset/selectize": "0.12.4",
-    "bower-asset/timepicker": "1.11.8",
-    "bower-asset/velocity": "1.4.1",
-    "zendframework/zend-feed": "2.7.0",
-    "roave/security-advisories": "dev-master",
-    "craftcms/server-check": "1.0.6"
-  },
-  "autoload": {
-    "psr-4": {
-      "craft\\": "src/"
-    }
-  },
-  "repositories": [
-        {
+    "name": "craftcms/cms",
+    "description": "Craft CMS",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "content management system"
+    ],
+    "homepage": "https://craftcms.com",
+    "license": "proprietary",
+    "support": {
+        "email": "support@craftcms.com",
+        "issues": "https://github.com/craftcms/cms/issues?state=open",
+        "forum": "https://craftcms.stackexchange.com/",
+        "source": "https://github.com/craftcms/cms",
+        "docs": "https://craftcms.com/docs",
+        "rss": "https://craftcms.com/changelog.rss"
+    },
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.0.0",
+        "yiisoft/yii2": "2.0.10",
+        "yiisoft/yii2-debug": "2.0.7",
+        "yiisoft/yii2-swiftmailer": "2.0.6",
+        "guzzlehttp/guzzle": "6.2.2",
+        "danielstjules/stringy": "2.3.2",
+        "creocoder/yii2-nested-sets": "0.9.0",
+        "pixelandtonic/imagine": "0.6.3.2",
+        "league/flysystem": "1.0.32",
+        "mikehaertl/php-shellcommand": "1.2.2",
+        "twig/twig": "2.1.0",
+        "bower-asset/d3": "3.5.17",
+        "bower-asset/element-resize-detector": "1.1.10",
+        "bower-asset/garnishjs": "0.1.11",
+        "bower-asset/jquery.payment": "3.0.0",
+        "bower-asset/picturefill": "3.0.2",
+        "bower-asset/selectize": "0.12.4",
+        "bower-asset/timepicker": "1.11.8",
+        "bower-asset/velocity": "1.4.1",
+        "zendframework/zend-feed": "2.7.0",
+        "roave/security-advisories": "dev-master",
+        "craftcms/server-check": "1.0.6"
+    },
+    "require-dev": {
+      "codeception/codeception": "2.2.8",
+      "codeception/verify": "0.3.2",
+      "codeception/specify": "0.4.5",
+      "codeception/mockery-module": "0.2.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "craft\\": "src/"
+        }
+    },
+    "repositories": [
+    {
         "type": "composer",
-      "url": "https://asset-packagist.org"
+        "url": "https://asset-packagist.org"
     }
   ]
 }

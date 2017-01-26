@@ -241,7 +241,7 @@ class Request extends \yii\web\Request
                 $this->_fullPath = $this->_getQueryStringPath();
             }
 
-            $this->_fullPath = trim($this->_fullPath, '/');
+            $this->_fullPath = trim((string)$this->_fullPath, '/');
         }
 
         return $this->_fullPath;
