@@ -1,6 +1,11 @@
 @charset "UTF-8";
 @import "../../../shared";
 
+@mixin spinner {
+    width: 24px;
+    background: url(../images/spinner.gif) no-repeat 50% 50%;
+}
+
 @font-face {
     font-family: 'Craft';
     src:url('../fonts/Craft.eot');

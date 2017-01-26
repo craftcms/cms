@@ -99,7 +99,7 @@ class SystemSettingsController extends Controller
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
 
-        Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
+        $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
             'info' => $info,

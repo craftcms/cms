@@ -10,6 +10,8 @@ settings:
     colors: true
 coverage:
     enabled: true
+    include:
+      - src/*
 params:
   - env
 modules:
