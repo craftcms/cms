@@ -3,9 +3,9 @@
 /* RTL stuff */
 #content #graphic { display: block; margin: 200px auto 0; }
 
-#content #graphic.error { background-image: url(../images/error.png); }
+#content #graphic.error { background-image: url(images/error.png); }
 
-#content #graphic.success { background-image: url(../images/success.png); }
+#content #graphic.success { background-image: url(images/success.png); }
 
 #content #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
@@ -32,7 +32,7 @@ body.rtl #content .update .releases .release h2 .critical { margin-right: 5px; }
 
 #content .update .releases .show-all-notes { display: block; margin-top: 7px; }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #content #graphic.error { background-image: url(../images/error_2x.png); background-size: 48px; }
-  #content #graphic.success { background-image: url(../images/success_2x.png); background-size: 48px; } }
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #content #graphic.error { background-image: url(images/error_2x.png); background-size: 48px; }
+  #content #graphic.success { background-image: url(images/success_2x.png); background-size: 48px; } }
 
 /*# sourceMappingURL=updates.css.map */
