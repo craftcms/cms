@@ -1346,8 +1346,6 @@ class AssetTransforms extends Component
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-
-            default: {
                 if ($asset->focalPoint) {
                     $focal = explode(",", $asset->focalPoint);
                     $position = ['x' => $focal[0], 'y' => $focal[1]];
