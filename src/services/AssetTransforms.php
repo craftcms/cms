@@ -524,7 +524,7 @@ class AssetTransforms extends Component
     private function _generateTransform(AssetTransformIndex $index)
     {
         // For _widthxheight_mode
-        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
+        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(_(?P<position>[a-z\-]+))?(_(?P<quality>\d+))?/i',
             $index->location, $matches)) {
             $transform = new AssetTransform();
             $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);
@@ -551,7 +551,8 @@ class AssetTransforms extends Component
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
-        if ($asset->getExtension() == $index->detectedFormat) {
+        // Focal points make transforms non-reusable, though
+        if ($asset->getExtension() == $index->detectedFormat && !$asset->focalPoint) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
             if ($transform->getIsNamedTransform()) {
@@ -1338,14 +1339,19 @@ class AssetTransforms extends Component
             }
 
             default: {
-                if (!preg_match('/(top|center|bottom)-(left|center|right)/',
+                if ($asset->focalPoint) {
+                    $focal = explode(",", $asset->focalPoint);
+                    $position = ['x' => $focal[0], 'y' => $focal[1]];
+                } else if (!preg_match('/(top|center|bottom)-(left|center|right)/',
                     $transform->position)
                 ) {
-                    $transform->position = 'center-center';
+                    $position = 'center-center';
+                } else {
+                    $position = $transform->position;
                 }
 
                 $image->scaleAndCrop($transform->width, $transform->height,
-                    true, $transform->position);
+                    true, $position);
                 break;
             }
         }

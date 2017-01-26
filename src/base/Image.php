@@ -81,11 +81,11 @@ abstract class Image extends Object
      * @param integer      $targetWidth
      * @param integer|null $targetHeight
      * @param boolean      $scaleIfSmaller
-     * @param string       $cropPositions
+     * @param string       $cropPosition
      *
      * @return static Self reference
      */
-    abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
+    abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPosition = 'center-center');
 
     /**
      * Resizes the image.

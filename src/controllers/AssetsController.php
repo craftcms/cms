@@ -747,7 +747,7 @@ class AssetsController extends Controller
     /**
      * Download a file.
      *
-     * @return void
+     * @return Response
      * @throws BadRequestHttpException if the file to download cannot be found.
      */
     public function actionDownloadAsset()
