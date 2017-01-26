@@ -9,6 +9,7 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\web\assets\craftsupport\CraftSupportAsset;
 use yii\base\Exception;
 
 /**
@@ -82,11 +83,13 @@ class CraftSupport extends Widget
             return false;
         }
 
-        $js = "new Craft.CraftSupportWidget({$this->id});";
-        Craft::$app->getView()->registerJs($js);
+        $view = Craft::$app->getView();
 
-        Craft::$app->getView()->registerJsResource('js/CraftSupportWidget.js');
-        Craft::$app->getView()->registerTranslations('app', [
+        $js = "new Craft.CraftSupportWidget({$this->id});";
+        $view->registerJs($js);
+
+        $view->registerAssetBundle(CraftSupportAsset::class);
+        $view->registerTranslations('app', [
             'Message sent successfully.',
             'Couldn’t send support request.',
         ]);
@@ -94,7 +97,7 @@ class CraftSupport extends Widget
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->get('backupCommand') !== false);
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/CraftSupport/body', [
+        return $view->renderTemplate('_components/widgets/CraftSupport/body', [
             'showBackupOption' => $showBackupOption
         ]);
     }

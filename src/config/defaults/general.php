@@ -260,12 +260,6 @@ return [
      */
     'enableTemplateCaching' => true,
     /**
-     * Any environment-specific variables that should be swapped out in URL and Path settings.
-     * See http://craftcms.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
-     * of this setting.
-     */
-    'environmentVariables' => [],
-    /**
      * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s
      * template.
      *

@@ -87,7 +87,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function getRootPath(): string
     {
-        return Craft::$app->getConfig()->parseEnvironmentString($this->path);
+        return $this->path;
     }
 
     /**
@@ -95,7 +95,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function getRootUrl()
     {
-        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
+        return rtrim($this->url, '/').'/';
     }
 
     /** @noinspection PhpInconsistentReturnPointsInspection */

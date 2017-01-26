@@ -28,10 +28,11 @@
     "creocoder/yii2-nested-sets": "0.9.0",
     "pixelandtonic/imagine": "0.6.3.2",
     "league/flysystem": "1.0.32",
-    "league/flysystem-ziparchive": "1.0.2",
     "mikehaertl/php-shellcommand": "1.2.2",
     "twig/twig": "2.1.0",
-    "bower-asset/d3": "4.4.4.0",
+    "bower-asset/d3": "3.5.17",
+    "bower-asset/d3-format": "1.0.2.0",
+    "bower-asset/d3-time-format": "2.0.3.0",
     "bower-asset/element-resize-detector": "1.1.10",
     "bower-asset/garnishjs": "0.1.11",
     "bower-asset/jquery.payment": "3.0.0",
@@ -41,9 +42,13 @@
     "bower-asset/velocity": "1.4.1",
     "zendframework/zend-feed": "2.7.0",
     "roave/security-advisories": "dev-master",
-    "craftcms/server-check": "1.0.6",
-    "bower-asset/d3-format": "1.0.2.0",
-    "bower-asset/d3-time-format": "2.0.3.0"
+    "craftcms/server-check": "1.0.6"
+  },
+  "require-dev": {
+    "codeception/codeception": "2.2.8",
+    "codeception/verify": "0.3.2",
+    "codeception/specify": "0.4.5",
+    "codeception/mockery-module": "0.2.2"
   },
   "autoload": {
     "psr-4": {
@@ -51,8 +56,8 @@
     }
   },
   "repositories": [
-        {
-        "type": "composer",
+    {
+      "type": "composer",
       "url": "https://asset-packagist.org"
     }
   ]

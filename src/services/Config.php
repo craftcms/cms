@@ -58,6 +58,7 @@ class Config extends Component
     const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_APC = 'apc';
     const CATEGORY_GUZZLE = 'guzzle';
+    const CATEGORY_VOLUMES = 'volumes';
 
     // Properties
     // =========================================================================
@@ -644,27 +645,6 @@ class Config extends Component
     }
 
     /**
-     * Parses a string for any [environment variables](http://craftcms.com/docs/multi-environment-configs#environment-specific-variables).
-     *
-     * This method simply loops through all of the elements in the
-     * [environmentVariables](http://craftcms.com/docs/config-settings#environmentVariables) config setting’s
-     * value, and replaces any {tag}s in the string that have matching keys with their corresponding values.
-     *
-     * @param string $str The string that should be parsed for environment variables.
-     *
-     * @return string The parsed string.
-     */
-    public function parseEnvironmentString(string $str): string
-    {
-        /** @noinspection ForeachSourceInspection */
-        foreach ($this->get('environmentVariables') as $key => $value) {
-            $str = str_replace('{'.$key.'}', $value, $str);
-        }
-
-        return $str;
-    }
-
-    /**
      * Returns the Resource Request trigger word based on the type of the current request.
      *
      * If it’s a front-end request, the [resourceTrigger](http://craftcms.com/docs/config-settings#resourceTrigger)
@@ -856,6 +836,8 @@ class Config extends Component
      */
     private function _loadConfigSettings(string $category)
     {
+        $category = strtolower($category);
+
         // Have we already loaded this category?
         if (isset($this->_configSettings[$category])) {
             return;
@@ -864,7 +846,16 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC, self::CATEGORY_GUZZLE], true)) {
+        if (in_array($category, [
+            self::CATEGORY_FILECACHE,
+            self::CATEGORY_GENERAL,
+            self::CATEGORY_DB,
+            self::CATEGORY_DBCACHE,
+            self::CATEGORY_MEMCACHE,
+            self::CATEGORY_APC,
+            self::CATEGORY_GUZZLE,
+            self::CATEGORY_VOLUMES,
+        ], true)) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */
@@ -939,15 +930,20 @@ class Config extends Component
     {
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {
-            $mergedCustomConfig = [];
+            // If no environment was specified, just look in the '*' array
+            if (Craft::$app->env === null) {
+                $customConfig = $customConfig['*'];
+            } else {
+                $mergedCustomConfig = [];
 
-            foreach ($customConfig as $env => $envConfig) {
-                if ($env === '*' || StringHelper::contains(CRAFT_ENVIRONMENT, $env)) {
-                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                foreach ($customConfig as $env => $envConfig) {
+                    if ($env === '*' || StringHelper::contains(Craft::$app->env, $env)) {
+                        $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                    }
                 }
-            }
 
-            $customConfig = $mergedCustomConfig;
+                $customConfig = $mergedCustomConfig;
+            }
         }
 
         $baseConfig = array_merge($baseConfig, $customConfig);

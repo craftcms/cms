@@ -198,7 +198,8 @@ class Updater
         if ($plugin === null) {
             $result = Craft::$app->getMigrator()->up();
         } else {
-            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($plugin->getHandle());
+            /** @var Plugin $plugin */
+            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($plugin->handle);
             $result = $plugin->update($pluginInfo['version']);
         }
 

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Header;
@@ -191,9 +192,10 @@ class Application extends \yii\web\Application
             $firstSeg = $request->getSegment(1);
 
             if ($firstSeg !== null) {
+                /** @var Plugin|null $plugin */
                 $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
-                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->getHandle())) {
+                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->handle)) {
                     throw new ForbiddenHttpException();
                 }
             }

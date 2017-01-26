@@ -117,6 +117,11 @@ trait ApplicationTrait
     public $minVersionRequired;
 
     /**
+     * @var string|null The environment ID Craft is currently running in.
+     */
+    public $env;
+
+    /**
      * @var
      */
     private $_isInstalled;

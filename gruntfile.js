@@ -4,15 +4,15 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		watch: {
 			sass: {
-				files: ['src/resources-src/sass/*.scss'],
+				files: ['src/web/assets/**/*.scss'],
 				tasks: 'sass'
 			},
-			globaljs: {
-				files: ['src/resources-src/global-js/*.js'],
-				tasks: ['concat', 'uglify:globaljs'],
+			cpjs: {
+				files: ['src/web/assets/cp/src/js/*.js'],
+				tasks: ['concat', 'uglify:cpjs'],
 			},
 			otherjs: {
-				files: ['src/resources/js/*.js', '!src/resources/js/Craft.js', '!src/resources/js/*.min.js'],
+				files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js'],
 				tasks: ['uglify:otherjs']
 			}
 		},
@@ -21,28 +21,32 @@ module.exports = function(grunt) {
 				style: 'compact',
 				unixNewlines: true
 			},
-			dist: {
-				expand: true,
-				cwd: 'src/resources-src/sass',
-				src: '*.scss',
-				dest: 'src/resources/css',
-				ext: '.css'
-			}
+            dist: {
+                expand: true,
+                cwd: 'src/web/assets',
+                src: '**/*.scss',
+                dest: 'src/web/assets',
+				rename: function(dest, src) {
+                	// Keep them where they came from
+                	return dest + '/' + src;
+				},
+                ext: '.css'
+            }
 		},
 		concat: {
-			globaljs: {
+			cpjs: {
 				options: {
 					banner: '/*! <%= pkg.name %> <%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n' +
 						'(function($){\n\n',
 					footer: '\n})(jQuery);\n',
 				},
 				src: [
-					'src/resources-src/global-js/Craft.js',
-					'src/resources-src/global-js/Base*.js',
-					'src/resources-src/global-js/*.js',
-					'!(src/resources-src/global-js/Craft.js|src/resources-src/global-js/Base*.js)'
+					'src/web/assets/cp/src/js/Craft.js',
+					'src/web/assets/cp/src/js/Base*.js',
+					'src/web/assets/cp/src/js/*.js',
+					'!(src/web/assets/cp/src/js/Craft.js|src/web/assets/cp/src/js/Base*.js)'
 				],
-				dest: 'src/resources/js/Craft.js'
+				dest: 'src/web/assets/cp/dist/js/Craft.js'
 			}
 		},
 		uglify: {
@@ -51,15 +55,19 @@ module.exports = function(grunt) {
 				preserveComments: 'some',
 				screwIE8: true
 			},
-			globaljs: {
-				src: 'src/resources/js/Craft.js',
-				dest: 'src/resources/js/Craft.min.js'
+			cpjs: {
+				src: 'src/web/assets/cp/dist/js/Craft.js',
+				dest: 'src/web/assets/cp/dist/js/Craft.min.js'
 			},
             otherjs: {
 				expand: true,
-				cwd: 'src/resources/js',
-				src: ['*.js', '!*.min.js', '!Craft.js'],
-				dest: 'src/resources/js',
+				cwd: 'src/web/assets',
+				src: ['*/dist/*.js', '!*/dist/*.min.js', '!tests/dist/tests.js'],
+				dest: 'src/web/assets',
+                rename: function(dest, src) {
+                    // Keep them where they came from
+                    return dest + '/' + src;
+                },
 				ext: '.min.js'
 			}
 		},
@@ -75,13 +83,12 @@ module.exports = function(grunt) {
 			},
 			beforeconcat: [
 				'gruntfile.js',
-				'src/resources/js/*.js',
-				'!src/resources/js/*.min.js',
-				'!src/resources/js/Craft.js',
-				'src/resources-src/global-js/*.js'
+				'src/web/assets/**/*.js',
+				'!src/web/assets/**/*.min.js',
+				'!src/web/assets/cp/dist/js/Craft.js'
 			],
 			afterconcat: [
-				'src/resources/js/Craft.js'
+				'src/web/assets/cp/dist/js/Craft.js'
 			]
 		}
 	});

@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `restoreCommand` config setting, which can be used to override the command Craft executes when restoring a database backup.
 - Added the `dsn` DB config setting, which can be used to manually specify the DSN string, ignoring most other DB config settings.
 - Added the `schema` DB config setting, which can be used to assign the default schema used when connecting to a PostgreSQL database.
+- Added support for setting Volume config settings in `config/volumes.php`. The file should return an array with keys that match volume handles, and values that are config arrays for the volumes.
 - Added the `view` global Twig variable, which is a reference to the View class that is rendering the template.
 - Added the `SORT_ASC` and `SORT_DESC` global Twig variables, which can be used to define query sorting in element queries.
 - Added the `POS_HEAD`, `POS_BEGIN`, `POS_END`, `POS_READY`, and `POS_LOAD` global Twig variables, which can be used to define the placement of registered scripts.
@@ -30,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - Added the Utility API, which enables plugins to provide custom utilities.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
 - Added method paramater and return types everywhere possible.
+- Added a new `@lib` Yii alias, pointed to `vendor/craftcms/cms/lib/`.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
 - Added `craft\base\Utility`.
@@ -64,6 +66,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
+- Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
@@ -83,6 +86,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\MissingComponentTrait::createFallback()`.
 - Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
 - Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
+- Added `craft\base\Plugin::$hasCpSection`, which replaces the static `hasCpSection()` method.
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
@@ -116,6 +120,9 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\utilities\SearchIndexes`.
 - Added `craft\utilities\SystemReport`.
 - Added `craft\utilities\Updates`.
+- Added `craft\web\assets\AssetBundle`.
+- Added `craft\web\AssetManager::getPublishedPath()`.
+- Added `craft\web\AssetManager::getPublishedUrl()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -160,6 +167,7 @@ Craft CMS 3.0 Working Changelog
 - File-based data caching now respects the `defaultDirMode` config setting.
 - Redactor config files must now be valid JSON.
 - When a category is deleted, its nested categories are no longer deleted with it.
+- Craft Personal and Client editions are now allowed to have custom Volume types (e.g. Amazon S3).
 - Renamed the “Get Help” widget to “Craft Support”.
 - When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
 - When editing a volume whose type class cannot be found, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.
@@ -174,6 +182,7 @@ Craft CMS 3.0 Working Changelog
 - Element indexes now remember which sources were expanded across multiple requests.
 - Element indexes now remember if a nested source was selected across multiple requests.
 - Plugin schema versions now default to `'1.0.0'`, and plugins absolutely must increment their schema version if they want any pending migrations to be noticed.
+- Resource requests no longer serve files within Craft’s or plugins’ `resources/` folders.
 - Renamed the `{% registercss %}` Twig tag to `{% css %}`.
 - Renamed the `{% registerjs %}` Twig tag to `{% js %}`.
 - `craft\base\Plugin` no longer automatically registers field types in the plugin’s `fields/` subfolder.
@@ -355,6 +364,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the `vendor/` folder.
+- Removed support for the `environmentVariables` config setting. Use the `siteUrl` config setting in `config/general.php` to set the site URL, and override volume settings with `config/volumes.php`.
 - Removed support for Yii 1-style controller action paths (e.g. `entries/saveEntry`), which were previously deprecated. Use the Yii 2 style instead (e.g. `entries/save-entry`).
 - Removed the deprecated `activateAccountFailurePath` config setting.
 - Removed the `appId` config setting.
@@ -362,10 +372,10 @@ Craft CMS 3.0 Working Changelog
 - Removed the `initSQLs` DB config setting.
 - Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
 - Removed the `{% registercssfile %}` Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
-- Removed the `{% registercssresource %}` Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
+- Removed the `{% registercssresource %}` and `{% includecssresource %}` Twig tags.
 - Removed the `{% registerhirescss %}` Twig tag. Use `{% css %}` instead, and type your own media selector.
 - Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
-- Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
+- Removed the `{% registerjsresource %}` and `{% includejsresource %}` Twig tags.
 - Removed the `{% endpaginate %}` Twig tag as it’s unnecessary.
 - Removed the `childOf`, `childField`, `parentOf`, and `parentField` element query params. Use `relatedTo` instead.
 - Removed the `depth` element query param. Use `level` instead.
@@ -425,6 +435,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Plugin::getFieldTypes()`.
 - Removed `craft\base\Plugin::getVolumeTypes()`.
 - Removed `craft\base\Plugin::getWidgetTypes()`.
+- Removed `craft\base\PluginInterface::hasCpSection()`. Plugins that have a CP section should set the `$hasCpSection` property.
 - Removed `craft\base\VolumeInterface::isLocal()`. Local volumes should implement `craft\base\LocalVolumeInterface` instead.
 - Removed `craft\db\Command::addColumnAfter()`.
 - Removed `craft\db\Command::addColumnBefore()`.
@@ -476,6 +487,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\tools\*`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
+- Removed `craft\web\View::registerCssResource()`.
+- Removed `craft\web\View::registerJsResource()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.

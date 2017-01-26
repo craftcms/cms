@@ -439,7 +439,8 @@ class Et extends Component
             $pluginsService = Craft::$app->getPlugins();
             $plugin = $pluginsService->getPluginByPackageName($packageName);
             if ($plugin) {
-                $pluginsService->setPluginLicenseKey($plugin->getHandle(), null);
+                /** @var Plugin $plugin */
+                $pluginsService->setPluginLicenseKey($plugin->handle, null);
             }
         }
 

@@ -29,43 +29,11 @@
                 label: "Handle"|t('app'),
                 id: 'handle',
                 name: 'handle',
+				class: 'code',
                 value: (volume is defined ? volume.handle : null),
                 errors: (volume is defined ? volume.getErrors('handle') : null),
                 required: true,
             }) }}
-
-            {% if CraftEdition == CraftPro %}
-				<hr>
-
-				{{ forms.selectField({
-					label: "Volume Type"|t('app'),
-					instructions: "What type of volume is this?"|t('app'),
-					id: 'type',
-					name: 'type',
-					options: volumeTypeOptions,
-					value: className(volume),
-					errors: volume.getErrors('type') ?? null,
-					toggle: true
-				}) }}
-
-				{% for volumeType in volumeTypes %}
-					{% set isCurrent = (volumeType == className(volume)) %}
-
-					<div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% namespace 'types['~volumeType~']' %}
-							{% if isCurrent %}
-								{{ volume.getSettingsHtml()|raw }}
-							{% else %}
-								{{ volumeInstances[volumeType].getSettingsHtml()|raw }}
-							{% endif %}
-						{% endnamespace %}
-					</div>
-				{% endfor %}
-			{% else %}
-				{% namespace 'types[craft\\volumes\\Local]' %}
-					{{ volume.getSettingsHtml()|raw }}
-				{% endnamespace %}
-			{% endif %}
 
 			{{ forms.lightswitchField({
 				label: "Assets in this volume have public URLs"|t,
@@ -76,8 +44,8 @@
 
 			<div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
 				{{ forms.textField({
-					label: "URL"|t('app'),
-					instructions: "The URL to your files."|t('app'),
+					label: "Base URL"|t('app'),
+					instructions: "The base URL to the assets in this volume."|t('app'),
 					id: 'url',
 					class: 'ltr volume-url',
 					name: 'url',
@@ -88,6 +56,32 @@
 				}) }}
 			</div>
 
+			<hr>
+
+			{{ forms.selectField({
+				label: "Volume Type"|t('app'),
+				instructions: "What type of volume is this?"|t('app'),
+				id: 'type',
+				name: 'type',
+				options: volumeTypeOptions,
+				value: className(volume),
+				errors: volume.getErrors('type') ?? null,
+				toggle: true
+			}) }}
+
+			{% for volumeType in volumeTypes %}
+				{% set isCurrent = (volumeType == className(volume)) %}
+
+				<div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+					{% namespace 'types['~volumeType~']' %}
+						{% if isCurrent %}
+							{{ volume.getSettingsHtml()|raw }}
+						{% else %}
+							{{ volumeInstances[volumeType].getSettingsHtml()|raw }}
+						{% endif %}
+					{% endnamespace %}
+				</div>
+			{% endfor %}
 		</div>
 
 		<div id="assetvolume-fieldlayout" class="hidden">

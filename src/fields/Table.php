@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\helpers\Json;
+use craft\web\assets\tablesettings\TableSettingsAsset;
 use yii\db\Schema;
 
 /**
@@ -112,8 +113,10 @@ class Table extends Field
             ],
         ];
 
-        Craft::$app->getView()->registerJsResource('js/TableFieldSettings.js');
-        Craft::$app->getView()->registerJs('new Craft.TableFieldSettings('.
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(TableSettingsAsset::class);
+        $view->registerJs('new Craft.TableFieldSettings('.
             Json::encode(Craft::$app->getView()->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE).', '.
             Json::encode(Craft::$app->getView()->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE).', '.
             Json::encode($columns, JSON_UNESCAPED_UNICODE).', '.
@@ -121,7 +124,7 @@ class Table extends Field
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE).
             ');');
 
-        $columnsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
             [
                 [
                     'label' => Craft::t('app', 'Table Columns'),
@@ -135,7 +138,7 @@ class Table extends Field
                 ]
             ]);
 
-        $defaultsField = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
+        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField',
             [
                 [
                     'label' => Craft::t('app', 'Default Values'),

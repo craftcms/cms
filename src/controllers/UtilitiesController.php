@@ -18,6 +18,7 @@ use craft\helpers\FileHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
+use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -79,7 +80,7 @@ class UtilitiesController extends Controller
             throw new ForbiddenHttpException('User not permitted to access the "'.$class::displayName().'".');
         }
 
-        Craft::$app->getView()->registerCssResource('css/utilities.css');
+        Craft::$app->getView()->registerAssetBundle(UtilitiesAsset::class);
 
         return $this->renderTemplate('utilities/_index', [
             'id' => $id,
