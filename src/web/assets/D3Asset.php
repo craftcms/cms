@@ -9,6 +9,8 @@ namespace craft\web\assets;
 
 use Craft;
 use yii\web\AssetBundle;
+use craft\helpers\ChartHelper;
+use craft\helpers\Json;
 
 /**
  * D3 asset bundle.
@@ -86,6 +88,7 @@ class D3Asset extends AssetBundle
 
         $js = 'window.d3FormatLocaleDefinition = '.file_get_contents($formatLocalePath).';';
         $js .= 'window.d3TimeFormatLocaleDefinition = '.file_get_contents($timeFormatLocalePath).';';
+        $js .= 'window.d3Formats = '.Json::encode(ChartHelper::formats()).';';
 
         $view->registerJs($js);
     }
