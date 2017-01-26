@@ -948,6 +948,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
+        return null;
     }
 
     /**

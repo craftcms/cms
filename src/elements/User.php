@@ -751,11 +751,7 @@ class User extends Element implements IdentityInterface
                 }
         }
 
-        if ($this->authError === null) {
-            return true;
-        }
-
-        return false;
+        return $this->authError === null;
     }
 
     /**
