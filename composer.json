@@ -43,7 +43,7 @@
         "craftcms/server-check": "1.0.6"
     },
     "require-dev": {
-      "codeception/codeception": "2.2.6",
+      "codeception/codeception": "2.2.8",
       "codeception/verify": "0.3.2",
       "codeception/specify": "0.4.5",
       "codeception/mockery-module": "0.2.2"
