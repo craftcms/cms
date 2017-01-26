@@ -287,4 +287,4 @@ EOD;
     }
 }
 
-spl_autoload_register(['Craft', 'autoload'], true, true);
+spl_autoload_register([Craft::class, 'autoload'], true, true);
