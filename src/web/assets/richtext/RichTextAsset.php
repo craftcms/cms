@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\richtext;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\redactor\RedactorAsset;
 

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jqueryui;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * jQuery UI asset bundle.

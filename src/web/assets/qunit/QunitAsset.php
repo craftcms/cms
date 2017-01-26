@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\qunit;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Qunit asset bundle.

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\utilities;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**

@@ -120,7 +120,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\utilities\SearchIndexes`.
 - Added `craft\utilities\SystemReport`.
 - Added `craft\utilities\Updates`.
-- Added `craft\web\assets\AssetBundle`.
+- Added `craft\web\AssetBundle`.
 - Added `craft\web\AssetManager::getPublishedPath()`.
 - Added `craft\web\AssetManager::getPublishedUrl()`.
 - Added `craft\web\Session::addAssetBundleFlash()`.

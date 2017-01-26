@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\web\assets;
+namespace craft\web;
 
 use Craft;
 
 /**
- * Application asset bundle.
+ * @inheritdoc
  */
 class AssetBundle extends \yii\web\AssetBundle
 {

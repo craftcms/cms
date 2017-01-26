@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\fileupload;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * File Upload asset bundle.

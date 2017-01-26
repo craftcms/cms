@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\clearcaches;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**

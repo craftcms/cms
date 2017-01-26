@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\redactor;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**

@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\colorpicker;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Colorpicker asset bundle.
