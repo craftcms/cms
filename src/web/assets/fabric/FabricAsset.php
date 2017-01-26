@@ -19,7 +19,7 @@ class FabricAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@lib/fabric';
+        $this->sourcePath = '@bower/fabric/dist';
 
         $this->js = [
             'fabric'.$this->dotJs(),
