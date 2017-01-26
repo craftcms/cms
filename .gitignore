@@ -12,5 +12,4 @@ Build/*
 node_modules/
 vendor/
 /composer.lock
-/codeception.yml
 /tests/_craft/config/db.php
