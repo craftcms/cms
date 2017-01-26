@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\cache\AppPathDependency;
 use craft\events\ResolveResourcePathEvent;
 use craft\helpers\FileHelper;

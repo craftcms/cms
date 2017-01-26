@@ -9,8 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\helpers\App;
-use craft\helpers\Json;
 use craft\web\assets\updates\UpdatesAsset;
 use yii\base\Exception;
 

@@ -476,6 +476,8 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         $this->updateRecentEntriesWidgets($siteIdsByLocale);
+
+        return true;
     }
 
     /**
