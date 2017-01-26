@@ -122,11 +122,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.editorHeight = this.$editorContainer.innerHeight();
             this.editorWidth = this.$editorContainer.innerWidth();
 
-            var focal = false;
-            if (data.focalPoint) {
-                focal = data.focalPoint.split(",");
-            }
-
             this.updateSizeAndPosition();
 
             // Load the canvas on which we'll host our image and set up the proxy render function
@@ -176,16 +171,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 // Set up the focal point
                 var focalState = {
-                    imageDimensions: this.getScaledImageDimensions()
+                    imageDimensions: this.getScaledImageDimensions(),
+                    offsetX: 0,
+                    offsetY: 0
                 };
 
-                if (focal) {
-                    focalState.offsetX = focal.x;
-                    focalState.offsetY = focal.y;
-                } else {
-                    focalState.offsetX = 0;
-                    focalState.offsetY = 0;
+                var focal = false;
+                if (data.focalPoint) {
+                    // Transform the focal point coordinates from relative to absolute
+                    var focalData = data.focalPoint;
+
+                    // Resolve for the current image dimensions.
+                    var adjustedX = focalState.imageDimensions.width * focalData.x;
+                    var adjustedY = focalState.imageDimensions.height * focalData.y;
+
+                    focalState.offsetX = adjustedX - focalState.imageDimensions.width/2;
+                    focalState.offsetY = adjustedY - focalState.imageDimensions.height/2;
+
+                    focal = true;
                 }
+
                 this.storeFocalPointState(focalState);
 
                 if (focal) {
@@ -240,7 +245,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             });
 
             this.$body.css({
-                'height': innerHeight - 58,
+                'height': innerHeight - 58
             });
 
             if (innerWidth < innerHeight) {
@@ -595,6 +600,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
          */
         storeFocalPointState: function (state) {
+            // TODO not really comfortable with imageDimensions being doubled in both cropper and focal State
+            // as they could be forced to have the same value and remove the need for duplicity
+
             // If we're asked to store a specific state.
             if (state) {
                 this.focalPointState = state;
@@ -673,7 +681,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     imageProperties.height *= scaleFactor;
                  }
 
-                console.log(this.scaleFactor);
                 var state = this.cropperState;
 
                 // Make sure we reposition the image as well to focus on the same image area
@@ -1041,6 +1048,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 postData.cropData = cropData;
             } else {
                 postData.imageDimensions = this.getScaledImageDimensions();
+            }
+
+            if (this.focalPoint) {
+                postData.focalPoint = this.focalPointState;
             }
 
             postData.flipData = this.flipData;

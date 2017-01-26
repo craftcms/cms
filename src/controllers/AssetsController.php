@@ -556,13 +556,30 @@ class AssetsController extends Controller
      * Return the image editor template.
      *
      * @return Response
+     * @throws BadRequestHttpException if the Asset is missing.
      */
     public function actionImageEditor()
     {
         $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+        if (!$asset) {
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+        }
+
+        $focal = null;
+        if ($asset->focalPoint) {
+            $focalPoint = explode(",", $asset->focalPoint);
+
+            // Make it dimension-agnostic
+            $focalX = $focalPoint[0] / $asset->width;
+            $focalY = $focalPoint[1] / $asset->height;
+            $focal = ['x' => $focalX, 'y' => $focalY];
+        }
+
         $html = Craft::$app->getView()->renderTemplate('_components/tools/image_editor');
 
-        return $this->asJson(['html' => $html, 'focalPoint' => null]);
+        return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }
 
     /**
@@ -613,7 +630,8 @@ class AssetsController extends Controller
         $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
-        $cropData = $request->getBodyParam('cropData');
+        $cropData = $request->getRequiredBodyParam('cropData');
+        $focalPoint = $request->getBodyParam('focalPoint');
         $imageDimensions = $request->getBodyParam('imageDimensions');
         $flipData = $request->getBodyParam('flipData');
         $zoom = $request->getBodyParam('zoom', 1);
@@ -675,21 +693,28 @@ class AssetsController extends Controller
         $imageCenterX = $image->getWidth() / 2;
         $imageCenterY = $image->getHeight() / 2;
 
-        if ($cropData) {
-            $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
-            $width = $cropData['width'] * $zoom * $adjustmentRatio;
-            $height = $cropData['height'] * $zoom * $adjustmentRatio;
-            $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width/2;
-            $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height/2;
+        $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
+        $width = $cropData['width'] * $zoom * $adjustmentRatio;
+        $height = $cropData['height'] * $zoom * $adjustmentRatio;
+        $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width/2;
+        $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height/2;
 
-            $image->crop($x, $x + $width, $y, $y + $height);
+        $focal = null;
+        if ($focalPoint) {
+            $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
+            $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
+            $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
+            $focal = round($fx).",".round($fy);
         }
+
+        $image->crop($x, $x + $width, $y, $y + $height);
 
         $image->saveAs($imageCopy);
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
             $asset->dateModified = filemtime($imageCopy);
+            $asset->focalPoint = $focal;
             $assetToSave = $asset;
         } else {
             $newAsset = new Asset();
@@ -701,6 +726,7 @@ class AssetsController extends Controller
             $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
             $newAsset->folderId = $folder->id;
             $newAsset->volumeId = $folder->volumeId;
+            $newAsset->focalPoint = $focal;
 
             $assetToSave = $newAsset;
         }

@@ -333,6 +333,7 @@ class AssetQuery extends ElementQuery
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.focalPoint',
             'assets.dateModified',
             'volumeFolders.path AS folderPath'
         ]);

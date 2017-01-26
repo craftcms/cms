@@ -344,6 +344,11 @@ class Asset extends Element
     public $size;
 
     /**
+     * @var string Focal point coordinates
+     */
+    public $focalPoint;
+
+    /**
      * @var \DateTime Date modified
      */
     public $dateModified;
@@ -929,6 +934,7 @@ class Asset extends Element
         $record->folderId = $this->folderId;
         $record->kind = $this->kind;
         $record->size = $this->size;
+        $record->focalPoint = $this->focalPoint;
         $record->width = $this->width;
         $record->height = $this->height;
         $record->dateModified = $this->dateModified;
