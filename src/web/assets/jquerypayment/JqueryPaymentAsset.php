@@ -22,11 +22,9 @@ class JqueryPaymentAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/jquery.payment/lib';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'jquery.payment.min.js';
-        } else {
-            $this->js[] = 'jquery.payment.js';
-        }
+        $this->js = [
+            'jquery.payment.min.js',
+        ];
 
         parent::init();
     }
