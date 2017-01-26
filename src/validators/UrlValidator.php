@@ -50,13 +50,6 @@ class UrlValidator extends YiiUrlValidator
             $this->defaultScheme = null;
         }
 
-        $result = parent::validateValue($value);
-
-        if (!empty($hasEnvVars)) {
-            // Prevent yii\validators\UrlValidator::validateAttribute() from overwriting $model->$attribute
-            $this->defaultScheme = null;
-        }
-
-        return $result;
+        return parent::validateValue($value);
     }
 }
