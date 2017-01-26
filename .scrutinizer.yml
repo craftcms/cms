@@ -6,6 +6,9 @@ build:
       ini:
         date.timezone: 'US/Pacific'
         memory_limit: '-1'
+  project_setup:
+    before:
+      - mysql -e "CREATE DATABASE `craft3test`"
   tests:
     override:
       command: 'php codeception.php run unit --coverage --coverage-xml --coverage-html'
