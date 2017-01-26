@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\jquerytouchevents;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * JqueryTouchEvents asset bundle.
@@ -22,11 +21,9 @@ class JqueryTouchEventsAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/jquery-touch-events/src';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'jquery.mobile-events.min.js';
-        } else {
-            $this->js[] = 'jquery.mobile-events.js';
-        }
+        $this->js = [
+            'jquery.mobile-events'.$this->dotJs(),
+        ];
 
         parent::init();
     }
