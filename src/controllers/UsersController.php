@@ -742,16 +742,16 @@ class UsersController extends Controller
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
-        Craft::$app->getView()->registerAssetBundle(EditUserAsset::class);
+        $this->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
         $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');
         $settingsJs = Json::encode([
             'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
+        $this->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
-        Craft::$app->getView()->registerTranslations('app', [
+        $this->getView()->registerTranslations('app', [
             'Please enter your current password.',
             'Please enter your password.',
         ]);
@@ -1119,7 +1119,7 @@ class UsersController extends Controller
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
                 FileHelper::removeFile($fileLocation);
 
-                $html = Craft::$app->getView()->renderTemplate('users/_photo', ['account' => $user]);
+                $html = $this->getView()->renderTemplate('users/_photo', ['account' => $user]);
 
                 return $this->asJson(['html' => $html]);
             }
@@ -1162,7 +1162,7 @@ class UsersController extends Controller
         $user->photoId = null;
         Craft::$app->getElements()->saveElement($user, false);
 
-        $html = Craft::$app->getView()->renderTemplate('users/_photo',
+        $html = $this->getView()->renderTemplate('users/_photo',
             [
                 'account' => $user
             ]
@@ -1552,7 +1552,7 @@ class UsersController extends Controller
     private function _renderSetPasswordTemplate(User $user, array $variables): string
     {
         $configService = Craft::$app->getConfig();
-        $view = Craft::$app->getView();
+        $view = $this->getView();
 
         // If the user doesn't have CP access, see if a custom Set Password template exists
         if (!$user->can('accessCp')) {

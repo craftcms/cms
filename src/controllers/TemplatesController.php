@@ -52,7 +52,7 @@ class TemplatesController extends Controller
     public function actionRender(string $template, array $variables = []): string
     {
         // Does that template exist?
-        if (Craft::$app->getView()->doesTemplateExist($template)) {
+        if ($this->getView()->doesTemplateExist($template)) {
             return $this->renderTemplate($template, $variables);
         }
 
@@ -67,7 +67,7 @@ class TemplatesController extends Controller
     public function actionOffline(): string
     {
         // If this is a site request, make sure the offline template exists
-        $view = Craft::$app->getView();
+        $view = $this->getView();
         if (Craft::$app->getRequest()->getIsSiteRequest() && !$view->doesTemplateExist('offline')) {
             $view->setTemplateMode($view::TEMPLATE_MODE_CP);
         }
@@ -141,18 +141,18 @@ class TemplatesController extends Controller
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->get('errorTemplatePrefix');
 
-            if (Craft::$app->getView()->doesTemplateExist($prefix.$statusCode)) {
+            if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
                 $template = $prefix.$statusCode;
-            } else if ($statusCode == 503 && Craft::$app->getView()->doesTemplateExist($prefix.'offline')) {
+            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix.'offline')) {
                 $template = $prefix.'offline';
-            } else if (Craft::$app->getView()->doesTemplateExist($prefix.'error')) {
+            } else if ($this->getView()->doesTemplateExist($prefix.'error')) {
                 $template = $prefix.'error';
             }
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
-            $view = Craft::$app->getView();
+            $view = $this->getView();
             $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
             if ($view->doesTemplateExist($statusCode)) {

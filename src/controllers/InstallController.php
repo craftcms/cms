@@ -74,7 +74,7 @@ class InstallController extends Controller
         $vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
         $vars['defaultSiteUrl'] = 'http://'.$server;
 
-        Craft::$app->getView()->registerAssetBundle(InstallerAsset::class);
+        $this->getView()->registerAssetBundle(InstallerAsset::class);
 
         return $this->renderTemplate('_special/install', $vars);
     }

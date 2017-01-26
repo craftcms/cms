@@ -237,7 +237,7 @@ class ElementIndexesController extends BaseElementsController
         $sources = Craft::$app->getElementIndexes()->getSources($this->_elementType, $this->_context);
 
         return $this->asJson([
-            'html' => Craft::$app->getView()->renderTemplate('_elements/sources', [
+            'html' => $this->getView()->renderTemplate('_elements/sources', [
                 'sources' => $sources
             ])
         ]);
@@ -367,7 +367,7 @@ class ElementIndexesController extends BaseElementsController
     {
         $responseData = [];
 
-        $view = Craft::$app->getView();
+        $view = $this->getView();
 
         // Get the action head/foot HTML before any more is added to it from the element HTML
         if ($includeActions) {

@@ -348,7 +348,7 @@ class CategoriesController extends Controller
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
+            $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
@@ -390,7 +390,7 @@ class CategoriesController extends Controller
         }
 
         // Render the template!
-        Craft::$app->getView()->registerAssetBundle(EditCategoryAsset::class);
+        $this->getView()->registerAssetBundle(EditCategoryAsset::class);
 
         return $this->renderTemplate('categories/_edit', $variables);
     }
@@ -775,7 +775,7 @@ class CategoriesController extends Controller
         // Have this category override any freshly queried categories with the same ID/site
         Craft::$app->getElements()->setPlaceholderElement($category);
 
-        Craft::$app->getView()->getTwig()->disableStrictVariables();
+        $this->getView()->getTwig()->disableStrictVariables();
 
         return $this->renderTemplate($categoryGroupSiteSettings[$category->siteId]->template, [
             'category' => $category

@@ -76,7 +76,7 @@ class AssetTransformsController extends Controller
             }
         }
 
-        Craft::$app->getView()->registerAssetBundle(EditTransformAsset::class);
+        $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
