@@ -478,16 +478,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }.bind(this));
 
             // Rotate controls
-            this.addListener($('.rotate-left'), 'click', function(ev) {
+            this.addListener($('.rotate-left'), 'click', function() {
                 this.rotateImage(-90);
             }.bind(this));
-            this.addListener($('.rotate-right'), 'click', function(ev) {
+            this.addListener($('.rotate-right'), 'click', function() {
                 this.rotateImage(90);
             }.bind(this));
-            this.addListener($('.flip-vertical'), 'click', function(ev) {
+            this.addListener($('.flip-vertical'), 'click', function() {
                 this.flipImage('y');
             }.bind(this));
-            this.addListener($('.flip-horizontal'), 'click', function(ev) {
+            this.addListener($('.flip-horizontal'), 'click', function() {
                 this.flipImage('x');
             }.bind(this));
 
@@ -690,8 +690,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 // Calculate how the cropper would need to move in a circle to maintain
                 // the focus on the same region if the image was rotated with zoom intact.
-                newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
-                newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
+                var newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
+                var newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
 
                 var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
 
@@ -946,7 +946,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         _adjustFocalPointByAngle: function (angle) {
             var angleInRadians = angle * (Math.PI / 180);
-            state = this.focalPointState;
+            var state = this.focalPointState;
 
             var focalX = state.offsetX;
             var focalY = state.offsetY;
@@ -955,7 +955,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // the focus on the same region if the image was rotated with zoom intact.
             var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
             var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
-            sizeFactor = this.getScaledImageDimensions().width / state.imageDimensions.width;
+            var sizeFactor = this.getScaledImageDimensions().width / state.imageDimensions.width;
 
             var adjustedFocalX = newFocalX * sizeFactor * this.zoomRatio;
             var adjustedFocalY = newFocalY * sizeFactor * this.zoomRatio;
@@ -989,8 +989,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             // If there's no vertex set after loop, it means that all of them are inside the image rectangle
+            var adjustmentRatio;
             if (!vertex) {
-                return 1;
+                adjustmentRatio = 1;
             } else {
                 // Find out which edge got crossed by the vertex
                 var edge = this._getEdgeCrossed(containingVertices, vertex);
@@ -1018,7 +1019,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         saveImage: function(ev) {
-            $button = $(ev.currentTarget);
+            var $button = $(ev.currentTarget);
             if ($button.hasClass('disabled')) {
                 return false;
             }
@@ -1057,7 +1058,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             postData.flipData = this.flipData;
             postData.zoom = this.zoomRatio;
 
-            Craft.postActionRequest('assets/save-image', postData, function(data) {
+            // TODO add some error-handling, perhaps
+            Craft.postActionRequest('assets/save-image', postData, function() {
                 this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
                 this.onSave();
                 this.hide();
@@ -1089,7 +1091,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         getZoomToFitRatio: function(dimensions) {
 
             // Get the bounding box for a rotated image
-            boundingBox = this._getImageBoundingBox(dimensions);
+            var boundingBox = this._getImageBoundingBox(dimensions);
 
             // Scale the bounding box to fit
             var scale = 1;
@@ -1141,10 +1143,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     })
                 ];
 
-                for (var i = 1; i <= lineCount; i++) {
+                var i;
+                for (i = 1; i <= lineCount; i++) {
                     grid.push(new fabric.Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions));
                 }
-                for (var i = 1; i <= lineCount; i++) {
+                for (i = 1; i <= lineCount; i++) {
                     grid.push(new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
                 }
 
@@ -1317,7 +1320,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     callback = function() {
                         // Reposition focal point correctly
                         if (this.focalPoint) {
-                            sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+                            var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
                             this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor);
                             this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor);
                             this.canvas.add(this.focalPoint);
@@ -1622,8 +1625,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
 
                 this._redrawCropperElements();
-                clipperDeltaX = this.clipper.left - this.image.left;
-                clipperDeltaY = this.clipper.top - this.image.top;
 
                 this.storeCropperState();
                 this.renderCropper();
@@ -1640,7 +1641,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param ev
          */
-        _handleMouseUp: function(ev) {
+        _handleMouseUp: function() {
             this.draggingCropper = false;
             this.scalingCropper = false;
             this.draggingFocal = false;
@@ -1703,7 +1704,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         return;
                     }
                 } else {
-
                     if (!(this.viewport.left - this.viewport.width / 2 - newX < 0 && this.viewport.left + this.viewport.width / 2 - newX > 0
                         && this.viewport.top - this.viewport.height / 2 - newY < 0 && this.viewport.top + this.viewport.height / 2 - newY > 0)) {
                         return;
