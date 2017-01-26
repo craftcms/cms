@@ -10,6 +10,7 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use craft\web\assets\feed\FeedAsset;
 use yii\base\Exception;
 
 /**
@@ -103,16 +104,16 @@ class Feed extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->registerJsResource('js/FeedWidget.js');
-        Craft::$app->getView()->registerJs(
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(FeedAsset::class);
+        $view->registerJs(
             "new Craft.FeedWidget({$this->id}, ".
             Json::encode($this->url).', '.
             Json::encode($this->limit).');'
         );
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body',
-            [
-                'limit' => $this->limit
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body', [
+            'limit' => $this->limit
+        ]);
     }
 }

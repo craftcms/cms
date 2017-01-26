@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\AssetTransform;
+use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -74,6 +75,8 @@ class AssetTransformsController extends Controller
                 $transform = new AssetTransform();
             }
         }
+
+        Craft::$app->getView()->registerAssetBundle(EditTransformAsset::class);
 
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,

@@ -2,7 +2,7 @@
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 
-{% do view.registerAssetBundle('craft\\web\\assets\\AppAsset') -%}
+{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
 {% set resourcesUrl = view.getAssetManager().getPublishedUrl('@app/resources', true) %}
 
 <!DOCTYPE html>

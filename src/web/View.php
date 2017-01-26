@@ -16,7 +16,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\web\assets\AppAsset;
+use craft\web\assets\cp\CpAsset;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
@@ -1184,9 +1184,9 @@ class View extends \yii\web\View
             $key = 'resource:'.$path;
         }
 
-        // Make AppAsset the default dependency
+        // Make CpAsset the default dependency
         $depends = (array)ArrayHelper::remove($options, 'depends', [
-            AppAsset::class
+            CpAsset::class
         ]);
 
         $sourcePath = Craft::getAlias('@app/resources');

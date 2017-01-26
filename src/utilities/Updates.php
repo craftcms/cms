@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Utility;
 use craft\helpers\App;
 use craft\helpers\Json;
+use craft\web\assets\updates\UpdatesAsset;
 use yii\base\Exception;
 
 /**
@@ -74,8 +75,7 @@ class Updates extends Utility
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
-        $view->registerCssResource('css/updates.css');
-        $view->registerJsResource('js/UpdatesUtility.js');
+        $view->registerAssetBundle(UpdatesAsset::class);
         $view->registerTranslations('app', [
             'You’ve got updates!',
             'You’re all up-to-date!',

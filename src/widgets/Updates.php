@@ -9,6 +9,7 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 use yii\base\Exception;
 
 /**
@@ -74,13 +75,14 @@ class Updates extends Widget
             return false;
         }
 
+        $view = Craft::$app->getView();
         $cached = Craft::$app->getUpdates()->getIsUpdateInfoCached();
 
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
-            Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');
-            Craft::$app->getView()->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
+            $view->registerAssetBundle(UpdatesWidgetAsset::class);
+            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
 
-            Craft::$app->getView()->registerTranslations('app', [
+            $view->registerTranslations('app', [
                 'One update available!',
                 '{total} updates available!',
                 'Go to Updates',
@@ -90,7 +92,7 @@ class Updates extends Widget
         }
 
         if ($cached) {
-            return Craft::$app->getView()->renderTemplate('_components/widgets/Updates/body',
+            return $view->renderTemplate('_components/widgets/Updates/body',
                 [
                     'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates()
                 ]);

@@ -13,10 +13,9 @@
 	"Message saved.",
 ]) %}
 
-{% block content %}
-	{% do view.registerCssResource("css/email_messages.css") %}
-	{% do view.registerJsResource("js/email_messages.js") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\emailmessages\\EmailMessagesAsset") %}
 
+{% block content %}
 	<div id="messages">
 		{% for message in craft.app.emailMessages.getAllMessages() %}
 			<h2>{{ message.heading }}</h2>

@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
 use yii\base\Exception;
 
 /**
@@ -67,8 +68,7 @@ class DeprecationErrors extends Utility
     {
         $view = Craft::$app->getView();
 
-        $view->registerCssResource('css/deprecator.css');
-        $view->registerJsResource('js/deprecator.js');
+        $view->registerAssetBundle(DeprecationErrorsAsset::class);
 
         return $view->renderTemplate('_components/utilities/DeprecationErrors', [
             'logs' => Craft::$app->getDeprecator()->getLogs()

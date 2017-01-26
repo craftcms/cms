@@ -23,6 +23,8 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
 use craft\validators\ArrayValidator;
+use craft\web\assets\matrix\MatrixAsset;
+use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 
 /**
  * Matrix represents a Matrix field.
@@ -181,15 +183,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Get the available field types data
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
 
-        Craft::$app->getView()->registerJsResource('js/MatrixConfigurator.js');
-        Craft::$app->getView()->registerJs(
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(MatrixSettingsAsset::class);
+        $view->registerJs(
             'new Craft.MatrixConfigurator('.
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE).', '.
             Json::encode(Craft::$app->getView()->getNamespace(), JSON_UNESCAPED_UNICODE).
             ');'
         );
 
-        Craft::$app->getView()->registerTranslations('app', [
+        $view->registerTranslations('app', [
             'Are you sure you want to delete this block type?',
             'Are you sure you want to delete this field?',
             'Field Type',
@@ -309,7 +313,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element);
 
-        Craft::$app->getView()->registerJsResource('js/MatrixInput.js');
+        Craft::$app->getView()->registerAssetBundle(MatrixAsset::class);
 
         Craft::$app->getView()->registerJs('new Craft.MatrixInput('.
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.

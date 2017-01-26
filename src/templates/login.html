@@ -2,8 +2,7 @@
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
-{% do view.registerCssResource("css/login.css") %}
-{% do view.registerJsResource("js/login.js") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 {% do view.registerTranslations('app', [
 	"Reset Password",
 	"Check your email for instructions to reset your password.",

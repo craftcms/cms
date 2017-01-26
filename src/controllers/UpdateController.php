@@ -19,6 +19,7 @@ use craft\helpers\Json;
 use craft\helpers\Update;
 use craft\helpers\UrlHelper;
 use craft\models\PluginUpdate;
+use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\Response;
@@ -78,8 +79,9 @@ class UpdateController extends Controller
      */
     public function actionGo(string $handle): string
     {
-        $this->getView()->registerCssResource('css/update.css');
-        $this->getView()->registerJsResource('js/Updater.js');
+        $view = $this->getView();
+
+        $view->registerAssetBundle(UpdaterAsset::class);
 
         $this->getView()->registerTranslations('app', [
             'Unable to determine what to update.',

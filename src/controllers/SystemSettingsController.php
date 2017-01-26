@@ -18,6 +18,7 @@ use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\Info;
 use craft\models\MailSettings;
+use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use DateTime;
 use yii\base\Exception;
@@ -97,6 +98,8 @@ class SystemSettingsController extends Controller
         }
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
+
+        Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
             'info' => $info,

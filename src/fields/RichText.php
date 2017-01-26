@@ -24,6 +24,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\validators\HandleValidator;
+use craft\web\assets\richtext\RichTextAsset;
 use yii\db\Schema;
 use yii\validators\StringValidator;
 
@@ -556,12 +557,8 @@ class RichText extends Field
     private function _includeFieldResources(string $configJs)
     {
         $view = Craft::$app->getView();
-        $view->registerCssResource('lib/redactor/redactor.css');
-        $view->registerCssResource('lib/redactor/plugins/pagebreak.css');
 
-        // Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-        $view->registerJsResource('lib/redactor/redactor.js');
-        //$view->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
+        $view->registerAssetBundle(RichTextAsset::class);
 
         $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
@@ -580,8 +577,6 @@ class RichText extends Field
             'Link to an asset',
             'Link to a category',
         ]);
-
-        $view->registerJsResource('js/RichTextInput.js');
 
         // Check to see if the Redactor has been translated into the current site
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
@@ -633,12 +628,14 @@ class RichText extends Field
                 $plugin = substr($plugin, 0, $pipe);
             }
 
+            $am = Craft::$app->getAssetManager();
             $view = Craft::$app->getView();
+
             if ($includeCss) {
-                $view->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
+                $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
             }
 
-            $view->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
+            $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js");
         }
     }
 
@@ -651,14 +648,17 @@ class RichText extends Field
      */
     private function _includeRedactorLangFile(string $lang): bool
     {
-        $resourcePath = "lib/redactor/lang/{$lang}.js";
-        $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);
+        $redactorPath = Craft::getAlias('@lib/redactor');
+        $subPath = "/lang/{$lang}.js";
+        $fullPath = $redactorPath.$subPath;
 
         if (!is_file($fullPath)) {
             return false;
         }
 
-        Craft::$app->getView()->registerJsResource($resourcePath);
+        $am = Craft::$app->getAssetManager();
+        $view = Craft::$app->getView();
+        $view->registerJsFile($am->getPublishedUrl($redactorPath).$subPath);
         self::$_redactorLang = $lang;
 
         return true;
