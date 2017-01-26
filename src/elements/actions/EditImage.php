@@ -33,7 +33,7 @@ class EditImage extends ElementAction
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return true;
     }
@@ -54,7 +54,7 @@ class EditImage extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }
@@ -69,20 +69,20 @@ class EditImage extends ElementAction
         $js = <<<EOT
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		_imageEditor: null,
-		validateSelection: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element');
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        _imageEditor: null,
+        validateSelection: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element');
 
-			return Garnish.hasAttr(\$element, 'data-image');
-		},
-		activate: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element:first'),
-			    element = Craft.getElementInfo(\$element);
+            return Garnish.hasAttr(\$element, 'data-image');
+        },
+        activate: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element:first'),
+                element = Craft.getElementInfo(\$element);
 
             var settings = {
                 onSave: function () {
@@ -91,8 +91,8 @@ class EditImage extends ElementAction
             };
             
             new Craft.AssetImageEditor(element.id, settings);
-		}
-	});
+        }
+    });
 })();
 EOT;
 

@@ -2,8 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
-use craft\db\Connection;
 use craft\db\Migration;
 
 /**
