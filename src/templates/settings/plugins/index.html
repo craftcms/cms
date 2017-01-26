@@ -2,7 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t('app') %}
-{% do view.registerAssetBundle("craft\\web\\assets\plugins\\PluginsAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\plugins\\PluginsAsset") %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
