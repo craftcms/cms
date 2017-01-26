@@ -31,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - Added the Utility API, which enables plugins to provide custom utilities.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
 - Added method paramater and return types everywhere possible.
+- Added a new `@lib` Yii alias, pointed to `vendor/craftcms/cms/lib/`.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
 - Added `craft\base\Utility`.

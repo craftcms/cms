@@ -194,11 +194,14 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$srcPath = $vendorPath.'/craftcms/cms/src';
+$cmsPath = $vendorPath.'/craftcms/cms';
+$libPath = $cmsPath.'/lib';
+$srcPath = $cmsPath.'/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Set aliases
+Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
