@@ -487,6 +487,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\tools\*`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
+- Removed `craft\web\View::registerCssResource()`.
+- Removed `craft\web\View::registerJsResource()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.
