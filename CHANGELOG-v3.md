@@ -62,10 +62,20 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
 - Added `craft\services\Utilities`.
+- Added `craft\utilities\AssetIndexes`.
+- Added `craft\utilities\ClearCaches`.
+- Added `craft\utilities\DbBackup`.
+- Added `craft\utilities\DeprecationErrors`.
+- Added `craft\utilities\FindAndReplace`.
+- Added `craft\utilities\PhpInfo`.
+- Added `craft\utilities\SearchIndexes`.
+- Added `craft\utilities\SystemReport`.
+- Added `craft\utilities\Updates`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
+- Added `craft\web\AssetBundle`.
 - Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
@@ -111,16 +121,6 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\services\Plugins::isComposerInstall()`.
-- Added `craft\utilities\AssetIndexes`.
-- Added `craft\utilities\ClearCaches`.
-- Added `craft\utilities\DbBackup`.
-- Added `craft\utilities\DeprecationErrors`.
-- Added `craft\utilities\FindAndReplace`.
-- Added `craft\utilities\PhpInfo`.
-- Added `craft\utilities\SearchIndexes`.
-- Added `craft\utilities\SystemReport`.
-- Added `craft\utilities\Updates`.
-- Added `craft\web\AssetBundle`.
 - Added `craft\web\AssetManager::getPublishedPath()`.
 - Added `craft\web\AssetManager::getPublishedUrl()`.
 - Added `craft\web\Session::addAssetBundleFlash()`.
