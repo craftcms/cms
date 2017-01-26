@@ -8,6 +8,8 @@
 namespace craft\web;
 
 use Craft;
+use yii\base\Exception;
+use yii\web\AssetBundle;
 
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
@@ -29,6 +31,16 @@ class Session extends \yii\web\Session
      * @see checkAuthorization()
      */
     public $authAccessParam;
+
+    /**
+     * @var string the name of the flash key that stores asset bundle data
+     */
+    public $assetBundleFlashKey = '__ab';
+
+    /**
+     * @var string the name of the flash key that stores JS data
+     */
+    public $jsFlashKey = '__js';
 
     // Public Methods
     // =========================================================================
@@ -90,35 +102,40 @@ class Session extends \yii\web\Session
     }
 
     /**
-     * Stores a JS file from resources/ in the user’s flash data.
+     * Queues up an asset bundle to be registered on a future request.
      *
-     * The file will be stored on the session, and can be retrieved by calling [[getJsResourceFlashes()]] or
+     * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $resource The resource path to the JS file.
+     * @param string       $name     the class name of the asset bundle (without the leading backslash)
+     * @param integer|null $position if set, this forces a minimum position for javascript files.
      *
      * @return void
+     * @throws Exception if $name isn't an asset bundle class name
+     * @see getAssetBundleFlashes()
      */
-    public function addJsResourceFlash(string $resource)
+    public function addAssetBundleFlash(string $name, int $position = null)
     {
-        $resources = $this->getJsResourceFlashes(false);
-
-        if (!in_array($resource, $resources, true)) {
-            $resources[] = $resource;
-            $this->setFlash('jsResources', $resources);
+        if (!is_subclass_of($name, AssetBundle::class)) {
+            throw new Exception("$name is not an asset bundle");
         }
+
+        $assetBundles = $this->getAssetBundleFlashes(false);
+        $assetBundles[$name] = $position;
+        $this->setFlash($this->assetBundleFlashKey, $assetBundles);
     }
 
     /**
-     * Returns the stored JS resource flashes.
+     * Returns the list of queued-up asset bundles in the session flash data.
      *
      * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
-     * @return array The stored JS resource flashes.
+     * @return array The queued-up asset bundles.
+     * @see addAssetBundleFlash()
      */
-    public function getJsResourceFlashes(bool $delete = true): array
+    public function getAssetBundleFlashes(bool $delete = false): array
     {
-        return $this->getFlash('jsResources', [], $delete);
+        return $this->getFlash($this->assetBundleFlashKey, [], $delete);
     }
 
     /**
@@ -127,15 +144,20 @@ class Session extends \yii\web\Session
      * The Javascript code will be stored on the session, and can be retrieved by calling
      * [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $js The Javascript code.
+     * @param string      $js       the JS code block to be registered
+     * @param integer     $position the position at which the JS script tag should be inserted
+     *                              in a page.
+     * @param string|null $key      the key that identifies the JS code block.
      *
      * @return void
+     * @see getJsFlashes()
+     * @see View::registerJs()
      */
-    public function addJsFlash(string $js)
+    public function addJsFlash(string $js, int $position = View::POS_READY, string $key = null)
     {
         $scripts = $this->getJsFlashes();
-        $scripts[] = $js;
-        $this->setFlash('js', $scripts);
+        $scripts[] = [$js, $position, $key];
+        $this->setFlash($this->jsFlashKey, $scripts);
     }
 
     /**
@@ -144,10 +166,11 @@ class Session extends \yii\web\Session
      * @param bool $delete Whether to delete the stored flashes. Defaults to `true`.
      *
      * @return array The stored JS flashes.
+     * @see addJsFlash()
      */
     public function getJsFlashes(bool $delete = true): array
     {
-        return $this->getFlash('js', [], $delete);
+        return $this->getFlash($this->jsFlashKey, [], $delete);
     }
 
     // Session-Based Authorization

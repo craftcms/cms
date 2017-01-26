@@ -123,6 +123,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\assets\AssetBundle`.
 - Added `craft\web\AssetManager::getPublishedPath()`.
 - Added `craft\web\AssetManager::getPublishedUrl()`.
+- Added `craft\web\Session::addAssetBundleFlash()`.
+- Added `craft\web\Session::getAssetBundleFlashes()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -336,6 +338,8 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::onAfterMoveElementInStructure()` is no longer static, no longer has an `$element` argument, and has been renamed to `afterMoveInStructure()`.
 - `craft\services\AssetIndexer::getIndexEntry()` now returns `null` if the index doesn’t exist, instead of `false`.
 - `craft\services\Updates::getUnwritableFolders()` now returns folder paths without trailing slashes.
+- `craft\web\Session::addJsFlash()` now has `$positon` and `$key` arguments.
+- `craft\web\Session::getJsFlashes()` now returns an array of nested arrays, each defining the JS code, the position, and the key.
 - `craft\web\View::getTwig()` no longer has `$loaderClass` or `$options` arguments.
 - Renamed `craft.getAssets()` back to `craft.assets()`.
 - Renamed `craft.getCategories()` back to `craft.categories()`.
@@ -486,6 +490,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
 - Removed `craft\tools\*`.
+- Removed `craft\web\Session::addJsResourceFlash()`.
+- Removed `craft\web\Session::getJsResourceFlashes()`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
 - Removed `craft\web\View::registerCssResource()`.
@@ -594,6 +600,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where you’d get a database error when saving a private Assets Volume.
 - Fixed a bug where linking to an entry or category from a Rich Text field wasn’t working.
 - Fixed `Plugins::validateConfig()`’s nulls.
+- Fixed a bug where JavaScript flashes weren’t getting registered on the subsequent page.
 
 ## 3.0.0-alpha.2948 - 2016-09-29
 
