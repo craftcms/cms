@@ -372,10 +372,10 @@ Craft CMS 3.0 Working Changelog
 - Removed the `initSQLs` DB config setting.
 - Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
 - Removed the `{% registercssfile %}` Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
-- Removed the `{% registercssresource %}` Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
+- Removed the `{% registercssresource %}` and `{% includecssresource %}` Twig tags.
 - Removed the `{% registerhirescss %}` Twig tag. Use `{% css %}` instead, and type your own media selector.
 - Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
-- Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
+- Removed the `{% registerjsresource %}` and `{% includejsresource %}` Twig tags.
 - Removed the `{% endpaginate %}` Twig tag as it’s unnecessary.
 - Removed the `childOf`, `childField`, `parentOf`, and `parentField` element query params. Use `relatedTo` instead.
 - Removed the `depth` element query param. Use `level` instead.
