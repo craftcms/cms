@@ -7,11 +7,10 @@
 
 namespace craft\web\assets\garnish;
 
-use Craft;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\velocity\VelocityAsset;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use yii\web\JqueryAsset;
 
 /**
@@ -25,6 +24,7 @@ class GarnishAsset extends AssetBundle
     public function init()
     {
         $this->sourcePath = '@bower/garnishjs/dist';
+
         $this->depends = [
             ElementResizeDetectorAsset::class,
             JqueryAsset::class,
@@ -32,11 +32,9 @@ class GarnishAsset extends AssetBundle
             VelocityAsset::class,
         ];
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'garnish.min.js';
-        } else {
-            $this->js[] = 'garnish.js';
-        }
+        $this->js = [
+            'garnish'.$this->dotJs(),
+        ];
 
         parent::init();
     }

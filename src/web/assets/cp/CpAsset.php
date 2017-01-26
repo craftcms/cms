@@ -8,16 +8,16 @@
 namespace craft\web\assets\cp;
 
 use Craft;
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
+use craft\web\assets\garnish\GarnishAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
-use craft\web\assets\garnish\GarnishAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;

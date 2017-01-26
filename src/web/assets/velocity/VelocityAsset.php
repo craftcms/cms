@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\velocity;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Velocity asset bundle.
@@ -22,11 +21,9 @@ class VelocityAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/velocity';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'velocity.min.js';
-        } else {
-            $this->js[] = 'velocity.js';
-        }
+        $this->js = [
+            'velocity'.$this->dotJs(),
+        ];
 
         parent::init();
     }

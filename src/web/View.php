@@ -608,6 +608,15 @@ class View extends \yii\web\View
     }
 
     /**
+     * @inheritdoc
+     */
+    public function endBody()
+    {
+        $this->registerAssetFlashes();
+        parent::endBody();
+    }
+
+    /**
      * Returns the content to be inserted in the head section.
      *
      * This includes:
@@ -675,6 +684,29 @@ class View extends \yii\web\View
         }
 
         return $html;
+    }
+
+    /**
+     * Registers any asset bundles and JS code that were queued-up in the session flash data.
+     *
+     * @return void
+     * @throws Exception if any of the registered asset bundles are not actually asset bundles
+     */
+    protected function registerAssetFlashes()
+    {
+        $session = Craft::$app->getSession();
+
+        foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+            if (!is_subclass_of($name, AssetBundle::class)) {
+                throw new Exception("$name is not an asset bundle");
+            }
+
+            $this->registerAssetBundle($name, $position);
+        }
+
+        foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+            $this->registerJs($js, $position, $key);
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sites"|t('app') %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\sites\\SitesAsset" %}
+{% do view.registerAssetBundle("craft\\web\\assets\\sites\\SitesAsset") %}
 
 {% do view.registerTranslations('app', [
 	"What do you want to do with any content that is only available in {language}?",

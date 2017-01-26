@@ -963,7 +963,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%shunnedmessages}}', 'userId'), '{{%shunnedmessages}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'elementId'), '{{%structureelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'structureId'), '{{%structureelements}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldLayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'groupId'), '{{%tags}}', 'groupId', '{{%taggroups}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'id'), '{{%tags}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);

@@ -66,7 +66,7 @@ class EntryRevisionsController extends BaseEntriesController
         $entryType = $draft->getType();
 
         if (!$entryType->hasTitleField) {
-            $draft->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+            $draft->title = $this->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
         }
 
 

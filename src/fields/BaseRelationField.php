@@ -426,10 +426,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $value = $element->getFieldValue($this->handle);
 
         if ($value instanceof ElementQueryInterface) {
+            /** @var ElementQuery $value */
             $value = $value->id;
+            /** @var int|int[]|false|null $value */
         }
 
-        if ($value !== null) {
+        if ($value) {
             Craft::$app->getRelations()->saveRelations($this, $element, $value);
         }
 

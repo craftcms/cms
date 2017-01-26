@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\timepicker;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Timepicker asset bundle.
@@ -22,11 +21,9 @@ class TimepickerAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/timepicker';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'jquery.timepicker.min.js';
-        } else {
-            $this->js[] = 'jquery.timepicker.js';
-        }
+        $this->js = [
+            'jquery.timepicker'.$this->dotJs(),
+        ];
 
         parent::init();
     }

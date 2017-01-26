@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\elementresizedetector;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * ElementResizeDetector asset bundle.
@@ -22,11 +21,9 @@ class ElementResizeDetectorAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/element-resize-detector/dist';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'element-resize-detector.min.js';
-        } else {
-            $this->js[] = 'element-resize-detector.js';
-        }
+        $this->js = [
+            'element-resize-detector'.$this->dotJs(),
+        ];
 
         parent::init();
     }

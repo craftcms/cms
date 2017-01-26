@@ -62,10 +62,64 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
 - Added `craft\services\Utilities`.
+- Added `craft\utilities\AssetIndexes`.
+- Added `craft\utilities\ClearCaches`.
+- Added `craft\utilities\DbBackup`.
+- Added `craft\utilities\DeprecationErrors`.
+- Added `craft\utilities\FindAndReplace`.
+- Added `craft\utilities\PhpInfo`.
+- Added `craft\utilities\SearchIndexes`.
+- Added `craft\utilities\SystemReport`.
+- Added `craft\utilities\Updates`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
 - Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
+- Added `craft\web\AssetBundle`.
+- Added `craft\web\assets\assetindexes\AssetIndexesAsset`.
+- Added `craft\web\assets\clearcaches\ClearCachesAsset`.
+- Added `craft\web\assets\colorpicker\ColorpickerAsset`.
+- Added `craft\web\assets\craftsupport\CraftSupportAsset`.
+- Added `craft\web\assets\dashboard\DashboardAsset`.
+- Added `craft\web\assets\datepickeri18n\DatepickerI18nAsset`.
+- Added `craft\web\assets\dbbackup\DbBackupAsset`.
+- Added `craft\web\assets\deprecationerrors\DeprecationErrorsAsset`.
+- Added `craft\web\assets\editcategory\EditCategoryAsset`.
+- Added `craft\web\assets\editentry\EditEntryAsset`.
+- Added `craft\web\assets\edittransform\EditTransformAsset`.
+- Added `craft\web\assets\edituser\EditUserAsset`.
+- Added `craft\web\assets\emailmessages\EmailMessagesAsset`.
+- Added `craft\web\assets\feed\FeedAsset`.
+- Added `craft\web\assets\fields\FieldsAsset`.
+- Added `craft\web\assets\fileupload\FileUploadAsset`.
+- Added `craft\web\assets\findreplace\FindReplaceAsset`.
+- Added `craft\web\assets\generalsettings\GeneralSettingsAsset`.
+- Added `craft\web\assets\installer\InstallerAsset`.
+- Added `craft\web\assets\jcrop\JcropAsset`.
+- Added `craft\web\assets\jqueryui\JqueryUiAsset`.
+- Added `craft\web\assets\login\LoginAsset`.
+- Added `craft\web\assets\matrix\MatrixAsset`.
+- Added `craft\web\assets\matrixsettings\MatrixSettingsAsset`.
+- Added `craft\web\assets\newusers\NewUsersAsset`.
+- Added `craft\web\assets\plugins\PluginsAsset`.
+- Added `craft\web\assets\positionselect\PositionSelectAsset`.
+- Added `craft\web\assets\quickpost\QuickPostAsset`.
+- Added `craft\web\assets\qunit\QunitAsset`.
+- Added `craft\web\assets\recententries\RecentEntriesAsset`.
+- Added `craft\web\assets\redactor\RedactorAsset`.
+- Added `craft\web\assets\richtext\RichTextAsset`.
+- Added `craft\web\assets\routes\RoutesAsset`.
+- Added `craft\web\assets\searchindexes\SearchIndexesAsset`.
+- Added `craft\web\assets\sites\SitesAsset`.
+- Added `craft\web\assets\tablesettings\TableSettingsAsset`.
+- Added `craft\web\assets\tests\TestsAsset`.
+- Added `craft\web\assets\updater\UpdaterAsset`.
+- Added `craft\web\assets\updates\UpdatesAsset`.
+- Added `craft\web\assets\updateswidget\UpdatesWidgetAsset`.
+- Added `craft\web\assets\userpermissions\UserPermissionsAsset`.
+- Added `craft\web\assets\utilities\UtilitiesAsset`.
+- Added `craft\web\assets\whatsnew\WhatsNewAsset`.
+- Added `craft\web\assets\xregexp\XregexpAsset`.
 - Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
@@ -111,18 +165,10 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\services\Plugins::isComposerInstall()`.
-- Added `craft\utilities\AssetIndexes`.
-- Added `craft\utilities\ClearCaches`.
-- Added `craft\utilities\DbBackup`.
-- Added `craft\utilities\DeprecationErrors`.
-- Added `craft\utilities\FindAndReplace`.
-- Added `craft\utilities\PhpInfo`.
-- Added `craft\utilities\SearchIndexes`.
-- Added `craft\utilities\SystemReport`.
-- Added `craft\utilities\Updates`.
-- Added `craft\web\assets\AssetBundle`.
 - Added `craft\web\AssetManager::getPublishedPath()`.
 - Added `craft\web\AssetManager::getPublishedUrl()`.
+- Added `craft\web\Session::addAssetBundleFlash()`.
+- Added `craft\web\Session::getAssetBundleFlashes()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -326,6 +372,16 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.
 - Renamed `craft\volumes\Rackspace::getClient()` to `client()`.
+- Renamed `craft\web\assets\AppAsset` to `craft\web\assets\cp\CpAsset`.
+- Renamed `craft\web\assets\D3Asset` to `craft\web\assets\d3\D3Asset`.
+- Renamed `craft\web\assets\ElementResizeDetectorAsset` to `craft\web\assets\elementresizedetector\ElementResizeDetectorAsset`.
+- Renamed `craft\web\assets\GarnishAsset` to `craft\web\assets\garnish\GarnishAsset`.
+- Renamed `craft\web\assets\JqueryPaymentAsset` to `craft\web\assets\jquerypayment\JqueryPaymentAsset`.
+- Renamed `craft\web\assets\JqueryTouchEventsAsset` to `craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset`.
+- Renamed `craft\web\assets\PicturefillAsset` to `craft\web\assets\picturefill\PicturefillAsset`.
+- Renamed `craft\web\assets\SelectizeAsset` to `craft\web\assets\selectize\SelectizeAsset`.
+- Renamed `craft\web\assets\TimepickerAsset` to `craft\web\assets\timepicker\TimepickerAsset`.
+- Renamed `craft\web\assets\VelocityAsset` to `craft\web\assets\velocity\VelocityAsset`.
 - Renamed `craft\web\twig\variables\CraftVariable::getLocale()` back to `locale()`.
 - Moved `craft\volumes\VolumeInterface::getRootPath()` to `craft\volumes\LocalVolumeInterface::getRootPath()`.
 - `craft\base\Element::getEditorHtml()` is no longer static, and no longer has an `$element` argument.
@@ -336,6 +392,8 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::onAfterMoveElementInStructure()` is no longer static, no longer has an `$element` argument, and has been renamed to `afterMoveInStructure()`.
 - `craft\services\AssetIndexer::getIndexEntry()` now returns `null` if the index doesn’t exist, instead of `false`.
 - `craft\services\Updates::getUnwritableFolders()` now returns folder paths without trailing slashes.
+- `craft\web\Session::addJsFlash()` now has `$positon` and `$key` arguments.
+- `craft\web\Session::getJsFlashes()` now returns an array of nested arrays, each defining the JS code, the position, and the key.
 - `craft\web\View::getTwig()` no longer has `$loaderClass` or `$options` arguments.
 - Renamed `craft.getAssets()` back to `craft.assets()`.
 - Renamed `craft.getCategories()` back to `craft.categories()`.
@@ -477,6 +535,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Matrix::saveBlock()`.
 - Removed `craft\services\Matrix::validateBlock()`.
 - Removed `craft\services\Path::getMigrationsPath()`.
+- Removed `craft\services\Path::getResourcesPath()`.
 - Removed `craft\services\Plugins::call()`.
 - Removed `craft\services\Plugins::callFirst()`.
 - Removed `craft\services\SystemSettings::getCategoryTimeUpdated()`.
@@ -485,6 +544,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
 - Removed `craft\tools\*`.
+- Removed `craft\web\Session::addJsResourceFlash()`.
+- Removed `craft\web\Session::getJsResourceFlashes()`.
 - Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
 - Removed `craft\web\twig\variables\Fields::createField()`.
 - Removed `craft\web\View::registerCssResource()`.
@@ -593,6 +654,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where you’d get a database error when saving a private Assets Volume.
 - Fixed a bug where linking to an entry or category from a Rich Text field wasn’t working.
 - Fixed `Plugins::validateConfig()`’s nulls.
+- Fixed a bug where JavaScript flashes weren’t getting registered on the subsequent page.
 
 ## 3.0.0-alpha.2948 - 2016-09-29
 

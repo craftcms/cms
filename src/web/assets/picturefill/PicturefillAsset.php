@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\picturefill;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Picturefill asset bundle.
@@ -22,11 +21,9 @@ class PicturefillAsset extends AssetBundle
     {
         $this->sourcePath = '@bower/picturefill/dist';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'picturefill.min.js';
-        } else {
-            $this->js[] = 'picturefill.js';
-        }
+        $this->js = [
+            'picturefill'.$this->dotJs(),
+        ];
 
         parent::init();
     }

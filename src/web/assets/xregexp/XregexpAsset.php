@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\xregexp;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Xregexp asset bundle.

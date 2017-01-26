@@ -7,7 +7,8 @@
 
 namespace craft\web\assets\jqueryui;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
+use yii\web\JqueryAsset;
 
 /**
  * jQuery UI asset bundle.
@@ -20,6 +21,10 @@ class JqueryUiAsset extends AssetBundle
     public function init()
     {
         $this->sourcePath = '@lib/jquery-ui';
+
+        $this->depends = [
+            JqueryAsset::class,
+        ];
 
         $this->js = [
             'jquery-ui'.$this->dotJs(),

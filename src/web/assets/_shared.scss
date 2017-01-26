@@ -244,11 +244,6 @@ $elementBorderRadius: 3px;
 	@include box-shadow(0 0 0 1px $hairlineColor);
 }
 
-@mixin spinner {
-	width: 24px;
-	background: url(../images/spinner.gif) no-repeat 50% 50%;
-}
-
 @mixin light-on-dark-text() {
 	// Make light on dark text sharp on Macs
 	// (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
