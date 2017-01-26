@@ -16,7 +16,7 @@ return [
 	'user' => getenv('TEST_DB_USER'),
 
 	// The database password to connect with.
-	'password' => getenv('TEST_DB_PASS)'),
+	'password' => getenv('TEST_DB_PASS'),
 
 	// The name of the database to select.
 	'database' => getenv('TEST_DB_NAME'),
