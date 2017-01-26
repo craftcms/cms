@@ -1797,6 +1797,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             var vertices = this._getRectangleVertices(rectangle);
 
+            // TODO sometimes after a straighten operation you'll get cropper stuck on edges
+            // so maybe be a little more lenient about this is resizing cropper inwards?
             if (!this.arePointsInsideRectangle(vertices, this.imageVerticeCoords)) {
                 return;
             }
