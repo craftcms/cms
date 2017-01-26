@@ -12,6 +12,6 @@ build:
   tests:
     override:
       command: 'php codeception.php run unit --coverage --coverage-xml --coverage-html'
-      overage:
+      coverage:
         file: 'tests/_output/coverage.xml'
         format: 'clover'
