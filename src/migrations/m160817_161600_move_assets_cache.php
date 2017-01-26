@@ -22,13 +22,15 @@ class m160817_161600_move_assets_cache extends Migration
 
         $folders = ['icons', 'resized', 'sources'];
 
-        Craft::info('Moving Assets cache folder to their new homes!');
+        echo '    > Moving Assets cache folder to their new homes ... ';
 
         foreach ($folders as $folder) {
-            rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
+            if (is_dir($basePath.DIRECTORY_SEPARATOR.$folder)) {
+                rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
+            }
         }
 
-        Craft::info('All done');
+        echo "done\n";
 
         return true;
     }
@@ -38,7 +40,7 @@ class m160817_161600_move_assets_cache extends Migration
      */
     public function safeDown()
     {
-        echo 'm160817_161600_move_assets_cache cannot be reverted.\n';
+        echo "m160817_161600_move_assets_cache cannot be reverted.\n";
 
         return false;
     }

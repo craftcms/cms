@@ -25,7 +25,7 @@ class RenameFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Rename file');
     }
@@ -75,7 +75,7 @@ class RenameFile extends ElementAction
                 Craft.elementIndex.setIndexAvailable();
                 Craft.elementIndex.promptHandler.resetPrompts();
 
-                if (textStatus == 'success')
+                if (textStatus === 'success')
                 {
                     if (response.prompt)
                     {
@@ -84,7 +84,7 @@ class RenameFile extends ElementAction
                         {
                             choice = choice[0].choice;
 
-                            if (choice != 'cancel')
+                            if (choice !== 'cancel')
                             {
                                 data.action = choice;
                                 Craft.postActionRequest('assets/move-asset', data, handleRename);

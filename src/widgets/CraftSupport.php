@@ -9,6 +9,8 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use craft\web\assets\craftsupport\CraftSupportAsset;
+use yii\base\Exception;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
@@ -24,7 +26,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Craft Support');
     }
@@ -32,7 +34,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
         return (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin());
@@ -41,9 +43,23 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/chat-bubbles.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Public Methods
@@ -52,15 +68,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'craft-support.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return Craft::t('app', 'Send a message to Craft Support');
     }
@@ -75,11 +83,13 @@ class CraftSupport extends Widget
             return false;
         }
 
-        $js = "new Craft.CraftSupportWidget({$this->id});";
-        Craft::$app->getView()->registerJs($js);
+        $view = Craft::$app->getView();
 
-        Craft::$app->getView()->registerJsResource('js/CraftSupportWidget.js');
-        Craft::$app->getView()->registerTranslations('app', [
+        $js = "new Craft.CraftSupportWidget({$this->id});";
+        $view->registerJs($js);
+
+        $view->registerAssetBundle(CraftSupportAsset::class);
+        $view->registerTranslations('app', [
             'Message sent successfully.',
             'Couldn’t send support request.',
         ]);
@@ -87,7 +97,7 @@ class CraftSupport extends Widget
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->get('backupCommand') !== false);
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/CraftSupport/body', [
+        return $view->renderTemplate('_components/widgets/CraftSupport/body', [
             'showBackupOption' => $showBackupOption
         ]);
     }

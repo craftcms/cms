@@ -73,7 +73,7 @@ class Dashboard extends Component
      *
      * @return string[]
      */
-    public function getAllWidgetTypes()
+    public function getAllWidgetTypes(): array
     {
         $widgetTypes = [
             FeedWidget::class,
@@ -99,7 +99,7 @@ class Dashboard extends Component
      *
      * @return WidgetInterface
      */
-    public function createWidget($config)
+    public function createWidget($config): WidgetInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -124,12 +124,12 @@ class Dashboard extends Component
      *
      * @return WidgetInterface[] The widgets
      */
-    public function getAllWidgets()
+    public function getAllWidgets(): array
     {
         $widgets = $this->_getUserWidgets();
 
         // If there are no widgets, this is the first time they've hit the dashboard.
-        if (!$widgets) {
+        if (empty($widgets)) {
             // Add the defaults and try again
             $this->_addDefaultUserWidgets();
             $widgets = $this->_getUserWidgets();
@@ -143,9 +143,9 @@ class Dashboard extends Component
      *
      * @param string $type The widget type
      *
-     * @return boolean Whether the current user has a widget of the given type
+     * @return bool Whether the current user has a widget of the given type
      */
-    public function doesUserHaveWidget($type)
+    public function doesUserHaveWidget(string $type): bool
     {
         return WidgetRecord::find()
             ->where([
@@ -159,11 +159,11 @@ class Dashboard extends Component
     /**
      * Returns a widget by its ID.
      *
-     * @param integer $id The widget’s ID
+     * @param int $id The widget’s ID
      *
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
-    public function getWidgetById($id)
+    public function getWidgetById(int $id)
     {
         $widgetRecord = WidgetRecord::findOne([
             'id' => $id,
@@ -188,12 +188,12 @@ class Dashboard extends Component
      * Saves a widget for the current user.
      *
      * @param WidgetInterface $widget        The widget to be saved
-     * @param boolean         $runValidation Whether the widget should be validated
+     * @param bool            $runValidation Whether the widget should be validated
      *
-     * @return boolean Whether the widget was saved successfully
+     * @return bool Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveWidget(WidgetInterface $widget, $runValidation = true)
+    public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
         /** @var Widget $widget */
         if ($runValidation && !$widget->validate()) {
@@ -256,11 +256,11 @@ class Dashboard extends Component
     /**
      * Soft-deletes a widget by its ID.
      *
-     * @param integer $widgetId The widget’s ID
+     * @param int $widgetId The widget’s ID
      *
-     * @return boolean Whether the widget was deleted successfully
+     * @return bool Whether the widget was deleted successfully
      */
-    public function deleteWidgetById($widgetId)
+    public function deleteWidgetById(int $widgetId): bool
     {
         $widget = $this->getWidgetById($widgetId);
 
@@ -276,10 +276,10 @@ class Dashboard extends Component
      *
      * @param WidgetInterface $widget The widget to be deleted
      *
-     * @return boolean Whether the widget was deleted successfully
+     * @return bool Whether the widget was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteWidget(WidgetInterface $widget)
+    public function deleteWidget(WidgetInterface $widget): bool
     {
         /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
@@ -319,12 +319,12 @@ class Dashboard extends Component
     /**
      * Reorders widgets.
      *
-     * @param integer[] $widgetIds The widget IDs
+     * @param int[] $widgetIds The widget IDs
      *
-     * @return boolean Whether the widgets were reordered successfully
+     * @return bool Whether the widgets were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderWidgets($widgetIds)
+    public function reorderWidgets(array $widgetIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -348,12 +348,12 @@ class Dashboard extends Component
     /**
      * Changes the colspan of a widget.
      *
-     * @param integer $widgetId
-     * @param integer $colspan
+     * @param int $widgetId
+     * @param int $colspan
      *
-     * @return boolean
+     * @return bool
      */
-    public function changeWidgetColspan($widgetId, $colspan)
+    public function changeWidgetColspan(int $widgetId, int $colspan): bool
     {
         $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
         $widgetRecord->colspan = $colspan;
@@ -396,15 +396,15 @@ class Dashboard extends Component
     /**
      * Gets a widget's record.
      *
-     * @param integer $widgetId
+     * @param int|null $widgetId
      *
      * @return WidgetRecord
      */
-    private function _getUserWidgetRecordById($widgetId = null)
+    private function _getUserWidgetRecordById(int $widgetId = null): WidgetRecord
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        if ($widgetId) {
+        if ($widgetId !== null) {
             $widgetRecord = WidgetRecord::findOne([
                 'id' => $widgetId,
                 'userId' => $userId
@@ -424,12 +424,12 @@ class Dashboard extends Component
     /**
      * Throws a "No widget exists" exception.
      *
-     * @param integer $widgetId
+     * @param int $widgetId
      *
      * @return void
      * @throws WidgetNotFoundException
      */
-    private function _noWidgetExists($widgetId)
+    private function _noWidgetExists(int $widgetId)
     {
         throw new WidgetNotFoundException("No widget exists with the ID '{$widgetId}'");
     }
@@ -440,7 +440,7 @@ class Dashboard extends Component
      * @return WidgetInterface[]
      * @throws Exception if no user is logged-in
      */
-    private function _getUserWidgets()
+    private function _getUserWidgets(): array
     {
         $userId = Craft::$app->getUser()->getId();
 

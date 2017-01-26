@@ -41,7 +41,7 @@ class m160807_144858_sites extends Migration
     // =========================================================================
 
     /**
-     * @var string The CASE SQL used to set site column values
+     * @var string|null The CASE SQL used to set site column values
      */
     protected $caseSql;
 
@@ -300,19 +300,28 @@ class m160807_144858_sites extends Migration
         Craft::$app->getDb()->getSchema()->refresh();
         $fks = MigrationHelper::findForeignKeysTo('{{%locales}}', 'locale');
 
-        foreach ($fks as $fkInfo) {
-            // Drop the old FK
-            MigrationHelper::dropForeignKey($fkInfo->fk, $this);
+        foreach ($fks as $refTable => $fkInfo) {
+            foreach ($fkInfo as $num => $fkData) {
+                $columns = [];
 
-            // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
-            foreach ($fkInfo->fk->refColumns as $i => $refColumn) {
-                if ($refColumn == 'locale') {
-                    $table = $fkInfo->table->name;
-                    $oldColumn = $fkInfo->fk->columns[$i];
-                    $newColumn = $oldColumn.'__siteId';
-                    $isNotNull = (stripos($fkInfo->table->columns[$oldColumn]->type, 'not null') !== false);
-                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn);
-                    $this->addForeignKey($this->db->getForeignKeyName($table, $newColumn), $table, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+                foreach ($fkData as $key => $fk) {
+                    if ($key !== 0 && $key !== 'updateType' && $key !== 'deleteType') {
+                        $columns[] = $key;
+                    }
+                }
+
+                // Drop the old FK
+                MigrationHelper::dropForeignKey($refTable, $columns, $this);
+
+                $originalRefTable = StringHelper::removeLeft($refTable, Craft::$app->getConfig()->getDbTablePrefix());
+                $originalRefTable = Craft::$app->getDb()->getTableSchema('{{%'.$originalRefTable.'}}');
+
+                // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
+                foreach ($columns as $refColumn) {
+                    $newColumn = $refColumn.'__siteId';
+                    $isNotNull = $originalRefTable->getColumn($refColumn)->allowNull;
+                    $this->addSiteColumn($refTable, $newColumn, $isNotNull, $refColumn);
+                    $this->addForeignKey($this->db->getForeignKeyName($refTable, $newColumn), $refTable, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
             }
         }
@@ -434,13 +443,13 @@ class m160807_144858_sites extends Migration
             try {
                 $settings = Json::decode($field['settings']);
             } catch (InvalidParamException $e) {
-                Craft::error('Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']);
-                $settings = [];
+                echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
+                return false;
             }
 
-            $localized = ($field['translationMethod'] == 'site');
+            $localized = ($field['translationMethod'] === 'site');
 
-            if ($field['type'] == 'craft\fields\Matrix') {
+            if ($field['type'] === 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
                 $settings['localizeRelations'] = $localized;
@@ -486,7 +495,7 @@ class m160807_144858_sites extends Migration
      *
      * @return void
      */
-    public function updateRecentEntriesWidgets($siteIdsByLocale)
+    public function updateRecentEntriesWidgets(array $siteIdsByLocale)
     {
         // Fetch all the Recent Entries widgets that have a locale setting
         $widgetResults = (new Query())
@@ -519,12 +528,12 @@ class m160807_144858_sites extends Migration
     /**
      * Creates a new siteId column and migrates the locale data over
      *
-     * @param string  $table
-     * @param string  $column
-     * @param boolean $isNotNull
-     * @param string  $localeColumn
+     * @param string $table
+     * @param string $column
+     * @param bool   $isNotNull
+     * @param string $localeColumn
      */
-    protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
+    protected function addSiteColumn(string $table, string $column, bool $isNotNull, string $localeColumn)
     {
         // Ignore NOT NULL for now
         $type = $this->integer();
@@ -547,7 +556,7 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2handle($locale)
+    protected function locale2handle(string $locale): string
     {
         // Make sure it's a valid handle
         if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
@@ -567,14 +576,14 @@ class m160807_144858_sites extends Migration
      *
      * @return string
      */
-    protected function locale2language($locale)
+    protected function locale2language(string $locale): string
     {
         $foundMatch = false;
 
         // Get the individual words
         $localeParts = array_filter(preg_split('/[^a-zA-Z]+/', $locale));
 
-        if ($localeParts) {
+        if (!empty($localeParts)) {
             $language = $localeParts[0].(isset($localeParts[1]) ? '-'.strtoupper($localeParts[1]) : '');
             $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
 

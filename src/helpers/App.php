@@ -21,17 +21,17 @@ class App
     // =========================================================================
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_isComposerInstall;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_isPhpDevServer;
 
     /**
-     * @var boolean
+     * @var bool
      */
     private static $_iconv;
 
@@ -41,9 +41,9 @@ class App
     /**
      * Returns whether Craft was installed via Composer.
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isComposerInstall()
+    public static function isComposerInstall(): bool
     {
         if (self::$_isComposerInstall !== null) {
             return self::$_isComposerInstall;
@@ -57,9 +57,9 @@ class App
     /**
      * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
      *
-     * @return boolean Whether Craft is running on the PHP Dev Server.
+     * @return bool Whether Craft is running on the PHP Dev Server.
      */
-    public static function isPhpDevServer()
+    public static function isPhpDevServer(): bool
     {
         if (self::$_isPhpDevServer !== null) {
             return self::$_isPhpDevServer;
@@ -77,7 +77,7 @@ class App
      *
      * @return array All the known Craft editions’ IDs.
      */
-    public static function editions()
+    public static function editions(): array
     {
         return [Craft::Personal, Craft::Client, Craft::Pro];
     }
@@ -85,11 +85,11 @@ class App
     /**
      * Returns the name of the given Craft edition.
      *
-     * @param integer $edition An edition’s ID.
+     * @param int $edition An edition’s ID.
      *
      * @return string The edition’s name.
      */
-    public static function editionName($edition)
+    public static function editionName(int $edition): string
     {
         switch ($edition) {
             case Craft::Client:
@@ -106,26 +106,27 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      *
-     * @return boolean Whether $edition is a valid edition ID.
+     * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition)
+    public static function isValidEdition($edition): bool
     {
         return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
     }
 
     /**
-     * Retrieves a boolean PHP config setting and normalizes it to an actual bool.
+     * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return boolean Whether it is set to the php.ini equivelant of `true`.
+     * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function phpConfigValueAsBool($var)
+    public static function phpConfigValueAsBool(string $var): bool
     {
         $value = ini_get($var);
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
-        return ($value == '1' || strtolower($value) == 'on');
+        /** @noinspection TypeUnsafeComparisonInspection */
+        return ($value == 1 || strtolower($value) === 'on');
     }
 
     /**
@@ -133,30 +134,33 @@ class App
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return integer The size in bytes.
+     * @return int The size in bytes.
      */
-    public static function phpConfigValueInBytes($var)
+    public static function phpConfigValueInBytes(string $var): int
     {
         $value = ini_get($var);
 
         // See if we can recognize that.
-        if (!preg_match('/\d+(K|M|G|T)/i', $value, $matches)) {
+        if (!preg_match('/(\d+)(K|M|G|T)/i', $value, $matches)) {
             return (int)$value;
         }
 
+        $value = (int)$matches[1];
+
         // Multiply! Falling through here is intentional.
-        switch (strtolower($matches[1])) {
-            /** @noinspection PhpMissingBreakStatementInspection */
+        switch (strtolower($matches[2])) {
             case 't':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+            // no break
             case 'g':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+            // no break
             case 'm':
                 $value *= 1024;
+            // no break
             case 'k':
                 $value *= 1024;
+            // no break
         }
 
         return $value;
@@ -169,7 +173,7 @@ class App
      *
      * @return string The normalized version number
      */
-    public static function normalizeVersionNumber($version)
+    public static function normalizeVersionNumber(string $version): string
     {
         // Periods before/after non-numeric sequences
         $version = preg_replace('/\D+/', '.$0.', $version);
@@ -190,7 +194,7 @@ class App
      *
      * @return string|null The major version
      */
-    public static function majorVersion($version)
+    public static function majorVersion(string $version)
     {
         $version = static::normalizeVersionNumber($version);
         $parts = explode('.', $version, 2);
@@ -209,7 +213,7 @@ class App
      *
      * @return string The X.Y parts of the version number
      */
-    public static function majorMinorVersion($version)
+    public static function majorMinorVersion(string $version): string
     {
         preg_match('/^\d+\.\d+/', $version, $matches);
 
@@ -223,7 +227,7 @@ class App
      *
      * @return string The download URL
      */
-    public static function craftDownloadUrl($version)
+    public static function craftDownloadUrl(string $version): string
     {
         $xy = self::majorMinorVersion($version);
 
@@ -233,9 +237,9 @@ class App
     /**
      * Returns whether the server has a valid version of the iconv extension installed.
      *
-     * @return boolean
+     * @return bool
      */
-    public static function checkForValidIconv()
+    public static function checkForValidIconv(): bool
     {
         if (self::$_iconv !== null) {
             return self::$_iconv;

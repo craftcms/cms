@@ -19,7 +19,6 @@ return [
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'updates' => 'update/index',
     'updates/go/<handle:[^/]*>' => 'update/go',
-    'settings' => 'system-settings/settings-index',
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',
@@ -36,7 +35,7 @@ return [
     'settings/general' => 'system-settings/general-settings',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
-    'settings/plugins/<pluginHandle:{handle}>' => 'plugins/edit-plugin-settings',
+    'settings/plugins/<pluginId>' => 'plugins/edit-plugin-settings',
     'settings/sections' => 'sections/index',
     'settings/sections/new' => 'sections/edit-section',
     'settings/sections/<sectionId:\d+>' => 'sections/edit-section',
@@ -68,4 +67,6 @@ return [
             ]
         ]
     ],
+    'utilities' => 'utilities',
+    'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
 ];

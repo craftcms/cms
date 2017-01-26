@@ -9,9 +9,11 @@ namespace craft\console;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use craft\errors\MissingComponentException;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
+use yii\console\Response;
 
 /**
  * Craft Console Application class
@@ -19,8 +21,9 @@ use yii\console\controllers\MigrateController;
  * @property Request $request          The request component
  * @property User    $user             The user component
  *
- * @method Request                                getRequest()      Returns the request component.
- * @method User                                   getUser()         Returns the user component.
+ * @method Request   getRequest()      Returns the request component.
+ * @method Response  getResponse()     Returns the response component.
+ * @method User      getUser()         Returns the user component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -64,12 +67,20 @@ class Application extends \yii\console\Application
      *
      * @return array The configuration of the built-in commands.
      */
-    public function coreCommands()
+    public function coreCommands(): array
     {
         return [
             'help' => HelpController::class,
             'migrate' => MigrateController::class,
             'cache' => CacheController::class,
         ];
+    }
+
+    /**
+     * @throws MissingComponentException
+     */
+    public function getSession()
+    {
+        throw new MissingComponentException('Session does not exist in a console request.');
     }
 }

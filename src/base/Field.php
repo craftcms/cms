@@ -78,7 +78,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return true;
     }
@@ -87,7 +87,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the field is fresh.
+     * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
@@ -96,12 +96,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -196,7 +196,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;
     }
@@ -204,7 +204,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationKey($element)
+    public function getTranslationKey(ElementInterface $element): string
     {
         /** @var Element $element */
         switch ($this->translationMethod) {
@@ -222,7 +222,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         return $value;
     }
@@ -230,7 +230,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
             [
@@ -242,7 +242,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
@@ -256,7 +256,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = [];
 
@@ -270,7 +270,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
     }
@@ -283,7 +283,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         $value = (string)$value;
 
@@ -293,7 +293,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         return Db::prepareValueForDb($value);
     }
@@ -321,7 +321,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh($isFresh)
+    public function setIsFresh(bool $isFresh = null)
     {
         $this->_isFresh = $isFresh;
     }
@@ -340,7 +340,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, $isNew)
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Trigger a 'beforeElementSave' event
         $event = new FieldElementEvent([
@@ -355,7 +355,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
+    public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Trigger an 'afterElementSave' event
         $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
@@ -367,7 +367,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementDelete(ElementInterface $element)
+    public function beforeElementDelete(ElementInterface $element): bool
     {
         // Trigger a 'beforeElementDelete' event
         $event = new FieldElementEvent([
@@ -398,9 +398,9 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed            $value   The field’s value
      * @param ElementInterface $element The element the field is associated with, if there is one
      *
-     * @return boolean Whether the value should be considered "empty"
+     * @return bool Whether the value should be considered "empty"
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         return empty($value);
     }
@@ -412,7 +412,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The field’s param name on the request
      */
-    protected function getRequestParamName($element)
+    protected function requestParamName(ElementInterface $element)
     {
         if (!$element) {
             return null;
@@ -428,36 +428,13 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     *
-     * @return mixed The field’s value
-     */
-    protected function getElementValue(ElementInterface $element)
-    {
-        return $element->getFieldValue($this->handle);
-    }
-
-    /**
-     * Updates this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     * @param mixed            $value   The field’s new value
-     */
-    protected function setElementValue(ElementInterface $element, $value)
-    {
-        $element->setFieldValue($this->handle, $value);
-    }
-
-    /**
      * Returns whether this is the first time the element's content has been edited.
      *
      * @param ElementInterface|null $element
      *
-     * @return boolean
+     * @return bool
      */
-    protected function isFresh($element)
+    protected function isFresh(ElementInterface $element = null): bool
     {
         if ($this->_isFresh !== null) {
             return $this->_isFresh;

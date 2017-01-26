@@ -23,7 +23,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return false;
     }
@@ -42,7 +42,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return static::displayName();
     }
@@ -65,7 +65,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $criteria)
+    public function performAction(ElementQueryInterface $criteria): bool
     {
         return true;
     }
@@ -84,11 +84,11 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * Sets the message that should be displayed to the user after the action is performed.
      *
-     * @param array $message The message that should be displayed to the user after the action is performed.
+     * @param string $message The message that should be displayed to the user after the action is performed.
      *
      * @return void
      */
-    protected function setMessage($message)
+    protected function setMessage(string $message)
     {
         $this->_message = $message;
     }

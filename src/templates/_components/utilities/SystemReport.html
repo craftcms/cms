@@ -1,0 +1,48 @@
+<div class="readable">
+	<h2>{{ "Application Info"|t('app') }}</h2>
+
+	<table class="data fullwidth fixed-layout">
+		<tbody>
+			{% for label, value in appInfo %}
+				<tr>
+					<th class="light">{{ label }}</th>
+					<td>{{ value }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>{{ "Plugins"|t('app') }}</h2>
+
+	<table class="data fullwidth fixed-layout">
+		<tbody>
+			{% for plugin in plugins %}
+				<tr>
+					<th class="light">{{ plugin.name }}</th>
+					<td>{{ plugin.version }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>{{ "Requirements"|t('app') }}</h2>
+
+	<table class="data fullwidth">
+		<tbody>
+		{% for requirement in requirements %}
+			<tr>
+				<td class="thin centeralign">
+					{% if requirement.error %}
+						<span class="error" title="{{ 'Failed'|t }}" data-icon="error"></span>
+					{% elseif requirement.warning %}
+						<span class="warning" title="{{ 'Passed with warning'|t }}" data-icon="alert"></span>
+					{% else %}
+						<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
+					{% endif %}
+				</td>
+				<td>{{ requirement.name }}{% if requirement.memo %} <span class="info">{{ requirement.memo|raw }}</span>{% endif %}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</div>

@@ -33,11 +33,11 @@ class Cp
 
     /**
      * @param string|null $path
-     * @param boolean     $fetch
+     * @param bool        $fetch
      *
      * @return array
      */
-    public static function alerts($path = null, $fetch = false)
+    public static function alerts(string $path = null, bool $fetch = false): array
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -49,13 +49,13 @@ class Cp
         if (Craft::$app->getUpdates()->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
             // relying on cached Elliott info
-            $updateModel = Craft::$app->getUpdates()->getUpdates();
+            $update = Craft::$app->getUpdates()->getUpdates();
 
             // Get the license key status
             $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
 
             // Invalid license?
-            if ($licenseKeyStatus == LicenseKeyStatus::Invalid) {
+            if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                 $alerts[] = Craft::t('app', 'Your license key is invalid.');
             } else if (Craft::$app->getHasWrongEdition()) {
                 $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
@@ -66,17 +66,17 @@ class Cp
             }
 
             if (
-                $path != 'updates' &&
+                $path !== 'updates' &&
                 $user->can('performUpdates') &&
-                !empty($updateModel->app->releases) &&
-                Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)
+                !empty($update->app->releases) &&
+                Craft::$app->getUpdates()->criticalCraftUpdateAvailable($update->app->releases)
             ) {
                 $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                    ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                    ' <a class="go nowrap" href="'.UrlHelper::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
             }
 
             // Domain mismatch?
-            if ($licenseKeyStatus == LicenseKeyStatus::Mismatched) {
+            if ($licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',

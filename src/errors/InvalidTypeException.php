@@ -22,24 +22,24 @@ use yii\base\Exception;
 class InvalidTypeException extends Exception
 {
     /**
-     * @var string The invalid class name
+     * @var string|null The invalid class name
      */
     public $class;
 
     /**
-     * @var string The base class or interface that [[$class]] was supposed to be
+     * @var string|null The base class or interface that [[$class]] was supposed to be
      */
     public $requiredType;
 
     /**
      * Constructor.
      *
-     * @param string  $handle       The class that doesn’t exist or doesn’t extend/implement $requiredType
-     * @param string  $requiredType The base class or interface that $class was supposed to be
-     * @param string  $message      The error message
-     * @param integer $code         The error code
+     * @param string      $handle       The class that doesn’t exist or doesn’t extend/implement $requiredType
+     * @param string      $requiredType The base class or interface that $class was supposed to be
+     * @param string|null $message      The error message
+     * @param int         $code         The error code
      */
-    public function __construct($handle, $requiredType, $message = null, $code = 0)
+    public function __construct(string $handle, string $requiredType, string $message = null, int $code = 0)
     {
         $this->class = $handle;
         $this->requiredType = $requiredType;

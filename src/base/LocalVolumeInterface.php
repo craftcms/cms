@@ -7,9 +7,6 @@
 
 namespace craft\base;
 
-use craft\errors\VolumeObjectExistsException;
-use craft\errors\VolumeObjectNotFoundException;
-
 /**
  * LocalVolumeInterface defines the common interface to be implemented by volume classes that are on the local file system.
  *
@@ -26,5 +23,5 @@ interface LocalVolumeInterface
      *
      * @return string The root path for the volume
      */
-    public function getRootPath();
+    public function getRootPath(): string;
 }

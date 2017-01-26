@@ -22,7 +22,7 @@ class RegisterUserActionsEvent extends Event
     // =========================================================================
 
     /**
-     * @var User The user associated with the event
+     * @var User|null The user associated with the event
      */
     public $user;
 

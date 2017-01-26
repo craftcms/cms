@@ -105,74 +105,84 @@
 
 
 {% macro textField(config) %}
+	{% import _self as forms %}
 	{% if config.unit is defined %}
 		{% set input %}
 			<div class="flex">
-				<div class="textwrapper">{{ _self.text(config) }}</div>
+				<div class="textwrapper">{{ forms.text(config) }}</div>
 				<div class="label light">{{ config.unit }}</div>
 			</div>
 		{% endset %}
 	{% else %}
-		{% set input = _self.text(config) %}
+		{% set input = forms.text(config) %}
 	{% endif %}
-	{{ _self.field(config, input) }}
+	{{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
-	{{ _self.field(config, _self.password(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.password(config)) }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
-	{{ _self.field(config, _self.date(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.date(config)) }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
-	{{ _self.field(config, _self.time(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.time(config)) }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
-	{{ _self.field(config, _self.color(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.color(config)) }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
+	{% import _self as forms %}
 	{% set input %}
 		<div class="datetimewrapper">
-			{{ _self.date(config) }}
-			{{ _self.time(config) }}
+			{{ forms.date(config) }}
+			{{ forms.time(config) }}
 		</div>
 	{% endset %}
-	{{ _self.field(config, input) }}
+	{{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro textareaField(config) %}
-	{{ _self.field(config, _self.textarea(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.textarea(config)) }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
-	{{ _self.field(config, _self.select(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.select(config)) }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
-	{{ _self.field(config, _self.multiselect(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.multiselect(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxField(config) %}
+	{% import _self as forms %}
 	{% if config.fieldLabel is defined %}
-		{{ _self.field(config|merge({label: config.fieldLabel}), _self.checkbox(config)) }}
+		{{ forms.field(config|merge({label: config.fieldLabel}), forms.checkbox(config)) }}
 	{% else %}
 		{% set instructions = config.instructions ?? null -%}
 		{% set warning = config.warning ?? null -%}
 		<div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
-			{{ _self.checkbox(config) }}
+			{{ forms.checkbox(config) }}
 			{% if instructions %}
 				<div class="instructions">{{ instructions|md }}</div>
 			{% endif %}
@@ -185,36 +195,42 @@
 
 
 {% macro checkboxSelectField(config) %}
-	{{ _self.field(config, _self.checkboxSelect(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.checkboxSelect(config)) }}
 {% endmacro %}
 
 
 {% macro radioGroupField(config) %}
-	{{ _self.field(config, _self.radioGroup(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.radioGroup(config)) }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
-	{{ _self.field(config, _self.file(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.file(config)) }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
+	{% import _self as forms %}
 	{% if config.labelId is not defined or not config.labelId %}
 		{% set config = config|merge({ labelId: 'label'~random() }) %}
 	{% endif %}
-	{{ _self.field(config, _self.lightswitch(config)) }}
+	{{ forms.field(config, forms.lightswitch(config)) }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
+	{% import _self as forms %}
 	{% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
-	{{ _self.field(config, input) }}
+	{{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
-	{{ _self.field(config, _self.elementSelect(config)) }}
+	{% import _self as forms %}
+	{{ forms.field(config, forms.elementSelect(config)) }}
 {% endmacro %}
 
 

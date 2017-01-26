@@ -21,7 +21,7 @@ class CreateMatrixContentTable extends Migration
     // =========================================================================
 
     /**
-     * @var string The table name
+     * @var string|null The table name
      */
     public $tableName;
 

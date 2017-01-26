@@ -9,10 +9,12 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Tag represents a tag element.
@@ -28,7 +30,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tag');
     }
@@ -36,7 +38,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -44,7 +46,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -52,7 +54,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -62,7 +64,7 @@ class Tag extends Element
      *
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new TagQuery(get_called_class());
     }
@@ -70,7 +72,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources(string $context = null): array
     {
         $sources = [];
 
@@ -89,7 +91,7 @@ class Tag extends Element
     // =========================================================================
 
     /**
-     * @var integer Group ID
+     * @var int|null Group ID
      */
     public $groupId;
 
@@ -110,7 +112,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return true;
     }
@@ -132,15 +134,20 @@ class Tag extends Element
     /**
      * Returns the tag's group.
      *
-     * @return TagGroup|null
+     * @return TagGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
     public function getGroup()
     {
-        if ($this->groupId) {
-            return Craft::$app->getTags()->getTagGroupById($this->groupId);
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Tag is missing its group ID');
         }
 
-        return null;
+        if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
     // Indexes, etc.
@@ -149,7 +156,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
@@ -177,7 +184,7 @@ class Tag extends Element
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         // Get the tag record
         if (!$isNew) {
@@ -195,23 +202,5 @@ class Tag extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the tag's title.
-     *
-     * @deprecated Deprecated in 2.3. Use [[$title]] instead.
-     * @return string
-     *
-     * @todo       Remove this method in Craft 4.
-     */
-    public function getName()
-    {
-        Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
-
-        return $this->title;
     }
 }

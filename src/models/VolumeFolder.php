@@ -23,33 +23,33 @@ class VolumeFolder extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Parent ID
+     * @var int|string|null Parent ID
      */
     public $parentId;
 
     /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Path
+     * @var string|null Path
      */
     public $path;
 
 
     /**
-     * @var VolumeFolder[]
+     * @var VolumeFolder[]|null
      */
     private $_children;
 
@@ -71,9 +71,9 @@ class VolumeFolder extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**
@@ -99,7 +99,7 @@ class VolumeFolder extends Model
      *
      * @return VolumeFolder[]
      */
-    public function getChildren()
+    public function getChildren(): array
     {
         if ($this->_children !== null) {
             return $this->_children;

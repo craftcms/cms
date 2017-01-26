@@ -24,7 +24,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Entries');
     }
@@ -32,7 +32,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Entry::class;
     }
@@ -40,7 +40,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an entry');
     }

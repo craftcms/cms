@@ -2,7 +2,7 @@
 
 {% do view.registerTranslations('app', [
 	"(blank)",
-	"1 update available",
+	"1 Available Update",
 	"Actions",
 	"Apply this to the {number} remaining conflicts?",
 	"An unknown error occurred.",
@@ -95,7 +95,7 @@
 	"Your session has ended.",
 	"Your session will expire in {time}.",
 	"{ctrl}C to copy.",
-	"{num} updates available",
+	"{num} Available Updates",
 	"“{name}” deleted.",
 ]) %}
 
@@ -141,7 +141,6 @@
 		{% endif %}
 
 		<div class="topbar">
-
 			<a class="site-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
 
 				{% if CraftEdition >= CraftClient %}
@@ -154,28 +153,6 @@
 
 				<h2>{{ siteName|t('site') }}</h2>
 			</a>
-
-			{% if currentUser.can('performUpdates') %}
-				{% if craft.app.updates.getIsUpdateInfoCached() %}
-					{% set totalUpdates = craft.app.updates.getTotalAvailableUpdates() %}
-					{% if totalUpdates %}
-						{% if totalUpdates == 1 %}
-							{% set updateText = "1 update available"|t('app') %}
-						{% else %}
-							{% set updateText = "{num} updates available"|t('app', { num: totalUpdates }) %}
-						{% endif %}
-						<a class="updates{% if craft.app.updates.getIsCriticalUpdateAvailable() %} critical{% endif %}" href="{{ url('updates') }}" title="{{ updateText }}">
-							<span data-icon="newstamp">
-								<span>{{ totalUpdates }}</span>
-							</span>
-						</a>
-					{% endif %}
-				{% else %}
-					{% js %}
-						Craft.cp.checkForUpdates();
-					{% endjs %}
-				{% endif %}
-			{% endif %}
 		</div>
 
 		<nav>
@@ -198,8 +175,8 @@
 								{{- item.label -}}
 							</span>
 
-							{%- if item.badge is defined and item.badge -%}
-								<span class="badge">{{ item.badge }}</span>
+							{%- if not item.sel and item.badgeCount -%}
+								<span class="badge">{{ item.badgeCount }}</span>
 							{%- endif -%}
 						</a>
 						{% if item.sel and hasSubnav  %}
@@ -315,15 +292,14 @@
 		</header>
 
 		{# Is the template defining its own layout? #}
-		{% set main = block('main')|trim %}
-		{% set hasCustomLayout = (main is not empty) %}
+		{% set hasCustomLayout = block('main') is defined %}
 
 		<main id="main" role="main"{% if not hasCustomLayout %} class="single-pane"{% endif %}>
 			<div class="padded">
 				{% if hasCustomLayout %}
-					{{ main|raw }}
+					{{ block('main') }}
 				{% else %}
-					{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
+					{% set sidebar = sidebar ?? block('sidebar') ?? null %}
 					{% set hasSidebar = (sidebar is not empty) %}
 
 					<div class="pane">
@@ -359,7 +335,7 @@
 			{%- spaceless %}
 				{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 				{% set licensedEdition = craft.app.getLicensedEdition() %}
-				{% set isTrial = licensedEdition is not sameas(null) and licensedEdition is not sameas(CraftEdition) %}
+				{% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
 				<div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
 					<div id="edition-logo">
@@ -377,9 +353,6 @@
 			<ul>
 				<li>Craft CMS {{ craft.app.version }}</li>
 				<li>© Pixel &amp; Tonic</li>
-				{% if currentUser.can('performUpdates') %}
-					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.updates.getIsUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>
-				{% endif %}
 			</ul>
 		</div>
 
@@ -389,3 +362,10 @@
 		</form>
 	{% endif %}
 {% endblock %}
+
+
+{% if not craft.app.updates.getIsUpdateInfoCached() %}
+	{% js %}
+		Craft.cp.checkForUpdates();
+	{% endjs %}
+{% endif %}

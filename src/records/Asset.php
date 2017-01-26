@@ -15,14 +15,14 @@ use yii\db\ActiveQueryInterface;
  *
  * @todo   Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
- * @property integer      $id           ID
- * @property integer      $volumeId     Volume ID
- * @property integer      $folderId     Folder ID
+ * @property int          $id           ID
+ * @property int          $volumeId     Volume ID
+ * @property int          $folderId     Folder ID
  * @property string       $filename     Filename
  * @property string       $kind         Kind
- * @property integer      $width        Width
- * @property integer      $height       Height
- * @property integer      $size         Size
+ * @property int          $width        Width
+ * @property int          $height       Height
+ * @property int          $size         Size
  * @property string       $focalPoint   Focal point coordinates
  * @property \DateTime    $dateModified Date modified
  * @property Element      $element      Element
@@ -42,7 +42,7 @@ class Asset extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%assets}}';
     }
@@ -52,7 +52,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -62,7 +62,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }
@@ -72,7 +72,7 @@ class Asset extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFolder()
+    public function getFolder(): ActiveQueryInterface
     {
         return $this->hasOne(VolumeFolder::class, ['id' => 'folderId']);
     }

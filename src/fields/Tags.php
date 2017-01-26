@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Tag;
 use craft\models\TagGroup;
@@ -27,7 +28,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tags');
     }
@@ -35,7 +36,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Tag::class;
     }
@@ -43,7 +44,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a tag');
     }
@@ -72,8 +73,9 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
+        /** @var Element|null $element */
         if (!($value instanceof ElementQueryInterface)) {
             /** @var Element $class */
             $class = static::elementType();
@@ -91,8 +93,8 @@ class Tags extends BaseRelationField
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
-                    'targetSiteId' => $this->getTargetSiteId($element),
-                    'sourceElementId' => !empty($element) ? $element->id : null,
+                    'targetSiteId' => $this->targetSiteId($element),
+                    'sourceElementId' => $element !== null ? $element->id : null,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         } else {
@@ -112,7 +114,7 @@ class Tags extends BaseRelationField
     {
         $tagGroupId = $this->_getTagGroupId();
 
-        if ($tagGroupId) {
+        if ($tagGroupId !== false) {
             return Craft::$app->getTags()->getTagGroupById($tagGroupId);
         }
 
@@ -122,7 +124,7 @@ class Tags extends BaseRelationField
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return integer|false
+     * @return int|false
      */
     private function _getTagGroupId()
     {

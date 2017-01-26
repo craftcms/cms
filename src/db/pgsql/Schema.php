@@ -49,7 +49,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db);
     }
@@ -57,11 +57,11 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Quotes a database name for use in a query.
      *
-     * @param $name
+     * @param string $name
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName(string $name): string
     {
         return '"'.$name.'"';
     }
@@ -80,7 +80,7 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -101,7 +101,7 @@ class Schema extends \yii\db\pgsql\Schema
             parent::rollBackSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -145,7 +145,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultRestoreCommand()
+    public function getDefaultRestoreCommand(): string
     {
         return 'psql'.
             ' --dbname={database}'.
@@ -170,7 +170,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return array All indexes for the given table.
      */
-    public function findIndexes($tableName)
+    public function findIndexes(string $tableName): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
@@ -207,9 +207,9 @@ class Schema extends \yii\db\pgsql\Schema
             $this->findConstraints($table);
 
             return $table;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -254,7 +254,7 @@ SQL;
 
         $extendedConstraints = $this->db->createCommand($sql)->queryAll();
 
-        foreach ($extendedConstraints as $count => $extendedConstraint) {
+        foreach ($extendedConstraints as $key => $extendedConstraint) {
             // Find out what to do on update.
             switch ($extendedConstraint['update_type']) {
                 case 'a':
@@ -293,7 +293,7 @@ SQL;
                     break;
             }
 
-            $table->addExtendedForeignKey([
+            $table->addExtendedForeignKey($key, [
                 'updateType' => $updateAction,
                 'deleteType' => $deleteAction,
             ]);
@@ -307,7 +307,7 @@ SQL;
      *
      * @return array Index and column names
      */
-    protected function getIndexInformation($table)
+    protected function getIndexInformation(TableSchema $table): array
     {
         $sql = <<<SQL
 SELECT

@@ -12,6 +12,8 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Json;
 use craft\models\Section;
+use craft\web\assets\recententries\RecentEntriesAsset;
+use yii\base\Exception;
 
 /**
  * RecentEntries represents a Recent Entries dashboard widget.
@@ -27,16 +29,30 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Recent Entries');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/clock.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var string|integer[] The section IDs that the widget should pull entries from
+     * @var string|int[] The section IDs that the widget should pull entries from
      */
     public $section = '*';
 
@@ -46,7 +62,7 @@ class RecentEntries extends Widget
     public $siteId;
 
     /**
-     * integer The total number of entries that the widget should show
+     * int The total number of entries that the widget should show
      */
     public $limit = 10;
 
@@ -90,15 +106,7 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'recent-entries.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getSections()->getSectionById($this->section);
@@ -118,7 +126,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
+        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
@@ -143,17 +151,18 @@ class RecentEntries extends Widget
             $params['sectionId'] = (int)$this->section;
         }
 
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $view = Craft::$app->getView();
 
-        Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
-        Craft::$app->getView()->registerJs($js);
-        Craft::$app->getView()->registerTranslations('app', [
+        $view->registerAssetBundle(RecentEntriesAsset::class);
+        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $view->registerJs($js);
+        $view->registerTranslations('app', [
             'by {author}',
         ]);
 
         $entries = $this->_getEntries();
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/body',
+        return $view->renderTemplate('_components/widgets/RecentEntries/body',
             [
                 'entries' => $entries
             ]);
@@ -167,11 +176,11 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEntries()
+    private function _getEntries(): array
     {
         $targetSiteId = $this->_getTargetSiteId();
 
-        if (!$targetSiteId) {
+        if ($targetSiteId === false) {
             // Hopeless
             return [];
         }
@@ -180,7 +189,7 @@ class RecentEntries extends Widget
         $editableSectionIds = $this->_getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
+        if (!$targetSectionId || $targetSectionId === '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
@@ -205,7 +214,7 @@ class RecentEntries extends Widget
      *
      * @return array
      */
-    private function _getEditableSectionIds()
+    private function _getEditableSectionIds(): array
     {
         $sectionIds = [];
 
@@ -232,7 +241,7 @@ class RecentEntries extends Widget
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
         // If they aren't allowed to edit *any* sites, return false
-        if (!$editableSiteIds) {
+        if (empty($editableSiteIds)) {
             return false;
         }
 

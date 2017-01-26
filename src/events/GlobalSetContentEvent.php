@@ -22,7 +22,7 @@ class GlobalSetContentEvent extends Event
     // =========================================================================
 
     /**
-     * @var GlobalSet The global set model associated with the event.
+     * @var GlobalSet|null The global set model associated with the event.
      */
     public $globalSet;
 }

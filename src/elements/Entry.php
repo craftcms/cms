@@ -23,7 +23,7 @@ use craft\events\SetStatusEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\records\Entry as EntryRecord;
@@ -52,7 +52,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Entry');
     }
@@ -60,7 +60,15 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function refHandle()
+    {
+        return 'entry';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -68,7 +76,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -76,7 +84,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -84,7 +92,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -92,7 +100,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function statuses()
+    public static function statuses(): array
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
@@ -107,7 +115,7 @@ class Entry extends Element
      *
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new EntryQuery(get_called_class());
     }
@@ -115,9 +123,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context)
+    protected static function defineSources(string $context = null): array
     {
-        if ($context == 'index') {
+        if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
             $editable = true;
         } else {
@@ -151,7 +159,7 @@ class Entry extends Element
             ]
         ];
 
-        if ($singleSectionIds) {
+        if (!empty($singleSectionIds)) {
             $sources[] = [
                 'key' => 'singles',
                 'label' => Craft::t('app', 'Singles'),
@@ -205,27 +213,23 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source)
+    protected static function defineActions(string $source = null): array
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
-            case '*': {
+            case '*':
                 $sections = Craft::$app->getSections()->getEditableSections();
                 break;
-            }
-            case 'singles': {
+            case 'singles':
                 $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
                 break;
-            }
-            default: {
-                if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-                    $section = Craft::$app->getSections()->getSectionById($matches[1]);
-
-                    if ($section) {
-                        $sections = [$section];
-                    }
+            default:
+                if (
+                    preg_match('/^section:(\d+)$/', $source, $matches) &&
+                    ($section = Craft::$app->getSections()->getSectionById($matches[1])) !== null
+                ) {
+                    $sections = [$section];
                 }
-            }
         }
 
         // Now figure out what we can do with these
@@ -287,7 +291,7 @@ class Entry extends Element
             }
 
             // View
-            $showViewAction = ($source == '*' || $source == 'singles');
+            $showViewAction = ($source === '*' || $source === 'singles');
 
             if (!$showViewAction) {
                 // They are viewing a specific section. See if it has URLs for the requested site
@@ -309,7 +313,7 @@ class Entry extends Element
             }
 
             // Channel/Structure-only actions
-            if ($source != '*' && $source != 'singles') {
+            if ($source !== '*' && $source !== 'singles') {
                 $section = $sections[0];
 
                 // New child?
@@ -349,7 +353,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes()
+    protected static function defineSortableAttributes(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -364,7 +368,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineTableAttributes()
+    protected static function defineTableAttributes(): array
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -392,15 +396,15 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source)
+    public static function defaultTableAttributes(string $source): array
     {
         $attributes = [];
 
-        if ($source == '*') {
+        if ($source === '*') {
             $attributes[] = 'section';
         }
 
-        if ($source != 'singles') {
+        if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
         }
@@ -414,9 +418,9 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
-        if ($handle == 'author') {
+        if ($handle === 'author') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -427,7 +431,7 @@ class Entry extends Element
             $map = (new Query())
                 ->select(['id as source', 'authorId as target'])
                 ->from(['{{%entries}}'])
-                ->where(['id' => $sourceElementIds])
+                ->where(['and', ['id' => $sourceElementIds], ['not', ['authorId' => null]]])
                 ->all();
 
             return [
@@ -442,10 +446,10 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
         /** @var ElementQuery $elementQuery */
-        if ($attribute == 'author') {
+        if ($attribute === 'author') {
             $with = $elementQuery->with ?: [];
             $with[] = 'author';
             $elementQuery->with = $with;
@@ -458,47 +462,47 @@ class Entry extends Element
     // =========================================================================
 
     /**
-     * @var integer Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Type ID
+     * @var int|null Type ID
      */
     public $typeId;
 
     /**
-     * @var integer Author ID
+     * @var int|null Author ID
      */
     public $authorId;
 
     /**
-     * @var \DateTime Post date
+     * @var \DateTime|null Post date
      */
     public $postDate;
 
     /**
-     * @var \DateTime Expiry date
+     * @var \DateTime|null Expiry date
      */
     public $expiryDate;
 
     /**
-     * @var integer New parent ID
+     * @var int|null New parent ID
      */
     public $newParentId;
 
     /**
-     * @var string Revision notes
+     * @var string|null Revision notes
      */
     public $revisionNotes;
 
     /**
-     * @var User
+     * @var User|null
      */
     private $_author;
 
     /**
-     * @var boolean
+     * @var bool|null
      * @see _hasNewParent()
      */
     private $_hasNewParent;
@@ -521,7 +525,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'postDate';
@@ -648,9 +652,9 @@ class Entry extends Element
      * @return Section
      * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
-        if (!$this->sectionId) {
+        if ($this->sectionId === null) {
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
@@ -667,9 +671,9 @@ class Entry extends Element
      * @return EntryType
      * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
-    public function getType()
+    public function getType(): EntryType
     {
-        if (!$this->typeId) {
+        if ($this->typeId === null) {
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
@@ -694,7 +698,7 @@ class Entry extends Element
             return $this->_author;
         }
 
-        if (!$this->authorId) {
+        if ($this->authorId === null) {
             return null;
         }
 
@@ -727,7 +731,7 @@ class Entry extends Element
             $postDate = $this->postDate->getTimestamp();
             $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
 
-            if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime)) {
+            if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
             }
 
@@ -744,7 +748,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return (
             Craft::$app->getUser()->checkPermission('publishEntries:'.$this->sectionId) && (
@@ -763,7 +767,7 @@ class Entry extends Element
         $section = $this->getSection();
 
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = UrlHelper::cpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
         if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
             $url .= '/'.$this->getSite()->handle;
@@ -775,10 +779,10 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
-        if ($handle == 'author') {
-            $author = isset($elements[0]) ? $elements[0] : null;
+        if ($handle === 'author') {
+            $author = $elements[0] ?? null;
             $this->setAuthor($author);
         } else {
             parent::setEagerLoadedElements($handle, $elements);
@@ -791,7 +795,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function tableAttributeHtml($attribute)
+    protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
             case 'author':
@@ -812,13 +816,13 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getEditorHtml()
+    public function getEditorHtml(): string
     {
         $html = '';
         $view = Craft::$app->getView();
 
         // Show the Entry Type field?
-        if (!$this->id) {
+        if ($this->id === null) {
             $entryTypes = $this->getSection()->getEntryTypes();
 
             if (count($entryTypes) > 1) {
@@ -873,14 +877,14 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function beforeSave($isNew)
+    public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
         $entryType = $this->getType();
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
+            if ($this->newParentId !== null) {
                 $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
 
                 if (!$parentEntry) {
@@ -922,7 +926,7 @@ EOD;
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave($isNew)
+    public function afterSave(bool $isNew)
     {
         $section = $this->getSection();
 
@@ -948,7 +952,7 @@ EOD;
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?
             if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
+                if ($this->newParentId === null) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
                     Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
@@ -970,7 +974,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure($structureId)
+    public function afterMoveInStructure(int $structureId)
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();
@@ -999,11 +1003,11 @@ EOD;
     /**
      * Returns whether the entry has been assigned a new parent entry.
      *
-     * @return boolean
+     * @return bool
      * @see beforeSave()
      * @see afterSave()
      */
-    private function _hasNewParent()
+    private function _hasNewParent(): bool
     {
         if ($this->_hasNewParent !== null) {
             return $this->_hasNewParent;
@@ -1015,10 +1019,10 @@ EOD;
     /**
      * Checks if the entry has been assigned a new parent entry.
      *
-     * @return boolean
+     * @return bool
      * @see _hasNewParent()
      */
-    private function _checkForNewParent()
+    private function _checkForNewParent(): bool
     {
         // Make sure this is a Structure section
         if ($this->getSection()->type != Section::TYPE_STRUCTURE) {
@@ -1026,7 +1030,7 @@ EOD;
         }
 
         // Is it a brand new entry?
-        if (!$this->id) {
+        if ($this->id === null) {
             return true;
         }
 

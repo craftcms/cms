@@ -26,9 +26,9 @@ class CategoryGroups
     /**
      * Returns all of the group IDs.
      *
-     * @return integer[]
+     * @return int[]
      */
-    public function getAllGroupIds()
+    public function getAllGroupIds(): array
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroupIds()', 'craft.categoryGroups.getAllGroupIds() has been deprecated. Use craft.app.categories.allGroupIds instead.');
 
@@ -38,11 +38,11 @@ class CategoryGroups
     /**
      * Returns all of the category group IDs that are editable by the current user.
      *
-     * @return integer[]
+     * @return int[]
      */
-    public function getEditableGroupIds()
+    public function getEditableGroupIds(): array
     {
-        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroupIds()', 'craft.categoryGroups.getEditableGroupIds() has been deprecated. Use craft.app.categories.editableGroupIds() instead.');
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroupIds()', 'craft.categoryGroups.getEditableGroupIds() has been deprecated. Use craft.app.categories.editableGroupIds instead.');
 
         return Craft::$app->getCategories()->getEditableGroupIds();
     }
@@ -50,13 +50,13 @@ class CategoryGroups
     /**
      * Returns all category groups.
      *
-     * @param null|string $indexBy
+     * @param string|null $indexBy
      *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.getAllGroups() instead.');
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.allGroups instead.');
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
@@ -70,11 +70,11 @@ class CategoryGroups
      *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroups()', 'craft.categoryGroups.getEditableGroups() has been deprecated. Use craft.app.categories.getEditableGroups() instead.');
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroups()', 'craft.categoryGroups.getEditableGroups() has been deprecated. Use craft.app.categories.editableGroups instead.');
 
-        $groups = Craft::$app->getCategories()->getEditableGroups($indexBy);
+        $groups = Craft::$app->getCategories()->getEditableGroups();
 
         return $indexBy ? ArrayHelper::index($groups, $indexBy) : $groups;
     }
@@ -82,9 +82,9 @@ class CategoryGroups
     /**
      * Gets the total number of category groups.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalGroups()
+    public function getTotalGroups(): int
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getTotalGroups()', 'craft.categoryGroups.getTotalGroups() has been deprecated. Use craft.app.categories.totalGroups instead.');
 
@@ -94,11 +94,11 @@ class CategoryGroups
     /**
      * Returns a group by its ID.
      *
-     * @param $groupId
+     * @param int $groupId
      *
      * @return CategoryGroup|null
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupById()', 'craft.categoryGroups.getGroupById() has been deprecated. Use craft.app.categories.getGroupById() instead.');
 
@@ -108,11 +108,11 @@ class CategoryGroups
     /**
      * Returns a group by its handle.
      *
-     * @param $groupHandle
+     * @param string $groupHandle
      *
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(string $groupHandle)
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupByHandle()', 'craft.categoryGroups.getGroupByHandle() has been deprecated. Use craft.app.categories.getGroupByHandle() instead.');
 

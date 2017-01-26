@@ -42,11 +42,11 @@ class Search
      *
      * @param string[]|string $str            The dirty keywords
      * @param array           $ignore         Ignore words to strip out
-     * @param boolean         $processCharMap Whether to remove punctuation and diacritics (default is true)
+     * @param bool            $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], $processCharMap = true)
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true): string
     {
         // Flatten
         if (is_array($str)) {
@@ -67,7 +67,7 @@ class Search
 
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, static::_getCharMap());
+            $str = strtr($str, self::_getCharMap());
         }
 
         // Remove ignore-words?
@@ -92,9 +92,9 @@ class Search
      * Returns the FULLTEXT minimum word length.
      *
      * @todo Get actual value from DB
-     * @return integer
+     * @return int
      */
-    public static function minWordLength()
+    public static function minWordLength(): int
     {
         if (self::$_ftMinWordLength !== null) {
             return self::$_ftMinWordLength;
@@ -109,7 +109,7 @@ class Search
      * @todo Make this customizable from the config settings
      * @return array
      */
-    public static function stopWords()
+    public static function stopWords(): array
     {
         if (self::$_ftStopWords !== null) {
             return self::$_ftStopWords;
@@ -131,7 +131,7 @@ class Search
      *
      * @return array
      */
-    private static function _getCharMap()
+    private static function _getCharMap(): array
     {
         // Keep local copy
         static $map = [];
@@ -145,7 +145,7 @@ class Search
             }
 
             // Replace punctuation with a space
-            foreach (static::_getPunctuation() as $value) {
+            foreach (self::_getPunctuation() as $value) {
                 $map[$value] = ' ';
             }
         }
@@ -159,7 +159,7 @@ class Search
      *
      * @return array
      */
-    private static function _getPunctuation()
+    private static function _getPunctuation(): array
     {
         // Keep local copy
         static $asciiPunctuation = [];

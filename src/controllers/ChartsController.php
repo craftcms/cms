@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
+use yii\base\Exception;
 use yii\base\Response;
 
 /**
@@ -32,8 +33,9 @@ class ChartsController extends Controller
      * Returns the data needed to display a New Users chart.
      *
      * @return Response
+     * @throws Exception
      */
-    public function actionGetNewUsersData()
+    public function actionGetNewUsersData(): Response
     {
         $userGroupId = Craft::$app->getRequest()->getRequiredBodyParam('userGroupId');
         $startDateParam = Craft::$app->getRequest()->getRequiredBodyParam('startDate');
@@ -41,6 +43,11 @@ class ChartsController extends Controller
 
         $startDate = DateTimeHelper::toDateTime($startDateParam);
         $endDate = DateTimeHelper::toDateTime($endDateParam);
+
+        if ($startDate === false || $endDate === false) {
+            throw new Exception('There was a problem calculating the start and end dates');
+        }
+
         $endDate->modify('+1 day');
 
         $intervalUnit = 'day';

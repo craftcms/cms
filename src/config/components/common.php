@@ -5,6 +5,7 @@ use craft\db\MigrationManager;
 use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\log\Logger;
@@ -48,6 +49,7 @@ return [
     'users' => craft\services\Users::class,
     'view' => craft\web\View::class,
     'volumes' => craft\services\Volumes::class,
+    'utilities' => craft\services\Utilities::class,
 
     // Configured components
     // -------------------------------------------------------------------------
@@ -267,9 +269,21 @@ return [
         $fileTarget = new FileTarget();
 
         if ($isConsoleRequest) {
-            $fileTarget->logFile = Craft::getAlias('@storage/logs/console.log');
+            $logPath = Craft::getAlias('@storage/logs/console.log');
+
+            if ($logPath === false) {
+                throw new Exception('There was a problem getting the console log path.');
+            }
+
+            $fileTarget->logFile = $logPath;
         } else {
-            $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
+            $logPath = Craft::getAlias('@storage/logs/web.log');
+
+            if ($logPath === false) {
+                throw new Exception('There was a problem getting the web log path.');
+            }
+
+            $fileTarget->logFile = $logPath;
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
             if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {

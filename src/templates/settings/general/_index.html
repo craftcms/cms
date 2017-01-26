@@ -24,7 +24,7 @@
 	{{ forms.lightswitchField({
 		first: true,
 		label: "System Status"|t,
-		warning: (craft.app.config.get('isSystemOn') is sameas(true) or craft.app.config.get('isSystemOn') is sameas(false) ? configWarning('isSystemOn')),
+		warning: (craft.app.config.get('isSystemOn') is same as(true) or craft.app.config.get('isSystemOn') is same as(false) ? configWarning('isSystemOn')),
 		id: 'on',
 		name: 'on',
 		on: info.on
@@ -46,12 +46,8 @@
 			"Are you sure you want to delete the logo?",
 		]) %}
 
-		{% do view.registerJsResource("lib/fileupload/jquery.ui.widget.js") %}
-		{% do view.registerJsResource("lib/fileupload/jquery.fileupload.js") %}
-		{% do view.registerJsResource("lib/jcrop/jquery.Jcrop.min.js") %}
-		{% do view.registerJsResource("js/rebrand.js") %}
-		{% do view.registerCssResource("lib/jcrop/jquery.Jcrop.min.css") %}
-		{% do view.registerCssResource("css/rebrand.css") %}
+		{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+		{% do view.registerAssetBundle("craft\\web\\assets\\jcrop\\JcropAsset") %}
 
 		{{ forms.field({
 			label: "Login Page Logo"|t

@@ -106,7 +106,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionUpdateDraftMeta()
+    public function actionUpdateDraftMeta(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -141,7 +141,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response
      * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
-    public function actionDeleteDraft()
+    public function actionDeleteDraft(): Response
     {
         $this->requirePostRequest();
 
@@ -316,7 +316,7 @@ class EntryRevisionsController extends BaseEntriesController
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
-            $authorId = isset($authorId[0]) ? $authorId[0] : null;
+            $authorId = $authorId[0] ?? null;
         }
 
         $draft->authorId = $authorId;
@@ -325,9 +325,9 @@ class EntryRevisionsController extends BaseEntriesController
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');
 
         if (is_array($parentId)) {
-            $parentId = isset($parentId[0]) ? $parentId[0] : null;
+            $parentId = $parentId[0] ?? null;
         }
 
-        $draft->newParentId = $parentId;
+        $draft->newParentId = $parentId ?: null;
     }
 }

@@ -5,7 +5,7 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into craft/config/db.php, and make your change there.
+ * If you want to change any of these settings, copy it into `config/db.php`, and make your change there.
  */
 
 return [
@@ -44,7 +44,7 @@ return [
      * If you're sharing Craft installs in a single database (MySQL) or a single
      * database and using a shared schema (PostgreSQL), then you can set a table
      * prefix here to avoid table naming conflicts per install. This can be no more than 5
-     * characters.
+     * characters, and must be all lowercase.
      */
     'tablePrefix' => '',
     /**

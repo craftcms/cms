@@ -54,7 +54,7 @@ class CraftVariable extends ServiceLocator
     // =========================================================================
 
     /**
-     * @var \craft\web\Application|\craft\console\Application The Craft application class
+     * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
 
@@ -91,16 +91,16 @@ class CraftVariable extends ServiceLocator
         ];
 
         switch (Craft::$app->getEdition()) {
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case Craft::Pro: {
+            case Craft::Pro:
                 /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
-            }
-            case Craft::Client: {
+            // no break
+            case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
+                /** @noinspection SuspiciousAssignmentsInspection */
                 $config['components'] = array_merge($config['components'], [
                     'rebrand' => Rebrand::class,
 
@@ -108,7 +108,6 @@ class CraftVariable extends ServiceLocator
                     'emailMessages' => EmailMessages::class,
                     'userPermissions' => UserPermissions::class,
                 ]);
-            }
         }
 
         // Add plugin components
@@ -142,7 +141,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log('CraftVariable::__call()', "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
 
             return $this->get($name);
         }
@@ -172,33 +171,20 @@ class CraftVariable extends ServiceLocator
      * @return string
      * @deprecated in 3.0
      */
-    public function getLocale()
+    public function locale(): string
     {
-        Craft::$app->getDeprecator()->log('craft.getLocale()', 'craft.getLocale() has been deprecated. Use craft.app.language instead.');
+        Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
 
         return Craft::$app->language;
     }
 
     /**
-     * Returns the system timezone.
-     *
-     * @return string
-     * @deprecated in 3.0
-     */
-    public function getTimeZone()
-    {
-        Craft::$app->getDeprecator()->log('craft.getTimeZone()', 'craft.getTimeZone() has been deprecated. Use craft.app.getTimeZone() instead.');
-
-        return Craft::$app->getTimeZone();
-    }
-
-    /**
      * Returns whether this site has multiple locales.
      *
-     * @return boolean
+     * @return bool
      * @deprecated in 3.0. Use craft.app.isMultiSite instead
      */
-    public function isLocalized()
+    public function isLocalized(): bool
     {
         Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
 
@@ -215,7 +201,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return AssetQuery
      */
-    public function assets($criteria = null)
+    public function assets($criteria = null): AssetQuery
     {
         $query = Asset::find();
         if ($criteria) {
@@ -232,7 +218,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return CategoryQuery
      */
-    public function categories($criteria = null)
+    public function categories($criteria = null): CategoryQuery
     {
         $query = Category::find();
         if ($criteria) {
@@ -249,7 +235,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return EntryQuery
      */
-    public function entries($criteria = null)
+    public function entries($criteria = null): EntryQuery
     {
         $query = Entry::find();
         if ($criteria) {
@@ -266,7 +252,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return TagQuery
      */
-    public function tags($criteria = null)
+    public function tags($criteria = null): TagQuery
     {
         $query = Tag::find();
         if ($criteria) {
@@ -283,7 +269,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return UserQuery
      */
-    public function users($criteria = null)
+    public function users($criteria = null): UserQuery
     {
         $query = User::find();
         if ($criteria) {

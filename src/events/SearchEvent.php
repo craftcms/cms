@@ -22,18 +22,18 @@ class SearchEvent extends BaseEvent
     // =========================================================================
 
     /**
-     * @var integer[] The list of element IDs to filter by the search query, or the filtered list of element IDs,
+     * @var int[] The list of element IDs to filter by the search query, or the filtered list of element IDs,
      *                depending on if this is a beforeSearch or afterSearch event
      */
     public $elementIds = true;
 
     /**
-     * @var SearchQuery The search query
+     * @var SearchQuery|null The search query
      */
     public $query;
 
     /**
-     * @var integer The site ID to filter by
+     * @var int|null The site ID to filter by
      */
     public $siteId;
 }

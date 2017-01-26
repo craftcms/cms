@@ -22,10 +22,7 @@ class SiteIdValidator extends Validator
     // =========================================================================
 
     /**
-     * @param $object
-     * @param $attribute
-     *
-     * @return void
+     * @inheritdoc
      */
     public function validateAttribute($object, $attribute)
     {

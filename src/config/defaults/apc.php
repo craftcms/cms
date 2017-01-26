@@ -5,12 +5,12 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into craft/config/filecache.php, and make your change there.
+ * If you want to change any of these settings, copy it into `config/filecache.php`, and make your change there.
  */
 
 return [
     /**
-     * @var boolean whether to use apcu or apc as the underlying caching extension.
+     * @var bool whether to use apcu or apc as the underlying caching extension.
      * If true {@link http://pecl.php.net/package/apcu APCu} will be used.
      * If false {@link http://pecl.php.net/package/apc APC}. will be used.
      * Defaults to false.

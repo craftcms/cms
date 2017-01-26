@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -23,7 +24,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Multi-select');
     }
@@ -43,13 +44,13 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
-        $options = $this->getTranslatedOptions();
+        $options = $this->translatedOptions();
 
         // If this is a new entry, look for any default options
         if ($this->isFresh($element)) {
-            $value = $this->getDefaultValue();
+            $value = $this->defaultValue();
         }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect',
@@ -66,7 +67,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function getOptionsSettingsLabel()
+    protected function optionsSettingLabel(): string
     {
         return Craft::t('app', 'Multi-select Options');
     }

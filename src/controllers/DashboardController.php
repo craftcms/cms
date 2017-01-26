@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\CraftSupport;
+use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use DateTime;
@@ -44,7 +45,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $dashboardService = Craft::$app->getDashboard();
         $view = Craft::$app->getView();
@@ -64,21 +65,22 @@ class DashboardController extends Controller
 
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
-            $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
-            $settingsJs = $view->clearJsBuffer(false);
+            $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
+            $settingsJs = (string)$view->clearJsBuffer(false);
 
             $class = get_class($widget);
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
-                'maxColspan' => $widget->getMaxColspan(),
-                'settingsHtml' => (string)$settingsHtml,
-                'settingsJs' => (string)$settingsJs,
+                'maxColspan' => $widget::maxColspan(),
+                'settingsHtml' => $settingsHtml,
+                'settingsJs' => $settingsJs,
                 'selectable' => true,
             ];
         }
 
         $view->setNamespace($namespace);
+        $variables = [];
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
@@ -100,7 +102,7 @@ class DashboardController extends Controller
                 $widgetTypeInfo[$info['type']] = [
                     'iconSvg' => $this->_getWidgetIconSvg($widget),
                     'name' => $widget::displayName(),
-                    'maxColspan' => $widget->getMaxColspan(),
+                    'maxColspan' => $widget::maxColspan(),
                     'selectable' => false,
                 ];
             }
@@ -112,15 +114,14 @@ class DashboardController extends Controller
                 'function(){'.$info['settingsJs'].'}'.
                 ");\n";
 
-            if ($widgetJs) {
+            if (!empty($widgetJs)) {
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance
                 $allWidgetJs .= $widgetJs."\n";
             }
         }
 
         // Include all the JS and CSS stuff
-        $view->registerCssResource('css/dashboard.css');
-        $view->registerJsResource('js/Dashboard.js');
+        $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
         $view->registerTranslations('app', [
@@ -142,7 +143,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionCreateWidget()
+    public function actionCreateWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +175,7 @@ class DashboardController extends Controller
      *
      * @throws BadRequestHttpException
      */
-    public function actionSaveWidgetSettings()
+    public function actionSaveWidgetSettings(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -211,7 +212,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteUserWidget()
+    public function actionDeleteUserWidget(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -227,7 +228,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionChangeWidgetColspan()
+    public function actionChangeWidgetColspan(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -246,7 +247,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionReorderUserWidgets()
+    public function actionReorderUserWidgets(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -262,7 +263,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    public function actionGetFeedItems()
+    public function actionGetFeedItems(): Response
     {
         $this->requireAcceptsJson();
 
@@ -295,7 +296,7 @@ class DashboardController extends Controller
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\base\InvalidParamException
      */
-    public function actionSendSupportRequest()
+    public function actionSendSupportRequest(): string
     {
         $this->requirePostRequest();
 
@@ -332,7 +333,7 @@ class DashboardController extends Controller
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-        if ($plugins) {
+        if (!empty($plugins)) {
             $pluginNames = [];
 
             foreach ($plugins as $plugin) {
@@ -381,7 +382,7 @@ class DashboardController extends Controller
                             'recursive' => false
                         ]);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage());
+                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }
 
@@ -510,20 +511,20 @@ class DashboardController extends Controller
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
 
-        if (!$widgetBodyHtml) {
+        if ($widgetBodyHtml === false) {
             return false;
         }
 
         // Get the settings HTML + JS
         $view->setNamespace('widget'.$widget->id.'-settings');
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
+        $settingsHtml = $view->namespaceInputs((string)$widget->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
         $colspan = ($widget->colspan ?: 1);
 
-        if (($maxColspan = $widget->getMaxColspan()) && $colspan > $maxColspan) {
+        if (($maxColspan = $widget::maxColspan()) && $colspan > $maxColspan) {
             $colspan = $maxColspan;
         }
 
@@ -548,22 +549,22 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getWidgetIconSvg(WidgetInterface $widget)
+    private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $iconPath = $widget->getIconPath();
+        $iconPath = $widget::iconPath();
 
-        if (!$iconPath) {
+        if ($iconPath === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
         if (!is_file($iconPath)) {
-            Craft::warning("Widget icon file doesn't exist: {$iconPath}");
+            Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
         if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-            Craft::warning("Widget icon file is not an SVG: {$iconPath}");
+            Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
 
             return $this->_getDefaultWidgetIconSvg($widget);
         }
@@ -578,7 +579,7 @@ class DashboardController extends Controller
      *
      * @return string
      */
-    private function _getDefaultWidgetIconSvg(WidgetInterface $widget)
+    private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
@@ -592,7 +593,7 @@ class DashboardController extends Controller
      *
      * @return Response
      */
-    private function _saveAndReturnWidget(WidgetInterface $widget)
+    private function _saveAndReturnWidget(WidgetInterface $widget): Response
     {
         /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();

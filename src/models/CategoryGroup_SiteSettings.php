@@ -25,37 +25,37 @@ class CategoryGroup_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Group ID
+     * @var int|null Group ID
      */
     public $groupId;
 
     /**
-     * @var integer Site ID
+     * @var int|null Site ID
      */
     public $siteId;
 
     /**
-     * @var boolean Has URLs?
+     * @var bool|null Has URLs?
      */
     public $hasUrls;
 
     /**
-     * @var string URI format
+     * @var string|null URI format
      */
     public $uriFormat;
 
     /**
-     * @var string Entry template
+     * @var string|null Entry template
      */
     public $template;
 
     /**
-     * @var CategoryGroup
+     * @var CategoryGroup|null
      */
     private $_group;
 
@@ -68,7 +68,7 @@ class CategoryGroup_SiteSettings extends Model
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): CategoryGroup
     {
         if ($this->_group !== null) {
             return $this->_group;

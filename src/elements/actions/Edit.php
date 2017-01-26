@@ -23,7 +23,7 @@ class Edit extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 
@@ -43,7 +43,7 @@ class Edit extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }
@@ -69,7 +69,7 @@ class Edit extends ElementAction
         {
             var \$element = \$selectedItems.find('.element:first');
 
-            if (Craft.elementIndex.viewMode == 'table') {
+            if (Craft.elementIndex.viewMode === 'table') {
                 new Craft.ElementEditor(\$element, {
                     params: {
                         includeTableAttributesForSource: Craft.elementIndex.sourceKey

@@ -41,32 +41,22 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the Flysystem adapter expects folder names to have trailing slashes
+     * @var bool Whether the Flysystem adapter expects folder names to have trailing slashes
      */
     protected $foldersHaveTrailingSlashes = true;
 
     /**
-     * @var AdapterInterface The Flysystem adapter, created by [[createAdapter()]]
+     * @var AdapterInterface|null The Flysystem adapter, created by [[createAdapter()]]
      */
     private $_adapter;
 
     /**
-     * @var Filesystem The Flysystem filesystem
+     * @var Filesystem|null The Flysystem filesystem
      */
     private $_filesystem;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns whether this volume stores files locally on the server.
-     *
-     * @return boolean Whether files are stored locally.
-     */
-    public static function isLocal()
-    {
-        return false;
-    }
 
     // Public Methods
     // =========================================================================
@@ -132,20 +122,20 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList($directory, $recursive)
+    public function getFileList(string $directory, bool $recursive): array
     {
-        return $this->getFilesystem()->listContents($directory, $recursive);
+        return $this->filesystem()->listContents($directory, $recursive);
     }
 
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream, array $config)
+    public function createFileByStream(string $path, $stream, array $config): bool
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
 
-            return $this->getFilesystem()->writeStream($path, $stream, $config);
+            return $this->filesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         }
@@ -154,12 +144,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function updateFileByStream($path, $stream, array $config)
+    public function updateFileByStream(string $path, $stream, array $config): bool
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
 
-            return $this->getFilesystem()->updateStream($path, $stream, $config);
+            return $this->filesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException($exception->getMessage());
         }
@@ -168,29 +158,33 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function fileExists($path)
+    public function fileExists(string $path): bool
     {
-        return $this->getFilesystem()->has($path);
+        return $this->filesystem()->has($path);
+    }
+
+    /**
+     * Checks whether a folder exists at the given path.
+     *
+     * @param string $path The path to the folder to check.
+     *
+     * @return array|bool|null
+     */
+    public function folderExists(string $path)
+    {
+        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**
      * @inheritdoc
      */
-    public function folderExists($path)
-    {
-        return $this->getAdapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteFile($path)
+    public function deleteFile(string $path): bool
     {
         try {
-            $result = $this->getFilesystem()->delete($path);
+            $result = $this->filesystem()->delete($path);
         } catch (FileNotFoundException $exception) {
             // Make a note of it, but otherwise - mission accomplished!
-            Craft::info($exception->getMessage());
+            Craft::info($exception->getMessage(), __METHOD__);
             $result = true;
         }
 
@@ -204,10 +198,10 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameFile($path, $newPath)
+    public function renameFile(string $path, string $newPath): bool
     {
         try {
-            return $this->getFilesystem()->rename($path, $newPath);
+            return $this->filesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
@@ -220,15 +214,15 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function copyFile($path, $newPath)
+    public function copyFile(string $path, string $newPath): bool
     {
-        return $this->getFilesystem()->copy($path, $newPath);
+        return $this->filesystem()->copy($path, $newPath);
     }
 
     /**
      * @inheritdoc
      */
-    public function createDir($path)
+    public function createDir(string $path): bool
     {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException(Craft::t('app',
@@ -236,16 +230,16 @@ abstract class Volume extends SavableComponent implements VolumeInterface
                 ['folder' => $path]));
         }
 
-        return $this->getFilesystem()->createDir($path);
+        return $this->filesystem()->createDir($path);
     }
 
     /**
      * @inheritdoc
      */
-    public function deleteDir($path)
+    public function deleteDir(string $path): bool
     {
         try {
-            return $this->getFilesystem()->deleteDir($path);
+            return $this->filesystem()->deleteDir($path);
         } catch (\Exception $exception) {
             // We catch all Exceptions because most of the times these will be 3rd party exceptions.
             return false;
@@ -255,7 +249,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir($path, $newName)
+    public function renameDir(string $path, string $newName): bool
     {
         if (!$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
@@ -290,14 +284,16 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         foreach ($directoryList as $dir) {
             $this->deleteDir($dir);
         }
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function saveFileLocally($uriPath, $targetPath)
+    public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $stream = $this->getFilesystem()->readStream($uriPath);
+        $stream = $this->filesystem()->readStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);
@@ -323,7 +319,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return \League\Flysystem\AdapterInterface The Flysystem adapter.
      */
-    protected function getAdapter()
+    protected function adapter()
     {
         if ($this->_adapter !== null) {
             return $this->_adapter;
@@ -337,13 +333,13 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return \League\Flysystem\Filesystem The Flysystem filesystem.
      */
-    protected function getFilesystem()
+    protected function filesystem()
     {
         if ($this->_filesystem !== null) {
             return $this->_filesystem;
         }
 
-        return $this->_filesystem = new Filesystem($this->getAdapter());
+        return $this->_filesystem = new Filesystem($this->adapter());
     }
 
     /**
@@ -353,10 +349,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return array
      */
-    protected function addFileMetadataToConfig($config)
+    protected function addFileMetadataToConfig(array $config): array
     {
-        $config = array_merge($config,
-            ['visibility' => $this->getVisibilitySetting()]);
+        $config = array_merge($config, [
+            'visibility' => $this->visibility()
+        ]);
 
         return $config;
     }
@@ -366,9 +363,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @param string $path the path to invalidate
      *
-     * @return boolean
+     * @return bool
      */
-    protected function invalidateCdnPath($path)
+    protected function invalidateCdnPath(string $path): bool
     {
         return true;
     }
@@ -378,7 +375,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      *
      * @return string
      */
-    protected function getVisibilitySetting()
+    protected function visibility(): string
     {
         return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }

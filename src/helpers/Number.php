@@ -23,11 +23,11 @@ class Number
     /**
      * Returns the "word" version of a number
      *
-     * @param integer $num The number
+     * @param int $num The number
      *
      * @return string The number word, or the original number if it's >= 10
      */
-    public static function word($num)
+    public static function word(int $num): string
     {
         $numberWordMap = [
             1 => Craft::t('app', 'one'),
@@ -52,11 +52,11 @@ class Number
     /**
      * Returns the uppercase alphabetic version of a number
      *
-     * @param integer $num The number
+     * @param int $num The number
      *
      * @return string The alphabetic version of the number
      */
-    public static function upperAlpha($num)
+    public static function upperAlpha(int $num): string
     {
         $num--;
         $alpha = '';
@@ -74,11 +74,11 @@ class Number
     /**
      * Returns the lowercase alphabetic version of a number
      *
-     * @param integer $num The number
+     * @param int $num The number
      *
      * @return string The alphabetic version of the number
      */
-    public static function lowerAlpha($num)
+    public static function lowerAlpha(int $num): string
     {
         $alpha = static::upperAlpha($num);
 
@@ -88,11 +88,11 @@ class Number
     /**
      * Returns the uppercase roman numeral version of a number
      *
-     * @param integer $num The number
+     * @param int $num The number
      *
      * @return string The roman numeral version of the number
      */
-    public static function upperRoman($num)
+    public static function upperRoman(int $num): string
     {
         $roman = '';
 
@@ -125,11 +125,11 @@ class Number
     /**
      * Returns the lowercase roman numeral version of a number
      *
-     * @param integer $num The number
+     * @param int $num The number
      *
      * @return string The roman numeral version of the number
      */
-    public static function lowerRoman($num)
+    public static function lowerRoman(int $num): string
     {
         $roman = static::upperRoman($num);
 

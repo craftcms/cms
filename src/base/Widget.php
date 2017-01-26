@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -29,7 +29,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         return (static::allowMultipleInstances() || !Craft::$app->getDashboard()->doesUserHaveWidget(static::class));
     }
@@ -37,11 +37,27 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * Returns whether the widget can be selected more than once.
      *
-     * @return boolean Whether the widget can be selected more than once
+     * @return bool Whether the widget can be selected more than once
      */
-    protected static function allowMultipleInstances()
+    protected static function allowMultipleInstances(): bool
     {
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function maxColspan()
+    {
+        return null;
     }
 
     // Public Methods
@@ -65,7 +81,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         // Default to the widget's display name
         return static::displayName();
@@ -74,26 +90,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getBodyHtml()
     {
-        return '<div style="margin: 0 -30px -30px;">'.
-            '<img style="display: block; width: 100%;" src="'.Url::getResourceUrl('images/prg.jpg').'">'.
-            '</div>';
-    }
+        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true).'/images/prg.jpg';
 
-    /**
-     * @inheritdoc
-     */
-    public function getMaxColspan()
-    {
-        return null;
+        return <<<EOD
+<div style="margin: 0 -24px -24px;">
+    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="{$url}">
+</div>
+EOD;
     }
 }

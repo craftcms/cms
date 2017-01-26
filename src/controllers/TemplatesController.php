@@ -43,13 +43,13 @@ class TemplatesController extends Controller
     /**
      * Renders a template.
      *
-     * @param       $template
-     * @param array $variables
+     * @param string $template
+     * @param array  $variables
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested template cannot be found
      */
-    public function actionRender($template, array $variables = [])
+    public function actionRender(string $template, array $variables = []): string
     {
         // Does that template exist?
         if (Craft::$app->getView()->doesTemplateExist($template)) {
@@ -64,7 +64,7 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionOffline()
+    public function actionOffline(): string
     {
         // If this is a site request, make sure the offline template exists
         $view = Craft::$app->getView();
@@ -81,19 +81,17 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionManualUpdateNotification()
+    public function actionManualUpdateNotification(): string
     {
         return $this->renderTemplate('_special/dbupdate');
     }
 
     /**
-     * @return string The rendering result
+     * @return string|null The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionRequirementsCheck()
     {
-        require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
-
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
@@ -128,7 +126,7 @@ class TemplatesController extends Controller
      *
      * @return string
      */
-    public function actionRenderError()
+    public function actionRenderError(): string
     {
         /** @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();

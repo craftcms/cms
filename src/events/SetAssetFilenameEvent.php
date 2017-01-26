@@ -21,7 +21,7 @@ class SetAssetFilenameEvent extends Event
     // =========================================================================
 
     /**
-     * @var string The asset filename (sans extension).
+     * @var string|null The asset filename (sans extension).
      */
     public $filename;
 }

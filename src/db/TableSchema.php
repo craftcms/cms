@@ -27,7 +27,7 @@ class TableSchema extends \yii\db\TableSchema
      *
      * @return array
      */
-    public function getExtendedForeignKeys()
+    public function getExtendedForeignKeys(): array
     {
         return $this->_extendedForeignKeys;
     }
@@ -35,10 +35,11 @@ class TableSchema extends \yii\db\TableSchema
     /**
      * Adds an extended foreign key to the internal array.
      *
-     * @param $extendedForeignKey
+     * @param int   $key
+     * @param array $extendedForeignKey
      */
-    public function addExtendedForeignKey($extendedForeignKey)
+    public function addExtendedForeignKey($key, $extendedForeignKey)
     {
-        $this->_extendedForeignKeys[] = $extendedForeignKey;
+        $this->_extendedForeignKeys[$key] = $extendedForeignKey;
     }
 }

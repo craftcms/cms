@@ -61,7 +61,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return QueryBuilder query builder instance
      */
-    public function createQueryBuilder()
+    public function createQueryBuilder(): QueryBuilder
     {
         return new QueryBuilder($this->db);
     }
@@ -69,11 +69,11 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * Quotes a database name for use in a query.
      *
-     * @param $name
+     * @param string $name
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
+    public function quoteDatabaseName(string $name): string
     {
         return '`'.$name.'`';
     }
@@ -133,7 +133,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultBackupCommand()
+    public function getDefaultBackupCommand(): string
     {
         return 'mysqldump'.
             ' --defaults-extra-file='.$this->_createDumpConfigFile().
@@ -154,7 +154,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return string The command to execute
      */
-    public function getDefaultRestoreCommand()
+    public function getDefaultRestoreCommand(): string
     {
         return 'mysqldump'.
             ' --defaults-extra-file='.$this->_createDumpConfigFile().
@@ -176,7 +176,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @return array All indexes for the given table.
      */
-    public function findIndexes($tableName)
+    public function findIndexes(string $tableName): array
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
@@ -203,7 +203,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $name table name
      *
-     * @return TableSchema driver dependent table metadata. Null if the table does not exist.
+     * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
     protected function loadTableSchema($name)
     {
@@ -214,9 +214,9 @@ class Schema extends \yii\db\mysql\Schema
             $this->findConstraints($table);
 
             return $table;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -253,8 +253,8 @@ SQL;
 
         $extendedConstraints = $this->db->createCommand($sql)->queryAll();
 
-        foreach ($extendedConstraints as $count => $extendedConstraint) {
-            $table->addExtendedForeignKey([
+        foreach ($extendedConstraints as $key => $extendedConstraint) {
+            $table->addExtendedForeignKey($key, [
                 'updateType' => $extendedConstraint['UPDATE_RULE'],
                 'deleteType' => $extendedConstraint['DELETE_RULE']
             ]);
@@ -269,7 +269,7 @@ SQL;
      *
      * @return string The path to the my.cnf file
      */
-    private function _createDumpConfigFile()
+    private function _createDumpConfigFile(): string
     {
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 

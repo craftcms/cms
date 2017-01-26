@@ -59,7 +59,7 @@ class ElementHelper
      *
      * @return string
      */
-    public static function createSlug($str)
+    public static function createSlug(string $str): string
     {
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
@@ -85,7 +85,7 @@ class ElementHelper
         $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
-        if (!$uriFormat) {
+        if ($uriFormat === null) {
             $element->uri = null;
 
             return;
@@ -170,9 +170,9 @@ class ElementHelper
      *
      * @param string $uriFormat
      *
-     * @return boolean
+     * @return bool
      */
-    public static function doesUriFormatHaveSlugTag($uriFormat)
+    public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
         $element = (object)['slug' => StringHelper::randomString()];
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
@@ -190,7 +190,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element)
+    public static function supportedSitesForElement(ElementInterface $element): array
     {
         $sites = [];
 
@@ -215,9 +215,9 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isElementEditable(ElementInterface $element)
+    public static function isElementEditable(ElementInterface $element): bool
     {
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
@@ -241,7 +241,7 @@ class ElementHelper
      *
      * @return array
      */
-    public static function editableSiteIdsForElement(ElementInterface $element)
+    public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
 
@@ -268,7 +268,7 @@ class ElementHelper
      *
      * @return void
      */
-    public static function setNextPrevOnElements($elements)
+    public static function setNextPrevOnElements(array $elements)
     {
         /** @var ElementInterface $lastElement */
         $lastElement = null;
@@ -298,18 +298,18 @@ class ElementHelper
      *
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource($elementType, $sourceKey, $context = null)
+    public static function findSource(string $elementType, string $sourceKey, string $context = null)
     {
-        /** @var ElementInterface $elementType */
+        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
-        while ($path) {
+        while (!empty($path)) {
             $key = array_shift($path);
             $source = null;
 
             foreach ($sources as $testSource) {
-                if (isset($testSource['key']) && $testSource['key'] == $key) {
+                if (isset($testSource['key']) && $testSource['key'] === $key) {
                     $source = $testSource;
                     break;
                 }
@@ -320,12 +320,12 @@ class ElementHelper
             }
 
             // Is that the end of the path?
-            if (!$path) {
+            if (empty($path)) {
                 return $source;
             }
 
             // Prepare for searching nested sources
-            $sources = isset($source['nested']) ? $source['nested'] : [];
+            $sources = $source['nested'] ?? [];
         }
 
         return null;

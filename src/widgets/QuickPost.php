@@ -12,6 +12,8 @@ use craft\base\Widget;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\Section;
+use craft\web\assets\quickpost\QuickPostAsset;
+use yii\base\Exception;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -27,26 +29,40 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Quick Post');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/newspaper.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The ID of the section that the widget should post to
+     * @var int|null The ID of the section that the widget should post to
      */
     public $section;
 
     /**
-     * @var integer The ID of the entry type that the widget should create
+     * @var int|null The ID of the entry type that the widget should create
      */
     public $entryType;
 
     /**
-     * @var integer[] The IDs of the fields that the widget should show
+     * @var int[]|null The IDs of the fields that the widget should show
      */
     public $fields;
 
@@ -116,15 +132,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'quick-post.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         $section = $this->_getSection();
 
@@ -140,11 +148,13 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->registerTranslations('app', [
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(QuickPostAsset::class);
+        $view->registerTranslations('app', [
             'Entry saved.',
             'Couldn’t save entry.',
         ]);
-        Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
 
@@ -154,7 +164,7 @@ class QuickPost extends Widget
 
         $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
-        if (!$entryTypes) {
+        if (empty($entryTypes)) {
             return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 
@@ -171,18 +181,18 @@ class QuickPost extends Widget
             'typeId' => $entryTypeId,
         ];
 
-        Craft::$app->getView()->startJsBuffer();
+        $view->startJsBuffer();
 
-        $html = Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/body',
+        $html = $view->renderTemplate('_components/widgets/QuickPost/body',
             [
                 'section' => $section,
                 'entryType' => $entryType,
                 'widget' => $this
             ]);
 
-        $fieldJs = Craft::$app->getView()->clearJsBuffer(false);
+        $fieldJs = $view->clearJsBuffer(false);
 
-        Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
+        $view->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.
             Json::encode($params).', '.
             "function() {\n".$fieldJs.

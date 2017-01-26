@@ -26,22 +26,22 @@ class ResaveElements extends Task
     // =========================================================================
 
     /**
-     * @var string|ElementInterface The element type that should be resaved
+     * @var string|ElementInterface|null The element type that should be resaved
      */
     public $elementType;
 
     /**
-     * @var array The element criteria that determines which elements should be resaved
+     * @var array|null The element criteria that determines which elements should be resaved
      */
     public $criteria;
 
     /**
-     * @var integer
+     * @var int|null
      */
     private $_siteId;
 
     /**
-     * @var integer[]
+     * @var int[]|null
      */
     private $_elementIds;
 
@@ -51,7 +51,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $class = $this->elementType;
 
@@ -61,7 +61,7 @@ class ResaveElements extends Task
         // Now find the affected element IDs
         /** @var ElementQuery $query */
         $query = $class::find();
-        if ($this->criteria) {
+        if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
         }
         $query
@@ -78,7 +78,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         try {
             /** @var Element $element */
@@ -115,7 +115,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Resaving {class} elements', [
             'class' => StringHelper::toLowerCase($this->elementType)

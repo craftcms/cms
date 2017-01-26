@@ -32,7 +32,7 @@ class m150403_185142_volumes extends Migration
         }
 
         if ($this->db->columnExists('{{%volumefolders}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId', 'volumeId');
+            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId', 'volumeId', $this);
         }
 
         if (!$this->db->columnExists('{{%volumes}}', 'url')) {

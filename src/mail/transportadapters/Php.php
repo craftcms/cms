@@ -21,7 +21,7 @@ class Php extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return 'PHP Mail';
     }
@@ -32,10 +32,10 @@ class Php extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getTransportConfig()
+    public function defineTransport()
     {
         return [
-            'class' => 'Swift_MailTransport',
+            'class' => \Swift_MailTransport::class,
         ];
     }
 }

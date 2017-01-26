@@ -19,7 +19,7 @@ use yii\base\Exception;
 class m160804_110002_userphotos_to_assets extends Migration
 {
     /**
-     * @var string
+     * @var string|null
      */
     private $_basePath;
 
@@ -33,33 +33,31 @@ class m160804_110002_userphotos_to_assets extends Migration
         // Make sure the userphotos folder actually exists
         FileHelper::createDirectory($this->_basePath);
 
-        Craft::info('Removing __default__ folder');
+        echo "    > Removing __default__ folder\n";
         FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
 
-        Craft::info('Changing the relative path from username/original.ext to original.ext');
+        echo "    > Changing the relative path from username/original.ext to original.ext\n";
         $affectedUsers = $this->_moveUserphotos();
 
-        Craft::info('Creating a private Yii Volume as default for Users');
+        echo "    > Creating a private Volume as default for Users\n";
         $volumeId = $this->_createUserphotoVolume();
 
-        Craft::info('Setting the Volume as the default one for userphoto uploads');
+        echo "    > Setting the Volume as the default one for userphoto uploads\n";
         $this->_setUserphotoVolume($volumeId);
 
-        Craft::info('Converting photos to Assets');
+        echo "    > Converting photos to Assets\n";
         $affectedUsers = $this->_convertPhotosToAssets($volumeId, $affectedUsers);
 
-        Craft::info('Updating Users table to drop the photo column and add photoId column.');
+        echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
         $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
-        Craft::info('Setting the photoId value');
+        echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);
 
-        Craft::info('Removing all the subfolders.');
+        echo "    > Removing all the subfolders.\n";
         $this->_removeSubdirectories();
-
-        Craft::info('All done');
 
         return true;
     }
@@ -69,7 +67,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeDown()
     {
-        echo 'm160804_110002_userphotos_to_assets cannot be reverted.\n';
+        echo "m160804_110002_userphotos_to_assets cannot be reverted.\n";
 
         return false;
     }
@@ -83,7 +81,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      * @return array
      * @throws Exception in case of failure
      */
-    private function _moveUserphotos()
+    private function _moveUserphotos(): array
     {
         $handle = opendir($this->_basePath);
         if ($handle === false) {
@@ -148,9 +146,9 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Create the user photo volume.
      *
-     * @return integer volume id
+     * @return int volume id
      */
-    private function _createUserphotoVolume()
+    private function _createUserphotoVolume(): int
     {
         // Safety first!
         $handle = 'userPhotos';
@@ -217,11 +215,11 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Set the photo volume setting for users.
      *
-     * @param integer $volumeId
+     * @param int $volumeId
      *
      * @return void
      */
-    private function _setUserphotoVolume($volumeId)
+    private function _setUserphotoVolume(int $volumeId)
     {
         $systemSettings = Craft::$app->getSystemSettings();
         $settings = $systemSettings->getSettings('users');
@@ -233,12 +231,12 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Convert matching user photos to Assets in a Volume and add that information
      * to the array passed in.
      *
-     * @param integer $volumeId
-     * @param array   $userList
+     * @param int   $volumeId
+     * @param array $userList
      *
      * @return array $userList
      */
-    private function _convertPhotosToAssets($volumeId, $userList)
+    private function _convertPhotosToAssets(int $volumeId, array $userList): array
     {
         $db = Craft::$app->getDb();
 
@@ -335,7 +333,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      *
      * @return void
      */
-    private function _setPhotoIdValues($userlist)
+    private function _setPhotoIdValues(array $userlist)
     {
         if (is_array($userlist)) {
             $db = Craft::$app->getDb();

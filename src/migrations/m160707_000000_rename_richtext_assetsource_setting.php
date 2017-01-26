@@ -23,8 +23,6 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
             ->where(['type' => 'craft\fields\RichText'])
             ->all();
 
-        echo '';
-
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
             if (!empty($settings['availableAssetSources'])) {

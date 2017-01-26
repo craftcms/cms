@@ -36,17 +36,17 @@ class Svg extends Image
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_svgContent;
 
     /**
-     * @var integer
+     * @var int|null
      */
     private $_height;
 
     /**
-     * @var integer
+     * @var int|null
      */
     private $_width;
 
@@ -56,7 +56,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getWidth()
+    public function getWidth(): int
     {
         return $this->_width;
     }
@@ -64,7 +64,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getHeight()
+    public function getHeight(): int
     {
         return $this->_height;
     }
@@ -72,7 +72,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getExtension()
+    public function getExtension(): string
     {
         return 'svg';
     }
@@ -80,10 +80,10 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage($path)
+    public function loadImage(string $path)
     {
         if (!is_file($path)) {
-            Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
+            Craft::error('Tried to load an image at '.$path.', but the file does not exist.', __METHOD__);
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
@@ -91,14 +91,19 @@ class Svg extends Image
 
         $svg = file_get_contents($path);
 
+        if ($svg === false) {
+            Craft::error('Tried to read the SVG contents at '.$path.', but could not.', __METHOD__);
+            throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
+        }
+
         // If the size is defined by viewbox only, add in width and height attributes
         if (!preg_match(self::SVG_WIDTH_RE, $svg) && preg_match(self::SVG_HEIGHT_RE, $svg)) {
             $svg = preg_replace(self::SVG_TAG_RE,
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
 
-        $this->_height = $height;
-        $this->_width = $width;
+        $this->_height = (int)$height;
+        $this->_width = (int)$width;
 
         $this->_svgContent = $svg;
 
@@ -108,7 +113,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function crop($x1, $x2, $y1, $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2)
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -148,7 +153,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -165,7 +170,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -202,7 +207,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize($targetWidth, $targetHeight = null)
+    public function resize(int $targetWidth, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -219,8 +224,8 @@ class Svg extends Image
             $this->_svgContent = preg_replace(self::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }
 
-        $this->_width = $targetWidth;
-        $this->_height = $targetHeight;
+        $this->_width = (int)$targetWidth;
+        $this->_height = (int)$targetHeight;
 
         return $this;
     }
@@ -228,9 +233,9 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function saveAs($targetPath, $autoQuality = false)
+    public function saveAs(string $targetPath, bool $autoQuality = false): bool
     {
-        if (pathinfo($targetPath, PATHINFO_EXTENSION) == 'svg') {
+        if (pathinfo($targetPath, PATHINFO_EXTENSION) === 'svg') {
             FileHelper::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(Craft::t('app',
@@ -245,7 +250,7 @@ class Svg extends Image
      *
      * @return string
      */
-    public function getSvgString()
+    public function getSvgString(): string
     {
         return $this->_svgContent;
     }
@@ -253,7 +258,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function getIsTransparent()
+    public function getIsTransparent(): bool
     {
         return true;
     }

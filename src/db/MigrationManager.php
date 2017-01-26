@@ -37,22 +37,22 @@ class MigrationManager extends Component
     // =========================================================================
 
     /**
-     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      */
     public $type;
 
     /**
-     * @var integer The plugin ID, if [[type]] is set to 'plugin'.
+     * @var int|null The plugin ID, if [[type]] is set to 'plugin'.
      */
     public $pluginId;
 
     /**
-     * @var string The namespace that the migration classes are in
+     * @var string|null The namespace that the migration classes are in
      */
     public $migrationNamespace;
 
     /**
-     * @var string The path to the migrations directory
+     * @var string|null The path to the migrations directory
      */
     public $migrationPath;
 
@@ -105,7 +105,7 @@ class MigrationManager extends Component
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
-    public function createMigration($name)
+    public function createMigration(string $name)
     {
         if (!is_dir($this->migrationPath)) {
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
@@ -121,12 +121,12 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param integer|null $limit The number of new migrations to be applied. If 0 or null, it means
-     *                            applying all available new migrations.
+     * @param int $limit     The number of new migrations to be applied. If 0, it means
+     *                       applying all available new migrations.
      *
-     * @return boolean Whether the migrations were applied successfully
+     * @return bool Whether the migrations were applied successfully
      */
-    public function up($limit = 0)
+    public function up(int $limit = 0): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
@@ -134,15 +134,14 @@ class MigrationManager extends Component
         $migrationNames = $this->getNewMigrations();
 
         if (empty($migrationNames)) {
-            Craft::info('No new migration found. Your system is up-to-date.');
+            Craft::info('No new migration found. Your system is up-to-date.', __METHOD__);
 
             return true;
         }
 
         $total = count($migrationNames);
 
-        $this->_normalizeLimit($limit);
-        if ($limit !== null) {
+        if ($limit !== 0) {
             $migrationNames = array_slice($migrationNames, 0, $limit);
         }
 
@@ -158,17 +157,17 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage);
+        Craft::info($logMessage, __METHOD__);
 
         foreach ($migrationNames as $migrationName) {
             if (!$this->migrateUp($migrationName)) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.');
+                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
 
                 return false;
             }
         }
 
-        Craft::info('Migrated up successfully.');
+        Craft::info('Migrated up successfully.', __METHOD__);
 
         return true;
     }
@@ -176,21 +175,20 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param integer|null $limit The number of migrations to be reverted. Defaults to 1,
-     *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
+     * @param int $limit The number of migrations to be reverted. Defaults to 1,
+     *                   meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      *
-     * @return boolean Whether the migrations were reverted successfully
+     * @return bool Whether the migrations were reverted successfully
      */
-    public function down($limit = 1)
+    public function down(int $limit = 1): bool
     {
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $this->_normalizeLimit($limit);
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
-            Craft::info('No migration has been done before.');
+            Craft::info('No migration has been done before.', __METHOD__);
 
             return true;
         }
@@ -202,17 +200,17 @@ class MigrationManager extends Component
             $logMessage .= "\n\t$migrationName";
         }
 
-        Craft::info($logMessage);
+        Craft::info($logMessage, __METHOD__);
 
         foreach ($migrationNames as $migrationName) {
             if (!$this->migrateDown($migrationName)) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.');
+                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
 
                 return false;
             }
         }
 
-        Craft::info('Migrated down successfully.');
+        Craft::info('Migrated down successfully.', __METHOD__);
 
         return true;
     }
@@ -222,10 +220,10 @@ class MigrationManager extends Component
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
      *
-     * @return boolean Whether the migration was applied successfully
+     * @return bool Whether the migration was applied successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateUp($migration)
+    public function migrateUp($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -237,7 +235,7 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
-        Craft::info("Applying $migrationName");
+        Craft::info("Applying $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -250,19 +248,19 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
             $this->addMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
         }
 
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
 
             if ($success) {
-                Craft::info($output);
+                Craft::info($output, __METHOD__);
             } else {
-                Craft::error($output);
+                Craft::error($output, __METHOD__);
             }
         }
 
@@ -274,10 +272,10 @@ class MigrationManager extends Component
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
      *
-     * @return boolean Whether the migration was reverted successfully
+     * @return bool Whether the migration was reverted successfully
      * @throws InvalidConfigException if $migration is invalid
      */
-    public function migrateDown($migration)
+    public function migrateDown($migration): bool
     {
         list($migrationName, $migration) = $this->_normalizeMigration($migration);
 
@@ -289,7 +287,7 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
-        Craft::info("Reverting $migrationName");
+        Craft::info("Reverting $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
 
@@ -302,19 +300,19 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Reverted $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::info("Reverted $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
             $this->removeMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to revert $migrationName (time: ".sprintf('%.3f', $time).'s)');
+            Craft::error("Failed to revert $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
         }
 
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
 
             if ($success) {
-                Craft::info($output);
+                Craft::info($output, __METHOD__);
             } else {
-                Craft::error($output);
+                Craft::error($output, __METHOD__);
             }
         }
 
@@ -324,15 +322,17 @@ class MigrationManager extends Component
     /**
      * Returns the migration history.
      *
-     * @param integer $limit The maximum number of records in the history to be returned. `null` for "no limit".
+     * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
      *
      * @return array The migration history
      */
-    public function getMigrationHistory($limit = null)
+    public function getMigrationHistory(int $limit = 0): array
     {
-        $history = $this->_createMigrationQuery()
-            ->limit($limit)
-            ->pairs($this->db);
+        $query = $this->_createMigrationQuery();
+        if ($limit !== 0) {
+            $query->limit($limit);
+        }
+        $history = $query->pairs($this->db);
         unset($history[self::BASE_MIGRATION]);
 
         return $history;
@@ -343,7 +343,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function addMigrationHistory($name)
+    public function addMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->insert(
@@ -362,7 +362,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function removeMigrationHistory($name)
+    public function removeMigrationHistory(string $name)
     {
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -380,9 +380,9 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      *
-     * @return boolean Whether the migration has been applied
+     * @return bool Whether the migration has been applied
      */
-    public function hasRun($name)
+    public function hasRun(string $name): bool
     {
         return $this->_createMigrationQuery()
             ->andWhere(['name' => $name])
@@ -394,7 +394,7 @@ class MigrationManager extends Component
      *
      * @return array The list of new migrations
      */
-    public function getNewMigrations()
+    public function getNewMigrations(): array
     {
         $migrations = [];
 
@@ -428,27 +428,13 @@ class MigrationManager extends Component
     // =========================================================================
 
     /**
-     * Normalizes the $limit argument passed to [[up()]] and [[down()]]
-     *
-     * @param integer|null &$limit
-     */
-    private function _normalizeLimit(&$limit)
-    {
-        if (is_numeric($limit) && $limit >= 1) {
-            $limit = (int)$limit;
-        } else {
-            $limit = null;
-        }
-    }
-
-    /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
      *
      * @return array
      */
-    private function _normalizeMigration($migration)
+    private function _normalizeMigration($migration): array
     {
         if (is_string($migration)) {
             $migrationName = $migration;
@@ -466,7 +452,7 @@ class MigrationManager extends Component
      *
      * @return Query The query
      */
-    private function _createMigrationQuery()
+    private function _createMigrationQuery(): Query
     {
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {

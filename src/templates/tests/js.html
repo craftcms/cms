@@ -1,8 +1,6 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Tests" %}
-{% do view.registerCssResource("lib/qunit/qunit-2.0.1.css") %}
-{% do view.registerJsResource("lib/qunit/qunit-2.0.1.js") %}
-{% do view.registerJsResource("js/tests.js") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\tests\\TestsAsset") %}
 
 {% block body %}
     <div id="body">

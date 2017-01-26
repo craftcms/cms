@@ -10,6 +10,8 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use craft\web\assets\feed\FeedAsset;
+use yii\base\Exception;
 
 /**
  * Feed represents a Feed dashboard widget.
@@ -25,26 +27,40 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Feed');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/feed.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var string The feed URL
+     * @var string|null The feed URL
      */
     public $url;
 
     /**
-     * @var string The feed title
+     * @var string|null The feed title
      */
     public $title;
 
     /**
-     * @var integer The maximum number of feed items to display
+     * @var int The maximum number of feed items to display
      */
     public $limit = 5;
 
@@ -78,15 +94,7 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'feed.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         return $this->title;
     }
@@ -96,16 +104,16 @@ class Feed extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->registerJsResource('js/FeedWidget.js');
-        Craft::$app->getView()->registerJs(
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(FeedAsset::class);
+        $view->registerJs(
             "new Craft.FeedWidget({$this->id}, ".
             Json::encode($this->url).', '.
             Json::encode($this->limit).');'
         );
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body',
-            [
-                'limit' => $this->limit
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body', [
+            'limit' => $this->limit
+        ]);
     }
 }

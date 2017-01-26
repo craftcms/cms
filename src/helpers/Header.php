@@ -35,7 +35,7 @@ class Header
      *
      * @return string
      */
-    public static function getMimeType()
+    public static function getMimeType(): string
     {
         if (self::$_mimeType !== null) {
             return self::$_mimeType;
@@ -60,9 +60,9 @@ class Header
      *
      * @param string $extension
      *
-     * @return boolean Whether setting the header was successful.
+     * @return bool Whether setting the header was successful.
      */
-    public static function setContentTypeByExtension($extension)
+    public static function setContentTypeByExtension(string $extension): bool
     {
         $mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 
@@ -101,11 +101,11 @@ class Header
     /**
      * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
      *
-     * @param integer $seconds Time in seconds to hold in browser cache
+     * @param int $seconds Time in seconds to hold in browser cache
      *
      * @return void
      */
-    public static function setExpires($seconds = 300)
+    public static function setExpires(int $seconds = 300)
     {
         static::setHeader(
             [
@@ -150,12 +150,12 @@ class Header
     /**
      * Forces a file download. Be sure to give the right extension.
      *
-     * @param string  $filename The name of the file when it's downloaded
-     * @param integer $fileSize The size in bytes.
+     * @param string   $filename The name of the file when it's downloaded
+     * @param int|null $fileSize The size in bytes.
      *
      * @return void
      */
-    public static function setDownload($filename, $fileSize = null)
+    public static function setDownload(string $filename, int $fileSize = null)
     {
         static::setHeader(
             [
@@ -178,11 +178,11 @@ class Header
      * Tells the browser the length of the following content. This mostly makes sense when using the download function
      * so the browser can calculate how many bytes are left during the process.
      *
-     * @param integer $sizeInBytes The content size in bytes
+     * @param int $sizeInBytes The content size in bytes
      *
      * @return void
      */
-    public static function setLength($sizeInBytes)
+    public static function setLength(int $sizeInBytes)
     {
         static::setHeader(['Content-Length' => (int)$sizeInBytes]);
     }
@@ -190,11 +190,11 @@ class Header
     /**
      * Removes a header by key.
      *
-     * @param $key
+     * @param string $key
      *
      * @return void
      */
-    public static function removeHeader($key)
+    public static function removeHeader(string $key)
     {
         header_remove($key);
     }
@@ -204,9 +204,9 @@ class Header
      *
      * @param string $name
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isHeaderSet($name)
+    public static function isHeaderSet(string $name): bool
     {
         return (static::getHeader($name) !== null);
     }
@@ -218,7 +218,7 @@ class Header
      *
      * @return string|null The value of the header, or `null` if it hasn’t been set.
      */
-    public static function getHeader($name)
+    public static function getHeader(string $name)
     {
         // Normalize to lowercase
         $name = strtolower($name);
@@ -242,9 +242,9 @@ class Header
      *
      * @param array|string $header Use key => value
      *
-     * @return boolean
+     * @return bool
      */
-    public static function setHeader($header)
+    public static function setHeader($header): bool
     {
         // Don't try to set headers when it's already too late
         if (headers_sent()) {

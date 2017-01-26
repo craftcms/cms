@@ -1,0 +1,11 @@
+<form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
+	<input type="hidden" name="action" value="utilities/asset-index-perform-action">
+	{{ csrfInput() }}
+
+	{{ checkboxSelectHtml|raw }}
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Go!'|t('app') }}" />
+		<div class="utility-status"></div>
+	</div>
+</form>

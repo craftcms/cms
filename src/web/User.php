@@ -8,11 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
@@ -22,7 +21,7 @@ use yii\web\IdentityInterface;
  *
  * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
  *
- * @property boolean          $hasElevatedSession Whether the user currently has an elevated session
+ * @property bool             $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity           The logged-in user.
  *
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
@@ -56,12 +55,11 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = Url::url($configService->getLoginPath());
+        $config['loginUrl'] = UrlHelper::url($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
-        $appId = Craft::$app->getConfig()->get('appId');
-        $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
+        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
         $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
         $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
         $config['idParam'] = $stateKeyPrefix.'__id';
@@ -87,15 +85,15 @@ class User extends \yii\web\User
     /**
      * Logs in a user by their ID
      *
-     * @param integer $userId   The user’s ID
-     * @param integer $duration The number of seconds that the user can remain in logged-in status.
+     * @param int $userId       The user’s ID
+     * @param int $duration     The number of seconds that the user can remain in logged-in status.
      *                          Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
      *                          If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
      *                          Note that if [[enableSession]] is false, this parameter will be ignored.
      *
-     * @return boolean Whether the user is logged in
+     * @return bool Whether the user is logged in
      */
-    public function loginByUserId($userId, $duration = 0)
+    public function loginByUserId(int $userId, int $duration = 0): bool
     {
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -123,7 +121,13 @@ class User extends \yii\web\User
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $cookie->expire = time() + DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+            $seconds = DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+
+            if ($seconds === null) {
+                $seconds = 0;
+            }
+
+            $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
             Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
@@ -169,9 +173,9 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return integer The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
+     * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
      */
-    public function getRemainingSessionTime()
+    public function getRemainingSessionTime(): int
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
@@ -197,9 +201,9 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user is an admin.
      *
-     * @return boolean Whether the current user is an admin.
+     * @return bool Whether the current user is an admin.
      */
-    public function getIsAdmin()
+    public function getIsAdmin(): bool
     {
         $user = $this->getIdentity();
 
@@ -211,9 +215,9 @@ class User extends \yii\web\User
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return boolean Whether the current user has the permission.
+     * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
 
@@ -223,7 +227,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return integer|boolean The number of seconds left in the current elevated user session
+     * @return int|bool The number of seconds left in the current elevated user session
      *                         or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
@@ -253,9 +257,9 @@ class User extends \yii\web\User
     /**
      * Returns whether the user currently has an elevated session.
      *
-     * @return boolean Whether the user currently has an elevated session
+     * @return bool Whether the user currently has an elevated session
      */
-    public function getHasElevatedSession()
+    public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
         if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
@@ -270,9 +274,9 @@ class User extends \yii\web\User
      *
      * @param string $password the current user’s password
      *
-     * @return boolean Whether the password was valid, and the user session has been elevated
+     * @return bool Whether the password was valid, and the user session has been elevated
      */
-    public function startElevatedSession($password)
+    public function startElevatedSession(string $password): bool
     {
         // Get the current user
         $user = $this->getIdentity();
@@ -482,9 +486,9 @@ class User extends \yii\web\User
      * Validates that the request has a user agent and IP associated with it,
      * if the 'requireUserAgentAndIpForSession' config setting is enabled.
      *
-     * @return boolean
+     * @return bool
      */
-    private function _validateUserAgentAndIp()
+    private function _validateUserAgentAndIp(): bool
     {
         if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession')) {
             $request = Craft::$app->getRequest();
@@ -538,7 +542,7 @@ class User extends \yii\web\User
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $interval = new \DateInterval('P3M');
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 

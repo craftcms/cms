@@ -13,13 +13,13 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Field record.
  *
- * @property integer    $id                   ID
- * @property integer    $groupId              Group ID
+ * @property int        $id                   ID
+ * @property int        $groupId              Group ID
  * @property string     $name                 Name
  * @property string     $handle               Handle
  * @property string     $context              Context
  * @property string     $instructions         Instructions
- * @property boolean    $translatable         Translatable
+ * @property bool       $translatable         Translatable
  * @property string     $translationMethod    Translation method
  * @property string     $translationKeyFormat Translation key format
  * @property string     $type                 Type
@@ -35,7 +35,7 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @var
+     * @var string|null
      */
     private $_oldHandle;
 
@@ -68,7 +68,7 @@ class Field extends ActiveRecord
     /**
      * Returns the old handle.
      *
-     * @return string
+     * @return string|null
      */
     public function getOldHandle()
     {
@@ -80,7 +80,7 @@ class Field extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fields}}';
     }
@@ -90,7 +90,7 @@ class Field extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }

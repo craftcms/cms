@@ -30,12 +30,12 @@ class StructuresController extends Controller
     // =========================================================================
 
     /**
-     * @var Structure
+     * @var Structure|null
      */
     private $_structure;
 
     /**
-     * @var Element
+     * @var Element|null
      */
     private $_element;
 
@@ -84,7 +84,7 @@ class StructuresController extends Controller
      *
      * @return Response
      */
-    public function actionGetElementLevelDelta()
+    public function actionGetElementLevelDelta(): Response
     {
         $delta = Craft::$app->getStructures()->getElementLevelDelta($this->_structure->id, $this->_element);
 
@@ -98,7 +98,7 @@ class StructuresController extends Controller
      *
      * @return Response
      */
-    public function actionMoveElement()
+    public function actionMoveElement(): Response
     {
         $parentElementId = Craft::$app->getRequest()->getBodyParam('parentId');
         $prevElementId = Craft::$app->getRequest()->getBodyParam('prevId');

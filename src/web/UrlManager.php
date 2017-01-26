@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * @inheritdoc
@@ -60,9 +60,9 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !Craft::$app->getConfig()->omitScriptNameInUrls();
+        $config['showScriptName'] = !Craft::$app->getConfig()->getOmitScriptNameInUrls();
         $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
@@ -81,7 +81,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (($route = $this->_getRequestRoute($request)) !== false) {
             // Merge in any additional route params
-            if ($this->_routeParams) {
+            if (!empty($this->_routeParams)) {
                 if (isset($route[1])) {
                     $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
                 } else {
@@ -116,7 +116,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return Url::getActionUrl($route, $params, $scheme);
+        return UrlHelper::actionUrl($route, $params, $scheme);
     }
 
     /**
@@ -134,7 +134,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $params
      */
-    public function setRouteParams($params)
+    public function setRouteParams(array $params)
     {
         $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
     }
@@ -205,7 +205,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the rules that should be used for the current request.
      *
-     * @return array|null
+     * @return array|null The rules, or null if it's a console request
      */
     private function _getRules()
     {
@@ -218,6 +218,7 @@ class UrlManager extends \yii\web\UrlManager
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
+            /** @var array $rules */
             $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
 
             if (Craft::$app->getEdition() >= Craft::Client) {
@@ -289,7 +290,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedElementRoute($path)
+    private function _getMatchedElementRoute(string $path)
     {
         if ($this->_matchedElementRoute !== null) {
             return $this->_matchedElementRoute;
@@ -321,7 +322,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedUrlRoute($request)
+    private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule UrlRule */
@@ -341,9 +342,9 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
      *
-     * @return boolean
+     * @return bool
      */
-    private function _isPublicTemplatePath()
+    private function _isPublicTemplatePath(): bool
     {
         $request = Craft::$app->getRequest();
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {

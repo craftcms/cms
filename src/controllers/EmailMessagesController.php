@@ -42,7 +42,7 @@ class EmailMessagesController extends Controller
      *
      * @return Response
      */
-    public function actionGetMessageModal()
+    public function actionGetMessageModal(): Response
     {
         $this->requireAcceptsJson();
 
@@ -63,7 +63,7 @@ class EmailMessagesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveMessage()
+    public function actionSaveMessage(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

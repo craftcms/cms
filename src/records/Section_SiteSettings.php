@@ -13,11 +13,11 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class Section_SiteSettings record.
  *
- * @property integer $id               ID
- * @property integer $sectionId        Section ID
- * @property integer $siteId           Site ID
- * @property boolean $enabledByDefault Enabled by default
- * @property boolean $hasUrls          Has URLs
+ * @property int     $id               ID
+ * @property int     $sectionId        Section ID
+ * @property int     $siteId           Site ID
+ * @property bool    $enabledByDefault Enabled by default
+ * @property bool    $hasUrls          Has URLs
  * @property string  $uriFormat        URI format
  * @property string  $template         Template
  * @property Section $section          Section
@@ -36,7 +36,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%sections_i18n}}';
     }
@@ -46,7 +46,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -56,7 +56,7 @@ class Section_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

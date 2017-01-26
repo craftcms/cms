@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\AssetTransform;
+use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -42,8 +43,10 @@ class AssetTransformsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionTransformIndex()
+    public function actionTransformIndex(): string
     {
+        $variables = [];
+
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
         $variables['modes'] = AssetTransform::modes();
 
@@ -59,7 +62,7 @@ class AssetTransformsController extends Controller
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
+    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): string
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -72,6 +75,8 @@ class AssetTransformsController extends Controller
                 $transform = new AssetTransform();
             }
         }
+
+        Craft::$app->getView()->registerAssetBundle(EditTransformAsset::class);
 
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
@@ -152,7 +157,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTransform()
+    public function actionDeleteTransform(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

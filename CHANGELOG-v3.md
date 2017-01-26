@@ -1,30 +1,42 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## [Unreleased]
+## Unreleased
 
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
+- Craft 3 now requires PHP 7.0.0 or later.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
-- Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
-- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
-- Craft now automatically loads the vendor/autoload.php file (if it exists) for plugins that were manually installed.
-- Added the bootstrap/ folder alongside the src/ folder, with new web.php and console.php bootstrap files.
-- Added PostgreSQL support, which can be enabled by setting the `driver` setting in craft/config/db.php to `'pgsql'`.
+- Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
+- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
+- Plugin icons now must be stored at the root of the plugin’s source directory.
+- Plugin IDs are now `kebab-case` versions of their handles.
+- Craft now automatically loads the `vendor/autoload.php` file (if it exists) for plugins that were manually installed.
+- Added the `bootstrap/` folder alongside the `src/` folder, with new web.php and console.php bootstrap files.
+- Added PostgreSQL support, which can be enabled by setting the `driver` setting in `config/db.php` to `'pgsql'`.
 - Added the `update/run-pending-migrations` controller action, which can be used as a post-deploy hook for deployment services like DeployBot, to get Craft to automatically run any pending migrations, minimizing site downtime.
 - Added the `backupCommand` config setting, which can be used to override the command Craft executes when creating a database backup.
 - Added the `restoreCommand` config setting, which can be used to override the command Craft executes when restoring a database backup.
 - Added the `dsn` DB config setting, which can be used to manually specify the DSN string, ignoring most other DB config settings.
 - Added the `schema` DB config setting, which can be used to assign the default schema used when connecting to a PostgreSQL database.
+- Added support for setting Volume config settings in `config/volumes.php`. The file should return an array with keys that match volume handles, and values that are config arrays for the volumes.
 - Added the `view` global Twig variable, which is a reference to the View class that is rendering the template.
 - Added the `SORT_ASC` and `SORT_DESC` global Twig variables, which can be used to define query sorting in element queries.
 - Added the `POS_HEAD`, `POS_BEGIN`, `POS_END`, `POS_READY`, and `POS_LOAD` global Twig variables, which can be used to define the placement of registered scripts.
 - Added the `className()` global Twig function, which returns the class name of a given object.
+- Added the `|atom` and `|rss` Twig filters, for formatting dates in Atom and RSS date formats, respectively.
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
+- Added the “Utilities” section to the Control Panel, replacing the Tools area of the Settings page.
+- Added the Utility API, which enables plugins to provide custom utilities.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
+- Added method paramater and return types everywhere possible.
+- Added a new `@lib` Yii alias, pointed to `vendor/craftcms/cms/lib/`.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
+- Added `craft\base\Utility`.
+- Added `craft\base\UtilityInterface`.
+- Added `craft\controllers\UtilitiesController`.
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
 - Added `craft\db\TableSchema`.
@@ -49,9 +61,66 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\SetElementTableAttributeHtmlEvent`.
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
+- Added `craft\services\Utilities`.
+- Added `craft\utilities\AssetIndexes`.
+- Added `craft\utilities\ClearCaches`.
+- Added `craft\utilities\DbBackup`.
+- Added `craft\utilities\DeprecationErrors`.
+- Added `craft\utilities\FindAndReplace`.
+- Added `craft\utilities\PhpInfo`.
+- Added `craft\utilities\SearchIndexes`.
+- Added `craft\utilities\SystemReport`.
+- Added `craft\utilities\Updates`.
 - Added `craft\validators\ArrayValidator`.
 - Added `craft\validators\AssetFilenameValidator`.
+- Added `craft\validators\UsernameValidator`.
 - Added `craft\validators\UserPasswordValidator`.
+- Added `craft\web\AssetBundle`.
+- Added `craft\web\assets\assetindexes\AssetIndexesAsset`.
+- Added `craft\web\assets\clearcaches\ClearCachesAsset`.
+- Added `craft\web\assets\colorpicker\ColorpickerAsset`.
+- Added `craft\web\assets\craftsupport\CraftSupportAsset`.
+- Added `craft\web\assets\dashboard\DashboardAsset`.
+- Added `craft\web\assets\datepickeri18n\DatepickerI18nAsset`.
+- Added `craft\web\assets\dbbackup\DbBackupAsset`.
+- Added `craft\web\assets\deprecationerrors\DeprecationErrorsAsset`.
+- Added `craft\web\assets\editcategory\EditCategoryAsset`.
+- Added `craft\web\assets\editentry\EditEntryAsset`.
+- Added `craft\web\assets\edittransform\EditTransformAsset`.
+- Added `craft\web\assets\edituser\EditUserAsset`.
+- Added `craft\web\assets\emailmessages\EmailMessagesAsset`.
+- Added `craft\web\assets\feed\FeedAsset`.
+- Added `craft\web\assets\fields\FieldsAsset`.
+- Added `craft\web\assets\fileupload\FileUploadAsset`.
+- Added `craft\web\assets\findreplace\FindReplaceAsset`.
+- Added `craft\web\assets\generalsettings\GeneralSettingsAsset`.
+- Added `craft\web\assets\installer\InstallerAsset`.
+- Added `craft\web\assets\jcrop\JcropAsset`.
+- Added `craft\web\assets\jqueryui\JqueryUiAsset`.
+- Added `craft\web\assets\login\LoginAsset`.
+- Added `craft\web\assets\matrix\MatrixAsset`.
+- Added `craft\web\assets\matrixsettings\MatrixSettingsAsset`.
+- Added `craft\web\assets\newusers\NewUsersAsset`.
+- Added `craft\web\assets\plugins\PluginsAsset`.
+- Added `craft\web\assets\positionselect\PositionSelectAsset`.
+- Added `craft\web\assets\quickpost\QuickPostAsset`.
+- Added `craft\web\assets\qunit\QunitAsset`.
+- Added `craft\web\assets\recententries\RecentEntriesAsset`.
+- Added `craft\web\assets\redactor\RedactorAsset`.
+- Added `craft\web\assets\richtext\RichTextAsset`.
+- Added `craft\web\assets\routes\RoutesAsset`.
+- Added `craft\web\assets\searchindexes\SearchIndexesAsset`.
+- Added `craft\web\assets\sites\SitesAsset`.
+- Added `craft\web\assets\tablesettings\TableSettingsAsset`.
+- Added `craft\web\assets\tests\TestsAsset`.
+- Added `craft\web\assets\updater\UpdaterAsset`.
+- Added `craft\web\assets\updates\UpdatesAsset`.
+- Added `craft\web\assets\updateswidget\UpdatesWidgetAsset`.
+- Added `craft\web\assets\userpermissions\UserPermissionsAsset`.
+- Added `craft\web\assets\utilities\UtilitiesAsset`.
+- Added `craft\web\assets\whatsnew\WhatsNewAsset`.
+- Added `craft\web\assets\xregexp\XregexpAsset`.
+- Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
@@ -64,10 +133,14 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::getSerializedFieldValues()`.
 - Added `craft\base\Element::route()`.
 - Added `craft\base\Element::tableAttributeHtml()`.
+- Added `craft\base\ElementInterface::refHandle()`.
 - Added `craft\base\Field::afterElementDelete()`, which is called by an element after it is deleted.
 - Added `craft\base\Field::beforeElementDelete()`, which is called by an element before it is deleted.
 - Added `craft\base\Field::getElementValidationRules()`, which field types can override to return their element-level validation rules.
 - Added `craft\base\MissingComponentTrait::createFallback()`.
+- Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
+- Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
+- Added `craft\base\Plugin::$hasCpSection`, which replaces the static `hasCpSection()` method.
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
@@ -75,6 +148,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\App::craftDownloadUrl()`.
 - Added `craft\helpers\App::isComposerInstall()`.
 - Added `craft\helpers\App::majorMinorVersion()`.
+- Added `craft\helpers\ArrayHelper::rename()`.
 - Added `craft\helpers\Db::isTypeSupported()`.
 - Added `craft\helpers\Update::getBasePath()`.
 - Added `craft\helpers\Update::parseManifestLine()`.
@@ -86,6 +160,15 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getUseWriteFileLock()`.
 - Added `craft\services\Config::isExtensionAllowed()`.
 - Added `craft\services\Elements::deleteElement()`.
+- Added `craft\services\Elements::getElementTypesByIds()`.
+- Added `craft\services\Images::getCanUseImagick()`.
+- Added `craft\services\Images::getImageMagickApiVersion()`.
+- Added `craft\services\Plugins::getPluginByPackageName()`.
+- Added `craft\services\Plugins::isComposerInstall()`.
+- Added `craft\web\AssetManager::getPublishedPath()`.
+- Added `craft\web\AssetManager::getPublishedUrl()`.
+- Added `craft\web\Session::addAssetBundleFlash()`.
+- Added `craft\web\Session::getAssetBundleFlashes()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
@@ -94,7 +177,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerAlerts` event to `craft\helpers\Cp`.
 - Added the `registerFileKinds` event to `craft\helpers\Assets`.
 - Added the `registerCacheOptions` event to `craft\tools\ClearCaches`.
-- Added the `registerCpNavItems` event to `craft\variables\Cp`.
+- Added the `registerCpNavItems` event to `craft\web\twig\variables\Cp`.
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.
 - Added the `registerElementTypes` event to `craft\services\Elements`.
 - Added the `registerFieldTypes` event to `craft\services\Fields`.
@@ -112,30 +195,32 @@ Craft CMS 3.0 Working Changelog
 - Added the `setFilename` event to `craft\helpers\Assets`.
 - Added the `setRoute` event to `craft\base\Element`.
 - Added the `setTableAttributeHtml` event to `craft\base\Element`.
-- Added Guzzle 6 HTTP Adapter.
+- Added support for a `.readable` CSS class for views that are primarily textual content.
 - Added php-shellcommand.
 - Added the ZendFeed library.
-- It is now possible to override the default Guzzle settings from craft/config/guzzle.php.
+- It is now possible to override the default Guzzle settings from `config/guzzle.php`.
+- Added a “Size” setting to Number fields.
 
 ### Changed
-- The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
+- The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/cms/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
 - The default `port` DB config value is now either `3306` (if MySQL) or `5432` (if PostgreSQL).
 - The default `tablePrefix` DB config value is now empty.
 - Renamed the `defaultFilePermissions` config setting to `defaultFileMode`, and it is now `null` by default.
 - Renamed the `defaultFolderPermissions` config setting to `defaultDirMode`.
 - Renamed the `useWriteFileLock` config setting to `useFileLocks`.
+- Renamed the `backupDbOnUpdate` config setting to `backupOnUpdate`. Note that performance should no longer be a major factor when setting this to false, since the backup is no longer generated by PHP.
+- Renamed the `restoreDbOnUpdateFailure` config setting to `restoreOnUpdateFailure`.
 - File-based data caching now respects the `defaultDirMode` config setting.
-- The `backupDbOnUpdate` config setting has been renamed to `backupOnUpdate`. Note that performance should no longer be a major factor when setting this to false, since the backup is no longer generated by PHP.
-- The `restoreDbOnUpdateFailure` config setting has been renamed to `restoreOnUpdateFailure`.
 - Redactor config files must now be valid JSON.
 - When a category is deleted, its nested categories are no longer deleted with it.
+- Craft Personal and Client editions are now allowed to have custom Volume types (e.g. Amazon S3).
 - Renamed the “Get Help” widget to “Craft Support”.
 - When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
 - When editing a volume whose type class cannot be found, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.
 - When editing email settings and the previously-selected transport type class cannot be found, Craft will now select PHP Mail as a fallback and display a validation error on the Transport Type setting.
 - The Feed widget is now limited to show 5 articles by default.
 - Element queries’ `status` params must now always be set to valid statuses, or the query won’t return any results.
-- Craft now relies on command line tools to create database backups (mysqldump and pg_dump).
+- Craft now relies on command line tools to create database backups (`mysqldump` and `pg_dump`).
 - Test emails now mask the values for any Mailer transport type settings that include “key” or “password” in their setting name.
 - The Control Panel page header is now fixed when scrolling down.
 - Translatable fields are no longer marked as translatable when editing an element type that isn’t localizable (e.g. user accounts).
@@ -143,13 +228,14 @@ Craft CMS 3.0 Working Changelog
 - Element indexes now remember which sources were expanded across multiple requests.
 - Element indexes now remember if a nested source was selected across multiple requests.
 - Plugin schema versions now default to `'1.0.0'`, and plugins absolutely must increment their schema version if they want any pending migrations to be noticed.
+- Resource requests no longer serve files within Craft’s or plugins’ `resources/` folders.
 - Renamed the `{% registercss %}` Twig tag to `{% css %}`.
 - Renamed the `{% registerjs %}` Twig tag to `{% js %}`.
-- `craft\base\Plugin` no longer automatically registers field types in the plugin’s fields/ subfolder.
-- `craft\base\Plugin` no longer automatically registers widget types in the plugin’s widgets/ subfolder.
-- `craft\base\Plugin` no longer automatically registers volume types in the plugin’s volumes/ subfolder.
-- Mailer Transport Adapters’ `getTransportConfig()` methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
+- `craft\base\Plugin` no longer automatically registers field types in the plugin’s `fields/` subfolder.
+- `craft\base\Plugin` no longer automatically registers widget types in the plugin’s `widgets/` subfolder.
+- `craft\base\Plugin` no longer automatically registers volume types in the plugin’s `volumes/` subfolder.
 - `craft\elements\User` now supports a `password` validation scenario, which only validates the `$newPassword` property.
+- `craft\elements\User` now supports a `registration` validation scenario, which only validates the `$username`, `$email`, and `$newPassword` properties.
 - It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
 - `craft\elements\db\MatrixBlockQuery::owner()` and `ownerSiteId()` now set the `$siteId` property when appropriate.
 - The source keys that are passed into element methods’ `$source` arguments now reflect the full path to the source, if it is a nested source (e.g. `folder:1/folder:2`).
@@ -164,10 +250,14 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\SavableComponent::afterSave()` now has an `$isNew` argument, which will indicate whether the element is brand new.
 - `craft\base\SavableComponent::beforeSave()` now has an `$isNew` argument, which will indicate whether the element is brand new.
 - `craft\db\Connection::columnExists()`’s `$table` argument can now be a \`craft\yii\db\TableSchema` object.
+- `craft\elements\Asset::getFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
+- `craft\elements\Asset::getVolume()` now throws a `yii\base\InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID.
+- `craft\elements\Tag::getGroup()` now throws a `yii\base\InvalidConfigException` if its `$groupId` property is set to an invalid tag group ID.
 - `craft\elements\User::getAuthor()` now throws a `yii\base\InvalidConfigException` if its `$authorId` property is set to an invalid user ID.
 - `craft\elements\User::getPhoto()` now throws a `yii\base\InvalidConfigException` if its `$photoId` property is set to an invalid asset ID.
 - `craft\models\FieldLayoutTab::getLayout()` now throws a `yii\base\InvalidConfigException` if its `$layoutId` property is set to an invalid field layout ID.
 - `craft\services\Elements::deleteElementById()` now has `$elementType` and `$siteId` arguments.
+- `craft\services\Element::getElementTypeById()` no longer accepts an array of element IDs. Use `getElementTypesByIds()` instead.
 - `craft\services\Path::getAppPath()` now throws an exception if it is called within a Composer install, as there is no “app path”.
 - The `beforeElementSave` and `afterElementSave` events triggered by `craft\base\Element` now have `$isNew` properties, which indicate whether the element is brand new.
 - The `beforeSave` and `afterSave` events triggered by `craft\base\Element` now have `$isNew` properties, which indicate whether the element is brand new.
@@ -178,40 +268,67 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\events\DbBackupEvent` to `BackupEvent`.
 - Renamed `craft\events\EntryEvent` to `VersionEvent`.
 - Renamed `craft\events\Event` to `CancelableEvent`.
+- Renamed `craft\helpers\Url` to `UrlHelper`.
 - Renamed `craft\mail\transportadaptors\BaseTransportAdaptor` to `craft\mail\transportadapters\BaseTransportAdapter`.
 - Renamed `craft\mail\transportadaptors\Gmail` to `craft\mail\transportadapters\Gmail`.
 - Renamed `craft\mail\transportadaptors\Php` to `craft\mail\transportadapters\Php`.
 - Renamed `craft\mail\transportadaptors\Sendmail` to `craft\mail\transportadapters\Sendmail`.
 - Renamed `craft\mail\transportadaptors\Smtp` to `craft\mail\transportadapters\Smtp`.
 - Renamed `craft\mail\transportadaptors\TransportAdaptorInterface` to `craft\mail\transportadapters\TransportAdapterInterface`.
+- Renamed `craft\models\AppNewRelease` to `AppUpdateRelease`.
+- Renamed `craft\models\PluginNewRelease` to `UpdateRelease`.
+- Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
 - Renamed `craft\base\Element::defineSortableAttributes()` to `sortableAttributes()`.
-- Renamed `craft\base\Element::getAvailableActions()` to `actions()`.
+- Renamed `craft\base\Element::getAvailableActions()` to `actions()`, and the method must return an array now.
 - Renamed `craft\base\Element::getContentPostLocation()` to `getFieldParamNamespace()`.
 - Renamed `craft\base\Element::getDefaultTableAttributes()` to `defaultTableAttributes()`.
 - Renamed `craft\base\Element::getEagerLoadingMap()` to `eagerLoadingMap()`.
+- Renamed `craft\base\Element::getFieldByHandle()` to `fieldByHandle()`.
+- Renamed `craft\base\Element::getFields()` to `fieldLayoutFields()`.
 - Renamed `craft\base\Element::getIndexHtml()` to `indexHtml()`.
 - Renamed `craft\base\Element::getSources()` to `sources()`.
-- Renamed `craft\base\Element::getStatuses()` to `statuses()`.
+- Renamed `craft\base\Element::getStatuses()` to `statuses()`, and the method must return an array now.
 - Renamed `craft\base\Element::setContentPostLocation()` to `setFieldParamNamespace()`.
 - Renamed `craft\base\Element::setFieldValuesFromPost()` to `setFieldValuesFromRequest()`, and the method no longer accepts an array of field values. Only call this method as a shortcut for `setFieldParamNamespace()` and `setFieldValues()`, passing in the param namespace the field values should be extracted from on the request body.
-- Renamed `craft\base\Field::getContentPostLocation()` to `getRequestParamName()`.
+- Renamed `craft\base\Field::getContentPostLocation()` to `requestParamName()`.
 - Renamed `craft\base\Field::prepareValue()` to `normalizeValue()`.
 - Renamed `craft\base\Field::prepareValueForDb()` to `serializeValue()`.
+- Renamed `craft\base\Plugin::getSettingsHtml()` to `settingsHtml()`.
 - Renamed `craft\base\PluginInterface::getVariableDefinition()` to `defineTemplateComponent()`.
-- Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
+- Renamed `craft\base\Task::getDefaultDescription()` to `defaultDescription()`.
+- Renamed `craft\base\Volume::getAdapter()` to `adapter()`.
+- Renamed `craft\base\Volume::getFilesystem()` to `filesystem()`.
+- Renamed `craft\base\Volume::getVisibilitySetting()` to `visibility()`.
+- Renamed `craft\base\WidgetInterface::getMaxColspan()` to `maxColspan()` (now static).
+- Renamed `craft\base\WidgetInterface::getIconPath()` to `iconPath()` (now static).
+- Renamed `craft\controllers\BaseElementsController::getContext()` to `context()`.
+- Renamed `craft\controllers\BaseElementsController::getElementType()` to `elementType()`.
 - Renamed `craft\db\Command::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\Migration::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\db\mysql\QueryBuilder::insertOrUpdate()` to `upsert()`.
 - Renamed `craft\elements\User::getAuthData()` to `authData()`
+- Renamed `craft\fields\BaseOptionsField::getDefaultValue()` to `defaultValue()`.
+- Renamed `craft\fields\BaseOptionsField::getOptionLabel()` to `optionLabel()`.
+- Renamed `craft\fields\BaseOptionsField::getOptionsSettingsLabel()` to `optionsSettingLabel()`.
+- Renamed `craft\fields\BaseOptionsField::getTranslatedOptions()` to `translatedOptions()`.
+- Renamed `craft\fields\BaseRelationField::getAvailableSources()` to `availableSources()`.
+- Renamed `craft\fields\BaseRelationField::getInputSelectionCriteria()` to `inputSelectionCriteria()`.
+- Renamed `craft\fields\BaseRelationField::getInputSources()` to `inputSources()`.
+- Renamed `craft\fields\BaseRelationField::getInputTemplateVariables()` to `inputTemplateVariables()`.
+- Renamed `craft\fields\BaseRelationField::getSourceOptions()` to `sourceOptions()`.
+- Renamed `craft\fields\BaseRelationField::getSupportedViewModes()` to `supportedViewModes()`, and the method must return an array now.
+- Renamed `craft\fields\BaseRelationField::getTargetSiteFieldHtml()` to `targetSiteFieldHtml()`.
+- Renamed `craft\fields\BaseRelationField::getTargetSiteId()` to `targetSiteId()`.
+- Renamed `craft\fields\BaseRelationField::getViewMode()` to `viewMode()`.
+- Renamed `craft\fields\BaseRelationField::getViewModeFieldHtml()` to `viewModeFieldHtml()`.
 - Renamed `craft\helpers\App::getEditionName()` to `editionName()`.
 - Renamed `craft\helpers\App::getEditions()` to `editions()`.
 - Renamed `craft\helpers\App::getMajorVersion()` to `majorVersion()`.
 - Renamed `craft\helpers\App::getPhpConfigValueAsBool()` to `phpConfigValueAsBool()`.
 - Renamed `craft\helpers\App::getPhpConfigValueInBytes()` to `phpConfigValueInBytes()`.
 - Renamed `craft\helpers\ArrayHelper::getFirstKey()` to `firstKey()`.
-- Renamed `craft\helpers\ArrayHelper::getFirstValue()` to `firstValue()`.
 - Renamed `craft\helpers\Assets::getFileTransferList()` to `fileTransferList()`.
 - Renamed `craft\helpers\Assets::getPeriodList()` to `periodList()`.
 - Renamed `craft\helpers\Assets::getTempFilePath()` to `tempFilePath()`.
@@ -237,17 +354,35 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\StringHelper::getEncoding()` to `encoding()`.
 - Renamed `craft\helpers\StringHelper::uppercaseFirst()` to `upperCaseFirst()`.
 - Renamed `craft\helpers\Template::getRaw()` to `raw()`.
-- Renamed `craft\helpers\Url::getUrl()` to `url()`.
-- Renamed `craft\helpers\Url::getUrlWithParams()` to `urlWithParams()`.
-- Renamed `craft\helpers\Url::getUrlWithProtocol()` to `urlWithProtocol()`.
-- Renamed `craft\helpers\Url::getUrlWithToken()` to `urlWithToken()`.
+- Renamed `craft\helpers\UrlHelper::getActionUrl()` to `actionUrl()`.
+- Renamed `craft\helpers\UrlHelper::getCpUrl()` to `cpUrl()`.
+- Renamed `craft\helpers\UrlHelper::getResourceUrl()` to `resourceUrl()`.
+- Renamed `craft\helpers\UrlHelper::getSiteUrl()` to `siteUrl()`.
+- Renamed `craft\helpers\UrlHelper::getUrl()` to `url()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithParams()` to `urlWithParams()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithProtocol()` to `urlWithProtocol()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithToken()` to `urlWithToken()`.
+- Renamed `craft\mail\transportadapters\TransportAdapterInterface::getTransportConfig()` to `defineTransport()`, and it is now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - Renamed `craft\models\AssetTransform::getTransformModes()` to `modes()`.
 - Renamed `craft\services\Assets::renameAsset()` to `renameFile()`, and replaced its `$newFilename` argument with `$runValidation`.
+- Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.
+- Renamed `craft\services\Config::usePathInfo()` to `getUsePathInfo()`.
 - Renamed `craft\services\Resources::getResourcePath()` to `resolveResourcePath()`.
 - Renamed `craft\volumes\AwsS3::getClient()` to `client()`.
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.
 - Renamed `craft\volumes\Rackspace::getClient()` to `client()`.
+- Renamed `craft\web\assets\AppAsset` to `craft\web\assets\cp\CpAsset`.
+- Renamed `craft\web\assets\D3Asset` to `craft\web\assets\d3\D3Asset`.
+- Renamed `craft\web\assets\ElementResizeDetectorAsset` to `craft\web\assets\elementresizedetector\ElementResizeDetectorAsset`.
+- Renamed `craft\web\assets\GarnishAsset` to `craft\web\assets\garnish\GarnishAsset`.
+- Renamed `craft\web\assets\JqueryPaymentAsset` to `craft\web\assets\jquerypayment\JqueryPaymentAsset`.
+- Renamed `craft\web\assets\JqueryTouchEventsAsset` to `craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset`.
+- Renamed `craft\web\assets\PicturefillAsset` to `craft\web\assets\picturefill\PicturefillAsset`.
+- Renamed `craft\web\assets\SelectizeAsset` to `craft\web\assets\selectize\SelectizeAsset`.
+- Renamed `craft\web\assets\TimepickerAsset` to `craft\web\assets\timepicker\TimepickerAsset`.
+- Renamed `craft\web\assets\VelocityAsset` to `craft\web\assets\velocity\VelocityAsset`.
+- Renamed `craft\web\twig\variables\CraftVariable::getLocale()` back to `locale()`.
 - Moved `craft\volumes\VolumeInterface::getRootPath()` to `craft\volumes\LocalVolumeInterface::getRootPath()`.
 - `craft\base\Element::getEditorHtml()` is no longer static, and no longer has an `$element` argument.
 - `craft\base\Element::getElementRoute()` is no longer static, no longer has an `$element` argument, and has been renamed to `getRoute()`.
@@ -257,6 +392,9 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::onAfterMoveElementInStructure()` is no longer static, no longer has an `$element` argument, and has been renamed to `afterMoveInStructure()`.
 - `craft\services\AssetIndexer::getIndexEntry()` now returns `null` if the index doesn’t exist, instead of `false`.
 - `craft\services\Updates::getUnwritableFolders()` now returns folder paths without trailing slashes.
+- `craft\web\Session::addJsFlash()` now has `$positon` and `$key` arguments.
+- `craft\web\Session::getJsFlashes()` now returns an array of nested arrays, each defining the JS code, the position, and the key.
+- `craft\web\View::getTwig()` no longer has `$loaderClass` or `$options` arguments.
 - Renamed `craft.getAssets()` back to `craft.assets()`.
 - Renamed `craft.getCategories()` back to `craft.categories()`.
 - Renamed `craft.getEntries()` back to `craft.entries()`.
@@ -268,36 +406,51 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
+- Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
-- Updated Twig to 1.28.2.
-- Updated Garnish to 0.1.9.
+- Updated Garnish to 0.1.11.
 - Updated Velocity to 1.4.1.
+- Updated element-resize-detector.js to 1.1.10.
 - Craft no longer requires the mcrypt PHP extension.
+- Improved the way the height of sidebars is calculated for panes with no tabs
+- Moved Utilities nav item to keep Settings as the last item
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
-- `craft.getTimeZone()` has been deprecated. Use `craft.app.getTimeZone()` instead.
 - `craft\web\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.
 
 ### Removed
-- Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
+- Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the `vendor/` folder.
+- Removed support for the `environmentVariables` config setting. Use the `siteUrl` config setting in `config/general.php` to set the site URL, and override volume settings with `config/volumes.php`.
+- Removed support for Yii 1-style controller action paths (e.g. `entries/saveEntry`), which were previously deprecated. Use the Yii 2 style instead (e.g. `entries/save-entry`).
+- Removed the deprecated `activateAccountFailurePath` config setting.
+- Removed the `appId` config setting.
 - Removed the `collation` DB config setting.
 - Removed the `initSQLs` DB config setting.
 - Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
 - Removed the `{% registercssfile %}` Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
-- Removed the `{% registercssresource %}` Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
+- Removed the `{% registercssresource %}` and `{% includecssresource %}` Twig tags.
 - Removed the `{% registerhirescss %}` Twig tag. Use `{% css %}` instead, and type your own media selector.
 - Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
-- Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
+- Removed the `{% registerjsresource %}` and `{% includejsresource %}` Twig tags.
+- Removed the `{% endpaginate %}` Twig tag as it’s unnecessary.
+- Removed the `childOf`, `childField`, `parentOf`, and `parentField` element query params. Use `relatedTo` instead.
+- Removed the `depth` element query param. Use `level` instead.
+- Removed the `name` tag query param. Use `title` instead.
+- Removed support for passing `"name"` into the `orderBy` tag query param. Pass `"title"` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
 - Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
+- Removed `craft\base\Tool`.
+- Removed `craft\base\ToolInterface`.
 - Removed `craft\cache\FileCache`.
 - Removed `craft\cache\adapters\GuzzleCacheAdapter`.
+- Removed `craft\controllers\ToolsController`.
 - Removed `craft\dates\DateTime`.
+- Removed `craft\dates\DateInterval`.
 - Removed `craft\db\DbBackup`.
 - Removed `craft\enums\BaseEnum`.
 - Removed `craft\errors\DbBackupException`.
@@ -311,6 +464,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\events\UserEvent`.
 - Removed `craft\helpers\Io`.
 - Removed `craft\log\EmailTarget`.
+- Removed `craft\models\AccountSettings`
+- Removed `craft\models\Username`.
 - Removed `craft\io\BaseIO`.
 - Removed `craft\io\File`.
 - Removed `craft\io\Folder`.
@@ -320,19 +475,25 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\io\ZipInterface`.
 - Removed `craft\models\LogEntry`.
 - Removed `craft\models\Password`.
+- Removed `craft\web\twig\StringTemplate`.
 - Removed `craft\base\Component::getType()`. It was only really there for objects that implement `craft\base\MissingComponentInterface`, and now they have an `$expectedType` property.
+- Removed `craft\base\ComponentInterface::classHandle()`.
 - Removed `craft\base\Element::getContentFromPost()`.
 - Removed `craft\base\Element::getSourceByKey()`.
 - Removed `craft\base\Element::saveElement()`.
 - Removed `craft\base\Element::setRawPostValueForField()`.
+- Removed `craft\base\Field::getElementValue()`.
+- Removed `craft\base\Field::setElementValue()`.
 - Removed `craft\base\FieldInterface::validateValue()`. Fields should start implementing `getElementValidationRules()` if they want to customize how their values get validated.
 - Removed `craft\base\Model::create()`.
 - Removed `craft\base\Model::getAllErrors()`.
 - Removed `craft\base\Model::populateModel()`.
+- Removed `craft\base\Plugin::$releaseFeedUrl`. Plugins that wish to have update notifications should now set `$changelogUrl`.
 - Removed `craft\base\Plugin::getClassesInSubpath()`.
 - Removed `craft\base\Plugin::getFieldTypes()`.
 - Removed `craft\base\Plugin::getVolumeTypes()`.
 - Removed `craft\base\Plugin::getWidgetTypes()`.
+- Removed `craft\base\PluginInterface::hasCpSection()`. Plugins that have a CP section should set the `$hasCpSection` property.
 - Removed `craft\base\VolumeInterface::isLocal()`. Local volumes should implement `craft\base\LocalVolumeInterface` instead.
 - Removed `craft\db\Command::addColumnAfter()`.
 - Removed `craft\db\Command::addColumnBefore()`.
@@ -343,8 +504,17 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\db\mysql\QueryBuilder::addColumnAfter()`.
 - Removed `craft\db\mysql\QueryBuilder::addColumnBefore()`.
 - Removed `craft\db\mysql\QueryBuilder::addColumnFirst()`.
+- Removed `craft\db\Query::scalar()`.
+- Removed `craft\db\Query::column()`.
 - Removed `craft\elements\db\ElementQuery::configure()`.
+- Removed `craft\elements\Tag::getName()`. Use the `title` property instead.
+- Removed `craft\helpers\ArrayHelper::getFirstValue()`.
 - Removed `craft\helpers\Json::removeComments()`.
+- Removed `craft\helpers\MigrationHelper::makeElemental()`.
+- Removed `craft\helpers\MigrationHelper::refresh()`.
+- Removed `craft\helpers\MigrationHelper::restoreAllForeignKeysOnTable()`.
+- Removed `craft\helpers\MigrationHelper::restoreAllIndexesOnTable()`.
+- Removed `craft\helpers\MigrationHelper::restoreAllUniqueIndexesOnTable()`.
 - Removed `craft\helpers\Update::cleanManifestFolderLine()`.
 - Removed `craft\helpers\Update::isManifestLineAFolder()`.
 - Removed `craft\services\Assets::deleteAssetsByIds()`.
@@ -360,10 +530,12 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Entries::saveEntry()`.
 - Removed `craft\services\Globals::deleteSetById()`.
 - Removed `craft\services\Globals::saveContent()`.
+- Removed `craft\services\Images::getIsImagickAtLeast()`.
 - Removed `craft\services\Matrix::deleteBlockById()`.
 - Removed `craft\services\Matrix::saveBlock()`.
 - Removed `craft\services\Matrix::validateBlock()`.
 - Removed `craft\services\Path::getMigrationsPath()`.
+- Removed `craft\services\Path::getResourcesPath()`.
 - Removed `craft\services\Plugins::call()`.
 - Removed `craft\services\Plugins::callFirst()`.
 - Removed `craft\services\SystemSettings::getCategoryTimeUpdated()`.
@@ -371,6 +543,13 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::flushUpdateInfoFromCache()`.
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
+- Removed `craft\tools\*`.
+- Removed `craft\web\Session::addJsResourceFlash()`.
+- Removed `craft\web\Session::getJsResourceFlashes()`.
+- Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
+- Removed `craft\web\twig\variables\Fields::createField()`.
+- Removed `craft\web\View::registerCssResource()`.
+- Removed `craft\web\View::registerJsResource()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.
@@ -403,8 +582,8 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\mysql\QueryBuilder::alterColumn()`.
 - Removed the `$runValidation` argument from `craft\services\Content::saveContent()`.
-- Removed the &$params argument from `craft\helpers\Db::parseDateParam()`.
-- Removed the &$params argument from `craft\helpers\Db::parseParam()`.
+- Removed the `$params` argument from `craft\helpers\Db::parseDateParam()`.
+- Removed the `$params` argument from `craft\helpers\Db::parseParam()`.
 - Removed the `beforeDeleteAsset`, `afterDeleteAsset`, `beforeSaveAsset` and `afterSaveAsset` events from `craft\services\Assets`.
 - Removed the `beforeDeleteCategory`, `afterDeleteCategory`, `beforeSaveCategory` and `afterSaveCategory` events from `craft\services\Categories`.
 - Removed the `beforeDeleteEntry`, `afterDeleteEntry`, `beforeSaveEntry` and `afterSaveEntry` events from `craft\services\Entry`.
@@ -429,16 +608,12 @@ Craft CMS 3.0 Working Changelog
 - Removed the `modifyAssetFilename` plugin hook. Asset filenames should be overridden using the `setFilename` event on `craft\helpers\Assets` now.
 - Removed the `modifyAssetSortableAttributes`, `modifyCategorySortableAttributes`, `modifyEntrySortableAttributes`, and `modifyUserSortableAttributes` plugin hooks. Sortable attribute modifications should be made using the `registerSortableAttributes` event on `craft\base\Element` or one of its subclasses now.
 - Removed the `modifyAssetSources`, `modifyCategorySources`, `modifyEntrySources`, and `modifyUserSources` plugin hooks. Element source modifications should be made using the `registerSources` event on `craft\base\Element` or one of its subclasses now.
-- Removed the `modifyCpNav` plugin hook. Control Panel nav modifications should be made using the `registerCpNavItems` event on `craft\variables\Cp` now.
+- Removed the `modifyCpNav` plugin hook. Control Panel nav modifications should be made using the `registerCpNavItems` event on `craft\web\twig\variables\Cp` now.
 - Removed the `registerCachePaths` plugin hook. Custom options for the Clear Caches tool (which can be set to callbacks now in addition to file paths) should be registered using the `registerCacheOptions` event on `craft\tools\ClearCaches` now.
 - Removed the `registerCpRoutes` and `registerSiteRoutes` plugin hooks. Custom URL rules for the Control Panel and front-end site should be registered using the `registerCpUrlRules` and `registerSiteUrlRules` events on `craft\web\UrlManager` now.
 - Removed the `registerEmailMessages` plugin hook. Custom email messages should be registered using the `registerMessages` event on `craft\services\EmailMessages` now.
 - Removed the `registerUserPermissions` plugin hook. Custom user permissions should be registered using the `registerPermissions` event on `craft\services\UserPermissions` now.
-- Removed helpers/MigrationHelper::refresh().
-- Removed helpers/MigrationHelper::makeElemental().
-- Removed helpers/MigrationHelper::restoreAllIndexesOnTable().
-- Removed helpers/MigrationHelper::restoreAllUniqueIndexesOnTable().
-- Removed helpers/MigrationHelper::restoreAllForeignKeysOnTable().
+- Removed the `craft\requirements` folder.  It is now a composer dependency.
 
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
@@ -458,6 +633,8 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the `fixedOrder` parameter wasn’t being respected for entry queries.
 - Fixed a bug where plugin-supplied custom fields weren’t working.
 - Fixed a PHP error that occurred when opening an element editor.
+- Fixed a PHP error that occurred when re-saving a category group.
+- Fixed a PHP error that occurred when using the `{% exit %}` tag with a specific status code.
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the `{% cache %}` tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
@@ -475,8 +652,11 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the requirements checker wasn’t taking into account MySQL/PostgreSQL installs running on non-standard ports.
 - Fixed a bug where you’d get a fatal PHP error during an update if you didn’t meet one of Craft’s requirements.
 - Fixed a bug where you’d get a database error when saving a private Assets Volume.
+- Fixed a bug where linking to an entry or category from a Rich Text field wasn’t working.
+- Fixed `Plugins::validateConfig()`’s nulls.
+- Fixed a bug where JavaScript flashes weren’t getting registered on the subsequent page.
 
-## [v3.0.0-alpha.2948] - 2016-09-29
+## 3.0.0-alpha.2948 - 2016-09-29
 
 ### Added
 - Added `craft\i18n\Locale::getNumberPattern()`.
@@ -501,7 +681,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `loginFailure` event to `craft\controllers\UsersController` (replacing the like-named event on `craft\elements\User`).
 
 ### Changed
-- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in craft/locales/, you should [update them](https://github.com/pixelandtonic/CraftLocaleData), too.
+- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in `locales/`, you should [update them](https://github.com/craftcms/locales), too.
 - Ported recent changes from Craft 2.
 - The `beforeSaveAssetTransform` event on `craft\services\AssetTransforms` no longer supports an `$isValid` property.
 - The `beforeDeleteAssetTransform` event on `craft\services\AssetTransforms` no longer supports a `$isValid` property.
@@ -565,7 +745,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when deleting an entry.
 - Fixed a bug where Craft wasn’t renaming content table columns when a field’s handle was renamed; instead it was just adding a new column based on the new handle.
 
-## [v3.0.0-alpha.2942] - 2016-09-21
+## 3.0.0-alpha.2942 - 2016-09-21
 
 ### Added
 - Added [Content Migrations](https://craftcms.com/news/craft-3-content-migrations) support.
@@ -643,7 +823,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed bug where `craft\helpers\StringHelper::startsWith()` and `endsWith()` were returning strings instead of booleans.
 - Fixed a bug where the `$isNew` property on entry draft events wasn’t getting set correctly.
 - Fixed the default email settings.
-- Fixed a PHP error that occurred when installing/updating/uninstalling a plugin that didn’t have a migrations/ folder.
+- Fixed a PHP error that occurred when installing/updating/uninstalling a plugin that didn’t have a `migrations/` folder.
 - Fixed a bug where files that were registered via an asset bundle weren’t getting included when calling `craft\web\View::getHeadHtml()`.
 - Fixed a bug where localized datepicker resources weren’t getting included properly.
 - Fixed a bug where matrixblocks.ownerSiteId was getting set to NOT NULL for new Craft installs, resulting in MySQL errors when saving non-localized Matrix fields.
@@ -651,7 +831,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a JavaScript error in `Craft.compare()` that affected Live Preview.
 - Fixed a bug where changes to tags’ titles made from the inline editor within Tags fields would not be reflected in the Tags field, for newly-selected tags.
 
-## [v3.0.0-alpha.2939] - 2016-09-15
+## 3.0.0-alpha.2939 - 2016-09-15
 
 ### Fixed
 - Fixed a bug where `craft\helpers\Io::copyFolder()` was not working.
@@ -664,10 +844,10 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where element queries were not always respecting the 'limit' and 'offset' params when the 'search' param was applied.
 - Fixed a bug where element queries were non respecting the 'orderBy' param if it was set to "score" and the 'search' param was applied.
 
-## [v3.0.0-alpha.2937] - 2016-09-13
+## 3.0.0-alpha.2937 - 2016-09-13
 
 ### Changed
-- It is now possible to override 'assetManager', 'cache', 'db', 'mailer', 'locale', 'formatter', and 'log' application components' configurations from craft/config/app.php.
+- It is now possible to override 'assetManager', 'cache', 'db', 'mailer', 'locale', 'formatter', and 'log' application components' configurations from `config/app.php`.
 - Renamed `craft\services\Plugins::getPluginInfo()` to `getAllPluginInfo()`.
 - `craft\elements\MatrixBlock::getType()` now throws an `yii\base\InvalidConfigException` if the block type cannot be determined, rather than returning `null`.
 
@@ -677,9 +857,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where fields weren't passing validation, with no visible validation errors, when there was only one Site.
 - Fixed a bug where elements' `afterSave()` functions and fields' `afterElementSave()` functions weren't getting called when saving new elements, which prevented Matrix and relationship fields' values from getting saved.
 - Fixed a PHP error that occurred when executing `migrate` commands from the CLI.
-- Fixed a bug where craft/config/db.php was not getting validated before attempting to establish a DB connection.
+- Fixed a bug where `config/db.php` was not getting validated before attempting to establish a DB connection.
 
-## [v3.0.0-alpha.2933] - 2016-09-12
+## 3.0.0-alpha.2933 - 2016-09-12
 
 ### Added
 - [Multi-site management!](https://craftcms.com/news/craft-3-multi-site)
@@ -710,7 +890,7 @@ Craft CMS 3.0 Working Changelog
 - Structure sections and category groups no longer have Nested URL Format settings. (It's still possible to achieve the same result with a single URI Format setting.)
 - Fields that are translatable now have a chat bubble icon, replacing the locale ID badge.
 - `craft\elements\Category::getGroup()` now throws an `yii\base\InvalidConfigException` if the category group type cannot be determined, rather than returning `null`.
-- Renamed `craft\base\PluginTrait::releasesFeedUrl` to releaseFeedUrl.
+- Renamed `craft\base\PluginTrait::$releasesFeedUrl` to `$releaseFeedUrl`.
 - `craft\mail\Message::setTo()` will now set a 'user' variable on the message, if it was passed a User model.
 - `Craft.ui.createSelect()` and `createLightswitch()` now initialize the `Craft.FieldToggle` class on the returned elements.
 
@@ -719,7 +899,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where users without Control Panel access weren't getting redirected correctly after account activation.
 - Fixed a JavaScript error that occurred when calling `Craft.ui.createCheckboxField()`.
 
-## [v3.0.0-alpha.2928] - 2016-08-31
+## 3.0.0-alpha.2928 - 2016-08-31
 
 ### Added
 - Table fields now have a "Lightswitch" column type option.
@@ -738,7 +918,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed bug where `&nbsp;` was getting output for editable table headings that should have been empty.
 - Fixed a bug where xregexp-all.js was not getting included properly when the `useCompressedJs` config setting was set to `true` (as it is by default).
 
-## [v3.0.0-alpha.2918] - 2016-08-25
+## 3.0.0-alpha.2918 - 2016-08-25
 
 ### Added
 - Added `$flavor` and `$inlineOnly` arguments to the `|markdown` filter, making it possible to choose which Markdown flavor should be used, and whether it should parse paragraphs or treat the whole thing as inline elements.
@@ -752,10 +932,10 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - All before/after-save events now have an `$isNew` property that identifies whether the object of the event is brand new or not.
-- The _includes/forms/field include template now parses the passed in `warning` variable as an inline Markdown string, if it exists.
-- The _includes/forms/editableTable include template now supports a `staticRows` variable, which if defined and set to `true` will prevent row CRUD operations in the resulting table.
-- The _includes/forms/editableTable include template now supports a `heading` column type, which can be used in conjunction with `staticRows` to define row headings.
-- The _includes/forms/editableTable include template now supports an `info` property on column configs, which will add an info button to the column header which reveas instruction text for the column.
+- The `_includes/forms/field` include template now parses the passed in `warning` variable as an inline Markdown string, if it exists.
+- The `_includes/forms/editableTable` include template now supports a `staticRows` variable, which if defined and set to `true` will prevent row CRUD operations in the resulting table.
+- The `_includes/forms/editableTable` include template now supports a `heading` column type, which can be used in conjunction with `staticRows` to define row headings.
+- The `_includes/forms/editableTable` include template now supports an `info` property on column configs, which will add an info button to the column header which reveas instruction text for the column.
 - Renamed some event classes to be more consistent.
 
 ### Fixed
@@ -766,10 +946,10 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where setting custom field attributes on an element query would prevent the query from executing.
 - Fixed a bug where plugin Control Panel nav items were getting the full plugin class name in the URL instead of just handle.
 
-## [v3.0.0-alpha.2915] - 2016-08-17
+## 3.0.0-alpha.2915 - 2016-08-17
 
 ### Added
-- User photos are now assets. (Note that the craft/storage/userphotos/ folder must be manually moved to a publicly accessible location, and the User Photos asset volume’s settings must be updated accordingly, for user photos to work properly.)
+- User photos are now assets. (Note that the `storage/userphotos/` folder must be manually moved to a publicly accessible location, and the User Photos asset volume’s settings must be updated accordingly, for user photos to work properly.)
 - Added `craft\elements\User::getPhoto()`, which returns the user’s photo asset, if they have one.
 - Added `craft\helpers\StringHelper::randomStringWithChars()`.
 - Added the `beforeSaveContent` event to `craft\services\Content`.
@@ -794,7 +974,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where element queries were not respecting the `offset` property.
 - Fixed a MySQL error that occurred when querying users with the `can` property.
 - Fixed a MySQL error that occurred when executing an element query that had custom query params.
-- Fixed a PHP error that occurred when rendering templates with a `{% paginate %}` tag. (Note that you may need to delete your craft/storage/runtime/compiled_templates/ folder.)
+- Fixed a PHP error that occurred when rendering templates with a `{% paginate %}` tag. (Note that you may need to delete your `storage/runtime/compiled_templates/` folder.)
 - Fixed a PHP warning that occurred when using `craft\services\Feeds` on a server running PHP 7.
 - Fixed a few bugs related to saving elements on localized sites.
 - Fixed tag group saving and deleting.
@@ -816,7 +996,7 @@ Craft CMS 3.0 Working Changelog
 ### Security
 - `craft\services\Security::hashData` and `validateData()` no longer require a `$key` argument.
 
-## [v3.0.0-alpha.2910] - 2016-08-04
+## 3.0.0-alpha.2910 - 2016-08-04
 
 ### Added
 - Ported all the changes from Craft 2.
@@ -909,7 +1089,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a lot of bugs. OK?
 
-## [v3.0.0-alpha.2687] - 2015-08-20
+## 3.0.0-alpha.2687 - 2015-08-20
 
 ### Added
 - Ported all improvements and bug fixes from the latest Craft 2.4 builds.
@@ -942,7 +1122,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where `craft\helpers\MigrationHelper` would forget that it had dropped a table after `dropTable()` was called.
 - Fixed an error that would occur if another error occurred during a MySQL transaction that included savepoints, and the savepoints had already been implicitly committed.
 
-## [v3.0.0-alpha.2681] - 2015-07-22
+## 3.0.0-alpha.2681 - 2015-07-22
 
 ### Added
 - Ported all improvements and bug fixes from the latest Craft 2.4 builds.
@@ -967,7 +1147,7 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii to 2.0.5.
 - Element queries are no longer limited to 100 results by default.
 - `craft\elements\db\ElementQuery::count()` now returns the total cached results, if set.
-- `craft\base\FieldInterface::validateValue()` is now responsible for required-field validation (and a basic is-empty check is included in base/Field).
+- `craft\base\FieldInterface::validateValue()` is now responsible for required-field validation (and a basic is-empty check is included in `craft\base\Field`).
 - `craft\base\FieldInterface::validateValue()` no longer needs to return `true` if the value passed validation.
 - `craft\dates\DateTimeHelper::toDateTime()`’s `$timezone` argument has been replaced with `$assumeSystemTimeZone`. If set to `true` and if `$value` doesn’t have an explicit time zone, the method will use the system’s time zone. Otherwise UTC will be used. (Defaults to `false`.)
 - `craft\dates\DateTimeHelper::toDateTime()` now checks for a `timezone` key when `$value` is in the date/time-picker array format.
@@ -983,13 +1163,13 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed many, many bugs.
 
-## [v3.0.0-alpha.2671] - 2015-06-18
+## 3.0.0-alpha.2671 - 2015-06-18
 
 ### Added
 - Ported all new features and improvements that were introduced in [Craft 2.4](http://buildwithcraft.com/updates#build2664).
 - The codebase now follows the [PSR-2](http://www.php-fig.org/psr/psr-2/) coding style.
-- Added support for config/app.php, which can return an array that will be merged with Craft’s core application config array.
-- Craft now looks for translation files at craft/translations/locale-ID/category.php, where `category` can either be `'app'`, `'site'`, `'yii'`, or a plugin’s handle.
+- Added support for `config/app.php`, which can return an array that will be merged with Craft’s core application config array.
+- Craft now looks for translation files at `translations/locale-ID/category.php`, where `category` can either be `'app'`, `'site'`, `'yii'`, or a plugin’s handle.
 - All user-defined strings in the Control Panel (e.g. section names) are now translated using the `'site'` category, to prevent translation conflicts with Craft’s own Control Panel translations.
 - Craft now uses SwiftMailer to send emails.
 - Added the ability for plugins to provide custom SwiftMailer transport options.
@@ -1003,9 +1183,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The `translationDebugOutput` config setting will now wrap strings with `@` characters if the category is `'app'`, `$` if the category is `'site'`, and `%` for anything else.
-- Web requests are now logged to craft/storage/logs/web.log.
-- Web requests that result in 404 errors are now logged to craft/storage/logs/web-404s.log.
-- Console requests are now logged to craft/storage/logs/console.log.
+- Web requests are now logged to `storage/logs/web.log`.
+- Web requests that result in 404 errors are now logged to `storage/logs/web-404s.log`.
+- Console requests are now logged to `storage/logs/console.log`.
 - Template error handling now works similarly to how it does in Craft 2 when Craft is running in Dev Mode, where the template source is shown in the error view.
 - Twig class names now link to their respective class reference URLs in the error view’s stack trace.
 - The `registercss`, `registerhirescss`, and `registerjs` tags can now be used as tag pairs.
@@ -1046,7 +1226,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that prevented user and email settings from being remembered.
 - Fixed a JavaScript error that occurred on pages with fields that could be toggled by a checkbox.
 
-## [v3.0.0-alpha.2663] - 2015-05-27
+## 3.0.0-alpha.2663 - 2015-05-27
 
 ### Changed
 - Plugins can now add an array of Twig extensions from the `addTwigExtension` hook.
@@ -1054,7 +1234,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a PHP error that occurred when installing Craft or validating URLs if the Intl extension wasn’t loaded.
 
-## [v3.0.0-alpha.2661] - 2015-05-22
+## 3.0.0-alpha.2661 - 2015-05-22
 
 ### Added
 - Added a `withPassword` criteria parameter to User queries, which includes the users’ hashed passwords in the query and sets them on the resulting User models.
@@ -1066,7 +1246,7 @@ Craft CMS 3.0 Working Changelog
 - URL validation now accounts for URLs that include environment variables.
 - URL validation now allows international domain names.
 - `contentTable` is now a reserved field handle.
-- Craft is now distributed with a public/cpresources folder, which should be set with writable permissions.
+- Craft is now distributed with a `public/cpresources/` folder, which should be set with writable permissions.
 - Craft now ensures that the public Resources folder exists and is writable at a much earlier stage so it can give a more helpful error message.
 
 ### Fixed
@@ -1083,17 +1263,17 @@ Craft CMS 3.0 Working Changelog
 - Fixed a “Craft Client is required” error when editing entries in Craft Personal.
 - Fixed an error that occurred after an Admin entered their password in order to change a user account’s email/password.
 - Fixed a validation error on the New Password field if a user attempted to update their email address but didn’t want to change their existing password.
-- Corrected the default config paths in the comments of config/db.php and config/general.php.
+- Corrected the default config paths in the comments of `config/db.php` and `config/general.php`.
 - Fixed a bug that resulted in the Updates page never getting past the “Checking for updates” step when an update was available.
 
-## [v3.0.0-alpha.2659] - 2015-05-19
+## 3.0.0-alpha.2659 - 2015-05-19
 
 ### Added
 - Added support for registering plugin resources via `craft\web\View::registerCssResource()` and `registerJsResource()`.
 - Added `craft\base\Element::getStructureId()`, `setStructureId()`, and `resolveStructureId()`.
 
 ### Changed
-- Drastically reduced the likelihood of importing a database backup with a falsely-identical schemaVersion as the files stored in craft/storage/runtime/compiled_classes/.
+- Drastically reduced the likelihood of importing a database backup with a falsely-identical schemaVersion as the files stored in `storage/runtime/compiled_classes/`.
 
 ### Fixed
 - Updated the sample config files to use PHP 5.4’s short array syntax.
@@ -1105,10 +1285,10 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when searching for tags within a Tags field.
 - Fixed a PHP error that occurred when using Date/Time fields configured to only show the timepicker.
 - Fixed a bug where asset bundles wouldn’t get re-published if a file within one of its subdirectories was created or updated.
-- Fixed a bug where database backups would get stored in `craft/storagebackups/` instead of `craft/storage/backups/`.
+- Fixed a bug where database backups would get stored in `storagebackups/` instead of `storage/backups/`.
 - Fixed a bug where the Min Build Required error message had encoded HTML.
 
-## v3.0.0-alpha.2657 - 2015-05-19
+## 3.0.0-alpha.2657 - 2015-05-19
 
 ### Added
 - Completely rewritten and refactored codebase, powered by [Yii 2](http://www.yiiframework.com/).
@@ -1117,20 +1297,3 @@ Craft CMS 3.0 Working Changelog
 - Asset Sources are now called Volumes, and plugins can supply their own Volume Types (made easy with [Flysystem](http://flysystem.thephpleague.com/)).
 - It is now possibly to customize the SQL of element queries, and there are more choices on how the data should be returned.
 - Included the [Yii 2 Debug Extension](http://www.yiiframework.com/doc-2.0/guide-tool-debugger.html).
-
-[Unreleased]: https://github.com/craftcms/craft/compare/v3.0.0-alpha.2948...develop
-[v3.0.0-alpha.2948]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2942...3.0.0-alpha.2948
-[v3.0.0-alpha.2942]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2939...3.0.0-alpha.2942
-[v3.0.0-alpha.2939]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2937...3.0.0-alpha.2939
-[v3.0.0-alpha.2937]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2933...3.0.0-alpha.2937
-[v3.0.0-alpha.2933]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2928...3.0.0-alpha.2933
-[v3.0.0-alpha.2928]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2918...3.0.0-alpha.2928
-[v3.0.0-alpha.2918]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2915...3.0.0-alpha.2918
-[v3.0.0-alpha.2915]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2910...3.0.0-alpha.2915
-[v3.0.0-alpha.2910]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2687...3.0.0-alpha.2910
-[v3.0.0-alpha.2687]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2681...3.0.0-alpha.2687
-[v3.0.0-alpha.2681]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2671...3.0.0-alpha.2681
-[v3.0.0-alpha.2671]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2663...3.0.0-alpha.2671
-[v3.0.0-alpha.2663]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2661...3.0.0-alpha.2663
-[v3.0.0-alpha.2661]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2659...3.0.0-alpha.2661
-[v3.0.0-alpha.2659]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2657...3.0.0-alpha.2659

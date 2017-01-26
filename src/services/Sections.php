@@ -117,9 +117,9 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
-     * @return integer[] All the sections’ IDs.
+     * @return int[] All the sections’ IDs.
      */
-    public function getAllSectionIds()
+    public function getAllSectionIds(): array
     {
         if ($this->_allSectionIds !== null) {
             return $this->_allSectionIds;
@@ -139,7 +139,7 @@ class Sections extends Component
      *
      * @return array All the editable sections’ IDs.
      */
-    public function getEditableSectionIds()
+    public function getEditableSectionIds(): array
     {
         if ($this->_editableSectionIds !== null) {
             return $this->_editableSectionIds;
@@ -161,7 +161,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections.
      */
-    public function getAllSections()
+    public function getAllSections(): array
     {
         if ($this->_fetchedAllSections) {
             return array_values($this->_sectionsById);
@@ -187,7 +187,7 @@ class Sections extends Component
      *
      * @return Section[] All the editable sections.
      */
-    public function getEditableSections()
+    public function getEditableSections(): array
     {
         $editableSectionIds = $this->getEditableSectionIds();
         $editableSections = [];
@@ -209,7 +209,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections of the given type.
      */
-    public function getSectionsByType($type)
+    public function getSectionsByType(string $type): array
     {
         $sections = [];
 
@@ -225,9 +225,9 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalSections()
+    public function getTotalSections(): int
     {
         return count($this->getAllSectionIds());
     }
@@ -235,9 +235,9 @@ class Sections extends Component
     /**
      * Gets the total number of sections that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalEditableSections()
+    public function getTotalEditableSections(): int
     {
         return count($this->getEditableSectionIds());
     }
@@ -245,11 +245,11 @@ class Sections extends Component
     /**
      * Returns a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return Section|null
      */
-    public function getSectionById($sectionId)
+    public function getSectionById(int $sectionId)
     {
         if (!$sectionId) {
             return null;
@@ -283,7 +283,7 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionByHandle($sectionHandle)
+    public function getSectionByHandle(string $sectionHandle)
     {
         $result = $this->_createSectionQuery()
             ->where(['sections.handle' => $sectionHandle])
@@ -302,11 +302,11 @@ class Sections extends Component
     /**
      * Returns a section’s site-specific settings.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId)
+    public function getSectionSiteSettings(int $sectionId): array
     {
         $siteSettings = (new Query())
             ->select([
@@ -335,13 +335,13 @@ class Sections extends Component
      * Saves a section.
      *
      * @param Section $section       The section to be saved
-     * @param boolean $runValidation Whether the section should be validated
+     * @param bool    $runValidation Whether the section should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSection(Section $section, $runValidation = true)
+    public function saveSection(Section $section, bool $runValidation = true): bool
     {
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
@@ -383,7 +383,7 @@ class Sections extends Component
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
 
-        if (!$allSiteSettings) {
+        if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
         }
 
@@ -400,7 +400,7 @@ class Sections extends Component
             // Do we need to create a structure?
             if ($section->type == Section::TYPE_STRUCTURE) {
                 /** @noinspection PhpUndefinedVariableInspection */
-                if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
+                if (!$isNewSection && $oldSection->type === Section::TYPE_STRUCTURE) {
                     $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
                     $isNewStructure = false;
                 } else {
@@ -409,7 +409,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels == 0) {
+                if ($section->maxLevels === 0) {
                     $section->maxLevels = null;
                 }
 
@@ -496,7 +496,7 @@ class Sections extends Component
                     ->where(['sectionId' => $section->id])
                     ->column();
 
-                if ($entryTypeIds) {
+                if (!empty($entryTypeIds)) {
                     $entryTypeId = array_shift($entryTypeIds);
                 }
             }
@@ -528,10 +528,9 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             switch ($section->type) {
-                case Section::TYPE_SINGLE: {
+                case Section::TYPE_SINGLE:
                     // Make sure that there is one and only one Entry Type and Entry for this section.
                     $singleEntryId = null;
-
                     if (!$isNewSection) {
                         // Re-save the entrytype name if the section name just changed
                         /** @noinspection PhpUndefinedVariableInspection */
@@ -540,7 +539,6 @@ class Sections extends Component
                             $entryType->name = $section->name;
                             $this->saveEntryType($entryType);
                         }
-
                         // Make sure there's only one entry in this section
                         $results = (new Query())
                             ->select([
@@ -554,20 +552,16 @@ class Sections extends Component
                             ->from(['{{%entries}} e'])
                             ->where(['e.sectionId' => $section->id])
                             ->all();
-
-                        if ($results) {
+                        if (!empty($results)) {
                             $firstResult = array_shift($results);
                             $singleEntryId = $firstResult['id'];
-
                             // If there are any more, get rid of them
-                            if ($results) {
+                            if (!empty($results)) {
                                 foreach ($results as $result) {
                                     Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                                 }
                             }
-
                             // Make sure it's enabled and all that.
-
                             $db->createCommand()
                                 ->update(
                                     '{{%elements}}',
@@ -579,7 +573,6 @@ class Sections extends Component
                                         'id' => $singleEntryId
                                     ])
                                 ->execute();
-
                             $db->createCommand()
                                 ->update(
                                     '{{%entries}}',
@@ -594,19 +587,17 @@ class Sections extends Component
                                     ])
                                 ->execute();
                         }
-
                         // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
-                        if ($entryTypeIds) {
+                        if (!empty($entryTypeIds)) {
                             foreach ($entryTypeIds as $entryTypeId) {
                                 $this->deleteEntryTypeById($entryTypeId);
                             }
                         }
                     }
-
                     if (!$singleEntryId) {
                         // Create it
-                        $firstSiteSettings = ArrayHelper::firstValue($allSiteSettings);
+                        $firstSiteSettings = reset($allSiteSettings);
                         $singleEntry = new Entry();
                         $singleEntry->siteId = $firstSiteSettings->siteId;
                         $singleEntry->sectionId = $section->id;
@@ -614,11 +605,8 @@ class Sections extends Component
                         $singleEntry->title = $section->name;
                         Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
-
                     break;
-                }
-
-                case Section::TYPE_STRUCTURE: {
+                case Section::TYPE_STRUCTURE:
                     /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
@@ -629,15 +617,12 @@ class Sections extends Component
                         $query->status(null);
                         $query->enabledForSite(false);
                         $query->orderBy('elements.id');
-
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
                         }
                     }
-
                     break;
-                }
             }
 
             // Finally, deal with the existing entries...
@@ -648,7 +633,7 @@ class Sections extends Component
                 /** @noinspection PhpUndefinedVariableInspection */
                 $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
 
-                if ($siteIds) {
+                if (!empty($siteIds)) {
                     Craft::$app->getTasks()->queueTask([
                         'type' => ResaveElements::class,
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
@@ -683,12 +668,12 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSectionById($sectionId)
+    public function deleteSectionById(int $sectionId): bool
     {
         $section = $this->getSectionById($sectionId);
 
@@ -704,10 +689,10 @@ class Sections extends Component
      *
      * @param Section $section
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSection(Section $section)
+    public function deleteSection(Section $section): bool
     {
         // Fire a 'beforeDeleteSection' event
         $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
@@ -731,7 +716,7 @@ class Sections extends Component
                 ->where(['id' => $entryTypeIds])
                 ->column();
 
-            if ($fieldLayoutIds) {
+            if (!empty($fieldLayoutIds)) {
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 
@@ -781,11 +766,11 @@ class Sections extends Component
      * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
-     * @param integer $siteId
+     * @param int     $siteId
      *
-     * @return boolean
+     * @return bool
      */
-    public function isSectionTemplateValid(Section $section, $siteId)
+    public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
@@ -815,11 +800,11 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId)
+    public function getEntryTypesBySectionId(int $sectionId): array
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
@@ -845,11 +830,11 @@ class Sections extends Component
     /**
      * Returns an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
      * @return EntryType|null
      */
-    public function getEntryTypeById($entryTypeId)
+    public function getEntryTypeById(int $entryTypeId)
     {
         if (!$entryTypeId) {
             return null;
@@ -878,11 +863,11 @@ class Sections extends Component
     /**
      * Returns entry types that have a given handle.
      *
-     * @param integer $entryTypeHandle
+     * @param int $entryTypeHandle
      *
      * @return EntryType[]
      */
-    public function getEntryTypesByHandle($entryTypeHandle)
+    public function getEntryTypesByHandle(int $entryTypeHandle): array
     {
         $entryTypes = [];
 
@@ -910,13 +895,13 @@ class Sections extends Component
      * Saves an entry type.
      *
      * @param EntryType $entryType     The entry type to be saved
-     * @param boolean   $runValidation Whether the entry type should be validated
+     * @param bool      $runValidation Whether the entry type should be validated
      *
-     * @return boolean Whether the entry type was saved successfully
+     * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType, $runValidation = true)
+    public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -1021,10 +1006,10 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      *
-     * @return boolean Whether the entry types were reordered successfully
+     * @return bool Whether the entry types were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderEntryTypes($entryTypeIds)
+    public function reorderEntryTypes(array $entryTypeIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1048,12 +1033,12 @@ class Sections extends Component
     /**
      * Deletes an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryTypeById($entryTypeId)
+    public function deleteEntryTypeById(int $entryTypeId): bool
     {
         $entryType = $this->getEntryTypeById($entryTypeId);
 
@@ -1069,10 +1054,10 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryType(EntryType $entryType)
+    public function deleteEntryType(EntryType $entryType): bool
     {
         // Fire a 'beforeSaveEntryType' event
         $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
@@ -1131,7 +1116,7 @@ class Sections extends Component
      *
      * @return Query
      */
-    private function _createSectionQuery()
+    private function _createSectionQuery(): Query
     {
         return (new Query())
             ->select([

@@ -25,32 +25,32 @@ class FieldLayoutTab extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Layout ID
+     * @var int|null Layout ID
      */
     public $layoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
     /**
-     * @var FieldLayout
+     * @var FieldLayout|null
      */
     private $_layout;
 
     /**
-     * @var FieldInterface[]
+     * @var FieldInterface[]|null
      */
     private $_fields;
 
@@ -109,7 +109,7 @@ class FieldLayoutTab extends Model
      *
      * @return FieldInterface[] The tab’s fields.
      */
-    public function getFields()
+    public function getFields(): array
     {
         if ($this->_fields !== null) {
             return $this->_fields;
@@ -136,7 +136,7 @@ class FieldLayoutTab extends Model
      *
      * @return void
      */
-    public function setFields($fields)
+    public function setFields(array $fields)
     {
         $this->_fields = $fields;
     }

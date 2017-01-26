@@ -12,9 +12,9 @@ use craft\db\ActiveRecord;
 /**
  * Class SystemSettings record.
  *
- * @property integer $id       ID
- * @property string  $category Category
- * @property array   $settings Settings
+ * @property int    $id       ID
+ * @property string $category Category
+ * @property array  $settings Settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -41,7 +41,7 @@ class SystemSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%systemsettings}}';
     }

@@ -10,6 +10,8 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use craft\web\assets\newusers\NewUsersAsset;
+use yii\base\Exception;
 
 /**
  * NewUsers represents a New Users dashboard widget.
@@ -25,7 +27,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'New Users');
     }
@@ -33,22 +35,36 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
         return (Craft::$app->getEdition() === Craft::Pro);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function iconPath()
+    {
+        $iconPath = Craft::getAlias('@app/icons/users.svg');
+
+        if ($iconPath === false) {
+            throw new Exception('There was a problem getting the icon path.');
+        }
+
+        return $iconPath;
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The ID of the user group
+     * @var int|null The ID of the user group
      */
     public $userGroupId;
 
     /**
-     * @var string The date range
+     * @var string|null The date range
      */
     public $dateRange;
 
@@ -59,7 +75,7 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle()
+    public function getTitle(): string
     {
         if ($groupId = $this->userGroupId) {
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
@@ -84,8 +100,9 @@ class NewUsers extends Widget
         $options = $this->getSettings();
         $options['orientation'] = Craft::$app->getLocale()->getOrientation();
 
-        Craft::$app->getView()->registerJsResource('js/NewUsersWidget.js');
-        Craft::$app->getView()->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(NewUsersAsset::class);
+        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '<div></div>';
     }
@@ -99,13 +116,5 @@ class NewUsers extends Widget
             [
                 'widget' => $this
             ]);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'new-users.svg';
     }
 }

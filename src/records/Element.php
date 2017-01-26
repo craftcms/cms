@@ -12,10 +12,10 @@ use craft\db\ActiveRecord;
 /**
  * Element record class.
  *
- * @property integer $id       ID
- * @property string  $type     Type
- * @property boolean $enabled  Enabled
- * @property boolean $archived Archived
+ * @property int    $id       ID
+ * @property string $type     Type
+ * @property bool   $enabled  Enabled
+ * @property bool   $archived Archived
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -30,7 +30,7 @@ class Element extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%elements}}';
     }

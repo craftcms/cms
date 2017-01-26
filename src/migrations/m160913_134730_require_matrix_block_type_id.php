@@ -24,9 +24,9 @@ class m160913_134730_require_matrix_block_type_id extends Migration
             ->where(['typeId' => null])
             ->column();
 
-        if ($typelessBlockIds) {
+        if (!empty($typelessBlockIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);
-            Craft::warning("Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds));
+            echo "    > Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds)."\n";
         }
 
         // Make typeId required

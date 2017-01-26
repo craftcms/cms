@@ -17,7 +17,7 @@ use craft\validators\UniqueValidator;
 /**
  * The AssetTransform model class.
  *
- * @property boolean $isNamedTransform Whether this is a named transform
+ * @property bool $isNamedTransform Whether this is a named transform
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -28,37 +28,37 @@ class AssetTransform extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var integer Width
+     * @var int|null Width
      */
     public $width;
 
     /**
-     * @var integer Height
+     * @var int|null Height
      */
     public $height;
 
     /**
-     * @var string Format
+     * @var string|null Format
      */
     public $format;
 
     /**
-     * @var \DateTime Dimension change time
+     * @var \DateTime|null Dimension change time
      */
     public $dimensionChangeTime;
 
@@ -73,7 +73,7 @@ class AssetTransform extends Model
     public $position = 'center-center';
 
     /**
-     * @var integer Quality
+     * @var int|null Quality
      */
     public $quality;
 
@@ -139,17 +139,17 @@ class AssetTransform extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**
      * Return whether this is a named transform
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsNamedTransform()
+    public function getIsNamedTransform(): bool
     {
         return !empty($this->name);
     }
@@ -159,7 +159,7 @@ class AssetTransform extends Model
      *
      * @return array
      */
-    public static function modes()
+    public static function modes(): array
     {
         return [
             'crop' => Craft::t('app', 'Scale and crop'),
@@ -171,7 +171,7 @@ class AssetTransform extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'dimensionChangeTime';

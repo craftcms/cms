@@ -23,22 +23,22 @@ class MailFailureEvent extends Event
     // =========================================================================
 
     /**
-     * @var string|array|User|User[] The user(s) the email was being sent to.
+     * @var string|array|User|User[]|null The user(s) the email was being sent to.
      */
     public $user;
 
     /**
-     * @var Message The email message.
+     * @var Message|null The email message.
      */
     public $email;
 
     /**
-     * @var array The status the elements are getting set to.
+     * @var array|null The status the elements are getting set to.
      */
     public $variables;
 
     /**
-     * @var string The error message.
+     * @var string|null The error message.
      */
     public $error;
 }

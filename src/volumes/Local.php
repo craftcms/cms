@@ -41,17 +41,9 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Local Folder');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isLocal()
-    {
-        return true;
     }
 
     // Properties
@@ -93,9 +85,9 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getRootPath()
+    public function getRootPath(): string
     {
-        return Craft::$app->getConfig()->parseEnvironmentString($this->path);
+        return $this->path;
     }
 
     /**
@@ -103,19 +95,20 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function getRootUrl()
     {
-        return rtrim(Craft::$app->getConfig()->parseEnvironmentString($this->url), '/').'/';
+        return rtrim($this->url, '/').'/';
     }
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * @inheritdoc
      */
-    public function renameDir($path, $newName)
+    public function renameDir(string $path, string $newName): bool
     {
         $parentDir = dirname($path);
-        $newPath = ($parentDir && $parentDir != '.' ? $parentDir.'/' : '').$newName;
+        $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
 
         try {
-            return $this->getFilesystem()->rename($path, $newPath);
+            return $this->filesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
@@ -131,7 +124,7 @@ class Local extends Volume implements LocalVolumeInterface
      *
      * @return LocalAdapter
      */
-    protected function createAdapter()
+    protected function createAdapter(): LocalAdapter
     {
         return new LocalAdapter($this->getRootPath());
     }

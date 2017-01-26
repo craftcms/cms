@@ -48,7 +48,7 @@ class ChartHelper
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, array $options = [])
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, array $options = []): array
     {
         // Setup
         $options = array_merge([
@@ -182,7 +182,6 @@ class ChartHelper
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             // Do we have a record for this date?
-            // $formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
             $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
             if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate) {
@@ -199,7 +198,7 @@ class ChartHelper
         return [
             'columns' => [
                 [
-                    'type' => $intervalUnit == 'hour' ? 'datetime' : 'date',
+                    'type' => $intervalUnit === 'hour' ? 'datetime' : 'date',
                     'label' => $options['categoryLabel']
                 ],
                 [
@@ -219,7 +218,7 @@ class ChartHelper
      *
      * @return string The unit that the chart should use ('hour', 'day', 'month', or 'year')
      */
-    public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate)
+    public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate): string
     {
         // Get the total number of days between the two dates
         $days = $endDate->diff($startDate)->format('%a');
@@ -244,7 +243,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function formats()
+    public static function formats(): array
     {
         return [
             'shortDateFormats' => self::shortDateFormats(),
@@ -259,7 +258,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function shortDateFormats()
+    public static function shortDateFormats(): array
     {
         $format = Craft::$app->getLocale()->getDateFormat('short');
 
@@ -313,7 +312,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function decimalFormat()
+    public static function decimalFormat(): string
     {
         return ',.3f';
     }
@@ -323,7 +322,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function percentFormat()
+    public static function percentFormat(): string
     {
         return ',.2%';
     }
@@ -333,7 +332,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function currencyFormat()
+    public static function currencyFormat(): string
     {
         return '$,.2f';
     }
@@ -343,7 +342,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function dateRanges()
+    public static function dateRanges(): array
     {
         $dateRanges = [
             'd7' => ['label' => Craft::t('app', 'Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],

@@ -23,7 +23,7 @@ class LocalizeRelations extends Task
     // =========================================================================
 
     /**
-     * @var integer The field ID whose data should be localized
+     * @var int|null The field ID whose data should be localized
      */
     public $fieldId;
 
@@ -48,7 +48,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
@@ -67,7 +67,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         $db = Craft::$app->getDb();
         try {
@@ -110,7 +110,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Localizing relations');
     }

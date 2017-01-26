@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * Paginate variable class.
@@ -52,11 +52,11 @@ class Paginate
     /**
      * Returns the URL to a specific page
      *
-     * @param integer $page
+     * @param int $page
      *
      * @return string|null
      */
-    public function getPageUrl($page)
+    public function getPageUrl(int $page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
             $path = Craft::$app->getRequest()->getPathInfo();
@@ -88,7 +88,7 @@ class Paginate
                 }
             }
 
-            return Url::url($path, $params);
+            return UrlHelper::url($path, $params);
         }
 
         return null;
@@ -137,13 +137,13 @@ class Paginate
     /**
      * Returns previous page URLs up to a certain distance from the current page.
      *
-     * @param integer $dist
+     * @param int|null $dist
      *
      * @return array
      */
-    public function getPrevUrls($dist = null)
+    public function getPrevUrls(int $dist = null): array
     {
-        if ($dist) {
+        if ($dist !== null) {
             $start = $this->currentPage - $dist;
         } else {
             $start = 1;
@@ -155,13 +155,13 @@ class Paginate
     /**
      * Returns next page URLs up to a certain distance from the current page.
      *
-     * @param integer $dist
+     * @param int|null $dist
      *
      * @return array
      */
-    public function getNextUrls($dist = null)
+    public function getNextUrls(int $dist = null): array
     {
-        if ($dist) {
+        if ($dist !== null) {
             $end = $this->currentPage + $dist;
         } else {
             $end = $this->totalPages;
@@ -173,12 +173,12 @@ class Paginate
     /**
      * Returns a range of page URLs.
      *
-     * @param integer $start
-     * @param integer $end
+     * @param int $start
+     * @param int $end
      *
      * @return array
      */
-    public function getRangeUrls($start, $end)
+    public function getRangeUrls(int $start, int $end): array
     {
         if ($start < 1) {
             $start = 1;

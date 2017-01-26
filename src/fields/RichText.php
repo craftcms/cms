@@ -12,9 +12,10 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Volume;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -23,6 +24,8 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\validators\HandleValidator;
+use craft\web\assets\redactor\RedactorAsset;
+use craft\web\assets\richtext\RichTextAsset;
 use yii\db\Schema;
 use yii\validators\StringValidator;
 
@@ -40,7 +43,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Rich Text');
     }
@@ -57,17 +60,17 @@ class RichText extends Field
     // =========================================================================
 
     /**
-     * @var string The Redactor config file to use
+     * @var string|null The Redactor config file to use
      */
     public $configFile;
 
     /**
-     * @var boolean Whether the HTML should be cleaned up on save
+     * @var bool Whether the HTML should be cleaned up on save
      */
     public $cleanupHtml = true;
 
     /**
-     * @var boolean Whether the HTML should be purified on save
+     * @var bool Whether the HTML should be purified on save
      */
     public $purifyHtml = true;
 
@@ -153,7 +156,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return $this->columnType;
     }
@@ -161,10 +164,10 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var string|null $value */
-        if ($value) {
+        if ($value !== null) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
         }
@@ -175,7 +178,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var RichTextData|null $value */
         /** @var Element $element */
@@ -208,7 +211,7 @@ class RichText extends Field
             $value = $value->getRawContent();
         }
 
-        if (StringHelper::contains($value, '{')) {
+        if ($value !== null && StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function($matches) {
@@ -228,7 +231,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules()
+    public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
         $rules[] = 'validateLength';
@@ -244,7 +247,7 @@ class RichText extends Field
      *
      * @return void
      */
-    public function validateLength(ElementInterface $element, $params)
+    public function validateLength(ElementInterface $element, array $params = null)
     {
         /** @var Element $element */
         /** @var RichTextData $value */
@@ -270,7 +273,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var RichTextData|null $value */
         return '<div class="text">'.($value ?: '&nbsp;').'</div>';
@@ -279,7 +282,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */
         if (!$value) {
@@ -291,7 +294,7 @@ class RichText extends Field
 
         // Temporary fix (hopefully) for a Redactor bug where some HTML will get submitted when the field is blank,
         // if any text was typed into the field, and then deleted
-        if ($value == '<p><br></p>') {
+        if ($value === '<p><br></p>') {
             $value = '';
         }
 
@@ -352,7 +355,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         /** @var RichTextData|null $value */
         if ($value) {
@@ -382,25 +385,25 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getLinkOptions($element)
+    private function _getLinkOptions(Element $element = null): array
     {
         $linkOptions = [];
 
         $sectionSources = $this->_getSectionSources($element);
         $categorySources = $this->_getCategorySources($element);
 
-        if ($sectionSources) {
+        if (!empty($sectionSources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to an entry'),
-                'elementType' => 'Entry',
+                'elementType' => Entry::class,
                 'sources' => $sectionSources,
             ];
         }
 
-        if ($categorySources) {
+        if (!empty($categorySources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to a category'),
-                'elementType' => 'Category',
+                'elementType' => Category::class,
                 'sources' => $categorySources,
             ];
         }
@@ -421,7 +424,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getSectionSources($element)
+    private function _getSectionSources(Element $element = null): array
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -453,7 +456,7 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getCategorySources($element)
+    private function _getCategorySources(Element $element = null): array
     {
         $sources = [];
 
@@ -477,13 +480,13 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getVolumes()
+    private function _getVolumes(): array
     {
         $volumes = [];
 
         $volumeIds = $this->availableVolumes;
 
-        if (!$volumeIds) {
+        if (empty($volumeIds)) {
             // TODO: change to getPublicVolumeIds() when it exists
             $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
@@ -505,13 +508,13 @@ class RichText extends Field
      *
      * @return array
      */
-    private function _getTransforms()
+    private function _getTransforms(): array
     {
         $allTransforms = Craft::$app->getAssetTransforms()->getAllTransforms();
         $transformList = [];
 
         foreach ($allTransforms as $transform) {
-            if ($this->availableTransforms && !in_array($transform->id, $this->availableTransforms, false)) {
+            if (!empty($this->availableTransforms) && !in_array($transform->id, $this->availableTransforms, false)) {
                 continue;
             }
             $transformList[] = (object)[
@@ -528,7 +531,7 @@ class RichText extends Field
      *
      * @return string
      */
-    private function _getConfigJson()
+    private function _getConfigJson(): string
     {
         if (!$this->configFile) {
             return '{}';
@@ -552,15 +555,11 @@ class RichText extends Field
      *
      * @return void
      */
-    private function _includeFieldResources($configJs)
+    private function _includeFieldResources(string $configJs)
     {
         $view = Craft::$app->getView();
-        $view->registerCssResource('lib/redactor/redactor.css');
-        $view->registerCssResource('lib/redactor/plugins/pagebreak.css');
 
-        // Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-        $view->registerJsResource('lib/redactor/redactor.js');
-        //$view->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
+        $view->registerAssetBundle(RichTextAsset::class);
 
         $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
@@ -579,8 +578,6 @@ class RichText extends Field
             'Link to an asset',
             'Link to a category',
         ]);
-
-        $view->registerJsResource('js/RichTextInput.js');
 
         // Check to see if the Redactor has been translated into the current site
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
@@ -619,25 +616,29 @@ class RichText extends Field
     /**
      * Includes a plugin’s JS file, if it appears to be requested by the config file.
      *
-     * @param string  $configJs
-     * @param string  $plugin
-     * @param boolean $includeCss
+     * @param string $configJs
+     * @param string $plugin
+     * @param bool   $includeCss
      *
      * @return void
      */
-    private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
+    private function _maybeIncludeRedactorPlugin(string $configJs, string $plugin, bool $includeCss)
     {
         if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
             if (($pipe = strpos($plugin, '|')) !== false) {
                 $plugin = substr($plugin, 0, $pipe);
             }
 
+            $am = Craft::$app->getAssetManager();
             $view = Craft::$app->getView();
+
             if ($includeCss) {
-                $view->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
+                $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
             }
 
-            $view->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
+            $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
+                'depends' => RedactorAsset::class
+            ]);
         }
     }
 
@@ -646,18 +647,21 @@ class RichText extends Field
      *
      * @param string $lang
      *
-     * @return boolean
+     * @return bool
      */
-    private function _includeRedactorLangFile($lang)
+    private function _includeRedactorLangFile(string $lang): bool
     {
-        $resourcePath = "lib/redactor/lang/{$lang}.js";
-        $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);
+        $redactorPath = Craft::getAlias('@lib/redactor');
+        $subPath = "/lang/{$lang}.js";
+        $fullPath = $redactorPath.$subPath;
 
         if (!is_file($fullPath)) {
             return false;
         }
 
-        Craft::$app->getView()->registerJsResource($resourcePath);
+        $am = Craft::$app->getAssetManager();
+        $view = Craft::$app->getView();
+        $view->registerJsFile($am->getPublishedUrl($redactorPath).$subPath);
         self::$_redactorLang = $lang;
 
         return true;

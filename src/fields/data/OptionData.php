@@ -21,17 +21,17 @@ class OptionData implements Serializable
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $label;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $value;
 
     /**
-     * @var
+     * @var bool|null
      */
     public $selected;
 
@@ -43,9 +43,9 @@ class OptionData implements Serializable
      *
      * @param string $label
      * @param string $value
-     * @param        $selected
+     * @param bool   $selected
      */
-    public function __construct($label, $value, $selected)
+    public function __construct(string $label, string $value, bool $selected)
     {
         $this->label = $label;
         $this->value = $value;
@@ -55,7 +55,7 @@ class OptionData implements Serializable
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string)$this->value;
     }

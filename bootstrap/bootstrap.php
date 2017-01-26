@@ -18,16 +18,17 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$getArg = function ($param, $unset = true) {
-    if (isset($_SERVER['argv'])) {
+$findConfig = function($constName, $argName) {
+    if (defined($constName)) {
+        return realpath(constant($constName));
+    }
+
+    if (!empty($_SERVER['argv'])) {
         foreach ($_SERVER['argv'] as $key => $arg) {
-            if (strpos($arg, "--{$param}=") !== false) {
+            if (strpos($arg, "--{$argName}=") !== false) {
                 $parts = explode('=', $arg);
                 $value = $parts[1];
-
-                if ($unset) {
-                    unset($_SERVER['argv'][$key]);
-                }
+                unset($_SERVER['argv'][$key]);
 
                 return $value;
             }
@@ -37,7 +38,7 @@ $getArg = function ($param, $unset = true) {
     return null;
 };
 
-$createFolder = function ($path) {
+$createFolder = function($path) {
     // Code borrowed from Io...
     if (!is_dir($path)) {
         $oldumask = umask(0);
@@ -55,7 +56,7 @@ $createFolder = function ($path) {
     }
 };
 
-$ensureFolderIsReadable = function ($path, $writableToo = false) {
+$ensureFolderIsReadable = function($path, $writableToo = false) {
     $realPath = realpath($path);
 
     // !@file_exists('/.') is a workaround for the terrible is_executable()
@@ -79,24 +80,27 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 // Determine the paths
 // -----------------------------------------------------------------------------
 
-// Set the vendor path. By default assume that Craft is located as a Composer dependency.
-$vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
+// Set the vendor path. By default assume that it's 4 levels up from here
+$vendorPath = $findConfig('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
 
-// Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
-$craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
+// Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
+$basePath = $findConfig('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
-// By default the remaining folders will be in craft/
-$configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $craftPath.'/config');
-$contentMigrationsPath = realpath(defined('CRAFT_CONTENT_MIGRATIONS_PATH') ? CRAFT_CONTENT_MIGRATIONS_PATH : $getArg('contentMigrationsPath') ?: $craftPath.'/migrations');
-$pluginsPath = realpath(defined('CRAFT_PLUGINS_PATH') ? CRAFT_PLUGINS_PATH : $getArg('pluginsPath') ?: $craftPath.'/plugins');
-$storagePath = realpath(defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $getArg('storagePath') ?: $craftPath.'/storage');
-$templatesPath = realpath(defined('CRAFT_TEMPLATES_PATH') ? CRAFT_TEMPLATES_PATH : $getArg('templatesPath') ?: $craftPath.'/templates');
-$translationsPath = realpath(defined('CRAFT_TRANSLATIONS_PATH') ? CRAFT_TRANSLATIONS_PATH : $getArg('translationsPath') ?: $craftPath.'/translations');
+// By default the remaining directories will be in the base directory
+$configPath = $findConfig('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
+$contentMigrationsPath = $findConfig('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
+$pluginsPath = $findConfig('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
+$storagePath = $findConfig('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
+$templatesPath = $findConfig('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
+$translationsPath = $findConfig('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
+
+// Set the environment
+$environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
 
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-// Validate permissions on craft/config/ and craft/storage/
+// Validate permissions on config/ and storage/
 $ensureFolderIsReadable($configPath);
 
 if ($appType === 'web') {
@@ -119,15 +123,15 @@ if ($appType === 'web') {
 
 $ensureFolderIsReadable($storagePath, true);
 
-// Create the craft/storage/runtime/ folder if it doesn't already exist
+// Create the storage/runtime/ folder if it doesn't already exist
 $createFolder($storagePath.'/runtime');
 $ensureFolderIsReadable($storagePath.'/runtime', true);
 
-// Create the craft/storage/logs/ folder if it doesn't already exist
+// Create the storage/logs/ folder if it doesn't already exist
 $createFolder($storagePath.'/logs');
 $ensureFolderIsReadable($storagePath.'/logs', true);
 
-// Log errors to craft/storage/logs/phperrors.log
+// Log errors to storage/logs/phperrors.log
 ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
 
@@ -137,14 +141,8 @@ ini_set('error_log', $storagePath.'/logs/phperrors.log');
 
 // We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
 if ($appType === 'console') {
-    // Set the environment
-    defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
-
     $devMode = true;
 } else {
-    // Set the environment
-    defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', $_SERVER['SERVER_NAME']);
-
     $devMode = false;
     $generalConfigPath = $configPath.'/general.php';
 
@@ -157,10 +155,16 @@ if ($appType === 'console') {
                 $generalConfig = ['*' => $generalConfig];
             }
 
-            // Loop through all of the environment configs, figuring out what the final word is on Dev Mode
-            foreach ($generalConfig as $env => $envConfig) {
-                if ($env == '*' || strpos(CRAFT_ENVIRONMENT, $env) !== false) {
-                    if (isset($envConfig['devMode'])) {
+            // If no environment was specified, just look in the '*' array
+            if ($environment === null) {
+                $devMode = $generalConfig['*']['devMode'] ?? false;
+            } else {
+                // Loop through all of the environment configs, figuring out what the final word is on Dev Mode
+                foreach ($generalConfig as $env => $envConfig) {
+                    if (
+                        ($env === '*' || strpos($environment, $env) !== false) &&
+                        isset($envConfig['devMode'])
+                    ) {
                         $devMode = $envConfig['devMode'];
                     }
                 }
@@ -190,11 +194,15 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$srcPath = $vendorPath.'/craftcms/craft/src';
+$cmsPath = $vendorPath.'/craftcms/cms';
+$libPath = $cmsPath.'/lib';
+$srcPath = $cmsPath.'/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
 // Set aliases
+Craft::setAlias('@lib', $libPath);
+Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@plugins', $pluginsPath);
@@ -210,6 +218,7 @@ $config = ArrayHelper::merge(
 );
 
 $config['vendorPath'] = $vendorPath;
+$config['env'] = $environment;
 
 // Set the current site
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {

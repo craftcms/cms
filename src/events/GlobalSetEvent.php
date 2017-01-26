@@ -21,12 +21,12 @@ class GlobalSetEvent extends CancelableEvent
     // =========================================================================
 
     /**
-     * @var GlobalSet The global set model associated with the event.
+     * @var GlobalSet|null The global set model associated with the event.
      */
     public $globalSet;
 
     /**
-     * @var boolean Whether the global set is brand new
+     * @var bool Whether the global set is brand new
      */
     public $isNew = false;
 }

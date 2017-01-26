@@ -29,22 +29,11 @@ class Plugin extends Module implements PluginInterface
 
     use PluginTrait;
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasCpSection()
-    {
-        return false;
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var Model|boolean The model used to store the plugin’s settings
+     * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
@@ -61,25 +50,16 @@ class Plugin extends Module implements PluginInterface
 
         // Set up a translation message source for the plugin
         $i18n = Craft::$app->getI18n();
-        $handle = $this->getHandle();
 
         /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
-            $i18n->translations[$handle] = [
+        if (!isset($i18n->translations[$this->handle]) && !isset($i18n->translations[$this->handle.'*'])) {
+            $i18n->translations[$this->handle] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => "@plugins/$handle/translations",
+                'basePath' => "@plugins/{$this->handle}/translations",
                 'allowOverrides' => true,
             ];
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getHandle()
-    {
-        return $this->id;
     }
 
     /**
@@ -113,7 +93,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update($fromVersion)
+    public function update(string $fromVersion)
     {
         if ($this->beforeUpdate() === false) {
             return false;
@@ -172,11 +152,10 @@ class Plugin extends Module implements PluginInterface
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings',
-            [
-                'plugin' => $this,
-                'settingsHtml' => $this->getSettingsHtml()
-            ]);
+        return $controller->renderTemplate('settings/plugins/_settings', [
+            'plugin' => $this,
+            'settingsHtml' => $this->settingsHtml()
+        ]);
     }
 
     /**
@@ -184,7 +163,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return MigrationManager The plugin’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
@@ -225,9 +204,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall()
+    protected function beforeInstall(): bool
     {
         return true;
     }
@@ -242,9 +221,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is updated.
      *
-     * @return boolean Whether the plugin should be updated
+     * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate()
+    protected function beforeUpdate(): bool
     {
         return true;
     }
@@ -259,9 +238,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeUninstall()
+    protected function beforeUninstall(): bool
     {
         return true;
     }
@@ -286,9 +265,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
      *
-     * @return string The rendered settings HTML
+     * @return string|null The rendered settings HTML
      */
-    protected function getSettingsHtml()
+    protected function settingsHtml()
     {
         return null;
     }

@@ -17,6 +17,23 @@ namespace craft\base;
  */
 interface WidgetInterface extends SavableComponentInterface
 {
+    // Static
+    // =========================================================================
+
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null The path to the widget’s SVG icon
+     */
+    public static function iconPath();
+
+    /**
+     * Returns the widget’s maximum colspan.
+     *
+     * @return int|null The widget’s maximum colspan, if it has one
+     */
+    public static function maxColspan();
+
     // Public Methods
     // =========================================================================
 
@@ -25,14 +42,7 @@ interface WidgetInterface extends SavableComponentInterface
      *
      * @return string The widget’s title.
      */
-    public function getTitle();
-
-    /**
-     * Returns the path to the widget’s SVG icon.
-     *
-     * @return string|null The path to the widget’s SVG icon, if it has one
-     */
-    public function getIconPath();
+    public function getTitle(): string;
 
     /**
      * Returns the widget's body HTML.
@@ -42,11 +52,4 @@ interface WidgetInterface extends SavableComponentInterface
      *                      to be selectable in the first place, use {@link isSelectable()}.)
      */
     public function getBodyHtml();
-
-    /**
-     * Returns the widget’s maximum colspan.
-     *
-     * @return integer|null The widget’s maximum colspan, if it has one
-     */
-    public function getMaxColspan();
 }

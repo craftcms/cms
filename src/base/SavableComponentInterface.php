@@ -23,9 +23,9 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Returns whether the component should be selectable in component Type selects.
      *
-     * @return boolean whether the component should be selectable in component Type selects.
+     * @return bool whether the component should be selectable in component Type selects.
      */
-    public static function isSelectable();
+    public static function isSelectable(): bool;
 
     // Public Methods
     // =========================================================================
@@ -33,19 +33,19 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Returns whether the component is new (unsaved).
      *
-     * @return boolean Whether the component is new
+     * @return bool Whether the component is new
      */
-    public function getIsNew();
+    public function getIsNew(): bool;
 
     /**
      * Validates the component.
      *
-     * @param array   $attributeNames List of attribute names that should be validated.
-     *                                If this parameter is empty, it means any attribute listed in the applicable
-     *                                validation rules should be validated.
-     * @param boolean $clearErrors    Whether existing errors should be cleared before performing validation
+     * @param string[]|null $attributeNames List of attribute names that should be validated.
+     *                                      If this parameter is empty, it means any attribute listed in the applicable
+     *                                      validation rules should be validated.
+     * @param bool          $clearErrors    Whether existing errors should be cleared before performing validation
      *
-     * @return boolean Whether the validation is successful without any error.
+     * @return bool Whether the validation is successful without any error.
      */
     public function validate($attributeNames = null, $clearErrors = true);
 
@@ -58,14 +58,14 @@ interface SavableComponentInterface extends ComponentInterface
      * @return array The list of settings attribute names
      * @see getSettings()
      */
-    public function settingsAttributes();
+    public function settingsAttributes(): array;
 
     /**
      * Returns an array of the component’s settings.
      *
      * @return array The component’s settings.
      */
-    public function getSettings();
+    public function getSettings(): array;
 
     /**
      * Returns the component’s settings HTML.
@@ -77,8 +77,8 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * For more complex settings, you might prefer to create a template, and render it via
-     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template loacated at
-     * craft/plugins/myplugin/templates/_settings.html, passing the settings to it:
+     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * `path/to/myplugin/templates/_settings.html`, passing the settings to it:
      *
      * ```php
      * return Craft::$app->getView()->renderTemplate('myplugin/_settings', [
@@ -167,27 +167,27 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Performs actions before a component is saved.
      *
-     * @param boolean $isNew Whether the component is brand new
+     * @param bool $isNew Whether the component is brand new
      *
-     * @return boolean Whether the component should be saved
+     * @return bool Whether the component should be saved
      */
-    public function beforeSave($isNew);
+    public function beforeSave(bool $isNew): bool;
 
     /**
      * Performs actions after a component is saved.
      *
-     * @param boolean $isNew Whether the component is brand new
+     * @param bool $isNew Whether the component is brand new
      *
      * @return void
      */
-    public function afterSave($isNew);
+    public function afterSave(bool $isNew);
 
     /**
      * Performs actions before a component is deleted.
      *
-     * @return boolean Whether the component should be deleted
+     * @return bool Whether the component should be deleted
      */
-    public function beforeDelete();
+    public function beforeDelete(): bool;
 
     /**
      * Performs actions after a component is deleted.

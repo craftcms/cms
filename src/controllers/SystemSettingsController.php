@@ -12,17 +12,13 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\Info;
 use craft\models\MailSettings;
-use craft\tools\AssetIndex;
-use craft\tools\ClearCaches;
-use craft\tools\DbBackup;
-use craft\tools\FindAndReplace;
-use craft\tools\SearchIndex;
+use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use DateTime;
 use yii\base\Exception;
@@ -54,37 +50,13 @@ class SystemSettingsController extends Controller
     }
 
     /**
-     * Shows the settings index.
-     *
-     * @return string The rendering result
-     */
-    public function actionSettingsIndex()
-    {
-        $tools = [];
-
-        // Only include the Update Asset Indexes tool if there are any asset volumes
-        if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0) {
-            $tools[] = new AssetIndex();
-        }
-
-        $tools[] = new ClearCaches();
-        $tools[] = new DbBackup();
-        $tools[] = new FindAndReplace();
-        $tools[] = new SearchIndex();
-
-        return $this->renderTemplate('settings/_index', [
-            'tools' => $tools
-        ]);
-    }
-
-    /**
      * Shows the general settings form.
      *
-     * @param Info $info The info being edited, if there were any validation errors.
+     * @param Info|null $info The info being edited, if there were any validation errors.
      *
      * @return string The rendering result
      */
-    public function actionGeneralSettings(Info $info = null)
+    public function actionGeneralSettings(Info $info = null): string
     {
         if ($info === null) {
             $info = Craft::$app->getInfo();
@@ -121,11 +93,13 @@ class SystemSettingsController extends Controller
             $timezoneIds[] = $timezoneId;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
-                'label' => 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' – '.$timezoneId : '')
+                'label' => 'UTC'.$format.($abbr !== 'UTC' ? " ({$abbr})" : '').($timezoneId !== 'UTC' ? ' – '.$timezoneId : '')
             ];
         }
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
+
+        Craft::$app->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index', [
             'info' => $info,
@@ -166,13 +140,13 @@ class SystemSettingsController extends Controller
     /**
      * Renders the email settings page.
      *
-     * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
-     * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
+     * @param MailSettings|null              $settings The posted email settings, if there were any validation errors
+     * @param TransportAdapterInterface|null $adapter  The transport adapter, if there were any validation errors
      *
      * @return string
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)
+    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): string
     {
         if ($settings === null) {
             $settings = Craft::$app->getSystemSettings()->getEmailSettings();
@@ -325,13 +299,13 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param integer|null   $globalSetId The global set’s ID, if any.
+     * @param int|null       $globalSetId The global set’s ID, if any.
      * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
+    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): string
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {
@@ -355,11 +329,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => Url::url('settings/globals')
+                'url' => UrlHelper::url('settings/globals')
             ]
         ];
 
@@ -393,7 +367,7 @@ class SystemSettingsController extends Controller
      *
      * @return MailSettings
      */
-    private function _createMailSettingsFromPost()
+    private function _createMailSettingsFromPost(): MailSettings
     {
         $request = Craft::$app->getRequest();
         $settings = new MailSettings();

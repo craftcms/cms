@@ -21,7 +21,7 @@ use Zend\Feed\Reader\Http\Psr7ResponseDecorator;
 class GuzzleClient implements FeedReaderHttpClientInterface
 {
     /**
-     * @var GuzzleClientInterface
+     * @var GuzzleClientInterface|null
      */
     private $_client;
 

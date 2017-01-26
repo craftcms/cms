@@ -22,12 +22,12 @@ trait MissingComponentTrait
     // =========================================================================
 
     /**
-     * @var string|Component The expected component class name.
+     * @var string|Component|null The expected component class name.
      */
     public $expectedType;
 
     /**
-     * @var string The exception message that explains why the component class was invalid
+     * @var string|null The exception message that explains why the component class was invalid
      */
     public $errorMessage;
 
@@ -46,7 +46,7 @@ trait MissingComponentTrait
      *
      * @return ComponentInterface
      */
-    public function createFallback($type)
+    public function createFallback(string $type): ComponentInterface
     {
         /** @var Arrayable $this */
         $config = $this->toArray();

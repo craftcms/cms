@@ -12,11 +12,10 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\tasks\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;
@@ -66,21 +65,21 @@ class TemplateCaches extends Component
     /**
      * The current request's path, as it will be stored in the templatecaches table.
      *
-     * @var string
+     * @var string|null
      */
     private $_path;
 
     /**
      * A list of element queries that were executed within the existing caches.
      *
-     * @var array
+     * @var array|null
      */
     private $_cachedQueries;
 
     /**
      * A list of element IDs that are active within the existing caches.
      *
-     * @var array
+     * @var array|null
      */
     private $_cacheElementIds;
 
@@ -101,7 +100,7 @@ class TemplateCaches extends Component
     /**
      * Whether all caches have been deleted, on a per-element type basis, in this request.
      *
-     * @var bool
+     * @var bool|null
      */
     private $_deletedCachesByElementType;
 
@@ -111,15 +110,20 @@ class TemplateCaches extends Component
     /**
      * Returns a cached template by its key.
      *
-     * @param string  $key    The template cache key
-     * @param boolean $global Whether the cache would have been stored globally.
+     * @param string $key    The template cache key
+     * @param bool   $global Whether the cache would have been stored globally.
      *
      * @return string|null
      */
-    public function getTemplateCache($key, $global)
+    public function getTemplateCache(string $key, bool $global)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
+            return null;
+        }
+
+        // Don't return anything if it's not a global request and the path > 255 characters.
+        if (!$global && strlen($this->_getPath()) > 255) {
             return null;
         }
 
@@ -160,7 +164,7 @@ class TemplateCaches extends Component
      *
      * @return void
      */
-    public function startTemplateCache($key)
+    public function startTemplateCache(string $key)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -222,11 +226,11 @@ class TemplateCaches extends Component
     /**
      * Includes an element in any active caches.
      *
-     * @param integer $elementId The element ID.
+     * @param int $elementId The element ID.
      *
      * @return void
      */
-    public function includeElementInTemplateCaches($elementId)
+    public function includeElementInTemplateCaches(int $elementId)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -247,7 +251,7 @@ class TemplateCaches extends Component
      * Ends a template cache.
      *
      * @param string      $key        The template cache key.
-     * @param boolean     $global     Whether the cache should be stored globally.
+     * @param bool        $global     Whether the cache should be stored globally.
      * @param string|null $duration   How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
@@ -255,7 +259,7 @@ class TemplateCaches extends Component
      * @throws \Exception
      * @return void
      */
-    public function endTemplateCache($key, $global, $duration, $expiration, $body)
+    public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -265,7 +269,13 @@ class TemplateCaches extends Component
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains(stripslashes($body), Url::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))) {
+        if (StringHelper::contains(stripslashes($body), UrlHelper::siteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))) {
+            return;
+        }
+
+        if (!$global && (strlen($path = $this->_getPath()) > 255)) {
+            Craft::warning('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, __METHOD__);
+
             return;
         }
 
@@ -273,7 +283,7 @@ class TemplateCaches extends Component
         $body = StringHelper::encodeMb4($body);
 
         // Figure out the expiration date
-        if ($duration) {
+        if ($duration !== null) {
             $expiration = new DateTime($duration);
         }
 
@@ -358,11 +368,11 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its ID(s).
      *
-     * @param integer|array $cacheId The cache ID.
+     * @param int|array $cacheId The cache ID.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCacheById($cacheId)
+    public function deleteCacheById($cacheId): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -380,9 +390,9 @@ class TemplateCaches extends Component
      *
      * @param string $elementType The element class.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCachesByElementType($elementType)
+    public function deleteCachesByElementType(string $elementType): bool
     {
         if ($this->_deletedAllCaches || !empty($this->_deletedCachesByElementType[$elementType]) || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -396,7 +406,7 @@ class TemplateCaches extends Component
             ->where(['type' => $elementType])
             ->column();
 
-        if ($cacheIds) {
+        if (!empty($cacheIds)) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     self::$_templateCachesTable,
@@ -412,9 +422,9 @@ class TemplateCaches extends Component
      *
      * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCachesByElement($elements)
+    public function deleteCachesByElement($elements): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -425,7 +435,7 @@ class TemplateCaches extends Component
         }
 
         if (is_array($elements)) {
-            $firstElement = ArrayHelper::firstValue($elements);
+            $firstElement = reset($elements);
         } else {
             $firstElement = $elements;
             $elements = [$elements];
@@ -446,14 +456,14 @@ class TemplateCaches extends Component
     /**
      * Deletes caches that include an a given element ID(s).
      *
-     * @param integer|array $elementId         The ID of the element(s) whose caches should be cleared.
-     * @param boolean       $deleteQueryCaches Whether a DeleteStaleTemplateCaches task should be created, deleting any
+     * @param int|array $elementId             The ID of the element(s) whose caches should be cleared.
+     * @param bool      $deleteQueryCaches     Whether a DeleteStaleTemplateCaches task should be created, deleting any
      *                                         query caches that may now involve this element, but hadn't previously.
      *                                         (Defaults to `true`.)
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCachesByElementId($elementId, $deleteQueryCaches = true)
+    public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -499,7 +509,7 @@ class TemplateCaches extends Component
             ->where(['elementId' => $elementId])
             ->column();
 
-        if (!$cacheIds) {
+        if (empty($cacheIds)) {
             return false;
         }
 
@@ -512,9 +522,9 @@ class TemplateCaches extends Component
      * @param ElementQuery $query The element query that should be used to find elements whose caches
      *                            should be deleted.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCachesByElementQuery(ElementQuery $query)
+    public function deleteCachesByElementQuery(ElementQuery $query): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -531,11 +541,11 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its key(s).
      *
-     * @param integer|array $key The cache key(s) to delete.
+     * @param int|array $key The cache key(s) to delete.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteCachesByKey($key)
+    public function deleteCachesByKey($key): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -551,9 +561,9 @@ class TemplateCaches extends Component
     /**
      * Deletes any expired caches.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteExpiredCaches()
+    public function deleteExpiredCaches(): bool
     {
         if ($this->_deletedAllCaches || $this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -571,9 +581,9 @@ class TemplateCaches extends Component
     /**
      * Deletes any expired caches if we haven't already done that within the past 24 hours.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteExpiredCachesIfOverdue()
+    public function deleteExpiredCachesIfOverdue(): bool
     {
         // Ignore if we've already done this once during the request
         if ($this->_deletedExpiredCaches || $this->_isTemplateCachingEnabled() === false) {
@@ -597,9 +607,9 @@ class TemplateCaches extends Component
     /**
      * Deletes all the template caches.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteAllCaches()
+    public function deleteAllCaches(): bool
     {
         if ($this->_deletedAllCaches || $this->_isTemplateCachingEnabled() === false) {
             return false;
@@ -620,9 +630,9 @@ class TemplateCaches extends Component
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
      *
-     * @return boolean Whether template caching is enabled
+     * @return bool Whether template caching is enabled
      */
-    private function _isTemplateCachingEnabled()
+    private function _isTemplateCachingEnabled(): bool
     {
         if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
             return true;
@@ -636,7 +646,7 @@ class TemplateCaches extends Component
      *
      * @return string
      */
-    private function _getPath()
+    private function _getPath(): string
     {
         if ($this->_path !== null) {
             return $this->_path;

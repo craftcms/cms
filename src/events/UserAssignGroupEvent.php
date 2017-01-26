@@ -21,7 +21,7 @@ class UserAssignGroupEvent extends CancelableEvent
     // =========================================================================
 
     /**
-     * @var User The user model associated with this event
+     * @var User|null The user model associated with this event
      */
     public $user;
 }
