@@ -9,6 +9,6 @@ build:
   project_setup:
     before:
       - mysql -e "CREATE DATABASE craft3test CHARACTER SET = 'utf8' COLLATE = 'utf8_unicode_ci'"
-  tests:
-    override:
-      command: 'php codeception.php run unit'
+#  tests:
+#    override:
+#      command: 'php codeception.php run unit'
