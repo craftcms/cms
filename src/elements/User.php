@@ -948,7 +948,7 @@ class User extends Element implements IdentityInterface
             ]);
         }
 
-        return Craft::$app->getAssetManager()->getPublishedUrl('@app/resources', true).'/images/user.svg';
+        return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true).'/images/user.svg';
     }
 
     /**

@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User;
 use craft\migrations\Install;
 use craft\models\Site;
+use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
@@ -72,6 +73,8 @@ class InstallController extends Controller
         $vars = [];
         $vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
         $vars['defaultSiteUrl'] = 'http://'.$server;
+
+        Craft::$app->getView()->registerAssetBundle(InstallerAsset::class);
 
         return $this->renderTemplate('_special/install', $vars);
     }

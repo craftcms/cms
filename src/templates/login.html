@@ -2,15 +2,14 @@
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
-{% do view.registerCssResource("css/login.css") %}
-{% do view.registerJsResource("js/login.js") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 {% do view.registerTranslations('app', [
 	"Reset Password",
 	"Check your email for instructions to reset your password.",
 ]) %}
 
 {% set username = (craft.app.config.get('rememberUsernameDuration') ? craft.app.user.getRememberedUsername(): '') %}
-{% set resourcesUrl = view.getAssetManager().getPublishedUrl('@app/resources', true) %}
+{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) %}
 
 {% block body %}
 	<script type="text/javascript">
@@ -45,7 +44,7 @@
 			'<input id="submit" class="btn submit disabled" type="submit" value="{{ "Login"|t('app') }}">' +
 			'<div id="spinner" class="spinner hidden"></div>' +
 			'</div>' +
-			'<a id="poweredby" href="http://craftcms.com/" title="{{ "Powered by Craft CMS"|t('app') }}"><img src="{{ resourcesUrl }}/images/craftcms.svg" /></a>'+
+			'<a id="poweredby" href="http://craftcms.com/" title="{{ "Powered by Craft CMS"|t('app') }}"><img src="{{ cpAssetUrl }}/images/craftcms.svg" /></a>'+
 			'</form>'
 		);
 

@@ -16,7 +16,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\web\assets\AppAsset;
+use craft\web\assets\cp\CpAsset;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
@@ -520,48 +520,6 @@ class View extends \yii\web\View
         }
 
         return false;
-    }
-
-    /**
-     * Registers a CSS file from the resources/ folder.
-     *
-     * @param string      $path    The resource path for the CSS file to be registered.
-     * @param array       $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
-     *                             the supported options. The following options are specially handled and are not treated as HTML attributes:
-     *
-     * - `depends`: array, specifies the names of the asset bundles that this CSS file depends on.
-     *
-     * @param string|null $key     The key that identifies the CSS script file. If null, it will use
-     *                             $url as the key. If two CSS files are registered with the same key, the latter
-     *                             will overwrite the former.
-     */
-    public function registerCssResource(string $path, array $options = [], string $key = null)
-    {
-        $this->_registerResource($path, $options, $key, 'css');
-    }
-
-    /**
-     * Registers a JS file from the resources/ folder.
-     *
-     * @param string      $path    The resource path for the JS file to be registered.
-     * @param array       $options the HTML attributes for the script tag. The following options are specially handled
-     *                             and are not treated as HTML attributes:
-     *
-     * - `depends`: array, specifies the names of the asset bundles that this JS file depends on.
-     * - `position`: specifies where the JS script tag should be inserted in a page. The possible values are:
-     *     * [[POS_HEAD]]: in the head section
-     *     * [[POS_BEGIN]]: at the beginning of the body section
-     *     * [[POS_END]]: at the end of the body section. This is the default value.
-     *
-     * Please refer to [[Html::jsFile()]] for other supported options.
-     *
-     * @param string|null $key     the key that identifies the JS script file. If null, it will use
-     *                             $url as the key. If two JS files are registered with the same key, the latter
-     *                             will overwrite the former.
-     */
-    public function registerJsResource(string $path, array $options = [], string $key = null)
-    {
-        $this->_registerResource($path, $options, $key, 'js');
     }
 
     /**
@@ -1168,68 +1126,6 @@ class View extends \yii\web\View
         }
 
         return $this->_twigOptions;
-    }
-
-    /**
-     * Registers an asset bundle for a file in the resources/ folder.
-     *
-     * @param string      $path
-     * @param array       $options
-     * @param string|null $key
-     * @param string      $kind
-     */
-    private function _registerResource(string $path, array $options, string $key = null, string $kind)
-    {
-        if ($key === null) {
-            $key = 'resource:'.$path;
-        }
-
-        // Make AppAsset the default dependency
-        $depends = (array)ArrayHelper::remove($options, 'depends', [
-            AppAsset::class
-        ]);
-
-        $sourcePath = Craft::getAlias('@app/resources');
-
-        // If the resource doesn't exist in vendor/craftcms/cms/src/resources, check plugins' resources/ subfolders
-        if (!is_file($sourcePath.DIRECTORY_SEPARATOR.$path)) {
-            $pathParts = explode('/', $path);
-
-            if (count($pathParts) > 1) {
-                $pluginHandle = array_shift($pathParts);
-                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-                if ($plugin !== null) {
-                    /** @var Plugin $plugin */
-                    $pluginSourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources';
-                    $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
-                    if (is_file($pluginSourcePath.DIRECTORY_SEPARATOR.$pluginSubpath)) {
-                        $sourcePath = $pluginSourcePath;
-                        $path = $pluginSubpath;
-                    }
-                }
-            }
-        }
-
-        if ($kind === 'js' && Craft::$app->getConfig()->get('useCompressedJs')) {
-            // See if a .min.js version of the file exists
-            $minPath = str_replace('.js', '.min.js', $path);
-            if (file_exists($sourcePath.DIRECTORY_SEPARATOR.$minPath)) {
-                $path = $minPath;
-            }
-        }
-
-        $bundle = new AssetBundle([
-            'sourcePath' => $sourcePath,
-            "{$kind}" => [$path],
-            "{$kind}Options" => $options,
-            'depends' => $depends,
-        ]);
-
-        $am = $this->getAssetManager();
-        $am->bundles[$key] = $bundle;
-        $bundle->publish($am);
-
-        $this->registerAssetBundle($key);
     }
 
     /**
