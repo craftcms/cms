@@ -139,7 +139,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%assets}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'volumeId' => $this->integer(),
             'folderId' => $this->integer()->notNull(),
             'filename' => $this->string()->notNull(),
@@ -147,10 +147,12 @@ class Install extends Migration
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
+            'focalPoint' => $this->string(20)->null(),
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%assettransformindex}}', [
             'id' => $this->primaryKey(),
@@ -182,11 +184,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%categories}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%categorygroups}}', [
             'id' => $this->primaryKey(),
@@ -274,7 +277,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%entries}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
@@ -283,6 +286,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%entrydrafts}}', [
             'id' => $this->primaryKey(),
@@ -396,7 +400,7 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%matrixblocks}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'ownerId' => $this->integer()->notNull(),
             'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
@@ -405,6 +409,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%matrixblocktypes}}', [
             'id' => $this->primaryKey(),
@@ -552,11 +557,12 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%tags}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'groupId' => $this->integer()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%tasks}}', [
             'id' => $this->primaryKey(),
@@ -647,7 +653,7 @@ class Install extends Migration
             'preferences' => $this->text(),
         ]);
         $this->createTable('{{%users}}', [
-            'id' => $this->primaryKey(),
+            'id' => $this->integer()->notNull(),
             'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
             'firstName' => $this->string(100),
@@ -674,6 +680,7 @@ class Install extends Migration
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
+            'PRIMARY KEY(id)',
         ]);
         $this->createTable('{{%volumefolders}}', [
             'id' => $this->primaryKey(),
@@ -798,7 +805,7 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false, true), '{{%relations}}', 'targetId', false);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false, true), '{{%relations}}', 'sourceSiteId', false);
         $this->createIndex($this->db->getIndexName('{{%routes}}', 'uriPattern', true), '{{%routes}}', 'uriPattern', true);
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false, true), '{{%routes}}', 'siteId', false) ;
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false, true), '{{%routes}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'handle', true), '{{%sections}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'name', true), '{{%sections}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'structureId', false, true), '{{%sections}}', 'structureId', false);
@@ -957,7 +964,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%shunnedmessages}}', 'userId'), '{{%shunnedmessages}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'elementId'), '{{%structureelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'structureId'), '{{%structureelements}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldLayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%taggroups}}', 'fieldLayoutId'), '{{%taggroups}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'groupId'), '{{%tags}}', 'groupId', '{{%taggroups}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'id'), '{{%tags}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);

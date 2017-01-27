@@ -485,6 +485,11 @@ class Volumes extends Component
             $volume = new MissingVolume($config);
         }
 
+        // Are they overriding any settings?
+        if ($volume->handle !== null && ($override = Craft::$app->getConfig()->get($volume->handle, Config::CATEGORY_VOLUMES)) !== null) {
+            Craft::configure($volume, $override);
+        }
+
         return $volume;
     }
 

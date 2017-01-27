@@ -5,6 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
+use craft\behaviors\ContentBehavior;
+use craft\behaviors\ContentTrait;
+use craft\behaviors\ElementQueryBehavior;
+use craft\behaviors\ElementQueryTrait;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use craft\services\Config;
@@ -121,10 +125,10 @@ class Craft extends Yii
     public static function autoload($className)
     {
         if (
-            $className === 'craft\behaviors\ContentBehavior' ||
-            $className === 'craft\behaviors\ContentTrait' ||
-            $className === 'craft\behaviors\ElementQueryBehavior' ||
-            $className === 'craft\behaviors\ElementQueryTrait'
+            $className === ContentBehavior::class ||
+            $className === ContentTrait::class ||
+            $className === ElementQueryBehavior::class ||
+            $className === ElementQueryTrait::class
         ) {
             $storedFieldVersion = static::$app->getInfo()->fieldVersion;
             $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
@@ -237,9 +241,7 @@ EOD;
         // Maybe they want to set some config options specifically for this request.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
 
-        return new Client([
-            $guzzleConfig
-        ]);
+        return new Client($guzzleConfig);
     }
 
     /**
@@ -287,4 +289,4 @@ EOD;
     }
 }
 
-spl_autoload_register(['Craft', 'autoload'], true, true);
+spl_autoload_register([Craft::class, 'autoload'], true, true);

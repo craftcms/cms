@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\Section;
+use craft\web\assets\quickpost\QuickPostAsset;
 use yii\base\Exception;
 
 /**
@@ -147,11 +148,13 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->registerTranslations('app', [
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(QuickPostAsset::class);
+        $view->registerTranslations('app', [
             'Entry saved.',
             'Couldn’t save entry.',
         ]);
-        Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
 
@@ -178,18 +181,18 @@ class QuickPost extends Widget
             'typeId' => $entryTypeId,
         ];
 
-        Craft::$app->getView()->startJsBuffer();
+        $view->startJsBuffer();
 
-        $html = Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/body',
+        $html = $view->renderTemplate('_components/widgets/QuickPost/body',
             [
                 'section' => $section,
                 'entryType' => $entryType,
                 'widget' => $this
             ]);
 
-        $fieldJs = Craft::$app->getView()->clearJsBuffer(false);
+        $fieldJs = $view->clearJsBuffer(false);
 
-        Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
+        $view->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.
             Json::encode($params).', '.
             "function() {\n".$fieldJs.

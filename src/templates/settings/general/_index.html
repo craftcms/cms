@@ -46,14 +46,10 @@
 			"Are you sure you want to delete the logo?",
 		]) %}
 
-		{% do view.registerJsResource("lib/fileupload/jquery.ui.widget.js") %}
-		{% do view.registerJsResource("lib/fileupload/jquery.fileupload.js") %}
-		{% do view.registerJsResource("lib/jcrop/jquery.Jcrop.min.js") %}
-		{% do view.registerJsResource("js/rebrand.js") %}
-		{% do view.registerCssResource("lib/jcrop/jquery.Jcrop.min.css") %}
-		{% do view.registerCssResource("css/rebrand.css") %}
+		{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+        {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
-		{{ forms.field({
+        {{ forms.field({
 			label: "Login Page Logo"|t
 		}, include('settings/general/_images/logo')) }}
 

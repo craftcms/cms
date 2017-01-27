@@ -1,0 +1,68 @@
+<div class="tabs">
+    <ul>
+        <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
+        <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
+        {#<li data-view="effects"><i></i>{{ 'Effects'|t('app') }}</li>
+        <li data-view="filters"><i></i>{{ 'Filters'|t('app') }}</li>#}
+    </ul>
+</div>
+<div class="views">
+    <div class="rotate hidden" data-view="rotate" data-rotate="true">
+        <div class="rotate-buttons buttons">
+            <div class="rotate-left btn icon">{{ 'Rotate Left'|t('app') }}</div>
+            <div class="rotate-right btn icon">{{ 'Rotate Right'|t('app') }}</div>
+        </div>
+        <div class="flip-buttons buttons">
+            <div class="flip-vertical btn icon">{{ 'Flip Vertical'|t('app') }}</div>
+            <div class="flip-horizontal btn icon">{{ 'Flip Horizontal'|t('app') }}</div>
+        </div>
+        <div class="buttons">
+            <div class="focal-point btn icon">{{ 'Focal Point'|t('app') }}</div>
+        </div>
+    </div>
+    <div class="crop hidden" data-view="crop" data-crop="true">
+        <div class="buttons">
+            <div class="focal-point btn icon">{{ 'Focal Point'|t('app') }}</div>
+        </div>
+        {# <div class="crop-buttons buttons">
+            <div class="unconstrained btn icon menubtn">{{ 'Unconstrained'|t('app') }}</div>
+            <div class="menu">
+                <ul>
+                    <li><a class="" data-attr="unconstrained">{{ 'Unconstrained'|t('app') }}</a></li>
+                    <li><a class="" data-attr="original">{{ 'Original'|t('app') }}</a></li>
+                    <li><a class="" data-attr="square">{{ 'Square'|t('app') }}</a></li>
+                    <li><a class="" data-attr="16:9">16:9</a></li>
+                    <li><a class="" data-attr="8:10">8:10</a></li>
+                    <li><a class="" data-attr="5:7">5:7</a></li>
+                    <li><a class="" data-attr="4:3">4:3</a></li>
+                    <li><a class="" data-attr="3:5">3:5</a></li>
+                    <li><a class="" data-attr="3:2">3:2</a></li>
+                </ul>
+            </div>
+        </div> #}
+    </div>
+    {#    <div class="effects hidden" data-view="effects">
+
+        bright/contrast
+    </div>
+    <div class="filters hidden" data-view="filters">
+        <ul>
+            <li><img src="http://placehold.it/80x80"><span>{{ 'Original'|t('app') }}</span></li>
+        </ul>
+
+    </div>    #}
+
+</div>
+<div class="image-container">
+    <div class="image">
+        <canvas id="image-canvas">
+        </canvas>
+        <canvas id="cropping-canvas">
+        </canvas>
+    </div>
+    <div class="image-tools hidden">
+        <div data-view="transform" class="straightening">
+            <div id="slide-rule" class="slide-rule"></div>
+        </div>
+    </div>
+</div>

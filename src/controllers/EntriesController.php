@@ -18,6 +18,7 @@ use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Site;
+use craft\web\assets\editentry\EditEntryAsset;
 use DateTime;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
@@ -82,6 +83,8 @@ class EntriesController extends BaseEntriesController
         }
 
         $this->_prepEditEntryVariables($variables);
+
+        $this->getView()->registerAssetBundle(EditEntryAsset::class);
 
         /** @var Site $site */
         $site = $variables['site'];
@@ -262,15 +265,14 @@ class EntriesController extends BaseEntriesController
                 ];
             }
 
-            Craft::$app->getView()->registerJsResource('js/EntryTypeSwitcher.js');
-            Craft::$app->getView()->registerJs('new Craft.EntryTypeSwitcher();');
+            $this->getView()->registerJs('new Craft.EntryTypeSwitcher();');
         } else {
             $variables['showEntryTypes'] = false;
         }
 
         // Enable Live Preview?
         if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
-            Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
+            $this->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $entry->getUrl(),
@@ -339,13 +341,11 @@ class EntriesController extends BaseEntriesController
         $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
 
         // Include translations
-        Craft::$app->getView()->registerTranslations('app', [
+        $this->getView()->registerTranslations('app', [
             'Live Preview',
         ]);
 
         // Render the template!
-        Craft::$app->getView()->registerCssResource('css/entry.css');
-
         return $this->renderTemplate('entries/_edit', $variables);
     }
 
@@ -371,10 +371,10 @@ class EntriesController extends BaseEntriesController
 
         $this->_prepEditEntryVariables($variables);
 
-        $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', $variables).
-            Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
+        $paneHtml = $this->getView()->renderTemplate('_includes/tabs', $variables).
+            $this->getView()->renderTemplate('entries/_fields', $variables);
 
-        $view = Craft::$app->getView();
+        $view = $this->getView();
 
         return $this->asJson([
             'paneHtml' => $paneHtml,
@@ -906,7 +906,7 @@ class EntriesController extends BaseEntriesController
         // Have this entry override any freshly queried entries with the same ID/site ID
         Craft::$app->getElements()->setPlaceholderElement($entry);
 
-        Craft::$app->getView()->getTwig()->disableStrictVariables();
+        $this->getView()->getTwig()->disableStrictVariables();
 
         return $this->renderTemplate($sectionSiteSettings[$entry->siteId]->template, [
             'entry' => $entry

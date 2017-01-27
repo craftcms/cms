@@ -19,6 +19,7 @@ use craft\helpers\StringHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
+use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -80,7 +81,7 @@ class UtilitiesController extends Controller
             throw new ForbiddenHttpException('User not permitted to access the "'.$class::displayName().'".');
         }
 
-        Craft::$app->getView()->registerCssResource('css/utilities.css');
+        $this->getView()->registerAssetBundle(UtilitiesAsset::class);
 
         return $this->renderTemplate('utilities/_index', [
             'id' => $id,
@@ -103,7 +104,7 @@ class UtilitiesController extends Controller
         $this->requireAcceptsJson();
 
         $logId = Craft::$app->request->getRequiredParam('logId');
-        $html = Craft::$app->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
+        $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
             'log' => Craft::$app->deprecator->getLogById($logId)
         ]);
 
@@ -246,7 +247,7 @@ class UtilitiesController extends Controller
             $responseArray = [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
-                $responseArray['confirm'] = Craft::$app->getView()->renderTemplate('assets/_missing_items',
+                $responseArray['confirm'] = $this->getView()->renderTemplate('assets/_missing_items',
                     [
                         'missingFiles' => $missingFiles,
                         'missingFolders' => $missingFolders,
@@ -624,7 +625,7 @@ class UtilitiesController extends Controller
     private function _getDefaultUtilityIconSvg(string $class): string
     {
         /** @var UtilityInterface $class */
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $class::displayName()
         ]);
     }

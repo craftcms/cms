@@ -86,8 +86,8 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            if ($plugin::hasCpSection()) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->getHandle()] = [
+            if ($plugin->hasCpSection) {
+                $general['accessCp']['nested']['accessPlugin-'.$plugin->handle] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }

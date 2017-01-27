@@ -5,6 +5,7 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Json;
+use craft\fields\RichText;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -20,7 +21,7 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['type' => 'craft\fields\RichText'])
+            ->where(['type' => RichText::class])
             ->all();
 
         foreach ($fields as $field) {

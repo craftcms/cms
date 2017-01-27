@@ -1,0 +1,38 @@
+actor: Tester
+paths:
+    tests: tests
+    log: tests/_output
+    data: tests/_data
+    support: tests/_support
+    envs: tests/_envs
+settings:
+    bootstrap: _bootstrap.php
+    colors: true
+coverage:
+    enabled: true
+    include:
+      - src/*
+    exclude:
+      - tests/_support/_generated/*
+      - src/config/*
+      - src/icons/*
+      - src/migrations/*
+      - src/sampleimages/*
+      - src/templates/*
+      - src/translations/*
+      - src/migration.php.template
+params:
+  - env
+modules:
+  config:
+    Yii2:
+      configFile: 'tests/_craft/config/test.php'
+  enabled:
+    - Db:
+        dsn: 'mysql:host=127.0.0.1;dbname=%TEST_DB_NAME%;'
+        user: '%TEST_DB_USER%'
+        password: '%TEST_DB_PASS%'
+        dump: 'tests/_data/dump.sql'
+        populate: true
+        cleanup: true
+        reconnect: true

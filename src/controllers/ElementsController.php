@@ -180,7 +180,7 @@ class ElementsController extends BaseElementsController
             $categories = [];
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_components/fieldtypes/Categories/input',
+        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
             [
                 'elements' => $categories,
                 'id' => $request->getParam('id'),
@@ -331,7 +331,7 @@ class ElementsController extends BaseElementsController
         $response['siteId'] = $element->siteId;
 
         $namespace = 'editor_'.StringHelper::randomString(10);
-        Craft::$app->getView()->setNamespace($namespace);
+        $this->getView()->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
 
@@ -344,10 +344,10 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs((string)$element->getEditorHtml()).
+            $this->getView()->namespaceInputs((string)$element->getEditorHtml()).
             '</div>';
 
-        $view = Craft::$app->getView();
+        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
 

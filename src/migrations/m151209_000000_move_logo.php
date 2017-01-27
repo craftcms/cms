@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use yii\base\ErrorException;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName

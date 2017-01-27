@@ -218,8 +218,8 @@ class Svg extends Image
         } else {
             // In case the root element has dimension attributes set with percentage,
             // weed them out so we don't duplicate them.
-            $this->_svgContent = preg_replace(self::SVG_CLEANUP_WIDTH_RE, "\${1}", $this->_svgContent);
-            $this->_svgContent = preg_replace(self::SVG_CLEANUP_HEIGHT_RE, "\${1}", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_CLEANUP_WIDTH_RE, '${1}', $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_CLEANUP_HEIGHT_RE, '${1}', $this->_svgContent);
 
             $this->_svgContent = preg_replace(self::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }

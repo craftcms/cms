@@ -2,5 +2,5 @@
 {% set title = "Assets"|t('app') %}
 {% set elementType = 'craft\\elements\\Asset' %}
 
-{% do view.registerJsResource("lib/fileupload/jquery.ui.widget.js") %}
-{% do view.registerJsResource("lib/fileupload/jquery.fileupload.js") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}

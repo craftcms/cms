@@ -2,7 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t('app') %}
-{% do view.registerCssResource("css/plugins.css") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\plugins\\PluginsAsset") %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
@@ -69,7 +69,7 @@
 						</td>
 						<td>
 							{% if config.hasSettings %}
-								<a href="{{ url('settings/plugins/'~handle) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
+								<a href="{{ url('settings/plugins/'~config.moduleId) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
 							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">

@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSortableAttributesEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
@@ -118,6 +119,11 @@ abstract class Element extends Component implements ElementInterface
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+
+    /**
+     * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the Control Panel.
+     */
+    const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
@@ -948,6 +954,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
+        return null;
     }
 
     /**
@@ -1479,7 +1486,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHtmlAttributes(string $context): array
     {
-        return [];
+        $htmlAttributes = $this->htmlAttributes($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementHtmlAttributesEvent([
+            'htmlAttributes' => $htmlAttributes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+
+        return $event->htmlAttributes;
     }
 
     /**
@@ -1867,6 +1882,19 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     *
+     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     *
+     * @return array
+     * @see getHtmlAttributes()
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        return [];
     }
 
     // Private Methods

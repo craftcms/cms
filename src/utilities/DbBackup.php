@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\web\assets\dbbackup\DbBackupAsset;
 use yii\base\Exception;
 
 /**
@@ -59,7 +60,7 @@ class DbBackup extends Utility
     {
         $view = Craft::$app->getView();
 
-        $view->registerJsResource('js/DbBackupUtility.js');
+        $view->registerAssetBundle(DbBackupAsset::class);
         $view->registerJs('new Craft.DbBackupUtility(\'db-backup\');');
 
         return $view->renderTemplate('_components/utilities/DbBackup');

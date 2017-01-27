@@ -20,15 +20,4 @@ Several great learning resources are out there:
 Installing Craft 3 Beta
 -----------------------
 
-To install the Craft 3 Beta, follow these instructions.
-
-1. Install Composer if you don’t have it already.
-  - [macOS/Linux/Unix instructions](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)
-  - [Windows instructions](https://getcomposer.org/doc/00-intro.md#installation-windows)
-2. Run this command in your terminal (substituting `path` with the path the project should be created at) to create a new Craft project based on this package:
-
-        php composer.phar create-project craftcms/craft path
-
-3. Copy the `.env.example` file at the root of the project to a new `.env` file, and fill in your database connection settings within it.
-4. Create a new web server, setting its document root to the `web/` folder within the project.
-5. Point your web browser to `http://example.com/index.php?p=admin` (substituting `example.com` with your new web server’s host name) to access the Craft installer.
+To install the Craft 3 Beta, follow the [installation instructions](https://github.com/craftcms/docs/blob/master/installation.md) outlined in the documentation.

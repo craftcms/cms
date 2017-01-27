@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\cache\AppPathDependency;
 use craft\events\ResolveResourcePathEvent;
 use craft\helpers\FileHelper;
@@ -98,8 +97,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'defaultuserphoto':
-                    return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
                 case 'tempuploads':
                     array_shift($segs);
 
@@ -157,23 +154,6 @@ class Resources extends Component
                     break;
                 case '404':
                     throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
-            }
-        }
-
-        // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.$uri;
-
-        if (file_exists($appResourcePath)) {
-            return $appResourcePath;
-        }
-
-        // See if the first segment is a plugin handle.
-        if (isset($segs[0]) && ($plugin = Craft::$app->getPlugins()->getPlugin($segs[0])) !== null) {
-            /** @var Plugin $plugin */
-            $pluginResourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, array_splice($segs, 1));
-
-            if (is_file($pluginResourcePath)) {
-                return $pluginResourcePath;
             }
         }
 
@@ -327,7 +307,7 @@ class Resources extends Component
     private function _getIconPath(string $ext): string
     {
         $pathService = Craft::$app->getPath();
-        $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
+        $sourceIconPath = Craft::getAlias('@app/icons/file.svg');
         $extLength = mb_strlen($ext);
 
         if ($extLength > 5) {
@@ -367,6 +347,6 @@ class Resources extends Component
     private function _getBrokenImageThumbPath(): string
     {
         //http_response_code(404);
-        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';
+        return Craft::getAlias('@app/icons/broken-image.svg');
     }
 }

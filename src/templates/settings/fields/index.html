@@ -5,6 +5,8 @@
 
 {% set docsUrl = 'http://craftcms.com/docs/fields' %}
 
+{% do view.registerAssetBundle("craft\\web\\assets\\fields\\FieldsAsset") %}
+
 {% do view.registerTranslations('app', [
 	"What do you want to name your group?",
 	"Could not create the group:",
@@ -69,8 +71,6 @@
 
 
 {% block content %}
-	{% do view.registerJsResource("js/fields.js") %}
-
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
 			{{ "This group doesn’t have any fields yet."|t('app') }}

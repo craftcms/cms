@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\CraftSupport;
+use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use DateTime;
@@ -47,7 +48,7 @@ class DashboardController extends Controller
     public function actionIndex(): string
     {
         $dashboardService = Craft::$app->getDashboard();
-        $view = Craft::$app->getView();
+        $view = $this->getView();
 
         $namespace = $view->getNamespace();
 
@@ -120,8 +121,7 @@ class DashboardController extends Controller
         }
 
         // Include all the JS and CSS stuff
-        $view->registerCssResource('css/dashboard.css');
-        $view->registerJsResource('js/Dashboard.js');
+        $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
         $view->registerTranslations('app', [
@@ -505,7 +505,7 @@ class DashboardController extends Controller
     private function _getWidgetInfo(WidgetInterface $widget)
     {
         /** @var Widget $widget */
-        $view = Craft::$app->getView();
+        $view = $this->getView();
         $namespace = $view->getNamespace();
 
         // Get the body HTML
@@ -581,7 +581,7 @@ class DashboardController extends Controller
      */
     private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
         ]);
     }
@@ -600,7 +600,7 @@ class DashboardController extends Controller
 
         if ($dashboardService->saveWidget($widget)) {
             $info = $this->_getWidgetInfo($widget);
-            $view = Craft::$app->getView();
+            $view = $this->getView();
 
             return $this->asJson([
                 'success' => true,

@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\web\assets\clearcaches\ClearCachesAsset;
 use yii\base\Event;
 use yii\base\Exception;
 
@@ -78,7 +79,7 @@ class ClearCaches extends Utility
 
         $view = Craft::$app->getView();
 
-        $view->registerJsResource('js/ClearCachesUtility.js');
+        $view->registerAssetBundle(ClearCachesAsset::class);
         $view->registerJs('new Craft.ClearCachesUtility(\'clear-caches\');');
 
         return $view->renderTemplate('_components/utilities/ClearCaches', [

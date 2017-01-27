@@ -23,6 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property int          $width        Width
  * @property int          $height       Height
  * @property int          $size         Size
+ * @property string       $focalPoint   Focal point coordinates
  * @property \DateTime    $dateModified Date modified
  * @property Element      $element      Element
  * @property Volume       $volume       Volume

@@ -91,11 +91,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function firstKey(array $arr)
     {
-        if (is_array($arr)) {
-            /** @noinspection LoopWhichDoesNotLoopInspection */
-            foreach ($arr as $key => $value) {
-                return $key;
-            }
+        /** @noinspection LoopWhichDoesNotLoopInspection */
+        foreach ($arr as $key => $value) {
+            return $key;
         }
 
         return null;
@@ -114,7 +112,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function rename(array &$array, string $oldKey, string $newKey, $default = null)
     {
-        if (is_array($array) && (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array))) {
+        if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
         }
     }

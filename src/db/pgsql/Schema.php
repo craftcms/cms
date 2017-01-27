@@ -309,8 +309,7 @@ SQL;
      */
     protected function getIndexInformation(TableSchema $table): array
     {
-        $sql = <<<SQL
-SELECT
+        $sql = 'SELECT
     i.relname as indexname,
     pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
 FROM (
@@ -322,8 +321,7 @@ INNER JOIN pg_class c ON c.oid = idx.indrelid
 INNER JOIN pg_namespace ns ON c.relnamespace = ns.oid
 WHERE c.relname = :tableName AND ns.nspname = :schemaName
 AND idx.indisprimary = FALSE 
-ORDER BY i.relname, k
-SQL;
+ORDER BY i.relname, k';
 
         return $this->db->createCommand($sql, [
             ':schemaName' => $table->schemaName,

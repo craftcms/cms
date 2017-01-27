@@ -166,7 +166,6 @@ class Images extends Component
             $image->loadImage($path);
         }
 
-
         return $image;
     }
 

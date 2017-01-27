@@ -709,9 +709,7 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
-        /**
-         * @var $query Query
-         */
+        /** @var $query Query */
         $query = (new Query())
             ->select([
                 'id',
@@ -1133,9 +1131,7 @@ class Assets extends Component
 
             // Move the transforms
             foreach ($transformIndexes as $transformIndex) {
-                /**
-                 * @var AssetTransformIndex $transformIndex
-                 */
+                /** @var AssetTransformIndex $transformIndex */
                 $fromTransformPath = $assetTransforms->getTransformSubpath($asset,
                     $transformIndex);
                 $toTransformPath = $fromTransformPath;

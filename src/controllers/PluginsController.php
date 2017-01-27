@@ -115,18 +115,18 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string               $pluginHandle The plugin’s handle
-     * @param PluginInterface|null $plugin       The plugin, if there were validation errors
+     * @param string               $pluginId The plugin’s module ID
+     * @param PluginInterface|null $plugin   The plugin, if there were validation errors
      *
      * @return string The plugin page HTML
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $pluginHandle, PluginInterface $plugin = null): string
+    public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null): string
     {
         if ($plugin === null) {
-            $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
+            $plugin = Craft::$app->getModule($pluginId);
 
-            if ($plugin === null) {
+            if ($plugin === null || !$plugin instanceof PluginInterface) {
                 throw new NotFoundHttpException('Plugin not found');
             }
         }

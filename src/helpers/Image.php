@@ -60,8 +60,7 @@ class Image
      */
     public static function isImageManipulatable(string $extension): bool
     {
-        $path = Craft::$app->getPath()->getResourcesPath();
-        $file = $path.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'samples'.DIRECTORY_SEPARATOR.'sample.'.StringHelper::toLowerCase($extension);
+        $file = Craft::getAlias('@app/sampleimages/sample.'.strtolower($extension));
 
         try {
             Craft::$app->getImages()->loadImage($file);

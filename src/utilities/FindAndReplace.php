@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\web\assets\findreplace\FindReplaceAsset;
 use yii\base\Exception;
 
 /**
@@ -59,7 +60,7 @@ class FindAndReplace extends Utility
     {
         $view = Craft::$app->getView();
 
-        $view->registerJsResource('js/FindAndReplaceUtility.js');
+        $view->registerAssetBundle(FindReplaceAsset::class);
         $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
 
         return $view->renderTemplate('_components/utilities/FindAndReplace');

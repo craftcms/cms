@@ -1,9 +1,9 @@
 <?php
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\elements\Entry;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -23,7 +23,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ->from(['{{%elements}} el'])
             ->leftJoin('{{%entries}} en', '[[en.id]] = [[el.id]]')
             ->where([
-                'el.type' => 'craft\elements\Entry',
+                'el.type' => Entry::class,
                 'en.id' => null
             ])
             ->column();

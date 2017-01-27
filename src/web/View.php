@@ -10,13 +10,11 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\web\assets\AppAsset;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
@@ -523,48 +521,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a CSS file from the resources/ folder.
-     *
-     * @param string      $path    The resource path for the CSS file to be registered.
-     * @param array       $options The HTML attributes for the link tag. Please refer to [[Html::cssFile()]] for
-     *                             the supported options. The following options are specially handled and are not treated as HTML attributes:
-     *
-     * - `depends`: array, specifies the names of the asset bundles that this CSS file depends on.
-     *
-     * @param string|null $key     The key that identifies the CSS script file. If null, it will use
-     *                             $url as the key. If two CSS files are registered with the same key, the latter
-     *                             will overwrite the former.
-     */
-    public function registerCssResource(string $path, array $options = [], string $key = null)
-    {
-        $this->_registerResource($path, $options, $key, 'css');
-    }
-
-    /**
-     * Registers a JS file from the resources/ folder.
-     *
-     * @param string      $path    The resource path for the JS file to be registered.
-     * @param array       $options the HTML attributes for the script tag. The following options are specially handled
-     *                             and are not treated as HTML attributes:
-     *
-     * - `depends`: array, specifies the names of the asset bundles that this JS file depends on.
-     * - `position`: specifies where the JS script tag should be inserted in a page. The possible values are:
-     *     * [[POS_HEAD]]: in the head section
-     *     * [[POS_BEGIN]]: at the beginning of the body section
-     *     * [[POS_END]]: at the end of the body section. This is the default value.
-     *
-     * Please refer to [[Html::jsFile()]] for other supported options.
-     *
-     * @param string|null $key     the key that identifies the JS script file. If null, it will use
-     *                             $url as the key. If two JS files are registered with the same key, the latter
-     *                             will overwrite the former.
-     */
-    public function registerJsResource(string $path, array $options = [], string $key = null)
-    {
-        $this->_registerResource($path, $options, $key, 'js');
-    }
-
-    /**
      * Registers a hi-res CSS code block.
      *
      * @param string      $css     the CSS code block to be registered
@@ -650,6 +606,15 @@ class View extends \yii\web\View
     }
 
     /**
+     * @inheritdoc
+     */
+    public function endBody()
+    {
+        $this->registerAssetFlashes();
+        parent::endBody();
+    }
+
+    /**
      * Returns the content to be inserted in the head section.
      *
      * This includes:
@@ -717,6 +682,29 @@ class View extends \yii\web\View
         }
 
         return $html;
+    }
+
+    /**
+     * Registers any asset bundles and JS code that were queued-up in the session flash data.
+     *
+     * @return void
+     * @throws Exception if any of the registered asset bundles are not actually asset bundles
+     */
+    protected function registerAssetFlashes()
+    {
+        $session = Craft::$app->getSession();
+
+        foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+            if (!is_subclass_of($name, AssetBundle::class)) {
+                throw new Exception("$name is not an asset bundle");
+            }
+
+            $this->registerAssetBundle($name, $position);
+        }
+
+        foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+            $this->registerJs($js, $position, $key);
+        }
     }
 
     /**
@@ -1171,68 +1159,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers an asset bundle for a file in the resources/ folder.
-     *
-     * @param string      $path
-     * @param array       $options
-     * @param string|null $key
-     * @param string      $kind
-     */
-    private function _registerResource(string $path, array $options, string $key = null, string $kind)
-    {
-        if ($key === null) {
-            $key = 'resource:'.$path;
-        }
-
-        // Make AppAsset the default dependency
-        $depends = (array)ArrayHelper::remove($options, 'depends', [
-            AppAsset::class
-        ]);
-
-        $sourcePath = Craft::getAlias('@app/resources');
-
-        // If the resource doesn't exist in vendor/craftcms/cms/src/resources, check plugins' resources/ subfolders
-        if (!is_file($sourcePath.DIRECTORY_SEPARATOR.$path)) {
-            $pathParts = explode('/', $path);
-
-            if (count($pathParts) > 1) {
-                $pluginHandle = array_shift($pathParts);
-                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-                if ($plugin) {
-                    /** @var Plugin $plugin */
-                    $pluginSourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources';
-                    $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
-                    if (is_file($pluginSourcePath.DIRECTORY_SEPARATOR.$pluginSubpath)) {
-                        $sourcePath = $pluginSourcePath;
-                        $path = $pluginSubpath;
-                    }
-                }
-            }
-        }
-
-        if ($kind === 'js' && Craft::$app->getConfig()->get('useCompressedJs')) {
-            // See if a .min.js version of the file exists
-            $minPath = str_replace('.js', '.min.js', $path);
-            if (file_exists($sourcePath.DIRECTORY_SEPARATOR.$minPath)) {
-                $path = $minPath;
-            }
-        }
-
-        $bundle = new AssetBundle([
-            'sourcePath' => $sourcePath,
-            "{$kind}" => [$path],
-            "{$kind}Options" => $options,
-            'depends' => $depends,
-        ]);
-
-        $am = $this->getAssetManager();
-        $am->bundles[$key] = $bundle;
-        $bundle->publish($am);
-
-        $this->registerAssetBundle($key);
-    }
-
-    /**
      * Replaces textarea contents with a marker.
      *
      * @param array $matches
@@ -1331,7 +1257,7 @@ class View extends \yii\web\View
         $html = '<div';
 
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' '.$attribute.'="'.HtmlHelper::encode($value).'"';
+            $html .= ' '.$attribute.($value !== null ? '="'.HtmlHelper::encode($value).'"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
