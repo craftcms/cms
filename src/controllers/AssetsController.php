@@ -603,18 +603,7 @@ class AssetsController extends Controller
 
         $response = Craft::$app->getResponse();
 
-        $filter = $request->getQueryParam('filter');
-
-        if ($filter) {
-            $className = StringHelper::replace($filter, '-', '\\');
-            $filter = Craft::$app->getImageEffects()->getFilter($className);
-            $filterOptions = $request->getQueryParam('filterOptions', []);
-            $imageBlob = $filter->applyAndReturnBlob($filePath, $filterOptions);
-
-            return $response->sendContentAsFile($imageBlob, null, ['inline' => true, 'mimeType' => FileHelper::getMimeTypeByExtension($filePath)]);
-        } else {
-            return $response->sendFile($filePath, null, ['inline' => true]);
-        }
+        return $response->sendFile($filePath, null, ['inline' => true]);
     }
 
     /**
