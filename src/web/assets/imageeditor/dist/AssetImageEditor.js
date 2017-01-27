@@ -353,7 +353,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
-         * Reset focal point to the middle of the editor
+         * Toggle focal point
          */
         toggleFocalPoint: function () {
             if (!this.focalPoint) {
@@ -504,6 +504,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }.bind(this),
                 onEnd: function() {
                     this._hideGrid();
+                    this._cleanupFocalPointAfterStraighten();
                 }.bind(this)
             });
 
@@ -942,9 +943,44 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             if (this.focalPoint) {
                 this._adjustFocalPointByAngle(angleDelta);
+                if (!this._isInside(this.focalPoint, this.viewport)) {
+                    this.focalPoint.set({opacity: 0});
+                } else {
+                    this.focalPoint.set({opacity: 1});
+                }
             }
 
             this._zoomImage();
+        },
+
+        /**
+         * If focal point is active and outside of viewport after straightening, reset it.
+         */
+        _cleanupFocalPointAfterStraighten: function () {
+            if (this.focalPoint && !this._isInside(this.focalPoint, this.viewport)) {
+                this.focalPoint.set({opacity: 1});
+                var state = this.focalPointState;
+                state.offsetX = 0;
+                state.offsetY = 0;
+                this.storeFocalPointState(state);
+                this.toggleFocalPoint();
+            }
+        },
+
+        /**
+         * Returns true if an object is inside another rectangle shaped object that is not rotated.
+         *
+         * @param object
+         * @param containingObject
+         *
+         * @returns {boolean}
+         */
+        _isInside: function (object, containingObject) {
+            return (object.left > containingObject.left - containingObject.width/2
+                && object.top > containingObject.top - containingObject.height/2
+                && object.left < containingObject.left + containingObject.width/2
+                && object.top < containingObject.top + containingObject.height/2
+            )
         },
 
         _adjustFocalPointByAngle: function (angle) {
@@ -1592,8 +1628,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 
             // Focal before resize before dragging
-            var focal = this.focalPoint && this._fabricObjectHitTest(ev, this.focalPoint);
-            var move = this.croppingCanvas && this._fabricObjectHitTest(ev, this.clipper);
+            var focal = this.focalPoint && this._isMouseOver(ev, this.focalPoint);
+            var move = this.croppingCanvas && this._isMouseOver(ev, this.clipper);
             var handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
 
             if (handle || move || focal) {
@@ -1824,7 +1860,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         _setMouseCursor: function(ev) {
             var cursor = 'default';
             var handle = this.croppingCanvas && this._cropperHandleHitTest(ev);
-            if (this.focalPoint && this._fabricObjectHitTest(ev, this.focalPoint)) {
+            if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
                 cursor = 'pointer';
             } else if (handle) {
                 if (handle == 't' || handle == 'b') {
@@ -1836,7 +1872,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 } else if (handle == 'bl' || handle == 'tr') {
                     cursor = 'nesw-resize';
                 }
-            } else if (this.croppingCanvas && this._fabricObjectHitTest(ev, this.clipper)) {
+            } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
                 cursor = 'move';
             }
 
@@ -1904,7 +1940,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @return boolean
          */
 
-        _fabricObjectHitTest: function (event, object) {
+        _isMouseOver: function (event, object) {
             var parentOffset = this.$croppingCanvas.offset();
             var mouseX = event.pageX - parentOffset.left;
             var mouseY = event.pageY - parentOffset.top;
@@ -2108,6 +2144,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param rectangle
          * @param vertex
+         *
          * @returns {*}
          */
         _getEdgeCrossed: function(rectangle, vertex) {
