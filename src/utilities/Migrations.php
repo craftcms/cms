@@ -43,7 +43,7 @@ class Migrations extends Utility
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/newspaper.svg');
+        $iconPath = Craft::getAlias('@app/icons/arrow-up.svg');
 
         if ($iconPath === false) {
             throw new Exception('There was a problem getting the icon path.');
