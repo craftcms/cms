@@ -285,12 +285,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
 		// Y domain
 
-		var yDomainMax = $.proxy(function() {
-			return this.yAxisMaxValue();
-
-		}, this);
-
-		var yDomain = [0, yDomainMax()];
+		var yDomain = [0, this.getYMaxValue()];
 
         this.x = d3.scaleTime().range([0, this.width]);
         this.y = d3.scaleLinear().range([this.height, 0]);
@@ -456,9 +451,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if (this.orientation == 'rtl') {
             var yAxis = d3.axisLeft(y)
-                .tickFormat(this.yTickFormat())
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
+                .tickFormat(this.getYTickFormatter())
+                .tickValues(this.getYTickValues())
+                .ticks(this.settings.y.ticks);
 
             var translateX = this.width + 10;
             var translateY = 0;
@@ -474,9 +469,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
         else {
             var yAxis = d3.axisRight(y)
-                .tickFormat(this.yTickFormat())
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
+                .tickFormat(this.getYTickFormatter())
+                .tickValues(this.getYTickValues())
+                .ticks(this.settings.y.ticks);
 
             var translateX = -(10);
             var translateY = 0;
@@ -490,20 +485,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
     },
 
-	xTickFormat: function() {
-		return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
-	},
-
-	yTickFormat: function() {
-		return this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
-	},
-
     drawXTicks: function() {
         var x = this.paddedX;
 
         var xTicks = 3;
         var xAxis = d3.axisBottom(x)
-            .tickFormat(this.xTickFormat())
+            .tickFormat(this.getXTickFormatter())
             .ticks(xTicks);
 
         this.svg.append("g")
@@ -546,8 +533,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .call(yLineAxis
                     .tickSize(innerTickSize, tickSizeOuter)
                     .tickFormat("")
-                    .tickValues(this.yTickValues())
-                    .ticks(this.yTicks())
+                    .tickValues(this.getYTickValues())
+                    .ticks(this.settings.y.ticks)
                 );
         }
     },
@@ -616,15 +603,65 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 }, this))
                 .on("mouseover", $.proxy(function(d, index) {
                     // Expand plot
+
 					this.svg.select('.plot-' + index).attr("r", 5);
 
-					// Content
-                    var content = this.getTipContent(d);
+
+					// Set tip content
+
+					var $content = $('<div />');
+					var $xValue = $('<div class="x-value" />').appendTo($content);
+					var $yValue = $('<div class="y-value" />').appendTo($content);
+
+					$xValue.html(this.getXTickFormatter()(d[0]));
+					$yValue.html(this.getYTickFormatter()(d[1]));
+
+					var content = $content.get(0);
+
                     this.tip.setContent(content);
 
-                    // Position
-                    var position = this.getTipPosition(this.tip.$tip, d);
+
+                    // Set tip position
+
+					var getTipPosition = $.proxy(function($tip, d) {
+					}, this);
+
+					var x = this.paddedX;
+					var y = this.paddedY;
+
+					var chartMargin = this.getChartMargin();
+
+					var offset = 24;
+					var top = (y(d[1]) - this.tip.$tip.height() / 2);
+					var left;
+
+					if (this.orientation != 'rtl') {
+						left = (x(d[0]) + this.settings.margin.left + offset);
+
+						var calcLeft = (this.$chart.offset().left + left + this.tip.$tip.width());
+						var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
+
+						if (calcLeft > maxLeft) {
+							left = x(d[0]) - (this.tip.$tip.width() + offset);
+						}
+					}
+					else {
+						left = (x(d[0]) - (this.tip.$tip.width() + this.settings.margin.left + offset));
+					}
+
+					if (left < 0) {
+						left = (x(d[0]) + this.settings.margin.left + offset);
+					}
+
+					var position = {
+						top: top,
+						left: left,
+					};
+					
                     this.tip.setPosition(position);
+
+
+                    // Show tip
 
                     this.tip.show();
 
@@ -641,64 +678,23 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
-
-	getTipContent: function(d) {
-		var $content = $('<div />');
-		var $xValue = $('<div class="x-value" />').appendTo($content);
-		var $yValue = $('<div class="y-value" />').appendTo($content);
-
-		$xValue.html(this.xTickFormat()(d[0]));
-		$yValue.html(this.yTickFormat()(d[1]));
-
-		return $content.get(0);
+	
+	getXTickFormatter: function() {
+		return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
 	},
 
-    getTipPosition: function($tip, d) {
-        var x = this.paddedX;
-        var y = this.paddedY;
+	getYTickFormatter: function() {
+		return this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+	},
 
-        var chartMargin = this.getChartMargin();
-
-        var offset = 24;
-        var top = (y(d[1]) - $tip.height() / 2);
-        var left;
-
-        if (this.orientation != 'rtl') {
-            left = (x(d[0]) + this.settings.margin.left + offset);
-
-            var calcLeft = (this.$chart.offset().left + left + $tip.width());
-            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
-
-            if (calcLeft > maxLeft) {
-                left = x(d[0]) - ($tip.width() + offset);
-            }
-        }
-        else {
-            left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
-        }
-
-        if (left < 0) {
-            left = (x(d[0]) + this.settings.margin.left + offset);
-        }
-
-        return {
-            top: top,
-            left: left,
-        };
-    },
-
-    yAxisMaxValue: function() {
+    getYMaxValue: function() {
         return d3.max(this.dataTable.rows, function(d) {
             return d[1];
         });
     },
 
-    yTicks: function() {
-        return 2;
-    },
-
-    yTickValues: function() {
-        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
+    getYTickValues: function() {
+        return [this.getYMaxValue() / 2, this.getYMaxValue()];
     },
 },
 {
@@ -710,9 +706,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         yAxisGridlines: true,
         axis: {
             y: {
-                show: false
+                show: false,
             }
-        }
+        },
+		y: {
+        	ticks: 2,
+		}
     }
 });
 
