@@ -128,9 +128,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     chartBaseClass: 'cp-chart',
     dataTable: null,
 
-    // dataTables: [],
-    // isStacked: true,
-
     formatLocale: null,
     timeFormatLocale: null,
     orientation: null,
