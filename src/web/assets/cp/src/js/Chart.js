@@ -261,31 +261,29 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
 
 
-        // X & Y Scales & Domains
-
-
         // X domain
 
-		var min = d3.min(this.dataTable.rows, function(d) {
+		var xDomainMin = d3.min(this.dataTable.rows, function(d) {
 			return d[0];
 		});
 
-		var max = d3.max(this.dataTable.rows, function(d) {
+		var xDomainMax = d3.max(this.dataTable.rows, function(d) {
 			return d[0];
 		});
 
-		var xDomain;
+		var xDomain = [xDomainMin, xDomainMax];
 
 		if (this.orientation == 'rtl') {
-			xDomain = [max, min];
-		} else {
-			xDomain = [min, max];
+			xDomain = [xDomainMax, xDomainMin];
 		}
 
 
 		// Y domain
 
 		var yDomain = [0, this.getYMaxValue()];
+
+
+		// X & Y Scales & Domains
 
         this.x = d3.scaleTime().range([0, this.width]);
         this.y = d3.scaleLinear().range([this.height, 0]);
@@ -588,6 +586,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
 
             // Draw triggers
+
             this.svg.append('g')
                 .attr("class", "tip-triggers")
                 .selectAll("rect")
@@ -678,7 +677,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
-	
+
 	getXTickFormatter: function() {
 		return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
 	},
