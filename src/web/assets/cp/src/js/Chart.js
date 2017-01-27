@@ -287,6 +287,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         this.x = d3.scaleTime().range([0, this.width]);
         this.y = d3.scaleLinear().range([this.height, 0]);
+
         this.x.domain(xDomain);
         this.y.domain(yDomain);
 
@@ -621,9 +622,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
 
                     // Set tip position
-
-					var getTipPosition = $.proxy(function($tip, d) {
-					}, this);
 
 					var x = this.paddedX;
 					var y = this.paddedY;
