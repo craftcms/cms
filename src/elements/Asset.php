@@ -974,6 +974,27 @@ class Asset extends Element
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        $attributes = [];
+
+        if ($context === 'index') {
+            // Eligible for the image editor?
+            $ext = $this->getExtension();
+            if (strcasecmp($ext, 'svg') !== 0 && Image::isImageManipulatable($ext)) {
+                $attributes['data-editable-image'] = null;
+            }
+        }
+
+        return $attributes;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
      * Return a dimension of the image.
      *
      * @param string                           $dimension 'height' or 'width'
