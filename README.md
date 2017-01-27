@@ -11,7 +11,7 @@ To install the Craft 3 Beta, follow the [installation instructions](https://gith
 ## Resources
 
 #### Official Resources
-- [Craft Documentation](https://github.com/craftcms/docs)
+- [Craft 3 Documentation](https://github.com/craftcms/docs)
 - [Craft 3 Plugins](https://github.com/craftcms/plugins)
 - [Demo site](https://demo.craftcms.com/)
 - [Craft Slack](https://craftcms.com/community#slack)
