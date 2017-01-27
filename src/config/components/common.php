@@ -265,41 +265,29 @@ return [
         }
 
         $configService = Craft::$app->getConfig();
-        $fileTarget = new FileTarget();
+
+        $target = [
+            'class' => FileTarget::class,
+            'fileMode' => $configService->get('defaultFileMode'),
+            'dirMode' => $configService->get('defaultDirMode'),
+        ];
 
         if ($isConsoleRequest) {
-            $logPath = Craft::getAlias('@storage/logs/console.log');
-
-            if ($logPath === false) {
-                throw new Exception('There was a problem getting the console log path.');
-            }
-
-            $fileTarget->logFile = $logPath;
+            $target['logFile'] = '@storage/logs/console.log';
         } else {
-            $logPath = Craft::getAlias('@storage/logs/web.log');
-
-            if ($logPath === false) {
-                throw new Exception('There was a problem getting the web log path.');
-            }
-
-            $fileTarget->logFile = $logPath;
+            $target['logFile'] = '@storage/logs/web.log';
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
             if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {
-                $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
+                $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
         }
 
-        $fileTarget->fileMode = $configService->get('defaultFileMode');
-        $fileTarget->dirMode = $configService->get('defaultDirMode');
-
-        $config = [
+        return Craft::createObject([
             'class' => yii\log\Dispatcher::class,
             'targets' => [
-                $fileTarget
+                $target,
             ]
-        ];
-
-        return Craft::createObject($config);
+        ]);
     },
 ];
