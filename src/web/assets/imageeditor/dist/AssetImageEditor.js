@@ -102,7 +102,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth;
             var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
-            this.maxImageSize = Math.min(browserViewportHeight, browserViewportWidth);
+            this.maxImageSize = Math.max(browserViewportHeight, browserViewportWidth);
         },
 
         /**
@@ -466,17 +466,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Return the current image dimensions that would be used in the current image area with no straightening or rotation applied.
          */
         getScaledImageDimensions: function() {
-            var imageRatio = this.originalHeight / this.originalWidth;
-            var editorRatio = this.editorHeight / this.editorWidth;
 
             var dimensions = {};
-            if (imageRatio > editorRatio) {
-                dimensions.height = Math.min(this.editorHeight, this.originalHeight);
-                dimensions.width = Math.round(this.originalWidth / (this.originalHeight / dimensions.height));
-            } else {
-                dimensions.width = Math.min(this.editorWidth, this.originalWidth);
-                dimensions.height = Math.round(this.originalHeight * (dimensions.width / this.originalWidth));
-            }
+            dimensions.height = Math.min(this.editorHeight, this.originalHeight);
+            dimensions.width = Math.round(this.originalWidth / (this.originalHeight / dimensions.height));
 
             return dimensions;
         },
