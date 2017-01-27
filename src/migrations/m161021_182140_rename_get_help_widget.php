@@ -3,6 +3,7 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
+use craft\widgets\CraftSupport;
 
 /**
  * m161021_182140_rename_get_help_widget migration.
@@ -17,7 +18,7 @@ class m161021_182140_rename_get_help_widget extends Migration
         $this->update(
             '{{%widgets}}',
             [
-                'type' => 'craft\widgets\CraftSupport'
+                'type' => CraftSupport::class
             ],
             [
                 'type' => 'craft\widgets\GetHelp'

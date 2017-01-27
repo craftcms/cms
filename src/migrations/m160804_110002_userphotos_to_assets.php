@@ -12,6 +12,8 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\Exception;
+use craft\volumes\Local;
+use craft\elements\Asset;
 
 /**
  * m160804_110002_userphotos_to_assets migration.
@@ -182,7 +184,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->max('[[sortOrder]]');
 
         $volumeData = [
-            'type' => 'craft\volumes\Local',
+            'type' => Local::class,
             'name' => $name,
             'handle' => $handle,
             'hasUrls' => null,
@@ -271,7 +273,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [
-                    'type' => 'craft\elements\Asset',
+                    'type' => Asset::class,
                     'enabled' => 1,
                     'archived' => 0
                 ];
