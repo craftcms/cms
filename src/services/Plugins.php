@@ -21,7 +21,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -849,7 +848,7 @@ class Plugins extends Component
         $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
-            $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
+            $iconPath = Craft::getAlias('@app/icons/default-plugin.svg');
         }
 
         return file_get_contents($iconPath);

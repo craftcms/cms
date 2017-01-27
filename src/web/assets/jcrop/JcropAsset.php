@@ -7,7 +7,7 @@
 
 namespace craft\web\assets\jcrop;
 
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * Jcrop asset bundle.

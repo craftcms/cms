@@ -4,7 +4,7 @@
 html, body { height: 100%; }
 body { overflow: hidden; background: #fff; }
 
-#bg { position: fixed; top: 0; left: 0; width: 150%; height: 100%; background: url(../images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
+#bg { position: fixed; top: 0; left: 0; width: 150%; height: 100%; background: url(images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
 
 .beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
 #beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
@@ -24,7 +24,7 @@ h1 { margin-bottom: 35px; text-align: center; }
 	body.ltr & { content: 'rarr'; }
 	body.rtl & { content: 'larr'; }
 }
-.buttons .btn.loading:after { content: '' !important; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
+.buttons .btn.loading:after { content: '' !important; background: url(images/spinner_submit.gif) no-repeat 0 0; }
 
 .dots { position: absolute; bottom: 10px; left: 50%; margin-left: -17px; }
 .dots div { @include floatleft; border-radius: 4px; border: 1px solid rgba(0,0,0,0.15); width: 6px; height: 6px; }
@@ -43,11 +43,11 @@ input.hidden { position: absolute; top: 100px; }
 #account,
 #site { background: #fff no-repeat 0 100%; }
 
-#account { background-image: url(../images/setup-screen-bgs/account.gif); }
-#site { background-image: url(../images/setup-screen-bgs/site.gif); }
+#account { background-image: url(images/account.gif); }
+#site { background-image: url(images/site.gif); }
 
 #welcome h1,
-#installing h1 { margin-top: 140px; }
+#installing h1 { margin-top: 140px !important; }
 #installing #spinner { display: block; margin: 0 auto; }
 #welcome .buttons,
 #installing .buttons { position: static; margin: 0; text-align: center; }
@@ -61,5 +61,5 @@ input.hidden { position: absolute; top: 100px; }
 	   only screen and (        min-device-pixel-ratio: 1.5),
 	   only screen and (        min-resolution: 1.5dppx)
 {
-	.buttons .btn.loading:after { background-image: url(../images/spinner_submit_2x.gif); background-size: 20px; }
+	.buttons .btn.loading:after { background-image: url(images/spinner_submit_2x.gif); background-size: 20px; }
 }

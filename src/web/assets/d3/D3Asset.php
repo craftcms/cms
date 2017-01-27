@@ -8,7 +8,7 @@
 namespace craft\web\assets\d3;
 
 use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\View;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
@@ -25,11 +25,9 @@ class D3Asset extends AssetBundle
     {
         $this->sourcePath = '@bower/d3';
 
-        if (Craft::$app->getConfig()->get('useCompressedJs')) {
-            $this->js[] = 'd3.min.js';
-        } else {
-            $this->js[] = 'd3.js';
-        }
+        $this->js = [
+            'd3'.$this->dotJs(),
+        ];
 
         parent::init();
     }

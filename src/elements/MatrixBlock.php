@@ -18,6 +18,7 @@ use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\validators\SiteIdValidator;
+use craft\web\assets\matrix\MatrixAsset;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -371,15 +372,12 @@ class MatrixBlock extends Element
      */
     public function afterDelete()
     {
-        // TODO: get this working with asset bundles
-        /*
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
-            $session->addJsResourceFlash('js/MatrixInput.js');
+            $session->addAssetBundleFlash(MatrixAsset::class);
             $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
         }
-        */
 
         parent::afterDelete();
     }

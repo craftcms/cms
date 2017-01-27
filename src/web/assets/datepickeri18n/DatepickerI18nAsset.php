@@ -8,7 +8,7 @@
 namespace craft\web\assets\datepickeri18n;
 
 use Craft;
-use craft\web\assets\AssetBundle;
+use craft\web\AssetBundle;
 use craft\web\assets\jqueryui\JqueryUiAsset;
 
 /**
@@ -34,6 +34,7 @@ class DatepickerI18nAsset extends AssetBundle
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (isset($datepickerLanguage)) {
             $this->sourcePath = '@lib/datepicker-i18n';
 

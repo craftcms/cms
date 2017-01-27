@@ -79,7 +79,7 @@ class RebrandController extends Controller
                 move_uploaded_file($file->tempName, $fileDestination);
 
                 Craft::$app->getImages()->loadImage($fileDestination)->scaleToFit(500, 500)->saveAs($fileDestination);
-                $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+                $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
                 return $this->asJson(['html' => $html]);
             }
@@ -107,7 +107,7 @@ class RebrandController extends Controller
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath().'/'.$type);
 
-        $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+        $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
         return $this->asJson(['html' => $html]);
     }

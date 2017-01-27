@@ -7,8 +7,7 @@
 
 namespace craft\web\assets\jquerypayment;
 
-use Craft;
-use yii\web\AssetBundle;
+use craft\web\AssetBundle;
 
 /**
  * JqueryPayment asset bundle.
@@ -23,7 +22,7 @@ class JqueryPaymentAsset extends AssetBundle
         $this->sourcePath = '@bower/jquery.payment/lib';
 
         $this->js = [
-            'jquery.payment.min.js',
+            'jquery.payment'.$this->dotJs(),
         ];
 
         parent::init();

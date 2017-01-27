@@ -12,4 +12,3 @@ Build/*
 node_modules/
 vendor/
 /composer.lock
-/tests/_craft/config/db.php
