@@ -59,7 +59,6 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
  * @property \craft\services\Images          $images             The images service
- * @property \craft\services\ImageEffects    $imageEffects       The image effects service
  * @property bool                            $sInMaintenanceMode Whether the system is in maintenance mode
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
@@ -932,17 +931,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('images');
-    }
-
-    /**
-     * Returns the image effects service.
-     *
-     * @return \craft\services\ImageEffects The image effects service
-     */
-    public function getImageEffects()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('imageEffects');
     }
 
     /**

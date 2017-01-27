@@ -1005,7 +1005,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 && object.top > containingObject.top - containingObject.height/2
                 && object.left < containingObject.left + containingObject.width/2
                 && object.top < containingObject.top + containingObject.height/2
-            )
+            );
         },
 
         _adjustFocalPointByAngle: function (angle) {
