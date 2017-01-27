@@ -263,10 +263,39 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // X & Y Scales & Domains
 
+
+        // X domain
+
+		var min = d3.min(this.dataTable.rows, function(d) {
+			return d[0];
+		});
+
+		var max = d3.max(this.dataTable.rows, function(d) {
+			return d[0];
+		});
+
+		var xDomain;
+
+		if (this.orientation == 'rtl') {
+			xDomain = [max, min];
+		} else {
+			xDomain = [min, max];
+		}
+
+
+		// Y domain
+
+		var yDomainMax = $.proxy(function() {
+			return this.yAxisMaxValue();
+
+		}, this);
+
+		var yDomain = [0, yDomainMax()];
+
         this.x = d3.scaleTime().range([0, this.width]);
         this.y = d3.scaleLinear().range([this.height, 0]);
-        this.x.domain(this.xDomain());
-        this.y.domain(this.yDomain());
+        this.x.domain(xDomain);
+        this.y.domain(yDomain);
 
 
         // Append SVG to chart element
@@ -296,8 +325,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var chartMargin = this.getChartMargin();
         this.paddedX = d3.scaleTime().range([chartMargin.left, (this.width - chartMargin.right)]);
         this.paddedY = d3.scaleLinear().range([this.height, 0]);
-        this.paddedX.domain(this.xDomain());
-        this.paddedY.domain(this.yDomain());
+        this.paddedX.domain(xDomain);
+        this.paddedY.domain(yDomain);
 
 
         // Draw
@@ -472,9 +501,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     drawXTicks: function() {
         var x = this.paddedX;
 
+        var xTicks = 3;
         var xAxis = d3.axisBottom(x)
             .tickFormat(this.xTickFormat())
-            .ticks(this.xTicks());
+            .ticks(xTicks);
 
         this.svg.append("g")
             .attr("class", "x ticks-axis")
@@ -547,24 +577,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
     },
 
-    expandPlot: function(index) {
-        this.svg.select('.plot-' + index).attr("r", 5);
-    },
-
-    unexpandPlot: function(index) {
-        this.svg.select('.plot-' + index).attr("r", 4);
-    },
-
-    xAxisTickInterval: function() {
-        var chartMargin = this.getChartMargin();
-
-        var tickSizeOuter = 6;
-        var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - tickSizeOuter * 2;
-        var interval = length / (this.dataTable.rows.length - 1);
-
-        return interval;
-    },
-
     drawTipTriggers: function() {
         var x = this.paddedX;
 
@@ -574,8 +586,21 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 this.tip = new Craft.charts.Tip(this.$chart);
             }
 
-            var tipTriggerWidth = Math.max(0, this.xAxisTickInterval());
 
+            // Define xAxisTickInterval
+
+			var chartMargin = this.getChartMargin();
+			var tickSizeOuter = 6;
+			var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - tickSizeOuter * 2;
+			var xAxisTickInterval = length / (this.dataTable.rows.length - 1);
+
+
+            // trigger width
+
+            var tipTriggerWidth = Math.max(0, xAxisTickInterval);
+
+
+            // Draw triggers
             this.svg.append('g')
                 .attr("class", "tip-triggers")
                 .selectAll("rect")
@@ -590,19 +615,25 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     return x(d[0]) - tipTriggerWidth / 2;
                 }, this))
                 .on("mouseover", $.proxy(function(d, index) {
-                    this.expandPlot(index);
+                    // Expand plot
+					this.svg.select('.plot-' + index).attr("r", 5);
 
+					// Content
                     var content = this.getTipContent(d);
                     this.tip.setContent(content);
 
-                    var tipPosition = this.getTipPosition(this.tip.$tip, d);
-                    this.tip.setPosition(tipPosition);
+                    // Position
+                    var position = this.getTipPosition(this.tip.$tip, d);
+                    this.tip.setPosition(position);
 
                     this.tip.show();
 
                 }, this))
                 .on("mouseout", $.proxy(function(d, index) {
-                    this.unexpandPlot(index);
+                    // Unexpand Plot
+					this.svg.select('.plot-' + index).attr("r", 4);
+
+					// Hide tip
                     this.tip.hide();
                 }, this));
         }
@@ -656,39 +687,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         };
     },
 
-    xDomain: function() {
-        var min = d3.min(this.dataTable.rows, function(d) {
-            return d[0];
-        });
-        var max = d3.max(this.dataTable.rows, function(d) {
-            return d[0];
-        });
-
-        if (this.orientation == 'rtl') {
-            return [max, min];
-        }
-        else {
-            return [min, max];
-        }
-    },
-
-    xTicks: function() {
-        return 3;
-    },
-
     yAxisMaxValue: function() {
         return d3.max(this.dataTable.rows, function(d) {
             return d[1];
         });
-    },
-
-    yDomain: function() {
-        var yDomainMax = $.proxy(function() {
-            return this.yAxisMaxValue();
-
-        }, this);
-
-        return [0, yDomainMax()];
     },
 
     yTicks: function() {
