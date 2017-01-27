@@ -186,36 +186,38 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 		this.$chart = $('<div class="' + className + '" />').appendTo(this.$container);
     },
 
-    xTickFormat: function(timeFormatLocale) {
-        switch (this.settings.dataScale) {
-            case 'year':
-                return timeFormatLocale.format('%Y');
+    getTimeFormatter: function(timeFormatLocale, dataScale)
+    {
+		switch (dataScale) {
+			case 'year':
+				return timeFormatLocale.format('%Y');
 
-            case 'month':
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.month);
+			case 'month':
+				return timeFormatLocale.format(this.settings.formats.shortDateFormats.month);
 
-            case 'hour':
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.day + " %H:00:00");
+			case 'hour':
+				return timeFormatLocale.format(this.settings.formats.shortDateFormats.day + " %H:00:00");
 
-            default:
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.day);
-        }
+			default:
+				return timeFormatLocale.format(this.settings.formats.shortDateFormats.day);
+		}
     },
+    
+    getNumberFormatter: function(formatLocale, type)
+    {
+		switch (type) {
+			case 'currency':
+				return formatLocale.format(this.settings.formats.currencyFormat);
 
-    yTickFormat: function(formatLocale) {
-        switch (this.dataTable.columns[1].type) {
-            case 'currency':
-                return formatLocale.format(this.settings.formats.currencyFormat);
+			case 'percent':
+				return formatLocale.format(this.settings.formats.percentFormat);
 
-            case 'percent':
-                return formatLocale.format(this.settings.formats.percentFormat);
+			case 'time':
+				return Craft.charts.utils.getDuration;
 
-            case 'time':
-                return Craft.charts.utils.getDuration;
-
-            default:
-                return formatLocale.format(".2");
-        }
+			default:
+				return formatLocale.format(".2");
+		}
     },
 
     resize: function() {
@@ -453,7 +455,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if (this.orientation == 'rtl') {
             var yAxis = d3.axisLeft(y)
-                .tickFormat(this.yTickFormat(this.formatLocale))
+                .tickFormat(this.yTickFormat())
                 .tickValues(this.yTickValues())
                 .ticks(this.yTicks());
 
@@ -471,7 +473,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
         else {
             var yAxis = d3.axisRight(y)
-                .tickFormat(this.yTickFormat(this.formatLocale))
+                .tickFormat(this.yTickFormat())
                 .tickValues(this.yTickValues())
                 .ticks(this.yTicks());
 
@@ -487,11 +489,19 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
     },
 
+	xTickFormat: function() {
+		return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+	},
+
+	yTickFormat: function() {
+		return this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+	},
+
     drawXTicks: function() {
         var x = this.paddedX;
 
         var xAxis = d3.axisBottom(x)
-            .tickFormat(this.xTickFormat(this.timeFormatLocale))
+            .tickFormat(this.xTickFormat())
             .ticks(this.xTicks());
 
         this.svg.append("g")
@@ -595,8 +605,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var tipSettings = {
                 chart: this,
                 locale: this.formatLocale,
-                xTickFormat: this.xTickFormat(this.timeFormatLocale),
-                yTickFormat: this.yTickFormat(this.formatLocale),
+                xTickFormat: this.xTickFormat(),
+                yTickFormat: this.yTickFormat(),
                 tipContentFormat: $.proxy(this, 'tipContentFormat'),
                 getPosition: $.proxy(this, 'getTipPosition')
             };
