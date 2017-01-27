@@ -15,7 +15,6 @@ namespace craft\base;
  */
 interface ImageFilterInterface extends ComponentInterface
 {
-
     // Public Methods
     // =========================================================================
 
@@ -23,34 +22,34 @@ interface ImageFilterInterface extends ComponentInterface
      * Apply the filter and return the resulting image blob
      *
      * @param string $imagePath the location of file to apply filter to.
-     * @param array $options filter options, if any
+     * @param array  $options   filter options, if any
      *
      * @return string|false
      */
-    public function applyAndReturnBlob($imagePath, $options = []);
+    public function applyAndReturnBlob(string $imagePath, array $options = []);
 
     /**
      * Apply the filter and store the image to a path. If path is omitted, store to original path.
      *
      * @param string $imagePath the location of file to apply filter to.
-     * @param array $options filter options, if any
+     * @param array  $options   filter options, if any
      * @param string $targetPath
      *
      * @return boolean
      */
-    public function applyAndStore($imagePath, $options = [], $targetPath = '');
+    public function applyAndStore(string $imagePath, array $options = [], string $targetPath = ''): bool;
 
     /**
      * Returns true if the filter can be applied on the current Craft installation.
      *
      * @return boolean
      */
-    public function canApplyFilter();
+    public function canApplyFilter(): bool;
 
     /**
      * Get the field Html for filter configuration.
-     * 
+     *
      * @return string
      */
-    public function getFieldHtml();
+    public function getFieldHtml(): string;
 }

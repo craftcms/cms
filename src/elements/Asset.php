@@ -346,7 +346,7 @@ class Asset extends Element
     public $size;
 
     /**
-     * @var string|null Size
+     * @var string|null Focal point
      */
     public $focalPoint;
 

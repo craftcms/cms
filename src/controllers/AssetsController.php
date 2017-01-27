@@ -19,7 +19,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
-use craft\image\Raster ;
+use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -558,7 +558,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException if the Asset is missing.
      */
-    public function actionImageEditor()
+    public function actionImageEditor(): Response
     {
         $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
@@ -584,15 +584,18 @@ class AssetsController extends Controller
 
     /**
      * Get the image being edited.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
      */
-    public function actionEditImage()
+    public function actionEditImage(): Response
     {
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredQueryParam('assetId');
-        $size = $request->getRequiredQueryParam('size');
+        $assetId = (int)$request->getRequiredQueryParam('assetId');
+        $size = (int)$request->getRequiredQueryParam('size');
 
         // TODO the method name needs some work.
-        $filePath = Assets::getEditorImagePath($assetId, $size);
+        $filePath = Assets::editorImagePath($assetId, $size);
 
         if (!$filePath) {
             throw new BadRequestHttpException('The Asset cannot be found');
@@ -607,6 +610,7 @@ class AssetsController extends Controller
             $filter = Craft::$app->getImageEffects()->getFilter($className);
             $filterOptions = $request->getQueryParam('filterOptions', []);
             $imageBlob = $filter->applyAndReturnBlob($filePath, $filterOptions);
+
             return $response->sendContentAsFile($imageBlob, null, ['inline' => true, 'mimeType' => FileHelper::getMimeTypeByExtension($filePath)]);
         } else {
             return $response->sendFile($filePath, null, ['inline' => true]);
@@ -620,7 +624,8 @@ class AssetsController extends Controller
      * @throws BadRequestHttpException if some parameters are missing.
      * @throws \Exception if something went wrong saving the Asset.
      */
-    public function actionSaveImage() {
+    public function actionSaveImage(): Response
+    {
         $this->requireLogin();
         $this->requireAcceptsJson();
 
@@ -672,9 +677,7 @@ class AssetsController extends Controller
 
         $imageSize = Image::imageSize($imageCopy);
 
-        /**
-         * @var Raster $image
-         */
+        /** @var Raster $image */
         $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
         $originalImageWidth = $imageSize[0];
         $originalImageHeight = $imageSize[1];
@@ -697,8 +700,8 @@ class AssetsController extends Controller
         $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
         $width = $cropData['width'] * $zoom * $adjustmentRatio;
         $height = $cropData['height'] * $zoom * $adjustmentRatio;
-        $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width/2;
-        $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height/2;
+        $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width / 2;
+        $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
 
         $focal = null;
         if ($focalPoint) {

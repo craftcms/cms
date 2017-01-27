@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\image\filters;
+namespace craft\image\filters;
 
 use Craft;
-use craft\app\base\ImageFilter;
+use craft\base\ImageFilter;
 
 /**
  * Class Sepia
@@ -18,21 +18,20 @@ use craft\app\base\ImageFilter;
  */
 class Sepia extends ImageFilter
 {
-
-
     /**
      * Return a string representation of the filter.
      *
      * @return string
      */
-    public function __toString() {
+    public function __toString()
+    {
         return Craft::t('app', 'Sepia');
     }
 
     /**
      * @inheritdoc
      */
-    public function canApplyFilter()
+    public function canApplyFilter(): bool
     {
         return Craft::$app->getImages()->getIsImagick();
     }
@@ -40,30 +39,33 @@ class Sepia extends ImageFilter
     /**
      * @inheritdoc
      */
-    public function applyAndReturnBlob($imagePath, $options = [])
+    public function applyAndReturnBlob(string $imagePath, array $options = [])
     {
         $image = new \Imagick($imagePath);
         $this->applyFilter($image, $options);
+
         return $image->getImageBlob();
     }
 
     /**
      * @inheritdoc
      */
-    public function applyAndStore($imagePath, $options = [], $targetPath = '')
+    public function applyAndStore(string $imagePath, array $options = [], string $targetPath = ''): bool
     {
         $targetPath = empty($targetPath) ? $imagePath : $targetPath;
         $image = new \Imagick($imagePath);
         $this->applyFilter($image, $options);
+
         return $image->writeImage($targetPath);
     }
 
     /**
      * @inheritdoc
      */
-    protected function applyFilter(\Imagick $image, $options = [])
+    protected function applyFilter(\Imagick $image, array $options = []): \Imagick
     {
         $image->sepiaToneImage(80);
+
         return $image;
     }
 }

@@ -294,7 +294,7 @@ class Path extends Component
      *
      * @return string
      */
-    public function getImageEditorSourcesPath()
+    public function getImageEditorSourcesPath(): string
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'imageeditor';
         FileHelper::createDirectory($path);

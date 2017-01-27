@@ -15,25 +15,22 @@ namespace craft\base;
  */
 abstract class ImageFilter extends Component implements ImageFilterInterface
 {
-
     // Public Methods
     // =========================================================================
 
     /**
-     * Returns true if the filter can be applied on the current Craft installation.
-     *
-     * @return boolean
+     * @inheritdoc
      */
-    public function canApplyFilter() {
+    public function canApplyFilter(): bool
+    {
         return true;
     }
 
     /**
-     * Get the field Html for filter configuration.
-     * 
-     * @return string
+     * @inheritdoc
      */
-    public function getFieldHtml() {
+    public function getFieldHtml(): string
+    {
         return '';
     }
 }

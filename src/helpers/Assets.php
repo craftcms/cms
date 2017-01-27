@@ -566,8 +566,9 @@ class Assets
      * @param integer $size
      *
      * @return false|string
+     * @throws Exception in case of failure
      */
-    public static function getEditorImagePath($assetId, $size)
+    public static function editorImagePath(int $assetId, int $size)
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
@@ -575,9 +576,7 @@ class Assets
             return false;
         }
 
-        /**
-         * @var Volume $volume
-         */
+        /** @var Volume $volume */
         $volume = $asset->getVolume();
 
         $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();

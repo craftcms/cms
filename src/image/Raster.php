@@ -256,8 +256,8 @@ class Raster extends Image
             if (is_array($cropPosition)) {
                 $centerX = $cropPosition['x'] / $factor;
                 $centerY = $cropPosition['y'] / $factor;
-                $x1 = $centerX - $targetWidth/2;
-                $y1 = $centerY - $targetHeight/2;
+                $x1 = $centerX - $targetWidth / 2;
+                $y1 = $centerY - $targetHeight / 2;
                 $x2 = $x1 + $targetWidth;
                 $y2 = $y1 + $targetHeight;
 
@@ -402,7 +402,8 @@ class Raster extends Image
      *
      * @return static Self reference
      */
-    public function flipHorizontally(){
+    public function flipHorizontally()
+    {
         $this->_image->flipHorizontally();
 
         return $this;
@@ -413,7 +414,8 @@ class Raster extends Image
      *
      * @return static Self reference
      */
-    public function flipVertically(){
+    public function flipVertically()
+    {
         $this->_image->flipVertically();
 
         return $this;

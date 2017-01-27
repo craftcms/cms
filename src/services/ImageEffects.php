@@ -2,13 +2,12 @@
 namespace craft\services;
 
 use Craft;
-
 use craft\base\Component;
 use craft\base\ImageFilterInterface;
 use craft\helpers\Component as ComponentHelper;
-use craft\app\image\filters\Grayscale;
-use craft\app\image\filters\Sepia;
-use craft\app\image\filters\Brightness;
+use craft\image\filters\Brightness;
+use craft\image\filters\Grayscale;
+use craft\image\filters\Sepia;
 
 /**
  * Class ImageEffects
@@ -22,15 +21,6 @@ use craft\app\image\filters\Brightness;
  */
 class ImageEffects extends Component
 {
-
-    // Constants
-    // =========================================================================
-
-    /**
-     * @var string The volume interface name
-     */
-    const IMAGE_FILTER_INTERFACE = 'craft\app\base\ImageFilterInterface';
-
     // Public Methods
     // =========================================================================
 
@@ -39,7 +29,8 @@ class ImageEffects extends Component
      *
      * @return string
      */
-    public function __toString() {
+    public function __toString()
+    {
         return static::displayName();
     }
 
@@ -48,7 +39,7 @@ class ImageEffects extends Component
      *
      * @return array the available volume type classes
      */
-    public function getAllFilterTypes()
+    public function getAllFilterTypes(): array
     {
         // TODO filters
         return [];
@@ -60,7 +51,7 @@ class ImageEffects extends Component
         ];
 
         // TODO filters
-       foreach (Craft::$app->getPlugins()->call('getImageFilters', [], true) as $pluginFilters) {
+        foreach (Craft::$app->getPlugins()->call('getImageFilters', [], true) as $pluginFilters) {
             $imageFilters = array_merge($imageFilters, $pluginFilters);
         }
 
@@ -70,9 +61,9 @@ class ImageEffects extends Component
     /**
      * Returns all image filters.
      *
-     * @return array
+     * @return ImageFilterInterface[]
      */
-    public function getAllFilters()
+    public function getAllFilters(): array
     {
         $filterTypes = $this->getAllFilterTypes();
         $filters = [];
@@ -85,18 +76,16 @@ class ImageEffects extends Component
     }
 
     /**
-     * Return an instantiated image filter buy it's component type.
+     * Return an instantiated image filter buy its component type.
      *
-     * @param $filterType
+     * @param string $filterType
      *
      * @return ImageFilterInterface
      */
-    public function getFilter($filterType) {
-
-        /**
-         * @var ImageFilterInterface $filter
-         */
-        $filter = ComponentHelper::createComponent(['type' => $filterType], static::IMAGE_FILTER_INTERFACE);
+    public function getFilter(string $filterType): ImageFilterInterface
+    {
+        /** @var ImageFilterInterface $filter */
+        $filter = ComponentHelper::createComponent(['type' => $filterType], ImageFilterInterface::class);
 
         return $filter;
     }
@@ -104,13 +93,14 @@ class ImageEffects extends Component
     /**
      * Apply an image filter and store the resulting image.
      *
-     * @param ImageFilterInterface $filter the filter to use
-     * @param string $imagePath the location of image
-     * @param array $options filter options
+     * @param ImageFilterInterface $filter    the filter to use
+     * @param string               $imagePath the location of image
+     * @param array                $options   filter options
      *
      * @return bool
      */
-    public function applyFilterAndStore(ImageFilterInterface $filter, $imagePath, $options = []) {
+    public function applyFilterAndStore(ImageFilterInterface $filter, string $imagePath, array $options = []): bool
+    {
         if ($filter->canApplyFilter()) {
             return $filter->applyAndStore($imagePath, $options, $imagePath);
         }
@@ -121,20 +111,18 @@ class ImageEffects extends Component
     /**
      * Apply an image filter and store the resulting blob.
      *
-     * @param ImageFilterInterface $filter the filter to use
-     * @param string $imagePath the location of image
-     * @param array $options filter options
+     * @param ImageFilterInterface $filter    the filter to use
+     * @param string               $imagePath the location of image
+     * @param array                $options   filter options
      *
      * @return false|string
      */
-
-    public function applyFilterAndReturnBlob(ImageFilterInterface $filter, $imagePath, $options = []) {
+    public function applyFilterAndReturnBlob(ImageFilterInterface $filter, string $imagePath, array $options = [])
+    {
         if ($filter->canApplyFilter()) {
             return $filter->applyAndReturnBlob($imagePath, $options);
         }
 
         return false;
     }
-
-
 }
