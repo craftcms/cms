@@ -102,7 +102,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth;
             var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
-            this.maxImageSize = Math.min(browserViewportHeight, browserViewportWidth);
+            this.maxImageSize = Math.max(browserViewportHeight, browserViewportWidth);
         },
 
         /**
