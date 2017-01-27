@@ -339,14 +339,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Create the focal point.
          */
         _createFocalPoint: function () {
+            var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+
+            var adjustedFocalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
+            var adjustedFocalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio;
+
             this.focalPoint = new fabric.Group([
                 new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
                 new fabric.Circle({radius: 8, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
             ], {
                 originX: 'center',
                 originY: 'center',
-                left: this.focalPointState.offsetX + this.editorWidth/2,
-                top: this.focalPointState.offsetY + this.editorHeight/2
+                left: this.editorWidth/2 + adjustedFocalX,
+                top: this.editorHeight/2 + adjustedFocalY
             });
 
             this.canvas.add(this.focalPoint);
