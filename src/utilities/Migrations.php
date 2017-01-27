@@ -55,6 +55,14 @@ class Migrations extends Utility
     /**
      * @inheritdoc
      */
+    public static function badgeCount(): int
+    {
+        return count(Craft::$app->getContentMigrator()->getNewMigrations());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
