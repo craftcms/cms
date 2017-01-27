@@ -60,59 +60,34 @@ Craft.charts.DataTable = Garnish.Base.extend(
 /**
  * Class Craft.charts.Tip
  */
-Craft.charts.Tip = Garnish.Base.extend(
-{
+
+Craft.charts.Tip = Garnish.Base.extend({
     $tip: null,
 
-    init: function($container, settings) {
-        this.setSettings(settings, Craft.charts.Tip.defaults);
+	init: function($container) {
+		this.$container = $container;
 
-        this.$container = $container;
+		this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
 
-        this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
+		this.hide();
+	},
 
-        this.hide();
+    setContent: function(html) {
+		this.$tip.html(html);
     },
 
-    tipContentFormat: function(d) {
-        var locale = this.settings.locale;
-
-
-        if (this.settings.tipContentFormat) {
-            return this.settings.tipContentFormat(locale, d);
-        }
-        else {
-            var $content = $('<div />');
-            var $xValue = $('<div class="x-value" />').appendTo($content);
-            var $yValue = $('<div class="y-value" />').appendTo($content);
-
-            $xValue.html(this.settings.xTickFormat(d[0]));
-            $yValue.html(this.settings.yTickFormat(d[1]));
-
-            return $content.get(0);
-        }
+    setPosition: function(position) {
+		this.$tip.css("left", position.left + "px");
+		this.$tip.css("top", position.top + "px");
     },
 
-    show: function(d) {
-        this.$tip.html(this.tipContentFormat(d));
-        this.$tip.css("display", 'block');
+	show: function(d) {
+		this.$tip.css("display", 'block');
+	},
 
-        var position = this.settings.getPosition(this.$tip, d);
-
-        this.$tip.css("left", position.left + "px");
-        this.$tip.css("top", position.top + "px");
-    },
-
-    hide: function() {
-        this.$tip.css("display", 'none');
-    },
-},
-{
-    defaults: {
-        locale: null,
-        tipContentFormat: null, // $.noop ?
-        getPosition: null, // $.noop ?
-    }
+	hide: function() {
+		this.$tip.css("display", 'none');
+	},
 });
 
 // ---------------------------------------------------------------------
@@ -602,20 +577,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var x = this.paddedX;
 
         if (this.settings.enableTips) {
-            var tipSettings = {
-                chart: this,
-                locale: this.formatLocale,
-                xTickFormat: this.xTickFormat(),
-                yTickFormat: this.yTickFormat(),
-                tipContentFormat: $.proxy(this, 'tipContentFormat'),
-                getPosition: $.proxy(this, 'getTipPosition')
-            };
 
             if (!this.tip) {
-                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
-            }
-            else {
-                this.tip.setSettings(tipSettings);
+                this.tip = new Craft.charts.Tip(this.$chart);
             }
 
             this.svg.append('g')
@@ -633,7 +597,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 }, this))
                 .on("mouseover", $.proxy(function(d, index) {
                     this.expandPlot(index);
-                    this.tip.show(d);
+
+                    var content = this.getTipContent(d);
+                    this.tip.setContent(content);
+
+                    var tipPosition = this.getTipPosition(this.tip.$tip, d);
+                    this.tip.setPosition(tipPosition);
+
+                    this.tip.show();
+
                 }, this))
                 .on("mouseout", $.proxy(function(d, index) {
                     this.unexpandPlot(index);
@@ -644,6 +616,17 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
     },
+
+	getTipContent: function(d) {
+		var $content = $('<div />');
+		var $xValue = $('<div class="x-value" />').appendTo($content);
+		var $yValue = $('<div class="y-value" />').appendTo($content);
+
+		$xValue.html(this.xTickFormat()(d[0]));
+		$yValue.html(this.yTickFormat()(d[1]));
+
+		return $content.get(0);
+	},
 
     getTipPosition: function($tip, d) {
         var x = this.paddedX;
