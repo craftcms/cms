@@ -1257,7 +1257,7 @@ class View extends \yii\web\View
         $html = '<div';
 
         foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' '.$attribute.'="'.HtmlHelper::encode($value).'"';
+            $html .= ' '.$attribute.($value !== null ? '="'.HtmlHelper::encode($value).'"' : '');
         }
 
         if (ElementHelper::isElementEditable($element)) {
