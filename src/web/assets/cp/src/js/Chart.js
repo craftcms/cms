@@ -158,24 +158,24 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     },
 
     draw: function(dataTable, settings) {
-        // Set settings
+        // Settings
 
 		this.setSettings(settings);
 
         
-		// Localized formatters
+		// Chart attributes
 
+		this.dataTable = dataTable;
 		this.formatLocale = d3.formatLocale(this.settings.formatLocaleDefinition);
 		this.timeFormatLocale = d3.timeFormatLocale(this.settings.timeFormatLocaleDefinition);
+		this.orientation = this.settings.orientation;
 
 
-		// Reset chart element
+		// Set (or reset) the chart element
 
 		if (this.$chart) {
 			this.$chart.remove();
 		}
-
-		// Chart CSS class
 
 		var className = this.chartBaseClass;
 
@@ -183,15 +183,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 			className += ' ' + this.settings.chartClass;
 		}
 
-		// Chart element
-
 		this.$chart = $('<div class="' + className + '" />').appendTo(this.$container);
-
-		// Orientation
-        this.orientation = this.settings.orientation;
-
-        // DataTable
-        this.dataTable = dataTable;
     },
 
     xTickFormat: function(timeFormatLocale) {
