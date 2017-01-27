@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\web\assets\searchindexes\SearchIndexesAsset;
 use yii\base\Exception;
 
 /**
@@ -59,7 +60,7 @@ class SearchIndexes extends Utility
     {
         $view = Craft::$app->getView();
 
-        $view->registerJsResource('js/SearchIndexesUtility.js');
+        $view->registerAssetBundle(SearchIndexesAsset::class);
         $view->registerJs('new Craft.SearchIndexesUtility(\'search-indexes\');');
 
         return $view->renderTemplate('_components/utilities/SearchIndexes');

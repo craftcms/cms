@@ -22,6 +22,7 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\services\Users;
+use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use craft\web\View;
@@ -741,8 +742,7 @@ class UsersController extends Controller
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
-        Craft::$app->getView()->registerCssResource('css/account.css');
-        Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
+        Craft::$app->getView()->registerAssetBundle(EditUserAsset::class);
 
         $userIdJs = Json::encode($user->id);
         $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');

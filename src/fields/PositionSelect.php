@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\web\assets\positionselect\PositionSelectAsset;
 use yii\db\Schema;
 
 /**
@@ -102,16 +103,18 @@ class PositionSelect extends Field
             return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
         }
 
-        Craft::$app->getView()->registerJsResource('js/PositionSelectInput.js');
+        $view = Craft::$app->getView();
 
-        $id = Craft::$app->getView()->formatInputId($this->handle);
-        Craft::$app->getView()->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
+        $view->registerAssetBundle(PositionSelectAsset::class);
+
+        $id = $view->formatInputId($this->handle);
+        $view->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
 
         if (!$value && !empty($this->options)) {
             $value = $this->options[0];
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/input',
+        return $view->renderTemplate('_components/fieldtypes/PositionSelect/input',
             [
                 'id' => $id,
                 'name' => $this->handle,

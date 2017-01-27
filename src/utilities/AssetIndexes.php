@@ -10,6 +10,7 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\base\Volume;
+use craft\web\assets\assetindexes\AssetIndexesAsset;
 use yii\base\Exception;
 
 /**
@@ -75,7 +76,7 @@ class AssetIndexes extends Utility
             'options' => $sourceOptions
         ]);
 
-        $view->registerJsResource('js/AssetIndexesUtility.js');
+        $view->registerAssetBundle(AssetIndexesAsset::class);
         $view->registerJs('new Craft.AssetIndexesUtility(\'asset-indexes\');');
 
         return $view->renderTemplate('_components/utilities/AssetIndexes', [

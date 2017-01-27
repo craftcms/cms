@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use craft\models\CraftSupport;
+use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use DateTime;
@@ -120,8 +121,7 @@ class DashboardController extends Controller
         }
 
         // Include all the JS and CSS stuff
-        $view->registerCssResource('css/dashboard.css');
-        $view->registerJsResource('js/Dashboard.js');
+        $view->registerAssetBundle(DashboardAsset::class);
         $view->registerJs('window.dashboard = new Craft.Dashboard('.Json::encode($widgetTypeInfo).');');
         $view->registerJs($allWidgetJs);
         $view->registerTranslations('app', [

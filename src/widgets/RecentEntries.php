@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Json;
 use craft\models\Section;
+use craft\web\assets\recententries\RecentEntriesAsset;
 use yii\base\Exception;
 
 /**
@@ -150,17 +151,18 @@ class RecentEntries extends Widget
             $params['sectionId'] = (int)$this->section;
         }
 
-        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $view = Craft::$app->getView();
 
-        Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
-        Craft::$app->getView()->registerJs($js);
-        Craft::$app->getView()->registerTranslations('app', [
+        $view->registerAssetBundle(RecentEntriesAsset::class);
+        $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
+        $view->registerJs($js);
+        $view->registerTranslations('app', [
             'by {author}',
         ]);
 
         $entries = $this->_getEntries();
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/body',
+        return $view->renderTemplate('_components/widgets/RecentEntries/body',
             [
                 'entries' => $entries
             ]);

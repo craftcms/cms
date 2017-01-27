@@ -29,6 +29,11 @@ trait PluginTrait
     public $name;
 
     /**
+     * @var string|null The plugin’s handle
+     */
+    public $handle;
+
+    /**
      * @var string|null The plugin’s version number
      */
     public $version;
@@ -101,4 +106,9 @@ trait PluginTrait
      * @var bool Whether the plugin has settings
      */
     public $hasSettings = false;
+
+    /**
+     * @var bool Whether the plugin has its own section in the CP
+     */
+    public $hasCpSection = false;
 }

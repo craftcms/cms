@@ -18,6 +18,7 @@ use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Site;
+use craft\web\assets\editentry\EditEntryAsset;
 use DateTime;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
@@ -82,6 +83,8 @@ class EntriesController extends BaseEntriesController
         }
 
         $this->_prepEditEntryVariables($variables);
+
+        Craft::$app->getView()->registerAssetBundle(EditEntryAsset::class);
 
         /** @var Site $site */
         $site = $variables['site'];
@@ -262,7 +265,6 @@ class EntriesController extends BaseEntriesController
                 ];
             }
 
-            Craft::$app->getView()->registerJsResource('js/EntryTypeSwitcher.js');
             Craft::$app->getView()->registerJs('new Craft.EntryTypeSwitcher();');
         } else {
             $variables['showEntryTypes'] = false;
@@ -344,8 +346,6 @@ class EntriesController extends BaseEntriesController
         ]);
 
         // Render the template!
-        Craft::$app->getView()->registerCssResource('css/entry.css');
-
         return $this->renderTemplate('entries/_edit', $variables);
     }
 

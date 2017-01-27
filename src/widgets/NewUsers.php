@@ -10,6 +10,7 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
+use craft\web\assets\newusers\NewUsersAsset;
 use yii\base\Exception;
 
 /**
@@ -99,8 +100,9 @@ class NewUsers extends Widget
         $options = $this->getSettings();
         $options['orientation'] = Craft::$app->getLocale()->getOrientation();
 
-        Craft::$app->getView()->registerJsResource('js/NewUsersWidget.js');
-        Craft::$app->getView()->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(NewUsersAsset::class);
+        $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
         return '<div></div>';
     }

@@ -98,8 +98,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'defaultuserphoto':
-                    return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
                 case 'tempuploads':
                     array_shift($segs);
 
@@ -157,23 +155,6 @@ class Resources extends Component
                     break;
                 case '404':
                     throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
-            }
-        }
-
-        // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.$uri;
-
-        if (file_exists($appResourcePath)) {
-            return $appResourcePath;
-        }
-
-        // See if the first segment is a plugin handle.
-        if (isset($segs[0]) && ($plugin = Craft::$app->getPlugins()->getPlugin($segs[0])) !== null) {
-            /** @var Plugin $plugin */
-            $pluginResourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, array_splice($segs, 1));
-
-            if (is_file($pluginResourcePath)) {
-                return $pluginResourcePath;
             }
         }
 

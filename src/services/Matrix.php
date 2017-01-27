@@ -705,6 +705,8 @@ class Matrix extends Component
         }
 
         // Tell the browser to collapse any new block IDs
+        // TODO: get this working with asset bundles
+        /*
         if (!Craft::$app->getRequest()->getIsConsoleRequest() && !empty($collapsedBlockIds)) {
             Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
@@ -712,6 +714,7 @@ class Matrix extends Component
                 Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
             }
         }
+        */
 
         return true;
     }

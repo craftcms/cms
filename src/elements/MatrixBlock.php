@@ -371,12 +371,15 @@ class MatrixBlock extends Element
      */
     public function afterDelete()
     {
+        // TODO: get this working with asset bundles
+        /*
         if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
             // Tell the browser to forget about this block
             $session = Craft::$app->getSession();
             $session->addJsResourceFlash('js/MatrixInput.js');
             $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
         }
+        */
 
         parent::afterDelete();
     }
