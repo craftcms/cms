@@ -2,7 +2,7 @@ build:
   environment:
     timezone: UTC
     php:
-      version: 7.0.8
+      version: 7.1
       ini:
         date.timezone: 'US/Pacific'
         memory_limit: '-1'
@@ -11,7 +11,8 @@ build:
       - mysql -e "CREATE DATABASE craft3test CHARACTER SET = 'utf8' COLLATE = 'utf8_unicode_ci'"
   tests:
     override:
-      command: 'php codeception.php run unit --coverage --coverage-xml --coverage-html'
-      coverage:
-        file: 'tests/_output/coverage.xml'
-        format: 'clover'
+      -
+        command: 'php codeception.php run unit --coverage --coverage-xml --coverage-html'
+        coverage:
+          file: 'tests/_output/coverage.xml'
+          format: 'clover'
