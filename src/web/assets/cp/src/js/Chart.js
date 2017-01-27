@@ -81,7 +81,7 @@ Craft.charts.Tip = Garnish.Base.extend({
 		this.$tip.css("top", position.top + "px");
     },
 
-	show: function(d) {
+	show: function() {
 		this.$tip.css("display", 'block');
 	},
 
@@ -133,12 +133,9 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     },
 
     draw: function(dataTable, settings) {
-        // Settings
+        // Settings and chart attributes
 
 		this.setSettings(settings);
-
-        
-		// Chart attributes
 
 		this.dataTable = dataTable;
 		this.formatLocale = d3.formatLocale(this.settings.formatLocaleDefinition);
@@ -558,11 +555,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.svg.select('.plot-' + index).attr("r", 4);
     },
 
-    getTipTriggerWidth: function() {
-
-        return Math.max(0, this.xAxisTickInterval());
-    },
-
     xAxisTickInterval: function() {
         var chartMargin = this.getChartMargin();
 
@@ -582,6 +574,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 this.tip = new Craft.charts.Tip(this.$chart);
             }
 
+            var tipTriggerWidth = Math.max(0, this.xAxisTickInterval());
+
             this.svg.append('g')
                 .attr("class", "tip-triggers")
                 .selectAll("rect")
@@ -590,10 +584,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .attr("class", "tip-trigger")
                 .style('fill', 'transparent')
                 .style('fill-opacity', '1')
-                .attr("width", this.getTipTriggerWidth())
+                .attr("width", tipTriggerWidth)
                 .attr("height", this.height)
                 .attr("x", $.proxy(function(d) {
-                    return x(d[0]) - this.getTipTriggerWidth() / 2;
+                    return x(d[0]) - tipTriggerWidth / 2;
                 }, this))
                 .on("mouseover", $.proxy(function(d, index) {
                     this.expandPlot(index);
