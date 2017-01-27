@@ -1,10 +1,13 @@
 {% import "_includes/forms" as forms %}
 
-{% if newMigrations|length > 0 or migrationHistory|length > 0 %}
-
-	<div class="buttons">
-		<a href="{{ actionUrl('utilities/apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
-	</div>
+{% if newMigrations or migrationHistory %}
+	{% if newMigrations %}
+		<div class="buttons">
+			<a href="{{ actionUrl('utilities/apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
+		</div>
+	{% else %}
+		<p>{{ 'No pending content migrations.'|t('app') }}</p>
+	{% endif %}
 
 	<table class="data fullwidth">
 		<thead>
@@ -34,5 +37,5 @@
 		</tbody>
 	</table>
 {% else %}
-	<p>{{ 'No migrations.'|t('app') }}</p>
+	<p>{{ 'No content migrations.'|t('app') }}</p>
 {% endif %}
