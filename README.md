@@ -10,14 +10,14 @@ To install the Craft 3 Beta, follow the [installation instructions](https://gith
 
 ## Resources
 
-### Official Resources
+#### Official Resources
 - [Craft Documentation](https://github.com/craftcms/docs)
 - [Craft 3 Plugins](https://github.com/craftcms/plugins)
 - [Demo site](https://demo.craftcms.com/)
 - [Craft Slack](https://craftcms.com/community#slack)
 - [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)
 
-### Community Resources
+#### Community Resources
 - [Mijingo learning resources](https://mijingo.com/craft)
 - [Envato Tuts+ learning resources](https://webdesign.tutsplus.com/categories/craft-cms/courses) offers a collection of video courses as well.
 - [Straight Up Craft](http://straightupcraft.com/)
