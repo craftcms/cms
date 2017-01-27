@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
 - Craft 3 now requires PHP 7.0.0 or later.
+- Added an image editor to the Assets index page, with support for cropping, rotating, and flipping images, as well as setting focal points on them, which influences where images should be cropped for image transforms.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
