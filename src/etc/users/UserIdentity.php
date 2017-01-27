@@ -68,10 +68,18 @@ class UserIdentity extends \CUserIdentity
 
 		if ($user)
 		{
+			// Add a little randomness in the timing of the response.
+			$this->_slowRoll();
 			return $this->_processUserStatus($user);
 		}
 		else
 		{
+			// Spin some cycles validating a random password hash.
+			craft()->users->validatePassword('$2y$13$L.NLoP5bLzBTP66WendST.4uKn4CTz7ngo9XzVDCfv8yfdME7NEwa', $this->password);
+
+			// Add a little randomness in the timing of the response.
+			$this->_slowRoll();
+
 			$this->errorCode = static::ERROR_USERNAME_INVALID;
 			return false;
 		}
@@ -219,5 +227,14 @@ class UserIdentity extends \CUserIdentity
 		{
 			return static::ERROR_ACCOUNT_LOCKED;
 		}
+	}
+
+	/**
+	 * Introduces a random delay into the script to help prevent timing enumeration attacks.
+	 */
+	private function _slowRoll()
+	{
+		// Delay randomly between 0 and 1.5 seconds.
+		usleep(mt_rand(0, 1500000));
 	}
 }
