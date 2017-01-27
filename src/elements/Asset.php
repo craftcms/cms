@@ -16,6 +16,7 @@ use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Edit;
+use craft\elements\actions\EditImage;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
@@ -172,6 +173,7 @@ class Asset extends Element
                 $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
             ) {
                 $actions[] = RenameFile::class;
+                $actions[] = EditImage::class;
             }
 
             // Replace File
@@ -342,6 +344,11 @@ class Asset extends Element
      * @var int|null Size
      */
     public $size;
+
+    /**
+     * @var string|null Size
+     */
+    public $focalPoint;
 
     /**
      * @var \DateTime|null Date modified
@@ -933,6 +940,7 @@ class Asset extends Element
         $record->folderId = $this->folderId;
         $record->kind = $this->kind;
         $record->size = $this->size;
+        $record->focalPoint = $this->focalPoint;
         $record->width = $this->width;
         $record->height = $this->height;
         $record->dateModified = $this->dateModified;

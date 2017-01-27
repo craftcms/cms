@@ -1354,7 +1354,7 @@ class AssetTransforms extends Component
                 } else {
                     $position = $transform->position;
                 }
-                $image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
+                $image->scaleAndCrop($transform->width, $transform->height, true, $position);
         }
 
         $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);

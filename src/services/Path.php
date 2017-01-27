@@ -290,6 +290,19 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/assets/imageeditor/` folder.
+     *
+     * @return string
+     */
+    public function getImageEditorSourcesPath()
+    {
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'imageeditor';
+        FileHelper::createDirectory($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/runtime/assets/cache/resized/` directory.
      *
      * @return string

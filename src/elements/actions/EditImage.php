@@ -76,8 +76,8 @@ class EditImage extends ElementAction
         validateSelection: function(\$selectedItems)
         {
             var \$element = \$selectedItems.find('.element');
-
-            return Garnish.hasAttr(\$element, 'data-image');
+            var extension = \$element.data('url').split('.').pop();
+            return extension.match(/jpe?g|gif|png/);
         },
         activate: function(\$selectedItems)
         {

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
@@ -620,7 +621,7 @@ class Assets
         // For remote files, check if maxCachedImageSizes setting would work for us.
         $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
 
-        if (!$volume::isLocal() && $maxCachedSize > $size) {
+        if (!$volume instanceof LocalVolumeInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
             $localSource = $asset->getTransformSource();
             Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
