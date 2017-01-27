@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
-use yii\base\Exception;
 
 /**
  * NewUsers represents a New Users dashboard widget.
@@ -46,13 +45,7 @@ class NewUsers extends Widget
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/users.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/users.svg');
     }
 
     // Properties

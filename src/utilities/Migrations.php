@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use yii\base\Exception;
 
 /**
  * Migrations represents a Migrations utility.
@@ -43,13 +42,7 @@ class Migrations extends Utility
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/arrow-up.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/arrow-up.svg');
     }
 
     /**
