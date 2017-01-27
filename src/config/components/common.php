@@ -5,7 +5,6 @@ use craft\db\MigrationManager;
 use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\log\Logger;
