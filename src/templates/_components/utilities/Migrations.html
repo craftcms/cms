@@ -3,7 +3,7 @@
 {% if newMigrations|length > 0 or migrationHistory|length > 0 %}
 
 	<div class="buttons">
-		<a href="{{ actionUrl('utilities/migrations-apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
+		<a href="{{ actionUrl('utilities/apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
 	</div>
 
 	<table class="data fullwidth">

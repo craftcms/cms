@@ -542,7 +542,7 @@ class UtilitiesController extends Controller
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
      */
-    public function actionMigrationsApplyNewMigrations()
+    public function actionApplyNewMigrations()
     {
         $this->requirePermission('utility:migrations');
 
