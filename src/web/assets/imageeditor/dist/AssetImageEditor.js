@@ -341,8 +341,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         _createFocalPoint: function () {
             var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
 
-            var adjustedFocalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
-            var adjustedFocalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio;
+            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
+            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio;
+
+            focalX += this.image.left;
+            focalY += this.image.top;
+
+            // Focal point uses image center as a reference point. That means that if there is no focal
+            // point yet and we try to create one, it's created in the middle of the image. Which presents
+            // us a problem if the image is not visible in the viewport.
+            if (this.currentView != 'crop' && this.viewporet && !this._isCenterInside(this.image, this.viewport)) {
+                // In which case we adapt.
+                var deltaX = this.viewport.left - this.image.left;
+                var deltaY = this.viewport.top - this.image.top;
+
+                // Bump focal to middle of viewport
+                focalX += deltaX;
+                focalY += deltaY;
+
+                // Reflect changes in saved state
+                this.focalPointState.offsetX += deltaX;
+                this.focalPointState.offsetY += deltaY;
+            }
 
             this.focalPoint = new fabric.Group([
                 new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
@@ -350,8 +370,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ], {
                 originX: 'center',
                 originY: 'center',
-                left: this.editorWidth/2 + adjustedFocalX,
-                top: this.editorHeight/2 + adjustedFocalY
+                left: focalX,
+                top: focalY
             });
 
             this.canvas.add(this.focalPoint);
@@ -948,7 +968,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             if (this.focalPoint) {
                 this._adjustFocalPointByAngle(angleDelta);
-                if (!this._isInside(this.focalPoint, this.viewport)) {
+                if (!this._isCenterInside(this.focalPoint, this.viewport)) {
                     this.focalPoint.set({opacity: 0});
                 } else {
                     this.focalPoint.set({opacity: 1});
@@ -962,7 +982,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * If focal point is active and outside of viewport after straightening, reset it.
          */
         _cleanupFocalPointAfterStraighten: function () {
-            if (this.focalPoint && !this._isInside(this.focalPoint, this.viewport)) {
+            if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.viewport)) {
                 this.focalPoint.set({opacity: 1});
                 var state = this.focalPointState;
                 state.offsetX = 0;
@@ -973,14 +993,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
-         * Returns true if an object is inside another rectangle shaped object that is not rotated.
+         * Returns true if a center of an object is inside another rectangle shaped object that is not rotated.
          *
          * @param object
          * @param containingObject
          *
          * @returns {boolean}
          */
-        _isInside: function (object, containingObject) {
+        _isCenterInside: function (object, containingObject) {
             return (object.left > containingObject.left - containingObject.width/2
                 && object.top > containingObject.top - containingObject.height/2
                 && object.left < containingObject.left + containingObject.width/2
@@ -1360,6 +1380,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     viewportDimensions.height = this.clipper.height / this.scaleFactor;
                     viewportDimensions.width = this.clipper.width / this.scaleFactor;
                     this.scaleFactor = 1;
+
+                    if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper)) {
+                        this.focalPoint.set({opacity: 1});
+                        var state = this.focalPointState;
+                        state.offsetX = 0;
+                        state.offsetY = 0;
+                        this.storeFocalPointState(state);
+                        this.toggleFocalPoint();
+                    }
 
                     callback = function() {
                         // Reposition focal point correctly
