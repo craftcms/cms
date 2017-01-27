@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
 - Craft 3 now requires PHP 7.0.0 or later.
+- Added an image editor to the Assets index page, with support for cropping, rotating, and flipping images, as well as setting focal points on them, which influences where images should be cropped for image transforms.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in `plugins/`. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
@@ -33,6 +34,8 @@ Craft CMS 3.0 Working Changelog
 - Added method paramater and return types everywhere possible.
 - Added a new `@lib` Yii alias, pointed to `vendor/craftcms/cms/lib/`.
 - Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
+- Added `craft\base\ImageFilter`.
+- Added `craft\base\ImageFilterInterface`.
 - Added `craft\base\LocalVolumeInterface`.
 - Added `craft\base\Utility`.
 - Added `craft\base\UtilityInterface`.
@@ -40,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
 - Added `craft\db\TableSchema`.
+- Added `craft\elements\actions\EditImage`.
 - Added `craft\errors\InvalidPluginException`.
 - Added `craft\errors\ShellCommandException`.
 - Added `craft\events\RegisterAssetFileKindsEvent`.
@@ -62,6 +66,10 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\SetElementTableAttributeHtmlEvent`.
 - Added `craft\helpers\FileHelper`.
 - Added `craft\helpers\MailerHelper`.
+- Added `craft\image\filters\Brightness`.
+- Added `craft\image\filters\Grayscale`.
+- Added `craft\image\filters\Sepia`.
+- Added `craft\services\ImageEffects`.
 - Added `craft\services\Utilities`.
 - Added `craft\utilities\AssetIndexes`.
 - Added `craft\utilities\ClearCaches`.
@@ -90,11 +98,13 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\assets\edittransform\EditTransformAsset`.
 - Added `craft\web\assets\edituser\EditUserAsset`.
 - Added `craft\web\assets\emailmessages\EmailMessagesAsset`.
+- Added `craft\web\assets\fabric\FabricAsset`.
 - Added `craft\web\assets\feed\FeedAsset`.
 - Added `craft\web\assets\fields\FieldsAsset`.
 - Added `craft\web\assets\fileupload\FileUploadAsset`.
 - Added `craft\web\assets\findreplace\FindReplaceAsset`.
 - Added `craft\web\assets\generalsettings\GeneralSettingsAsset`.
+- Added `craft\web\assets\imageeditor\ImageEditorAsset`.
 - Added `craft\web\assets\installer\InstallerAsset`.
 - Added `craft\web\assets\jcrop\JcropAsset`.
 - Added `craft\web\assets\jqueryui\JqueryUiAsset`.
@@ -122,6 +132,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\assets\whatsnew\WhatsNewAsset`.
 - Added `craft\web\assets\xregexp\XregexpAsset`.
 - Added `craft\base\ApplicationTrait::$env`, which stores the current environment ID, which is set to `$_SERVER['SERVER_NAME']` by default and can be overridden with the `CRAFT_ENVIRONMENT` PHP constant.
+- Added `craft\base\ApplicationTrait::getImageEffects()`.
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
@@ -143,20 +154,27 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Plugin::$changelogUrl`, which replaces `$releaseFeedUrl` and should point to a Markdown-formatted changelog.
 - Added `craft\base\Plugin::$downloadUrl`, which should point to the plugin’s download URL.
 - Added `craft\base\Plugin::$hasCpSection`, which replaces the static `hasCpSection()` method.
+- Added `craft\controllers\AssetsController::actionImageEditor()`.
+- Added `craft\controllers\AssetsController::actionEditImage()`.
+- Added `craft\controllers\AssetsController::actionSaveImage()`.
 - Added `craft\db\Connection::backupTo()`.
 - Added `craft\db\mysql\Schema::findIndexes()`.
+- Added `craft\elements\Asset::$focalPoint`.
 - Added `craft\elements\Asset::$keepFileOnDelete`, which can be set to true if the corresponding file should not be deleted when deleting the asset.
 - Added `craft\elements\Asset::$newFilename`, which can be set before saving an asset to rename its file.
 - Added `craft\helpers\App::craftDownloadUrl()`.
 - Added `craft\helpers\App::isComposerInstall()`.
 - Added `craft\helpers\App::majorMinorVersion()`.
 - Added `craft\helpers\ArrayHelper::rename()`.
+- Added `craft\helpers\Assets::editorImagePath()`.
 - Added `craft\helpers\Db::isTypeSupported()`.
 - Added `craft\helpers\Update::getBasePath()`.
 - Added `craft\helpers\Update::parseManifestLine()`.
 - Added `craft\helpers\Assets::getFileKindByExtension()`.
 - Added `craft\helpers\Assets::getFileKindLabel()`.
 - Added `craft\helpers\Assets::getFileKinds()`.
+- Added `craft\image\Raster::flipHorizontally()`.
+- Added `craft\image\Raster::flipVertically()`.
 - Added `craft\services\Config::getAllowedFileExtensions()`.
 - Added `craft\services\Config::getDbPort()`.
 - Added `craft\services\Config::getUseWriteFileLock()`.
@@ -165,6 +183,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Elements::getElementTypesByIds()`.
 - Added `craft\services\Images::getCanUseImagick()`.
 - Added `craft\services\Images::getImageMagickApiVersion()`.
+- Added `craft\services\Path::getImageEditorSourcesPath()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\services\Plugins::isComposerInstall()`.
 - Added `craft\web\AssetManager::getPublishedPath()`.
@@ -201,6 +220,7 @@ Craft CMS 3.0 Working Changelog
 - Added support for a `.readable` CSS class for views that are primarily textual content.
 - Added php-shellcommand.
 - Added the ZendFeed library.
+- Added the fabric.js JavaScript library.
 - It is now possible to override the default Guzzle settings from `config/guzzle.php`.
 - Added a “Size” setting to Number fields.
 

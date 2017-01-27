@@ -47,9 +47,9 @@
 		]) %}
 
 		{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
-		{% do view.registerAssetBundle("craft\\web\\assets\\jcrop\\JcropAsset") %}
+        {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
-		{{ forms.field({
+        {{ forms.field({
 			label: "Login Page Logo"|t
 		}, include('settings/general/_images/logo')) }}
 

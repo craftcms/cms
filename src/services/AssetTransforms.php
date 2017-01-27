@@ -533,8 +533,7 @@ class AssetTransforms extends Component
     private function _generateTransform(AssetTransformIndex $index): bool
     {
         // For _widthxheight_mode
-        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
-            $index->location, $matches)) {
+        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?/i', $index->location, $matches)) {
             $transform = new AssetTransform();
             $transform->width = ($matches['width'] !== 'AUTO' ? (int)$matches['width'] : null);
             $transform->height = ($matches['height'] !== 'AUTO' ? (int)$matches['height'] : null);
@@ -563,7 +562,8 @@ class AssetTransforms extends Component
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
-        if ($asset->getExtension() === $index->detectedFormat) {
+        // Focal points make transforms non-reusable, though
+        if ($asset->getExtension() === $index->detectedFormat && !$asset->focalPoint) {
             $possibleLocations = [$this->_getUnnamedTransformFolderName($transform)];
 
             if ($transform->getIsNamedTransform()) {
@@ -1107,28 +1107,33 @@ class AssetTransforms extends Component
     public function deleteResizedAssetVersion(Asset $asset)
     {
         $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
-        $dir = Craft::$app->getPath()->getResizedAssetsPath();
+        $dirs = [
+            Craft::$app->getPath()->getResizedAssetsPath(),
+            Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
+        ];
 
-        try {
+        foreach ($dirs as $dir) {
+            try {
             $handle = opendir($dir);
             if ($handle === false) {
                 Craft::warning("Unable to open directory: $dir", __METHOD__);
 
-                return;
-            }
-            while (($subDir = readdir($handle)) !== false) {
-                if ($subDir === '.' || $subDir === '..') {
-                    continue;
+                    return;
                 }
-                $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
-                if (!is_file($path)) {
-                    continue;
+                while (($subDir = readdir($handle)) !== false) {
+                    if ($subDir === '.' || $subDir === '..') {
+                        continue;
+                    }
+                    $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
+                    if (!is_file($path)) {
+                        continue;
+                    }
+                    FileHelper::removeFile($path);
                 }
-                FileHelper::removeFile($path);
+                closedir($handle);
+            } catch (ErrorException $e) {
+                Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
             }
-            closedir($handle);
-        } catch (ErrorException $e) {
-            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
         }
     }
 
@@ -1340,10 +1345,15 @@ class AssetTransforms extends Component
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-                if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    $transform->position = 'center-center';
+                if ($asset->focalPoint) {
+                    $focal = explode(",", $asset->focalPoint);
+                    $position = ['x' => $focal[0], 'y' => $focal[1]];
+                } else if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+                    $position = 'center-center';
+                } else {
+                    $position = $transform->position;
                 }
-                $image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
+                $image->scaleAndCrop($transform->width, $transform->height, true, $position);
         }
 
         $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);
