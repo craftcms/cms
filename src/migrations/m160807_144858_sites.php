@@ -11,6 +11,12 @@ use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 use yii\base\InvalidParamException;
 use yii\db\Expression;
+use craft\fields\Users;
+use craft\fields\Tags;
+use craft\fields\Entries;
+use craft\fields\Categories;
+use craft\fields\Assets;
+use craft\fields\Matrix;
 
 /**
  * m160807_144858_sites migration.
@@ -429,12 +435,12 @@ class m160807_144858_sites extends Migration
             ->from(['{{%fields}}'])
             ->where([
                 'type' => [
-                    'craft\fields\Matrix',
-                    'craft\fields\Assets',
-                    'craft\fields\Categories',
-                    'craft\fields\Entries',
-                    'craft\fields\Tags',
-                    'craft\fields\Users'
+                    Matrix::class,
+                    Assets::class,
+                    Categories::class,
+                    Entries::class,
+                    Tags::class,
+                    Users::class
                 ]
             ])
             ->all();

@@ -241,9 +241,7 @@ EOD;
         // Maybe they want to set some config options specifically for this request.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
 
-        return new Client([
-            $guzzleConfig
-        ]);
+        return new Client($guzzleConfig);
     }
 
     /**

@@ -47,6 +47,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\RegisterComponentTypesEvent`.
 - Added `craft\events\RegisterCpAlertsEvent`.
 - Added `craft\events\RegisterCpNavItemsEvent`.
+- Added `craft\events\RegisterElementHtmlAttributesEvent`.
 - Added `craft\events\RegisterElementSortableAttributesEvent`.
 - Added `craft\events\RegisterElementSourcesEvent`.
 - Added `craft\events\RegisterElementTableAttributesEvent`.
@@ -131,6 +132,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::defineTableAttributes()`.
 - Added `craft\base\Element::getHtmlAttributes()`, which gives elements a chance to define any HTML attributes that should be included when rendering an element node for the Control Panel.
 - Added `craft\base\Element::getSerializedFieldValues()`.
+- Added `craft\base\Element::htmlAttributes()`.
 - Added `craft\base\Element::route()`.
 - Added `craft\base\Element::tableAttributeHtml()`.
 - Added `craft\base\ElementInterface::refHandle()`.
@@ -181,6 +183,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.
 - Added the `registerElementTypes` event to `craft\services\Elements`.
 - Added the `registerFieldTypes` event to `craft\services\Fields`.
+- Added the `registerHtmlAttributes` event to `craft\base\Element`.
 - Added the `registerLinkOptions` event to `craft\fields\RichText`.
 - Added the `registerMailerTransportTypes` event to `craft\helpers\MailerHelper`.
 - Added the `registerMessages` event to `craft\services\EmailMessages`.
