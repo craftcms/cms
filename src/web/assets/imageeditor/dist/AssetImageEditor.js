@@ -350,7 +350,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Focal point uses image center as a reference point. That means that if there is no focal
             // point yet and we try to create one, it's created in the middle of the image. Which presents
             // us a problem if the image is not visible in the viewport.
-            if (this.currentView != 'crop' && this.viewporet && !this._isCenterInside(this.image, this.viewport)) {
+            if (this.currentView != 'crop' && this.viewport && !this._isCenterInside(this.image, this.viewport)) {
                 // In which case we adapt.
                 var deltaX = this.viewport.left - this.image.left;
                 var deltaY = this.viewport.top - this.image.top;
