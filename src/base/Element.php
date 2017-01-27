@@ -1486,7 +1486,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHtmlAttributes(string $context): array
     {
-        $htmlAttributes = $this->htmlAttributes();
+        $htmlAttributes = $this->htmlAttributes($context);
 
         // Give plugins a chance to modify them
         $event = new RegisterElementHtmlAttributesEvent([
