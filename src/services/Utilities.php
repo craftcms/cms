@@ -54,8 +54,7 @@ class Utilities extends Component
             UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
-            DeprecationErrors::class,
-            Migrations::class,
+            SearchIndexes::class,
         ];
 
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
@@ -63,9 +62,10 @@ class Utilities extends Component
         }
 
         $utilityTypes[] = ClearCaches::class;
+        $utilityTypes[] = DeprecationErrors::class;
         $utilityTypes[] = DbBackup::class;
         $utilityTypes[] = FindAndReplace::class;
-        $utilityTypes[] = SearchIndexes::class;
+        $utilityTypes[] = Migrations::class;
 
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes
