@@ -212,7 +212,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function searchableAttributes(): array
+    protected static function defineSearchableAttributes(): array
     {
         return ['username', 'firstName', 'lastName', 'fullName', 'email'];
     }

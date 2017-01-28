@@ -17,6 +17,7 @@ use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
+use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortableAttributesEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
@@ -104,6 +105,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
      */
     const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
+     */
+    const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
     /**
      * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
@@ -285,7 +291,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function searchableAttributes(): array
     {
-        return [];
+        $attributes = static::defineSearchableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSearchableAttributesEvent([
+            'attributes' => $attributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+
+        return $event->attributes;
     }
 
     /**
@@ -310,6 +324,17 @@ abstract class Element extends Component implements ElementInterface
      * @see actions()
      */
     protected static function defineActions(string $source = null): array
+    {
+        return [];
+    }
+
+    /**
+     * Defines which element attributes should be searchable.
+     *
+     * @return string[] The element attributes that should be searchable
+     * @see searchableAttributes()
+     */
+    protected static function defineSearchableAttributes(): array
     {
         return [];
     }

@@ -201,7 +201,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function searchableAttributes(): array
+    protected static function defineSearchableAttributes(): array
     {
         return ['filename', 'extension', 'kind'];
     }

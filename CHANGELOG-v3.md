@@ -131,6 +131,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
 - Added `craft\base\Element::beforeDelete()`, which is called before the element is deleted.
 - Added `craft\base\Element::defineActions()`.
+- Added `craft\base\Element::defineSearchableAttributes()`.
 - Added `craft\base\Element::defineSortableAttributes()`.
 - Added `craft\base\Element::defineSources()`.
 - Added `craft\base\Element::defineTableAttributes()`.
@@ -200,6 +201,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerMailerTransportTypes` event to `craft\helpers\MailerHelper`.
 - Added the `registerMessages` event to `craft\services\EmailMessages`.
 - Added the `registerPermissions` event to `craft\services\UserPermissions`.
+- Added the `registerSearchableAttributes` event to `craft\base\Element`.
 - Added the `registerSortableAttributes` event to `craft\base\Element`.
 - Added the `registerSources` event to `craft\base\Element`.
 - Added the `registerTableAttributes` event to `craft\base\Element`.
