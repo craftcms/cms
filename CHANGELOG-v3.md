@@ -50,6 +50,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\RegisterCpAlertsEvent`.
 - Added `craft\events\RegisterCpNavItemsEvent`.
 - Added `craft\events\RegisterElementHtmlAttributesEvent`.
+- Added `craft\events\RegisterElementSearchableAttributesEvent`.
 - Added `craft\events\RegisterElementSortableAttributesEvent`.
 - Added `craft\events\RegisterElementSourcesEvent`.
 - Added `craft\events\RegisterElementTableAttributesEvent`.
