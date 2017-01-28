@@ -42,7 +42,7 @@ Before submitting bug reports and feature requests, please search through [open 
 
 If you do find a similar issue, upvote it by adding a :thumbsup: [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Only leave a comment if you have relevant information to add.
 
-If no one has filed the issue yet, [submit a ne one](https://github.com/craftcms/cms/issues/new). Please include a clear description of the issue, and as much relevant information as possible, including a code sample demonstrating the the issue.
+If no one has filed the issue yet, [submit a new one](https://github.com/craftcms/cms/issues/new). Please include a clear description of the issue, and as much relevant information as possible, including a code sample demonstrating the the issue.
 
 ## Documentation Edits
 
