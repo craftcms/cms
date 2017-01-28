@@ -220,7 +220,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 year: "%Y"
             }
         },
-        margin: {top: 25, right: 10, bottom: 25, left: 10},
+        margin: {top: 25, right: 0, bottom: 25, left: 0},
         chartClass: null,
         colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
         ticksStyles: {
@@ -321,6 +321,23 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     drawTicks: function()
     {
+        // Draw X ticks
+
+        var x = this.getX(true);
+
+        var xTicks = 3;
+        var xAxis = d3.axisBottom(x)
+            .tickFormat(this.getXTickFormatter())
+            .ticks(xTicks);
+
+        this.g.append("g")
+            .attr("class", "x ticks-axis")
+            .attr("transform", "translate(0, " + this.height + ")")
+            .style('fill', this.settings.ticksStyles['fill'])
+            .style('font-size', this.settings.ticksStyles['font-size'])
+            .call(xAxis);
+
+
         // Draw Y ticks
 
         var y = this.getY();
@@ -351,23 +368,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
 
 
-        // Draw X ticks
-
-        var x = this.getX();
-
-        var xTicks = 3;
-        var xAxis = d3.axisBottom(x)
-            .tickFormat(this.getXTickFormatter())
-            .ticks(xTicks);
-
-        this.g.append("g")
-            .attr("class", "x ticks-axis")
-            .attr("transform", "translate(0, " + this.height + ")")
-            .style('fill', this.settings.ticksStyles['fill'])
-            .style('font-size', this.settings.ticksStyles['font-size'])
-            .call(xAxis);
-
-
         // On after draw ticks
 
         this.onAfterDrawTicks();
@@ -392,11 +392,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var left = 0;
         var right = 0;
 
-        if(padded)
-        {
-            var chartMargin = this.getChartMargin();
-            left = chartMargin.left;
-            right = chartMargin.right;
+        if(padded) {
+            left = 14;
+            right = 14;
         }
 
         var x = d3.scaleTime().range([left, (this.width - right)]);
@@ -418,7 +416,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     drawChart: function() {
-        var x = this.getX();
+        var x = this.getX(true);
         var y = this.getY();
 
 
