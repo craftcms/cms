@@ -406,17 +406,11 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         if (this.settings.yAxisGridlines) {
             var yLineAxis = d3.axisLeft(y);
 
-            var translateX = 0;
-            var translateY = 0;
-
-            var innerTickSize = - (this.width);
-            var tickSizeOuter = 0;
-
             this.g.append("g")
                 .attr("class", "y grid-line")
-                .attr("transform", "translate(" + translateX + " , " + translateY + ")")
+                .attr("transform", "translate(0 , 0)")
                 .call(yLineAxis
-                    .tickSize(innerTickSize, tickSizeOuter)
+                    .tickSize(- (this.width), 0)
                     .tickFormat("")
                     .tickValues(this.getYTickValues())
                     .ticks(this.settings.y.ticks)
@@ -426,12 +420,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Line
 
         var line = d3.line()
-            .x(function(d) {
-                return x(d[0]);
-            })
-            .y(function(d) {
-                return y(d[1]);
-            });
+            .x(function(d) { return x(d[0]); })
+            .y(function(d) { return y(d[1]); });
 
         this.g
             .append("g")
