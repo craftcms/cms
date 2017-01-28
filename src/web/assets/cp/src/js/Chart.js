@@ -578,7 +578,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
             // Draw triggers
 
-            var x = this.getX();
+            var x = this.getX(true);
             var y = this.getY();
 
             this.g.append('g')
