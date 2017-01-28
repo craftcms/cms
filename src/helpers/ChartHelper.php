@@ -247,6 +247,7 @@ class ChartHelper
     {
         return [
             'shortDateFormats' => self::shortDateFormats(),
+            'numberFormat' => self::numberFormat(),
             'decimalFormat' => self::decimalFormat(),
             'percentFormat' => self::percentFormat(),
             'currencyFormat' => self::currencyFormat(),
@@ -305,6 +306,16 @@ class ChartHelper
         }
 
         return $shortDateFormats;
+    }
+
+    /**
+     * Returns the number format for D3
+     *
+     * @return string
+     */
+    public static function numberFormat(): string
+    {
+        return ',d';
     }
 
     /**
