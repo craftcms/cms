@@ -21,7 +21,7 @@ class RegisterElementActionsEvent extends Event
     // =========================================================================
 
     /**
-     * @var string|null The selected source’s key, if any.
+     * @var string The selected source’s key
      */
     public $source;
 
