@@ -688,7 +688,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     getYTickValues: function() {
-        return [this.getYMaxValue() / 2, this.getYMaxValue()];
+        var maxValue = this.getYMaxValue();
+
+        if(maxValue > 1)  {
+            return [(maxValue / 2), maxValue];
+        } else {
+            return [0, maxValue];
+        }
     },
 },
 {
