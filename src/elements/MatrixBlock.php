@@ -173,7 +173,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
         // translatable. Otherwise all blocks belong to all sites, and their content is translatable.

@@ -579,7 +579,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         $sites = [];
 

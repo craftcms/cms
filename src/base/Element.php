@@ -926,7 +926,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
             return Craft::$app->getSites()->getAllSiteIds();

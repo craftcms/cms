@@ -397,7 +397,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return int[]|array
      */
-    public function getSupportedSites();
+    public function getSupportedSites(): array;
 
     /**
      * Returns the URI format used to generate this element’s URI.
