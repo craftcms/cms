@@ -722,7 +722,7 @@ class Plugins extends Component
     {
         $parts = preg_split('/(?=[\p{Lu}])+/u', $handle);
 
-        return strtolower(implode('-', $parts));
+        return trim(strtolower(implode('-', $parts)), '-');
     }
 
     /**
