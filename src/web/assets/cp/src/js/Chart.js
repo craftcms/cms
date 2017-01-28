@@ -260,7 +260,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var yTicksMaxWidth = 0;
 
         $.each(values, $.proxy(function(key, value) {
-            var characterWidth = 7;
+            var characterWidth = 8;
 
             var formatter = this.getYTickFormatter();
 
