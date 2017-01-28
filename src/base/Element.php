@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortableAttributesEvent;
@@ -120,6 +121,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
     const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
 
     /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
@@ -448,9 +454,16 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function defaultTableAttributes(string $source): array
     {
-        $availableTableAttributes = static::tableAttributes();
+        $tableAttributes = static::defineDefaultTableAttributes($source);
 
-        return array_keys($availableTableAttributes);
+        // Give plugins a chance to modify them
+        $event = new RegisterElementDefaultTableAttributesEvent([
+            'source' => $source,
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
     }
 
     /**
@@ -480,6 +493,23 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         return [];
+    }
+
+    /**
+     * Returns the list of table attribute keys that should be shown by default.
+     *
+     * @param string $source The selected source’s key
+     *
+     * @return string[] The table attributes.
+     * @see defaultTableAttributes()
+     * @see tableAttributes()
+     */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        // Return all of them by default
+        $availableTableAttributes = static::tableAttributes();
+
+        return array_keys($availableTableAttributes);
     }
 
     // Methods for customizing element queries

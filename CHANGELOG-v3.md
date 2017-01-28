@@ -49,6 +49,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\RegisterComponentTypesEvent`.
 - Added `craft\events\RegisterCpAlertsEvent`.
 - Added `craft\events\RegisterCpNavItemsEvent`.
+- Added `craft\events\RegisterElementDefaultTableAttributesEvent`.
 - Added `craft\events\RegisterElementHtmlAttributesEvent`.
 - Added `craft\events\RegisterElementSearchableAttributesEvent`.
 - Added `craft\events\RegisterElementSortableAttributesEvent`.
@@ -130,6 +131,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::$validateCustomFields`, which can be set to true or false to explicitly require/prevent custom field validation.
 - Added `craft\base\Element::afterDelete()`, which is called after an element is deleted.
 - Added `craft\base\Element::afterMoveInStructure()`, which is called after an element is moved within a structure.
+- Added `craft\base\Element::defineDefaultTableAttributes()`.
 - Added `craft\base\Element::beforeDelete()`, which is called before the element is deleted.
 - Added `craft\base\Element::defineActions()`.
 - Added `craft\base\Element::defineSearchableAttributes()`.
@@ -195,6 +197,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerCacheOptions` event to `craft\tools\ClearCaches`.
 - Added the `registerCpNavItems` event to `craft\web\twig\variables\Cp`.
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.
+- Added the `registerDefaultTableAttributes` event to `craft\base\Element`.
 - Added the `registerElementTypes` event to `craft\services\Elements`.
 - Added the `registerFieldTypes` event to `craft\services\Fields`.
 - Added the `registerHtmlAttributes` event to `craft\base\Element`.

@@ -396,7 +396,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes(string $source): array
+    protected static function defineDefaultTableAttributes(string $source): array
     {
         $attributes = [];
 

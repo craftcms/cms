@@ -244,7 +244,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes(string $source): array
+    protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
             'filename',

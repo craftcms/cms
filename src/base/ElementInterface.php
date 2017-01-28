@@ -350,7 +350,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $source The selected source’s key
      *
-     * @return array The table attribute keys
+     * @return string[] The table attribute keys
      */
     public static function defaultTableAttributes(string $source): array;
 
