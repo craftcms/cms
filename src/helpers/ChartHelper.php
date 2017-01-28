@@ -315,7 +315,7 @@ class ChartHelper
      */
     public static function numberFormat(): string
     {
-        return ',.2';
+        return ',.0f';
     }
 
     /**
