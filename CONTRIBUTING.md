@@ -11,8 +11,7 @@ The following is a set of guidelines for contributing to Craft CMS and its first
   - [Craft isn’t FOSS](#craft-isnt-foss)
   - [Code of Conduct](#code-of-conduct)
 - [Security Disclosures](#security-disclosures)
-- [Bug Reports](#bug-reports)
-- [Feature Requests](#feature-requests)
+- [Bug Reports & Feature Requests](#bug-reports--feature-requests)
 - [Documentation Edits](#documentation-edits)
 - [Control Panel Translations](#control-panel-translations)
 - [Core Enhancements](#core-enhancements)
@@ -37,15 +36,13 @@ Please take a couple minutes to read through Craft’s [code of conduct](https:/
 
 If you discover a security vulnerability, please report it directly to [support@craftcms.com][support]. We will review and respond privately via email.
 
-## Bug Reports
+## Bug Reports & Feature Requests
 
-Non-security-related issues should be reported in [GitHub Issues](https://github.com/craftcms/cms/issues). Search through the existing issues first, to make sure it hasn’t already been reported.
+Before submitting bug reports and feature requests, please search through [open issues](https://github.com/craftcms/cms/issues) to see if yours has already been filed.
 
-Bug reports should include a title and clear description of the issue, and as much relevant information as possible, including a code sample demonstrating the the issue.
+If you do find a similar issue, upvote it by adding a :thumbsup: [reaction](https://github.com/blog/2119-add-reactions-to-pull-requests-issues-and-comments). Only leave a comment if you have relevant information to add.
 
-## Feature Requests
-
-Feature requests should be posted on [UserVoice][uservoice] rather than GitHub Issues, so the community can discuss them and vote on them. Search through the existing ideas first, to make sure it hasn’t already been suggested.
+If no one has filed the issue yet, [submit a ne one](https://github.com/craftcms/cms/issues/new). Please include a clear description of the issue, and as much relevant information as possible, including a code sample demonstrating the the issue.
 
 ## Documentation Edits
 
