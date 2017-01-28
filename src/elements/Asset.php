@@ -185,7 +185,7 @@ class Asset extends Element
             $actions[] = Craft::$app->getElements()->createAction(
                 [
                     'type' => CopyReferenceTag::class,
-                    'elementType' => Asset::class,
+                    'elementType' => static::class,
                 ]
             );
 
