@@ -243,49 +243,12 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
-    
+
     init: function(container, settings)
     {
         this.base(container, Craft.charts.Area.defaults);
 
         this.setSettings(settings);
-    },
-
-    getChartMargin: function()
-    {
-        var margin = this.settings.margin;
-
-
-        // Estimate the max width of y ticks and set it as the left margin
-
-        var values = this.getYTickValues();
-        var yTicksMaxWidth = 0;
-
-        $.each(values, $.proxy(function(key, value) {
-            var characterWidth = 8;
-
-            var formatter = this.getYTickFormatter();
-
-            var formattedValue = formatter(value);
-            var computedTickWidth = formattedValue.length * characterWidth;
-
-            if(computedTickWidth > yTicksMaxWidth) {
-                yTicksMaxWidth = computedTickWidth;
-            }
-        }, this));
-
-        if(yTicksMaxWidth < 24)
-        {
-            yTicksMaxWidth = 24;
-        }
-
-        if(this.orientation != 'rtl') {
-            margin.left = yTicksMaxWidth;
-        } else {
-            margin.right = yTicksMaxWidth;
-        }
-
-        return margin;
     },
 
     draw: function(dataTable, settings) {
@@ -380,46 +343,44 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.onAfterDrawTicks();
     },
 
-    getX: function (padded)
-    {
-        var xDomainMin = d3.min(this.dataTable.rows, function(d) {
-            return d[0];
-        });
+    drawAxes: function() {
+        var x = this.getX();
+        var y = this.getY();
 
-        var xDomainMax = d3.max(this.dataTable.rows, function(d) {
-            return d[0];
-        });
+        var xAxis = d3.axisBottom(x).ticks(0).tickSizeOuter(0);
 
-        var xDomain = [xDomainMin, xDomainMax];
+        var xTranslateX = -0;
+        var xTranslateY = this.height;
 
-        if (this.orientation == 'rtl') {
-            xDomain = [xDomainMax, xDomainMin];
+        this.g.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(" + xTranslateX + "," + xTranslateY + ")")
+            .call(xAxis);
+
+        if (this.settings.axis.y.show) {
+            if (this.orientation == 'rtl') {
+                var yTranslateX = this.width;
+                var yTranslateY = 0;
+
+                var yAxis = d3.axisLeft(y).ticks(0);
+
+                this.g.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", " + yTranslateY + ")")
+                    .call(yAxis);
+            }
+            else {
+                var yTranslateX = chartMargin.left;
+                var yTranslateY = 0;
+
+                var yAxis = d3.axisRight(y).ticks(0);
+
+                this.g.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", " + yTranslateY + ")")
+                    .call(yAxis);
+            }
         }
-
-        var left = 0;
-        var right = 0;
-
-        if(padded) {
-            left = 14;
-            right = 14;
-        }
-
-        var x = d3.scaleTime().range([left, (this.width - right)]);
-
-        x.domain(xDomain);
-
-        return x;
-    },
-
-    getY: function()
-    {
-        var yDomain = [0, this.getYMaxValue()];
-
-        var y = d3.scaleLinear().range([this.height, 0]);
-
-        y.domain(yDomain);
-
-        return y;
     },
 
     drawChart: function() {
@@ -518,46 +479,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .attr("r", 4)
                 .attr("cx", $.proxy(function(d) { return x(d[0]); }, this))
                 .attr("cy", $.proxy(function(d) { return y(d[1]); }, this));
-        }
-    },
-
-    drawAxes: function() {
-        var x = this.getX();
-        var y = this.getY();
-
-        var xAxis = d3.axisBottom(x).ticks(0).tickSizeOuter(0);
-
-        var xTranslateX = -0;
-        var xTranslateY = this.height;
-
-        this.g.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(" + xTranslateX + "," + xTranslateY + ")")
-            .call(xAxis);
-
-        if (this.settings.axis.y.show) {
-            if (this.orientation == 'rtl') {
-                var yTranslateX = this.width;
-                var yTranslateY = 0;
-
-                var yAxis = d3.axisLeft(y).ticks(0);
-
-                this.g.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + yTranslateX + ", " + yTranslateY + ")")
-                    .call(yAxis);
-            }
-            else {
-                var yTranslateX = chartMargin.left;
-                var yTranslateY = 0;
-
-                var yAxis = d3.axisRight(y).ticks(0);
-
-                this.g.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + yTranslateX + ", " + yTranslateY + ")")
-                    .call(yAxis);
-            }
         }
     },
 
@@ -671,6 +592,85 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.g);
+    },
+
+    getChartMargin: function()
+    {
+        var margin = this.settings.margin;
+
+
+        // Estimate the max width of y ticks and set it as the left margin
+
+        var values = this.getYTickValues();
+        var yTicksMaxWidth = 0;
+
+        $.each(values, $.proxy(function(key, value) {
+            var characterWidth = 8;
+
+            var formatter = this.getYTickFormatter();
+
+            var formattedValue = formatter(value);
+            var computedTickWidth = formattedValue.length * characterWidth;
+
+            if(computedTickWidth > yTicksMaxWidth) {
+                yTicksMaxWidth = computedTickWidth;
+            }
+        }, this));
+
+        if(yTicksMaxWidth < 24)
+        {
+            yTicksMaxWidth = 24;
+        }
+
+        if(this.orientation != 'rtl') {
+            margin.left = yTicksMaxWidth;
+        } else {
+            margin.right = yTicksMaxWidth;
+        }
+
+        return margin;
+    },
+
+    getX: function (padded)
+    {
+        var xDomainMin = d3.min(this.dataTable.rows, function(d) {
+            return d[0];
+        });
+
+        var xDomainMax = d3.max(this.dataTable.rows, function(d) {
+            return d[0];
+        });
+
+        var xDomain = [xDomainMin, xDomainMax];
+
+        if (this.orientation == 'rtl') {
+            xDomain = [xDomainMax, xDomainMin];
+        }
+
+        var left = 0;
+        var right = 0;
+
+        if(padded) {
+            left = 14;
+            right = 14;
+        }
+
+        var x = d3.scaleTime().range([left, (this.width - right)]);
+
+        x.domain(xDomain);
+
+        return x;
+    },
+
+    getY: function()
+    {
+        var yDomain = [0, this.getYMaxValue()];
+
+        var y = d3.scaleLinear().range([this.height, 0]);
+
+        y.domain(yDomain);
+
+        return y;
     },
 
     getXTickFormatter: function() {
