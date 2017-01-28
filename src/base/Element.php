@@ -19,7 +19,7 @@ use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
-use craft\events\RegisterElementSortableAttributesEvent;
+use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementRouteEvent;
@@ -113,9 +113,9 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
 
     /**
-     * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
+     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
      */
-    const EVENT_REGISTER_SORTABLE_ATTRIBUTES = 'registerSortableAttributes';
+    const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
 
     /**
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
@@ -382,7 +382,7 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::sortableAttributes();
+            $sortableAttributes = static::sortOptions();
 
             if (!empty($sortableAttributes)) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
@@ -420,17 +420,17 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sortableAttributes(): array
+    public static function sortOptions(): array
     {
-        $sortableAttributes = static::defineSortableAttributes();
+        $sortOptions = static::defineSortOptions();
 
         // Give plugins a chance to modify them
-        $event = new RegisterElementSortableAttributesEvent([
-            'sortableAttributes' => $sortableAttributes
+        $event = new RegisterElementSortOptionsEvent([
+            'sortOptions' => $sortOptions
         ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SORTABLE_ATTRIBUTES, $event);
+        Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
 
-        return $event->sortableAttributes;
+        return $event->sortOptions;
     }
 
     /**
@@ -467,21 +467,22 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Defines the attributes that elements can be sorted by.
+     * Returns the sort options for the element type.
      *
-     * @return string[] The attributes that elements can be sorted by
-     * @see sortableAttributes()
+     * @return array The attributes that elements can be sorted by
+     * @see sortOptions()
      */
-    protected static function defineSortableAttributes(): array
+    protected static function defineSortOptions(): array
     {
+        // Default to the available table attributes
         $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
-        $sortableAttributes = [];
+        $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
-            $sortableAttributes[$key] = $labelInfo['label'];
+            $sortOptions[$key] = $labelInfo['label'];
         }
 
-        return $sortableAttributes;
+        return $sortOptions;
     }
 
     /**

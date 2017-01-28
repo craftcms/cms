@@ -182,7 +182,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes(): array
+    protected static function defineSortOptions(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),

@@ -52,7 +52,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\RegisterElementDefaultTableAttributesEvent`.
 - Added `craft\events\RegisterElementHtmlAttributesEvent`.
 - Added `craft\events\RegisterElementSearchableAttributesEvent`.
-- Added `craft\events\RegisterElementSortableAttributesEvent`.
+- Added `craft\events\RegisterElementSortOptionsEvent`.
 - Added `craft\events\RegisterElementSourcesEvent`.
 - Added `craft\events\RegisterElementTableAttributesEvent`.
 - Added `craft\events\RegisterEmailMessagesEvent`.
@@ -135,7 +135,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Element::beforeDelete()`, which is called before the element is deleted.
 - Added `craft\base\Element::defineActions()`.
 - Added `craft\base\Element::defineSearchableAttributes()`.
-- Added `craft\base\Element::defineSortableAttributes()`.
+- Added `craft\base\Element::defineSortOptions()`.
 - Added `craft\base\Element::defineSources()`.
 - Added `craft\base\Element::defineTableAttributes()`.
 - Added `craft\base\Element::getHtmlAttributes()`, which gives elements a chance to define any HTML attributes that should be included when rendering an element node for the Control Panel.
@@ -206,7 +206,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerMessages` event to `craft\services\EmailMessages`.
 - Added the `registerPermissions` event to `craft\services\UserPermissions`.
 - Added the `registerSearchableAttributes` event to `craft\base\Element`.
-- Added the `registerSortableAttributes` event to `craft\base\Element`.
+- Added the `registerSortOptions` event to `craft\base\Element`.
 - Added the `registerSources` event to `craft\base\Element`.
 - Added the `registerTableAttributes` event to `craft\base\Element`.
 - Added the `registerUserActions` event to `craft\controllers\UsersController`.
@@ -302,7 +302,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `Craft::getCookieConfig()` to `cookieConfig()`.
 - Renamed `craft\base\Element::defineAvailableTableAttributes()` to `tableAttributes()`.
 - Renamed `craft\base\Element::defineSearchableAttributes()` to `searchableAttributes()`.
-- Renamed `craft\base\Element::defineSortableAttributes()` to `sortableAttributes()`.
+- Renamed `craft\base\Element::defineSortableAttributes()` to `sortOptions()`.
 - Renamed `craft\base\Element::getAvailableActions()` to `actions()`, and the method must return an array now.
 - Renamed `craft\base\Element::getContentPostLocation()` to `getFieldParamNamespace()`.
 - Renamed `craft\base\Element::getDefaultTableAttributes()` to `defaultTableAttributes()`.

@@ -10,18 +10,18 @@ namespace craft\events;
 use yii\base\Event;
 
 /**
- * RegisterElementSortableAttributesEvent class.
+ * RegisterElementSortOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterElementSortableAttributesEvent extends Event
+class RegisterElementSortOptionsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array List of registered sortable attributes for the element type.
+     * @var array List of registered sort options for the element type.
      */
-    public $sortableAttributes = [];
+    public $sortOptions = [];
 }
