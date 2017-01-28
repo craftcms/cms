@@ -264,27 +264,25 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param BaseTableSchema|string $table
-     * @param string                 $column
-     * @param bool|null              $refresh
+     * @param string    $table
+     * @param string    $column
+     * @param bool|null $refresh
      *
      * @return bool
      * @throws NotSupportedException if there is no support for the current driver type
      */
-    public function columnExists($table, string $column, bool $refresh = null): bool
+    public function columnExists(string $table, string $column, bool $refresh = null): bool
     {
         // Default to refreshing the tables if Craft isn't installed yet
         if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
             $this->getSchema()->refresh();
         }
 
-        if (!$table instanceof BaseTableSchema) {
-            if (($table = $this->getTableSchema('{{'.$table.'}}')) === null) {
-                return false;
-            }
+        if (($tableSchema = $this->getTableSchema($table)) === null) {
+            return false;
         }
 
-        return ($table->getColumn($column) !== null);
+        return ($tableSchema->getColumn($column) !== null);
     }
 
     /**

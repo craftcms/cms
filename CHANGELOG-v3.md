@@ -671,6 +671,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where linking to an entry or category from a Rich Text field wasn’t working.
 - Fixed `Plugins::validateConfig()`’s nulls.
 - Fixed a bug where JavaScript flashes weren’t getting registered on the subsequent page.
+- Fixed a bug where `craft\db\Connection::columnExists()` wasn’t returning `true` if the column existed.
 
 ## 3.0.0-alpha.2948 - 2016-09-29
 
