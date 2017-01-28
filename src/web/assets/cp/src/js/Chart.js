@@ -243,10 +243,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
-
-    paddedX: null,
-    paddedY: null,
-
+    
     init: function(container, settings)
     {
         this.base(container, Craft.charts.Area.defaults);
