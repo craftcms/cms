@@ -706,9 +706,11 @@ class Fields extends Component
                     Craft::$app->getDb()->createCommand()
                         ->alterColumn($contentTable, $oldColumnName, $columnType)
                         ->execute();
-                    Craft::$app->getDb()->createCommand()
-                        ->renameColumn($contentTable, $oldColumnName, $newColumnName)
-                        ->execute();
+                    if ($oldColumnName !== $newColumnName) {
+                        Craft::$app->getDb()->createCommand()
+                            ->renameColumn($contentTable, $oldColumnName, $newColumnName)
+                            ->execute();
+                    }
                 } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
                     Craft::$app->getDb()->createCommand()
                         ->alterColumn($contentTable, $newColumnName, $columnType)
@@ -720,7 +722,7 @@ class Fields extends Component
                 }
 
                 // Clear the translation key format if not using a custom translation method
-                if ($field->translationMethod != Field::TRANSLATION_METHOD_CUSTOM) {
+                if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
                     $field->translationKeyFormat = null;
                 }
             } else {
