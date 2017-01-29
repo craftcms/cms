@@ -164,7 +164,6 @@ class UtilitiesController extends Controller
 
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
-
         // Initial request
         if (!empty($params['start'])) {
             $batches = [];

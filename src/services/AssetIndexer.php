@@ -186,7 +186,7 @@ class AssetIndexer extends Component
             $this->updateIndexEntryRecordId($indexEntryModel->id, $asset->id);
 
             $asset->size = $indexEntryModel->size;
-            $timeModified = new DateTime($indexEntryModel->timestamp);
+            $timeModified = $indexEntryModel->timestamp;
 
             if ($asset->kind === 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
