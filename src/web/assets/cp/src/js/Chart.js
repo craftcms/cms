@@ -187,11 +187,9 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
             case 'decimal':
                 return formatLocale.format(this.settings.formats.decimalFormat);
-                break;
 
             case 'number':
                 return formatLocale.format(this.settings.formats.numberFormat);
-                break;
         }
     },
 
