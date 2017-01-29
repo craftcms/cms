@@ -158,8 +158,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         this.$chart = $('<div class="' + className + '" />').appendTo(this.$container);
     },
 
-    getTimeFormatter: function(timeFormatLocale, dataScale)
-    {
+    getTimeFormatter: function(timeFormatLocale, dataScale) {
         switch (dataScale) {
             case 'year':
                 return timeFormatLocale.format('%Y');
@@ -175,8 +174,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         }
     },
     
-    getNumberFormatter: function(formatLocale, type)
-    {
+    getNumberFormatter: function(formatLocale, type) {
         switch (type) {
             case 'currency':
                 return formatLocale.format(this.settings.formats.currencyFormat);
@@ -263,7 +261,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         this.width = this.$chart.width() - margin.left - margin.right;
         this.height = this.$chart.height() - margin.top - margin.bottom;
-
 
         // Append SVG to chart element
 
@@ -368,8 +365,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .attr("class", "y axis")
                     .attr("transform", "translate(" + yTranslateX + ", " + yTranslateY + ")")
                     .call(yAxis);
-            }
-            else {
+            } else {
                 var yTranslateX = chartMargin.left;
                 var yTranslateY = 0;
 
@@ -473,9 +469,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     drawTipTriggers: function() {
-
         if (this.settings.enableTips) {
-
             if (!this.tip) {
                 this.tip = new Craft.charts.Tip(this.$chart);
             }
@@ -489,7 +483,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var xAxisTickInterval = length / (this.dataTable.rows.length - 1);
 
 
-            // trigger width
+            // Tip trigger width
 
             var tipTriggerWidth = Math.max(0, xAxisTickInterval);
 
@@ -549,8 +543,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                         if (calcLeft > maxLeft) {
                             left = x(d[0]) - (this.tip.$tip.width() + offset);
                         }
-                    }
-                    else {
+                    } else {
                         left = (x(d[0]) - (this.tip.$tip.width() + margin.left + offset));
                     }
 
@@ -584,8 +577,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.g);
     },
 
-    getChartMargin: function()
-    {
+    getChartMargin: function() {
         var margin = this.settings.margin;
 
 
@@ -602,7 +594,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var formattedValue = formatter(value);
             var computedTickWidth = formattedValue.length * characterWidth;
 
-            if(computedTickWidth > yTicksMaxWidth) {
+            if (computedTickWidth > yTicksMaxWidth) {
                 yTicksMaxWidth = computedTickWidth;
             }
         }, this));
@@ -614,8 +606,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return margin;
     },
 
-    getX: function (padded)
-    {
+    getX: function(padded) {
         var xDomainMin = d3.min(this.dataTable.rows, function(d) {
             return d[0];
         });
@@ -633,7 +624,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var left = 0;
         var right = 0;
 
-        if(padded) {
+        if (padded) {
             left = 14;
             right = 14;
         }
@@ -645,8 +636,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return x;
     },
 
-    getY: function()
-    {
+    getY: function() {
         var yDomain = [0, this.getYMaxValue()];
 
         var y = d3.scaleLinear().range([this.height, 0]);
@@ -673,7 +663,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     getYTickValues: function() {
         var maxValue = this.getYMaxValue();
 
-        if(maxValue > 1)  {
+        if (maxValue > 1)  {
             return [(maxValue / 2), maxValue];
         } else {
             return [0, maxValue];
@@ -756,8 +746,7 @@ Craft.charts.utils = {
 
                     data.columns.push(column);
                 });
-            }
-            else {
+            } else {
                 var row = [];
 
                 $.each(v, function(k2, v2) {
