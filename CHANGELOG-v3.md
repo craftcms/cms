@@ -22,6 +22,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `schema` DB config setting, which can be used to assign the default schema used when connecting to a PostgreSQL database.
 - Added support for setting Volume config settings in `config/volumes.php`. The file should return an array with keys that match volume handles, and values that are config arrays for the volumes.
 - Added the `view` global Twig variable, which is a reference to the View class that is rendering the template.
+- Added `craft.matrixBlocks()`, which can be used to query for Matrix blocks.
 - Added the `SORT_ASC` and `SORT_DESC` global Twig variables, which can be used to define query sorting in element queries.
 - Added the `POS_HEAD`, `POS_BEGIN`, `POS_END`, `POS_READY`, and `POS_LOAD` global Twig variables, which can be used to define the placement of registered scripts.
 - Added the `className()` global Twig function, which returns the class name of a given object.
