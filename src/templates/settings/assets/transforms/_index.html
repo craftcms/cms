@@ -26,7 +26,7 @@
                 <td data-title="{{ 'Handle'|t('app') }}"><code>{{ transform.handle }}</code></td>
 				<td data-title="{{ 'Mode'|t('app') }}">
 					{% if transform.mode %}
-						{{ transformModes[transform.mode] }}
+						{{ modes[transform.mode] }}
 					{%  endif %}
 				</td>
 				<td data-title="{{ 'Dimensions'|t('app') }}">{{ transform.width ? transform.width : 'Auto'|t('app') }} &times; {{ transform.height ? transform.height : 'Auto'|t('app') }}</td>

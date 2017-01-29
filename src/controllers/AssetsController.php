@@ -17,7 +17,9 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\Image;
 use craft\helpers\StringHelper;
+use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -37,8 +39,6 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-// TODO: permission rework
-// TODO: All exceptions must be translatable.
 class AssetsController extends Controller
 {
     // Properties
@@ -378,11 +378,12 @@ class AssetsController extends Controller
 
         $assets = Craft::$app->getAssets();
         $asset = $assets->getAssetById($assetId);
-        $folder = $assets->getFolderById($folderId);
 
         if (empty($asset)) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
+
+        $folder = $assets->getFolderById($folderId);
 
         if (empty($folder)) {
             throw new BadRequestHttpException('The folder cannot be found');
@@ -503,7 +504,7 @@ class AssetsController extends Controller
                         $folderIdChanges, $conflictResolution === 'merge');
                 }
             } else {
-                // Resolving a confclit
+                // Resolving a conflict
                 $existingFolder = $assets->findFolder([
                     'parentId' => $newParentFolderId,
                     'name' => $folderToMove->name
@@ -549,6 +550,190 @@ class AssetsController extends Controller
             'transferList' => $fileTransferList,
             'newFolderId' => $folderIdChanges[$folderBeingMovedId] ?? null
         ]);
+    }
+
+    /**
+     * Return the image editor template.
+     *
+     * @return Response
+     * @throws BadRequestHttpException if the Asset is missing.
+     */
+    public function actionImageEditor(): Response
+    {
+        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+        if (!$asset) {
+            throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to edit does not exist.'));
+        }
+
+        $focal = null;
+        if ($asset->focalPoint) {
+            $focalPoint = explode(",", $asset->focalPoint);
+
+            // Make it dimension-agnostic
+            $focalX = $focalPoint[0] / $asset->width;
+            $focalY = $focalPoint[1] / $asset->height;
+            $focal = ['x' => $focalX, 'y' => $focalY];
+        }
+
+        $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
+
+        return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
+    }
+
+    /**
+     * Get the image being edited.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionEditImage(): Response
+    {
+        $request = Craft::$app->getRequest();
+        $assetId = (int)$request->getRequiredQueryParam('assetId');
+        $size = (int)$request->getRequiredQueryParam('size');
+
+        // TODO the method name needs some work.
+        $filePath = Assets::editorImagePath($assetId, $size);
+
+        if (!$filePath) {
+            throw new BadRequestHttpException('The Asset cannot be found');
+        }
+
+        $response = Craft::$app->getResponse();
+
+        return $response->sendFile($filePath, null, ['inline' => true]);
+    }
+
+    /**
+     * Save an image according to posted parameters.
+     *
+     * @return Response
+     * @throws BadRequestHttpException if some parameters are missing.
+     * @throws \Exception if something went wrong saving the Asset.
+     */
+    public function actionSaveImage(): Response
+    {
+        $this->requireLogin();
+        $this->requireAcceptsJson();
+
+        $assets = Craft::$app->getAssets();
+        $request = Craft::$app->getRequest();
+
+        $assetId = $request->getRequiredBodyParam('assetId');
+        $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
+        $imageRotation = $request->getRequiredBodyParam('imageRotation');
+        $replace = $request->getRequiredBodyParam('replace');
+        $cropData = $request->getRequiredBodyParam('cropData');
+        $focalPoint = $request->getBodyParam('focalPoint');
+        $imageDimensions = $request->getBodyParam('imageDimensions');
+        $flipData = $request->getBodyParam('flipData');
+        $zoom = $request->getBodyParam('zoom', 1);
+
+        $asset = $assets->getAssetById($assetId);
+
+        if (empty($asset)) {
+            throw new BadRequestHttpException('The Asset cannot be found');
+        }
+
+        $folder = $asset->getFolder();
+
+        if (empty($folder)) {
+            throw new BadRequestHttpException('The folder cannot be found');
+        }
+
+        // Check the permissions to save in the resolved folder.
+        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
+
+        // If replacing, check for permissions to replace existing Asset files.
+        if ($replace) {
+            $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+        }
+
+        // Verify parameter adequacy
+        if (!in_array($viewportRotation, [0, 90, 180, 270])) {
+            throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
+        }
+
+        if (is_array($cropData)) {
+            if (array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))) {
+                throw new BadRequestHttpException('Invalid cropping parameters passed');
+            }
+        }
+
+        $imageCopy = $asset->getCopyOfFile();
+
+        $imageSize = Image::imageSize($imageCopy);
+
+        /** @var Raster $image */
+        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+        $originalImageWidth = $imageSize[0];
+        $originalImageHeight = $imageSize[1];
+
+        if (!empty($flipData['x'])) {
+            $image->flipHorizontally();
+        }
+
+        if (!empty($flipData['y'])) {
+            $image->flipVertically();
+        }
+
+        $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+
+        $image->rotate($imageRotation + $viewportRotation);
+
+        $imageCenterX = $image->getWidth() / 2;
+        $imageCenterY = $image->getHeight() / 2;
+
+        $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
+        $width = $cropData['width'] * $zoom * $adjustmentRatio;
+        $height = $cropData['height'] * $zoom * $adjustmentRatio;
+        $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width / 2;
+        $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
+
+        $focal = null;
+        if ($focalPoint) {
+            $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
+            $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
+            $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
+            $focal = round($fx).",".round($fy);
+        }
+
+        $image->crop($x, $x + $width, $y, $y + $height);
+
+        $image->saveAs($imageCopy);
+
+        if ($replace) {
+            $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+            $asset->dateModified = filemtime($imageCopy);
+            $asset->focalPoint = $focal;
+            $assetToSave = $asset;
+        } else {
+            $newAsset = new Asset();
+            // Make sure there are no double spaces, if the filename had a space followed by a
+            // capital letter because of Yii's "word" logic.
+            $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($asset->filename, PATHINFO_BASENAME)));
+
+            $newAsset->newFilePath = $imageCopy;
+            $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
+            $newAsset->folderId = $folder->id;
+            $newAsset->volumeId = $folder->volumeId;
+            $newAsset->focalPoint = $focal;
+
+            $assetToSave = $newAsset;
+        }
+
+        try {
+            $assets->saveAsset($assetToSave);
+            FileHelper::removeFile($imageCopy);
+        } // No matter what happened, delete the file on server.
+        catch (\Exception $exception) {
+            FileHelper::removeFile($imageCopy);
+            throw $exception;
+        }
+
+        return $this->asJson(['success' => true]);
     }
 
     /**

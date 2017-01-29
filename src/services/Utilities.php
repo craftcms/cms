@@ -18,6 +18,7 @@ use craft\utilities\FindAndReplace;
 use craft\utilities\PhpInfo;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemReport;
+use craft\utilities\Migrations;
 use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
 
@@ -53,7 +54,7 @@ class Utilities extends Component
             UpdatesUtility::class,
             SystemReport::class,
             PhpInfo::class,
-            DeprecationErrors::class,
+            SearchIndexes::class,
         ];
 
         if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
@@ -61,9 +62,10 @@ class Utilities extends Component
         }
 
         $utilityTypes[] = ClearCaches::class;
+        $utilityTypes[] = DeprecationErrors::class;
         $utilityTypes[] = DbBackup::class;
         $utilityTypes[] = FindAndReplace::class;
-        $utilityTypes[] = SearchIndexes::class;
+        $utilityTypes[] = Migrations::class;
 
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes

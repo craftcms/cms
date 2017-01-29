@@ -10,7 +10,6 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
-use yii\base\Exception;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
@@ -44,13 +43,7 @@ class DeprecationErrors extends Utility
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/bug.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/bug.svg');
     }
 
     /**

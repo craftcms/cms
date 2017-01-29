@@ -10,7 +10,6 @@ namespace craft\utilities;
 use Craft;
 use craft\base\Utility;
 use craft\web\assets\findreplace\FindReplaceAsset;
-use yii\base\Exception;
 
 /**
  * FindAndReplace represents a FindAndReplace dashboard widget.
@@ -44,13 +43,7 @@ class FindAndReplace extends Utility
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/wand.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/wand.svg');
     }
 
     /**

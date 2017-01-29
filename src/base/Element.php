@@ -16,7 +16,10 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
-use craft\events\RegisterElementSortableAttributesEvent;
+use craft\events\RegisterElementDefaultTableAttributesEvent;
+use craft\events\RegisterElementHtmlAttributesEvent;
+use craft\events\RegisterElementSearchableAttributesEvent;
+use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementRouteEvent;
@@ -105,9 +108,14 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_ACTIONS = 'registerActions';
 
     /**
-     * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
+     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
      */
-    const EVENT_REGISTER_SORTABLE_ATTRIBUTES = 'registerSortableAttributes';
+    const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+
+    /**
+     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
+     */
+    const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
 
     /**
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
@@ -115,9 +123,19 @@ abstract class Element extends Component implements ElementInterface
     const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
 
     /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+
+    /**
+     * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the Control Panel.
+     */
+    const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
@@ -279,7 +297,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function searchableAttributes(): array
     {
-        return [];
+        $attributes = static::defineSearchableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSearchableAttributesEvent([
+            'attributes' => $attributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+
+        return $event->attributes;
     }
 
     /**
@@ -304,6 +330,17 @@ abstract class Element extends Component implements ElementInterface
      * @see actions()
      */
     protected static function defineActions(string $source = null): array
+    {
+        return [];
+    }
+
+    /**
+     * Defines which element attributes should be searchable.
+     *
+     * @return string[] The element attributes that should be searchable
+     * @see searchableAttributes()
+     */
+    protected static function defineSearchableAttributes(): array
     {
         return [];
     }
@@ -345,7 +382,7 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::sortableAttributes();
+            $sortableAttributes = static::sortOptions();
 
             if (!empty($sortableAttributes)) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
@@ -383,17 +420,17 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sortableAttributes(): array
+    public static function sortOptions(): array
     {
-        $sortableAttributes = static::defineSortableAttributes();
+        $sortOptions = static::defineSortOptions();
 
         // Give plugins a chance to modify them
-        $event = new RegisterElementSortableAttributesEvent([
-            'sortableAttributes' => $sortableAttributes
+        $event = new RegisterElementSortOptionsEvent([
+            'sortOptions' => $sortOptions
         ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SORTABLE_ATTRIBUTES, $event);
+        Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
 
-        return $event->sortableAttributes;
+        return $event->sortOptions;
     }
 
     /**
@@ -417,27 +454,35 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function defaultTableAttributes(string $source): array
     {
-        $availableTableAttributes = static::tableAttributes();
+        $tableAttributes = static::defineDefaultTableAttributes($source);
 
-        return array_keys($availableTableAttributes);
+        // Give plugins a chance to modify them
+        $event = new RegisterElementDefaultTableAttributesEvent([
+            'source' => $source,
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
     }
 
     /**
-     * Defines the attributes that elements can be sorted by.
+     * Returns the sort options for the element type.
      *
-     * @return string[] The attributes that elements can be sorted by
-     * @see sortableAttributes()
+     * @return array The attributes that elements can be sorted by
+     * @see sortOptions()
      */
-    protected static function defineSortableAttributes(): array
+    protected static function defineSortOptions(): array
     {
+        // Default to the available table attributes
         $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
-        $sortableAttributes = [];
+        $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
-            $sortableAttributes[$key] = $labelInfo['label'];
+            $sortOptions[$key] = $labelInfo['label'];
         }
 
-        return $sortableAttributes;
+        return $sortOptions;
     }
 
     /**
@@ -449,6 +494,23 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         return [];
+    }
+
+    /**
+     * Returns the list of table attribute keys that should be shown by default.
+     *
+     * @param string $source The selected source’s key
+     *
+     * @return string[] The table attributes.
+     * @see defaultTableAttributes()
+     * @see tableAttributes()
+     */
+    protected static function defineDefaultTableAttributes(string $source): array
+    {
+        // Return all of them by default
+        $availableTableAttributes = static::tableAttributes();
+
+        return array_keys($availableTableAttributes);
     }
 
     // Methods for customizing element queries
@@ -865,7 +927,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
             return Craft::$app->getSites()->getAllSiteIds();
@@ -1480,7 +1542,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getHtmlAttributes(string $context): array
     {
-        return [];
+        $htmlAttributes = $this->htmlAttributes($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementHtmlAttributesEvent([
+            'htmlAttributes' => $htmlAttributes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+
+        return $event->htmlAttributes;
     }
 
     /**
@@ -1868,6 +1938,19 @@ abstract class Element extends Component implements ElementInterface
     protected function route()
     {
         return null;
+    }
+
+    /**
+     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     *
+     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     *
+     * @return array
+     * @see getHtmlAttributes()
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        return [];
     }
 
     // Private Methods

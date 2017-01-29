@@ -182,7 +182,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes(): array
+    protected static function defineSortOptions(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -210,7 +210,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes(string $source): array
+    protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
             'link',

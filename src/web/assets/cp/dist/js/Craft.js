@@ -12340,6 +12340,7 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
 
 /** global: Craft */
 /** global: Garnish */
+
 /**
  * Image upload class for user photos, site icon and logo.
  */
@@ -12458,6 +12459,7 @@ Craft.ImageUpload = Garnish.Base.extend(
         }
     }
 );
+
 /** global: Craft */
 /** global: Garnish */
 /**

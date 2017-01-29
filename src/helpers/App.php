@@ -110,6 +110,10 @@ class App
      */
     public static function isValidEdition($edition): bool
     {
+        if ($edition === false || $edition === null) {
+            return false;
+        }
+
         return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
     }
 
@@ -211,13 +215,17 @@ class App
      *
      * @param string $version The full version number
      *
-     * @return string The X.Y parts of the version number
+     * @return string|null The X.Y parts of the version number
      */
-    public static function majorMinorVersion(string $version): string
+    public static function majorMinorVersion(string $version)
     {
         preg_match('/^\d+\.\d+/', $version, $matches);
 
-        return $matches[0];
+        if (isset($matches[0])) {
+            return $matches[0];
+        }
+
+        return null;
     }
 
     /**

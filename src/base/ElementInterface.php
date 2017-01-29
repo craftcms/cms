@@ -293,7 +293,7 @@ interface ElementInterface extends ComponentInterface
     public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string;
 
     /**
-     * Returns the attributes that elements can be sorted by.
+     * Returns the sort options for the element type.
      *
      * This method should return an array, where the keys reference database column names that should be sorted on,
      * and where the values define the user-facing labels.
@@ -321,9 +321,9 @@ interface ElementInterface extends ComponentInterface
      * Note that this method will only get called once for the entire index; not each time that a new source is
      * selected.
      *
-     * @return string[] The attributes that elements can be sorted by
+     * @return array The attributes that elements can be sorted by
      */
-    public static function sortableAttributes(): array;
+    public static function sortOptions(): array;
 
     /**
      * Defines all of the available columns that can be shown in table views.
@@ -350,7 +350,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $source The selected source’s key
      *
-     * @return array The table attribute keys
+     * @return string[] The table attribute keys
      */
     public static function defaultTableAttributes(string $source): array;
 
@@ -397,7 +397,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return int[]|array
      */
-    public function getSupportedSites();
+    public function getSupportedSites(): array;
 
     /**
      * Returns the URI format used to generate this element’s URI.

@@ -117,9 +117,7 @@ class RichText extends Field
         }
 
         $volumeOptions = [];
-        /**
-         * @var $volume Volume
-         */
+        /** @var $volume Volume */
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
             if ($volume->hasUrls) {
                 $volumeOptions[] = [

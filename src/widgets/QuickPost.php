@@ -13,7 +13,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\Section;
 use craft\web\assets\quickpost\QuickPostAsset;
-use yii\base\Exception;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -39,13 +38,7 @@ class QuickPost extends Widget
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/newspaper.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/newspaper.svg');
     }
 
     // Properties

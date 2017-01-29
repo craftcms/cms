@@ -241,11 +241,9 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPosition = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
-
-        list($verticalPosition, $horizontalPosition) = explode('-', $cropPositions);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             // Scale first.
@@ -255,47 +253,84 @@ class Raster extends Image
 
             $this->resize($newWidth, $newHeight);
 
-            // Now crop.
-            if ($newWidth - $targetWidth > 0) {
-                switch ($horizontalPosition) {
-                    case 'left':
-                        $x1 = 0;
-                        $x2 = $x1 + $targetWidth;
-                        break;
-                    case 'right':
-                        $x2 = $newWidth;
-                        $x1 = $newWidth - $targetWidth;
-                        break;
-                    default:
-                        $x1 = round(($newWidth - $targetWidth) / 2);
-                        $x2 = $x1 + $targetWidth;
-                        break;
-                }
-
-                $y1 = 0;
-                $y2 = $y1 + $targetHeight;
-            } elseif ($newHeight - $targetHeight > 0) {
-                switch ($verticalPosition) {
-                    case 'top':
-                        $y1 = 0;
-                        $y2 = $y1 + $targetHeight;
-                        break;
-                    case 'bottom':
-                        $y2 = $newHeight;
-                        $y1 = $newHeight - $targetHeight;
-                        break;
-                    default:
-                        $y1 = round(($newHeight - $targetHeight) / 2);
-                        $y2 = $y1 + $targetHeight;
-                }
-
-                $x1 = 0;
+            if (is_array($cropPosition)) {
+                $centerX = $cropPosition['x'] / $factor;
+                $centerY = $cropPosition['y'] / $factor;
+                $x1 = $centerX - $targetWidth / 2;
+                $y1 = $centerY - $targetHeight / 2;
                 $x2 = $x1 + $targetWidth;
+                $y2 = $y1 + $targetHeight;
+
+                // Now see if we have to bump this around to make it fit the image.
+                if ($x1 < 0) {
+                    $x2 -= $x1;
+                    $x1 = 0;
+                }
+                if ($y1 < 0) {
+                    $y2 -= $y1;
+                    $y1 = 0;
+                }
+                if ($x2 > $newWidth) {
+                    $x1 -= ($x2 - $newWidth);
+                    $x2 = $newWidth;
+                }
+                if ($y2 > $newHeight) {
+                    $y1 -= ($y2 - $newHeight);
+                    $y2 = $newHeight;
+                }
             } else {
-                $x1 = round(($newWidth - $targetWidth) / 2);
-                $x2 = $x1 + $targetWidth;
-                $y1 = round(($newHeight - $targetHeight) / 2);
-                $y2 = $y1 + $targetHeight;
+                list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
+
+                // Now crop.
+                if ($newWidth - $targetWidth > 0) {
+
+                    switch ($horizontalPosition) {
+                        case 'left': {
+                            $x1 = 0;
+                            $x2 = $x1 + $targetWidth;
+                            break;
+                        }
+                        case 'right': {
+                            $x2 = $newWidth;
+                            $x1 = $newWidth - $targetWidth;
+                            break;
+                        }
+                        default: {
+                            $x1 = round(($newWidth - $targetWidth) / 2);
+                            $x2 = $x1 + $targetWidth;
+                            break;
+                        }
+                    }
+
+                    $y1 = 0;
+                    $y2 = $y1 + $targetHeight;
+                } elseif ($newHeight - $targetHeight > 0) {
+                    switch ($verticalPosition) {
+                        case 'top': {
+                            $y1 = 0;
+                            $y2 = $y1 + $targetHeight;
+                            break;
+                        }
+                        case 'bottom': {
+                            $y2 = $newHeight;
+                            $y1 = $newHeight - $targetHeight;
+                            break;
+                        }
+                        default: {
+                            $y1 = round(($newHeight - $targetHeight) / 2);
+                            $y2 = $y1 + $targetHeight;
+                            break;
+                        }
+                    }
+
+                    $x1 = 0;
+                    $x2 = $x1 + $targetWidth;
+                } else {
+                    $x1 = round(($newWidth - $targetWidth) / 2);
+                    $x2 = $x1 + $targetWidth;
+                    $y1 = round(($newHeight - $targetHeight) / 2);
+                    $y2 = $y1 + $targetHeight;
+                }
             }
 
             $this->crop($x1, $x2, $y1, $y2);
@@ -337,6 +372,10 @@ class Raster extends Image
                 $this->_image->resize(new Box($targetWidth,
                     $targetHeight), $this->_getResizeFilter());
             }
+
+            if (Craft::$app->getImages()->getIsImagick()) {
+                $this->_image->getImagick()->setImagePage(0, 0, 0, 0);
+            }
         }
 
         return $this;
@@ -352,6 +391,32 @@ class Raster extends Image
     public function rotate(int $degrees)
     {
         $this->_image->rotate($degrees);
+
+        $this->_image->getImagick()->setImagePage($this->getWidth(), $this->getHeight(), 0, 0);
+
+        return $this;
+    }
+
+    /**
+     * Flips the image horizontally.
+     *
+     * @return static Self reference
+     */
+    public function flipHorizontally()
+    {
+        $this->_image->flipHorizontally();
+
+        return $this;
+    }
+
+    /**
+     * Flips the image vertically.
+     *
+     * @return static Self reference
+     */
+    public function flipVertically()
+    {
+        $this->_image->flipVertically();
 
         return $this;
     }

@@ -253,11 +253,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * Returns an option's label by its value.
      *
-     * @param string $value
+     * @param string|null $value
      *
-     * @return string
+     * @return string|null
      */
-    protected function optionLabel(string $value): string
+    protected function optionLabel(string $value = null)
     {
         foreach ($this->options as $option) {
             if ($option['value'] == $value) {

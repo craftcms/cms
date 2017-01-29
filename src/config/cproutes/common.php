@@ -28,7 +28,7 @@ return [
     'settings/categories' => 'categories/group-index',
     'settings/categories/new' => 'categories/edit-category-group',
     'settings/categories/<groupId:\d+>' => 'categories/edit-category-group',
-    'settings/email' => 'systemSettings/editEmailSettings',
+    'settings/email' => 'system-settings/edit-email-settings',
     'settings/fields/<groupId:\d+>' => ['template' => 'settings/fields'],
     'settings/fields/new' => 'fields/edit-field',
     'settings/fields/edit/<fieldId:\d+>' => 'fields/edit-field',

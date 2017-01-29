@@ -17,7 +17,6 @@ use PDO;
 use RequirementsChecker;
 use Twig_Environment;
 use Yii;
-use yii\base\Exception;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
@@ -51,13 +50,7 @@ class SystemReport extends Utility
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/check.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/check.svg');
     }
 
     /**

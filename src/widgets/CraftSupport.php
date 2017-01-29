@@ -10,7 +10,6 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\web\assets\craftsupport\CraftSupportAsset;
-use yii\base\Exception;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
@@ -53,13 +52,7 @@ class CraftSupport extends Widget
      */
     public static function iconPath()
     {
-        $iconPath = Craft::getAlias('@app/icons/chat-bubbles.svg');
-
-        if ($iconPath === false) {
-            throw new Exception('There was a problem getting the icon path.');
-        }
-
-        return $iconPath;
+        return Craft::getAlias('@app/icons/chat-bubbles.svg');
     }
 
     // Public Methods

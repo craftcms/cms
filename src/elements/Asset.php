@@ -16,6 +16,7 @@ use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
 use craft\elements\actions\Edit;
+use craft\elements\actions\EditImage;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
@@ -172,6 +173,7 @@ class Asset extends Element
                 $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
             ) {
                 $actions[] = RenameFile::class;
+                $actions[] = EditImage::class;
             }
 
             // Replace File
@@ -183,7 +185,7 @@ class Asset extends Element
             $actions[] = Craft::$app->getElements()->createAction(
                 [
                     'type' => CopyReferenceTag::class,
-                    'elementType' => Asset::class,
+                    'elementType' => static::class,
                 ]
             );
 
@@ -199,7 +201,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function searchableAttributes(): array
+    protected static function defineSearchableAttributes(): array
     {
         return ['filename', 'extension', 'kind'];
     }
@@ -207,7 +209,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSortableAttributes(): array
+    protected static function defineSortOptions(): array
     {
         return [
             'title' => Craft::t('app', 'Title'),
@@ -242,7 +244,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes(string $source): array
+    protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
             'filename',
@@ -342,6 +344,11 @@ class Asset extends Element
      * @var int|null Size
      */
     public $size;
+
+    /**
+     * @var string|null Focal point
+     */
+    public $focalPoint;
 
     /**
      * @var \DateTime|null Date modified
@@ -933,6 +940,7 @@ class Asset extends Element
         $record->folderId = $this->folderId;
         $record->kind = $this->kind;
         $record->size = $this->size;
+        $record->focalPoint = $this->focalPoint;
         $record->width = $this->width;
         $record->height = $this->height;
         $record->dateModified = $this->dateModified;
@@ -960,6 +968,27 @@ class Asset extends Element
 
         Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        $attributes = [];
+
+        if ($context === 'index') {
+            // Eligible for the image editor?
+            $ext = $this->getExtension();
+            if (strcasecmp($ext, 'svg') !== 0 && Image::isImageManipulatable($ext)) {
+                $attributes['data-editable-image'] = null;
+            }
+        }
+
+        return $attributes;
     }
 
     // Private Methods
