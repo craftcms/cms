@@ -524,11 +524,7 @@ abstract class Element extends Component implements ElementInterface
         // Eager-loading descendants or direct children?
         if ($handle === 'descendants' || $handle === 'children') {
             // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
             // Get the structure data for these elements
             $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
