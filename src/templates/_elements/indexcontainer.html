@@ -16,7 +16,7 @@
 {% if showSiteMenu == 'auto' %}
 	{% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
-{% set sortableAttributes = elementInstance.sortableAttributes() %}
+{% set sortOptions = elementInstance.sortOptions() %}
 
 <div class="main">
 	<div class="toolbar">
@@ -64,10 +64,10 @@
 					</div>
 				</td>
 				<td class="thin">
-					<div class="btn menubtn sortmenubtn"{% if sortableAttributes %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortableAttributes|first }) }}"{% endif %} data-icon="asc">{{ sortableAttributes ? sortableAttributes|first }}</div>
+					<div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptions|first }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptions|first }}</div>
 					<div class="menu">
 						<ul class="padded sort-attributes">
-							{% for key, label in sortableAttributes %}
+							{% for key, label in sortOptions %}
 								<li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ key }}">{{ label }}</a></li>
 							{% endfor %}
 						</ul>
