@@ -503,7 +503,11 @@ class View extends \yii\web\View
             $parts = array_filter(explode('/', $name));
             $pluginId = StringHelper::toLowerCase(array_shift($parts));
 
-            if ($pluginId && ($plugin = Craft::$app->getPlugins()->getPluginByModuleId($pluginId)) !== null) {
+            if ($pluginId && (
+                    ($plugin = Craft::$app->getPlugins()->getPlugin($pluginId)) !== null ||
+                    ($plugin = Craft::$app->getPlugins()->getPluginByModuleId($pluginId)) !== null
+                )
+            ) {
                 // Get the template path for the plugin.
                 /** @var Plugin $plugin */
                 $basePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'templates';
