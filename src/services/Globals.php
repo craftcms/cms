@@ -316,7 +316,6 @@ class Globals extends Component
 
                         $transaction->commit();
                     }
-                    $success = false;
                 } else {
                     $success = false;
                 }
