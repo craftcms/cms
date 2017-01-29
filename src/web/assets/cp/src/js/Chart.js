@@ -607,16 +607,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             }
         }, this));
 
-        if(yTicksMaxWidth < 24)
-        {
-            yTicksMaxWidth = 24;
-        }
+        yTicksMaxWidth += 10;
 
-        if(this.orientation != 'rtl') {
-            margin.left = yTicksMaxWidth;
-        } else {
-            margin.right = yTicksMaxWidth;
-        }
+        margin.left = yTicksMaxWidth;
 
         return margin;
     },
