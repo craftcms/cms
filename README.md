@@ -6,7 +6,7 @@ Craft is a content-first CMS that aims to make life enjoyable for developers and
 
 ## How to Install
 
-To install the Craft 3 Beta, follow the [installation instructions](https://github.com/craftcms/docs/blob/master/installation.md) outlined in the documentation.
+To install the Craft 3 Beta, follow the [installation instructions](https://github.com/craftcms/docs/blob/master/en/installation.md) outlined in the documentation.
 
 ## Resources
 

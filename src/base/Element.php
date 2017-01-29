@@ -382,10 +382,10 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::sortOptions();
+            $sortOptions = static::sortOptions();
 
-            if (!empty($sortableAttributes)) {
-                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
+            if (!empty($sortOptions)) {
+                $order = (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortOptions);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
@@ -524,11 +524,7 @@ abstract class Element extends Component implements ElementInterface
         // Eager-loading descendants or direct children?
         if ($handle === 'descendants' || $handle === 'children') {
             // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
             // Get the structure data for these elements
             $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];

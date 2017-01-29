@@ -422,11 +422,7 @@ class Entry extends Element
     {
         if ($handle === 'author') {
             // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
             $map = (new Query())
                 ->select(['id as source', 'authorId as target'])
