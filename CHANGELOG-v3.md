@@ -181,6 +181,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Images::getCanUseImagick()`.
 - Added `craft\services\Images::getImageMagickApiVersion()`.
 - Added `craft\services\Path::getImageEditorSourcesPath()`.
+- Added `craft\services\Plugins::getPluginByModuleId()`.
 - Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\services\Plugins::isComposerInstall()`.
 - Added `craft\web\AssetManager::getPublishedPath()`.

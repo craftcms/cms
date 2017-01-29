@@ -242,6 +242,24 @@ class Plugins extends Component
     }
 
     /**
+     * Returns an enabled plugin by its module ID (its handle converted to kebab-case).
+     *
+     * @param string $id The plugin’s module ID
+     *
+     * @return PluginInterface|null The plugin, or null if it doesn’t exist
+     */
+    public function getPluginByModuleId(string $id)
+    {
+        $plugin = Craft::$app->getModule($id);
+
+        if ($plugin === null || !$plugin instanceof PluginInterface) {
+            return null;
+        }
+
+        return $plugin;
+    }
+
+    /**
      * Returns an enabled plugin by its package name.
      *
      * @param string $packageName The plugin’s package name
