@@ -226,10 +226,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         margin: {top: 25, right: 0, bottom: 25, left: 0},
         chartClass: null,
         colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
-        ticksStyles: {
-            'fill': '#555',
-            'font-size': '11px'
-        }
     }
 });
 
@@ -300,8 +296,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.g.append("g")
             .attr("class", "x ticks-axis")
             .attr("transform", "translate(0, " + this.height + ")")
-            .style('fill', this.settings.ticksStyles['fill'])
-            .style('font-size', this.settings.ticksStyles['font-size'])
             .call(xAxis);
 
 
@@ -316,8 +310,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .ticks(this.settings.y.ticks);
 
             this.g.append("g")
-                .style('fill', this.settings.ticksStyles['fill'])
-                .style('font-size', this.settings.ticksStyles['font-size'])
                 .attr("class", "y ticks-axis")
                 .call(yAxis);
         } else {
@@ -329,8 +321,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             this.g.append("g")
                 .attr("class", "y ticks-axis")
                 .attr("transform", "translate(" + this.width + ",0)")
-                .style('fill', this.settings.ticksStyles['fill'])
-                .style('font-size', this.settings.ticksStyles['font-size'])
                 .call(yAxis);
         }
 
