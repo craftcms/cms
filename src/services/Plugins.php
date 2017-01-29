@@ -23,6 +23,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\helpers\Inflector;
 
 /**
  * The Plugins service provides APIs for managing plugins.
@@ -703,7 +704,7 @@ class Plugins extends Component
 
         // Create the plugin
         /** @var Plugin $plugin */
-        $moduleId = $this->generateModuleId($config['handle']);
+        $moduleId = Inflector::camel2id($config['handle']);
         $plugin = Craft::createObject($config, [$moduleId, Craft::$app]);
 
         // Set its settings
@@ -727,20 +728,6 @@ class Plugins extends Component
         }
 
         return $plugin;
-    }
-
-    /**
-     * Generates a module ID for a plugin based on its handle.
-     *
-     * @param string $handle
-     *
-     * @return string
-     */
-    public function generateModuleId(string $handle): string
-    {
-        $parts = preg_split('/(?=[\p{Lu}])+/u', $handle);
-
-        return trim(strtolower(implode('-', $parts)), '-');
     }
 
     /**
@@ -830,7 +817,7 @@ class Plugins extends Component
 
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
             $config['isEnabled'] = ($plugin !== null);
-            $config['moduleId'] = $plugin !== null ? $plugin->id : $this->generateModuleId($config['handle']);
+            $config['moduleId'] = $plugin !== null ? $plugin->id : Inflector::camel2id($config['handle']);
             $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings);
 
             $info[$lcHandle] = $config;
