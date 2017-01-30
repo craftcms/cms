@@ -652,27 +652,28 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
  */
 Craft.charts.utils = {
 
-    getDuration: function(value) {
-        var sec_num = parseInt(value, 10);
-        var hours = Math.floor(sec_num / 3600);
-        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+    getDuration: function(seconds) {
+        var secondsNum = parseInt(seconds, 10);
 
-        if (hours < 10) {
-            hours = "0" + hours;
+        var duration = {
+            hours: (Math.floor(secondsNum / 3600)),
+            minutes: (Math.floor((secondsNum - (duration.hours * 3600)) / 60)),
+            seconds: (secondsNum - (duration.hours * 3600) - (duration.minutes * 60)),
+        };
+
+        if (duration.hours < 10) {
+            duration.hours = "0" + duration.hours;
         }
 
-        if (minutes < 10) {
-            minutes = "0" + minutes;
+        if (duration.minutes < 10) {
+            duration.minutes = "0" + duration.minutes;
         }
 
-        if (seconds < 10) {
-            seconds = "0" + seconds;
+        if (duration.seconds < 10) {
+            duration.seconds = "0" + duration.seconds;
         }
 
-        var time = hours + ':' + minutes + ':' + seconds;
-
-        return time;
+        return duration.hours + ':' + duration.minutes + ':' + duration.seconds;
     },
 
     getTimeFormatter: function(timeFormatLocale, chartSettings) {
