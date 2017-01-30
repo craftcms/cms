@@ -186,7 +186,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         timeFormatLocaleDefinition: null,
         formats: {
             numberFormat: ',.0f',
-            decimalFormat: ',.3f',
             percentFormat: ',.2%',
             currencyFormat: '$,.2f',
             shortDateFormats: {
@@ -712,9 +711,6 @@ Craft.charts.utils = {
 
             case 'time':
                 return Craft.charts.utils.getDuration;
-
-            case 'decimal':
-                return formatLocale.format(chartSettings.formats.decimalFormat);
 
             case 'number':
                 return formatLocale.format(chartSettings.formats.numberFormat);

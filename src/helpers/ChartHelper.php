@@ -315,17 +315,7 @@ class ChartHelper
      */
     public static function numberFormat(): string
     {
-        return ',.0f';
-    }
-
-    /**
-     * Returns the decimal format for D3
-     *
-     * @return string
-     */
-    public static function decimalFormat(): string
-    {
-        return ',.3f';
+        return ',.2f';
     }
 
     /**
