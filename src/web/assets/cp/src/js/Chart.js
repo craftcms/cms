@@ -441,7 +441,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // Plots
 
-        if (this.settings.enablePlots) {
+        if (this.settings.plots) {
             this.g.append('g')
                 .attr("class", "plots")
                 .selectAll("circle")
@@ -660,7 +660,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     defaults: {
         chartClass: 'area',
-        enablePlots: true,
+        plots: true,
         enableTips: true,
         xAxis: {
             gridlines: false,
