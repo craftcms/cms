@@ -285,42 +285,36 @@ class Raster extends Image
                 if ($newWidth - $targetWidth > 0) {
 
                     switch ($horizontalPosition) {
-                        case 'left': {
+                        case 'left':
                             $x1 = 0;
                             $x2 = $x1 + $targetWidth;
                             break;
-                        }
-                        case 'right': {
+                        case 'right':
                             $x2 = $newWidth;
                             $x1 = $newWidth - $targetWidth;
                             break;
-                        }
-                        default: {
+                        default:
                             $x1 = round(($newWidth - $targetWidth) / 2);
                             $x2 = $x1 + $targetWidth;
                             break;
-                        }
                     }
 
                     $y1 = 0;
                     $y2 = $y1 + $targetHeight;
                 } elseif ($newHeight - $targetHeight > 0) {
                     switch ($verticalPosition) {
-                        case 'top': {
+                        case 'top':
                             $y1 = 0;
                             $y2 = $y1 + $targetHeight;
                             break;
-                        }
-                        case 'bottom': {
+                        case 'bottom':
                             $y2 = $newHeight;
                             $y1 = $newHeight - $targetHeight;
                             break;
-                        }
-                        default: {
+                        default:
                             $y1 = round(($newHeight - $targetHeight) / 2);
                             $y2 = $y1 + $targetHeight;
                             break;
-                        }
                     }
 
                     $x1 = 0;
