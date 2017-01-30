@@ -61,8 +61,7 @@
                                     return function(d) {
                                         var format = ',.0f';
 
-                                        if(d != Math.round(d))
-                                        {
+                                        if (d != Math.round(d)) {
                                             format = ',.1f';
                                         }
 
