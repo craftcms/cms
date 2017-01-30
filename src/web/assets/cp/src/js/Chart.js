@@ -683,11 +683,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         tips: true,
         xAxis: {
             gridlines: false,
-            showAxis: true
+            showAxis: true,
+            formatter: $.noop
         },
         yAxis: {
             gridlines: true,
-            showAxis: false
+            showAxis: false,
+            formatter: $.noop
         }
     }
 });
