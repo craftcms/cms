@@ -134,6 +134,7 @@ $ensureFolderIsReadable($storagePath.'/logs', true);
 // Log errors to storage/logs/phperrors.log
 ini_set('log_errors', 1);
 ini_set('error_log', $storagePath.'/logs/phperrors.log');
+error_reporting(E_ALL);
 
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
@@ -174,12 +175,10 @@ if ($appType === 'console') {
 }
 
 if ($devMode) {
-    error_reporting(E_ALL);
     ini_set('display_errors', 1);
     defined('YII_DEBUG') || define('YII_DEBUG', true);
     defined('YII_ENV') || define('YII_ENV', 'dev');
 } else {
-    error_reporting(0);
     ini_set('display_errors', 0);
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');

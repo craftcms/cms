@@ -965,8 +965,7 @@ class AssetTransforms extends Component
                 $image->setQuality(100);
             }
 
-            $image->scaleToFit($maxCachedImageSize,
-                $maxCachedImageSize)->saveAs($destination);
+            $image->scaleToFit($maxCachedImageSize, $maxCachedImageSize, false)->saveAs($destination);
         } else {
             if ($source !== $destination) {
                 copy($source, $destination);
