@@ -224,11 +224,14 @@ Craft CMS 3.0 Working Changelog
 - Added the fabric.js JavaScript library.
 - It is now possible to override the default Guzzle settings from `config/guzzle.php`.
 - Added a “Size” setting to Number fields.
-- Added `bower-asset/d3-format` dependency v1.0.2.0
-- Added `bower-asset/d3-time-format` dependency v2.0.3.0
-- Added `d3FormatLocaleDefinition`, `d3TimeFormatLocaleDefinition`, `d3Formats` global JS variables
-- Added `xAxis.formatter` and `yAxis.formatter` for the Area chart
+- Added `bower-asset/d3-format` dependency v1.0.2.0.
+- Added `bower-asset/d3-time-format` dependency v2.0.3.0.
+- Added `d3FormatLocaleDefinition`, `d3TimeFormatLocaleDefinition`, `d3Formats` global JS variables.
+- Added `xAxis.showAxis` setting to the Area chart.
+- Added `xAxis.formatter` and `yAxis.formatter` settings for the Area chart.
 - Added `Craft.charts.BaseChart.setSettings()` handling recursive merge of chart settings
+- Added `Craft.charts.utils.getNumberFormatter()` chart util for localized number formatting.
+- Added `Craft.charts.utils.getTimeFormatter()` chart util for localized time formatting.
 
 ### Changed
 - The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/cms/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
@@ -448,6 +451,8 @@ Craft CMS 3.0 Working Changelog
 - Updated charts and “New Users” widget for D3 v4.x
 - Moved `numberFormat`, `percentFormat` and `currencyFormat` from `ChartHelper` to `Craft.charts.BaseChart` default settings
 - Improved `Craft.charts.BaseChart` and `Craft.charts.Area` settings
+- Renamed `xAxisGridlines` setting to `xAxis.gridlines` and `yAxisGridlines` setting to `yAxis.gridlines` for the Area chart
+- Renamed `axis.y.show` setting to `yAxis.showAxis` for the Area chart
 - Renamed the `enablePlots` Area chart setting to `plots`
 - Renamed the `enableTips` Area chart setting to `tips`
 
