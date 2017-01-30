@@ -77,7 +77,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.base(this.$container, this.settings);
 
-            this.$buttons = $('<div class="buttons rightalign"/>').appendTo(this.$footer);
+            this.$buttons = $('<div class="buttons right"/>').appendTo(this.$footer);
             this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
             this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
 
