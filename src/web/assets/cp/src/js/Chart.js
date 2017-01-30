@@ -636,11 +636,28 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     getXTickFormatter: function() {
-        return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+        var formatter;
+
+        if (this.settings.xAxis.formatter)  {
+            formatter = this.settings.yAxis.formatter(this.formatLocale);
+        } else {
+            formatter = this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+        }
+
+        return formatter;
     },
 
-    getYTickFormatter: function() {
-        return this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+    getYTickFormatter: function()
+    {
+        var formatter;
+
+        if (this.settings.yAxis.formatter) {
+            formatter = this.settings.yAxis.formatter(this.formatLocale);
+        }  else {
+            formatter = this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+        }
+
+        return formatter;
     },
 
     getYMaxValue: function() {
