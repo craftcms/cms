@@ -257,7 +257,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.width = this.$chart.width() - margin.left - margin.right;
         this.height = this.$chart.height() - margin.top - margin.bottom;
 
-        
+
         // Append SVG to chart element
 
         var svg = {
@@ -724,52 +724,6 @@ Craft.charts.utils = {
         var time = hours + ':' + minutes + ':' + seconds;
 
         return time;
-    },
-
-    /**
-     * arrayToDataTable
-     */
-    arrayToDataTable: function(twoDArray) {
-
-        var data = {
-            columns: [],
-            rows: []
-        };
-
-        $.each(twoDArray, function(k, v) {
-            if (k == 0) {
-                // first row is column definition
-
-                data.columns = [];
-
-                $.each(v, function(k2, v2) {
-
-                    // guess column type from first row
-                    var columnType = typeof(twoDArray[(k + 1)][k2]);
-
-                    var column = {
-                        name: v2,
-                        type: columnType,
-                    };
-
-                    data.columns.push(column);
-                });
-            } else {
-                var row = [];
-
-                $.each(v, function(k2, v2) {
-                    var cell = v2;
-
-                    row.push(cell);
-                });
-
-                data.rows.push(row);
-            }
-        });
-
-        var dataTable = new Craft.charts.DataTable(data);
-
-        return dataTable;
     },
 
     applyShadowFilter: function(id, svg) {
