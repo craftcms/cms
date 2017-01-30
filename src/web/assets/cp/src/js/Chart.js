@@ -491,9 +491,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .style('fill-opacity', '1')
                 .attr("width", tipTriggerWidth)
                 .attr("height", this.height)
-                .attr("x", $.proxy(function(d) {
-                    return x(d[0]) - tipTriggerWidth / 2;
-                }, this))
+                .attr("x", $.proxy(function(d) { return x(d[0]) - tipTriggerWidth / 2; }, this))
                 .on("mouseover", $.proxy(function(d, index) {
                     // Expand plot
 
