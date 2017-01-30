@@ -224,6 +224,11 @@ Craft CMS 3.0 Working Changelog
 - Added the fabric.js JavaScript library.
 - It is now possible to override the default Guzzle settings from `config/guzzle.php`.
 - Added a “Size” setting to Number fields.
+- Added `bower-asset/d3-format` dependency v1.0.2.0
+- Added `bower-asset/d3-time-format` dependency v2.0.3.0
+- Added `d3FormatLocaleDefinition`, `d3TimeFormatLocaleDefinition`, `d3Formats` global JS variables
+- Added `xAxis.formatter` and `yAxis.formatter` for the Area chart
+- Added `Craft.charts.BaseChart.setSettings()` handling recursive merge of chart settings
 
 ### Changed
 - The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/cms/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
@@ -439,9 +444,12 @@ Craft CMS 3.0 Working Changelog
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
 - Moved Utilities nav item to keep Settings as the last item
-- Updated `bower-asset/d3` dependency to `4.5.0.0`
-- Updated charts for D3 v4.5.0
-- Removed `numberFormat`, `percentFormat` and `currencyFormat` from `ChartHelper` which are now defined in `Craft.charts.BaseChart` default settings
+- Updated `bower-asset/d3` dependency to v4.5.0.0
+- Updated charts and “New Users” widget for D3 v4.x
+- Moved `numberFormat`, `percentFormat` and `currencyFormat` from `ChartHelper` to `Craft.charts.BaseChart` default settings
+- Improved `Craft.charts.BaseChart` and `Craft.charts.Area` settings
+- Renamed the `enablePlots` Area chart setting to `plots`
+- Renamed the `enableTips` Area chart setting to `tips`
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
@@ -641,6 +649,8 @@ Craft CMS 3.0 Working Changelog
 - Removed the `registerEmailMessages` plugin hook. Custom email messages should be registered using the `registerMessages` event on `craft\services\EmailMessages` now.
 - Removed the `registerUserPermissions` plugin hook. Custom user permissions should be registered using the `registerPermissions` event on `craft\services\UserPermissions` now.
 - Removed the `craft\requirements` folder.  It is now a composer dependency.
+- Removed `Craft.charts.utils.applyShadowFilter()` JS method
+- Removed `Craft.charts.utils.arrayToDataTable()` JS method
 
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
