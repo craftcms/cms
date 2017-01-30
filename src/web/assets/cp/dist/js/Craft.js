@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-01-29 */
+/*! Craft 3.0.0 - 2017-01-30 */
 (function($){
 
 /** global: Craft */
@@ -7141,8 +7141,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw X ticks
 
         var x = this.getX(true);
-
         var xTicks = 3;
+
         var xAxis = d3.axisBottom(x)
             .tickFormat(this.getXTickFormatter())
             .ticks(xTicks);
@@ -7156,21 +7156,22 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw Y ticks
 
         var y = this.getY();
+        var yTicks = 2;
 
         if (this.orientation != 'rtl') {
             var yAxis = d3.axisLeft(y)
-                .tickFormat(this.getYTickFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
-                .ticks(this.settings.y.ticks);
+                .ticks(yTicks);
 
             this.g.append("g")
                 .attr("class", "y ticks-axis")
                 .call(yAxis);
         } else {
             var yAxis = d3.axisRight(y)
-                .tickFormat(this.getYTickFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
-                .ticks(this.settings.y.ticks);
+                .ticks(yTicks);
 
             this.g.append("g")
                 .attr("class", "y ticks-axis")
@@ -7198,7 +7199,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("transform", "translate(" + xTranslateX + "," + xTranslateY + ")")
             .call(xAxis);
 
-        if (this.settings.axis.y.show) {
+        if (this.settings.yAxis.showAxis) {
             if (this.orientation == 'rtl') {
                 var yTranslateX = this.width;
                 var yTranslateY = 0;
@@ -7230,10 +7231,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // X & Y grid lines
 
-        if (this.settings.xAxisGridlines) {
+        if (this.settings.xAxis.gridlines) {
             var xLineAxis = d3.axisBottom(x);
 
-            // draw x lines
             this.g.append("g")
                 .attr("class", "x grid-line")
                 .attr("transform", "translate(0," + this.height + ")")
@@ -7243,7 +7243,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
 
-        if (this.settings.yAxisGridlines) {
+        var yTicks = 2;
+
+        if (this.settings.yAxis.gridlines) {
             var yLineAxis = d3.axisLeft(y);
 
             this.g.append("g")
@@ -7253,7 +7255,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .tickSize(- (this.width), 0)
                     .tickFormat("")
                     .tickValues(this.getYTickValues())
-                    .ticks(this.settings.y.ticks)
+                    .ticks(yTicks)
                 );
         }
 
@@ -7297,7 +7299,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // Plots
 
-        if (this.settings.enablePlots) {
+        if (this.settings.plots) {
             this.g.append('g')
                 .attr("class", "plots")
                 .selectAll("circle")
@@ -7313,7 +7315,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     drawTipTriggers: function() {
-        if (this.settings.enableTips) {
+        if (this.settings.tips) {
             if (!this.tip) {
                 this.tip = new Craft.charts.Tip(this.$chart);
             }
@@ -7347,9 +7349,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .style('fill-opacity', '1')
                 .attr("width", tipTriggerWidth)
                 .attr("height", this.height)
-                .attr("x", $.proxy(function(d) {
-                    return x(d[0]) - tipTriggerWidth / 2;
-                }, this))
+                .attr("x", $.proxy(function(d) { return x(d[0]) - tipTriggerWidth / 2; }, this))
                 .on("mouseover", $.proxy(function(d, index) {
                     // Expand plot
 
@@ -7363,7 +7363,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var $yValue = $('<div class="y-value" />').appendTo($content);
 
                     $xValue.html(this.getXTickFormatter()(d[0]));
-                    $yValue.html(this.getYTickFormatter()(d[1]));
+                    $yValue.html(this.getYFormatter()(d[1]));
 
                     var content = $content.get(0);
 
@@ -7417,6 +7417,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 }, this));
         }
 
+
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.g);
     },
@@ -7433,7 +7434,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         $.each(values, $.proxy(function(key, value) {
             var characterWidth = 8;
 
-            var formatter = this.getYTickFormatter();
+            var formatter = this.getYFormatter();
 
             var formattedValue = formatter(value);
             var computedTickWidth = formattedValue.length * characterWidth;
@@ -7491,11 +7492,28 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     getXTickFormatter: function() {
-        return this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+        var formatter;
+
+        if (this.settings.xAxis.formatter != $.noop) {
+            formatter = this.settings.xAxis.formatter(this);
+        } else {
+            formatter = this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+        }
+
+        return formatter;
     },
 
-    getYTickFormatter: function() {
-        return this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+    getYFormatter: function()
+    {
+        var formatter;
+
+        if (this.settings.yAxis.formatter != $.noop) {
+            formatter = this.settings.yAxis.formatter(this);
+        }  else {
+            formatter = this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+        }
+
+        return formatter;
     },
 
     getYMaxValue: function() {
@@ -7517,17 +7535,17 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     defaults: {
         chartClass: 'area',
-        enablePlots: true,
-        enableTips: true,
-        xAxisGridlines: false,
-        yAxisGridlines: true,
-        axis: {
-            y: {
-                show: false,
-            }
+        plots: true,
+        tips: true,
+        xAxis: {
+            gridlines: false,
+            showAxis: true,
+            formatter: $.noop
         },
-        y: {
-            ticks: 2,
+        yAxis: {
+            gridlines: true,
+            showAxis: false,
+            formatter: $.noop
         }
     }
 });
