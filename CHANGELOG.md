@@ -7,6 +7,7 @@ Craft CMS Changelog
 - Increased the minimum width of HUD element editors to `380px`.
 - Increased the size of number fields to `10`.
 - Updated element-resize-detector.js to 1.1.10.
+- Updated Garnish to 0.1.12.
 
 ### Fixed
 - Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
