@@ -285,8 +285,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw X ticks
 
         var x = this.getX(true);
-
         var xTicks = 3;
+
         var xAxis = d3.axisBottom(x)
             .tickFormat(this.getXTickFormatter())
             .ticks(xTicks);
@@ -300,12 +300,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         // Draw Y ticks
 
         var y = this.getY();
+        var yTicks = 2;
 
         if (this.orientation != 'rtl') {
             var yAxis = d3.axisLeft(y)
                 .tickFormat(this.getYTickFormatter())
                 .tickValues(this.getYTickValues())
-                .ticks(this.settings.y.ticks);
+                .ticks(yTicks);
 
             this.g.append("g")
                 .attr("class", "y ticks-axis")
@@ -314,7 +315,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             var yAxis = d3.axisRight(y)
                 .tickFormat(this.getYTickFormatter())
                 .tickValues(this.getYTickValues())
-                .ticks(this.settings.y.ticks);
+                .ticks(yTicks);
 
             this.g.append("g")
                 .attr("class", "y ticks-axis")
@@ -342,7 +343,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
             .attr("transform", "translate(" + xTranslateX + "," + xTranslateY + ")")
             .call(xAxis);
 
-        if (this.settings.axis.y.show) {
+        if (this.settings.yAxis.showAxis) {
             if (this.orientation == 'rtl') {
                 var yTranslateX = this.width;
                 var yTranslateY = 0;
@@ -374,10 +375,9 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         // X & Y grid lines
 
-        if (this.settings.xAxisGridlines) {
+        if (this.settings.xAxis.gridlines) {
             var xLineAxis = d3.axisBottom(x);
 
-            // draw x lines
             this.g.append("g")
                 .attr("class", "x grid-line")
                 .attr("transform", "translate(0," + this.height + ")")
@@ -387,7 +387,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
 
-        if (this.settings.yAxisGridlines) {
+        if (this.settings.yAxis.gridlines) {
             var yLineAxis = d3.axisLeft(y);
 
             this.g.append("g")
@@ -397,7 +397,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     .tickSize(- (this.width), 0)
                     .tickFormat("")
                     .tickValues(this.getYTickValues())
-                    .ticks(this.settings.y.ticks)
+                    .ticks(yTicks)
                 );
         }
 
@@ -561,6 +561,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 }, this));
         }
 
+
         // Apply shadow filter
         Craft.charts.utils.applyShadowFilter('drop-shadow', this.g);
     },
@@ -663,15 +664,13 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         chartClass: 'area',
         enablePlots: true,
         enableTips: true,
-        xAxisGridlines: false,
-        yAxisGridlines: true,
-        axis: {
-            y: {
-                show: false,
-            }
+        xAxis: {
+            gridlines: false,
+            showAxis: true
         },
-        y: {
-            ticks: 2,
+        yAxis: {
+            gridlines: true,
+            showAxis: false,
         }
     }
 });
