@@ -55,7 +55,22 @@
                         this.$chartContainer.removeClass('hidden');
 
                         // Create chart
-                        this.chart = new Craft.charts.Area(this.$chartContainer);
+                        this.chart = new Craft.charts.Area(this.$chartContainer, {
+                            yAxis: {
+                                formatter: function(chart) {
+                                    return function(d) {
+                                        var format = ',.0f';
+
+                                        if(d != Math.round(d))
+                                        {
+                                            format = ',.1f';
+                                        }
+
+                                        return chart.formatLocale.format(format)(d);
+                                    };
+                                }
+                            }
+                        });
 
                         var chartDataTable = new Craft.charts.DataTable(response.dataTable);
 
