@@ -22,11 +22,11 @@ class QunitAsset extends AssetBundle
         $this->sourcePath = '@lib/qunit';
 
         $this->css = [
-            'qunit-2.0.1.css',
+            'qunit-2.1.1.css',
         ];
 
         $this->js = [
-            'qunit-2.0.1.js',
+            'qunit-2.1.1.js',
         ];
 
         parent::init();
