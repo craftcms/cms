@@ -3,8 +3,8 @@
   "description": "Craft CMS",
   "keywords": [
     "cms",
-    "yii2",
-    "craftcms"
+    "craftcms",
+    "yii2"
   ],
   "homepage": "https://craftcms.com",
   "license": "proprietary",
