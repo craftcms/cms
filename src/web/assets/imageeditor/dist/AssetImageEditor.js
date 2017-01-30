@@ -759,7 +759,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     onChange: this.canvas.renderAll.bind(this.canvas),
                     duration: this.settings.animationDuration,
                     onComplete: function() {
-                        var cleanAngle = parseInt((this.image.angle + 360) % 360, 10);
+                        var cleanAngle = parseFloat((this.image.angle + 360) % 360);
                         this.image.set({angle: cleanAngle});
                         this.animationInProgress = false;
                         if (this.focalPoint) {
@@ -878,7 +878,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var previousAngle = this.image.angle;
 
-                this.imageStraightenAngle = parseInt(slider.value, 10) % 360;
+                this.imageStraightenAngle = parseFloat(slider.value) % 360;
 
                 // Straighten the image
                 this.image.set({
