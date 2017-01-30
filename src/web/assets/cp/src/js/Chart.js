@@ -61,7 +61,9 @@ Craft.charts.DataTable = Garnish.Base.extend(
  * Class Craft.charts.Tip
  */
 
-Craft.charts.Tip = Garnish.Base.extend({
+Craft.charts.Tip = Garnish.Base.extend(
+{
+    $container: null,
     $tip: null,
 
     init: function($container) {
@@ -110,8 +112,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     svg: null,
     width: null,
     height: null,
-    x: null,
-    y: null,
 
     init: function(container, settings) {
         this.$container = container;
@@ -235,6 +235,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
+    g: null,
 
     init: function(container, settings)
     {
