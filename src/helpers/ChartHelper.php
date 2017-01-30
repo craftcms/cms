@@ -248,7 +248,6 @@ class ChartHelper
         return [
             'shortDateFormats' => self::shortDateFormats(),
             'numberFormat' => self::numberFormat(),
-            'decimalFormat' => self::decimalFormat(),
             'percentFormat' => self::percentFormat(),
             'currencyFormat' => self::currencyFormat(),
         ];
