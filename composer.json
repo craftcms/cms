@@ -26,7 +26,7 @@
     "danielstjules/stringy": "2.3.2",
     "creocoder/yii2-nested-sets": "0.9.0",
     "pixelandtonic/imagine": "0.6.3.2",
-    "league/flysystem": "1.0.32",
+    "league/flysystem": "1.0.34",
     "mikehaertl/php-shellcommand": "1.2.2",
     "twig/twig": "2.1.0",
     "bower-asset/d3": "4.5.0.0",
@@ -37,12 +37,12 @@
     "bower-asset/jquery.payment": "3.0.0",
     "bower-asset/picturefill": "3.0.2",
     "bower-asset/selectize": "0.12.4",
-    "bower-asset/timepicker": "1.11.8",
-    "bower-asset/velocity": "1.4.1",
+    "bower-asset/timepicker": "1.11.9",
+    "bower-asset/velocity": "1.4.2",
     "bower-asset/fabric": "1.7.3",
     "zendframework/zend-feed": "2.7.0",
     "roave/security-advisories": "dev-master",
-    "craftcms/server-check": "1.0.6"
+    "craftcms/server-check": "1.0.7"
   },
   "require-dev": {
     "codeception/codeception": "2.2.8",

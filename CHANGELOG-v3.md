@@ -441,13 +441,17 @@ Craft CMS 3.0 Working Changelog
 - All Craft and library dependencies that make remote calls use Craft's centralized Guzzle instance.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
-- Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
 - Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
-- Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
 - Updated D3 to 4.5.0.0.
-- Updated Velocity to 1.4.1.
+- Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.2.
+- Updated Garnish to 0.1.12.
+- Updated Velocity to 1.4.2.
+- Updated element-resize-detector.js to 1.1.10.
+- Updated flysystem to 1.0.34.
+- Updated qUnit to 2.1.1.
+- Updated Redactor to 1.4.
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
 - Moved Utilities nav item to keep Settings as the last item
