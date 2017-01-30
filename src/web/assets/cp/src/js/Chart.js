@@ -638,8 +638,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     getXTickFormatter: function() {
         var formatter;
 
-        if (this.settings.xAxis.formatter)  {
-            formatter = this.settings.yAxis.formatter(this.formatLocale);
+        if (this.settings.xAxis.formatter != $.noop) {
+            formatter = this.settings.xAxis.formatter(this);
         } else {
             formatter = this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
         }
@@ -651,8 +651,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     {
         var formatter;
 
-        if (this.settings.yAxis.formatter) {
-            formatter = this.settings.yAxis.formatter(this.formatLocale);
+        if (this.settings.yAxis.formatter != $.noop) {
+            formatter = this.settings.yAxis.formatter(this);
         }  else {
             formatter = this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
         }
