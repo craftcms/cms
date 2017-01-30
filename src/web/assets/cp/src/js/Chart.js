@@ -290,7 +290,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var xTicks = 3;
 
         var xAxis = d3.axisBottom(x)
-            .tickFormat(this.getXTickFormatter())
+            .tickFormat(this.getXFormatter())
             .ticks(xTicks);
 
         this.g.append("g")
@@ -508,7 +508,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var $xValue = $('<div class="x-value" />').appendTo($content);
                     var $yValue = $('<div class="y-value" />').appendTo($content);
 
-                    $xValue.html(this.getXTickFormatter()(d[0]));
+                    $xValue.html(this.getXFormatter()(d[0]));
                     $yValue.html(this.getYFormatter()(d[1]));
 
                     var content = $content.get(0);
@@ -633,7 +633,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return y;
     },
 
-    getXTickFormatter: function() {
+    getXFormatter: function() {
         var formatter;
 
         if (this.settings.xAxis.formatter != $.noop) {
