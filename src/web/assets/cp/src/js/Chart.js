@@ -457,7 +457,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     },
 
     drawTipTriggers: function() {
-        if (this.settings.enableTips) {
+        if (this.settings.tips) {
             if (!this.tip) {
                 this.tip = new Craft.charts.Tip(this.$chart);
             }
@@ -661,7 +661,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     defaults: {
         chartClass: 'area',
         plots: true,
-        enableTips: true,
+        tips: true,
         xAxis: {
             gridlines: false,
             showAxis: true
