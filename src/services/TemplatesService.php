@@ -250,7 +250,24 @@ class TemplatesService extends BaseApplicationComponent
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
-		$result = $twig->render($template, $variables);
+
+		try
+		{
+			$result = $twig->render($template, $variables);
+		}
+		catch (\Exception $e)
+		{
+			if (!craft()->config->get('devMode'))
+			{
+				// Throw a generic exception instead
+				throw new Exception(Craft::t('An error occurred when rendering a template.'), 0, $e);
+			}
+			else
+			{
+				throw $e;
+			}
+		}
+
 		$this->_renderingTemplate = $lastRenderingTemplate;
 		return $result;
 	}
@@ -271,7 +288,24 @@ class TemplatesService extends BaseApplicationComponent
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
-		$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
+
+		try
+		{
+			$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
+		}
+		catch (\Exception $e)
+		{
+			if (!craft()->config->get('devMode'))
+			{
+				// Throw a generic exception instead
+				throw new Exception(Craft::t('An error occurred when rendering a template.'), 0, $e);
+			}
+			else
+			{
+				throw $e;
+			}
+		}
+
 		$this->_renderingTemplate = $lastRenderingTemplate;
 
 		return (string) $result;
@@ -323,41 +357,56 @@ class TemplatesService extends BaseApplicationComponent
 			return $template;
 		}
 
-		// Get a Twig instance with the String template loader
-		$twig = $this->getTwig('Twig_Loader_String', array('safe_mode' => $safeMode));
-
-		// Have we already parsed this template?
-		$cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
-
-		if (!isset($this->_objectTemplates[$cacheKey]))
+		try
 		{
-			// Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-			$formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-			$formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
-			$this->_objectTemplates[$cacheKey] = $twig->loadTemplate($formattedTemplate);
+			// Get a Twig instance with the String template loader
+			$twig = $this->getTwig('Twig_Loader_String', array('safe_mode' => $safeMode));
+
+			// Have we already parsed this template?
+			$cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
+
+			if (!isset($this->_objectTemplates[$cacheKey]))
+			{
+				// Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
+				$formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+				$formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
+				$this->_objectTemplates[$cacheKey] = $twig->loadTemplate($formattedTemplate);
+			}
+
+			// Temporarily disable strict variables if it's enabled
+			$strictVariables = $twig->isStrictVariables();
+
+			if ($strictVariables)
+			{
+				$twig->disableStrictVariables();
+			}
+
+			// Render it!
+			$lastRenderingTemplate = $this->_renderingTemplate;
+			$this->_renderingTemplate = 'string:'.$template;
+			$result = $this->_objectTemplates[$cacheKey]->render(array(
+				'object' => $object
+			));
+
+			$this->_renderingTemplate = $lastRenderingTemplate;
+
+			// Re-enable strict variables
+			if ($strictVariables)
+			{
+				$twig->enableStrictVariables();
+			}
 		}
-
-		// Temporarily disable strict variables if it's enabled
-		$strictVariables = $twig->isStrictVariables();
-
-		if ($strictVariables)
+		catch (\Exception $e)
 		{
-			$twig->disableStrictVariables();
-		}
-
-		// Render it!
-		$lastRenderingTemplate = $this->_renderingTemplate;
-		$this->_renderingTemplate = 'string:'.$template;
-		$result = $this->_objectTemplates[$cacheKey]->render(array(
-			'object' => $object
-		));
-
-		$this->_renderingTemplate = $lastRenderingTemplate;
-
-		// Re-enable strict variables
-		if ($strictVariables)
-		{
-			$twig->enableStrictVariables();
+			if (!craft()->config->get('devMode'))
+			{
+				// Throw a generic exception instead
+				throw new Exception(Craft::t('An error occurred when rendering a template.'), 0, $e);
+			}
+			else
+			{
+				throw $e;
+			}
 		}
 
 		return $result;

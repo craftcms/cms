@@ -637,7 +637,13 @@ class UsersController extends BaseController
 
 				if (craft()->userSession->checkPermission('deleteUsers'))
 				{
-					$sketchyActions[] = array('id' => 'delete-btn', 'label' => Craft::t('Delete…'));
+					// Even if they have delete user permissions, we don't want a non-admin
+					// to be able to delete an admin.
+					$currentUser = craft()->userSession->getUser();
+
+					if (($currentUser && $currentUser->admin) || !$variables['account']->admin) {
+						$sketchyActions[] = array('id' => 'delete-btn', 'label' => Craft::t('Delete…'));
+					}
 				}
 			}
 		}
@@ -1294,6 +1300,7 @@ class UsersController extends BaseController
 	 * Sends a new activation email to a user.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionSendActivationEmail()
 	{

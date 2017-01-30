@@ -1,6 +1,28 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+## 2.6.2959 - 2017-01-30
+
+### Changed
+- Increased the minimum width of HUD element editors to `380px`.
+- Increased the size of number fields to `10`.
+- Updated element-resize-detector.js to 1.1.10.
+- Updated Garnish to 0.1.12.
+- Changed it so that it is much harder to enumerate valid user accounts from a login page based on timing attacks.
+
+### Fixed
+- Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
+- Fixed a deprecation error that was getting logged whenever a tag was saved within the Control Panel.
+- Fixed a bug where Craft was scaling remote images up if less than 2,000 x 2,000 pixels when caching them locally.
+- Fixed a bug where some PHP errors weren’t getting logged to `craft/storage/runtime/logs/phperrors.log` when Dev Mode was disabled.
+- Fixed a bug where the Control Panel could become unresponsive when opening nested HUDs.
+- Fixed a PHP 5.3 compatibility issue.
+
+### Security
+- Craft now catches runtime exceptions thrown by Twig and throws generic ones instead when Dev Mode is disabled, as they may include internal file/directory paths.
+
 ## 2.6.2958 - 2017-01-03
 
 ### Changed
@@ -27,7 +49,7 @@ Craft CMS Changelog
 ### Changed
 - Updated PHPMailer to 5.2.21, which fixes a [remote code execution vulnerability](https://legalhackers.com/advisories/PHPMailer-Exploit-Remote-Code-Exec-CVE-2016-10045-Vuln-Patch-Bypass.html).
 
-## 2.6.2955 - 2016-12-27 
+## 2.6.2955 - 2016-12-27
 
 ### Changed
 - [TagModel::getName()](https://craftcms.com/classreference/models/TagModel#getName-detail) now logs a deprecation error. Use the `title` property instead.
@@ -454,7 +476,7 @@ Craft CMS Changelog
 - It is now possible to translate custom element index source headings with [static translations](https://craftcms.com/support/static-translations).
 - The `checkboxField` macro in `_includes/forms.html` now supports a `warning` param, for displaying a warning message alongside the checkbox field.
 - Improved the performance of some cloud-based asset operations.
-- `attributeLabel` is now a reserved field handle. 
+- `attributeLabel` is now a reserved field handle.
 - The Requirement Report on `admin/utils/serverinfo` now checks if any of the `craft/` subfolders can be accessed directly via HTTP requests, and warns the user if so.
 - Cookie info is no longer included in the `admin/utils/phpinfo` page.
 - The Polish characters `ź` and `Ź` are now mapped to `z` and `Z` when converting a string to ASCII.
@@ -627,7 +649,7 @@ Craft CMS Changelog
 - Improved mouseclick detection in several areas of the Control Panel, to better-emulate native OS click detection.
 
 ### Fixed
-- Fixed a bug where clicking the “Add a row” button on editable tables in the Control Panel could add multiple rows at once. 
+- Fixed a bug where clicking the “Add a row” button on editable tables in the Control Panel could add multiple rows at once.
 - Fixed a MySQL error that would occur when saving a Matrix field with more than 127 blocks.
 
 ## 2.5.2765 - 2016-02-23
@@ -3860,7 +3882,7 @@ Craft CMS Changelog
 - It is now possible to select the title/username text on the Entries, Assets, and Users index pages.
 - Made “status” a reserved field handle.
 - The “smtpPassword” property now gets redacted from the logs when Dev Mode is enabled.
-- Made improvements to the database backup and restoration scripts so there’s now a much smaller chance of running into fatal errors due to queries that are too large for MySQL’s 
+- Made improvements to the database backup and restoration scripts so there’s now a much smaller chance of running into fatal errors due to queries that are too large for MySQL’s
 - Reduced the memory footprint of the database backup and restoration scripts.
 
 ### Fixed
@@ -4796,7 +4818,7 @@ Craft CMS Changelog
 
 ### Added
 - Added a Table fieldtype.
-- Added a Date fieldtype. 
+- Added a Date fieldtype.
 - Added 30-day free package trials.
 
 ### Changed

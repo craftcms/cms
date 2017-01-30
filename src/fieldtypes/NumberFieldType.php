@@ -69,7 +69,7 @@ class NumberFieldType extends BaseFieldType implements IPreviewableFieldType
 		return craft()->templates->render('_includes/forms/text', array(
 			'name'  => $name,
 			'value' => craft()->numberFormatter->formatDecimal($value, false),
-			'size'  => 5
+			'size'  => 10
 		));
 	}
 

@@ -1188,6 +1188,7 @@ body.rtl .hud .tip-right { left: -15px; }
 .hud .body ::-webkit-scrollbar-track { background-color: #fafafa; }
 
 /* element editor HUDs */
+@media (min-width: 440px) { .hud .elementeditor { min-width: 380px; } }
 .hud .elementeditor { max-width: 600px; }
 
 .hud .elementeditor .hud-header { text-align: center; }

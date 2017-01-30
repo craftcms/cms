@@ -138,17 +138,16 @@ if (file_exists($generalConfigPath))
 
 ini_set('log_errors', 1);
 ini_set('error_log', CRAFT_STORAGE_PATH.'runtime/logs/phperrors.log');
+error_reporting(E_ALL & ~E_STRICT & ~E_DEPRECATED);
 
 if ($devMode)
 {
-	error_reporting(E_ALL & ~E_STRICT & ~E_DEPRECATED);
 	ini_set('display_errors', 1);
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 }
 else
 {
-	error_reporting(0);
 	ini_set('display_errors', 0);
 	defined('YII_DEBUG') || define('YII_DEBUG', false);
 }

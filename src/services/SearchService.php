@@ -75,7 +75,17 @@ class SearchService extends BaseApplicationComponent
 
 		foreach ($searchableAttributes as $attribute)
 		{
-			$value = $element->$attribute;
+		    // todo: remove in Craft 3
+		    if ($elementTypeClass === ElementType::Tag && $attribute === 'name')
+		    {
+		        /** @var TagModel $element */
+                $value = $element->getName(false);
+            }
+            else
+            {
+                $value = $element->$attribute;
+            }
+
 			$value = StringHelper::arrayToString($value);
 			$this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
 		}
