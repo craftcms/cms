@@ -185,7 +185,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         formatLocaleDefinition: null,
         timeFormatLocaleDefinition: null,
         formats: {
-            numberFormat: ',.0f',
+            numberFormat: ',.2f',
             percentFormat: ',.2%',
             currencyFormat: '$,.2f',
             shortDateFormats: {
