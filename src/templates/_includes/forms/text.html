@@ -1,30 +1,30 @@
 {%- set type = (type is defined ? type : 'text') %}
 
 {%- set class = [
-	'text',
-	(class is defined and class ? class : null),
-	(type is defined and type == 'password' ? 'password' : null),
-	(disabled is defined and disabled ? 'disabled' : null),
-	(size is defined and size ? null : 'fullwidth')
+    'text',
+    (class is defined and class ? class : null),
+    (type is defined and type == 'password' ? 'password' : null),
+    (disabled is defined and disabled ? 'disabled' : null),
+    (size is defined and size ? null : 'fullwidth')
 ]|filter|join(' ') %}
 
 {%- if showCharsLeft is defined and showCharsLeft and maxlength is defined and maxlength %}
-	{%- set style = 'padding-'~(craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left')~': '~(7.2*maxlength|length+14)~'px;' %}
+    {%- set style = 'padding-'~(craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left')~': '~(7.2*maxlength|length+14)~'px;' %}
 {%- endif %}
 
 {%- if type == 'password' %}<div class="passwordwrapper">{% endif -%}
 <input class="{{ class }}" type="{{ type }}"
-	{%- if style is defined %} style="{{ style }}"{% endif %}
-	{%- if id is defined %} id="{{ id }}"{% endif %}
-	{%- if size is defined %} size="{{ size }}"{% endif %}
-	{%- if name is defined %} name="{{ name }}"{% endif %}
-	{%- if value is defined %} value="{{ value }}"{% endif %}
-	{%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
-	{%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
-	{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-	{%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
-	{%- if disabled is defined and disabled %} disabled {% endif %}
-	{%- if readonly is defined and readonly %} readonly {% endif %}
-	{%- if title is defined %} title="{{ title }}"{% endif %}
-	{%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>
+    {%- if style is defined %} style="{{ style }}"{% endif %}
+    {%- if id is defined %} id="{{ id }}"{% endif %}
+    {%- if size is defined %} size="{{ size }}"{% endif %}
+    {%- if name is defined %} name="{{ name }}"{% endif %}
+    {%- if value is defined %} value="{{ value }}"{% endif %}
+    {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
+    {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
+    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+    {%- if autocomplete is not defined or not autocomplete %} autocomplete="off"{% endif %}
+    {%- if disabled is defined and disabled %} disabled {% endif %}
+    {%- if readonly is defined and readonly %} readonly {% endif %}
+    {%- if title is defined %} title="{{ title }}"{% endif %}
+    {%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}>
 {%- if type == 'password' %}</div>{% endif %}

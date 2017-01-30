@@ -1,5 +1,5 @@
 {% if name is defined and name %}
-	<input type="hidden" name="{{ name }}" value="">
+    <input type="hidden" name="{{ name }}" value="">
 {% endif -%}
 
 {% set elements = (elements is defined and elements ? elements : []) -%}
@@ -11,30 +11,30 @@
 {% set viewMode = (viewMode is defined ? viewMode : 'list') %}
 
 <div id="{{ id }}" class="elementselect">
-	<div class="elements">
-		{% for element in elements %}
-			{% include "_elements/element" with {
-				context: 'field',
-				size: (viewMode == 'large' ? 'large' : 'small')
-			} %}
-		{% endfor %}
-	</div>
+    <div class="elements">
+        {% for element in elements %}
+            {% include "_elements/element" with {
+                context: 'field',
+                size: (viewMode == 'large' ? 'large' : 'small')
+            } %}
+        {% endfor %}
+    </div>
 
-	<div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
+    <div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
 </div>
 
 {% set jsSettings = {
-	id: id|namespaceInputId,
-	name: name|namespaceInputName,
-	elementType: elementType,
-	sources: sources,
-	criteria: criteria,
-	sourceElementId: sourceElementId,
-	viewMode: viewMode,
-	limit: limit,
-	modalStorageKey: storageKey
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    elementType: elementType,
+    sources: sources,
+    criteria: criteria,
+    sourceElementId: sourceElementId,
+    viewMode: viewMode,
+    limit: limit,
+    modalStorageKey: storageKey
 } %}
 
 {% js %}
-	new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
 {% endjs %}

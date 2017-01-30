@@ -5,24 +5,24 @@
 {% set selectedNavItem = 'messages' %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% do view.registerTranslations('app', [
-	"Couldn’t save message.",
-	"Message saved.",
+    "Couldn’t save message.",
+    "Message saved.",
 ]) %}
 
 {% do view.registerAssetBundle("craft\\web\\assets\\emailmessages\\EmailMessagesAsset") %}
 
 {% block content %}
-	<div id="messages">
-		{% for message in craft.app.emailMessages.getAllMessages() %}
-			<h2>{{ message.heading }}</h2>
-			<div class="pane message" data-key="{{ message.key }}">
-				<div class="subject">{{ message.subject }}</div>
-				<div class="body">{{ message.body|nl2br }}</div>
-			</div>
-		{% endfor %}
-	</div>
+    <div id="messages">
+        {% for message in craft.app.emailMessages.getAllMessages() %}
+            <h2>{{ message.heading }}</h2>
+            <div class="pane message" data-key="{{ message.key }}">
+                <div class="subject">{{ message.subject }}</div>
+                <div class="body">{{ message.body|nl2br }}</div>
+            </div>
+        {% endfor %}
+    </div>
 {% endblock %}

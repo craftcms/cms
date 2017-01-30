@@ -1,9 +1,9 @@
 {%- spaceless %}
 
 {% set class = [
-	(class is defined ? class : null),
-	((toggle is defined and toggle is not empty) or (reverseToggle is defined and reverseToggle is not empty) ? 'fieldtoggle' : null),
-	'checkbox'
+    (class is defined ? class : null),
+    ((toggle is defined and toggle is not empty) or (reverseToggle is defined and reverseToggle is not empty) ? 'fieldtoggle' : null),
+    'checkbox'
 ]|filter|join(' ') %}
 
 {% set value = (value is defined ? value : 1) %}
@@ -11,18 +11,18 @@
 {% set label = (label is defined ? label) %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
-	<input type="hidden" name="{{ name }}" value="">
+    <input type="hidden" name="{{ name }}" value="">
 {% endif %}
 
 <input type="checkbox" value="{{ value }}"
-	{%- if id %} id="{{ id }}"{% endif %}
-	class="{{ class }}"
-	{%- if name is defined %} name="{{ name }}"{% endif %}
-	{%- if checked is defined and checked %} checked{% endif %}
-	{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-	{%- if disabled is defined and disabled %} disabled{% endif %}
-	{%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
-	{%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
+    {%- if id %} id="{{ id }}"{% endif %}
+    class="{{ class }}"
+    {%- if name is defined %} name="{{ name }}"{% endif %}
+    {%- if checked is defined and checked %} checked{% endif %}
+    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+    {%- if disabled is defined and disabled %} disabled{% endif %}
+    {%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
+    {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}>
 
 <label for="{{ id }}">{{ label|raw }}</label>
 

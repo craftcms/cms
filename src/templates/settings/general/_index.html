@@ -4,59 +4,59 @@
 {% set fullPageForm = true %}
 
 {% set crumbs = [
-	{ label: "Settings"|t, url: url('settings') }
+    { label: "Settings"|t, url: url('settings') }
 ] %}
 
 
 {% macro configWarning(setting, file) -%}
-	{{ "This is being overridden by the {setting} config setting."|t({
-		setting: '<a href="http://craftcms.com/docs/config-settings#'~setting~'" target="_blank">'~setting~'</a>'
-	})|raw }}
+    {{ "This is being overridden by the {setting} config setting."|t({
+        setting: '<a href="http://craftcms.com/docs/config-settings#'~setting~'" target="_blank">'~setting~'</a>'
+    })|raw }}
 {%- endmacro %}
 
 {% from _self import configWarning %}
 
 
 {% block content %}
-	<input type="hidden" name="action" value="system-settings/save-general-settings">
-	{{ redirectInput('settings') }}
+    <input type="hidden" name="action" value="system-settings/save-general-settings">
+    {{ redirectInput('settings') }}
 
-	{{ forms.lightswitchField({
-		first: true,
-		label: "System Status"|t,
-		warning: (craft.app.config.get('isSystemOn') is same as(true) or craft.app.config.get('isSystemOn') is same as(false) ? configWarning('isSystemOn')),
-		id: 'on',
-		name: 'on',
-		on: info.on
-	}) }}
+    {{ forms.lightswitchField({
+        first: true,
+        label: "System Status"|t,
+        warning: (craft.app.config.get('isSystemOn') is same as(true) or craft.app.config.get('isSystemOn') is same as(false) ? configWarning('isSystemOn')),
+        id: 'on',
+        name: 'on',
+        on: info.on
+    }) }}
 
-	{{ forms.selectField({
-		label: "Timezone"|t,
-		warning: (craft.app.config.get('timezone') ? configWarning('timezone')),
-		id: 'timezone',
-		name: 'timezone',
-		value: info.timezone,
-		options: timezoneOptions
-	}) }}
+    {{ forms.selectField({
+        label: "Timezone"|t,
+        warning: (craft.app.config.get('timezone') ? configWarning('timezone')),
+        id: 'timezone',
+        name: 'timezone',
+        value: info.timezone,
+        options: timezoneOptions
+    }) }}
 
-	{% if CraftEdition >= CraftClient %}
-		<hr>
+    {% if CraftEdition >= CraftClient %}
+        <hr>
 
-		{% do view.registerTranslations('app', [
-			"Are you sure you want to delete the logo?",
-		]) %}
+        {% do view.registerTranslations('app', [
+            "Are you sure you want to delete the logo?",
+        ]) %}
 
-		{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+        {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
         {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
         {{ forms.field({
-			label: "Login Page Logo"|t
-		}, include('settings/general/_images/logo')) }}
+            label: "Login Page Logo"|t
+        }, include('settings/general/_images/logo')) }}
 
-		{{ forms.field({
-			label: "Site Icon"|t
-		}, include('settings/general/_images/icon')) }}
+        {{ forms.field({
+            label: "Site Icon"|t
+        }, include('settings/general/_images/icon')) }}
 
-		<div class="clear"></div>
-	{% endif %}
+        <div class="clear"></div>
+    {% endif %}
 {% endblock %}

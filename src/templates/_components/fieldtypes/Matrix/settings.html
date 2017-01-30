@@ -2,188 +2,188 @@
 
 
 {% set blockTypeInput %}
-	<div class="mc-sidebar block-types">
-		<div class="col-inner-container">
-			<div class="heading">
-				<h5>{{ "Block Types"|t('app') }}</h5>
-			</div>
-			<div class="items">
-				<div class="blocktypes">
-					{% for blockType in matrixField.getBlockTypes() %}
-						<div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
-							<div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
-							<div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
-							<div class="actions">
-								<a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
-								<a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
-							</div>
-							<input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
-							<input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
-						</div>
-					{% endfor %}
-				</div>
-				<div class="btn add icon">{{ "New block type"|t('app') }}</div>
-			</div>
-		</div>
-	</div>
-	<div class="mc-sidebar fields">
-		<div class="col-inner-container hidden">
-			<div class="heading">
-				<h5>{{ "Fields"|t('app') }}</h5>
-			</div>
-			<div class="items">
-				{% for blockType in matrixField.getBlockTypes() %}
-					<div data-id="{{ blockType.id }}" class="hidden">
-						{% for field in blockType.getFields() %}
-							<div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
-								<div class="name{% if field.required %} required{% endif %}">
-									{%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
-								&nbsp;</div>
-								<div class="handle code">{{ field.handle }}&nbsp;</div>
-								<div class="actions">
-									<a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
-								</div>
-							</div>
-						{% endfor %}
-					</div>
-				{% endfor %}
-				<div class="btn add icon">{{ "New field"|t('app') }}</div>
-			</div>
-		</div>
-	</div>
-	<div class="field-settings">
-		<div class="col-inner-container hidden">
-			<div class="heading">
-				<h5>{{ "Field Settings"|t('app') }}</h5>
-			</div>
-			<div class="items">
-				{% for blockType in matrixField.getBlockTypes() %}
-					<div data-id="{{ blockType.id }}">
-						{% for field in blockType.getFields() %}
-							{% set fieldId = field.id %}
-							<div data-id="{{ fieldId }}" class="hidden">
-								{% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
-									{{ forms.textField({
-										label: "Name"|t('app'),
-										id: 'name',
-										name: 'name',
-										value: (field.name != '__blank__' ? field.name),
-										errors: field.getErrors('name'),
-										autofocus: true
-									}) }}
+    <div class="mc-sidebar block-types">
+        <div class="col-inner-container">
+            <div class="heading">
+                <h5>{{ "Block Types"|t('app') }}</h5>
+            </div>
+            <div class="items">
+                <div class="blocktypes">
+                    {% for blockType in matrixField.getBlockTypes() %}
+                        <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockType.id }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
+                            <div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
+                            <div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
+                            <div class="actions">
+                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                                <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
+                            </div>
+                            <input class="hidden" name="blockTypes[{{ blockType.id }}][name]" value="{{ blockType.name }}">
+                            <input class="hidden" name="blockTypes[{{ blockType.id }}][handle]" value="{{ blockType.handle }}">
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="btn add icon">{{ "New block type"|t('app') }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="mc-sidebar fields">
+        <div class="col-inner-container hidden">
+            <div class="heading">
+                <h5>{{ "Fields"|t('app') }}</h5>
+            </div>
+            <div class="items">
+                {% for blockType in matrixField.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}" class="hidden">
+                        {% for field in blockType.getFields() %}
+                            <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ field.id }}">
+                                <div class="name{% if field.required %} required{% endif %}">
+                                    {%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
+                                &nbsp;</div>
+                                <div class="handle code">{{ field.handle }}&nbsp;</div>
+                                <div class="actions">
+                                    <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <div class="btn add icon">{{ "New field"|t('app') }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="field-settings">
+        <div class="col-inner-container hidden">
+            <div class="heading">
+                <h5>{{ "Field Settings"|t('app') }}</h5>
+            </div>
+            <div class="items">
+                {% for blockType in matrixField.getBlockTypes() %}
+                    <div data-id="{{ blockType.id }}">
+                        {% for field in blockType.getFields() %}
+                            {% set fieldId = field.id %}
+                            <div data-id="{{ fieldId }}" class="hidden">
+                                {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
+                                    {{ forms.textField({
+                                        label: "Name"|t('app'),
+                                        id: 'name',
+                                        name: 'name',
+                                        value: (field.name != '__blank__' ? field.name),
+                                        errors: field.getErrors('name'),
+                                        autofocus: true
+                                    }) }}
 
-									{{ forms.textField({
-										label: "Handle"|t('app'),
-										id: 'handle',
-										class: 'code',
-										name: 'handle',
-										maxlength: 64,
-										value: field.handle,
-										errors: field.getErrors('handle'),
-										required: true,
-									}) }}
+                                    {{ forms.textField({
+                                        label: "Handle"|t('app'),
+                                        id: 'handle',
+                                        class: 'code',
+                                        name: 'handle',
+                                        maxlength: 64,
+                                        value: field.handle,
+                                        errors: field.getErrors('handle'),
+                                        required: true,
+                                    }) }}
 
-									{{ forms.textareaField({
-										label: "Instructions"|t('app'),
-										id: 'instructions',
-										class: 'nicetext',
-										name: 'instructions',
-										value: field.instructions,
-										errors: field.getErrors('instructions'),
-									}) }}
+                                    {{ forms.textareaField({
+                                        label: "Instructions"|t('app'),
+                                        id: 'instructions',
+                                        class: 'nicetext',
+                                        name: 'instructions',
+                                        value: field.instructions,
+                                        errors: field.getErrors('instructions'),
+                                    }) }}
 
-									{{ forms.checkboxField({
-										label: "This field is required"|t('app'),
-										id: 'required',
-										name: 'required',
-										checked: field.required
-									}) }}
+                                    {{ forms.checkboxField({
+                                        label: "This field is required"|t('app'),
+                                        id: 'required',
+                                        name: 'required',
+                                        checked: field.required
+                                    }) }}
 
-									{{ forms.selectField({
-										label: "Field Type"|t('app'),
-										warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
-										id: 'type',
-										name: 'type',
-										options: fieldTypes,
-										value: className(field),
-										errors: field.getErrors('type') ?? null
-									}) }}
+                                    {{ forms.selectField({
+                                        label: "Field Type"|t('app'),
+                                        warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
+                                        id: 'type',
+                                        name: 'type',
+                                        options: fieldTypes,
+                                        value: className(field),
+                                        errors: field.getErrors('type') ?? null
+                                    }) }}
 
-									{% if craft.app.getIsMultiSite() %}
-										<div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
-											{{ forms.selectField({
-												label: "Translation Method"|t('app'),
-												id: 'translation-method',
-												name: 'translationMethod',
-												options: [
-													{ value: 'none', label: "Not translatable"|t('app') },
-													{ value: 'language', label: "Translate for each language"|t('app') },
-													{ value: 'site', label: "Translate for each site"|t('app') },
-													{ value: 'custom', label: "Custom…"|t('app') }
-												],
-												value: field.translationMethod,
-												toggle: true,
-												targetPrefix: 'translation-method-'
-											}) }}
+                                    {% if craft.app.getIsMultiSite() %}
+                                        <div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
+                                            {{ forms.selectField({
+                                                label: "Translation Method"|t('app'),
+                                                id: 'translation-method',
+                                                name: 'translationMethod',
+                                                options: [
+                                                    { value: 'none', label: "Not translatable"|t('app') },
+                                                    { value: 'language', label: "Translate for each language"|t('app') },
+                                                    { value: 'site', label: "Translate for each site"|t('app') },
+                                                    { value: 'custom', label: "Custom…"|t('app') }
+                                                ],
+                                                value: field.translationMethod,
+                                                toggle: true,
+                                                targetPrefix: 'translation-method-'
+                                            }) }}
 
-											<div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
-												{{ forms.textField({
-													label: "Translation Key Format"|t('app'),
-													id: 'translation-key-format',
-													name: 'translationKeyFormat',
-													value: field.translationKeyFormat,
-													errors: field.getErrors('translationKeyFormat')
-												}) }}
-											</div>
-										</div>
-									{% endif %}
-								{% endnamespace %}
+                                            <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                                                {{ forms.textField({
+                                                    label: "Translation Key Format"|t('app'),
+                                                    id: 'translation-key-format',
+                                                    name: 'translationKeyFormat',
+                                                    value: field.translationKeyFormat,
+                                                    errors: field.getErrors('translationKeyFormat')
+                                                }) }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endnamespace %}
 
-								<hr>
+                                <hr>
 
-								<div class="fieldtype-settings">
-									<div>
-										{% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
-											{{ field.getSettingsHtml()|raw  }}
-										{% endnamespace %}
-									</div>
-								</div>
+                                <div class="fieldtype-settings">
+                                    <div>
+                                        {% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~'][typesettings]' %}
+                                            {{ field.getSettingsHtml()|raw  }}
+                                        {% endnamespace %}
+                                    </div>
+                                </div>
 
-								<hr>
+                                <hr>
 
-								<a class="error delete">{{ "Delete"|t('app') }}</a>
-							</div>
-						{% endfor %}
-					</div>
-				{% endfor %}
-			</div>
-		</div>
-	</div>
+                                <a class="error delete">{{ "Delete"|t('app') }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 {% endset %}
 
 <div id="matrix-configurator" class="matrix-configurator">
-	{{ forms.field({
-		label: "Configuration"|t('app'),
-		instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t('app'),
-		name: 'config'
-	}, blockTypeInput) }}
+    {{ forms.field({
+        label: "Configuration"|t('app'),
+        instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t('app'),
+        name: 'config'
+    }, blockTypeInput) }}
 </div>
 
 {% if craft.app.getIsMultiSite() %}
-	{{ forms.checkboxField({
-		label: "Manage blocks on a per-site basis"|t('app'),
-		id: 'localize-blocks',
-		name: 'localizeBlocks',
-		checked: matrixField.localizeBlocks
-	}) }}
+    {{ forms.checkboxField({
+        label: "Manage blocks on a per-site basis"|t('app'),
+        id: 'localize-blocks',
+        name: 'localizeBlocks',
+        checked: matrixField.localizeBlocks
+    }) }}
 {% endif %}
 
 {{ forms.textField({
-	label: "Max Blocks"|t('app'),
-	instructions: "The maximum number of blocks the field is allowed to have."|t('app'),
-	id: 'maxBlocks',
-	name: 'maxBlocks',
-	value: matrixField.maxBlocks,
-	size: 3,
-	errors: matrixField.getErrors('maxBlocks')
+    label: "Max Blocks"|t('app'),
+    instructions: "The maximum number of blocks the field is allowed to have."|t('app'),
+    id: 'maxBlocks',
+    name: 'maxBlocks',
+    value: matrixField.maxBlocks,
+    size: 3,
+    errors: matrixField.getErrors('maxBlocks')
 }) }}

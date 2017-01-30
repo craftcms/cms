@@ -1,18 +1,18 @@
 {% import "_includes/forms" as forms %}
 
 {% set config = {
-	id: name,
-	name: name,
-	value: value,
-	class: 'nicetext',
-	maxlength: field.maxLength,
-	showCharsLeft: true,
+    id: name,
+    name: name,
+    value: value,
+    class: 'nicetext',
+    maxlength: field.maxLength,
+    showCharsLeft: true,
     placeholder: field.placeholder|t('site'),
-	rows: field.initialRows
+    rows: field.initialRows
 } %}
 
 {% if field.multiline %}
-	{{ forms.textarea(config) }}
+    {{ forms.textarea(config) }}
 {% else %}
-	{{ forms.text(config) }}
+    {{ forms.text(config) }}
 {% endif %}

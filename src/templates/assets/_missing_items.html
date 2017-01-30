@@ -1,9 +1,9 @@
 {% if missingFolders and missingFiles %}
-	{% set items = "folders and files"|t('app') %}
+    {% set items = "folders and files"|t('app') %}
 {% elseif missingFolders %}
-	{% set items = "folders"|t('app') %}
+    {% set items = "folders"|t('app') %}
 {% else %}
-	{% set items = "files"|t('app') %}
+    {% set items = "files"|t('app') %}
 {% endif %}
 {% if skippedFiles %}
     <h2>{{ "Skipped files"|t('app', { items: items }) }}</h2>

@@ -2,17 +2,17 @@
 {% set title = "Install Craft CMS"|t('app') %}
 
 {% do view.registerTranslations('app', [
-	"All done!",
-	"Go to {app}",
+    "All done!",
+    "Go to {app}",
 ]) %}
 
 {% block body %}
-	<div id="bg"></div>
-	<div class="beginbtncontainer">
-		<div id="beginbtn" class="btn big submit">{{ "Begin"|t('app') }}</div>
-	</div>
+    <div id="bg"></div>
+    <div class="beginbtncontainer">
+        <div id="beginbtn" class="btn big submit">{{ "Begin"|t('app') }}</div>
+    </div>
 
-	{% include "_special/install/account" %}
-	{% include "_special/install/site" %}
-	{% include "_special/install/installing" %}
+    {% include "_special/install/account" %}
+    {% include "_special/install/site" %}
+    {% include "_special/install/installing" %}
 {% endblock %}

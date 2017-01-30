@@ -5,132 +5,132 @@
 
 
 {% block content %}
-	<input type="hidden" name="action" value="fields/save-field">
-	{{ redirectInput('settings/fields/{groupId}') }}
-	{% if fieldId is defined and fieldId %}
-		<input type="hidden" name="fieldId" value="{{ fieldId }}">
-	{% endif %}
+    <input type="hidden" name="action" value="fields/save-field">
+    {{ redirectInput('settings/fields/{groupId}') }}
+    {% if fieldId is defined and fieldId %}
+        <input type="hidden" name="fieldId" value="{{ fieldId }}">
+    {% endif %}
 
-	{{ forms.selectField({
-		first: true,
-		label: "Group"|t('app'),
-		instructions: "Which group should this field be displayed in?"|t('app'),
-		id: 'group',
-		name: 'group',
-		options: groupOptions,
-		value: groupId
-	}) }}
+    {{ forms.selectField({
+        first: true,
+        label: "Group"|t('app'),
+        instructions: "Which group should this field be displayed in?"|t('app'),
+        id: 'group',
+        name: 'group',
+        options: groupOptions,
+        value: groupId
+    }) }}
 
-	{{ forms.textField({
-		label: "Name"|t('app'),
-		instructions: "What this field will be called in the CP."|t('app'),
-		id: 'name',
-		name: 'name',
-		value: (field is not empty ? field.name : null),
-		errors: (field is not empty ? field.getErrors('name') : null),
-		required: true,
-		translatable: true,
-		autofocus: true
-	}) }}
+    {{ forms.textField({
+        label: "Name"|t('app'),
+        instructions: "What this field will be called in the CP."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: (field is not empty ? field.name : null),
+        errors: (field is not empty ? field.getErrors('name') : null),
+        required: true,
+        translatable: true,
+        autofocus: true
+    }) }}
 
-	{{ forms.textField({
-		label: "Handle"|t('app'),
-		instructions: "How you’ll refer to this field in the templates."|t('app'),
-		id: 'handle',
-		class: 'code',
-		name: 'handle',
-		maxlength: 64,
-		value: (field is not empty ? field.handle : null),
-		errors: (field is not empty ? field.getErrors('handle') : null),
-		required: true,
-	}) }}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this field in the templates."|t('app'),
+        id: 'handle',
+        class: 'code',
+        name: 'handle',
+        maxlength: 64,
+        value: (field is not empty ? field.handle : null),
+        errors: (field is not empty ? field.getErrors('handle') : null),
+        required: true,
+    }) }}
 
-	{{ forms.textareaField({
-		label: "Instructions"|t('app'),
-		instructions: "Helper text to guide the author."|t('app'),
-		id: 'instructions',
-		class: 'nicetext',
-		name: 'instructions',
-		value: (field is not empty ? field.instructions : null),
-		errors: (field is not empty ? field.getErrors('instructions') : null),
-		translatable: true
-	}) }}
+    {{ forms.textareaField({
+        label: "Instructions"|t('app'),
+        instructions: "Helper text to guide the author."|t('app'),
+        id: 'instructions',
+        class: 'nicetext',
+        name: 'instructions',
+        value: (field is not empty ? field.instructions : null),
+        errors: (field is not empty ? field.getErrors('instructions') : null),
+        translatable: true
+    }) }}
 
-	{{ forms.selectField({
-		label: "Field Type"|t('app'),
-		instructions: "What type of field is this?"|t('app'),
-		warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
-		id: 'type',
-		name: 'type',
-		options: fieldTypeOptions,
-		value: className(field),
-		errors: field.getErrors('type') ?? null,
-		toggle: true
-	}) }}
+    {{ forms.selectField({
+        label: "Field Type"|t('app'),
+        instructions: "What type of field is this?"|t('app'),
+        warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
+        id: 'type',
+        name: 'type',
+        options: fieldTypeOptions,
+        value: className(field),
+        errors: field.getErrors('type') ?? null,
+        toggle: true
+    }) }}
 
-	{% if craft.app.getIsMultiSite() %}
-		<div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
-			{{ forms.selectField({
-				label: "Translation Method"|t('app'),
-				instructions: "How should this field’s values be translated?"|t('app'),
-				id: 'translation-method',
-				name: 'translationMethod',
-				options: [
-					{ value: 'none', label: "Not translatable"|t('app') },
-					{ value: 'language', label: "Translate for each language"|t('app') },
-					{ value: 'site', label: "Translate for each site"|t('app') },
-					{ value: 'custom', label: "Custom…"|t('app') }
-				],
-				value: field.translationMethod,
-				toggle: true,
-				targetPrefix: 'translation-method-'
-			}) }}
+    {% if craft.app.getIsMultiSite() %}
+        <div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
+            {{ forms.selectField({
+                label: "Translation Method"|t('app'),
+                instructions: "How should this field’s values be translated?"|t('app'),
+                id: 'translation-method',
+                name: 'translationMethod',
+                options: [
+                    { value: 'none', label: "Not translatable"|t('app') },
+                    { value: 'language', label: "Translate for each language"|t('app') },
+                    { value: 'site', label: "Translate for each site"|t('app') },
+                    { value: 'custom', label: "Custom…"|t('app') }
+                ],
+                value: field.translationMethod,
+                toggle: true,
+                targetPrefix: 'translation-method-'
+            }) }}
 
-			<div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
-				{{ forms.textField({
-					label: "Translation Key Format"|t('app'),
-					instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
-					id: 'translation-key-format',
-					name: 'translationKeyFormat',
-					value: field.translationKeyFormat,
-					errors: field.getErrors('translationKeyFormat')
-				}) }}
-			</div>
-		</div>
-	{% endif %}
+            <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                {{ forms.textField({
+                    label: "Translation Key Format"|t('app'),
+                    instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
+                    id: 'translation-key-format',
+                    name: 'translationKeyFormat',
+                    value: field.translationKeyFormat,
+                    errors: field.getErrors('translationKeyFormat')
+                }) }}
+            </div>
+        </div>
+    {% endif %}
 
-	<hr>
+    <hr>
 
-	{% for type in allFieldTypes %}
-		{% set isCurrent = (type == className(field)) %}
-		<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-			{% namespace 'types['~type~']' %}
-				{% set _field = isCurrent ? field : craft.app.fields.createField(type) %}
-				{{ _field.getSettingsHtml()|raw }}
-			{% endnamespace %}
-		</div>
-	{% endfor %}
+    {% for type in allFieldTypes %}
+        {% set isCurrent = (type == className(field)) %}
+        <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+            {% namespace 'types['~type~']' %}
+                {% set _field = isCurrent ? field : craft.app.fields.createField(type) %}
+                {{ _field.getSettingsHtml()|raw }}
+            {% endnamespace %}
+        </div>
+    {% endfor %}
 {% endblock %}
 
 
 {% if field is empty or field.handle is empty %}
-	{% js %}
-		new Craft.HandleGenerator('#name', '#handle');
-	{% endjs %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
 {% endif %}
 
 {% js %}
-	Craft.fieldTypesWithContent = {{ craft.app.fields.getFieldTypesWithContent()|json_encode|raw }};
+    Craft.fieldTypesWithContent = {{ craft.app.fields.getFieldTypesWithContent()|json_encode|raw }};
 
-	var $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}"),
-		$translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
+    var $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}"),
+        $translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
 
-	$fieldTypeInput.change(function(e) {
-		// Show or hide the translation settings depending on if this type has content
-		if ($.inArray($(this).val(), Craft.fieldTypesWithContent) != -1) {
-			$translationSettings.removeClass('hidden');
+    $fieldTypeInput.change(function(e) {
+        // Show or hide the translation settings depending on if this type has content
+        if ($.inArray($(this).val(), Craft.fieldTypesWithContent) != -1) {
+            $translationSettings.removeClass('hidden');
         } else {
-        	$translationSettings.addClass('hidden');
-		}
+            $translationSettings.addClass('hidden');
+        }
     });
 {% endjs %}

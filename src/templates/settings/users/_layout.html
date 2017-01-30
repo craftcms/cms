@@ -5,19 +5,19 @@
 {% set title = "User Settings"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set navItems = {
-	groups: { label: "User Groups"|t('app'), url: url('settings/users') },
-	fields: { label: "Fields"|t('app'), url: url('settings/users/fields') },
-	settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
+    groups: { label: "User Groups"|t('app'), url: url('settings/users') },
+    fields: { label: "Fields"|t('app'), url: url('settings/users/fields') },
+    settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
 } %}
 
 {% set docTitle = navItems[selectedNavItem].label~' - '~title %}
 
 {% block sidebar %}
-	<nav>
-		{% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
-	</nav>
+    <nav>
+        {% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+    </nav>
 {% endblock %}
