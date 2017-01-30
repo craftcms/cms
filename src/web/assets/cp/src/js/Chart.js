@@ -202,8 +202,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
     tip: null,
     g: null,
 
-    init: function(container, settings)
-    {
+    init: function(container, settings) {
         this.base(container, Craft.charts.Area.defaults);
 
         this.setSettings(settings);
@@ -247,8 +246,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.drawTipTriggers();
     },
 
-    drawTicks: function()
-    {
+    drawTicks: function() {
         // Draw X ticks
 
         var x = this.getX(true);
@@ -610,8 +608,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return formatter;
     },
 
-    getYFormatter: function()
-    {
+    getYFormatter: function() {
         var formatter;
 
         if (this.settings.yAxis.formatter != $.noop) {
