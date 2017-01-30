@@ -14,7 +14,6 @@ use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
-use DateTime;
 use yii\base\Component;
 
 /**

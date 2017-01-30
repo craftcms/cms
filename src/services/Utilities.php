@@ -15,10 +15,10 @@ use craft\utilities\ClearCaches;
 use craft\utilities\DbBackup;
 use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
+use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
 use craft\utilities\SearchIndexes;
 use craft\utilities\SystemReport;
-use craft\utilities\Migrations;
 use craft\utilities\Updates as UpdatesUtility;
 use yii\base\Component;
 

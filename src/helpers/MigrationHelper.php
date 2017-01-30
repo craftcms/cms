@@ -121,7 +121,7 @@ class MigrationHelper
      *
      * @return void
      */
-    public static function  renameTable(string $oldName, string $newName, Migration $migration = null)
+    public static function renameTable(string $oldName, string $newName, Migration $migration = null)
     {
         $rawOldName = Craft::$app->getDb()->getSchema()->getRawTableName($oldName);
         $rawNewName = Craft::$app->getDb()->getSchema()->getRawTableName($newName);

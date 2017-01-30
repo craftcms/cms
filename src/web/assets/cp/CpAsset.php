@@ -7,7 +7,6 @@
 
 namespace craft\web\assets\cp;
 
-use Craft;
 use craft\web\AssetBundle;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;

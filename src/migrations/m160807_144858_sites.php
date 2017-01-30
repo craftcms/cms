@@ -5,18 +5,18 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\fields\Assets;
+use craft\fields\Categories;
+use craft\fields\Entries;
+use craft\fields\Matrix;
+use craft\fields\Tags;
+use craft\fields\Users;
 use craft\helpers\Json;
 use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 use yii\base\InvalidParamException;
 use yii\db\Expression;
-use craft\fields\Users;
-use craft\fields\Tags;
-use craft\fields\Entries;
-use craft\fields\Categories;
-use craft\fields\Assets;
-use craft\fields\Matrix;
 
 /**
  * m160807_144858_sites migration.
@@ -450,6 +450,7 @@ class m160807_144858_sites extends Migration
                 $settings = Json::decode($field['settings']);
             } catch (InvalidParamException $e) {
                 echo 'Field '.$field['id'].' ('.$field['type'].') settings were invalid JSON: '.$field['settings']."\n";
+
                 return false;
             }
 

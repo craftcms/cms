@@ -1113,9 +1113,9 @@ class AssetTransforms extends Component
 
         foreach ($dirs as $dir) {
             try {
-            $handle = opendir($dir);
-            if ($handle === false) {
-                Craft::warning("Unable to open directory: $dir", __METHOD__);
+                $handle = opendir($dir);
+                if ($handle === false) {
+                    Craft::warning("Unable to open directory: $dir", __METHOD__);
 
                     return;
                 }

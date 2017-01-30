@@ -31,6 +31,7 @@ class m170120_000000_schema_cleanup extends Migration
     public function safeDown()
     {
         echo "m170120_000000_schema_cleanup cannot be reverted.\n";
+
         return false;
     }
 }
