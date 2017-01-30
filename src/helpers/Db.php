@@ -309,6 +309,7 @@ class Db
         }
 
         $condition = [$conditionOperator];
+        $driver = Craft::$app->getDb()->getDriverName();
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
@@ -316,20 +317,35 @@ class Db
 
             if (StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
-                    $condition[] = [
-                        'or',
-                        [$column => null],
-                        [$column => '']
-                    ];
-                } else {
-                    $condition[] = [
-                        'not',
-                        [
+                    if ($driver === Connection::DRIVER_MYSQL) {
+                        $condition[] = [
                             'or',
                             [$column => null],
                             [$column => '']
-                        ]
-                    ];
+                        ];
+                    } else {
+                        // Because PostgreSQL chokes if you do a string check on an int column
+                        $condition[] = [$column => null];
+                    }
+                } else {
+                    if ($driver === Connection::DRIVER_MYSQL) {
+                        $condition[] = [
+                            'not',
+                            [
+                                'or',
+                                [$column => null],
+                                [$column => '']
+                            ]
+                        ];
+                    } else {
+                        // Because PostgreSQL chokes if you do a string check on an int column
+                        $condition[] = [
+                            'not',
+                            [
+                                [$column => null],
+                            ]
+                        ];
+                    }
                 }
             } else {
                 // Trim any whitespace from the value
