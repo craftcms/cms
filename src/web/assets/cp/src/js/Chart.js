@@ -132,6 +132,11 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         }, this));
     },
 
+    setSettings: function(settings, defaults) {
+        var baseSettings = (this.settings === undefined ? {} : this.settings);
+        this.settings = $.extend(true, {}, baseSettings, defaults, settings);
+    },
+
     draw: function(dataTable, settings) {
         // Settings and chart attributes
 
