@@ -7014,41 +7014,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         this.$chart = $('<div class="' + className + '" />').appendTo(this.$container);
     },
 
-    getTimeFormatter: function(timeFormatLocale, dataScale) {
-        switch (dataScale) {
-            case 'year':
-                return timeFormatLocale.format('%Y');
-
-            case 'month':
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.month);
-
-            case 'hour':
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.day + " %H:00:00");
-
-            default:
-                return timeFormatLocale.format(this.settings.formats.shortDateFormats.day);
-        }
-    },
-    
-    getNumberFormatter: function(formatLocale, type) {
-        switch (type) {
-            case 'currency':
-                return formatLocale.format(this.settings.formats.currencyFormat);
-
-            case 'percent':
-                return formatLocale.format(this.settings.formats.percentFormat);
-
-            case 'time':
-                return Craft.charts.utils.getDuration;
-
-            case 'decimal':
-                return formatLocale.format(this.settings.formats.decimalFormat);
-
-            case 'number':
-                return formatLocale.format(this.settings.formats.numberFormat);
-        }
-    },
-
     resize: function() {
         this.draw(this.dataTable, this.settings);
     },
@@ -7138,15 +7103,14 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.drawTipTriggers();
     },
 
-    drawTicks: function()
-    {
+    drawTicks: function() {
         // Draw X ticks
 
         var x = this.getX(true);
         var xTicks = 3;
 
         var xAxis = d3.axisBottom(x)
-            .tickFormat(this.getXTickFormatter())
+            .tickFormat(this.getXFormatter())
             .ticks(xTicks);
 
         this.g.append("g")
@@ -7364,7 +7328,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var $xValue = $('<div class="x-value" />').appendTo($content);
                     var $yValue = $('<div class="y-value" />').appendTo($content);
 
-                    $xValue.html(this.getXTickFormatter()(d[0]));
+                    $xValue.html(this.getXFormatter()(d[0]));
                     $yValue.html(this.getYFormatter()(d[1]));
 
                     var content = $content.get(0);
@@ -7489,26 +7453,25 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return y;
     },
 
-    getXTickFormatter: function() {
+    getXFormatter: function() {
         var formatter;
 
         if (this.settings.xAxis.formatter != $.noop) {
             formatter = this.settings.xAxis.formatter(this);
         } else {
-            formatter = this.getTimeFormatter(this.timeFormatLocale, this.settings.dataScale);
+            formatter = Craft.charts.utils.getTimeFormatter(this.timeFormatLocale, this.settings);
         }
 
         return formatter;
     },
 
-    getYFormatter: function()
-    {
+    getYFormatter: function() {
         var formatter;
 
         if (this.settings.yAxis.formatter != $.noop) {
             formatter = this.settings.yAxis.formatter(this);
         }  else {
-            formatter = this.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type);
+            formatter = Craft.charts.utils.getNumberFormatter(this.formatLocale, this.dataTable.columns[1].type, this.settings);
         }
 
         return formatter;
@@ -7576,6 +7539,41 @@ Craft.charts.utils = {
         var time = hours + ':' + minutes + ':' + seconds;
 
         return time;
+    },
+
+    getTimeFormatter: function(timeFormatLocale, chartSettings) {
+        switch (chartSettings.dataScale) {
+            case 'year':
+                return timeFormatLocale.format('%Y');
+
+            case 'month':
+                return timeFormatLocale.format(chartSettings.formats.shortDateFormats.month);
+
+            case 'hour':
+                return timeFormatLocale.format(chartSettings.formats.shortDateFormats.day + " %H:00:00");
+
+            default:
+                return timeFormatLocale.format(chartSettings.formats.shortDateFormats.day);
+        }
+    },
+
+    getNumberFormatter: function(formatLocale, type, chartSettings) {
+        switch (type) {
+            case 'currency':
+                return formatLocale.format(chartSettings.formats.currencyFormat);
+
+            case 'percent':
+                return formatLocale.format(chartSettings.formats.percentFormat);
+
+            case 'time':
+                return Craft.charts.utils.getDuration;
+
+            case 'decimal':
+                return formatLocale.format(chartSettings.formats.decimalFormat);
+
+            case 'number':
+                return formatLocale.format(chartSettings.formats.numberFormat);
+        }
     }
 };
 
