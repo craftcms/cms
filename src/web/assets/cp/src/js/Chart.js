@@ -191,7 +191,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 year: "%Y"
             }
         },
-        margin: {top: 25, right: 0, bottom: 25, left: 0},
+        margin: {top: 0, right: 0, bottom: 0, left: 0},
         chartClass: null,
         colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
     }
@@ -311,19 +311,19 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if (this.settings.yAxis.showAxis) {
             var y = this.getY();
+            var chartPadding = 0;
+
             if (this.orientation == 'rtl') {
                 var yAxis = d3.axisLeft(y).ticks(0);
-
                 this.drawingArea.append("g")
                     .attr("class", "y axis")
-                    .attr("transform", "translate(" + this.width + ", 0)")
+                    .attr("transform", "translate(" + (this.width - chartPadding) + ", 0)")
                     .call(yAxis);
             } else {
                 var yAxis = d3.axisRight(y).ticks(0);
-
                 this.drawingArea.append("g")
                     .attr("class", "y axis")
-                    .attr("transform", "translate(" + chartMargin.left + ", 0)")
+                    .attr("transform", "translate(" + chartPadding + ", 0)")
                     .call(yAxis);
             }
         }
@@ -571,8 +571,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var right = 0;
 
         if (padded) {
-            left = 14;
-            right = 14;
+            left = 0;
+            right = 0;
         }
 
         var x = d3.scaleTime().range([left, (this.width - right)]);
@@ -635,6 +635,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     defaults: {
         chartClass: 'area',
+        margin: {top: 25, right: 5, bottom: 25, left: 0},
         plots: true,
         tips: true,
         xAxis: {
@@ -716,4 +717,3 @@ Craft.charts.utils = {
         }
     }
 };
-
