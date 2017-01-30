@@ -590,7 +590,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[locale]] property.
+     * Sets the [[site]] property.
      *
      * @param string $value The property value
      *
