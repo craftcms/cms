@@ -73,13 +73,7 @@ class MigrateController extends BaseMigrateController
     {
         parent::init();
 
-        $path = Craft::getAlias('@app/updates/migration.php.template');
-
-        if ($path === false) {
-            throw new Exception('There was a problem getting the migration template path.');
-        }
-
-        $this->templateFile = $path;
+        $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
 
     /**
@@ -113,21 +107,14 @@ class MigrateController extends BaseMigrateController
             }
         }
 
-        switch ($this->type) {
-            case MigrationManager::TYPE_CONTENT:
-                // Verify that a content migrations folder exists
-                if (Craft::getAlias('@contentMigrations') === false) {
-                    throw new Exception('You must create a migrations/ directory within your base directory before managing content migrations');
+        if ($this->type === MigrationManager::TYPE_PLUGIN) {
+            // Make sure $this->plugin in set to a plugin
+            if (is_string($this->plugin)) {
+                if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
+                    throw new Exception('Invalid plugin handle: '.$this->plugin);
                 }
-                break;
-            case MigrationManager::TYPE_PLUGIN:
-                // Make sure $this->plugin in set to a plugin
-                if (is_string($this->plugin)) {
-                    if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
-                        throw new Exception('Invalid plugin handle: '.$this->plugin);
-                    }
-                    $this->plugin = $plugin;
-                }
+                $this->plugin = $plugin;
+            }
         }
 
         $this->migrationPath = $this->getMigrator()->migrationPath;

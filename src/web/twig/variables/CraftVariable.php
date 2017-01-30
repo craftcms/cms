@@ -13,9 +13,11 @@ use craft\elements\Category;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\EntryQuery;
+use craft\elements\db\MatrixBlockQuery;
 use craft\elements\db\TagQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\Entry;
+use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use yii\di\ServiceLocator;
@@ -238,6 +240,23 @@ class CraftVariable extends ServiceLocator
     public function entries($criteria = null): EntryQuery
     {
         $query = Entry::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Returns a new MatrixBlockQuery instance.
+     *
+     * @param mixed $criteria
+     *
+     * @return MatrixBlockQuery
+     */
+    public function matrixBlocks($criteria = null): MatrixBlockQuery
+    {
+        $query = MatrixBlock::find();
         if ($criteria) {
             Craft::configure($query, $criteria);
         }

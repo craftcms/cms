@@ -123,12 +123,11 @@ class PluginsController extends Controller
      */
     public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null): string
     {
-        if ($plugin === null) {
-            $plugin = Craft::$app->getModule($pluginId);
-
-            if ($plugin === null || !$plugin instanceof PluginInterface) {
-                throw new NotFoundHttpException('Plugin not found');
-            }
+        if (
+            $plugin === null &&
+            ($plugin = Craft::$app->getPlugins()->getPluginByModuleId($pluginId)) === null
+        ) {
+            throw new NotFoundHttpException('Plugin not found');
         }
 
         return $plugin->getSettingsResponse();
