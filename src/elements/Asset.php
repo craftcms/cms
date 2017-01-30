@@ -905,7 +905,7 @@ class Asset extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
-        if ($isNew && !$this->title) {
+        if ($isNew && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
             // Give it a default title based on the file name
             $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
