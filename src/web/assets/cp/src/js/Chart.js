@@ -304,7 +304,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if (this.orientation != 'rtl') {
             var yAxis = d3.axisLeft(y)
-                .tickFormat(this.getYTickFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
@@ -313,7 +313,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .call(yAxis);
         } else {
             var yAxis = d3.axisRight(y)
-                .tickFormat(this.getYTickFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
@@ -507,7 +507,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     var $yValue = $('<div class="y-value" />').appendTo($content);
 
                     $xValue.html(this.getXTickFormatter()(d[0]));
-                    $yValue.html(this.getYTickFormatter()(d[1]));
+                    $yValue.html(this.getYFormatter()(d[1]));
 
                     var content = $content.get(0);
 
@@ -578,7 +578,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         $.each(values, $.proxy(function(key, value) {
             var characterWidth = 8;
 
-            var formatter = this.getYTickFormatter();
+            var formatter = this.getYFormatter();
 
             var formattedValue = formatter(value);
             var computedTickWidth = formattedValue.length * characterWidth;
@@ -647,7 +647,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return formatter;
     },
 
-    getYTickFormatter: function()
+    getYFormatter: function()
     {
         var formatter;
 
