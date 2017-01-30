@@ -21,6 +21,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `dsn` DB config setting, which can be used to manually specify the DSN string, ignoring most other DB config settings.
 - Added the `schema` DB config setting, which can be used to assign the default schema used when connecting to a PostgreSQL database.
 - Added support for setting Volume config settings in `config/volumes.php`. The file should return an array with keys that match volume handles, and values that are config arrays for the volumes.
+- It is now possible to override the default Guzzle settings from `config/guzzle.php`.
 - Added the `view` global Twig variable, which is a reference to the View class that is rendering the template.
 - Added `craft.matrixBlocks()`, which can be used to query for Matrix blocks.
 - Added the `SORT_ASC` and `SORT_DESC` global Twig variables, which can be used to define query sorting in element queries.
@@ -219,19 +220,17 @@ Craft CMS 3.0 Working Changelog
 - Added the `setRoute` event to `craft\base\Element`.
 - Added the `setTableAttributeHtml` event to `craft\base\Element`.
 - Added support for a `.readable` CSS class for views that are primarily textual content.
+- Added a “Size” setting to Number fields.
+- Added `d3FormatLocaleDefinition`, `d3TimeFormatLocaleDefinition`, `d3Formats` global JS variables.
+- Added the `xAxis.showAxis`, `xAxis.formatter` and `yAxis.formatter` settings to the Area chart.
+- Added `Craft.charts.BaseChart.setSettings()`.
+- Added `Craft.charts.utils.getNumberFormatter()`.
+- Added `Craft.charts.utils.getTimeFormatter()`.
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - Added the fabric.js JavaScript library.
-- It is now possible to override the default Guzzle settings from `config/guzzle.php`.
-- Added a “Size” setting to Number fields.
-- Added `bower-asset/d3-format` dependency v1.0.2.0.
-- Added `bower-asset/d3-time-format` dependency v2.0.3.0.
-- Added `d3FormatLocaleDefinition`, `d3TimeFormatLocaleDefinition`, `d3Formats` global JS variables.
-- Added `xAxis.showAxis` setting to the Area chart.
-- Added `xAxis.formatter` and `yAxis.formatter` settings for the Area chart.
-- Added `Craft.charts.BaseChart.setSettings()` handling recursive merge of chart settings
-- Added `Craft.charts.utils.getNumberFormatter()` chart util for localized number formatting.
-- Added `Craft.charts.utils.getTimeFormatter()` chart util for localized time formatting.
+- Added the d3-format JavaScript library.
+- Added the d3-time-format JavaScriptlibrary.
 
 ### Changed
 - The bootstrap script now assumes that the `vendor/` folder is 3 levels up from the `bootstrap/` directory by default (e.g. `vendor/craftcms/cms/bootstrap/`). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
@@ -301,6 +300,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\events\EntryEvent` to `VersionEvent`.
 - Renamed `craft\events\Event` to `CancelableEvent`.
 - Renamed `craft\helpers\Url` to `UrlHelper`.
+- Renamed `craft\services\Feeds` to `craft\feeds\Feeds`.
 - Renamed `craft\mail\transportadaptors\BaseTransportAdaptor` to `craft\mail\transportadapters\BaseTransportAdapter`.
 - Renamed `craft\mail\transportadaptors\Gmail` to `craft\mail\transportadapters\Gmail`.
 - Renamed `craft\mail\transportadaptors\Php` to `craft\mail\transportadapters\Php`.
@@ -432,7 +432,12 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft.getEntries()` back to `craft.entries()`.
 - Renamed `craft.getTags()` back to `craft.tags()`.
 - Renamed `craft.getUsers()` back to `craft.users()`.
-- Moved `craft\services\Feeds` to `craft\feeds\Feeds`.
+- Moved `numberFormat`, `percentFormat` and `currencyFormat` from `ChartHelper` to the `Craft.charts.BaseChart` default settings.
+- Improved `Craft.charts.BaseChart` and `Craft.charts.Area` settings.
+- Renamed `xAxisGridlines` setting to `xAxis.gridlines` and `yAxisGridlines` setting to `yAxis.gridlines` for the Area chart.
+- Renamed `axis.y.show` setting to `yAxis.showAxis` for the Area chart.
+- Renamed the `enablePlots` Area chart setting to `plots`.
+- Renamed the `enableTips` Area chart setting to `tips`.
 - All Craft and library dependencies that make remote calls use Craft's centralized Guzzle instance.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
@@ -441,18 +446,11 @@ Craft CMS 3.0 Working Changelog
 - Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
+- Updated D3 to 4.5.0.0.
 - Updated Velocity to 1.4.1.
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
 - Moved Utilities nav item to keep Settings as the last item
-- Updated `bower-asset/d3` dependency to v4.5.0.0
-- Updated charts and “New Users” widget for D3 v4.x
-- Moved `numberFormat`, `percentFormat` and `currencyFormat` from `ChartHelper` to `Craft.charts.BaseChart` default settings
-- Improved `Craft.charts.BaseChart` and `Craft.charts.Area` settings
-- Renamed `xAxisGridlines` setting to `xAxis.gridlines` and `yAxisGridlines` setting to `yAxis.gridlines` for the Area chart
-- Renamed `axis.y.show` setting to `yAxis.showAxis` for the Area chart
-- Renamed the `enablePlots` Area chart setting to `plots`
-- Renamed the `enableTips` Area chart setting to `tips`
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
@@ -652,8 +650,8 @@ Craft CMS 3.0 Working Changelog
 - Removed the `registerEmailMessages` plugin hook. Custom email messages should be registered using the `registerMessages` event on `craft\services\EmailMessages` now.
 - Removed the `registerUserPermissions` plugin hook. Custom user permissions should be registered using the `registerPermissions` event on `craft\services\UserPermissions` now.
 - Removed the `craft\requirements` folder.  It is now a composer dependency.
-- Removed `Craft.charts.utils.applyShadowFilter()` JS method
-- Removed `Craft.charts.utils.arrayToDataTable()` JS method
+- Removed the `Craft.charts.utils.applyShadowFilter()` JavaScript method.
+- Removed the `Craft.charts.utils.arrayToDataTable()` JavaScript method.
 
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
