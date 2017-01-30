@@ -439,6 +439,8 @@ Craft CMS 3.0 Working Changelog
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
 - Moved Utilities nav item to keep Settings as the last item
+- Updated `bower-asset/d3` dependency to `4.5.0.0`
+- Updated charts for D3 v4.5.0
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
