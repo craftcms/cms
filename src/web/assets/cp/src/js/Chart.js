@@ -261,7 +261,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var x = this.getX(true);
         var xTicks = 3;
         var xAxis = d3.axisBottom(x)
-            .tickFormat(this.getXTicksFormatter())
+            .tickFormat(this.getXFormatter())
             .ticks(xTicks);
 
         this.drawingArea.append("g")
@@ -277,7 +277,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         if (this.orientation != 'rtl') {
             var yAxis = d3.axisLeft(y)
-                .tickFormat(this.getYTicksFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
@@ -286,7 +286,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 .call(yAxis);
         } else {
             var yAxis = d3.axisRight(y)
-                .tickFormat(this.getYTicksFormatter())
+                .tickFormat(this.getYFormatter())
                 .tickValues(this.getYTickValues())
                 .ticks(yTicks);
 
@@ -538,7 +538,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         $.each(values, $.proxy(function(key, value) {
             var characterWidth = 8;
 
-            var formatter = this.getYTicksFormatter();
+            var formatter = this.getYFormatter();
 
             var formattedValue = formatter(value);
             var computedTickWidth = formattedValue.length * characterWidth;
@@ -619,30 +619,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         return formatter;
     },
 
-    getXTicksFormatter: function() {
-        var formatter;
-
-        if (this.settings.xAxis.ticksFormatter != $.noop) {
-            formatter = this.settings.xAxis.ticksFormatter(this);
-        } else {
-            formatter = this.getXFormatter();
-        }
-
-        return formatter;
-    },
-
-    getYTicksFormatter: function() {
-        var formatter;
-
-        if (this.settings.yAxis.ticksFormatter != $.noop) {
-            formatter = this.settings.yAxis.ticksFormatter(this);
-        }  else {
-            formatter = this.getYFormatter();
-        }
-
-        return formatter;
-    },
-
     getYMaxValue: function() {
         return d3.max(this.dataTable.rows, function(d) {
             return d[1];
@@ -668,14 +644,12 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         xAxis: {
             gridlines: false,
             showAxis: true,
-            formatter: $.noop,
-            ticksFormatter: $.noop
+            formatter: $.noop
         },
         yAxis: {
             gridlines: true,
             showAxis: false,
-            formatter: $.noop,
-            ticksFormatter: $.noop
+            formatter: $.noop
         }
     }
 });

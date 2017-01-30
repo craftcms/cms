@@ -57,7 +57,7 @@
                         // Create chart
                         this.chart = new Craft.charts.Area(this.$chartContainer, {
                             yAxis: {
-                                ticksFormatter: function(chart) {
+                                formatter: function(chart) {
                                     return function(d) {
                                         var format = ',.0f';
 
