@@ -668,7 +668,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         },
         yAxis: {
             gridlines: true,
-            showAxis: false,
+            showAxis: false
         }
     }
 });
