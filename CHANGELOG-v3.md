@@ -433,9 +433,7 @@ Craft CMS 3.0 Working Changelog
 - Updated Twig to 2.1.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
-- Updated Garnish to 0.1.11.
 - Updated Velocity to 1.4.1.
-- Updated element-resize-detector.js to 1.1.10.
 - Craft no longer requires the mcrypt PHP extension.
 - Improved the way the height of sidebars is calculated for panes with no tabs
 - Moved Utilities nav item to keep Settings as the last item
