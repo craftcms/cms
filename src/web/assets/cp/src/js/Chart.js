@@ -257,6 +257,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         this.width = this.$chart.width() - margin.left - margin.right;
         this.height = this.$chart.height() - margin.top - margin.bottom;
 
+        
         // Append SVG to chart element
 
         var svg = {
