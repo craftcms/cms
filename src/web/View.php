@@ -226,6 +226,8 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
+     * @thorws Exception in case of failure
+     * @throws \Exception in case of failure
      */
     public function renderTemplate($template, array $variables = []): string
     {
@@ -235,7 +237,17 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
         Craft::beginProfile($template, __METHOD__);
-        $output = $this->getTwig()->render($template, $variables);
+
+        try {
+            $output = $this->getTwig()->render($template, $variables);
+        } catch (\Exception $e) {
+            if (!Craft::$app->getConfig()->get('devMode')) {
+                // Throw a generic exception instead
+                throw new Exception('An error occurred when rendering a template.', 0, $e);
+            }
+            throw $e;
+        }
+
         Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
@@ -275,6 +287,8 @@ class View extends \yii\web\View
      * @param array  $args     Any arguments that should be passed to the macro.
      *
      * @return string The rendered macro output.
+     * @thorws Exception in case of failure
+     * @throws \Exception in case of failure
      */
     public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
@@ -283,7 +297,17 @@ class View extends \yii\web\View
 
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
-        $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
+
+        try {
+            $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
+        } catch (\Exception $e) {
+            if (!Craft::$app->getConfig()->get('devMode')) {
+                // Throw a generic exception instead
+                throw new Exception('An error occurred when rendering a template.', 0, $e);
+            }
+            throw $e;
+        }
+
         $this->_renderingTemplate = $renderingTemplate;
 
         return (string)$output;
@@ -318,6 +342,8 @@ class View extends \yii\web\View
      * @param mixed  $object   The object that should be passed into the template.
      *
      * @return string The rendered template.
+     * @thorws Exception in case of failure
+     * @throws \Exception in case of failure
      */
     public function renderObjectTemplate(string $template, $object): string
     {
@@ -326,38 +352,46 @@ class View extends \yii\web\View
             return $template;
         }
 
-        $twig = $this->getTwig();
+        try {
+            $twig = $this->getTwig();
 
-        // Is this the first time we've parsed this template?
-        $cacheKey = md5($template);
-        if (!isset($this->_objectTemplates[$cacheKey])) {
-            // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
-            $template = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
-            $template = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $template);
-            $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
-        }
+            // Is this the first time we've parsed this template?
+            $cacheKey = md5($template);
+            if (!isset($this->_objectTemplates[$cacheKey])) {
+                // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
+                $template = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
+                $template = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $template);
+                $this->_objectTemplates[$cacheKey] = $twig->createTemplate($template);
+            }
 
-        // Temporarily disable strict variables if it's enabled
-        $strictVariables = $twig->isStrictVariables();
+            // Temporarily disable strict variables if it's enabled
+            $strictVariables = $twig->isStrictVariables();
 
-        if ($strictVariables) {
-            $twig->disableStrictVariables();
-        }
+            if ($strictVariables) {
+                $twig->disableStrictVariables();
+            }
 
-        // Render it!
-        $lastRenderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = 'string:'.$template;
-        /** @var Template $templateObj */
-        $templateObj = $this->_objectTemplates[$cacheKey];
-        $output = $templateObj->render([
-            'object' => $object
-        ]);
+            // Render it!
+            $lastRenderingTemplate = $this->_renderingTemplate;
+            $this->_renderingTemplate = 'string:'.$template;
+            /** @var Template $templateObj */
+            $templateObj = $this->_objectTemplates[$cacheKey];
+            $output = $templateObj->render([
+                'object' => $object
+            ]);
 
-        $this->_renderingTemplate = $lastRenderingTemplate;
+            $this->_renderingTemplate = $lastRenderingTemplate;
 
-        // Re-enable strict variables
-        if ($strictVariables) {
-            $twig->enableStrictVariables();
+            // Re-enable strict variables
+            if ($strictVariables) {
+                $twig->enableStrictVariables();
+            }
+        } catch (\Exception $e) {
+            if (!Craft::$app->getConfig()->get('devMode')) {
+                // Throw a generic exception instead
+                throw new Exception('An error occurred when rendering a template.', 0, $e);
+            }
+            throw $e;
         }
 
         return $output;
