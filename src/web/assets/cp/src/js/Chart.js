@@ -387,6 +387,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                 );
         }
 
+        var yTicks = 2;
+
         if (this.settings.yAxis.gridlines) {
             var yLineAxis = d3.axisLeft(y);
 
