@@ -6917,7 +6917,9 @@ Craft.charts.DataTable = Garnish.Base.extend(
  * Class Craft.charts.Tip
  */
 
-Craft.charts.Tip = Garnish.Base.extend({
+Craft.charts.Tip = Garnish.Base.extend(
+{
+    $container: null,
     $tip: null,
 
     init: function($container) {
@@ -6966,8 +6968,6 @@ Craft.charts.BaseChart = Garnish.Base.extend(
     svg: null,
     width: null,
     height: null,
-    x: null,
-    y: null,
 
     init: function(container, settings) {
         this.$container = container;
@@ -7091,6 +7091,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 Craft.charts.Area = Craft.charts.BaseChart.extend(
 {
     tip: null,
+    g: null,
 
     init: function(container, settings)
     {
@@ -7111,6 +7112,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
         this.width = this.$chart.width() - margin.left - margin.right;
         this.height = this.$chart.height() - margin.top - margin.bottom;
+
 
         // Append SVG to chart element
 
@@ -7416,10 +7418,6 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
                     this.tip.hide();
                 }, this));
         }
-
-
-        // Apply shadow filter
-        Craft.charts.utils.applyShadowFilter('drop-shadow', this.g);
     },
 
     getChartMargin: function() {
@@ -7578,91 +7576,6 @@ Craft.charts.utils = {
         var time = hours + ':' + minutes + ':' + seconds;
 
         return time;
-    },
-
-    /**
-     * arrayToDataTable
-     */
-    arrayToDataTable: function(twoDArray) {
-
-        var data = {
-            columns: [],
-            rows: []
-        };
-
-        $.each(twoDArray, function(k, v) {
-            if (k == 0) {
-                // first row is column definition
-
-                data.columns = [];
-
-                $.each(v, function(k2, v2) {
-
-                    // guess column type from first row
-                    var columnType = typeof(twoDArray[(k + 1)][k2]);
-
-                    var column = {
-                        name: v2,
-                        type: columnType,
-                    };
-
-                    data.columns.push(column);
-                });
-            } else {
-                var row = [];
-
-                $.each(v, function(k2, v2) {
-                    var cell = v2;
-
-                    row.push(cell);
-                });
-
-                data.rows.push(row);
-            }
-        });
-
-        var dataTable = new Craft.charts.DataTable(data);
-
-        return dataTable;
-    },
-
-    applyShadowFilter: function(id, svg) {
-        // filters go in defs element
-        var defs = svg.append("defs");
-
-        // create filter with id #{id}
-        // height=130% so that the shadow is not clipped
-        var filter = defs.append("filter")
-            .attr("id", id)
-            .attr("width", "200%")
-            .attr("height", "200%")
-            .attr("x", "-50%")
-            .attr("y", "-50%");
-
-        // SourceAlpha refers to opacity of graphic that this filter will be applied to
-        // convolve that with a Gaussian with standard deviation 3 and store result
-        // in blur
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 1)
-            .attr("result", "blur");
-
-        // translate output of Gaussian blur to the right and downwards with 2px
-        // store result in offsetBlur
-        filter.append("feOffset")
-            .attr("in", "blur")
-            .attr("dx", 0)
-            .attr("dy", 0)
-            .attr("result", "offsetBlur");
-
-        // overlay original SourceGraphic over translated blurred opacity by using
-        // feMerge filter. Order of specifying inputs is important!
-        var feMerge = filter.append("feMerge");
-
-        feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur");
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
     }
 };
 
