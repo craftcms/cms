@@ -3,51 +3,51 @@
 
 
 {% block pageTitle %}
-	{{ parent() }}
+    {{ parent() }}
 
-	{% if craft.app.getIsMultiSite() %}
-		<div class="select">
-			<select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
-				{% for site in craft.app.sites.getEditableSites() %}
-					<option value="{{ site.id }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
-				{% endfor %}
-			</select>
-		</div>
-	{% endif %}
+    {% if craft.app.getIsMultiSite() %}
+        <div class="select">
+            <select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
+                {% for site in craft.app.sites.getEditableSites() %}
+                    <option value="{{ site.id }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
 {% endblock %}
 
 
 {% block sidebar %}
-	<nav>
-		<ul>
-			{% for theGlobalSet in editableGlobalSets %}
-				<li><a{% if theGlobalSet.handle == globalSet.handle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
-			{% endfor %}
-		</ul>
-	</nav>
+    <nav>
+        <ul>
+            {% for theGlobalSet in editableGlobalSets %}
+                <li><a{% if theGlobalSet.handle == globalSet.handle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
 {% endblock %}
 
 
 {% block content %}
-	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
-		<input type="hidden" name="action" value="globals/save-content">
-		<input type="hidden" name="setId" value="{{ globalSet.id }}">
-		<input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
-		{{ csrfInput() }}
+    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
+        <input type="hidden" name="action" value="globals/save-content">
+        <input type="hidden" name="setId" value="{{ globalSet.id }}">
+        <input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
+        {{ csrfInput() }}
 
-		{% if globalSet.getFieldLayout().getFields() | length %}
-			<div>
-				{% include "_includes/fields" with {
-				    fields: globalSet.getFieldLayout().getFields(),
-				    element: globalSet
-				} only %}
-			</div>
+        {% if globalSet.getFieldLayout().getFields() | length %}
+            <div>
+                {% include "_includes/fields" with {
+                    fields: globalSet.getFieldLayout().getFields(),
+                    element: globalSet
+                } only %}
+            </div>
 
-			<div class="buttons">
-				<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-			</div>
-		{% else %}
-			{{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
-		{% endif %}
-	</form>
+            <div class="buttons">
+                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+            </div>
+        {% else %}
+            {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
+        {% endif %}
+    </form>
 {% endblock %}

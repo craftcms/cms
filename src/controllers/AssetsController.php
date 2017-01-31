@@ -569,7 +569,7 @@ class AssetsController extends Controller
 
         $focal = null;
         if ($asset->focalPoint) {
-            $focalPoint = explode(",", $asset->focalPoint);
+            $focalPoint = explode(',', $asset->focalPoint);
 
             // Make it dimension-agnostic
             $focalX = $focalPoint[0] / $asset->width;
@@ -652,14 +652,15 @@ class AssetsController extends Controller
         }
 
         // Verify parameter adequacy
-        if (!in_array($viewportRotation, [0, 90, 180, 270])) {
+        if (!in_array($viewportRotation, [0, 90, 180, 270], false)) {
             throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
         }
 
-        if (is_array($cropData)) {
-            if (array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))) {
-                throw new BadRequestHttpException('Invalid cropping parameters passed');
-            }
+        if (
+            is_array($cropData) &&
+            array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))
+        ) {
+            throw new BadRequestHttpException('Invalid cropping parameters passed');
         }
 
         $imageCopy = $asset->getCopyOfFile();
@@ -668,8 +669,7 @@ class AssetsController extends Controller
 
         /** @var Raster $image */
         $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
-        $originalImageWidth = $imageSize[0];
-        $originalImageHeight = $imageSize[1];
+        list($originalImageWidth, $originalImageHeight) = $imageSize;
 
         if (!empty($flipData['x'])) {
             $image->flipHorizontally();
@@ -697,7 +697,7 @@ class AssetsController extends Controller
             $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
             $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
             $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
-            $focal = round($fx).",".round($fy);
+            $focal = round($fx).','.round($fy);
         }
 
         $image->crop($x, $x + $width, $y, $y + $height);

@@ -21,7 +21,6 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
-use yii\db\TableSchema as BaseTableSchema;
 
 /**
  * @inheritdoc

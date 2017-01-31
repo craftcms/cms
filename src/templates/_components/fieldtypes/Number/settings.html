@@ -1,37 +1,37 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.textField({
-	label: "Min Value"|t('app'),
-	id: 'min',
-	name: 'min',
-	value: field.min,
-	size: 5,
-	errors: field.getErrors('min')
+    label: "Min Value"|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+    size: 5,
+    errors: field.getErrors('min')
 }) }}
 
 {{ forms.textField({
-	label: "Max Value"|t('app'),
-	id: 'max',
-	name: 'max',
-	value: field.max,
-	size: 5,
-	errors: field.getErrors('max')
+    label: "Max Value"|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+    size: 5,
+    errors: field.getErrors('max')
 }) }}
 
 {{ forms.textField({
-	label: "Decimal Points"|t('app'),
-	id: 'decimals',
-	name: 'decimals',
-	value: field.decimals,
-	size: 1,
-	errors: field.getErrors('decimals')
+    label: "Decimal Points"|t('app'),
+    id: 'decimals',
+    name: 'decimals',
+    value: field.decimals,
+    size: 1,
+    errors: field.getErrors('decimals')
 }) }}
 
 {{ forms.textField({
-	label: "Size"|t('app'),
-	id: 'size',
-	name: 'size',
-	value: field.size,
-	size: 2,
-	errors: field.getErrors('size')
+    label: "Size"|t('app'),
+    id: 'size',
+    name: 'size',
+    value: field.size,
+    size: 2,
+    errors: field.getErrors('size')
 }) }}

@@ -15,7 +15,6 @@ use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -547,12 +546,9 @@ class UtilitiesController extends Controller
 
         $migrator = Craft::$app->getContentMigrator();
 
-        if($migrator->up(0))
-        {
+        if ($migrator->up(0)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
-        }
-        else
-        {
+        } else {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 

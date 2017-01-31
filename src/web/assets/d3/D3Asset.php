@@ -8,10 +8,10 @@
 namespace craft\web\assets\d3;
 
 use Craft;
-use craft\web\AssetBundle;
-use craft\web\View;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
+use craft\web\AssetBundle;
+use craft\web\View;
 
 /**
  * D3 asset bundle.

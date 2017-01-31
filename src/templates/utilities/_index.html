@@ -3,9 +3,9 @@
 {% set title = displayName %}
 
 {% block sidebar %}
-	<nav class="has-icons">
-		<ul>
-			{% for utility in utilities %}
+    <nav class="has-icons">
+        <ul>
+            {% for utility in utilities %}
                 {% set selected = utility.id == id %}
                 <li>
                     <a class="{% if selected %}sel{% elseif utility.badgeCount %}has-badge{% endif %}" href="{{ url('utilities/'~utility.id) }}">
@@ -16,9 +16,9 @@
                         {% endif %}
                     </a>
                 </li>
-			{% endfor %}
-		</ul>
-	</nav>
+            {% endfor %}
+        </ul>
+    </nav>
 {% endblock %}
 
 {% block content %}

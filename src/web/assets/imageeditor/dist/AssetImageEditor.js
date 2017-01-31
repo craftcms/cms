@@ -188,8 +188,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     var adjustedX = focalState.imageDimensions.width * focalData.x;
                     var adjustedY = focalState.imageDimensions.height * focalData.y;
 
-                    focalState.offsetX = adjustedX - focalState.imageDimensions.width/2;
-                    focalState.offsetY = adjustedY - focalState.imageDimensions.height/2;
+                    focalState.offsetX = adjustedX - focalState.imageDimensions.width / 2;
+                    focalState.offsetY = adjustedY - focalState.imageDimensions.height / 2;
 
                     focal = true;
                 }
@@ -338,7 +338,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Create the focal point.
          */
-        _createFocalPoint: function () {
+        _createFocalPoint: function() {
             var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
 
             var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
@@ -380,7 +380,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Toggle focal point
          */
-        toggleFocalPoint: function () {
+        toggleFocalPoint: function() {
             if (!this.focalPoint) {
                 this._createFocalPoint();
             } else {
@@ -433,14 +433,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
         },
 
-        _repositionFocalPoint: function (previousEditorDimensions) {
+        _repositionFocalPoint: function(previousEditorDimensions) {
             if (this.focalPoint) {
-                var offsetX = this.focalPoint.left-this.editorWidth/2;
-                var offsetY = this.focalPoint.top-this.editorHeight/2;
+                var offsetX = this.focalPoint.left - this.editorWidth / 2;
+                var offsetY = this.focalPoint.top - this.editorHeight / 2;
 
                 var currentWidth = this.image.width;
                 var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
-                var ratio = newWidth/currentWidth;
+                var ratio = newWidth / currentWidth;
 
                 offsetX -= (previousEditorDimensions.width - this.editorWidth) / 2;
                 offsetY -= (previousEditorDimensions.height - this.editorHeight) / 2;
@@ -449,8 +449,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 offsetY *= ratio;
 
                 this.focalPoint.set({
-                    left: this.editorWidth/2 + offsetX,
-                    top: this.editorHeight/2 + offsetY
+                    left: this.editorWidth / 2 + offsetX,
+                    top: this.editorHeight / 2 + offsetY
                 });
             }
         },
@@ -628,7 +628,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
          */
-        storeFocalPointState: function (state) {
+        storeFocalPointState: function(state) {
             // TODO not really comfortable with imageDimensions being doubled in both cropper and focal State
             // as they could be forced to have the same value and remove the need for duplicity
 
@@ -697,7 +697,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     scaleFactor = 1 / this.scaleFactor;
                     this.scaleFactor = 1;
                 } else {
-                    if (this.viewport.width > this.editorHeight){
+                    if (this.viewport.width > this.editorHeight) {
                         scaleFactor = this.editorHeight / this.viewport.width;
                     } else if (this.viewport.height > this.editorWidth) {
                         scaleFactor = this.editorWidth / this.viewport.height;
@@ -705,10 +705,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this.scaleFactor = scaleFactor;
                 }
 
-                 if (scaleFactor < 1) {
+                if (scaleFactor < 1) {
                     imageProperties.width *= scaleFactor;
                     imageProperties.height *= scaleFactor;
-                 }
+                }
 
                 var state = this.cropperState;
 
@@ -981,7 +981,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * If focal point is active and outside of viewport after straightening, reset it.
          */
-        _cleanupFocalPointAfterStraighten: function () {
+        _cleanupFocalPointAfterStraighten: function() {
             if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.viewport)) {
                 this.focalPoint.set({opacity: 1});
                 var state = this.focalPointState;
@@ -1000,15 +1000,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @returns {boolean}
          */
-        _isCenterInside: function (object, containingObject) {
-            return (object.left > containingObject.left - containingObject.width/2
-                && object.top > containingObject.top - containingObject.height/2
-                && object.left < containingObject.left + containingObject.width/2
-                && object.top < containingObject.top + containingObject.height/2
+        _isCenterInside: function(object, containingObject) {
+            return (object.left > containingObject.left - containingObject.width / 2
+                && object.top > containingObject.top - containingObject.height / 2
+                && object.left < containingObject.left + containingObject.width / 2
+                && object.top < containingObject.top + containingObject.height / 2
             );
         },
 
-        _adjustFocalPointByAngle: function (angle) {
+        _adjustFocalPointByAngle: function(angle) {
             var angleInRadians = angle * (Math.PI / 180);
             var state = this.focalPointState;
 
@@ -1379,7 +1379,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                     // Calculate the cropper dimensions after all the zooming
                     viewportDimensions.height = this.clipper.height * inverseZoomFactor;
-                    viewportDimensions.width = this.clipper.width  * inverseZoomFactor;
+                    viewportDimensions.width = this.clipper.width * inverseZoomFactor;
 
                     if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper)) {
                         this.focalPoint.set({opacity: 1});
@@ -1759,7 +1759,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param ev
          */
-        _handleFocalDrag: function (ev) {
+        _handleFocalDrag: function(ev) {
             if (this.focalPoint) {
                 var deltaX = ev.pageX - this.previousMouseX;
                 var deltaY = ev.pageY - this.previousMouseY;
@@ -1974,7 +1974,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @return boolean
          */
 
-        _isMouseOver: function (event, object) {
+        _isMouseOver: function(event, object) {
             var parentOffset = this.$croppingCanvas.offset();
             var mouseX = event.pageX - parentOffset.left;
             var mouseY = event.pageY - parentOffset.top;

@@ -5,9 +5,9 @@
 {% import "_includes/forms" as forms %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') },
-	{ label: "Assets"|t('app'), url: url('settings/assets') },
-	{ label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') }
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Assets"|t('app'), url: url('settings/assets') },
+    { label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') }
 ] %}
 
 {% set fullPageForm = true %}
@@ -16,119 +16,119 @@
 
 
 {% if isNewTransform %}
-	{% set title = "Create a new image transform"|t('app') %}
+    {% set title = "Create a new image transform"|t('app') %}
 {% else %}
-	{% set title = transform.name %}
+    {% set title = transform.name %}
 {% endif %}
 
 
 {% block content %}
-		<input type="hidden" name="action" value="asset-transforms/save-transform">
-		{{ redirectInput('settings/assets/transforms') }}
+        <input type="hidden" name="action" value="asset-transforms/save-transform">
+        {{ redirectInput('settings/assets/transforms') }}
 
-		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
-
-		{{ forms.textField({
-			first: true,
-			label: "Name"|t('app'),
-			id: 'name',
-			name: 'name',
-			value: (transform is defined ? transform.name : null),
-			errors: (transform is defined ? transform.getErrors('name') : null),
-			autofocus: true,
-			required: true,
-			translatable: true
-		}) }}
+        {% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 
         {{ forms.textField({
-	        label: "Handle"|t('app'),
-	        id: "handle",
-	        name: "handle",
-	        value: (transform is defined ? transform.handle : null),
-	        errors: (transform is defined ? transform.getErrors('handle') : null),
-	        required: true,
-	        translatable: true
+            first: true,
+            label: "Name"|t('app'),
+            id: 'name',
+            name: 'name',
+            value: (transform is defined ? transform.name : null),
+            errors: (transform is defined ? transform.getErrors('name') : null),
+            autofocus: true,
+            required: true,
+            translatable: true
+        }) }}
+
+        {{ forms.textField({
+            label: "Handle"|t('app'),
+            id: "handle",
+            name: "handle",
+            value: (transform is defined ? transform.handle : null),
+            errors: (transform is defined ? transform.getErrors('handle') : null),
+            required: true,
+            translatable: true
         }) }}
 
         {% set modeInput %}
-        	<div id="mode">
-        		<label id="mode-crop">
-        			<input type="radio" name="mode" value="crop"{% if transform is not defined or transform.mode == 'crop' %} checked{% endif %}>
-        			{{ "Crop"|t('app') }}
-        		</label>
+            <div id="mode">
+                <label id="mode-crop">
+                    <input type="radio" name="mode" value="crop"{% if transform is not defined or transform.mode == 'crop' %} checked{% endif %}>
+                    {{ "Crop"|t('app') }}
+                </label>
 
-        		<label id="mode-fit">
-        			<input type="radio" name="mode" value="fit"{% if transform is defined and transform.mode == 'fit' %} checked{% endif %}>
-        			{{ "Fit"|t('app') }}
-        		</label>
+                <label id="mode-fit">
+                    <input type="radio" name="mode" value="fit"{% if transform is defined and transform.mode == 'fit' %} checked{% endif %}>
+                    {{ "Fit"|t('app') }}
+                </label>
 
-        		<label id="mode-stretch">
-        			<input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
-        			{{ "Stretch"|t('app') }}
-        		</label>
-        	</div>
+                <label id="mode-stretch">
+                    <input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
+                    {{ "Stretch"|t('app') }}
+                </label>
+            </div>
         {% endset %}
 
-		{{ forms.field({
-			label: "Mode"|t('app')
-		}, modeInput) }}
+        {{ forms.field({
+            label: "Mode"|t('app')
+        }, modeInput) }}
 
-		<div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
-			{{ forms.selectField({
-				label: "Default Focal Point"|t('app'),
-				id: 'position',
-				name: 'position',
-				options: {
-					'top-left': "Top-Left"|t('app'),
-					'top-center': "Top-Center"|t('app'),
-					'top-right': "Top-Right"|t('app'),
-					'center-left': "Center-Left"|t('app'),
-					'center-center': "Center-Center"|t('app'),
-					'center-right': "Center-Right"|t('app'),
-					'bottom-left': "Bottom-Left"|t('app'),
-					'bottom-center': "Bottom-Center"|t('app'),
-					'bottom-right': "Bottom-Right"|t('app')
-				},
-				value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
-			}) }}
-		</div>
+        <div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
+            {{ forms.selectField({
+                label: "Default Focal Point"|t('app'),
+                id: 'position',
+                name: 'position',
+                options: {
+                    'top-left': "Top-Left"|t('app'),
+                    'top-center': "Top-Center"|t('app'),
+                    'top-right': "Top-Right"|t('app'),
+                    'center-left': "Center-Left"|t('app'),
+                    'center-center': "Center-Center"|t('app'),
+                    'center-right': "Center-Right"|t('app'),
+                    'bottom-left': "Bottom-Left"|t('app'),
+                    'bottom-center': "Bottom-Center"|t('app'),
+                    'bottom-right': "Bottom-Right"|t('app')
+                },
+                value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
+            }) }}
+        </div>
 
-		{{ forms.textField({
-			label: "Width"|t('app'),
-			id: "width",
-			name: "width",
-			size: 5,
-			value: (transform is defined ? transform.width : null),
-			errors: (transform is defined ? transform.getErrors('width') : null),
-			translatable: true
-		}) }}
+        {{ forms.textField({
+            label: "Width"|t('app'),
+            id: "width",
+            name: "width",
+            size: 5,
+            value: (transform is defined ? transform.width : null),
+            errors: (transform is defined ? transform.getErrors('width') : null),
+            translatable: true
+        }) }}
 
-		{{ forms.textField({
-			label: "Height"|t('app'),
-			id: "height",
-			name: "height",
-			size: 5,
-			value: (transform is defined ? transform.height : null),
-			errors: (transform is defined ? transform.getErrors('height') : null),
-			translatable: true
-		}) }}
+        {{ forms.textField({
+            label: "Height"|t('app'),
+            id: "height",
+            name: "height",
+            size: 5,
+            value: (transform is defined ? transform.height : null),
+            errors: (transform is defined ? transform.getErrors('height') : null),
+            translatable: true
+        }) }}
 
-		{{ forms.selectField({
-			label: "Quality"|t,
-			id: "quality",
-			name: "quality",
-			options: {
-				'0': "Auto"|t,
-				'10': "Low"|t,
-				'30': "Medium"|t,
-				'60': "High"|t,
-				'82': "Very High (Recommended)"|t,
-				'100': "Maximum"|t
-			},
-			value: (transform is defined ? transform.quality : 82),
-			errors: (transform is defined ? transform.getErrors('quality') : null),
-			translatable: true
-		}) }}
+        {{ forms.selectField({
+            label: "Quality"|t,
+            id: "quality",
+            name: "quality",
+            options: {
+                '0': "Auto"|t,
+                '10': "Low"|t,
+                '30': "Medium"|t,
+                '60': "High"|t,
+                '82': "Very High (Recommended)"|t,
+                '100': "Maximum"|t
+            },
+            value: (transform is defined ? transform.quality : 82),
+            errors: (transform is defined ? transform.getErrors('quality') : null),
+            translatable: true
+        }) }}
 
         {% set formatOptions = [
             {label: 'Auto', value: null},
@@ -151,17 +151,17 @@
 
 
 {% js %}
-	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+    {% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
-	$('#mode input').change(function()
-	{
-		if ($(this).val() == 'crop')
-		{
-			$('#position-container').removeClass('hidden');
-		}
-		else
-		{
-			$('#position-container').addClass('hidden');
-		}
-	})
+    $('#mode input').change(function()
+    {
+        if ($(this).val() == 'crop')
+        {
+            $('#position-container').removeClass('hidden');
+        }
+        else
+        {
+            $('#position-container').addClass('hidden');
+        }
+    })
 {% endjs %}

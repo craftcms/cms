@@ -2,16 +2,16 @@
 {%- set value = (value is defined ? value : null) %}
 
 {%- for key, option in options %}
-	{%- set optionLabel = (option.label is defined ? option.label : option) %}
-	{%- set optionValue = (option.value is defined ? option.value : key) -%}
-	<div>
-		{% include "_includes/forms/radio" with {
-			label:     optionLabel,
-			id:        (id is defined and loop.first ? id : null),
-			name:      (name is defined ? name : null),
-			value:     optionValue,
-			checked:   (optionValue == value),
-			autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
-		} only %}
-	</div>
+    {%- set optionLabel = (option.label is defined ? option.label : option) %}
+    {%- set optionValue = (option.value is defined ? option.value : key) -%}
+    <div>
+        {% include "_includes/forms/radio" with {
+            label:     optionLabel,
+            id:        (id is defined and loop.first ? id : null),
+            name:      (name is defined ? name : null),
+            value:     optionValue,
+            checked:   (optionValue == value),
+            autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
+        } only %}
+    </div>
 {% endfor %}

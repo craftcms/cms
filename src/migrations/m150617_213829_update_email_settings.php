@@ -4,11 +4,11 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\mail\transportadapters\Sendmail;
-use craft\mail\transportadapters\Smtp;
 use craft\mail\Mailer;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
+use craft\mail\transportadapters\Smtp;
 
 /**
  * m150617_213829_update_email_settings migration.

@@ -25,6 +25,7 @@ class m170114_161144_udates_permission extends Migration
     public function safeDown()
     {
         echo "m170114_161144_udates_permission cannot be reverted.\n";
+
         return false;
     }
 }

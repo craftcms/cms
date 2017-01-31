@@ -10,8 +10,7 @@ SlideRuleInput = Garnish.Base.extend({
 
     startPositionX: null,
 
-    init: function(id, settings)
-    {
+    init: function(id, settings) {
         this.setSettings(settings, SlideRuleInput.defaultSettings);
 
         this.value = 0;
@@ -20,31 +19,28 @@ SlideRuleInput = Garnish.Base.extend({
         this.slideMin = -45;
         this.slideMax = 45;
 
-        this.$container = $('#'+id);
+        this.$container = $('#' + id);
         this.$overlay = $('<div class="overlay"></div>').appendTo(this.$container);
         this.$cursor = $('<div class="cursor"></div>').appendTo(this.$container);
         this.$graduations = $('<div class="graduations"></div>').appendTo(this.$container);
         this.$graduationsUl = $('<ul></ul>').appendTo(this.$graduations);
 
-        for(var i = this.graduationsMin; i <= this.graduationsMax; i++)
-        {
-            var $li = $('<li class="graduation" data-graduation="'+i+'"><div class="label">'+i+'</div></li>').appendTo(this.$graduationsUl);
+        for (var i = this.graduationsMin; i <= this.graduationsMax; i++) {
+            var $li = $('<li class="graduation" data-graduation="' + i + '"><div class="label">' + i + '</div></li>').appendTo(this.$graduationsUl);
 
-            if((i % 5) == 0)
-            {
+            if ((i % 5) == 0) {
                 $li.addClass('main-graduation');
             }
 
-            if(i == 0)
-            {
+            if (i == 0) {
                 $li.addClass('selected');
             }
         }
 
         this.$options = this.$container.find('.graduation');
 
-        this.addListener(this.$container, 'resize',  $.proxy(this, '_handleResize'));
-        this.addListener(this.$container, 'tapstart',  $.proxy(this, '_handleTapStart'));
+        this.addListener(this.$container, 'resize', $.proxy(this, '_handleResize'));
+        this.addListener(this.$container, 'tapstart', $.proxy(this, '_handleTapStart'));
         this.addListener(Garnish.$bod, 'tapmove', $.proxy(this, '_handleTapMove'));
         this.addListener(Garnish.$bod, 'tapend', $.proxy(this, '_handleTapEnd'));
 
@@ -52,22 +48,19 @@ SlideRuleInput = Garnish.Base.extend({
 
         // this.setValue(0);
 
-        setTimeout($.proxy(function()
-        {
+        setTimeout($.proxy(function() {
             // (n -1) options because the border is placed on the left of the 10px box
             this.graduationsCalculatedWidth = (this.$options.length - 1) * 10;
             this.$graduationsUl.css('left', (-this.graduationsCalculatedWidth / 2) + this.$container.width() / 2);
         }, this), 50);
     },
 
-    _handleResize: function()
-    {
+    _handleResize: function() {
         var left = this.valueToPosition(this.value);
         this.$graduationsUl.css('left', left);
     },
 
-    _handleTapStart: function(ev, touch)
-    {
+    _handleTapStart: function(ev, touch) {
         ev.preventDefault();
 
         this.startPositionX = touch.position.x;
@@ -77,10 +70,8 @@ SlideRuleInput = Garnish.Base.extend({
         this.onStart();
     },
 
-    _handleTapMove: function(ev, touch)
-    {
-        if(this.dragging)
-        {
+    _handleTapMove: function(ev, touch) {
+        if (this.dragging) {
             ev.preventDefault();
 
             var curX = this.startPositionX - touch.position.x;
@@ -93,44 +84,36 @@ SlideRuleInput = Garnish.Base.extend({
         }
     },
 
-    setValue: function (value) {
+    setValue: function(value) {
         var left = this.valueToPosition(value);
-        if(value < this.slideMin)
-        {
+        if (value < this.slideMin) {
             value = this.slideMin;
             left = this.valueToPosition(value);
 
         }
-        else if(value > this.slideMax)
-        {
+        else if (value > this.slideMax) {
             value = this.slideMax;
             left = this.valueToPosition(value);
         }
 
         this.$graduationsUl.css('left', left);
 
-        if(value >= this.slideMin && value <= this.slideMax)
-        {
+        if (value >= this.slideMin && value <= this.slideMax) {
             this.$options.removeClass('selected');
 
             $.each(this.$options, function(key, option) {
-                if($(option).data('graduation') > 0 )
-                {
-                    if($(option).data('graduation') <= value)
-                    {
+                if ($(option).data('graduation') > 0) {
+                    if ($(option).data('graduation') <= value) {
                         $(option).addClass('selected');
                     }
                 }
-                if($(option).data('graduation') < 0 )
-                {
-                    if($(option).data('graduation') >= value)
-                    {
+                if ($(option).data('graduation') < 0) {
+                    if ($(option).data('graduation') >= value) {
                         $(option).addClass('selected');
                     }
                 }
 
-                if($(option).data('graduation') == 0)
-                {
+                if ($(option).data('graduation') == 0) {
                     $(option).addClass('selected');
                 }
             });
@@ -139,45 +122,41 @@ SlideRuleInput = Garnish.Base.extend({
         this.value = value;
     },
 
-    _handleTapEnd: function(ev, touch)
-    {
-        if(this.dragging)
-        {
+    _handleTapEnd: function(ev, touch) {
+        if (this.dragging) {
             ev.preventDefault();
             this.dragging = false;
             this.onEnd();
         }
     },
 
-    positionToValue: function (position)
-    {
+    positionToValue: function(position) {
         var scaleMin = (this.graduationsMin * -1);
         var scaleMax = (this.graduationsMin - this.graduationsMax) * -1;
 
         return (( ( this.$graduations.width() / 2 ) + (position * -1) ) / this.graduationsCalculatedWidth) * scaleMax - scaleMin;
     },
 
-    valueToPosition: function(value)
-    {
+    valueToPosition: function(value) {
         var scaleMin = (this.graduationsMin * -1);
         var scaleMax = (this.graduationsMin - this.graduationsMax) * -1;
 
         return -((value + scaleMin) * this.graduationsCalculatedWidth / scaleMax - this.$graduations.width() / 2);
     },
 
-    onStart: function () {
+    onStart: function() {
         if (typeof this.settings.onChange == "function") {
             this.settings.onStart(this);
         }
     },
 
-    onChange: function () {
+    onChange: function() {
         if (typeof this.settings.onChange == "function") {
             this.settings.onChange(this);
         }
     },
 
-    onEnd: function () {
+    onEnd: function() {
         if (typeof this.settings.onChange == "function") {
             this.settings.onEnd(this);
         }

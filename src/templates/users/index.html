@@ -1,5 +1,5 @@
 {% if CraftEdition != CraftPro %}
-	{% exit 404 %}
+    {% exit 404 %}
 {% endif %}
 
 {% requirePermission 'editUsers' %}
@@ -11,9 +11,9 @@
 {% set docsUrl = 'http://craftcms.com/docs/users' %}
 
 {% if currentUser.can('registerUsers') %}
-	{% set extraPageHeaderHtml %}
-		<div class="buttons right">
-			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t('app') }}</a>
-		</div>
-	{% endset %}
+    {% set extraPageHeaderHtml %}
+        <div class="buttons right">
+            <a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New user"|t('app') }}</a>
+        </div>
+    {% endset %}
 {% endif %}

@@ -2,19 +2,19 @@
 {% set title = "Asset Settings"|t('app') %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 
 {% set navItems = {
-	volumes: { label: "Volumes"|t('app'), url: url('settings/assets') },
-	transforms: { label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') },
+    volumes: { label: "Volumes"|t('app'), url: url('settings/assets') },
+    transforms: { label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') },
 } %}
 
 {% set docTitle = navItems[selectedNavItem].label~' - '~title %}
 
 {% block sidebar %}
-	<nav>
-		{% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
-	</nav>
+    <nav>
+        {% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+    </nav>
 {% endblock %}

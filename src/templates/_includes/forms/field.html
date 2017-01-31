@@ -8,31 +8,31 @@
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set errors = (errors is defined ? errors : null) -%}
 {%- set fieldClass = [
-	'field',
-	(first is defined and first ? 'first' : null),
-	(errors ? 'has-errors' : null),
-	(fieldClass is defined and fieldClass ? fieldClass : null)
+    'field',
+    (first is defined and first ? 'first' : null),
+    (errors ? 'has-errors' : null),
+    (fieldClass is defined and fieldClass ? fieldClass : null)
 ]|filter|join(' ') -%}
 
 <div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}>
-	{% if label or instructions %}
-		<div class="heading">
-			{% if label %}
-				<label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
-					{{- label|raw -}}
-					{%- if site %} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.'|t('app') }}"></span>{% endif -%}
-				</label>
-			{% endif %}
-			{% if instructions %}
-				<div class="instructions">{{ instructions|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
-			{% endif %}
-		</div>
-	{% endif %}
-	<div class="input {{ orientation }}{% if errors %} errors{% endif %}">
-		{{ input|raw }}
-	</div>
-	{% if warning %}
-		<p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
-	{% endif %}
-	{% include "_includes/forms/errorList" with { errors: errors } %}
+    {% if label or instructions %}
+        <div class="heading">
+            {% if label %}
+                <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
+                    {{- label|raw -}}
+                    {%- if site %} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.'|t('app') }}"></span>{% endif -%}
+                </label>
+            {% endif %}
+            {% if instructions %}
+                <div class="instructions">{{ instructions|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
+            {% endif %}
+        </div>
+    {% endif %}
+    <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
+        {{ input|raw }}
+    </div>
+    {% if warning %}
+        <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+    {% endif %}
+    {% include "_includes/forms/errorList" with { errors: errors } %}
 </div>

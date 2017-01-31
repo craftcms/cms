@@ -5,15 +5,15 @@ namespace craft\migrations;
 use Craft;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\elements\Asset;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use yii\base\Exception;
 use craft\volumes\Local;
-use craft\elements\Asset;
+use yii\base\Exception;
 
 /**
  * m160804_110002_userphotos_to_assets migration.

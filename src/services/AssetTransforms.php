@@ -1126,9 +1126,9 @@ class AssetTransforms extends Component
 
         foreach ($dirs as $dir) {
             try {
-            $handle = opendir($dir);
-            if ($handle === false) {
-                Craft::warning("Unable to open directory: $dir", __METHOD__);
+                $handle = opendir($dir);
+                if ($handle === false) {
+                    Craft::warning("Unable to open directory: $dir", __METHOD__);
 
                     return;
                 }
@@ -1358,7 +1358,7 @@ class AssetTransforms extends Component
                 break;
             default:
                 if ($asset->focalPoint) {
-                    $focal = explode(",", $asset->focalPoint);
+                    $focal = explode(',', $asset->focalPoint);
                     $position = ['x' => $focal[0], 'y' => $focal[1]];
                 } else if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
                     $position = 'center-center';

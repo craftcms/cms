@@ -108,7 +108,13 @@ class UsersController extends Controller
         // Does a user exist with that username/email?
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
+        // Delay randomly between 0 and 1.5 seconds.
+        usleep(random_int(0, 1500000));
+
         if (!$user) {
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword($password, '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+
             return $this->_handleLoginFailure(User::AUTH_USERNAME_INVALID);
         }
 

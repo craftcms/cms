@@ -4,13 +4,13 @@
 {% set title = "Globals"|t('app') %}
 
 {% set extraPageHeaderHtml %}
-	<div class="buttons right">
-		<a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
-	</div>
+    <div class="buttons right">
+        <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">{{ "New global set"|t('app') }}</a>
+    </div>
 {% endset %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set docsUrl = 'http://craftcms.com/docs/globals' %}
@@ -20,45 +20,45 @@
 
 
 {% block content %}
-	<div class="field">
-		<p id="nosets"{% if globalSets %} class="hidden"{% endif %}>
-			{{ "No global sets exist yet."|t('app') }}
-		</p>
+    <div class="field">
+        <p id="nosets"{% if globalSets %} class="hidden"{% endif %}>
+            {{ "No global sets exist yet."|t('app') }}
+        </p>
 
-		{% if globalSets %}
-			<table id="sets" class="data fullwidth collapsible">
-				<thead>
-					<th scope="col">{{ "Global Set Name"|t('app') }}</th>
-					<th scope="col">{{ "Handle"|t('app') }}</th>
-					<td class="thin"></td>
-				</thead>
-				<tbody>
-					{% for globalSet in globalSets %}
-						<tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
-							<th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
-							<td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
-							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-	</div>
+        {% if globalSets %}
+            <table id="sets" class="data fullwidth collapsible">
+                <thead>
+                    <th scope="col">{{ "Global Set Name"|t('app') }}</th>
+                    <th scope="col">{{ "Handle"|t('app') }}</th>
+                    <td class="thin"></td>
+                </thead>
+                <tbody>
+                    {% for globalSet in globalSets %}
+                        <tr data-id="{{ globalSet.id }}" data-name="{{ globalSet.name }}">
+                            <th scope="row" data-title="{{ 'Global Set Name'|t('app') }}"><a href="{{ url('settings/globals/' ~ globalSet.id) }}">{{ globalSet.name|t('site') }}</a></th>
+                            <td class="code" data-title="{{ 'Handle'|t('app') }}">{{ globalSet.handle }}</td>
+                            <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
 {% endblock %}
 
 
 {% js %}
-	var adminTable = new Craft.AdminTable({
-		tableSelector: '#sets',
-		noItemsSelector: '#nosets',
-		deleteAction: 'globals/delete-set',
-		onDeleteItem: function()
-		{
-			// Hide the Globals tab if that was the last one
-			if (adminTable.totalItems == 0)
-			{
-				$('#nav-globals').remove();
-			}
-		}
-	});
+    var adminTable = new Craft.AdminTable({
+        tableSelector: '#sets',
+        noItemsSelector: '#nosets',
+        deleteAction: 'globals/delete-set',
+        onDeleteItem: function()
+        {
+            // Hide the Globals tab if that was the last one
+            if (adminTable.totalItems == 0)
+            {
+                $('#nav-globals').remove();
+            }
+        }
+    });
 {% endjs %}

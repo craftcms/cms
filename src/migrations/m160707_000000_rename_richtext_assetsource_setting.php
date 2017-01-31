@@ -4,8 +4,8 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
-use craft\helpers\Json;
 use craft\fields\RichText;
+use craft\helpers\Json;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName

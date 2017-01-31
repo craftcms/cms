@@ -2,11 +2,11 @@
 {% set title = "Internal Server Error"|t('app') %}
 
 {% block message %}
-	<h2>{{ title }}</h2>
+    <h2>{{ title }}</h2>
 
-	{% if message %}
-		{% filter md %}{{ message }}{% endfilter %}
-	{% else %}
-		<p>{{ "An error occurred while processing your request."|t('app') }}</p>
-	{% endif %}
+    {% if message %}
+        {% filter md %}{{ message }}{% endfilter %}
+    {% else %}
+        <p>{{ "An error occurred while processing your request."|t('app') }}</p>
+    {% endif %}
 {% endblock %}

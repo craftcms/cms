@@ -2,43 +2,43 @@
 {% set meta = meta is defined ? meta : false %}
 
 {% if not craft.app.config.get('useEmailAsUsername') %}
-	{{ forms.textField({
-		first: true,
-		label: "Username"|t('app'),
-		id: 'username',
-		name: 'username',
-		value: (account is defined ? account.username : null),
-		autofocus: true,
-		required: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? true : false),
-		disabled: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? false : true),
-		errors: (account is defined ? account.getErrors('username') : null)
-	}) }}
+    {{ forms.textField({
+        first: true,
+        label: "Username"|t('app'),
+        id: 'username',
+        name: 'username',
+        value: (account is defined ? account.username : null),
+        autofocus: true,
+        required: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? true : false),
+        disabled: (isNewAccount or (currentUser.admin or account.getIsCurrent()) ? false : true),
+        errors: (account is defined ? account.getErrors('username') : null)
+    }) }}
 {% endif %}
 
 {% if not meta %}
 <div class="grid" data-cols="2" data-mode="pct">
-	<div class="item" data-colspan="1">
+    <div class="item" data-colspan="1">
 {% endif %}
-		{{ forms.textField({
-			label: "First Name"|t('app'),
-			id: 'firstName',
-			name: 'firstName',
-			value: (account is defined ? account.firstName : null),
-			errors: (account is defined ? account.getErrors('firstName') : null),
-			autofocus: craft.app.config.get('useEmailAsUsername')
-		}) }}
+        {{ forms.textField({
+            label: "First Name"|t('app'),
+            id: 'firstName',
+            name: 'firstName',
+            value: (account is defined ? account.firstName : null),
+            errors: (account is defined ? account.getErrors('firstName') : null),
+            autofocus: craft.app.config.get('useEmailAsUsername')
+        }) }}
 {% if not meta %}
-	</div>
-	<div class="item" data-colspan="1">
+    </div>
+    <div class="item" data-colspan="1">
 {% endif %}
-		{{ forms.textField({
-			label: "Last Name"|t('app'),
-			id: 'lastName',
-			name: 'lastName',
-			value: (account is defined ? account.lastName : null),
-			errors: (account is defined ? account.getErrors('lastName') : null)
-		}) }}
+        {{ forms.textField({
+            label: "Last Name"|t('app'),
+            id: 'lastName',
+            name: 'lastName',
+            value: (account is defined ? account.lastName : null),
+            errors: (account is defined ? account.getErrors('lastName') : null)
+        }) }}
 {% if not meta %}
-	</div>
+    </div>
 </div>
 {% endif %}

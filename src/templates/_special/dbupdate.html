@@ -5,18 +5,18 @@
 {% set name = 'Craft CMS' %}
 
 {% if not craft.app.updates.getIsCraftDbMigrationNeeded() %}
-	{% set plugin = craft.app.updates.getPluginsThatNeedDbUpdate()|first %}
+    {% set plugin = craft.app.updates.getPluginsThatNeedDbUpdate()|first %}
 
-	{% if plugin %}
-		{% set handle = plugin.handle %}
-		{% set name = plugin.name %}
-	{% endif %}
+    {% if plugin %}
+        {% set handle = plugin.handle %}
+        {% set name = plugin.name %}
+    {% endif %}
 {% endif %}
 
 
 {% block message %}
-	<p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: name }) }}</p>
-	<div class="buttons">
-		<a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t('app') }}</a>
-	</div>
+    <p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: name }) }}</p>
+    <div class="buttons">
+        <a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t('app') }}</a>
+    </div>
 {% endblock %}
