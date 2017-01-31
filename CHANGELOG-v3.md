@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.1 - 2017-01-29
 
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
