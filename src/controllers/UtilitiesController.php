@@ -285,7 +285,7 @@ class UtilitiesController extends Controller
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('assettransformindex', ['assetId' => $params['deleteAsset']])
+                    ->delete('{{%assettransformindex}}', ['assetId' => $params['deleteAsset']])
                     ->execute();
 
                 /** @var Asset[] $assets */
