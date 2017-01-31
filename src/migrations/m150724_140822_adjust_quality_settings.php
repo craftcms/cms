@@ -1,8 +1,8 @@
 <?php
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -14,11 +14,11 @@ class m150724_140822_adjust_quality_settings extends Migration
      *
      * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $transforms = (new Query())
-            ->select('id, quality')
-            ->from('{{%assettransforms}}')
+            ->select(['id', 'quality'])
+            ->from(['{{%assettransforms}}'])
             ->all();
 
         foreach ($transforms as $transform) {

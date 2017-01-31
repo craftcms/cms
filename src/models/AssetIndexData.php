@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\dates\DateTime;
+use craft\base\Model;
+use DateTime;
 
 /**
  * AssetIndexData model class.
@@ -22,42 +22,42 @@ class AssetIndexData extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Session ID
+     * @var string|null Session ID
      */
     public $sessionId;
 
     /**
-     * @var integer Offset
+     * @var int|null Offset
      */
     public $offset;
 
     /**
-     * @var string URI
+     * @var string|null URI
      */
     public $uri;
 
     /**
-     * @var integer Size
+     * @var int|null Size
      */
     public $size;
 
     /**
-     * @var integer Record ID
+     * @var int|null Record ID
      */
     public $recordId;
 
     /**
-     * @var DateTime The index timestamp
+     * @var DateTime|null The index timestamp
      */
     public $timestamp;
 
@@ -67,7 +67,7 @@ class AssetIndexData extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'timestamp';
@@ -81,54 +81,7 @@ class AssetIndexData extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['offset'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['size'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['recordId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'volumeId',
-                    'sessionId',
-                    'offset',
-                    'uri',
-                    'size',
-                    'recordId'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'volumeId', 'offset', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
         ];
     }
 
@@ -137,8 +90,8 @@ class AssetIndexData extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->uri;
+        return (string)$this->uri;
     }
 }

@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Task;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\ElementQuery;
-use craft\app\helpers\StringHelper;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Task;
+use craft\elements\db\ElementQuery;
+use craft\helpers\StringHelper;
 
 /**
  * ResaveElements represents a Resave Elements background task.
@@ -26,22 +26,22 @@ class ResaveElements extends Task
     // =========================================================================
 
     /**
-     * @var string|ElementInterface The element type that should be resaved
+     * @var string|ElementInterface|null The element type that should be resaved
      */
     public $elementType;
 
     /**
-     * @var array The element criteria that determines which elements should be resaved
+     * @var array|null The element criteria that determines which elements should be resaved
      */
     public $criteria;
 
     /**
-     * @var integer
+     * @var int|null
      */
     private $_siteId;
 
     /**
-     * @var integer[]
+     * @var int[]|null
      */
     private $_elementIds;
 
@@ -51,7 +51,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $class = $this->elementType;
 
@@ -60,8 +60,11 @@ class ResaveElements extends Task
 
         // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find()
-            ->configure($this->criteria)
+        $query = $class::find();
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+        $query
             ->offset(null)
             ->limit(null)
             ->orderBy(null);
@@ -75,31 +78,33 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
-        $class = $this->elementType;
-
         try {
             /** @var Element $element */
-            $element = $class::find()
-                ->id($this->_elementIds[$step])
-                ->siteId($this->_siteId)
-                ->one();
+            $elementId = $this->_elementIds[$step];
+            $element = Craft::$app->getElements()->getElementById($elementId, $this->elementType, $this->_siteId);
 
-            if (!$element || Craft::$app->getElements()->saveElement($element,
-                    false)
-            ) {
+            if (!$element) {
                 return true;
             }
 
-            $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
+            if (!Craft::$app->getElements()->saveElement($element, false)) {
+                $errorMessage = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
 
-            foreach ($element->getAllErrors() as $attributeError) {
-                $error .= "\n - {$attributeError}";
+                foreach ($element->getErrors() as $attribute => $errors) {
+                    foreach ($errors as $error) {
+                        $errorMessage .= "\n - {$error}";
+                    }
+                }
+
+                return $errorMessage;
             }
 
-            return $error;
+            return true;
         } catch (\Exception $e) {
+            $class = $this->elementType;
+
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }
     }
@@ -110,7 +115,7 @@ class ResaveElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Resaving {class} elements', [
             'class' => StringHelper::toLowerCase($this->elementType)

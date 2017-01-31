@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
-use craft\app\base\Savable;
+use craft\base\Serializable;
 
 /**
  * Class OptionData
@@ -15,23 +15,23 @@ use craft\app\base\Savable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OptionData implements Savable
+class OptionData implements Serializable
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $label;
 
     /**
-     * @var string
+     * @var string|null
      */
     public $value;
 
     /**
-     * @var
+     * @var bool|null
      */
     public $selected;
 
@@ -41,13 +41,11 @@ class OptionData implements Savable
     /**
      * Constructor
      *
-     * @param string $label
-     * @param string $value
-     * @param        $selected
-     *
-     * @return OptionData
+     * @param string|null $label
+     * @param string|null $value
+     * @param bool        $selected
      */
-    public function __construct($label, $value, $selected)
+    public function __construct(string $label = null, string $value = null, bool $selected)
     {
         $this->label = $label;
         $this->value = $value;
@@ -57,7 +55,7 @@ class OptionData implements Savable
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return (string)$this->value;
     }
@@ -65,7 +63,7 @@ class OptionData implements Savable
     /**
      * @inheritdoc
      */
-    public function getSavableValue()
+    public function serialize()
     {
         return $this->value;
     }

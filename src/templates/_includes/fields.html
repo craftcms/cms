@@ -2,12 +2,12 @@
 {% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
 
 {% namespace namespace %}
-	{% for field in fields %}
-		{% include "_includes/field" with {
-			field:    field,
-			required: field.required,
-			element:  element,
-			static:   (static is defined ? static : null)
-		} only %}
-	{% endfor %}
+    {% for field in fields %}
+        {% include "_includes/field" with {
+            field:    field,
+            required: field.required,
+            element:  element,
+            static:   (static is defined ? static : null)
+        } only %}
+    {% endfor %}
 {% endnamespace %}

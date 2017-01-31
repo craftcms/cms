@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\i18n\Locale;
+use craft\i18n\Locale;
 use yii\i18n\MissingTranslationEvent;
 
 /**
@@ -47,11 +47,8 @@ class Localization
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
             $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
-            // Remove any group symbols
-            $number = str_replace($groupSymbol, '', $number);
-
-            // Use a period for the decimal symbol
-            $number = str_replace($decimalSymbol, '.', $number);
+            // Remove any group symbols and use a period for the decimal symbol
+            $number = str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
         }
 
         return $number;
@@ -64,23 +61,23 @@ class Localization
      *
      * @return array|null
      */
-    public static function getLocaleData($localeId)
+    public static function localeData(string $localeId)
     {
         $data = null;
 
         // Load the locale data
-        $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$localeId.'.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$localeId.'.php';
+        $appDataPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
 
-        if (Io::fileExists($appDataPath)) {
-            $data = require($appDataPath);
+        if (is_file($appDataPath)) {
+            $data = require $appDataPath;
         }
 
-        if (Io::fileExists($customDataPath)) {
+        if (is_file($customDataPath)) {
             if ($data !== null) {
-                $data = ArrayHelper::merge($data, require($customDataPath));
+                $data = ArrayHelper::merge($data, require $customDataPath);
             } else {
-                $data = require($customDataPath);
+                $data = require $customDataPath;
             }
         }
 
@@ -113,13 +110,13 @@ class Localization
             $loadedAlready = false;
 
             // We've loaded the translation file already, just check for the translation.
-            if (isset(static::$_translations[$translationFile])) {
+            if (isset(self::$_translations[$translationFile])) {
                 /** @noinspection PhpUnusedLocalVariableInspection */
                 $loadedAlready = true;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
+                if (isset(self::$_translations[$translationFile][$event->message])) {
                     // Found a match... grab it and go.
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
@@ -135,22 +132,22 @@ class Localization
         }
 
         // No luck in cache, check the file system.
-        $frameworkMessagePath = Io::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
+        $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
-            $path = $frameworkMessagePath.$translationFile.'/yii.php';
+            $path = $frameworkMessagePath.DIRECTORY_SEPARATOR.$translationFile.DIRECTORY_SEPARATOR.'yii.php';
 
-            if (Io::fileExists($path)) {
+            if (is_file($path)) {
                 // Load it up.
-                static::$_translations[$translationFile] = include($path);
+                self::$_translations[$translationFile] = include $path;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                if (isset(self::$_translations[$translationFile][$event->message])) {
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
             } else {
-                static::$_translations[$translationFile] = [];
+                self::$_translations[$translationFile] = [];
             }
         }
     }

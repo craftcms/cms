@@ -1,0 +1,41 @@
+{% import "_includes/forms" as forms %}
+
+{% if newMigrations or migrationHistory %}
+    {% if newMigrations %}
+        <div class="buttons">
+            <a href="{{ actionUrl('utilities/apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
+        </div>
+    {% else %}
+        <p>{{ 'No pending content migrations.'|t('app') }}</p>
+    {% endif %}
+
+    <table class="data fullwidth">
+        <thead>
+        <tr>
+            <th>{{ 'Name'|t('app') }}</th>
+            <th>{{ 'Status'|t('app') }}</th>
+            <th>{{ 'Apply Time'|t('app') }}</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            {% for newMigration in newMigrations %}
+                <tr>
+                    <td>{{ newMigration }}</td>
+                    <td>{{ 'New'|t('app') }}</td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+
+            {% for migrationName, migration in migrationHistory %}
+                <tr>
+                    <td>{{ migrationName }}</td>
+                    <td>{{ 'Applied'|t('app') }}</td>
+                    <td>{{ migration|datetime() }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>{{ 'No content migrations.'|t('app') }}</p>
+{% endif %}

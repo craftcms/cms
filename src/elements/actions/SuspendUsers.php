@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\User;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
+use craft\helpers\Json;
 
 /**
  * SuspendUsers represents a Suspend Users element action.
@@ -28,7 +28,7 @@ class SuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Suspend');
     }
@@ -41,27 +41,27 @@ class SuspendUsers extends ElementAction
         $type = Json::encode(static::class);
         $userId = Json::encode(Craft::$app->getUser()->getIdentity()->id);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: true,
-		validateSelection: function(\$selectedItems)
-		{
-			for (var i = 0; i < \$selectedItems.length; i++)
-			{
-				if (\$selectedItems.eq(i).find('.element').data('id') == {$userId})
-				{
-					return false;
-				}
-			}
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: true,
+        validateSelection: function(\$selectedItems)
+        {
+            for (var i = 0; i < \$selectedItems.length; i++)
+            {
+                if (\$selectedItems.eq(i).find('.element').data('id') == {$userId})
+                {
+                    return false;
+                }
+            }
 
-			return true;
-		}
-	});
+            return true;
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }
@@ -69,7 +69,7 @@ EOT;
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var ElementQuery $query */
         // Get the users that aren't already suspended

@@ -5,7 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
+
+use craft\helpers\Component as ComponentHelper;
+use yii\base\Arrayable;
 
 /**
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
@@ -19,12 +22,12 @@ trait MissingComponentTrait
     // =========================================================================
 
     /**
-     * @var string|Component The expected component class name.
+     * @var string|Component|null The expected component class name.
      */
-    public $type;
+    public $expectedType;
 
     /**
-     * @var string The exception message that explains why the component class was invalid
+     * @var string|null The exception message that explains why the component class was invalid
      */
     public $errorMessage;
 
@@ -33,16 +36,23 @@ trait MissingComponentTrait
      */
     public $settings;
 
-    // Public Methods
+    // Properties
     // =========================================================================
 
     /**
-     * Returns the expected component class name.
+     * Creates a new component of a given type based on this one’s properties.
      *
-     * @return string
+     * @param string $type The component class that should be used as the fallback
+     *
+     * @return ComponentInterface
      */
-    public function getType()
+    public function createFallback(string $type): ComponentInterface
     {
-        return $this->type;
+        /** @var Arrayable $this */
+        $config = $this->toArray();
+        unset($config['expectedType'], $config['errorMessage'], $config['settings']);
+        $config['type'] = $type;
+
+        return ComponentHelper::createComponent($config);
     }
 }

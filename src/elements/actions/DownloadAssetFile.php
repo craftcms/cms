@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\helpers\Json;
 
 /**
  * DownloadAssetFile represents a Download Asset element action.
@@ -25,7 +25,7 @@ class DownloadAssetFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Download Asset file');
     }
@@ -37,31 +37,36 @@ class DownloadAssetFile extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			var form = $('<form method="post" target="_blank" action="">' +
-			'<input type="hidden" name="action" value="assets/download-asset" />' +
-			'<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
-			'<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
-			'<input type="submit" value="Submit" />' +
-			'</form>');
-			
-			form.appendTo('body');
-			form.submit();
-			form.remove();
-		}
-	});
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            var form = $('<form method="post" target="_blank" action="">' +
+            '<input type="hidden" name="action" value="assets/download-asset" />' +
+            '<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
+            '<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
+            '<input type="submit" value="Submit" />' +
+            '</form>');
+            
+            form.appendTo('body');
+            form.submit();
+            form.remove();
+        }
+    });
 })();
-EOT;
+EOD;
 
-        $js = str_replace("{csrfName}", Craft::$app->getConfig()->get('csrfTokenName'), $js);
-        $js = str_replace("{csrfValue}", Craft::$app->getRequest()->getCsrfToken(), $js);
+        $js = str_replace([
+            '{csrfName}',
+            '{csrfValue}'
+        ], [
+            Craft::$app->getConfig()->get('csrfTokenName'),
+            Craft::$app->getRequest()->getCsrfToken()
+        ], $js);
 
         Craft::$app->getView()->registerJs($js);
     }

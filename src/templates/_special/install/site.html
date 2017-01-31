@@ -1,31 +1,30 @@
 {% import "_includes/forms" as forms %}
 
-
 <div id="site" class="modal">
-	<h1>{{ "Setup your site"|t('app') }}</h1>
+    <h1>{{ "Setup your site"|t('app') }}</h1>
 
-	<form id="siteform" accept-charset="UTF-8">
-		{{ csrfInput() }}
-		{{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
-		{{ forms.textField({ label: "Base URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
+    <form id="siteform" accept-charset="UTF-8">
+        {{ csrfInput() }}
+        {{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
+        {{ forms.textField({ label: "Base URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
-		{% set languageInput %}
-			<div class="select">
-				<select id="siteLanguage">
-					{% for locale in craft.app.i18n.getAllLocales() %}
-						<option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
-					{% endfor %}
-				</select>
-			</div>
-		{% endset %}
-		{{ forms.field({ label: "Language"|t('app'), id: 'siteLanguage' }, languageInput) }}
+        {% set languageInput %}
+            <div class="select">
+                <select id="siteLanguage">
+                    {% for locale in craft.app.i18n.getAllLocales() %}
+                        <option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endset %}
+        {{ forms.field({ label: "Language"|t('app'), id: 'siteLanguage' }, languageInput) }}
 
-		<div class="buttons">
-			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t('app') }}
-				<input type="submit" tabindex="-1">
-			</div>
-		</div>
-	</form>
+        <div class="buttons">
+            <div id="sitesubmit" class="btn big submit">{{ "Finish up"|t('app') }}
+                <input type="submit" tabindex="-1">
+            </div>
+        </div>
+    </form>
 
-	{% include "_special/install/dots" with {dot: 2} %}
+    {% include "_special/install/dots" with {dot: 2} %}
 </div>

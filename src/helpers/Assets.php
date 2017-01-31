@@ -5,13 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\elements\Asset;
-use craft\app\enums\PeriodType;
-use craft\app\models\VolumeFolder;
+use craft\base\LocalVolumeInterface;
+use craft\base\Volume;
+use craft\base\VolumeInterface;
+use craft\elements\Asset;
+use craft\enums\PeriodType;
+use craft\events\RegisterAssetFileKindsEvent;
+use craft\events\SetAssetFilenameEvent;
+use craft\models\VolumeFolder;
+use yii\base\Event;
+use yii\base\Exception;
 
 /**
  * Class Assets
@@ -26,6 +32,21 @@ class Assets
 
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     */
+    const EVENT_SET_FILENAME = 'setFilename';
+
+    /**
+     * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
+     */
+    const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
+
+    // Properties
+    // =========================================================================
+
+    private static $_fileKinds;
+
     // Public Methods
     // =========================================================================
 
@@ -34,30 +55,36 @@ class Assets
      *
      * @param string $extension extension to use. "tmp" by default.
      *
-     * @return mixed
+     * @return string The temporary file path
+     * @throws Exception in case of failure
      */
-    public static function getTempFilePath($extension = 'tmp')
+    public static function tempFilePath(string $extension = 'tmp'): string
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
+        $path = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename;
+        if (($handle = fopen($path, 'wb')) === false) {
+            throw new Exception('Could not create temp file: '.$path);
+        }
+        fclose($handle);
 
-        return Io::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
+        return $path;
     }
 
     /**
      * Generate a URL for a given Assets file in a Source Type.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function generateUrl(Volume $volume, Asset $file)
+    public static function generateUrl(VolumeInterface $volume, Asset $file): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
         $filename = $file->filename;
-        $appendix = static::getUrlAppendix($volume, $file);
+        $appendix = static::urlAppendix($volume, $file);
 
         return $baseUrl.$folderPath.$filename.$appendix;
     }
@@ -65,18 +92,18 @@ class Assets
     /**
      * Get appendix for an URL based on it's Source caching settings.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(VolumeInterface $volume, Asset $file): string
     {
         $appendix = '';
 
-        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires))
-        {
-            $appendix = '?mtime='.$file->dateModified->format("YmdHis");
+        /** @var Volume $volume */
+        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
+            $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
 
         return $appendix;
@@ -85,18 +112,18 @@ class Assets
     /**
      * Clean an Asset's filename.
      *
-     * @param         $name
-     * @param boolean $isFilename                 if set to true (default), will separate extension
+     * @param string $name
+     * @param bool   $isFilename                  if set to true (default), will separate extension
      *                                            and clean the filename separately.
-     * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
+     * @param bool   $preventPluginModifications  if set to true, will prevent plugins from modify
      *
      * @return mixed
      */
-    public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
+    public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
     {
         if ($isFilename) {
-            $baseName = Io::getFilename($name, false);
-            $extension = '.'.Io::getExtension($name);
+            $baseName = pathinfo($name, PATHINFO_FILENAME);
+            $extension = '.'.pathinfo($name, PATHINFO_EXTENSION);
         } else {
             $baseName = $name;
             $extension = '';
@@ -110,13 +137,17 @@ class Assets
         }
 
         if ($isFilename && !$preventPluginModifications) {
-            $pluginModifiedAssetName = Craft::$app->getPlugins()->callFirst('modifyAssetFilename', [$baseName], true);
-
-            // Use the plugin-modified name, if anyone was up to the task.
-            $baseName = $pluginModifiedAssetName ?: $baseName;
+            $event = new SetAssetFilenameEvent([
+                'filename' => $baseName
+            ]);
+            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+            $baseName = $event->filename;
         }
 
-        $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
+        $baseName = FileHelper::sanitizeFilename($baseName, [
+            'asciiOnly' => $config->get('convertFilenamesToAscii'),
+            'separator' => $separator
+        ]);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';
@@ -134,7 +165,7 @@ class Assets
      *
      * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = []): array
     {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
@@ -146,17 +177,16 @@ class Assets
             $relativePath = substr($sourceFolder->path, $sourcePrefixLength);
 
             // If we have a target tree map, try to see if we should just point to an existing folder.
-            if ($targetTreeMap && isset($targetTreeMap[$relativePath])) {
+            if (!empty($targetTreeMap) && isset($targetTreeMap[$relativePath])) {
                 $folderIdChanges[$sourceFolder->id] = $targetTreeMap[$relativePath];
             } else {
                 $folder = new VolumeFolder();
                 $folder->name = $sourceFolder->name;
                 $folder->volumeId = $destinationFolder->volumeId;
-                $folder->path = ltrim(rtrim($destinationFolder->path,
-                        '/').('/').$relativePath, '/');
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
-                $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
+                $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
 
                 $assets->createFolder($folder);
 
@@ -177,7 +207,7 @@ class Assets
      *
      * @return array
      */
-    public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false): array
     {
         $fileTransferList = [];
 
@@ -185,16 +215,16 @@ class Assets
         foreach ($assets as $asset) {
             $newFolderId = $folderIdChanges[$asset->folderId];
             $transferItem = [
-                'fileId' => $asset->id,
+                'assetId' => $asset->id,
                 'folderId' => $newFolderId
             ];
 
             // If we're merging, preemptively figure out if there'll be conflicts and resolve them
             if ($merge) {
-                $conflictingAsset = Craft::$app->getAssets()->findAsset([
-                    'filename' => $asset->filename,
-                    'folderId' => $newFolderId
-                ]);
+                $conflictingAsset = Asset::find()
+                    ->folderId($newFolderId)
+                    ->filename(Db::escapeParam($asset->filename))
+                    ->one();
 
                 if ($conflictingAsset) {
                     $transferItem['userResponse'] = 'replace';
@@ -212,7 +242,7 @@ class Assets
      *
      * @return array
      */
-    public static function getPeriodList()
+    public static function periodList(): array
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
@@ -227,19 +257,380 @@ class Assets
     /**
      * Sorts a folder tree by Volume sort order.
      *
-     * @param array &$tree array passed by reference of the sortable folders.
+     * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
-    public static function sortFolderTree(&$tree)
+    public static function sortFolderTree(array &$tree)
     {
         $sort = [];
 
         foreach ($tree as $topFolder) {
-            /**
-             * @var VolumeFolder $topFolder
-             */
-            $sort[] = $topFolder->getVolume()->sortOrder;
+            /** @var Volume $volume */
+            $volume = $topFolder->getVolume();
+            $sort[] = $volume->sortOrder;
         }
 
         array_multisort($sort, $tree);
+    }
+
+    /**
+     * Returns a list of the supported file kinds.
+     *
+     * @return array The supported file kinds
+     */
+    public static function getFileKinds(): array
+    {
+        self::_buildFileKinds();
+
+        return self::$_fileKinds;
+    }
+
+    /**
+     * Returns the label of a given file kind.
+     *
+     * @param string $kind
+     *
+     * @return string
+     */
+    public static function getFileKindLabel(string $kind): string
+    {
+        self::_buildFileKinds();
+
+        if (isset(self::$_fileKinds[$kind]['label'])) {
+            return self::$_fileKinds[$kind]['label'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Return a file's kind by a given extension.
+     *
+     * @param string $file The file name/path
+     *
+     * @return string The file kind, or "unknown" if unknown.
+     */
+    public static function getFileKindByExtension(string $file): string
+    {
+        if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '') {
+            $ext = strtolower($ext);
+
+            foreach (static::getFileKinds() as $kind => $info) {
+                if (in_array($ext, $info['extensions'], true)) {
+                    return $kind;
+                }
+            }
+        }
+
+        return 'unknown';
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Builds the internal file kinds array, if it hasn't been built already.
+     *
+     * @return void
+     */
+    private static function _buildFileKinds()
+    {
+        if (self::$_fileKinds === null) {
+            self::$_fileKinds = [
+                'access' => [
+                    'label' => Craft::t('app', 'Access'),
+                    'extensions' => [
+                        'adp',
+                        'accdb',
+                        'mdb',
+                        'accde',
+                        'accdt',
+                        'accdr',
+                    ]
+                ],
+                'audio' => [
+                    'label' => Craft::t('app', 'Audio'),
+                    'extensions' => [
+                        '3gp',
+                        'aac',
+                        'act',
+                        'aif',
+                        'aiff',
+                        'aifc',
+                        'alac',
+                        'amr',
+                        'au',
+                        'dct',
+                        'dss',
+                        'dvf',
+                        'flac',
+                        'gsm',
+                        'iklax',
+                        'ivs',
+                        'm4a',
+                        'm4p',
+                        'mmf',
+                        'mp3',
+                        'mpc',
+                        'msv',
+                        'oga',
+                        'ogg',
+                        'opus',
+                        'ra',
+                        'tta',
+                        'vox',
+                        'wav',
+                        'wma',
+                        'wv',
+                    ]
+                ],
+                'compressed' => [
+                    'label' => Craft::t('app', 'Compressed'),
+                    'extensions' => [
+                        'bz2',
+                        'tar',
+                        'gz',
+                        '7z',
+                        's7z',
+                        'dmg',
+                        'rar',
+                        'zip',
+                        'tgz',
+                        'zipx',
+                    ]
+                ],
+                'excel' => [
+                    'label' => Craft::t('app', 'Excel'),
+                    'extensions' => [
+                        'xls',
+                        'xlsx',
+                        'xlsm',
+                        'xltx',
+                        'xltm',
+                    ]
+                ],
+                'flash' => [
+                    'label' => Craft::t('app', 'Flash'),
+                    'extensions' => [
+                        'fla',
+                        'flv',
+                        'swf',
+                        'swt',
+                        'swc',
+                    ]
+                ],
+                'html' => [
+                    'label' => Craft::t('app', 'HTML'),
+                    'extensions' => [
+                        'html',
+                        'htm',
+                    ]
+                ],
+                'illustrator' => [
+                    'label' => Craft::t('app', 'Illustrator'),
+                    'extensions' => [
+                        'ai',
+                    ]
+                ],
+                'image' => [
+                    'label' => Craft::t('app', 'Image'),
+                    'extensions' => [
+                        'jfif',
+                        'jp2',
+                        'jpx',
+                        'jpg',
+                        'jpeg',
+                        'jpe',
+                        'tiff',
+                        'tif',
+                        'png',
+                        'gif',
+                        'bmp',
+                        'webp',
+                        'ppm',
+                        'pgm',
+                        'pnm',
+                        'pfm',
+                        'pam',
+                        'svg',
+                    ]
+                ],
+                'javascript' => [
+                    'label' => Craft::t('app', 'Javascript'),
+                    'extensions' => [
+                        'js',
+                    ]
+                ],
+                'json' => [
+                    'label' => Craft::t('app', 'JSON'),
+                    'extensions' => [
+                        'json',
+                    ]
+                ],
+                'pdf' => [
+                    'label' => Craft::t('app', 'PDF'),
+                    'extensions' => ['pdf']
+                ],
+                'photoshop' => [
+                    'label' => Craft::t('app', 'Photoshop'),
+                    'extensions' => [
+                        'psd',
+                        'psb',
+                    ]
+                ],
+                'php' => [
+                    'label' => Craft::t('app', 'PHP'),
+                    'extensions' => ['php']
+                ],
+                'powerpoint' => [
+                    'label' => Craft::t('app', 'PowerPoint'),
+                    'extensions' => [
+                        'pps',
+                        'ppsm',
+                        'ppsx',
+                        'ppt',
+                        'pptm',
+                        'pptx',
+                        'potx',
+                    ]
+                ],
+                'text' => [
+                    'label' => Craft::t('app', 'Text'),
+                    'extensions' => [
+                        'txt',
+                        'text',
+                    ]
+                ],
+                'video' => [
+                    'label' => Craft::t('app', 'Video'),
+                    'extensions' => [
+                        'avchd',
+                        'asf',
+                        'asx',
+                        'avi',
+                        'flv',
+                        'fla',
+                        'mov',
+                        'm4v',
+                        'mng',
+                        'mpeg',
+                        'mpg',
+                        'm1s',
+                        'mp2v',
+                        'm2v',
+                        'm2s',
+                        'mp4',
+                        'mkv',
+                        'qt',
+                        'flv',
+                        'mp4',
+                        'ogg',
+                        'ogv',
+                        'rm',
+                        'wmv',
+                        'webm',
+                        'vob',
+                    ]
+                ],
+                'word' => [
+                    'label' => Craft::t('app', 'Word'),
+                    'extensions' => [
+                        'doc',
+                        'docx',
+                        'dot',
+                        'docm',
+                        'dotm',
+                    ]
+                ],
+                'xml' => [
+                    'label' => Craft::t('app', 'XML'),
+                    'extensions' => [
+                        'xml',
+                    ]
+                ],
+            ];
+
+            // Allow plugins to modify file kinds
+            $event = new RegisterAssetFileKindsEvent([
+                'fileKinds' => self::$_fileKinds,
+            ]);
+
+            Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
+            self::$_fileKinds = $event->fileKinds;
+        }
+    }
+
+    /**
+     * Return an image path to use in Image Editor for an Asset by id and size.
+     *
+     * @param integer $assetId
+     * @param integer $size
+     *
+     * @return false|string
+     * @throws Exception in case of failure
+     */
+    public static function editorImagePath(int $assetId, int $size)
+    {
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+        if (!$asset || !Image::isImageManipulatable($asset->getExtension())) {
+            return false;
+        }
+
+        /** @var Volume $volume */
+        $volume = $asset->getVolume();
+
+        $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
+        $assetSourcesDirectory = $imagePath.'/'.$assetId;
+        $targetSizedPath = $assetSourcesDirectory.'/'.$size;
+        $targetFilePath = $targetSizedPath.'/'.$assetId.'.'.$asset->getExtension();
+        FileHelper::createDirectory($targetSizedPath);
+
+        // You never know.
+        if (is_file($targetFilePath)) {
+            return $targetFilePath;
+        }
+
+        // Maybe we have larger sources available we can use.
+        if (FileHelper::createDirectory($assetSourcesDirectory)) {
+            $handle = opendir($assetSourcesDirectory);
+
+            if ($handle === false) {
+                throw new Exception("Unable to open directory: $assetSourcesDirectory");
+            }
+
+            while (($subDir = readdir($handle)) !== false) {
+                if ($subDir === '.' || $subDir === '..') {
+                    continue;
+                }
+                $existingSize = $subDir;
+                $existingAsset = $assetSourcesDirectory.DIRECTORY_SEPARATOR.$subDir.'/'.$assetId.'.'.$asset->getExtension();
+                if ($existingSize >= $size && is_file($existingAsset)) {
+                    Craft::$app->getImages()->loadImage($existingAsset)
+                        ->scaleToFit($size, $size, false)
+                        ->saveAs($targetFilePath);
+
+                    return $targetFilePath;
+                }
+            }
+            closedir($handle);
+        }
+
+        // No existing resources we could use.
+
+        // For remote files, check if maxCachedImageSizes setting would work for us.
+        $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
+
+        if (!$volume instanceof LocalVolumeInterface && $maxCachedSize > $size) {
+            // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
+            $localSource = $asset->getTransformSource();
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+        } else {
+            // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
+            $localSource = $asset->getCopyOfFile();
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size, false)->saveAs($targetFilePath);
+            FileHelper::removeFile($localSource);
+        }
+
+        return $targetFilePath;
     }
 }

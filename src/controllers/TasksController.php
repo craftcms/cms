@@ -5,12 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Json;
-use craft\app\web\Controller;
+use craft\helpers\Json;
+use craft\web\Controller;
 use yii\web\Response;
+
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
@@ -29,7 +31,7 @@ class TasksController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['actionRunPendingTasks'];
+    protected $allowAnonymous = ['run-pending-tasks'];
 
     // Public Methods
     // =========================================================================
@@ -37,9 +39,9 @@ class TasksController extends Controller
     /**
      * Runs any pending tasks.
      *
-     * @return void
+     * @return string
      */
-    public function actionRunPendingTasks()
+    public function actionRunPendingTasks(): string
     {
         $tasksService = Craft::$app->getTasks();
 
@@ -60,7 +62,7 @@ class TasksController extends Controller
             }
         }
 
-        Craft::$app->end();
+        return '1';
     }
 
     /**
@@ -68,7 +70,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetRunningTaskInfo()
+    public function actionGetRunningTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
@@ -105,7 +107,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionRerunTask()
+    public function actionRerunTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -137,7 +139,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTask()
+    public function actionDeleteTask(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
@@ -156,7 +158,7 @@ class TasksController extends Controller
      *
      * @return Response
      */
-    public function actionGetTaskInfo()
+    public function actionGetTaskInfo(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');

@@ -5,22 +5,22 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
+use craft\validators\SiteIdValidator;
+use craft\validators\UriValidator;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriValidator;
 
 /**
  * Element_SiteSettings record class.
  *
- * @property integer $id        ID
- * @property integer $elementId Element ID
- * @property integer $siteId    Site ID
+ * @property int     $id        ID
+ * @property int     $elementId Element ID
+ * @property int     $siteId    Site ID
  * @property string  $slug      Slug
  * @property string  $uri       URI
- * @property boolean $enabled   Enabled
+ * @property bool    $enabled   Enabled
  * @property Element $element   Element
  * @property Site    $site      Site
  *
@@ -51,7 +51,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%elements_i18n}}';
     }
@@ -61,7 +61,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
@@ -71,7 +71,7 @@ class Element_SiteSettings extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

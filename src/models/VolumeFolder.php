@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\base\Volume;
+use craft\base\Model;
+use craft\base\VolumeInterface;
 
 /**
  * The VolumeFolder model class.
@@ -23,35 +23,35 @@ class VolumeFolder extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Parent ID
+     * @var int|string|null Parent ID
      */
     public $parentId;
 
     /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Path
+     * @var string|null Path
      */
     public $path;
 
 
     /**
-     * @var array
+     * @var VolumeFolder[]|null
      */
-    private $_children = null;
+    private $_children;
 
     // Public Methods
     // =========================================================================
@@ -62,32 +62,7 @@ class VolumeFolder extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['parentId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['id', 'parentId', 'volumeId', 'name', 'path'],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true],
         ];
     }
 
@@ -96,13 +71,13 @@ class VolumeFolder extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->name;
+        return (string)$this->name;
     }
 
     /**
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolume()
     {
@@ -112,7 +87,7 @@ class VolumeFolder extends Model
     /**
      * Set the child folders.
      *
-     * @param array $children
+     * @param VolumeFolder[] $children
      */
     public function setChildren(array $children)
     {
@@ -122,15 +97,15 @@ class VolumeFolder extends Model
     /**
      * Get this folder's children.
      *
-     * @return array|null
+     * @return VolumeFolder[]
      */
-    public function getChildren()
+    public function getChildren(): array
     {
-        if (is_null($this->_children)) {
-            $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+        if ($this->_children !== null) {
+            return $this->_children;
         }
 
-        return $this->_children;
+        return $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
     }
 
     /**
@@ -154,7 +129,7 @@ class VolumeFolder extends Model
      */
     public function addChild(VolumeFolder $folder)
     {
-        if (is_null($this->_children)) {
+        if ($this->_children === null) {
             $this->_children = [];
         }
 

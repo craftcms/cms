@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Class Structure record.
  *
- * @property integer            $id        ID
- * @property integer            $maxLevels Max levels
+ * @property int                $id        ID
+ * @property int                $maxLevels Max levels
  * @property StructureElement[] $elements  Elements
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -31,13 +31,7 @@ class Structure extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['maxLevels'],
-                'number',
-                'min' => 1,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
+            [['maxLevels'], 'number', 'min' => 1, 'max' => 65535, 'integerOnly' => true],
         ];
     }
 
@@ -46,7 +40,7 @@ class Structure extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%structures}}';
     }
@@ -56,7 +50,7 @@ class Structure extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElements()
+    public function getElements(): ActiveQueryInterface
     {
         return $this->hasMany(StructureElement::class, ['structureId' => 'id']);
     }

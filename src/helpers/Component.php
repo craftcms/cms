@@ -5,10 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
-use craft\app\base\ComponentInterface;
-use craft\app\errors\MissingComponentException;
+use craft\base\ComponentInterface;
+use craft\base\SavableComponentInterface;
+use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -25,18 +26,19 @@ class Component
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @param mixed  $config     The component’s class name, or its config, with a `type` value and optionally a `settings` value.
-     * @param string $instanceOf The class or interface that the component must be an instance of.
+     * @param mixed       $config     The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param string|null $instanceOf The class or interface that the component must be an instance of.
      *
      * @return ComponentInterface The component
-     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with $instanceOf.
+     * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist
      */
-    public static function createComponent($config, $instanceOf = null)
+    public static function createComponent($config, string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {
             $class = $config;
+            $config = [];
         } else {
             $config = ArrayHelper::toArray($config);
 
@@ -53,18 +55,17 @@ class Component
             throw new MissingComponentException("Unable to find component class '$class'.");
         }
 
-        if (!is_subclass_of($class, \craft\app\base\ComponentInterface::class)) {
+        if (!is_subclass_of($class, ComponentInterface::class)) {
             throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
-        if ($instanceOf && !is_subclass_of($class, $instanceOf)) {
+        if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
         // Expand the settings and merge with the rest of the config
-        if (is_subclass_of($class, \craft\app\base\SavableComponentInterface::class) && !empty($config['settings'])) {
+        if (is_subclass_of($class, SavableComponentInterface::class) && !empty($config['settings'])) {
             $settings = $config['settings'];
-            unset($config['settings']);
 
             if (is_string($settings)) {
                 $settings = Json::decode($settings);
@@ -73,10 +74,10 @@ class Component
             $config = array_merge($config, $settings);
         }
 
-        // Instantiate and return
-        /** @var ComponentInterface $class */
-        $component = $class::create($config);
+        // Unset $config['settings'] even if it was empty
+        unset($config['settings']);
 
-        return $component;
+        // Instantiate and return
+        return new $class($config);
     }
 }

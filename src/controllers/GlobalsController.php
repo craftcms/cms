@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\elements\GlobalSet;
-use craft\app\web\Controller;
+use craft\elements\GlobalSet;
+use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -62,20 +62,20 @@ class GlobalsController extends Controller
         $globalSet->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getGlobals()->saveSet($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
+        if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 
-            return $this->redirectToPostedUrl($globalSet);
+            // Send the global set back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'globalSet' => $globalSet
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
-        // Send the global set back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'globalSet' => $globalSet
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($globalSet);
     }
 
     /**
@@ -83,7 +83,7 @@ class GlobalsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSet()
+    public function actionDeleteSet(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -91,7 +91,7 @@ class GlobalsController extends Controller
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
-        Craft::$app->getGlobals()->deleteSetById($globalSetId);
+        Craft::$app->getElements()->deleteElementById($globalSetId, GlobalSet::class);
 
         return $this->asJson(['success' => true]);
     }
@@ -99,25 +99,25 @@ class GlobalsController extends Controller
     /**
      * Edits a global set's content.
      *
-     * @param string    $globalSetHandle The global set’s handle.
-     * @param string    $siteHandle      The site handle, if specified.
-     * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
+     * @param string         $globalSetHandle The global set’s handle.
+     * @param string|null    $siteHandle      The site handle, if specified.
+     * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent($globalSetHandle, $siteHandle = null, GlobalSet $globalSet = null)
+    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): string
     {
         // Get the sites the user is allowed to edit
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        if (!$editableSiteIds) {
+        if (empty($editableSiteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
 
         // Editing a specific site?
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -125,12 +125,12 @@ class GlobalsController extends Controller
             }
 
             // Make sure the user has permission to edit that site
-            if (!in_array($site->id, $editableSiteIds)) {
+            if (!in_array($site->id, $editableSiteIds, false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         } else {
             // Are they allowed to edit the current site?
-            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds)) {
+            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
                 $site = Craft::$app->getSites()->currentSite;
             } else {
                 // Just use the first site they are allowed to edit
@@ -151,7 +151,7 @@ class GlobalsController extends Controller
             }
         }
 
-        if (!$editableGlobalSets || !isset($editableGlobalSets[$globalSetHandle])) {
+        if (empty($editableGlobalSets) || !isset($editableGlobalSets[$globalSetHandle])) {
             throw new ForbiddenHttpException('User not permitted to edit global set');
         }
 
@@ -192,21 +192,21 @@ class GlobalsController extends Controller
             throw new NotFoundHttpException('Global set not found');
         }
 
-        $globalSet->setFieldValuesFromPost('fields');
+        $globalSet->setFieldValuesFromRequest('fields');
 
-        if (Craft::$app->getGlobals()->saveContent($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
+        if (!Craft::$app->getElements()->saveElement($globalSet)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the global set back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'globalSet' => $globalSet,
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
-        // Send the global set back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'globalSet' => $globalSet,
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 }

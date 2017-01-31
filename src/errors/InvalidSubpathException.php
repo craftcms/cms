@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\errors;
+namespace craft\errors;
 
 use yii\base\Exception;
 
@@ -22,18 +22,18 @@ use yii\base\Exception;
 class InvalidSubpathException extends Exception
 {
     /**
-     * @var string The invalid subpath
+     * @var string|null The invalid subpath
      */
     public $subpath;
 
     /**
      * Constructor.
      *
-     * @param string  $subpath The invalid subpath
-     * @param string  $message The error message
-     * @param integer $code    The error code
+     * @param string      $subpath The invalid subpath
+     * @param string|null $message The error message
+     * @param int         $code    The error code
      */
-    public function __construct($subpath, $message = null, $code = 0)
+    public function __construct(string $subpath, string $message = null, int $code = 0)
     {
         $this->subpath = $subpath;
 

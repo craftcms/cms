@@ -5,7 +5,7 @@
  *
  * This file is subject to be overwritten by a Craft update at any time.
  *
- * If you want to change any of these settings, copy it into craft/config/general.php, and make your change there.
+ * If you want to change any of these settings, copy it into `config/general.php`, and make your change there.
  */
 
 return [
@@ -33,8 +33,8 @@ return [
      * Possible values are:
      *
      * - `true` (all updates are allowed)
-     * - `'minor-only'` (only minor and build updates are allowed)
-     * - `'build-only'` (only build updates are allowed)
+     * - `'minor-only'` (only minor and patch updates are allowed - the "Y" and "Z" in X.Y.Z)
+     * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
      * - `false` (no updates are allowed)
      */
     'allowAutoUpdates' => true,
@@ -52,24 +52,35 @@ return [
      */
     'allowUppercaseInSlug' => false,
     /**
-     * If this is set, Craft will call Yii’s CApplication::setId() method (http://www.yiiframework.com/doc/api/1.1/CApplication#setId-detail) to explicitly
-     * set an application ID for Craft instead of using it’s own method of generating an ID based on a hash of
-     * CApplication::getBasePath(). Yii’s default method causes issues with deployment services like Capistrano
-     * where deploying will destroy any active user sessions.
-     *
-     * The value is itself is not important as long as it is very hard to guess and is NOT based on the the absolute path
-     * of the craft/app folder.
-     */
-    'appId' => null,
-    /**
      * If set to true, will automatically log the user in after successful account activation.
      */
     'autoLoginAfterAccountActivation' => false,
     /**
-     *  Whether Craft should backup the database when updating. This applies to
+     *  Whether Craft should run the backup logic when updating. This applies to
      * both auto and manual updates.
      */
-    'backupDbOnUpdate' => true,
+    'backupOnUpdate' => true,
+    /**
+     * Craft will use the command line libraries `pg_dump` and `mysqldump` for backing up a database
+     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * running as.
+     *
+     * If you want to use some other library, or want to specify an absolute path to them,
+     * or want to specify different parameters than the default, or you want to implement some other backup
+     * solution, you can override that behavior here.
+     *
+     * There are several tokens you can use that Craft will swap out at runtime:
+     *
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
+     *     * `{port}` - Swapped with the current database port.
+     *     * `{server}` - Swapped with the current database host name.
+     *     * `{user}` - Swapped with the user to connect to the database.
+     *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database backups completely.
+     */
+    'backupCommand' => null,
     /**
      * Sets the base URL to the CP that Craft should use when generating CP-facing URLs. This will be determined
      * automatically if left blank.
@@ -93,7 +104,7 @@ return [
      */
     'cacheElementQueries' => true,
     /**
-     * The length of time Craft will keep things cached in craft/storage/runtime/.
+     * The length of time Craft will keep things cached in `storage/runtime/`.
      *
      * Set to '0' to cache things indefinitely.
      *
@@ -135,7 +146,7 @@ return [
     /**
      * Any custom ASCII character mappings.
      *
-     * This array is merged into the default one in StringHelper::getAsciiCharMap(). The key is the ASCII character to
+     * This array is merged into the default one in StringHelper::asciiCharMap(). The key is the ASCII character to
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
      *
      * For example:
@@ -154,13 +165,15 @@ return [
      */
     'defaultCpLanguage' => null,
     /**
-     * The default permissions Craft will use when creating a file on the file system.
+     * The default permission to be set for newly generated directories.
+     * If set to null, the permission will be determined by the current environment.
      */
-    'defaultFilePermissions' => 0664,
+    'defaultDirMode' => 0775,
     /**
-     * The default permissions Craft will use when creating a folder on the file system.
+     * The default permission to be set for newly generated files.
+     * If set to null, the permission will be determined by the current environment.
      */
-    'defaultFolderPermissions' => 0775,
+    'defaultFileMode' => null,
     /**
      * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
@@ -197,7 +210,7 @@ return [
     /**
      * The default day that new users should have set as their “Week Start Day”.
      *
-     * This should be set to an integer from `0` to `6` where:
+     * This should be set to an int from `0` to `6` where:
      *
      * - `0` represents Sunday
      * - `1` represents Monday
@@ -247,16 +260,10 @@ return [
      */
     'enableTemplateCaching' => true,
     /**
-     * Any environment-specific variables that should be swapped out in URL and Path settings.
-     * See http://craftcms.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
-     * of this setting.
-     */
-    'environmentVariables' => [],
-    /**
      * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s
      * template.
      *
-     * If set to '_', then your site’s 404 template would live at craft/templates/_404.html, for example.
+     * If set to `'_'`, then your site’s 404 template would live at `templates/_404.html`, for example.
      */
     'errorTemplatePrefix' => '',
     /**
@@ -460,10 +467,30 @@ return [
      */
     'resourceTrigger' => 'cpresources',
     /**
-     * Whether Craft should attempt to restore the just-created DB backup in the event that there was an error making
-     * the database schema changes mandated by the update.
+     * Craft will use the command line libraries `psql` and `mysql` for restoring a database
+     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * running as.
+     *
+     * If you want to use some other library, or want to specify an absolute path to them,
+     * or want to specify different parameters than the default, or you want to implement some other restoration
+     * solution, you can override that behavior here.
+     *
+     * There are several tokens you can use that Craft will swap out at runtime:
+     *
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
+     *     * `{port}` - Swapped with the current database port.
+     *     * `{server}` - Swapped with the current database host name.
+     *     * `{user}` - Swapped with the user to connect to the database.
+     *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database restores completely.
      */
-    'restoreDbOnUpdateFailure' => true,
+    'restoreCommand' => null,
+    /**
+     * Whether Craft should attempt to restore the backup in the event that there was an error.
+     */
+    'restoreOnUpdateFailure' => true,
     /**
      * Whether Craft should rotate images according to their EXIF data on upload.
      */
@@ -526,7 +553,7 @@ return [
      * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
-    'testToEmailAddress' => '',
+    'testToEmailAddress' => null,
     /**
      * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
@@ -598,7 +625,7 @@ return [
      *
      * @see http://php.net/manual/en/function.file-put-contents.php
      */
-    'useWriteFileLock' => 'auto',
+    'useFileLocks' => 'auto',
     /**
      * Whether Craft should use XSendFile to serve files when possible.
      */
@@ -606,7 +633,7 @@ return [
     /**
      * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
      * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
-     * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.
+     * If not set, a random one is generated for you. Ultimately saved in `storage/runtime/validation.key`.
      *
      * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
      * should be set to the same key across all web servers.

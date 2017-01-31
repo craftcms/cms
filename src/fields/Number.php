@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\helpers\Db;
-use craft\app\helpers\Localization;
-use craft\app\i18n\Locale;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\helpers\Db;
+use craft\helpers\Localization;
+use craft\i18n\Locale;
 
 /**
  * Number represents a Number field.
@@ -29,7 +29,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Number');
     }
@@ -38,22 +38,45 @@ class Number extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var integer|float The minimum allowed number
+     * @var int|float The minimum allowed number
      */
     public $min = 0;
 
     /**
-     * @var integer|float The maximum allowed number
+     * @var int|float|null The maximum allowed number
      */
     public $max;
 
     /**
-     * @var integer The number of digits allowed after the decimal point
+     * @var int The number of digits allowed after the decimal point
      */
     public $decimals = 0;
 
+    /**
+     * @var int|null The size of the field
+     */
+    public $size;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Normalize $max
+        if ($this->max !== null && empty($this->max)) {
+            $this->max = null;
+        }
+
+        // Normalize $size
+        if ($this->size !== null && empty($this->size)) {
+            $this->size = null;
+        }
+    }
 
     /**
      * @inheritdoc
@@ -62,7 +85,7 @@ class Number extends Field implements PreviewableFieldInterface
     {
         $rules = parent::rules();
         $rules[] = [['min', 'max'], 'number'];
-        $rules[] = [['decimals'], 'integer'];
+        $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
             ['max'],
             'compare',
@@ -91,7 +114,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Db::getNumericalColumnType($this->min, $this->max, $this->decimals);
     }
@@ -99,11 +122,11 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
-        /** @var Element $element */
         // Is this a post request?
         $request = Craft::$app->getRequest();
+
         if (!$request->getIsConsoleRequest() && $request->getIsPost()) {
             // Normalize the number and make it look like this is what was posted
             if ($value === '') {
@@ -111,7 +134,6 @@ class Number extends Field implements PreviewableFieldInterface
             } else {
                 $value = Localization::normalizeNumber($value);
             }
-            $element->setRawPostValueForField($this->handle, $value);
         }
 
         return $value;
@@ -120,7 +142,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if ($this->isFresh($element) && ($value < $this->min || $value > $this->max)) {
             $value = $this->min;
@@ -133,7 +155,7 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'name' => $this->handle,
             'value' => $value,
-            'size' => 5
+            'size' => $this->size
         ]);
     }
 }

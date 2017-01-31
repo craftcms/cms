@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
-use craft\app\base\Savable;
-use craft\app\helpers\Json;
+use craft\base\Serializable;
+use craft\helpers\Json;
 
 /**
  * Multi-select option field data class.
@@ -16,15 +16,15 @@ use craft\app\helpers\Json;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MultiOptionsFieldData extends \ArrayObject implements Savable
+class MultiOptionsFieldData extends \ArrayObject implements Serializable
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var
+     * @var array
      */
-    private $_options;
+    private $_options = [];
 
     // Public Methods
     // =========================================================================
@@ -32,9 +32,9 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
     /**
      * Returns the options.
      *
-     * @return array|null
+     * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->_options;
     }
@@ -44,7 +44,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
      *
      * @param array $options
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->_options = $options;
     }
@@ -52,9 +52,9 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
     /**
      * @param mixed $value
      *
-     * @return boolean
+     * @return bool
      */
-    public function contains($value)
+    public function contains($value): bool
     {
         $value = (string)$value;
 
@@ -70,7 +70,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
     /**
      * @inheritdoc
      */
-    public function getSavableValue()
+    public function serialize()
     {
         return Json::encode($this->getArrayCopy());
     }

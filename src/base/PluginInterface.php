@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
@@ -17,25 +17,8 @@ namespace craft\app\base;
  */
 interface PluginInterface
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * Returns whether the plugin has its own section in the CP.
-     *
-     * @return boolean Whether the plugin has its own section in the CP.
-     */
-    public static function hasCpSection();
-
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns the plugin’s handle.
-     *
-     * @return string The plugin’s handle
-     */
-    public function getHandle();
 
     /**
      * Installs the plugin.
@@ -53,7 +36,7 @@ interface PluginInterface
      * @return void|false Return `false` to indicate the update failed.
      * All other return values mean the update was successful.
      */
-    public function update($fromVersion);
+    public function update(string $fromVersion);
 
     /**
      * Uninstalls the plugin.
@@ -73,15 +56,15 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[PluginsController::actionRThe rendered settings page HTML
+     * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings()]]
      */
     public function getSettingsResponse();
 
     /**
-     * Returns the component definition that should be registered on the [[\craft\app\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
+     * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
      *
      * @return mixed|null The component definition to be registered.
      * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
      */
-    public function getVariableDefinition();
+    public function defineTemplateComponent();
 }

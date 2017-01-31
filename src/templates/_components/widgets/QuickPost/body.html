@@ -3,42 +3,42 @@
 
 
 <form method="post" accept-charset="UTF-8">
-	<input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
-	{{ csrfInput() }}
+    <input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
+    {{ csrfInput() }}
 
-	{% if section.type != 'single' and entryType.hasTitleField %}
-		{{ forms.textField({
-			label: entryType.titleLabel|t('app'),
-			id: 'title',
-			name: 'title',
-			required: true,
-			first: true
-		}) }}
-	{% endif %}
+    {% if section.type != 'single' and entryType.hasTitleField %}
+        {{ forms.textField({
+            label: entryType.titleLabel|t('app'),
+            id: 'title',
+            name: 'title',
+            required: true,
+            first: true
+        }) }}
+    {% endif %}
 
-	{% namespace fieldNamespace %}
-		{% for field in entryType.getFieldLayout().getFields() %}
-			{% if field.required or field.id in widget.fields %}
-				{% include "_includes/field" with {
-					field: field,
-					required: field.required,
-					entry: null
-				} only %}
-			{% endif %}
-		{% endfor %}
-	{% endnamespace %}
+    {% namespace fieldNamespace %}
+        {% for field in entryType.getFieldLayout().getFields() %}
+            {% if field.required or field.id in widget.fields %}
+                {% include "_includes/field" with {
+                    field: field,
+                    required: field.required,
+                    entry: null
+                } only %}
+            {% endif %}
+        {% endfor %}
+    {% endnamespace %}
 
-	<div class="buttons">
-		<div class="btngroup">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+    <div class="buttons">
+        <div class="btngroup">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 
-			<div class="btn submit menubtn"></div>
-			<div class="menu">
-				<ul>
-					<li><a class="save-and-continue-editing">{{ "Save and continue editing"|t('app') }}</a></li>
-				</ul>
-			</div>
-		</div>
-		<div class="spinner hidden"></div>
-	</div>
+            <div class="btn submit menubtn"></div>
+            <div class="menu">
+                <ul>
+                    <li><a class="save-and-continue-editing">{{ "Save and continue editing"|t('app') }}</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="spinner hidden"></div>
+    </div>
 </form>

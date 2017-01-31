@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console;
+namespace craft\console;
 
-use craft\app\elements\User as UserElement;
+use craft\elements\User as UserElement;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;
@@ -26,7 +26,7 @@ class User extends Component
     // =========================================================================
 
     /**
-     * @var UserElement|false
+     * @var UserElement|IdentityInterface|false
      */
     private $_identity = false;
 
@@ -36,9 +36,9 @@ class User extends Component
     /**
      * Returns a value indicating whether the user is a guest (not authenticated).
      *
-     * @return boolean Whether the current user is a guest.
+     * @return bool Whether the current user is a guest.
      */
-    public function getIsGuest()
+    public function getIsGuest(): bool
     {
         return $this->getIdentity() === null;
     }
@@ -49,9 +49,9 @@ class User extends Component
     /**
      * Returns whether the current user is an admin.
      *
-     * @return boolean Whether the current user is an admin.
+     * @return bool Whether the current user is an admin.
      */
-    public function getIsAdmin()
+    public function getIsAdmin(): bool
     {
         $user = $this->getIdentity();
 
@@ -63,9 +63,9 @@ class User extends Component
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return boolean Whether the current user has the permission.
+     * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
 
@@ -75,7 +75,7 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return UserElement|false
+     * @return UserElement|false|null
      */
     public function getIdentity()
     {
@@ -90,7 +90,7 @@ class User extends Component
      *
      * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity($identity)
+    public function setIdentity(IdentityInterface $identity = null)
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;

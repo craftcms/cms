@@ -5,12 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\base\ElementInterface;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\base\ElementInterface;
+use craft\helpers\Json;
+use yii\base\Exception;
 
 /**
  * CopyReferenceTag represents a Copy Reference Tag element action.
@@ -24,7 +25,7 @@ class CopyReferenceTag extends ElementAction
     // =========================================================================
 
     /**
-     * @var ElementInterface|string The element type associated with this action
+     * @var string|null The element type associated with this action
      */
     public $elementType;
 
@@ -34,7 +35,7 @@ class CopyReferenceTag extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Copy reference tag');
     }
@@ -46,26 +47,32 @@ class CopyReferenceTag extends ElementAction
     {
         $type = Json::encode(static::class);
         $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
+        /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
-        $elementTypeHandle = Json::encode($elementType::classHandle());
 
-        $js = <<<EOT
+        if (($refHandle = $elementType::refHandle()) === null) {
+            throw new Exception("Element type \"{$elementType}\" doesn't have a reference handle.");
+        }
+
+        $refHandleJs = Json::encode($refHandle);
+
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			var message = Craft.t('app', {$prompt}, {
-				ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
-			});
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            var message = Craft.t('app', {$prompt}, {
+                ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+            });
 
-			prompt(message, '{'+{$elementTypeHandle}+':'+\$selectedItems.find('.element').data('id')+'}');
-		}
-	});
+            prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

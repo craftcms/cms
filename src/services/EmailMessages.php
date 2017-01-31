@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\models\RebrandEmail;
-use craft\app\records\EmailMessage as EmailMessageRecord;
+use craft\events\RegisterEmailMessagesEvent;
+use craft\helpers\ArrayHelper;
+use craft\models\RebrandEmail;
+use craft\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
-use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -26,6 +26,14 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class EmailMessages extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
+     */
+    const EVENT_REGISTER_MESSAGES = 'registerMessages';
+
     // Properties
     // =========================================================================
 
@@ -40,26 +48,19 @@ class EmailMessages extends Component
     /**
      * Returns all of the system email messages.
      *
-     * @param integer|null $siteId
+     * @param string|null $language
      *
-     * @return array
-     * @throws Exception if $siteId is invalid
+     * @return RebrandEmail[]
      */
-    public function getAllMessages($siteId = null)
+    public function getAllMessages(string $language = null): array
     {
-        if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-
-            if (!$site) {
-                throw new Exception('Invalid site ID: '.$siteId);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         // Find any custom messages
         $records = EmailMessageRecord::findAll([
-            'siteId' => $site->id
+            'language' => $language
         ]);
 
         // Index the records by their keys
@@ -74,7 +75,7 @@ class EmailMessages extends Component
         foreach ($this->_getAllMessageKeys() as $key) {
             $message = new RebrandEmail();
             $message->key = $key;
-            $message->siteId = $siteId;
+            $message->language = $language;
 
             // Is there a custom message?
             if (isset($recordsByKey[$key])) {
@@ -82,12 +83,12 @@ class EmailMessages extends Component
                 $message->body = $recordsByKey[$key]->body;
             } else {
                 // Default to whatever's in the translation file
-                $message->subject = $this->_translateMessageString($key, 'subject', $site->language);
-                $message->body = $this->_translateMessageString($key, 'body', $site->language);
+                $message->subject = $this->_translateMessageString($key, 'subject', $language);
+                $message->body = $this->_translateMessageString($key, 'body', $language);
             }
 
             // Not possible to customize the heading
-            $message->heading = $this->_translateMessageString($key, 'heading', $site->language);
+            $message->heading = $this->_translateMessageString($key, 'heading', $language);
 
             $messages[] = $message;
         }
@@ -98,22 +99,22 @@ class EmailMessages extends Component
     /**
      * Returns a system email message by its key.
      *
-     * @param string       $key
-     * @param integer|null $siteId
+     * @param string      $key
+     * @param string|null $language
      *
      * @return RebrandEmail
      */
-    public function getMessage($key, $siteId = null)
+    public function getMessage(string $key, string $language = null): RebrandEmail
     {
-        if (!$siteId) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         $message = new RebrandEmail();
         $message->key = $key;
-        $message->siteId = $siteId;
+        $message->language = $language;
 
-        $record = $this->_getMessageRecord($key, $siteId);
+        $record = $this->_getMessageRecord($key, $language);
 
         $message->subject = $record->subject;
         $message->body = $record->body;
@@ -126,11 +127,11 @@ class EmailMessages extends Component
      *
      * @param RebrandEmail $message
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveMessage(RebrandEmail $message)
+    public function saveMessage(RebrandEmail $message): bool
     {
-        $record = $this->_getMessageRecord($message->key, $message->siteId);
+        $record = $this->_getMessageRecord($message->key, $message->language);
 
         $record->subject = $message->subject;
         $record->body = $message->body;
@@ -152,7 +153,7 @@ class EmailMessages extends Component
      *
      * @return array
      */
-    private function _getAllMessageKeys()
+    private function _getAllMessageKeys(): array
     {
         $this->_setAllMessageInfo();
 
@@ -166,7 +167,7 @@ class EmailMessages extends Component
      *
      * @return array|null
      */
-    private function _getMessageInfoByKey($key)
+    private function _getMessageInfoByKey(string $key)
     {
         $this->_setAllMessageInfo();
 
@@ -184,32 +185,40 @@ class EmailMessages extends Component
      */
     private function _setAllMessageInfo()
     {
-        if (!isset($this->_messagesInfo)) {
-            $craftMessageInfo = [
+        if ($this->_messagesInfo !== null) {
+            return;
+        }
+
+        $messages = [
+            [
+                'key' => 'account_activation',
                 'category' => 'app',
                 'sourceLanguage' => Craft::$app->sourceLanguage
-            ];
+            ],
+            [
+                'key' => 'verify_new_email',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+            [
+                'key' => 'forgot_password',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+            [
+                'key' => 'test_email',
+                'category' => 'app',
+                'sourceLanguage' => Craft::$app->sourceLanguage
+            ],
+        ];
 
-            $this->_messagesInfo = [
-                'account_activation' => $craftMessageInfo,
-                'verify_new_email' => $craftMessageInfo,
-                'forgot_password' => $craftMessageInfo,
-                'test_email' => $craftMessageInfo,
-            ];
+        // Give plugins a chance to add additional messages
+        $event = new RegisterEmailMessagesEvent([
+            'messages' => $messages
+        ]);
+        $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
 
-            // Give plugins a chance to add additional messages
-            foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys) {
-                /** @var Plugin $plugin */
-                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-
-                foreach ($pluginKeys as $key) {
-                    $this->_messagesInfo[$key] = [
-                        'category' => $pluginHandle,
-                        'sourceLanguage' => $plugin->sourceLanguage
-                    ];
-                }
-            }
-        }
+        $this->_messagesInfo = ArrayHelper::index($event->messages, 'key');
     }
 
     /**
@@ -221,7 +230,7 @@ class EmailMessages extends Component
      *
      * @return null|string
      */
-    private function _translateMessageString($key, $part, $language)
+    private function _translateMessageString(string $key, string $part, string $language)
     {
         $messageInfo = $this->_getMessageInfoByKey($key);
 
@@ -230,11 +239,11 @@ class EmailMessages extends Component
         }
 
         $combinedKey = $key.'_'.$part;
-        $t = Craft::t($messageInfo['category'], $combinedKey, null, $language);
+        $t = Craft::t($messageInfo['category'], $combinedKey, [], $language);
 
         // If a translation couldn't be found, default to the message's source language
-        if ($t == $combinedKey) {
-            $t = Craft::t($messageInfo['category'], $combinedKey, null, $messageInfo['sourceLanguage']);
+        if ($t === $combinedKey) {
+            $t = Craft::t($messageInfo['category'], $combinedKey, [], $messageInfo['sourceLanguage']);
         }
 
         return $t;
@@ -243,35 +252,28 @@ class EmailMessages extends Component
     /**
      * Gets a message record by its key.
      *
-     * @param string       $key
-     * @param integer|null $siteId
+     * @param string      $key
+     * @param string|null $language
      *
      * @return EmailMessageRecord
-     * @throws Exception if $siteId is invalid
      */
-    private function _getMessageRecord($key, $siteId = null)
+    private function _getMessageRecord(string $key, string $language = null): EmailMessageRecord
     {
-        if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-
-            if (!$site) {
-                throw new Exception('Invalid site ID: '.$siteId);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         $record = EmailMessageRecord::findOne([
             'key' => $key,
-            'siteId' => $site->id,
+            'language' => $language,
         ]);
 
         if (!$record) {
             $record = new EmailMessageRecord();
             $record->key = $key;
-            $record->siteId = $site->id;
-            $record->subject = $this->_translateMessageString($key, 'subject', $site->language);
-            $record->body = $this->_translateMessageString($key, 'body', $site->language);
+            $record->language = $language;
+            $record->subject = $this->_translateMessageString($key, 'subject', $language);
+            $record->body = $this->_translateMessageString($key, 'body', $language);
         }
 
         return $record;

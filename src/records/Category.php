@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Category record.
  *
- * @property integer       $id      ID
- * @property integer       $groupId Group ID
+ * @property int           $id      ID
+ * @property int           $groupId Group ID
  * @property Element       $element Element
  * @property CategoryGroup $group   Group
  *
@@ -31,7 +31,7 @@ class Category extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%categories}}';
     }
@@ -41,7 +41,7 @@ class Category extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -51,7 +51,7 @@ class Category extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(CategoryGroup::class, ['id' => 'groupId']);
     }

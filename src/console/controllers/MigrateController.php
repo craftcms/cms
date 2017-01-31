@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console\controllers;
+namespace craft\console\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
+use craft\base\Plugin;
+use craft\db\MigrationManager;
+use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\helpers\Console;
@@ -47,19 +47,19 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
-     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
      *
      * If [[plugin]] is defined, this will automatically be set to 'plugin'. Otherwise defaults to 'app'.
      */
     public $type;
 
     /**
-     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
     /**
-     * @var MigrationManager The migration manager that will be used in this request
+     * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
 
@@ -72,7 +72,8 @@ class MigrateController extends BaseMigrateController
     public function init()
     {
         parent::init();
-        $this->templateFile = Craft::getAlias('@app/updates/migrationtemplate').'.php';
+
+        $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
 
     /**
@@ -93,13 +94,9 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
         // Validate $type
-        if ($this->type) {
-            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT])) {
+        if ($this->type !== null) {
+            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
                 throw new Exception('Invalid migration type: '.$this->type);
             }
         } else {
@@ -110,28 +107,22 @@ class MigrateController extends BaseMigrateController
             }
         }
 
-        switch ($this->type) {
-            case MigrationManager::TYPE_CONTENT:
-                // Verify that a content migrations folder exists
-                if (Craft::getAlias("@contentMigrations") == false) {
-                    throw new Exception('You must create a migrations/ folder within your craft/ folder before managing content migrations');
+        if ($this->type === MigrationManager::TYPE_PLUGIN) {
+            // Make sure $this->plugin in set to a plugin
+            if (is_string($this->plugin)) {
+                if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
+                    throw new Exception('Invalid plugin handle: '.$this->plugin);
                 }
-                break;
-            case MigrationManager::TYPE_PLUGIN:
-                // Make sure $this->plugin in set to a plugin
-                if (is_string($this->plugin)) {
-                    $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
-
-                    if ($plugin === null) {
-                        throw new Exception('Invalid plugin handle: '.$this->plugin);
-                    }
-
-                    $this->plugin = $plugin;
-                }
+                $this->plugin = $plugin;
+            }
         }
 
         $this->migrationPath = $this->getMigrator()->migrationPath;
-        Io::ensureFolderExists($this->migrationPath);
+        FileHelper::createDirectory($this->migrationPath);
+
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
         return true;
     }
@@ -142,19 +133,31 @@ class MigrateController extends BaseMigrateController
     public function actionCreate($name)
     {
         if (!preg_match('/^\w+$/', $name)) {
-            throw new Exception("The migration name should contain letters, digits and/or underscore characters only.");
+            throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
         }
 
-        $name = 'm'.gmdate('ymd_His').'_'.$name;
+        if ($isInstall = (strcasecmp($name, 'install') === 0)) {
+            $name = 'Install';
+        } else {
+            $name = 'm'.gmdate('ymd_His').'_'.$name;
+        }
+
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
         if ($this->confirm("Create new migration '$file'?")) {
-            $content = $this->renderFile(Craft::getAlias($this->templateFile), [
+            $templateFile = Craft::getAlias($this->templateFile);
+
+            if ($templateFile === false) {
+                throw new Exception('There was a problem getting the template file path');
+            }
+
+            $content = $this->renderFile($templateFile, [
+                'isInstall' => $isInstall,
                 'namespace' => $this->getMigrator()->migrationNamespace,
                 'className' => $name
             ]);
 
-            Io::writeToFile($file, $content);
+            FileHelper::writeToFile($file, $content);
             $this->stdout("New migration created successfully.\n", Console::FG_GREEN);
         }
     }
@@ -167,7 +170,7 @@ class MigrateController extends BaseMigrateController
      *
      * @return MigrationManager
      */
-    protected function getMigrator()
+    protected function getMigrator(): MigrationManager
     {
         if ($this->_migrator === null) {
             switch ($this->type) {
@@ -207,7 +210,12 @@ class MigrateController extends BaseMigrateController
      */
     protected function getMigrationHistory($limit)
     {
-        return $this->getMigrator()->getMigrationHistory($limit);
+        $history = $this->getMigrator()->getMigrationHistory((int)$limit);
+
+        // Convert values to unix timestamps
+        $history = array_map('strtotime', $history);
+
+        return $history;
     }
 
     /**

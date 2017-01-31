@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\errors;
+namespace craft\errors;
 
 use Craft;
 
@@ -24,32 +24,27 @@ class UploadFailedException extends FileException
     /**
      * Constructor
      *
-     * @param integer $errorCode
+     * @param int $errorCode
      */
-    public function __construct($errorCode)
+    public function __construct(int $errorCode)
     {
         switch ($errorCode) {
             case UPLOAD_ERR_INI_SIZE:
-            case UPLOAD_ERR_FORM_SIZE: {
+            case UPLOAD_ERR_FORM_SIZE:
                 $message = Craft::t('app', 'The uploaded file exceeds the maximum allowed size.');
                 break;
-            }
             case UPLOAD_ERR_PARTIAL:
-            case UPLOAD_ERR_NO_FILE: {
+            case UPLOAD_ERR_NO_FILE:
                 $message = Craft::t('app', 'The file failed to upload to the server properly.');
                 break;
-            }
-            case UPLOAD_ERR_NO_TMP_DIR: {
+            case UPLOAD_ERR_NO_TMP_DIR:
                 $message = Craft::t('app', 'Could not write to the temporary upload folder.');
                 break;
-            }
-            case UPLOAD_ERR_CANT_WRITE: {
+            case UPLOAD_ERR_CANT_WRITE:
                 $message = Craft::t('app', 'There was a problem with writing the file to the disk.');
                 break;
-            }
-            default: {
+            default:
                 $message = Craft::t('app', 'There was a problem with uploading the file..');
-            }
         }
 
         parent::__construct($message);

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\validators\SiteIdValidator;
+use craft\base\Model;
+use craft\validators\LanguageValidator;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -25,32 +25,32 @@ class RebrandEmail extends Model
     // =========================================================================
 
     /**
-     * @var string Key
+     * @var string|null Key
      */
     public $key;
 
     /**
-     * @var integer Site ID
+     * @var string|null Language
      */
-    public $siteId;
+    public $language;
 
     /**
-     * @var string Subject
+     * @var string|null Subject
      */
     public $subject;
 
     /**
-     * @var string Body
+     * @var string|null Body
      */
     public $body;
 
     /**
-     * @var string Html body
+     * @var string|null Html body
      */
     public $htmlBody;
 
     /**
-     * @var string Heading
+     * @var string|null Heading
      */
     public $heading;
 
@@ -63,12 +63,7 @@ class RebrandEmail extends Model
     public function rules()
     {
         return [
-            [['siteId'], SiteIdValidator::class],
-            [
-                ['key', 'siteId', 'subject', 'body', 'htmlBody'],
-                'safe',
-                'on' => 'search'
-            ],
+            [['language'], LanguageValidator::class],
         ];
     }
 }

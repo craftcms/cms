@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\events\ElementContentEvent;
-use craft\app\models\FieldLayout;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\events\ElementContentEvent;
+use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -84,7 +84,7 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         $row = (new Query())
-            ->from($this->contentTable)
+            ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
                 'siteId' => $element->siteId
@@ -117,13 +117,15 @@ class Content extends Component
             return;
         }
 
-        $fieldLayout = $element->getFieldLayout();
-
         if ($row = $this->getContentRow($element)) {
             $element->contentId = $row['id'];
+
             if ($element->hasTitles() && isset($row['title'])) {
                 $element->title = $row['title'];
             }
+
+            $fieldLayout = $element->getFieldLayout();
+
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
@@ -138,24 +140,17 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface $element       The element whose content we're saving.
-     * @param boolean          $runValidation Whether the element's content should be validated first.
+     * @param ElementInterface $element The element whose content we're saving.
      *
-     * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+     * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *                 element and its content model.
      * @throws Exception if $element has not been saved yet
      */
-    public function saveContent(ElementInterface $element, $runValidation = true)
+    public function saveContent(ElementInterface $element): bool
     {
         /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Cannot save the content of an unsaved element.');
-        }
-
-        if ($runValidation && $this->validateContent($element)) {
-             Craft::info('Content not saved due to validation error.', __METHOD__);
-
-             return false;
         }
 
         $originalContentTable = $this->contentTable;
@@ -185,7 +180,7 @@ class Content extends Component
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
                     $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                    $values[$column] = $field->serializeValue($element->getFieldValue($field->handle), $element);
                 }
             }
         }
@@ -201,7 +196,7 @@ class Content extends Component
             Craft::$app->getDb()->createCommand()
                 ->insert($this->contentTable, $values)
                 ->execute();
-            $element->contentId = Craft::$app->getDb()->getLastInsertID();
+            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
         if ($fieldLayout) {
@@ -218,50 +213,6 @@ class Content extends Component
         $this->fieldContext = $originalFieldContext;
 
         return true;
-    }
-
-    /**
-     * Validates some content with a given field layout.
-     *
-     * @param ElementInterface $element The element whose content should be validated.
-     *
-     * @return boolean Whether the element's content validates.
-     */
-    public function validateContent(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $validates = true;
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
-                $value = $element->getFieldValue($field->handle);
-                $errors = $field->validateValue($value, $element);
-
-                if (!empty($errors) && $errors !== true) {
-                    if (!is_array($errors)) {
-                        $errors = [$errors];
-                    }
-
-                    // Parse any {attribute} and {value} tokens in the error message(s)
-                    $i18n = Craft::$app->getI18n();
-                    $params = [
-                        'attribute' => Craft::t('site', $field->name),
-                        'value' => is_array($value) ? 'array()' : (is_object($value) ? get_class($value) : $value),
-                    ];
-
-                    foreach ($errors as $error) {
-                        $error = $i18n->format($error, $params, Craft::$app->language);
-                        $element->addError('field__'.$field->handle, $error);
-                    }
-
-                    $validates = false;
-                }
-            }
-        }
-
-        return $validates;
     }
 
     // Private Methods
@@ -300,15 +251,11 @@ class Content extends Component
      *
      * @return array
      */
-    private function _removeColumnPrefixesFromRow($row)
+    private function _removeColumnPrefixesFromRow(array $row): array
     {
-        $fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
-
         foreach ($row as $column => $value) {
-            if (strncmp($column, $this->fieldColumnPrefix,
-                    $fieldColumnPrefixLength) === 0
-            ) {
-                $fieldHandle = substr($column, $fieldColumnPrefixLength);
+            if (strpos($column, $this->fieldColumnPrefix) === 0) {
+                $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);
             }

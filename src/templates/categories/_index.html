@@ -1,11 +1,11 @@
 {% extends "_layouts/elementindex" %}
 {% set title = "Categories"|t('app') %}
-{% set elementType = 'craft\\app\\elements\\Category' %}
+{% set elementType = 'craft\\elements\\Category' %}
 {% set showStatusMenu = false %}
 
 
 {% if groupHandle is defined %}
-	{% registerjs %}
-		window.defaultGroupHandle = '{{ groupHandle }}';
-	{% endregisterjs %}
+    {% js %}
+        window.defaultGroupHandle = '{{ groupHandle }}';
+    {% endjs %}
 {% endif %}

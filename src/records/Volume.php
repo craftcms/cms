@@ -5,21 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\HandleValidator;
 
 /**
  * Class Volume record.
  *
- * @property integer     $id            ID
- * @property integer     $fieldLayoutId Field layout ID
+ * @property int         $id            ID
+ * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
  * @property string      $type          Type
- * @property boolean     $hasUrls       Whether Volume has URLs
+ * @property bool        $hasUrls       Whether Volume has URLs
  * @property string      $url           URL
  * @property array       $settings      Settings
  * @property string      $sortOrder     Sort order
@@ -38,7 +37,7 @@ class Volume extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%volumes}}';
     }
@@ -48,7 +47,7 @@ class Volume extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }

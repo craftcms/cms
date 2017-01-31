@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use yii\db\Expression;
 
@@ -29,7 +29,7 @@ class FixedOrderExpression extends Expression
      * @param array      $params Parameters
      * @param array      $config Name-value pairs that will be used to initialize the object properties.
      */
-    public function __construct($column, $values, $db, $params = [], $config = [])
+    public function __construct(string $column, array $values, Connection $db, array $params = [], array $config = [])
     {
         $expression = $db->getQueryBuilder()->fixedOrder($column, $values);
         parent::__construct($expression, $params, $config);

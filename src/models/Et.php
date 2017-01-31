@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class Et model.
@@ -25,42 +25,42 @@ class Et extends Model
     // =========================================================================
 
     /**
-     * @var string License key
+     * @var string|null License key
      */
     public $licenseKey;
 
     /**
-     * @var string License key status
+     * @var string|null License key status
      */
     public $licenseKeyStatus;
 
     /**
-     * @var string Licensed edition
+     * @var string|null Licensed edition
      */
     public $licensedEdition;
 
     /**
-     * @var string Licensed domain
+     * @var string|null Licensed domain
      */
     public $licensedDomain;
 
     /**
-     * @var boolean Edition testable domain
+     * @var bool Edition testable domain
      */
     public $editionTestableDomain = false;
 
     /**
-     * @var array The installed plugin license keys
+     * @var array|null The installed plugin license keys
      */
     public $pluginLicenseKeys;
 
     /**
-     * @var array The plugins' license key statuses. Set by the server response.
+     * @var array|null The plugins' license key statuses. Set by the server response.
      */
     public $pluginLicenseKeyStatuses;
 
     /**
-     * @var array|string Data
+     * @var array|string|Model|null Data
      */
     public $data;
 
@@ -75,57 +75,47 @@ class Et extends Model
     public $requestIp = '1.1.1.1';
 
     /**
-     * @var \DateTime Request time
+     * @var \DateTime|null Request time
      */
     public $requestTime;
 
     /**
-     * @var string Request port
+     * @var string|null Request port
      */
     public $requestPort;
 
     /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var integer Local build
-     */
-    public $localBuild;
-
-    /**
-     * @var string Local edition
+     * @var string|null Local edition
      */
     public $localEdition;
 
     /**
-     * @var string User email
+     * @var string|null User email
      */
     public $userEmail;
 
     /**
-     * @var string Track
-     */
-    public $track;
-
-    /**
-     * @var boolean Show beta updates
+     * @var bool Show beta updates
      */
     public $showBeta = false;
 
     /**
-     * @var array Errors
+     * @var array|null Response errors
      */
-    public $errors;
+    public $responseErrors;
 
     /**
-     * @var array Server info
+     * @var array|null Server info
      */
     public $serverInfo;
 
     /**
-     * @var string The context of the request. Either 'craft' or a plugin handle.
+     * @var string The context of the request. Either 'craft' or a plugin's package name.
      */
     public $handle = 'craft';
 
@@ -137,7 +127,7 @@ class Et extends Model
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
         if (!isset($config['requestTime'])) {
             $date = DateTimeHelper::currentUTCDateTime();
@@ -155,37 +145,8 @@ class Et extends Model
         return [
             [['licensedEdition'], 'in', 'range' => [0, 1, 2]],
             [['requestTime'], DateTimeValidator::class],
-            [
-                ['localBuild'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['localVersion', 'localBuild', 'localEdition', 'handle'], 'required'],
+            [['localVersion', 'localEdition', 'handle'], 'required'],
             [['userEmail'], 'email'],
-            [
-                [
-                    'licenseKey',
-                    'licenseKeyStatus',
-                    'licensedEdition',
-                    'licensedDomain',
-                    'editionTestableDomain',
-                    'data',
-                    'requestUrl',
-                    'requestIp',
-                    'requestTime',
-                    'requestPort',
-                    'localVersion',
-                    'localBuild',
-                    'localEdition',
-                    'userEmail',
-                    'track',
-                    'errors'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 

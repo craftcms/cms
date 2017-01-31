@@ -6,13 +6,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\db\Query;
-use craft\app\models\Section;
-use craft\app\records\UserPermission as UserPermissionRecord;
+use craft\base\Plugin;
+use craft\base\UtilityInterface;
+use craft\base\Volume;
+use craft\db\Query;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\models\CategoryGroup;
+use craft\models\Section;
+use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -27,6 +31,14 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class UserPermissions extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
+     */
+    const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+
     // Properties
     // =========================================================================
 
@@ -48,8 +60,10 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    public function getAllPermissions()
+    public function getAllPermissions(): array
     {
+        $permissions = [];
+
         // General
         // ---------------------------------------------------------------------
 
@@ -72,8 +86,8 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            if ($plugin::hasCpSection()) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->getHandle()] = [
+            if ($plugin->hasCpSection) {
+                $general['accessCp']['nested']['accessPlugin-'.$plugin->handle] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
@@ -84,7 +98,7 @@ class UserPermissions extends Component
         // Users
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $permissions[Craft::t('app', 'Users')] = [
                 'editUsers' => [
                     'label' => Craft::t('app', 'Edit users'),
@@ -163,39 +177,44 @@ class UserPermissions extends Component
         // Volumes
         // ---------------------------------------------------------------------
 
+        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         foreach ($volumes as $volume) {
-            $label = Craft::t('app', 'Volume - {volume}',
-                ['volume' => Craft::t('site', $volume->name)]);
+            $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 
-        // Plugins
+        // Utilities
         // ---------------------------------------------------------------------
 
-        foreach (Craft::$app->getPlugins()->call('registerUserPermissions') as $pluginHandle => $pluginPermissions) {
-            $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-            $permissions[$plugin->name] = $pluginPermissions;
-        }
+        $permissions[Craft::t('app', 'Utilities')] = $this->_getUtilityPermissions();
 
-        return $permissions;
+        // Let plugins customize them and add new ones
+        // ---------------------------------------------------------------------
+
+        $event = new RegisterUserPermissionsEvent([
+            'permissions' => $permissions
+        ]);
+        $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
+
+        return $event->permissions;
     }
 
     /**
      * Returns all of a given user group's permissions.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return array
      */
-    public function getPermissionsByGroupId($groupId)
+    public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByUserId[$groupId])) {
             $groupPermissions = (new Query())
-                ->select('p.name')
-                ->from('{{%userpermissions}} p')
-                ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
+                ->select(['p.name'])
+                ->from(['{{%userpermissions}} p'])
+                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
 
@@ -208,17 +227,17 @@ class UserPermissions extends Component
     /**
      * Returns all of the group permissions a given user has.
      *
-     * @param integer $userId
+     * @param int $userId
      *
      * @return array
      */
-    public function getGroupPermissionsByUserId($userId)
+    public function getGroupPermissionsByUserId(int $userId): array
     {
         return (new Query())
-            ->select('p.name')
-            ->from('{{%userpermissions}} p')
-            ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
-            ->innerJoin('{{%usergroups_users}} g_u', 'g_u.groupId = p_g.groupId')
+            ->select(['p.name'])
+            ->from(['{{%userpermissions}} p'])
+            ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
+            ->innerJoin('{{%usergroups_users}} g_u', '[[g_u.groupId]] = [[p_g.groupId]]')
             ->where(['g_u.userId' => $userId])
             ->column();
     }
@@ -226,28 +245,28 @@ class UserPermissions extends Component
     /**
      * Returns whether a given user group has a given permission.
      *
-     * @param integer $groupId
-     * @param string  $checkPermission
+     * @param int    $groupId
+     * @param string $checkPermission
      *
-     * @return boolean
+     * @return bool
      */
-    public function doesGroupHavePermission($groupId, $checkPermission)
+    public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
     {
         $allPermissions = $this->getPermissionsByGroupId($groupId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
      * Saves new permissions for a user group.
      *
-     * @param integer $groupId
-     * @param array   $permissions
+     * @param int   $groupId
+     * @param array $permissions
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveGroupPermissions($groupId, $permissions)
+    public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
         // Delete any existing group permissions
         Craft::$app->getDb()->createCommand()
@@ -256,7 +275,7 @@ class UserPermissions extends Component
 
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
-        if ($permissions) {
+        if (!empty($permissions)) {
             $groupPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
@@ -279,19 +298,19 @@ class UserPermissions extends Component
     /**
      * Returns all of a given user's permissions.
      *
-     * @param integer $userId
+     * @param int $userId
      *
      * @return array
      */
-    public function getPermissionsByUserId($userId)
+    public function getPermissionsByUserId(int $userId): array
     {
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
             $userPermissions = (new Query())
-                ->select('p.name')
-                ->from('{{%userpermissions}} p')
-                ->innerJoin('{{%userpermissions_users}} p_u', 'p_u.permissionId = p.id')
+                ->select(['p.name'])
+                ->from(['{{%userpermissions}} p'])
+                ->innerJoin('{{%userpermissions_users}} p_u', '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])
                 ->column();
 
@@ -304,28 +323,28 @@ class UserPermissions extends Component
     /**
      * Returns whether a given user has a given permission.
      *
-     * @param integer $userId
-     * @param string  $checkPermission
+     * @param int    $userId
+     * @param string $checkPermission
      *
-     * @return boolean
+     * @return bool
      */
-    public function doesUserHavePermission($userId, $checkPermission)
+    public function doesUserHavePermission(int $userId, string $checkPermission): bool
     {
         $allPermissions = $this->getPermissionsByUserId($userId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
      * Saves new permissions for a user.
      *
-     * @param integer $userId
-     * @param array   $permissions
+     * @param int   $userId
+     * @param array $permissions
      *
-     * @return boolean
+     * @return bool
      */
-    public function saveUserPermissions($userId, $permissions)
+    public function saveUserPermissions(int $userId, array $permissions): bool
     {
         // Delete any existing user permissions
         Craft::$app->getDb()->createCommand()
@@ -336,7 +355,7 @@ class UserPermissions extends Component
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
         $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
 
-        if ($permissions) {
+        if (!empty($permissions)) {
             $userPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
@@ -366,7 +385,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getSingleEntryPermissions($section)
+    private function _getSingleEntryPermissions(Section $section): array
     {
         $suffix = ':'.$section->id;
 
@@ -401,7 +420,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getEntryPermissions($section)
+    private function _getEntryPermissions(Section $section): array
     {
         $suffix = ':'.$section->id;
 
@@ -452,7 +471,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getGlobalSetPermissions($globalSets)
+    private function _getGlobalSetPermissions(array $globalSets): array
     {
         $permissions = [];
 
@@ -469,11 +488,11 @@ class UserPermissions extends Component
     /**
      * Returns the category permissions.
      *
-     * @param $groups
+     * @param CategoryGroup[] $groups
      *
      * @return array
      */
-    private function _getCategoryGroupPermissions($groups)
+    private function _getCategoryGroupPermissions(array $groups): array
     {
         $permissions = [];
 
@@ -490,11 +509,11 @@ class UserPermissions extends Component
     /**
      * Returns the array source permissions.
      *
-     * @param integer $sourceId
+     * @param int $sourceId
      *
      * @return array
      */
-    private function _getVolumePermissions($sourceId)
+    private function _getVolumePermissions(int $sourceId): array
     {
         $suffix = ':'.$sourceId;
 
@@ -517,6 +536,25 @@ class UserPermissions extends Component
     }
 
     /**
+     * Returns the permissions for the utilities.
+     *
+     * @return array
+     */
+    private function _getUtilityPermissions()
+    {
+        $permissions = [];
+
+        foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
+            /** @var UtilityInterface $class */
+            $permissions['utility:'.$class::id()] = [
+                'label' => $class::displayName()
+            ];
+        }
+
+        return $permissions;
+    }
+
+    /**
      * Filters out any orphaned permissions.
      *
      * @param array $postedPermissions The posted permissions.
@@ -525,11 +563,11 @@ class UserPermissions extends Component
      *
      * @return array The permissions we'll actually let them save.
      */
-    private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
+    private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
     {
         $filteredPermissions = [];
 
-        if ($postedPermissions) {
+        if (!empty($postedPermissions)) {
             foreach ($this->getAllPermissions() as $categoryPermissions) {
                 $this->_findSelectedPermissions($categoryPermissions, $postedPermissions, $groupPermissions, $filteredPermissions);
             }
@@ -546,15 +584,15 @@ class UserPermissions extends Component
      * @param array $groupPermissions
      * @param array &$filteredPermissions
      *
-     * @return boolean Whether any permissions were added to $filteredPermissions
+     * @return bool Whether any permissions were added to $filteredPermissions
      */
-    private function _findSelectedPermissions($permissionsGroup, $postedPermissions, $groupPermissions, &$filteredPermissions)
+    private function _findSelectedPermissions(array $permissionsGroup, array $postedPermissions, array $groupPermissions, array &$filteredPermissions): bool
     {
         $hasAssignedPermissions = false;
 
         foreach ($permissionsGroup as $name => $data) {
             // Should the user have this permission (either directly or via their group)?
-            if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions)) {
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array(strtolower($name), $groupPermissions, true)) {
                 // First assign any nested permissions
                 if (!empty($data['nested'])) {
                     $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);
@@ -581,7 +619,7 @@ class UserPermissions extends Component
      *
      * @return UserPermissionRecord
      */
-    private function _getPermissionRecordByName($permissionName)
+    private function _getPermissionRecordByName(string $permissionName): UserPermissionRecord
     {
         // Permission names are always stored in lowercase
         $permissionName = strtolower($permissionName);

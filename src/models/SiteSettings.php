@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\UrlValidator;
+use craft\base\Model;
+use craft\validators\UrlValidator;
 
 /**
  * Validates the required Site attributes for the installer.
@@ -22,12 +22,12 @@ class SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var string Site name
+     * @var string|null Site name
      */
     public $siteName;
 
     /**
-     * @var string Site URL
+     * @var string|null Site URL
      */
     public $siteUrl;
 
@@ -41,13 +41,8 @@ class SiteSettings extends Model
     {
         return [
             [['siteName', 'siteUrl'], 'required'],
-            [
-                ['siteUrl'],
-                UrlValidator::class,
-                'defaultScheme' => 'http'
-            ],
+            [['siteUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
             [['siteName', 'siteUrl'], 'string', 'max' => 255],
-            [['siteName', 'siteUrl'], 'safe', 'on' => 'search'],
         ];
     }
 }

@@ -5,16 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use yii\base\ModelEvent;
+use craft\events\ModelEvent;
 
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
- * @property boolean $isNew    Whether the component is new (unsaved)
- * @property array   $settings The component’s settings
- * @property string  $type     The class name that should be used to represent the field
+ * @property bool  $isNew    Whether the component is new (unsaved)
+ * @property array $settings The component’s settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -37,7 +36,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the component is saved
+     * @event ModelEvent The event that is triggered after the component is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
 
@@ -59,7 +58,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public static function isSelectable()
+    public static function isSelectable(): bool
     {
         return true;
     }
@@ -70,57 +69,15 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function getIsNew(): bool
     {
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
+        return (!$this->id || strpos($this->id, 'new') === 0);
     }
 
     /**
      * @inheritdoc
      */
-    public function afterSave()
-    {
-        // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        // Trigger a 'beforeDelete' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
-        // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getIsNew()
-    {
-        return (!$this->id || strncmp($this->id, 'new', 3) === 0);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettings()
+    public function getSettings(): array
     {
         $settings = [];
 
@@ -142,7 +99,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function settingsAttributes()
+    public function settingsAttributes(): array
     {
         $class = new \ReflectionClass($this);
         $names = [];
@@ -154,5 +111,54 @@ abstract class SavableComponent extends Component implements SavableComponentInt
         }
 
         return $names;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Trigger a 'beforeSave' event
+        $event = new ModelEvent([
+            'isNew' => $isNew,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave(bool $isNew)
+    {
+        // Trigger an 'afterSave' event
+        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        // Trigger a 'beforeDelete' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Trigger an 'afterDelete' event
+        $this->trigger(self::EVENT_AFTER_DELETE);
     }
 }

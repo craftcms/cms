@@ -5,11 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
 use yii\db\Schema;
 
 /**
@@ -26,7 +27,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Lightswitch');
     }
@@ -35,7 +36,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the lightswitch should be enabled by default
+     * @var bool Whether the lightswitch should be enabled by default
      */
     public $default = false;
 
@@ -45,7 +46,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_BOOLEAN;
     }
@@ -69,7 +70,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         // If this is a new entry, look for a default option
         if ($this->isFresh($element)) {
@@ -90,7 +91,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
             return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
@@ -102,7 +103,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         // It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
         return $value == false ? '0' : $value;
@@ -114,7 +115,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         // Lightswitch fields can never get required-field validation errors
         return false;

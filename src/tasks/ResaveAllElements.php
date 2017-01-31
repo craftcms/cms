@@ -5,10 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Task;
+use craft\base\Element;
+use craft\base\Task;
 
 /**
  * ResaveAllElements represents a Resave All Elements background task.
@@ -22,12 +23,12 @@ class ResaveAllElements extends Task
     // =========================================================================
 
     /**
-     * @var integer The site ID to fetch the elements in
+     * @var int|null The site ID to fetch the elements in
      */
     public $siteId;
 
     /**
-     * @var string Whether only localizable elements should be resaved
+     * @var string|null Whether only localizable elements should be resaved
      */
     public $localizableOnly;
 
@@ -54,14 +55,15 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_elementType = [];
         $localizableOnly = $this->localizableOnly;
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var Element|string $elementType */
             if (!$localizableOnly || $elementType::isLocalized()) {
-                $this->_elementType[] = $elementType::className();
+                $this->_elementType[] = $elementType;
             }
         }
 
@@ -71,7 +73,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         return $this->runSubTask([
             'type' => ResaveElements::class,
@@ -90,7 +92,7 @@ class ResaveAllElements extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');

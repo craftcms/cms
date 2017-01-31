@@ -5,15 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\Category;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\CategoryGroup;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\elements\Category;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\CategoryGroup;
+use yii\db\Connection;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -22,7 +23,7 @@ use craft\app\models\CategoryGroup;
  *
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
- * @method Category|array|null nth($n, $db = null)
+ * @method Category|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -36,12 +37,12 @@ class CategoryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var boolean Whether to only return categories that the user has permission to edit.
+     * @var bool Whether to only return categories that the user has permission to edit.
      */
-    public $editable;
+    public $editable = false;
 
     /**
-     * @var integer|integer[] The category group ID(s) that the resulting categories must be in.
+     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
      */
     public $groupId;
 
@@ -53,25 +54,21 @@ class CategoryQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -81,22 +78,23 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property based on a given category group(s)’s handle(s).
      *
-     * @param string|string[]|CategoryGroup $value The property value
+     * @param string|string[]|CategoryGroup|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function group($value)
     {
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = $value->id;
-        } else {
-            $query = new Query();
-            $this->groupId = $query
-                ->select('id')
+        } else if ($value !== null) {
+            $this->groupId = (new Query())
+                ->select(['id'])
                 ->from('{{%categorygroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
@@ -105,9 +103,9 @@ class CategoryQuery extends ElementQuery
     /**
      * Sets the [[groupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function groupId($value)
     {
@@ -122,7 +120,7 @@ class CategoryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
@@ -154,11 +152,8 @@ class CategoryQuery extends ElementQuery
     {
         if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
-            $editableGroupIds = Craft::$app->getCategories()->getEditableGroupIds();
             $this->subQuery->andWhere([
-                'in',
-                'categories.groupId',
-                $editableGroupIds
+                'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()
             ]);
         }
     }
@@ -171,57 +166,54 @@ class CategoryQuery extends ElementQuery
         if ($this->groupId) {
             // Should we set the structureId param?
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
-                $query = new Query();
-                $this->structureId = $query
-                    ->select('structureId')
-                    ->from('{{%categorygroups}}')
-                    ->where(Db::parseParam('id', $this->groupId, $query->params))
+                $structureId = (new Query())
+                    ->select(['structureId'])
+                    ->from(['{{%categorygroups}}'])
+                    ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
+                $this->structureId = $structureId ? (int)$structureId : false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId));
         }
     }
 
     /**
      * Applies the 'ref' param to the query being prepared.
+     *
+     * @return void
      */
     private function _applyRefParam()
     {
-        if ($this->ref) {
-            $joinCategoryGroups = false;
-            $refs = ArrayHelper::toArray($this->ref);
-            $conditionals = [];
+        if (!$this->ref) {
+            return;
+        }
 
-            foreach ($refs as $ref) {
-                $parts = array_filter(explode('/', $ref));
+        $refs = ArrayHelper::toArray($this->ref);
+        $condition = ['or'];
+        $joinCategoryGroups = false;
 
-                if ($parts) {
-                    if (count($parts) == 1) {
-                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
-                    } else {
-                        $conditionals[] = [
-                            'and',
-                            Db::parseParam('categorygroups.handle', $parts[0], $this->subQuery->params),
-                            Db::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
-                        ];
-                        $joinCategoryGroups = true;
-                    }
-                }
-            }
+        foreach ($refs as $ref) {
+            $parts = array_filter(explode('/', $ref));
 
-            if ($conditionals) {
-                if (count($conditionals) == 1) {
-                    $this->subQuery->andWhere($conditionals[0]);
+            if (!empty($parts)) {
+                if (count($parts) == 1) {
+                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {
-                    array_unshift($conditionals, 'or');
-                    $this->subQuery->andWhere($conditionals);
-                }
-
-                if ($joinCategoryGroups) {
-                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId');
+                    $condition[] = [
+                        'and',
+                        Db::parseParam('categorygroups.handle', $parts[0]),
+                        Db::parseParam('elements_i18n.slug', $parts[1])
+                    ];
+                    $joinCategoryGroups = true;
                 }
             }
+        }
+
+        $this->subQuery->andWhere($condition);
+
+        if ($joinCategoryGroups) {
+            $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');
         }
     }
 }

@@ -5,21 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\SiteIdValidator;
 
 /**
  * Class EntryVersion record.
  *
- * @property integer $id        ID
- * @property integer $entryId   Entry ID
- * @property integer $sectionId Section ID
- * @property integer $creatorId Creator ID
- * @property integer $siteId    Site ID
- * @property integer $num       Num
+ * @property int     $id        ID
+ * @property int     $entryId   Entry ID
+ * @property int     $sectionId Section ID
+ * @property int     $creatorId Creator ID
+ * @property int     $siteId    Site ID
+ * @property int     $num       Num
  * @property string  $notes     Notes
  * @property array   $data      Data
  * @property Entry   $entry     Entry
@@ -37,22 +36,10 @@ class EntryVersion extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['siteId'], SiteIdValidator::class],
-            [['num'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
-            [['siteId', 'num', 'data'], 'required'],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%entryversions}}';
     }
@@ -62,7 +49,7 @@ class EntryVersion extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getEntry()
+    public function getEntry(): ActiveQueryInterface
     {
         return $this->hasOne(Entry::class, ['id' => 'entryId']);
     }
@@ -72,7 +59,7 @@ class EntryVersion extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -82,7 +69,7 @@ class EntryVersion extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getCreator()
+    public function getCreator(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'creatorId']);
     }
@@ -92,7 +79,7 @@ class EntryVersion extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

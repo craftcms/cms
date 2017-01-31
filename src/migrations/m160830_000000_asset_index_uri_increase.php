@@ -1,9 +1,7 @@
 <?php
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use Craft;
-use craft\app\db\Migration;
-use craft\app\enums\ColumnType;
+use craft\db\Migration;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -15,11 +13,10 @@ class m160830_000000_asset_index_uri_increase extends Migration
      *
      * @return bool
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
-        Craft::info('Changing asset index data table uri column to text.');
+        echo "    > Changing asset index data table uri column to text.\n";
         $this->alterColumn('{{%assetindexdata}}', 'uri', 'text');
-        Craft::info('Done changing asset index data table uri column to text.');
 
         return true;
     }
@@ -29,7 +26,8 @@ class m160830_000000_asset_index_uri_increase extends Migration
      */
     public function safeDown()
     {
-        echo 'm160830_000000_asset_index_uri_increase cannot be reverted.\n';
+        echo "m160830_000000_asset_index_uri_increase cannot be reverted.\n";
+
         return false;
     }
 }

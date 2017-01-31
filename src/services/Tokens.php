@@ -5,16 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\records\Token as TokenRecord;
+use craft\db\Query;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\records\Token as TokenRecord;
+use DateTime;
 use yii\base\Component;
 use yii\db\Expression;
 
@@ -45,24 +44,24 @@ class Tokens extends Component
      * @param mixed         $route      Where matching requests should be routed to. If you want them to be routed to a
      *                                  controller action, pass:
      *                                  `['action' => "controller/action", 'params' => ['foo' => 'bar']]`.
-     * @param integer|null  $usageLimit The maximum number of times this token can be used. Defaults to no limit.
+     * @param int|null      $usageLimit The maximum number of times this token can be used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires. Defaults to the 'defaultTokenDuration' config
      *                                  setting.
      *
      * @return string|false             The generated token, or `false` if there was an error.
      */
-    public function createToken($route, $usageLimit = null, $expiryDate = null)
+    public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {
         if (!$expiryDate) {
             $expiryDate = DateTimeHelper::currentUTCDateTime();
-            $expiryDate->add(new DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
+            $expiryDate->add(new \DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
         }
 
         $tokenRecord = new TokenRecord();
         $tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
         $tokenRecord->route = $route;
 
-        if ($usageLimit) {
+        if ($usageLimit !== null) {
             $tokenRecord->usageCount = 0;
             $tokenRecord->usageLimit = $usageLimit;
         }
@@ -84,15 +83,14 @@ class Tokens extends Component
      *
      * @return array|false
      */
-    public function getTokenRoute($token)
+    public function getTokenRoute(string $token)
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
-
         $result = (new Query())
             ->select(['id', 'route', 'usageLimit', 'usageCount'])
-            ->from('{{%tokens}}')
-            ->where('token = :token', [':token' => $token])
+            ->from(['{{%tokens}}'])
+            ->where(['token' => $token])
             ->one();
 
         if ($result) {
@@ -123,11 +121,11 @@ class Tokens extends Component
     /**
      * Increments a token's usage count.
      *
-     * @param integer $tokenId
+     * @param int $tokenId
      *
-     * @return boolean
+     * @return bool
      */
-    public function incrementTokenUsageCountById($tokenId)
+    public function incrementTokenUsageCountById(int $tokenId): bool
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
@@ -146,23 +144,25 @@ class Tokens extends Component
     /**
      * Deletes a token by its ID.
      *
-     * @param integer $tokenId
+     * @param int $tokenId
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteTokenById($tokenId)
+    public function deleteTokenById(int $tokenId): bool
     {
         Craft::$app->getDb()->createCommand()
             ->delete('{{%tokens}}', ['id' => $tokenId])
             ->execute();
+
+        return true;
     }
 
     /**
      * Deletes any expired tokens.
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteExpiredTokens()
+    public function deleteExpiredTokens(): bool
     {
         // Ignore if we've already done this once during the request
         if ($this->_deletedExpiredTokens) {
@@ -170,10 +170,7 @@ class Tokens extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%tokens}}',
-                'expiryDate <= :now',
-                ['now' => Db::prepareDateForDb(new DateTime())])
+            ->delete('{{%tokens}}', ['<=', 'expiryDate', Db::prepareDateForDb(new DateTime())])
             ->execute();
 
         $this->_deletedExpiredTokens = true;

@@ -5,28 +5,28 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
 use Craft;
-use craft\app\db\ActiveRecord;
-use craft\app\db\NestedSetsTrait;
-use craft\app\db\TaskQuery;
+use craft\db\ActiveRecord;
+use craft\db\NestedSetsTrait;
+use craft\db\TaskQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**
  * Class Task record.
  *
- * @property integer $id          ID
- * @property integer $root        Root
- * @property integer $lft         Lft
- * @property integer $rgt         Rgt
- * @property integer $level       Level
- * @property integer $currentStep Current step
- * @property integer $totalSteps  Total steps
- * @property string  $status      Status
- * @property string  $type        Type
- * @property string  $description Description
- * @property array   $settings    Settings
+ * @property int    $id          ID
+ * @property int    $root        Root
+ * @property int    $lft         Lft
+ * @property int    $rgt         Rgt
+ * @property int    $level       Level
+ * @property int    $currentStep Current step
+ * @property int    $totalSteps  Total steps
+ * @property string $status      Status
+ * @property string $type        Type
+ * @property string $description Description
+ * @property array  $settings    Settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -46,7 +46,7 @@ class Task extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%tasks}}';
     }
@@ -56,12 +56,10 @@ class Task extends ActiveRecord
      *
      * @return TaskQuery
      */
-    public static function find()
+    public static function find(): TaskQuery
     {
-        /** @var TaskQuery $query */
-        $query = Craft::createObject(TaskQuery::class, [get_called_class()]);
-
-        return $query;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::createObject(TaskQuery::class, [get_called_class()]);
     }
 
     /**
@@ -86,7 +84,7 @@ class Task extends ActiveRecord
     public function transactions()
     {
         return [
-            static::SCENARIO_DEFAULT => static::OP_ALL,
+            self::SCENARIO_DEFAULT => self::OP_ALL,
         ];
     }
 }

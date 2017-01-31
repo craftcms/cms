@@ -5,14 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
+use craft\base\Volume;
+use craft\db\Query;
+use craft\elements\Asset;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use yii\db\Connection;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
@@ -21,7 +22,7 @@ use craft\app\helpers\Db;
  *
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
- * @method Asset|array|null nth($n, $db = null)
+ * @method Asset|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -35,37 +36,37 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer|integer[] The volume ID(s) that the resulting assets must be in.
+     * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
      */
     public $volumeId;
 
     /**
-     * @var integer|integer[] The asset folder ID(s) that the resulting assets must be in.
+     * @var int|int[]|null The asset folder ID(s) that the resulting assets must be in.
      */
     public $folderId;
 
     /**
-     * @var string|string[] The filename(s) that the resulting assets must have.
+     * @var string|string[]|null The filename(s) that the resulting assets must have.
      */
     public $filename;
 
     /**
-     * @var string|string[] The file kind(s) that the resulting assets must be.
+     * @var string|string[]|null The file kind(s) that the resulting assets must be.
      */
     public $kind;
 
     /**
-     * @var integer|string The width (in pixels) that the resulting assets must have.
+     * @var int|null The width (in pixels) that the resulting assets must have.
      */
     public $width;
 
     /**
-     * @var integer|string The height (in pixels) that the resulting assets must have.
+     * @var int|null The height (in pixels) that the resulting assets must have.
      */
     public $height;
 
     /**
-     * @var integer|string The size (in bytes) that the resulting assets must have.
+     * @var int|null The size (in bytes) that the resulting assets must have.
      */
     public $size;
 
@@ -75,12 +76,12 @@ class AssetQuery extends ElementQuery
     public $dateModified;
 
     /**
-     * @var boolean Whether the query should search the subfolders of [[folderId]].
+     * @var bool Whether the query should search the subfolders of [[folderId]].
      */
     public $includeSubfolders = false;
 
     /**
-     * @var array The asset transform indexes that should be eager-loaded, if they exist
+     * @var array|null The asset transform indexes that should be eager-loaded, if they exist
      */
     public $withTransforms;
 
@@ -92,35 +93,32 @@ class AssetQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'volume': {
-                $this->volume($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'volume') {
+            $this->volume($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
     /**
      * Sets the [[volumeId]] property based on a given volume(s)’s handle(s).
      *
-     * @param string|string[]|Volume $value The property value
+     * @param string|string[]|Volume|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function volume($value)
     {
         if ($value instanceof Volume) {
             $this->volumeId = $value->id;
-        } else {
-            $query = new Query();
-            $this->volumeId = $query
-                ->select('id')
-                ->from('{{%volumes}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+        } else if ($value !== null) {
+            $this->volumeId = (new Query())
+                ->select(['id'])
+                ->from(['{{%volumes}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->volumeId = null;
         }
 
         return $this;
@@ -131,12 +129,12 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated since Craft 3.0. Use [[volume()]] instead.
      */
     public function source($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The “source” asset parameter has been deprecated. Use “volume” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The “source” asset query param has been deprecated. Use “volume” instead.');
 
         return $this->volume($value);
     }
@@ -144,9 +142,9 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function volumeId($value)
     {
@@ -158,14 +156,14 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[volumeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
      */
     public function sourceId($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The “sourceId” asset parameter has been deprecated. Use “volumeId” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The “sourceId” asset query param has been deprecated. Use “volumeId” instead.');
 
         return $this->volumeId($value);
     }
@@ -173,9 +171,9 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[folderId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function folderId($value)
     {
@@ -187,9 +185,9 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[filename]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function filename($value)
     {
@@ -201,9 +199,9 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[kind]] property.
      *
-     * @param string|string[] $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function kind($value)
     {
@@ -215,11 +213,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[width]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function width($value)
+    public function width(int $value = null)
     {
         $this->width = $value;
 
@@ -229,11 +227,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[height]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function height($value)
+    public function height(int $value = null)
     {
         $this->height = $value;
 
@@ -243,11 +241,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[size]] property.
      *
-     * @param integer|string $value The property value
+     * @param int|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function size($value)
+    public function size(int $value = null)
     {
         $this->size = $value;
 
@@ -259,7 +257,7 @@ class AssetQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function dateModified($value)
     {
@@ -271,11 +269,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[includeSubfolders]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function includeSubfolders($value = true)
+    public function includeSubfolders(bool $value = true)
     {
         $this->includeSubfolders = $value;
 
@@ -285,11 +283,11 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[withTransforms]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param array|null $value The transforms to include.
      *
      * @return self The query object itself
      */
-    public function withTransforms($value)
+    public function withTransforms(array $value = null)
     {
         $this->withTransforms = $value;
 
@@ -304,7 +302,7 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if (!$this->asArray && $this->withTransforms) {
+        if ($this->asArray === false && !empty($this->withTransforms)) {
             $transforms = ArrayHelper::toArray($this->withTransforms);
 
             Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
@@ -319,7 +317,7 @@ class AssetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'source' was set to an invalid handle
         if ($this->volumeId === []) {
@@ -327,7 +325,7 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable('assets');
-        $this->query->innerJoin('{{%volumefolders}} volumeFolders', 'assets.folderId = volumeFolders.id');
+        $this->query->innerJoin('{{%volumefolders}} volumeFolders', '[[assets.folderId]] = [[volumeFolders.id]]');
 
         $this->query->select([
             'assets.volumeId',
@@ -337,46 +335,47 @@ class AssetQuery extends ElementQuery
             'assets.width',
             'assets.height',
             'assets.size',
+            'assets.focalPoint',
             'assets.dateModified',
             'volumeFolders.path AS folderPath'
         ]);
 
         if ($this->volumeId) {
-            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId));
         }
 
         if ($this->folderId) {
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders)));
             } else {
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId));
             }
         }
 
         if ($this->filename) {
-            $this->subQuery->andWhere(Db::parseParam('assets.filename', $this->filename, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.filename', $this->filename));
         }
 
         if ($this->kind) {
-            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind));
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
         }
 
         if ($this->dateModified) {
-            $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified));
         }
 
         return parent::beforePrepare();

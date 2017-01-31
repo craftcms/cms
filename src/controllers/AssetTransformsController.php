@@ -5,12 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Image;
-use craft\app\models\AssetTransform;
-use craft\app\web\Controller;
+use craft\helpers\Image;
+use craft\models\AssetTransform;
+use craft\web\assets\edittransform\EditTransformAsset;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -42,10 +43,12 @@ class AssetTransformsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionTransformIndex()
+    public function actionTransformIndex(): string
     {
+        $variables = [];
+
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
-        $variables['transformModes'] = AssetTransform::getTransformModes();
+        $variables['modes'] = AssetTransform::modes();
 
         return $this->renderTemplate('settings/assets/transforms/_index', $variables);
     }
@@ -53,13 +56,13 @@ class AssetTransformsController extends Controller
     /**
      * Edit an asset transform.
      *
-     * @param string         $transformHandle The transform’s handle, if any.
-     * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
+     * @param string|null         $transformHandle The transform’s handle, if any.
+     * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform($transformHandle = null, AssetTransform $transform = null)
+    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): string
     {
         if ($transform === null) {
             if ($transformHandle !== null) {
@@ -72,6 +75,8 @@ class AssetTransformsController extends Controller
                 $transform = new AssetTransform();
             }
         }
+
+        $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
         return $this->renderTemplate('settings/assets/transforms/_settings', [
             'handle' => $transformHandle,
@@ -104,6 +109,7 @@ class AssetTransformsController extends Controller
             $transform->format = null;
         }
 
+        // TODO: This validation should be handled on the transform object
         $errors = false;
 
         $session = Craft::$app->getSession();
@@ -121,28 +127,29 @@ class AssetTransformsController extends Controller
             $transform->quality = null;
         }
 
-        if (!empty($transform->format) && !in_array($transform->format, Image::getWebSafeFormats())) {
+        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
             $session->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
 
         if (!$errors) {
-            // Did it save?
-            if (Craft::$app->getAssetTransforms()->saveTransform($transform)) {
-                $session->setNotice(Craft::t('app', 'Transform saved.'));
-
-                return $this->redirectToPostedUrl($transform);
-            }
-
-            $session->setError(Craft::t('app', 'Couldn’t save transform.'));
+            $success = Craft::$app->getAssetTransforms()->saveTransform($transform);
+        } else {
+            $success = false;
         }
 
-        // Send the transform back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'transform' => $transform
-        ]);
+        if (!$success) {
+            // Send the transform back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'transform' => $transform
+            ]);
 
-        return null;
+            return null;
+        }
+
+        $session->setNotice(Craft::t('app', 'Transform saved.'));
+
+        return $this->redirectToPostedUrl($transform);
     }
 
     /**
@@ -150,7 +157,7 @@ class AssetTransformsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTransform()
+    public function actionDeleteTransform(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

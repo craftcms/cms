@@ -5,15 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\elements\User as UserElement;
-use craft\app\helpers\Db;
-use craft\app\helpers\Url;
-use craft\app\models\Password;
+use craft\elements\User as UserElement;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\UrlHelper;
+use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -22,7 +21,7 @@ use yii\web\IdentityInterface;
  *
  * An instance of the User service is globally accessible in Craft via [[Application::userSession `Craft::$app->getUser()`]].
  *
- * @property boolean          $hasElevatedSession Whether the user currently has an elevated session
+ * @property bool             $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity           The logged-in user.
  *
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
@@ -56,14 +55,13 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = Url::getUrl($configService->getLoginPath());
+        $config['loginUrl'] = UrlHelper::url($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
-        $appId = Craft::$app->getConfig()->get('appId');
-        $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
-        $config['identityCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_identity']);
-        $config['usernameCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_username']);
+        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
+        $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
+        $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
         $config['idParam'] = $stateKeyPrefix.'__id';
         $config['authTimeoutParam'] = $stateKeyPrefix.'__expire';
         $config['absoluteAuthTimeoutParam'] = $stateKeyPrefix.'__absoluteExpire';
@@ -87,15 +85,15 @@ class User extends \yii\web\User
     /**
      * Logs in a user by their ID
      *
-     * @param integer $userId   The user’s ID
-     * @param integer $duration The number of seconds that the user can remain in logged-in status.
+     * @param int $userId       The user’s ID
+     * @param int $duration     The number of seconds that the user can remain in logged-in status.
      *                          Defaults to 0, meaning login till the user closes the browser or the session is manually destroyed.
      *                          If greater than 0 and [[enableAutoLogin]] is true, cookie-based login will be supported.
      *                          Note that if [[enableSession]] is false, this parameter will be ignored.
      *
-     * @return boolean Whether the user is logged in
+     * @return bool Whether the user is logged in
      */
-    public function loginByUserId($userId, $duration = 0)
+    public function loginByUserId(int $userId, int $duration = 0): bool
     {
         $user = Craft::$app->getUsers()->getUserById($userId);
 
@@ -123,7 +121,13 @@ class User extends \yii\web\User
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $cookie->expire = time() + DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+            $seconds = DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+
+            if ($seconds === null) {
+                $seconds = 0;
+            }
+
+            $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
             Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
@@ -169,9 +173,9 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current user session.
      *
-     * @return integer The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
+     * @return int The seconds left in the session, or -1 if their session will expire when their HTTP session ends.
      */
-    public function getRemainingSessionTime()
+    public function getRemainingSessionTime(): int
     {
         // Are they logged in?
         if (!$this->getIsGuest()) {
@@ -197,9 +201,9 @@ class User extends \yii\web\User
     /**
      * Returns whether the current user is an admin.
      *
-     * @return boolean Whether the current user is an admin.
+     * @return bool Whether the current user is an admin.
      */
-    public function getIsAdmin()
+    public function getIsAdmin(): bool
     {
         $user = $this->getIdentity();
 
@@ -211,9 +215,9 @@ class User extends \yii\web\User
      *
      * @param string $permissionName The name of the permission.
      *
-     * @return boolean Whether the current user has the permission.
+     * @return bool Whether the current user has the permission.
      */
-    public function checkPermission($permissionName)
+    public function checkPermission(string $permissionName): bool
     {
         $user = $this->getIdentity();
 
@@ -223,7 +227,7 @@ class User extends \yii\web\User
     /**
      * Returns how many seconds are left in the current elevated user session.
      *
-     * @return integer|boolean The number of seconds left in the current elevated user session
+     * @return int|bool The number of seconds left in the current elevated user session
      *                         or false if it has been disabled.
      */
     public function getElevatedSessionTimeout()
@@ -253,9 +257,9 @@ class User extends \yii\web\User
     /**
      * Returns whether the user currently has an elevated session.
      *
-     * @return boolean Whether the user currently has an elevated session
+     * @return bool Whether the user currently has an elevated session
      */
-    public function getHasElevatedSession()
+    public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
         if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
@@ -270,9 +274,9 @@ class User extends \yii\web\User
      *
      * @param string $password the current user’s password
      *
-     * @return boolean Whether the password was valid, and the user session has been elevated
+     * @return bool Whether the password was valid, and the user session has been elevated
      */
-    public function startElevatedSession($password)
+    public function startElevatedSession(string $password): bool
     {
         // Get the current user
         $user = $this->getIdentity();
@@ -282,11 +286,9 @@ class User extends \yii\web\User
         }
 
         // Validate the password
-        $passwordModel = new Password();
-        $passwordModel->password = $password;
+        $validator = new UserPasswordValidator();
 
-        if ($passwordModel->validate() && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
-
+        if ($validator->validate($password) && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
             $elevatedSessionDuration = Craft::$app->getConfig()->getElevatedSessionDuration();
 
             // Make sure it hasn't been disabled.
@@ -358,7 +360,7 @@ class User extends \yii\web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration)
     {
-        /** @var \craft\app\elements\User $identity */
+        /** @var \craft\elements\User $identity */
         // Save the username cookie
         $this->sendUsernameCookie($identity);
 
@@ -383,11 +385,9 @@ class User extends \yii\web\User
      */
     protected function renewAuthStatus()
     {
-        if (Craft::$app->getIsInstalled()) {
-            // Only renew if the request meets our user agent and IP requirements
-            if ($this->_validateUserAgentAndIp()) {
-                parent::renewAuthStatus();
-            }
+        // Only renew if the request meets our user agent and IP requirements
+        if (Craft::$app->getIsInstalled() && $this->_validateUserAgentAndIp()) {
+            parent::renewAuthStatus();
         }
     }
 
@@ -397,7 +397,7 @@ class User extends \yii\web\User
     protected function renewIdentityCookie()
     {
         // Prevent the session row from getting stale
-        $this->_updateSessionToken();
+        $this->_updateSessionRow();
 
         parent::renewIdentityCookie();
     }
@@ -417,19 +417,21 @@ class User extends \yii\web\User
         if ($value !== null) {
             $data = json_decode($value, true);
 
-            if (count($data) === 4 && isset($data[0], $data[1], $data[2], $data[3])) {
-                $authKey = $data[1];
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::authData($data[1]);
 
-                // TODO: this can't be right (params don't match conditions)
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        '{{%sessions}}',
-                        ['and', 'userId=:userId', 'uid=:uid'],
-                        [
-                            'userId' => $identity->id,
-                            'token' => $authKey
-                        ])
-                    ->execute();
+                if ($authData) {
+                    $tokenUid = $authData[1];
+
+                    Craft::$app->getDb()->createCommand()
+                        ->delete(
+                            '{{%sessions}}',
+                            [
+                                'userId' => $identity->id,
+                                'uid' => $tokenUid
+                            ])
+                        ->execute();
+                }
             }
         }
 
@@ -449,7 +451,7 @@ class User extends \yii\web\User
     /**
      * Statically sets the identity in the event that this request should not be extending it.
      *
-     * @return boolean
+     * @return void
      */
     private function _setStaticIdentity()
     {
@@ -484,9 +486,9 @@ class User extends \yii\web\User
      * Validates that the request has a user agent and IP associated with it,
      * if the 'requireUserAgentAndIpForSession' config setting is enabled.
      *
-     * @return boolean
+     * @return bool
      */
-    private function _validateUserAgentAndIp()
+    private function _validateUserAgentAndIp(): bool
     {
         if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession')) {
             $request = Craft::$app->getRequest();
@@ -506,16 +508,16 @@ class User extends \yii\web\User
      *
      * @see _deleteStaleSessions()
      */
-    private function _updateSessionToken()
+    private function _updateSessionRow()
     {
         // Extract the current session token's UID from the identity cookie
         $cookieValue = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
 
         if ($cookieValue !== null) {
-            $identityData = json_decode($cookieValue, true);
+            $data = json_decode($cookieValue, true);
 
-            if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2])) {
-                $authData = UserElement::getAuthData($identityData[1]);
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
@@ -525,8 +527,10 @@ class User extends \yii\web\User
                         ->update(
                             '{{%sessions}}',
                             [],
-                            ['and', 'userId=:userId', 'uid=:uid'],
-                            [':userId' => $this->getId(), ':uid' => $tokenUid])
+                            [
+                                'userId' => $this->getId(),
+                                'uid' => $tokenUid
+                            ])
                         ->execute();
                 }
             }
@@ -538,15 +542,12 @@ class User extends \yii\web\User
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $interval = new \DateInterval('P3M');
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%sessions}}',
-                'dateUpdated < :pastTime',
-                ['pastTime' => Db::prepareDateForDb($pastTime)])
+            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

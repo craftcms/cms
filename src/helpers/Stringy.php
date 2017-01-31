@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 /**
  * The entire purpose of this class is so we can get at the charsArray in Stringy, which is a protected method
@@ -17,10 +17,12 @@ namespace craft\app\helpers;
 class Stringy extends \Stringy\Stringy
 {
     /**
+     * Call Stringy's `charsArray` for backwards compatibility.
+     *
      * @return array
      */
-    public function getAsciiCharMap()
+    public function getAsciiCharMap(): array
     {
-        return parent::charsArray();
+        return $this->charsArray();
     }
 }

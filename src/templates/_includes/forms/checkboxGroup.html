@@ -1,5 +1,5 @@
 {% if name is defined and name %}
-	<input type="hidden" name="{{ name }}" value="">
+    <input type="hidden" name="{{ name }}" value="">
 {% endif -%}
 
 {%- set options = (options is defined ? options : []) %}
@@ -7,16 +7,16 @@
 {%- set name = (name is defined and name ? name~'[]' : null) %}
 
 {%- for key, option in options %}
-	{%- set optionLabel = (option.label is defined ? option.label : option) %}
-	{%- set optionValue = (option.value is defined ? option.value : key) -%}
-	<div>
-		{% include "_includes/forms/checkbox" with {
-			label:     optionLabel,
-			id:        (loop.first and id is defined ? id : null),
-			name:      name,
-			value:     optionValue,
-			checked:   (optionValue in values),
-			autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
-		} only %}
-	</div>
+    {%- set optionLabel = (option.label is defined ? option.label : option) %}
+    {%- set optionValue = (option.value is defined ? option.value : key) -%}
+    <div>
+        {% include "_includes/forms/checkbox" with {
+            label:     optionLabel,
+            id:        (loop.first and id is defined ? id : null),
+            name:      name,
+            value:     optionValue,
+            checked:   (optionValue in values),
+            autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
+        } only %}
+    </div>
 {%- endfor %}

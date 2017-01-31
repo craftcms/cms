@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class AssetTransformIndex model.
@@ -22,67 +22,67 @@ class AssetTransformIndex extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer File ID
+     * @var int|null File ID
      */
     public $assetId;
 
     /**
-     * @var integer Filename
-     */
-    public $filename;
-
-    /**
-     * @var integer Format
-     */
-    public $format;
-
-    /**
-     * @var string Location
-     */
-    public $location;
-
-    /**
-     * @var integer Volume ID
+     * @var int|null Volume ID
      */
     public $volumeId;
 
     /**
-     * @var boolean File exists
+     * @var string|null Filename
+     */
+    public $filename;
+
+    /**
+     * @var string|null Format
+     */
+    public $format;
+
+    /**
+     * @var string|null Location
+     */
+    public $location;
+
+    /**
+     * @var bool File exists
      */
     public $fileExists = false;
 
     /**
-     * @var boolean In progress
+     * @var bool In progress
      */
     public $inProgress = false;
 
     /**
-     * @var \DateTime Date indexed
+     * @var \DateTime|null Date indexed
      */
     public $dateIndexed;
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 
     /**
-     * @var integer Detected format
+     * @var string|null Detected format
      */
     public $detectedFormat;
 
     /**
-     * @var array Transform
+     * @var AssetTransform|null Transform
      */
     public $transform;
 
@@ -92,7 +92,7 @@ class AssetTransformIndex extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function datetimeAttributes(): array
     {
         $names = parent::datetimeAttributes();
         $names[] = 'dateIndexed';
@@ -106,68 +106,8 @@ class AssetTransformIndex extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['assetId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['filename'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['format'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true],
             [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class],
-            [
-                ['detectedFormat'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'assetId',
-                    'filename',
-                    'format',
-                    'location',
-                    'volumeId',
-                    'fileExists',
-                    'inProgress',
-                    'dateIndexed',
-                    'dateUpdated',
-                    'dateCreated',
-                    'detectedFormat',
-                    'transform'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 
@@ -176,8 +116,8 @@ class AssetTransformIndex extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->id;
+        return (string)$this->id;
     }
 }

@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\Asset;
+use craft\elements\Asset;
 
 /**
  * Asset event class.
@@ -15,18 +15,18 @@ use craft\app\elements\Asset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetEvent extends Event
+class AssetEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Asset The asset model associated with the event.
+     * @var Asset|null The asset model associated with the event.
      */
     public $asset;
 
     /**
-     * @var boolean Whether the asset is brand new
+     * @var bool Whether the asset is brand new
      */
     public $isNew = false;
 }

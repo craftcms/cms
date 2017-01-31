@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\MigrationHelper;
 
 /**
  * m150403_185142_volumes migration.
@@ -32,15 +32,15 @@ class m150403_185142_volumes extends Migration
         }
 
         if ($this->db->columnExists('{{%volumefolders}}', 'sourceId')) {
-            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId', 'volumeId');
+            MigrationHelper::renameColumn('{{%volumefolders}}', 'sourceId', 'volumeId', $this);
         }
 
         if (!$this->db->columnExists('{{%volumes}}', 'url')) {
-            $this->addColumnAfter('{{%volumes}}', 'url', 'string', 'type');
+            $this->addColumn('{{%volumes}}', 'url', 'string');
         }
 
         if (!$this->db->columnExists('{{%assetindexdata}}', 'timestamp')) {
-            $this->addColumnAfter('{{%assetindexdata}}', 'timestamp', 'datetime', 'size');
+            $this->addColumn('{{%assetindexdata}}', 'timestamp', 'datetime');
         }
 
         if ($this->db->columnExists('{{%assets}}', 'sourceId')) {
@@ -61,9 +61,9 @@ class m150403_185142_volumes extends Migration
 
         // Update permissions
         $permissions = (new Query())
-            ->select('id, name')
-            ->from('{{%userpermissions}}')
-            ->where(['like', 'name', '%assetsource%', false])
+            ->select(['id', 'name'])
+            ->from(['{{%userpermissions}}'])
+            ->where(['like', 'name', 'assetsource'])
             ->all();
 
         foreach ($permissions as $permission) {

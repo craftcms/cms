@@ -1,8 +1,8 @@
 {% requireAdmin %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') },
-	{ label: "Plugins"|t('app'), url: url('settings/plugins') }
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Plugins"|t('app'), url: url('settings/plugins') }
 ] %}
 
 {% set fullPageForm = true %}
@@ -14,11 +14,11 @@
 
 
 {% block content %}
-	<input type="hidden" name="action" value="plugins/save-plugin-settings">
-	<input type="hidden" name="pluginHandle" value="{{ plugin.getHandle() }}">
-	{{ redirectInput('settings/plugins') }}
+    <input type="hidden" name="action" value="plugins/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="{{ plugin.handle }}">
+    {{ redirectInput('settings/plugins') }}
 
-	{% namespace 'settings' %}
-		{{ settingsHtml|raw }}
-	{% endnamespace %}
+    {% namespace 'settings' %}
+        {{ settingsHtml|raw }}
+    {% endnamespace %}
 {% endblock %}

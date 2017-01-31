@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
 use yii\validators\Validator;
@@ -24,7 +24,7 @@ class UriValidator extends Validator
     /**
      * @var string
      */
-    public $pattern = '/^[^\s]+$/u';
+    public $pattern = '/^\S+$/u';
 
     // Protected Methods
     // =========================================================================

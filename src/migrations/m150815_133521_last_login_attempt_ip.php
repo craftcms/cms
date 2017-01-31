@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\helpers\MigrationHelper;
 
 /**
  * m150815_133521_last_login_attempt_ip migration.

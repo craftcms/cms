@@ -5,12 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\helpers\Db;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\helpers\Db;
 use yii\db\Schema;
 
 /**
@@ -27,7 +28,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Plain Text');
     }
@@ -36,22 +37,22 @@ class PlainText extends Field implements PreviewableFieldInterface
     // =========================================================================
 
     /**
-     * @var string The input’s placeholder text
+     * @var string|null The input’s placeholder text
      */
     public $placeholder;
 
     /**
-     * @var boolean Whether the input should allow line breaks
+     * @var bool|null Whether the input should allow line breaks
      */
     public $multiline;
 
     /**
-     * @var integer The minimum number of rows the input should have, if multi-line
+     * @var int The minimum number of rows the input should have, if multi-line
      */
     public $initialRows = 4;
 
     /**
-     * @var integer The maximum number of characters allowed in the field
+     * @var int|null The maximum number of characters allowed in the field
      */
     public $maxLength;
 
@@ -83,7 +84,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         if (!$this->maxLength) {
             return Schema::TYPE_TEXT;
@@ -95,7 +96,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
             [

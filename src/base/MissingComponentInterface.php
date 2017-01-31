@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * MissingComponentInterface defines the common interface for classes that represent a missing component class.
@@ -18,13 +18,4 @@ namespace craft\app\base;
  */
 interface MissingComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the expected component class name.
-     *
-     * @return string
-     */
-    public function getType();
 }

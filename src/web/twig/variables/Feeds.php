@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\Number;
-use craft\app\helpers\Template;
+use craft\helpers\Number;
+use craft\helpers\Template;
 
 /**
  * Class Feeds variable.
@@ -24,14 +24,14 @@ class Feeds
     // =========================================================================
 
     /**
-     * @param string  $url
-     * @param integer $limit
-     * @param integer $offset
-     * @param null    $cacheDuration
+     * @param string      $url
+     * @param int         $limit
+     * @param int         $offset
+     * @param string|null $cacheDuration
      *
      * @return array
      */
-    public function getFeedItems($url, $limit = 0, $offset = 0, $cacheDuration = null)
+    public function getFeedItems(string $url, int $limit = 0, int $offset = 0, string $cacheDuration = null): array
     {
         Craft::$app->getDeprecator()->log('craft.feeds.getFeedItems()', 'craft.feeds.getFeedItems() has been deprecated. Use craft.app.feeds.getFeedItems() instead.');
 
@@ -44,7 +44,7 @@ class Feeds
 
         foreach ($items as &$item) {
             foreach ($rawProperties as $prop) {
-                $item[$prop] = Template::getRaw($item[$prop]);
+                $item[$prop] = Template::raw($item[$prop]);
             }
         }
 

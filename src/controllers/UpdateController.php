@@ -5,20 +5,27 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\enums\PluginUpdateStatus;
-use craft\app\errors\EtException;
-use craft\app\errors\UpdateValidationException;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Update;
-use craft\app\helpers\Url;
-use craft\app\web\Controller;
+use craft\base\Plugin;
+use craft\enums\PluginUpdateStatus;
+use craft\errors\EtException;
+use craft\errors\InvalidPluginException;
+use craft\errors\UpdateValidationException;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
+use craft\helpers\Update;
+use craft\helpers\UrlHelper;
+use craft\models\PluginUpdate;
+use craft\web\assets\updater\UpdaterAsset;
+use craft\web\Controller;
+use yii\base\Exception;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
@@ -40,15 +47,67 @@ class UpdateController extends Controller
      * @inheritdoc
      */
     protected $allowAnonymous = [
+        'go',
         'prepare',
         'backup-database',
         'update-database',
         'clean-up',
-        'rollback'
+        'rollback',
+        'run-pending-migrations',
     ];
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Update Index
+     *
+     * @return Response
+     */
+    public function actionIndex(): Response
+    {
+        // Redirect to the utility page
+        return $this->redirect('utilities/updates');
+    }
+
+    /**
+     * Update kickoff
+     *
+     * @param string $handle The update handle ("craft" or a plugin handle)
+     *
+     * @return string
+     */
+    public function actionGo(string $handle): string
+    {
+        $view = $this->getView();
+
+        $view->registerAssetBundle(UpdaterAsset::class);
+
+        $this->getView()->registerTranslations('app', [
+            'Unable to determine what to update.',
+            'A fatal error has occurred:',
+            'Status:',
+            'Response:',
+            'Send for help',
+            'All done!',
+            'Craft CMS was unable to install this update :(',
+            'The site has been restored to the state it was in before the attempted update.',
+            'No files have been updated and the database has not been touched.',
+        ]);
+
+        $dataJs = Json::encode([
+            'handle' => Craft::$app->getSecurity()->hashData($handle),
+            'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) === 'manualupdate') ? 1 : 0
+        ]);
+        $js = <<<EOD
+//noinspection JSUnresolvedVariable
+new Craft.Updater({$dataJs});
+EOD;
+
+        $this->getView()->registerJs($js);
+
+        return $this->renderTemplate('_special/updates/go');
+    }
 
     // Auto Updates
     // -------------------------------------------------------------------------
@@ -58,7 +117,7 @@ class UpdateController extends Controller
      *
      * @return Response
      */
-    public function actionGetAvailableUpdates()
+    public function actionGetAvailableUpdates(): Response
     {
         $this->requirePermission('performUpdates');
 
@@ -73,7 +132,26 @@ class UpdateController extends Controller
         }
 
         if ($updates) {
-            $response = ArrayHelper::toArray($updates);
+            $response = $updates->toArray();
+            ArrayHelper::rename($response, 'responseErrors', 'errors');
+
+            // Include whether Craft was Composer-installed
+            if (!empty($response['app'])) {
+                $response['app']['composer'] = App::isComposerInstall();
+            }
+
+            // Include plugin handles and whether they're Composer-installed
+            if (!empty($response['plugins'])) {
+                $pluginsService = Craft::$app->getPlugins();
+                foreach ($response['plugins'] as &$pluginInfo) {
+                    /** @var Plugin $plugin */
+                    $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
+                    $pluginInfo['handle'] = $plugin->handle;
+                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->handle);
+                }
+                unset($pluginInfo);
+            }
+
             $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
             return $this->asJson($response);
@@ -87,7 +165,7 @@ class UpdateController extends Controller
      *
      * @return Response
      */
-    public function actionGetUpdates()
+    public function actionGetUpdates(): Response
     {
         $this->requirePermission('performUpdates');
 
@@ -96,69 +174,50 @@ class UpdateController extends Controller
         $handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
 
         $return = [];
-        $updateInfo = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
-        if (!$updateInfo) {
+        if (!$update) {
             return $this->asErrorJson(Craft::t('app', 'There was a problem getting the latest update information.'));
         }
 
         try {
-            switch ($handle) {
-                case 'all': {
-                    // Craft first.
-                    $return[] = [
-                        'handle' => 'craft',
-                        'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
-                        'critical' => $updateInfo->app->criticalUpdateAvailable,
-                        'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
-                    ];
+            // Updating Craft?
+            if ($handle === 'all' || $handle === 'craft') {
+                $return[] = [
+                    'handle' => 'craft',
+                    'name' => 'Craft',
+                    'version' => $update->app->latestVersion,
+                    'critical' => $update->app->criticalUpdateAvailable,
+                    'releaseDate' => $update->app->latestDate->getTimestamp()
+                ];
+            }
 
-                    // Plugins
-                    if ($updateInfo->plugins !== null) {
-                        foreach ($updateInfo->plugins as $plugin) {
-                            if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
-                                $return[] = [
-                                    'handle' => $plugin->class,
-                                    'name' => $plugin->displayName,
-                                    'version' => $plugin->latestVersion,
-                                    'critical' => $plugin->criticalUpdateAvailable,
-                                    'releaseDate' => $plugin->latestDate->getTimestamp()
-                                ];
-                            }
-                        }
+            // Updating plugin(s)?
+            if ($handle !== 'craft') {
+                /** @var PluginUpdate[] $pluginUpdates */
+                if ($handle === 'all') {
+                    $pluginUpdates = $update->plugins;
+                } else {
+                    // Get the plugin's package name
+                    if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                        throw new InvalidPluginException($handle);
                     }
-
-                    break;
+                    /** @var Plugin $plugin */
+                    if (!isset($update->plugins[$plugin->packageName])) {
+                        throw new Exception("No update info is known for the plugin \"{$handle}\".");
+                    }
+                    $pluginUpdates = [$update->plugins[$plugin->packageName]];
                 }
 
-                case 'craft': {
-                    $return[] = [
-                        'handle' => 'Craft',
-                        'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
-                        'critical' => $updateInfo->app->criticalUpdateAvailable,
-                        'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
-                    ];
-                    break;
-                }
-
-                // We assume it's a plugin handle.
-                default: {
-                    if (!empty($updateInfo->plugins)) {
-                        if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0) {
-                            $return[] = [
-                                'handle' => $updateInfo->plugins[$handle]->handle,
-                                'name' => $updateInfo->plugins[$handle]->displayName,
-                                'version' => $updateInfo->plugins[$handle]->latestVersion,
-                                'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable,
-                                'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp()
-                            ];
-                        } else {
-                            return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
-                        }
-                    } else {
-                        return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
+                foreach ($pluginUpdates as $pluginUpdate) {
+                    if ($pluginUpdate->status === PluginUpdateStatus::UpdateAvailable && count($pluginUpdate->releases) > 0) {
+                        $return[] = [
+                            'handle' => $handle,
+                            'name' => $pluginUpdate->displayName,
+                            'version' => $pluginUpdate->latestVersion,
+                            'critical' => $pluginUpdate->criticalUpdateAvailable,
+                            'releaseDate' => $pluginUpdate->latestDate->getTimestamp()
+                        ];
                     }
                 }
             }
@@ -174,7 +233,7 @@ class UpdateController extends Controller
      *
      * @return Response
      */
-    public function actionPrepare()
+    public function actionPrepare(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -189,7 +248,6 @@ class UpdateController extends Controller
 
             if (!Craft::$app->getConfig()->allowAutoUpdates()) {
                 return $this->asJson([
-                    'alive' => true,
                     'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                     'finished' => true
                 ]);
@@ -203,29 +261,22 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
         }
 
         if ($manual) {
-            return $this->asJson([
-                'alive' => true,
-                'nextStatus' => Craft::t('app', 'Backing-up database…'),
-                'nextAction' => 'update/backup-database',
-                'data' => $data
-            ]);
-        } else {
-            $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
-
-            return $this->asJson([
-                'alive' => true,
-                'nextStatus' => Craft::t('app', 'Downloading update…'),
-                'nextAction' => 'update/process-download',
-                'data' => $data
-            ]);
+            return $this->_getFirstDbUpdateResponse($data);
         }
+
+        $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
+
+        return $this->asJson([
+            'nextStatus' => Craft::t('app', 'Downloading update…'),
+            'nextAction' => 'update/process-download',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -234,7 +285,7 @@ class UpdateController extends Controller
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionProcessDownload()
+    public function actionProcessDownload(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -244,7 +295,6 @@ class UpdateController extends Controller
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -255,7 +305,7 @@ class UpdateController extends Controller
 
         $md5 = Craft::$app->getSecurity()->validateData($data['md5']);
 
-        if (!$md5) {
+        if ($md5 === false) {
             throw new UpdateValidationException('Could not validate MD5.');
         }
 
@@ -263,19 +313,17 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
         }
 
-        $data = array(
+        $data = [
             'handle' => Craft::$app->getSecurity()->hashData($handle),
-            'uid'    => Craft::$app->getSecurity()->hashData($return['uid']),
-        );
+            'uid' => Craft::$app->getSecurity()->hashData($return['uid']),
+        ];
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Backing-up files…'),
             'nextAction' => 'update/backup-files',
             'data' => $data
@@ -288,7 +336,7 @@ class UpdateController extends Controller
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionBackupFiles()
+    public function actionBackupFiles(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -298,7 +346,6 @@ class UpdateController extends Controller
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -309,7 +356,7 @@ class UpdateController extends Controller
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-        if (!$uid) {
+        if ($uid === false) {
             throw new UpdateValidationException('Could not validate UID.');
         }
 
@@ -317,14 +364,12 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Updating files…'),
             'nextAction' => 'update/update-files',
             'data' => $data
@@ -337,7 +382,7 @@ class UpdateController extends Controller
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionUpdateFiles()
+    public function actionUpdateFiles(): Response
     {
         // This method should never be called in a manual update.
         $this->requirePermission('performUpdates');
@@ -347,7 +392,6 @@ class UpdateController extends Controller
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -358,7 +402,7 @@ class UpdateController extends Controller
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-        if (!$uid) {
+        if ($uid === false) {
             throw new UpdateValidationException('Could not validate UID.');
         }
 
@@ -366,19 +410,13 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error occurred. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }
 
-        return $this->asJson([
-            'alive' => true,
-            'nextStatus' => Craft::t('app', 'Backing-up database…'),
-            'nextAction' => 'update/backup-database',
-            'data' => $data
-        ]);
+        return $this->_getFirstDbUpdateResponse($data);
     }
 
     /**
@@ -386,31 +424,41 @@ class UpdateController extends Controller
      *
      * @return Response
      */
-    public function actionBackupDatabase()
+    public function actionBackupDatabase(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-
         $handle = $this->_getFixedHandle($data);
 
-        if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+        if (true || $this->_shouldBackupDb()) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            } else {
+                $plugin = null;
             }
 
             // If this a plugin, make sure it actually has new migrations before backing up the database.
-            if ($handle === 'craft' || (!empty($plugin) && $plugin->getMigrator()->getNewMigrations())) {
+            if ($handle === 'craft' || ($plugin !== null && $plugin->getMigrator()->getNewMigrations())) {
                 $return = Craft::$app->getUpdates()->backupDatabase();
 
                 if (!$return['success']) {
                     return $this->asJson([
-                        'alive' => true,
-                        'errorDetails' => $return['message'],
-                        'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
-                        'nextAction' => 'update/rollback'
+                        'nextStatus' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
+                        'junction' => [
+                            [
+                                'label' => Craft::t('app', 'Cancel the update'),
+                                'nextStatus' => Craft::t('app', 'Rolling back…'),
+                                'nextAction' => 'update/rollback'
+                            ],
+                            [
+                                'label' => Craft::t('app', 'Continue anyway'),
+                                'nextStatus' => Craft::t('app', 'Updating database…'),
+                                'nextAction' => 'update/update-database'
+                            ],
+                        ]
                     ]);
                 }
 
@@ -421,7 +469,6 @@ class UpdateController extends Controller
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Updating database…'),
             'nextAction' => 'update/update-database',
             'data' => $data
@@ -433,7 +480,7 @@ class UpdateController extends Controller
      *
      * @return Response
      */
-    public function actionUpdateDatabase()
+    public function actionUpdateDatabase(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -446,15 +493,13 @@ class UpdateController extends Controller
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error occurred. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Cleaning up…'),
             'nextAction' => 'update/clean-up',
             'data' => $data
@@ -469,7 +514,7 @@ class UpdateController extends Controller
      * @return Response
      * @throws UpdateValidationException
      */
-    public function actionCleanUp()
+    public function actionCleanUp(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -481,7 +526,7 @@ class UpdateController extends Controller
         } else {
             $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-            if (!$uid) {
+            if ($uid === false) {
                 throw new UpdateValidationException('Could not validate UID.');
             }
         }
@@ -493,21 +538,20 @@ class UpdateController extends Controller
         // Grab the old version from the manifest data before we nuke it.
         $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid), $handle);
 
-        if ($manifestData && $handle == 'craft') {
+        if (!empty($manifestData) && $handle === 'craft') {
             $oldVersion = Update::getLocalVersionFromManifest($manifestData);
         }
 
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
         // New major Craft CMS version?
-        if ($handle == 'craft' && $oldVersion && App::getMajorVersion($oldVersion) < App::getMajorVersion(Craft::$app->version)) {
-            $returnUrl = Url::getUrl('whats-new');
+        if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
+            $returnUrl = UrlHelper::url('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
         }
 
         return $this->asJson([
-            'alive' => true,
             'finished' => true,
             'returnUrl' => $returnUrl
         ]);
@@ -520,7 +564,7 @@ class UpdateController extends Controller
      * @throws ServerErrorHttpException if reasons
      * @throws UpdateValidationException
      */
-    public function actionRollback()
+    public function actionRollback(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -533,7 +577,7 @@ class UpdateController extends Controller
         } else {
             $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-            if (!$uid) {
+            if ($uid === false) {
                 throw new UpdateValidationException('Could not validate UID.');
             }
         }
@@ -556,36 +600,132 @@ class UpdateController extends Controller
         }
 
         return $this->asJson([
-            'alive' => true,
             'finished' => true,
             'rollBack' => true
         ]);
     }
 
+    /**
+     * This method is useful for service like DeployBot, DeployHQ (or any other deployment
+     * service that supports a post deployment hook.  You can point them to this controller endpoint
+     * and if there are any database migrations that need to run, they will automatically run,
+     * minimizing downtime.
+     *
+     * @throws Exception
+     */
+    public function actionRunPendingMigrations()
+    {
+        $this->requirePostRequest();
+
+        $updatesService = Craft::$app->getUpdates();
+
+        $updateCraft = $updatesService->getIsCraftDbMigrationNeeded();
+        $updatePlugin = $updatesService->getIsPluginDbUpdateNeeded();
+
+        /** @var Plugin[] $pluginsToUpdate */
+        $pluginsToUpdate = [];
+
+        // Make sure either Craft or a plugin needs a migration run.
+        if ($updateCraft || $updatePlugin) {
+            $pluginsService = Craft::$app->getPlugins();
+
+            if ($updatePlugin) {
+
+                // Figure out which plugins need to update the database.
+                $plugins = $pluginsService->getAllPlugins();
+
+                foreach ($plugins as $plugin) {
+                    if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                        $pluginsToUpdate[] = $plugin;
+                    }
+                }
+            }
+
+            // Run prepare update.
+            $return = $updatesService->prepareUpdate(true, 'craft');
+
+            if (!$return['success']) {
+                throw new Exception($return['message']);
+            }
+
+            $dbBackupPath = false;
+
+            // See if we're allowed to backup the database.
+            if ($this->_shouldBackupDb()) {
+                // DO it.
+                $return = $updatesService->backupDatabase();
+
+                if (!$return['success']) {
+                    throw new Exception($return['message']);
+                }
+
+                $dbBackupPath = $return['dbBackupPath'];
+            }
+
+            // Is there a Craft update?
+            if ($updateCraft) {
+                $return = $updatesService->updateDatabase('craft');
+
+                if (!$return['success']) {
+                    $this->_rollbackUpdate('craft', $return['message'], $dbBackupPath);
+                }
+            }
+
+            // Run any plugin updates.
+            foreach ($pluginsToUpdate as $plugin) {
+                $return = $updatesService->updateDatabase($plugin->handle);
+
+                if (!$return['success']) {
+                    $this->_rollbackUpdate($plugin->handle, $return['message'], $dbBackupPath);
+                }
+            }
+
+            // Cleanup
+            $updatesService->updateCleanUp(false, 'craft');
+        }
+    }
+
+    /**
+     * @param string      $handle
+     * @param string      $originalErrorMessage
+     * @param string|bool $dbBackupPath
+     *
+     * @throws Exception
+     */
+    private function _rollbackUpdate(string $handle, string $originalErrorMessage, $dbBackupPath)
+    {
+        $rollbackReturn = Craft::$app->getUpdates()->rollbackUpdate(false, $handle, $dbBackupPath);
+
+        if (!$rollbackReturn['success']) {
+            // It's just not your day, is it?
+            throw new Exception($rollbackReturn['message']);
+        }
+
+        // We've successfully rolled back, throw the original error message.
+        throw new Exception($originalErrorMessage);
+    }
+
+
     // Private Methods
     // =========================================================================
 
     /**
-     * @param $data
+     * @param array $data
      *
-     * @return boolean
+     * @return bool
      */
-    private function _isManualUpdate($data)
+    private function _isManualUpdate(array $data): bool
     {
-        if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1) {
-            return true;
-        }
-
-        return false;
+        return isset($data['manualUpdate']) && $data['manualUpdate'] == 1;
     }
 
     /**
-     * @param $data
+     * @param array $data
      *
      * @return string
      * @throws UpdateValidationException
      */
-    private function _getFixedHandle($data)
+    private function _getFixedHandle(array $data): string
     {
         if (!isset($data['handle'])) {
             return 'craft';
@@ -596,5 +736,43 @@ class UpdateController extends Controller
         }
 
         throw new UpdateValidationException('Could not validate the update handle.');
+    }
+
+    /**
+     * Returns whether the DB should be backed up, per the config.
+     *
+     * @return bool
+     */
+    private function _shouldBackupDb(): bool
+    {
+        $config = Craft::$app->getConfig();
+
+        return ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false);
+    }
+
+    /**
+     * Returns the response to initiate the first "update database" step (either backup or update).
+     *
+     * @param array $data
+     *
+     * @return Response
+     */
+    private function _getFirstDbUpdateResponse(array $data): Response
+    {
+        if ($this->_shouldBackupDb()) {
+            $response = [
+                'nextStatus' => Craft::t('app', 'Backing-up database…'),
+                'nextAction' => 'update/backup-database',
+                'data' => $data
+            ];
+        } else {
+            $response = [
+                'nextStatus' => Craft::t('app', 'Updating database…'),
+                'nextAction' => 'update/update-database',
+                'data' => $data
+            ];
+        }
+
+        return $this->asJson($response);
     }
 }

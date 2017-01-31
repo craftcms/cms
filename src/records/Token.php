@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use craft\app\db\ActiveRecord;
-use craft\app\validators\DateTimeValidator;
+use craft\db\ActiveRecord;
+use craft\validators\DateTimeValidator;
 
 /**
  * Token record.
  *
- * @property integer   $id         ID
+ * @property int       $id         ID
  * @property string    $token      Token
  * @property array     $route      Route
- * @property integer   $usageLimit Usage limit
- * @property integer   $usageCount Usage count
+ * @property int       $usageLimit Usage limit
+ * @property int       $usageCount Usage count
  * @property \DateTime $expiryDate Expiry date
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -34,20 +34,7 @@ class Token extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['usageLimit'],
-                'number',
-                'min' => 0,
-                'max' => 255,
-                'integerOnly' => true
-            ],
-            [
-                ['usageCount'],
-                'number',
-                'min' => 0,
-                'max' => 255,
-                'integerOnly' => true
-            ],
+            [['usageLimit', 'usageCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],
             [['expiryDate'], DateTimeValidator::class],
             [['token'], 'unique'],
             [['token', 'expiryDate'], 'required'],
@@ -60,7 +47,7 @@ class Token extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%tokens}}';
     }

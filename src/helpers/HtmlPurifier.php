@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use HTMLPurifier_Config;
 
@@ -22,18 +22,18 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      *
      * @return string
      */
-    public static function cleanUtf8($string)
+    public static function cleanUtf8(string $string): string
     {
         return \HTMLPurifier_Encoder::cleanUTF8($string);
     }
 
     /**
-     * @param string $string
+     * @param string              $string
      * @param HTMLPurifier_Config $config
      *
      * @return string
      */
-    public static function convertToUtf8($string, $config)
+    public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string
     {
         return \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
     }

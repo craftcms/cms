@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Task;
-use craft\app\db\Query;
+use craft\base\Task;
+use craft\db\Query;
 
 /**
  * LocalizeRelations represents a Localize Relations background task.
@@ -23,7 +23,7 @@ class LocalizeRelations extends Task
     // =========================================================================
 
     /**
-     * @var integer The field ID whose data should be localized
+     * @var int|null The field ID whose data should be localized
      */
     public $fieldId;
 
@@ -48,13 +48,15 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_relations = (new Query())
-            ->select('id, sourceId, sourceSiteId, targetId, sortOrder')
-            ->from('{{%relations}}')
-            ->where(['and', 'fieldId = :fieldId', 'sourceSiteId is null'],
-                [':fieldId' => $this->fieldId])
+            ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
+            ->from(['{{%relations}}'])
+            ->where([
+                'fieldId' => $this->fieldId,
+                'sourceSiteId' => null
+            ])
             ->all();
 
         $this->_allSiteIds = Craft::$app->getSites()->getAllSiteIds();
@@ -65,7 +67,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         $db = Craft::$app->getDb();
         try {
@@ -79,7 +81,8 @@ class LocalizeRelations extends Task
                     ['id' => $this->_relations[$step]['id']])
                 ->execute();
 
-            for ($counter = 1; $counter < count($this->_allSiteIds); $counter++) {
+            $totalSiteIds = count($this->_allSiteIds);
+            for ($counter = 1; $counter < $totalSiteIds; $counter++) {
                 $this->_workingSiteId = $this->_allSiteIds[$counter];
 
                 $db->createCommand()
@@ -107,7 +110,7 @@ class LocalizeRelations extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Localizing relations');
     }

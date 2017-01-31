@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\ElementActionInterface;
-use craft\app\elements\db\ElementQueryInterface;
+use craft\base\ElementActionInterface;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * Element action event class.
@@ -16,23 +16,23 @@ use craft\app\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementActionEvent extends Event
+class ElementActionEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var ElementActionInterface The element action associated with the event
+     * @var ElementActionInterface|null The element action associated with the event
      */
     public $action;
 
     /**
-     * @var ElementQueryInterface The element query associated with the event
+     * @var ElementQueryInterface|null The element query associated with the event
      */
     public $criteria;
 
     /**
-     * @var string The message that should be displayed in the Control Panel if [[$isValid]] is false
+     * @var string|null The message that should be displayed in the Control Panel if [[$isValid]] is false
      */
     public $message;
 }

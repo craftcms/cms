@@ -5,21 +5,22 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Task;
-use craft\app\base\TaskInterface;
-use craft\app\db\Query;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\TaskEvent;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\helpers\Header;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\records\Task as TaskRecord;
-use craft\app\tasks\MissingTask;
+use craft\base\Task;
+use craft\base\TaskInterface;
+use craft\db\Query;
+use craft\errors\MissingComponentException;
+use craft\events\TaskEvent;
+use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Header;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
+use craft\records\Task as TaskRecord;
+use craft\tasks\MissingTask;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\web\Response;
 
 /**
@@ -27,7 +28,7 @@ use yii\web\Response;
  *
  * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
  *
- * @property boolean $isTaskRunning Whether there is a task that is currently running
+ * @property bool $isTaskRunning Whether there is a task that is currently running
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -91,7 +92,7 @@ class Tasks extends Component
      * @throws \Exception
      * @return TaskInterface The task
      */
-    public function queueTask($task)
+    public function queueTask($task): TaskInterface
     {
         if (!$task instanceof TaskInterface) {
             $task = $this->createTask($task);
@@ -115,31 +116,36 @@ class Tasks extends Component
      *
      * @return TaskInterface The task
      */
-    public function createTask($config)
+    public function createTask($config): TaskInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
         }
 
         try {
-            return ComponentHelper::createComponent($config, TaskInterface::class);
+            /** @var Task $task */
+            $task = ComponentHelper::createComponent($config, TaskInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
-            return MissingTask::create($config);
+            $task = new MissingTask($config);
         }
+
+        return $task;
     }
 
     /**
      * Saves a task.
      *
      * @param TaskInterface $task          The task to be saved
-     * @param boolean       $runValidation Whether the task should be validated
+     * @param bool          $runValidation Whether the task should be validated
      *
-     * @return boolean Whether the task was saved successfully
+     * @return bool Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, $runValidation = true)
+    public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
         /** @var Task $task */
         if ($runValidation && !$task->validate()) {
@@ -158,7 +164,7 @@ class Tasks extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeSave()) {
+            if (!$task->beforeSave($isNewTask)) {
                 $transaction->rollBack();
 
                 return false;
@@ -170,7 +176,7 @@ class Tasks extends Component
                 $taskRecord = $this->_getTaskRecordById($task->id);
             }
 
-            $taskRecord->type = $task->getType();
+            $taskRecord->type = get_class($task);
             $taskRecord->status = $task->status;
             $taskRecord->description = $task->description;
             $taskRecord->totalSteps = $task->totalSteps;
@@ -183,6 +189,11 @@ class Tasks extends Component
                 $taskRecord->makeRoot(false);
             } else {
                 $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
+
+                if ($parentTaskRecord === null) {
+                    throw new Exception('There was a problem gettin the parent task record.');
+                }
+
                 $taskRecord->appendTo($parentTaskRecord, false);
             }
 
@@ -195,7 +206,7 @@ class Tasks extends Component
                 }
             }
 
-            $task->afterSave();
+            $task->afterSave($isNewTask);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -233,16 +244,16 @@ class Tasks extends Component
     /**
      * Re-runs a task by a given ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task
      */
-    public function rerunTaskById($taskId)
+    public function rerunTaskById(int $taskId)
     {
         /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
 
-        if ($task && $task->level == 0) {
+        if ($task && $task->level === 0) {
             $task->currentStep = null;
             $task->totalSteps = null;
             $task->status = Task::STATUS_PENDING;
@@ -291,9 +302,9 @@ class Tasks extends Component
      *
      * @param TaskInterface $task
      *
-     * @return boolean
+     * @return bool
      */
-    public function runTask(TaskInterface $task)
+    public function runTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -307,14 +318,14 @@ class Tasks extends Component
                 $task->totalSteps = $task->getTotalSteps();
                 $task->status = Task::STATUS_RUNNING;
 
-                Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.');
+                Craft::info('Starting task '.$taskRecord->type.' that has a total of '.$task->totalSteps.' steps.', __METHOD__);
 
                 for ($step = 0; $step < $task->totalSteps; $step++) {
                     // Update the task
                     $task->currentStep = $step + 1;
                     $this->saveTask($task);
 
-                    Craft::info('Starting step '.($step + 1).' of '.$task->totalSteps.' total steps.');
+                    Craft::info('Starting step '.($step + 1).' of '.$task->totalSteps.' total steps.', __METHOD__);
 
                     // Run it.
                     if (($result = $task->runStep($step)) !== true) {
@@ -339,7 +350,7 @@ class Tasks extends Component
         }
 
         if ($error === null) {
-            Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
+            Craft::info('Finished task '.$task->id.' ('.get_class($task).').', __METHOD__);
 
             // We're done with this task, nuke it.
             $taskRecord->deleteWithChildren();
@@ -347,7 +358,7 @@ class Tasks extends Component
             return true;
         }
 
-        $this->fail($task, $error);
+        $this->fail($task, is_string($error) ? $error : null);
 
         return false;
     }
@@ -360,14 +371,14 @@ class Tasks extends Component
      *
      * @return void
      */
-    public function fail(TaskInterface $task, $error = null)
+    public function fail(TaskInterface $task, string $error = null)
     {
         /** @var Task $task */
         $task->status = Task::STATUS_ERROR;
         $this->saveTask($task);
 
         // Log it
-        $logMessage = 'Encountered an error running task '.$task->id.' ('.$task->type.')';
+        $logMessage = 'Encountered an error running task '.$task->id.' ('.get_class($task).')';
 
         if ($task->currentStep) {
             $logMessage .= ', step '.$task->currentStep;
@@ -377,7 +388,7 @@ class Tasks extends Component
             }
         }
 
-        if ($error && is_string($error)) {
+        if ($error !== null) {
             $logMessage .= ': '.$error;
         } else {
             $logMessage .= '.';
@@ -389,16 +400,14 @@ class Tasks extends Component
     /**
      * Returns a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskInterface|null The task, or null if it doesn’t exist
      */
-    public function getTaskById($taskId)
+    public function getTaskById(int $taskId)
     {
-        $result = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->where('id = :id', [':id' => $taskId])
+        $result = $this->_createTaskQuery()
+            ->where(['id' => $taskId])
             ->one();
 
         if ($result !== false) {
@@ -413,12 +422,9 @@ class Tasks extends Component
      *
      * @return TaskInterface[] All the tasks
      */
-    public function getAllTasks()
+    public function getAllTasks(): array
     {
-        $tasks = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->orderBy('root asc, lft asc')
+        $tasks = $this->_createTaskQuery()
             ->all();
 
         foreach ($tasks as $key => $value) {
@@ -436,21 +442,12 @@ class Tasks extends Component
     public function getRunningTask()
     {
         if ($this->_runningTask === null) {
-            $result = (new Query())
-                ->select('*')
-                ->from('{{%tasks}}')
-                ->where(
-                    [
-                        'and',
-                        'lft = 1',
-                        'status = :status'
-                        /*, 'dateUpdated >= :aMinuteAgo'*/
-                    ],
-                    [
-                        ':status' => Task::STATUS_RUNNING
-                        /*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/
-                    ]
-                )
+            $result = $this->_createTaskQuery()
+                ->where([
+                    'lft' => '1',
+                    'status' => Task::STATUS_RUNNING,
+                    /* ['>=', 'dateUpdated' >= DateTimeHelper::formatTimeForDb('-1 minute')], */
+                ])
                 ->one();
 
             if ($result !== false) {
@@ -470,20 +467,17 @@ class Tasks extends Component
     /**
      * Returns whether there is a task that is currently running.
      *
-     * @return boolean Whether there is a task that is currently running
+     * @return bool Whether there is a task that is currently running
      */
-    public function getIsTaskRunning()
+    public function getIsTaskRunning(): bool
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where(
-                ['and', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
-                [
-                    ':status' => Task::STATUS_RUNNING
-                    /*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/
-                ]
-            )
+        return $this->_createTaskQuery()
+            ->where([
+                'and',
+                ['status' => Task::STATUS_RUNNING],
+                /* ['>=', 'dateUpdated', DateTimeHelper::formatTimeForDb('-1 minute')], */
+            ])
             ->exists();
     }
 
@@ -492,47 +486,41 @@ class Tasks extends Component
      *
      * @param string|null $type The task type to check for, if any
      *
-     * @return boolean Whether there are any pending tasks
+     * @return bool Whether there are any pending tasks
      */
-    public function areTasksPending($type = null)
+    public function areTasksPending(string $type = null): bool
     {
-        $conditions = ['and', 'lft = 1', 'status = :status'];
-        $params = [':status' => Task::STATUS_PENDING];
+        $query = $this->_createTaskQuery()
+            ->where([
+                'lft' => '1',
+                'status' => Task::STATUS_PENDING
+            ]);
 
-        if ($type) {
-            $conditions[] = 'type = :type';
-            $params[':type'] = $type;
+        if ($type !== null) {
+            $query->andWhere(['type' => $type]);
         }
 
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where($conditions, $params)
-            ->exists();
+        return $query->exists();
     }
 
     /**
      * Returns any pending tasks, optionally by a given type.
      *
-     * @param string|null  $type  The task type to check for, if any
-     * @param integer|null $limit The maximum number of tasks to return
+     * @param string|null $type  The task type to check for, if any
+     * @param int|null    $limit The maximum number of tasks to return
      *
      * @return TaskInterface[] The pending tasks
      */
-    public function getPendingTasks($type = null, $limit = null)
+    public function getPendingTasks(string $type = null, int $limit = null): array
     {
-        $conditions = ['and', 'lft = 1', 'status = :status'];
-        $params = [':status' => Task::STATUS_PENDING];
+        $query = $this->_createTaskQuery()
+            ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
 
-        if ($type) {
-            $conditions[] = 'type = :type';
-            $params[':type'] = $type;
+        if ($type !== null) {
+            $query->andWhere(['type' => $type]);
         }
 
-        $query = (new Query())
-            ->from('{{%tasks}}')
-            ->where($conditions, $params);
-
-        if ($limit) {
+        if ($limit !== null) {
             $query->limit($limit);
         }
 
@@ -548,31 +536,29 @@ class Tasks extends Component
     /**
      * Returns whether any tasks that have failed.
      *
-     * @return boolean Whether any tasks have failed
+     * @return bool Whether any tasks have failed
      */
-    public function getHaveTasksFailed()
+    public function getHaveTasksFailed(): bool
     {
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where(['and', 'level = 0', 'status = :status'],
-                [':status' => Task::STATUS_ERROR])
+        return $this->_createTaskQuery()
+            ->where(['level' => 0, 'status' => Task::STATUS_ERROR])
             ->exists();
     }
 
     /**
      * Returns the total number of active tasks.
      *
-     * @return integer The total number of active tasks
+     * @return int The total number of active tasks
      */
-    public function getTotalTasks()
+    public function getTotalTasks(): int
     {
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where(
-                ['and', 'lft = 1', 'status != :status'],
-                [':status' => Task::STATUS_ERROR]
-            )
-            ->count('id');
+        return $this->_createTaskQuery()
+            ->where([
+                'and',
+                ['lft' => '1'],
+                ['not', ['status' => Task::STATUS_ERROR]]
+            ])
+            ->count('[[id]]');
     }
 
     /**
@@ -582,27 +568,38 @@ class Tasks extends Component
      *
      * @return TaskInterface|null The next pending task, if any
      */
-    public function getNextPendingTask($type = null)
+    public function getNextPendingTask(string $type = null)
     {
         // If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
-        if ($type) {
+        if ($type !== null) {
             $pendingTasks = $this->getPendingTasks($type, 1);
 
-            if ($pendingTasks) {
+            if (!empty($pendingTasks)) {
                 return $pendingTasks[0];
             }
         } else {
             if ($this->_nextPendingTask === null) {
                 $taskRecord = TaskRecord::find()
                     ->where(['status' => Task::STATUS_PENDING])
-                    ->orderBy('dateCreated')
+                    ->orderBy(['dateCreated' => SORT_ASC])
                     ->roots()
                     ->one();
 
                 if ($taskRecord) {
                     /** @var TaskRecord $taskRecord */
                     $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-                    $this->_nextPendingTask = $this->createTask($taskRecord);
+                    $this->_nextPendingTask = $this->createTask($taskRecord->toArray([
+                        'id',
+                        'dateCreated',
+                        'dateUpdated',
+                        'level',
+                        'description',
+                        'totalSteps',
+                        'currentStep',
+                        'status',
+                        'type',
+                        'settings',
+                    ]));
                 } else {
                     $this->_nextPendingTask = false;
                 }
@@ -621,11 +618,11 @@ class Tasks extends Component
     /**
      * Deletes a task by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      */
-    public function deleteTaskById($taskId)
+    public function deleteTaskById(int $taskId): bool
     {
         $task = $this->getTaskById($taskId);
 
@@ -641,10 +638,10 @@ class Tasks extends Component
      *
      * @param TaskInterface $task The task
      *
-     * @return boolean Whether the task was deleted successfully
+     * @return bool Whether the task was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteTask(TaskInterface $task)
+    public function deleteTask(TaskInterface $task): bool
     {
         /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
@@ -714,43 +711,40 @@ class Tasks extends Component
         else if (
             $request->getIsSiteRequest() &&
             !$request->getIsAjax() &&
-            in_array(Header::getMimeType(), [
-                'text/html',
-                'application/xhtml+xml'
-            ])
+            in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
-            $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
+            $url = Json::encode(UrlHelper::actionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
-            $js = <<<EOT
+            $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-	var XMLHttpFactories = [
-		function () {return new XMLHttpRequest()},
-		function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-		function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-		function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-	];
-	var req = false;
-	for (var i = 0; i < XMLHttpFactories.length; i++) {
-		try {
-			req = XMLHttpFactories[i]();
-		}
-		catch (e) {
-			continue;
-		}
-		break;
-	}
-	if (!req) return;
-	req.open('GET', $url, true);
-	if (req.readyState == 4) return;
-	req.send();
+    var XMLHttpFactories = [
+        function () {return new XMLHttpRequest()},
+        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+    ];
+    var req = false;
+    for (var i = 0; i < XMLHttpFactories.length; i++) {
+        try {
+            req = XMLHttpFactories[i]();
+        }
+        catch (e) {
+            continue;
+        }
+        break;
+    }
+    if (!req) return;
+    req.open('GET', $url, true);
+    if (req.readyState == 4) return;
+    req.send();
 })();
 /*]]>*/
 </script>
-EOT;
+EOD;
 
             if ($response->content === null) {
                 $response->content = $js;
@@ -764,13 +758,37 @@ EOT;
     // =========================================================================
 
     /**
+     * Returns a Query object prepped for retrieving tasks.
+     *
+     * @return Query
+     */
+    private function _createTaskQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'level',
+                'description',
+                'totalSteps',
+                'currentStep',
+                'status',
+                'type',
+                'settings',
+            ])
+            ->from(['{{%tasks}}'])
+            ->orderBy(['root' => SORT_ASC, 'lft' => SORT_ASC]);
+    }
+
+    /**
      * Returns a TaskRecord by its ID.
      *
-     * @param integer $taskId The task’s ID
+     * @param int $taskId The task’s ID
      *
      * @return TaskRecord|null The TaskRecord, or null if it doesn’t exist
      */
-    private function _getTaskRecordById($taskId)
+    private function _getTaskRecordById(int $taskId)
     {
         if (!isset($this->_taskRecordsById[$taskId])) {
             $this->_taskRecordsById[$taskId] = TaskRecord::findOne($taskId);

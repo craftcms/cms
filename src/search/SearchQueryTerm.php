@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\search;
+namespace craft\search;
 
 /**
  * Search Query Term class
@@ -43,10 +43,15 @@ class SearchQueryTerm
     /**
      * @var null
      */
-    public $attribute = null;
+    public $attribute;
 
     /**
      * @var null
      */
-    public $term = null;
+    public $term;
+
+    /**
+     * @var bool|null
+     */
+    public $phrase;
 }

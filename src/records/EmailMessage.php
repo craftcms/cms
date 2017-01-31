@@ -5,21 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\SiteIdValidator;
+use craft\db\ActiveRecord;
+use craft\validators\LanguageValidator;
 
 /**
  * Class EmailMessage record.
  *
- * @property integer $id      ID
- * @property integer $siteId  Site ID
- * @property string  $key     Key
- * @property string  $subject Subject
- * @property string  $body    Body
- * @property Site    $site    Site
+ * @property int    $id       ID
+ * @property string $language Language
+ * @property string $key      Key
+ * @property string $subject  Subject
+ * @property string $body     Body
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -35,10 +33,10 @@ class EmailMessage extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], SiteIdValidator::class],
-            [['key'], 'unique', 'targetAttribute' => ['key', 'siteId']],
-            [['key', 'siteId', 'subject', 'body'], 'required'],
+            [['key'], 'unique', 'targetAttribute' => ['key', 'language']],
+            [['key', 'language', 'subject', 'body'], 'required'],
             [['key'], 'string', 'max' => 150],
+            [['language'], LanguageValidator::class],
             [['subject'], 'string', 'max' => 1000],
         ];
     }
@@ -48,18 +46,8 @@ class EmailMessage extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%emailmessages}}';
-    }
-
-    /**
-     * Returns the associated site
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getSite()
-    {
-        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

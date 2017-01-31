@@ -5,11 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\StringHelper;
-use yii\db\Exception as DbException;
+use yii\base\Exception;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 
@@ -25,7 +24,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     // =========================================================================
 
     /**
-     * @var boolean Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
+     * @var bool|null Whether [[renderCallStackItem()]] should render subsequent stack trace items in the event of a Twig error
      */
     private $_renderAllCallStackItems;
 
@@ -49,18 +48,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
                 /** @var FileTarget $logTarget */
                 $logTarget = $logDispatcher->targets[0];
-                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
+
+                $logPath404 = Craft::getAlias('@storage/logs/web-404s.log');
+
+                if ($logPath404 === false) {
+                    throw new Exception('Could not find the 404 log file path.');
+                }
+
+                $logTarget->logFile = $logPath404;
             }
-        }
-
-        // Log MySQL deadlocks
-        if ($exception instanceof DbException && StringHelper::contains($exception->getMessage(), 'Deadlock')) {
-            // TODO: MySQL specific
-            $data = Craft::$app->getDb()->createCommand('SHOW ENGINE INNODB STATUS')->query();
-            $info = $data->read();
-            $info = serialize($info);
-
-            Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand');
         }
 
         parent::handleException($exception);
@@ -102,13 +98,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
                 // $templateLine could be null or -1
                 if (is_int($templateLine) && $templateLine > 0) {
-                    $templateFile = $this->exception->getTemplateFile();
-                    $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
-
-                    if ($resolvedTemplate !== false) {
-                        $file = $resolvedTemplate;
-                        $line = $templateLine;
-                        $this->_renderAllCallStackItems = false;
+                    $templateSource = $this->exception->getSourceContext();
+                    if ($templateSource !== null) {
+                        $templateFile = $templateSource->getName();
+                        $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
+                        if ($resolvedTemplate !== false) {
+                            $file = $resolvedTemplate;
+                            $line = $templateLine;
+                            $this->_renderAllCallStackItems = false;
+                        }
                     }
                 }
             } else if ($this->_renderAllCallStackItems === false) {
@@ -130,12 +128,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $url = parent::getTypeUrl($class, $method);
 
         if ($url === null) {
-            if (strncmp($class, '__TwigTemplate_', 15) === 0) {
-                $class = 'Twig_Template';
+            if (strpos($class, '__TwigTemplate_') === 0) {
+                $class = \Twig_Template::class;
             }
 
-            if (strncmp($class, 'Twig_', 5) === 0) {
-                $url = "http://twig.sensiolabs.org/api/master/$class.html";
+            if (strpos($class, 'Twig_') === 0) {
+                $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
                     $url .= "#method_$method";

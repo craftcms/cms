@@ -5,13 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\errors\InvalidTypeException;
-use craft\app\services\Elements;
-use craft\app\web\Controller;
+use craft\base\ElementInterface;
+use craft\errors\InvalidTypeException;
+use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 
@@ -51,10 +50,10 @@ abstract class BaseElementsController extends Controller
     /**
      * Returns the posted element type class.
      *
-     * @return ElementInterface
+     * @return string
      * @throws BadRequestHttpException if the requested element type is invalid
      */
-    protected function getElementType()
+    protected function elementType(): string
     {
         $class = Craft::$app->getRequest()->getRequiredParam('elementType');
 
@@ -75,7 +74,7 @@ abstract class BaseElementsController extends Controller
      *
      * @return string
      */
-    protected function getContext()
+    protected function context(): string
     {
         return Craft::$app->getRequest()->getParam('context');
     }

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\helpers\Json;
 
 /**
  * View represents a View element action.
@@ -23,7 +23,7 @@ class View extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The trigger label
+     * @var string|null The trigger label
      */
     public $label;
 
@@ -43,7 +43,7 @@ class View extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return $this->label;
     }
@@ -55,28 +55,28 @@ class View extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		validateSelection: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element');
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element');
 
-			return (
-				\$element.data('url') &&
-				(\$element.data('status') == 'enabled' || \$element.data('status') == 'live')
-			);
-		},
-		activate: function(\$selectedItems)
-		{
-			window.open(\$selectedItems.find('.element').data('url'));
-		}
-	});
+            return (
+                \$element.data('url') &&
+                (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
+            );
+        },
+        activate: function(\$selectedItems)
+        {
+            window.open(\$selectedItems.find('.element').data('url'));
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

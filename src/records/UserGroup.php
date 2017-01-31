@@ -5,19 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use craft\app\db\ActiveRecord;
-use craft\app\validators\HandleValidator;
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
 
 /**
  * Class UserGroup record.
  *
- * @property integer $id     ID
- * @property string  $name   Name
- * @property string  $handle Handle
- * @property User[]  $users  Users
+ * @property int    $id     ID
+ * @property string $name   Name
+ * @property string $handle Handle
+ * @property User[] $users  Users
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,7 +31,7 @@ class UserGroup extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%usergroups}}';
     }
@@ -42,7 +41,7 @@ class UserGroup extends ActiveRecord
      *
      * @return ActiveQueryInterface
      */
-    public function getUsers()
+    public function getUsers(): ActiveQueryInterface
     {
         return $this->hasMany(User::class, ['id' => 'userId'])
             ->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);

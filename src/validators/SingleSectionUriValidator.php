@@ -5,13 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
-use Aws\CloudFront\Exception\Exception;
 use Craft;
-use craft\app\db\Query;
-use craft\app\helpers\ElementHelper;
-use craft\app\models\Section_SiteSettings;
+use craft\db\Query;
+use craft\models\Section_SiteSettings;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
@@ -31,7 +30,7 @@ class SingleSectionUriValidator extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        if (!($model instanceof Section_SiteSettings) || $attribute != 'uriFormat') {
+        if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 
@@ -40,23 +39,16 @@ class SingleSectionUriValidator extends Validator
 
         // Make sure no other elements are using this URI already
         $query = (new Query())
-            ->from('{{%elements_i18n}} elements_i18n')
-            ->where(
-                [
-                    'and',
-                    'elements_i18n.siteId = :siteId',
-                    'elements_i18n.uri = :uri'
-                ],
-                [
-                    ':siteId' => $model->siteId,
-                    ':uri' => $model->uriFormat
-                ]
-            );
+            ->from(['{{%elements_i18n}} elements_i18n'])
+            ->where([
+                'elements_i18n.siteId' => $model->siteId,
+                'elements_i18n.uri' => $model->uriFormat
+            ]);
 
         if ($section->id) {
             $query
-                ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
-                ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
+                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements_i18n.elementId]]')
+                ->andWhere(['not', ['entries.sectionId' => $section->id]]);
         }
 
         if ($query->exists()) {
@@ -66,7 +58,7 @@ class SingleSectionUriValidator extends Validator
                 throw new Exception('Invalid site ID: '.$model->siteId);
             }
 
-            if ($model->uriFormat == '__home__') {
+            if ($model->uriFormat === '__home__') {
                 $message = '{site} already has a homepage.';
             } else {
                 $message = '{site} already has an element with the URI “{value}”.';

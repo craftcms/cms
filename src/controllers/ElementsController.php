@@ -5,17 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\elements\Category;
-use craft\app\errors\InvalidTypeException;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\services\Elements;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
+use craft\errors\InvalidTypeException;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -40,19 +39,25 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetModalBody()
+    public function actionGetModalBody(): Response
     {
         $sourceKeys = Craft::$app->getRequest()->getParam('sources');
-        $elementType = $this->getElementType();
-        $context = $this->getContext();
+        $elementType = $this->elementType();
+        $context = $this->context();
+
+        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+
+        if ($showSiteMenu !== 'auto') {
+            $showSiteMenu = (bool)$showSiteMenu;
+        }
 
         if (is_array($sourceKeys)) {
             $sources = [];
 
             foreach ($sourceKeys as $key) {
-                $source = $elementType::getSourceByKey($key, $context);
+                $source = ElementHelper::findSource($elementType, $key, $context);
 
-                if ($source) {
+                if ($source !== null) {
                     $sources[$key] = $source;
                 }
             }
@@ -61,7 +66,7 @@ class ElementsController extends BaseElementsController
         }
 
         if (!empty($sources) && count($sources) === 1) {
-            $firstSource = ArrayHelper::getFirstValue($sources);
+            $firstSource = reset($sources);
             $showSidebar = !empty($firstSource['nested']);
         } else {
             $showSidebar = !empty($sources);
@@ -73,6 +78,7 @@ class ElementsController extends BaseElementsController
                 'elementType' => $elementType,
                 'sources' => $sources,
                 'showSidebar' => $showSidebar,
+                'showSiteMenu' => $showSiteMenu,
             ])
         ]);
     }
@@ -84,21 +90,8 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionGetEditorHtml()
+    public function actionGetEditorHtml(): Response
     {
-        /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
-        $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
-
-        if (!$element) {
-            throw new NotFoundHttpException('Element could not be found');
-        }
-
-        if (!$element->getIsEditable()) {
-            throw new ForbiddenHttpException('User is not permitted to edit this element');
-        }*/
-
         $element = $this->_getEditorElement();
         $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
 
@@ -112,29 +105,27 @@ class ElementsController extends BaseElementsController
      * @throws NotFoundHttpException if the requested element cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
      */
-    public function actionSaveElement()
+    public function actionSaveElement(): Response
     {
         /** @var Element $element */
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
-        $params = Craft::$app->getRequest()->getBodyParam($namespace);
-
-        if (isset($params['title'])) {
-            $element->title = $params['title'];
-            unset($params['title']);
-        }
+        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
+        $element->setFieldParamNamespace($namespace.'.fields');
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
-            $element->setFieldValuesFromPost($fields);
+            $element->setFieldValues($fields);
             unset($params['fields']);
         }
 
+        Craft::configure($element, $params);
+
         // Either way, at least tell the element where its content comes from
-        $element->setContentPostLocation($namespace.'.fields');
+        $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
-        if ($element::saveElement($element, $params)) {
+        if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,
                 'id' => $element->id,
@@ -147,13 +138,13 @@ class ElementsController extends BaseElementsController
             $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
-                $attributes = Craft::$app->getElementIndexes()->getTableAttributes($element->className(), $sourceKey);
+                $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
 
                 // Drop the first one
                 array_shift($attributes);
 
                 foreach ($attributes as $attribute) {
-                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($element, $attribute[0]);
+                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
                 }
             }
 
@@ -168,7 +159,7 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCategoriesInputHtml()
+    public function actionGetCategoriesInputHtml(): Response
     {
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
@@ -176,19 +167,20 @@ class ElementsController extends BaseElementsController
         // Fill in the gaps
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
-        if ($categoryIds) {
-            $categories = Category::find()
+        if (!empty($categoryIds)) {
+            /** @var CategoryQuery $categoryQuery */
+            $categoryQuery = Category::find()
                 ->id($categoryIds)
                 ->siteId($request->getParam('siteId'))
                 ->status(null)
                 ->enabledForSite(false)
-                ->limit($request->getParam('limit'))
-                ->all();
+                ->limit($request->getParam('limit'));
+            $categories = $categoryQuery->all();
         } else {
             $categories = [];
         }
 
-        $html = Craft::$app->getView()->renderTemplate('_components/fieldtypes/Categories/input',
+        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
             [
                 'elements' => $categories,
                 'id' => $request->getParam('id'),
@@ -211,7 +203,7 @@ class ElementsController extends BaseElementsController
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _getEditorElement()
+    private function _getEditorElement(): ElementInterface
     {
         $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
@@ -248,23 +240,23 @@ class ElementsController extends BaseElementsController
                 throw new BadRequestHttpException('No element exists with the ID '.$elementId);
             }
         } else {
-            $element = $elementType::create([]);
+            $element = new $elementType();
         }
 
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType->isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
 
-            foreach (ElementHelper::getSupportedSitesForElement($element) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
                 $elementSiteIds[] = $siteInfo['siteId'];
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
                     $newSiteId = $siteId;
                     break;
                 }
@@ -288,10 +280,7 @@ class ElementsController extends BaseElementsController
         // Populate it with any posted attributes
         $attributes = $request->getBodyParam('attributes', []);
         $attributes['siteId'] = $siteId;
-
-        if ($attributes) {
-            $element->setAttributes($attributes);
-        }
+        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
@@ -306,19 +295,21 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param boolean          $includeSites
+     * @param bool             $includeSites
      *
      * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
+    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
         /** @var Element $element */
-        $siteIds = ElementHelper::getEditableSiteIdsForElement($element);
+        $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
-        if (!$siteIds) {
+        if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
+
+        $response = [];
 
         if ($includeSites) {
             if (count($siteIds) > 1) {
@@ -340,23 +331,23 @@ class ElementsController extends BaseElementsController
         $response['siteId'] = $element->siteId;
 
         $namespace = 'editor_'.StringHelper::randomString(10);
-        Craft::$app->getView()->setNamespace($namespace);
+        $this->getView()->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="'.$namespace.'">';
 
-        if ($element->id) {
+        if ($element->id !== null) {
             $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
         }
 
-        if ($element->siteId) {
+        if ($element->siteId !== null) {
             $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)).
+            $this->getView()->namespaceInputs((string)$element->getEditorHtml()).
             '</div>';
 
-        $view = Craft::$app->getView();
+        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
 

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Stores the available plugin update info.
@@ -26,70 +26,51 @@ class PluginUpdate extends Model
     const STATUS_DELETED = 'Deleted';
     const STATUS_UNKNOWN = 'Unknown';
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof PluginNewRelease) {
-                    $config['releases'][$key] = PluginNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var string Class
+     * @var string|null Package name
      */
-    public $class;
+    public $packageName;
 
     /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var string Latest version
+     * @var string|null Latest version
      */
     public $latestVersion;
 
     /**
-     * @var \DateTime Latest date
+     * @var \DateTime|null Latest date
      */
     public $latestDate;
 
     /**
-     * @var string Display name
+     * @var string|null Display name
      */
     public $displayName;
 
     /**
-     * @var boolean Critical update available
+     * @var bool Critical update available
      */
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var boolean Manual update required
+     * @var bool Manual update required
      */
     public $manualUpdateRequired = false;
 
     /**
-     * @var string Manual download endpoint
+     * @var string|null Manual download endpoint
      */
     public $manualDownloadEndpoint;
 
     /**
-     * @var PluginNewRelease[] Releases
+     * @var UpdateRelease[]|null Releases
      */
     public $releases;
 
@@ -104,7 +85,23 @@ class PluginUpdate extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function init()
+    {
+        parent::init();
+
+        if ($this->releases !== null) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof UpdateRelease) {
+                    $this->releases[$key] = new UpdateRelease($value);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';

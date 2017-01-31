@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use yii\base\Exception;
 
@@ -20,7 +20,7 @@ class QueryAbortedException extends Exception
     /**
      * @return string The user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Query Aborted Exception';
     }

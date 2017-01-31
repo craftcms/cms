@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\models\RebrandEmail;
-use craft\app\web\Controller;
+use craft\models\RebrandEmail;
+use craft\web\Controller;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -42,17 +42,19 @@ class EmailMessagesController extends Controller
      *
      * @return Response
      */
-    public function actionGetMessageModal()
+    public function actionGetMessageModal(): Response
     {
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
-        $siteId = $request->getBodyParam('siteId');
-        $message = Craft::$app->getEmailMessages()->getMessage($key, $siteId);
+        $language = $request->getBodyParam('language');
+        $message = Craft::$app->getEmailMessages()->getMessage($key, $language);
 
-        return $this->renderTemplate('settings/email/_message_modal', [
-            'message' => $message,
+        return $this->asJson([
+            'body' => $this->getView()->renderTemplate('settings/email/_message_modal', [
+                'message' => $message,
+            ])
         ]);
     }
 
@@ -61,7 +63,7 @@ class EmailMessagesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveMessage()
+    public function actionSaveMessage(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -72,9 +74,9 @@ class EmailMessagesController extends Controller
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
         if (Craft::$app->getIsMultiSite()) {
-            $message->siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+            $message->language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $message->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+            $message->language = Craft::$app->language;
         }
 
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {

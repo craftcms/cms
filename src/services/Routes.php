@@ -5,15 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\RouteNotFoundException;
-use craft\app\events\RouteEvent;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\records\Route as RouteRecord;
+use craft\db\Query;
+use craft\errors\RouteNotFoundException;
+use craft\events\RouteEvent;
+use craft\helpers\Json;
+use craft\records\Route as RouteRecord;
 use yii\base\Component;
 
 /**
@@ -53,16 +52,16 @@ class Routes extends Component
     // =========================================================================
 
     /**
-     * Returns the routes defined in craft/config/routes.php
+     * Returns the routes defined in `config/routes.php`
      *
      * @return array
      */
-    public function getConfigFileRoutes()
+    public function getConfigFileRoutes(): array
     {
-        $path = Craft::$app->getPath()->getConfigPath().'/routes.php';
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
-        if (Io::fileExists($path)) {
-            $routes = require_once($path);
+        if (file_exists($path)) {
+            $routes = require $path;
 
             if (is_array($routes)) {
                 // Check for any site-specific routes
@@ -93,42 +92,45 @@ class Routes extends Component
      *
      * @return array
      */
-    public function getDbRoutes()
+    public function getDbRoutes(): array
     {
         $results = (new Query())
             ->select(['uriPattern', 'template'])
-            ->from('{{%routes}}')
-            ->where(['or', 'siteId is null', 'siteId = :siteId'],
-                [':siteId' => Craft::$app->getSites()->currentSite->id])
-            ->orderBy('sortOrder')
+            ->from(['{{%routes}}'])
+            ->where([
+                'or',
+                ['siteId' => null],
+                ['siteId' => Craft::$app->getSites()->currentSite->id]
+            ])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        if ($results) {
-            $routes = [];
-
-            foreach ($results as $result) {
-                $routes[$result['uriPattern']] = ['template' => $result['template']];
-            }
-
-            return $routes;
+        if (empty($results)) {
+            return [];
         }
 
-        return [];
+        $routes = [];
+
+        foreach ($results as $result) {
+            $routes[$result['uriPattern']] = ['template' => $result['template']];
+        }
+
+        return $routes;
     }
 
     /**
      * Saves a new or existing route.
      *
-     * @param array        $uriParts The URI as defined by the user. This is an array where each element is either a
+     * @param array    $uriParts     The URI as defined by the user. This is an array where each element is either a
      *                               string or an array containing the name of a subpattern and the subpattern
-     * @param string       $template The template to route matching requests to
-     * @param integer|null $siteId   The site ID the route should be limited to, if any
-     * @param integer|null $routeId  The route ID, if editing an existing route
+     * @param string   $template     The template to route matching requests to
+     * @param int|null $siteId       The site ID the route should be limited to, if any
+     * @param int|null $routeId      The route ID, if editing an existing route
      *
      * @return RouteRecord
-     * @throws RouteNotFoundException if $routeId is invalid
+     * @throws RouteNotFoundException if|null $routeId is invalid
      */
-    public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
+    public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null): RouteRecord
     {
         // Fire a 'beforeSaveRoute' event
         $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
@@ -149,8 +151,8 @@ class Routes extends Component
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->from('{{%routes}}')
-                ->max('sortOrder');
+                ->from(['{{%routes}}'])
+                ->max('[[sortOrder]]');
 
             $routeRecord->sortOrder = $maxSortOrder + 1;
         }
@@ -166,7 +168,7 @@ class Routes extends Component
                 $uriPattern .= $this->_escapeRegexChars($part);
             } else if (is_array($part)) {
                 // Is the name a valid handle?
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
+                if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
                     $subpatternName = $part[0];
 
                     // Make sure it's unique
@@ -180,7 +182,7 @@ class Routes extends Component
                     }
 
                     // Add the var as a named subpattern
-                    $uriPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
+                    $uriPattern .= '(?P<'.preg_quote($subpatternName, '/').'>'.$part[1].')';
                 } else {
                     // Just match it
                     $uriPattern .= '('.$part[1].')';
@@ -208,11 +210,11 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param integer $routeId
+     * @param int $routeId
      *
-     * @return boolean
+     * @return bool
      */
-    public function deleteRouteById($routeId)
+    public function deleteRouteById(int $routeId): bool
     {
         $routeRecord = RouteRecord::findOne($routeId);
 
@@ -254,24 +256,26 @@ class Routes extends Component
      *
      * @return void
      */
-    public function updateRouteOrder($routeIds)
+    public function updateRouteOrder(array $routeIds)
     {
-        foreach ($routeIds as $order => $routeId) {
-            $data = ['sortOrder' => $order + 1];
-            $condition = ['id' => $routeId];
+        $db = Craft::$app->getDb();
 
-            Craft::$app->getDb()->createCommand()
-                ->update('{{%routes}}', $data, $condition)
+        foreach ($routeIds as $order => $routeId) {
+            $db->createCommand()
+                ->update(
+                    '{{%routes}}',
+                    ['sortOrder' => $order + 1],
+                    ['id' => $routeId])
                 ->execute();
         }
     }
 
     /**
-     * @param $string
+     * @param string $string
      *
      * @return mixed
      */
-    private function _escapeRegexChars($string)
+    private function _escapeRegexChars(string $string)
     {
         $charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
         $escapedChars = [];

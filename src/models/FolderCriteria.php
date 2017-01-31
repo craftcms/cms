@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Folders parameters.
@@ -21,27 +21,27 @@ class FolderCriteria extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Parent ID
+     * @var int|string|bool Parent ID
      */
     public $parentId = false;
 
     /**
-     * @var integer Source ID
+     * @var int|null Source ID
      */
     public $volumeId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Path
+     * @var string|null Path
      */
     public $path;
 
@@ -51,12 +51,12 @@ class FolderCriteria extends Model
     public $order = 'name asc';
 
     /**
-     * @var integer Offset
+     * @var int|null Offset
      */
     public $offset;
 
     /**
-     * @var integer Limit
+     * @var int|null Limit
      */
     public $limit;
 
@@ -69,55 +69,7 @@ class FolderCriteria extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['parentId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['sourceId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['offset'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['limit'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'parentId',
-                    'sourceId',
-                    'name',
-                    'path',
-                    'order',
-                    'offset',
-                    'limit'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true],
         ];
     }
 }

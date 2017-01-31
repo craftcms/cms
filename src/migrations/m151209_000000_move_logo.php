@@ -1,10 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -17,7 +16,16 @@ class m151209_000000_move_logo extends Migration
     public function safeUp()
     {
         $pathService = Craft::$app->getPath();
-        Io::rename($pathService->getStoragePath().'/logo', $pathService->getRebrandPath().'/logo', true);
+        $from = $pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo';
+        $to = $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo';
+
+        if (is_dir($to) && is_dir($from)) {
+            echo "    > Moving {$from} to {$to} ... ";
+            rename($from, $to);
+            echo "done\n";
+        }
+
+        return true;
     }
 
     /**

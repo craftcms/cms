@@ -5,14 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\helpers\Url;
-use craft\app\models\FieldGroup;
-use craft\app\web\Controller;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\fields\MissingField;
+use craft\fields\PlainText;
+use craft\helpers\UrlHelper;
+use craft\models\FieldGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -48,7 +50,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -80,7 +82,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -101,43 +103,59 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param integer        $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface $field   The field being edited, if there were any validation errors
-     * @param integer        $groupId The default group ID that the field should be saved in
+     * @param int|null            $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|null $field   The field being edited, if there were any validation errors
+     * @param int|null            $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested field/field group cannot be found
      * @throws ServerErrorHttpException if no field groups exist
      */
-    public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
+    public function actionEditField(int $fieldId = null, FieldInterface $field = null, int $groupId = null): string
     {
         $this->requireAdmin();
+
+        $fieldsService = Craft::$app->getFields();
 
         // The field
         // ---------------------------------------------------------------------
 
+        /** @var Field $field */
         if ($field === null && $fieldId !== null) {
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
+            $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
             }
+
+            if ($field instanceof MissingField) {
+                $expectedType = $field->expectedType;
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $field = $field->createFallback(PlainText::class);
+                $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
+                    'type' => $expectedType
+                ]));
+            }
         }
 
         if ($field === null) {
-            $field = Craft::$app->getFields()->createField(\craft\app\fields\PlainText::class);
+            $field = $fieldsService->createField(PlainText::class);
         }
-
-        /** @var Field $field */
 
         // Field types
         // ---------------------------------------------------------------------
 
-        $allFieldTypes = Craft::$app->getFields()->getAllFieldTypes();
+        $allFieldTypes = $fieldsService->getAllFieldTypes();
+
+        // Make sure the selected field class is in there
+        if (!in_array(get_class($field), $allFieldTypes, true)) {
+            $allFieldTypes[] = get_class($field);
+        }
+
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {
-            if ($class === $field->getType() || $class::isSelectable()) {
+            if ($class === get_class($field) || $class::isSelectable()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -148,7 +166,7 @@ class FieldsController extends Controller
         // Groups
         // ---------------------------------------------------------------------
 
-        $allGroups = Craft::$app->getFields()->getAllGroups();
+        $allGroups = $fieldsService->getAllGroups();
 
         if (empty($allGroups)) {
             throw new ServerErrorHttpException('No field groups exist');
@@ -158,7 +176,7 @@ class FieldsController extends Controller
             $groupId = ($field !== null && $field->groupId !== null) ? $field->groupId : $allGroups[0]->id;
         }
 
-        $fieldGroup = Craft::$app->getFields()->getGroupById($groupId);
+        $fieldGroup = $fieldsService->getGroupById($groupId);
 
         if ($fieldGroup === null) {
             throw new NotFoundHttpException('Field group not found');
@@ -179,15 +197,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => Url::getUrl('settings/fields')
+                'url' => UrlHelper::url('settings/fields')
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => Url::getUrl('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/'.$groupId)
             ],
         ];
 
@@ -235,20 +253,20 @@ class FieldsController extends Controller
             'settings' => $request->getBodyParam('types.'.$type),
         ]);
 
-        if ($fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
+        if (!$fieldsService->saveField($field)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
 
-            return $this->redirectToPostedUrl($field);
+            // Send the field back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'field' => $field
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
-        // Send the field back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'field' => $field
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($field);
     }
 
     /**
@@ -256,7 +274,7 @@ class FieldsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteField()
+    public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

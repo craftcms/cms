@@ -1,0 +1,17 @@
+{% import "_includes/forms" as forms %}
+
+<form id="db-backup" class="utility" method="post" accept-charset="UTF-8">
+    <input type="hidden" name="action" value="utilities/db-backup-perform-action">
+    {{ csrfInput() }}
+
+    {{ forms.checkbox({
+        name: 'downloadBackup',
+        label: 'Download backup?'|t('app'),
+        checked: true,
+    }) }}
+
+    <div class="buttons">
+        <input type="submit" class="btn submit" value="{{ "Go!"|t('app') }}" />
+        <div class="utility-status"></div>
+    </div>
+</form>

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
-use craft\app\helpers\Db;
-use craft\app\helpers\StringHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 
 /**
  * @inheritdoc
@@ -26,11 +26,11 @@ class Command extends \yii\db\Command
     /**
      * @inheritdoc
      *
-     * @param string  $table               The table that new rows will be inserted into.
-     * @param array   $columns             The column data (name => value) to be inserted into the table.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param string $table               The table that new rows will be inserted into.
+     * @param array  $columns             The column data (name => value) to be inserted into the table.
+     * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return $this the command object itself
+     * @return static the command object itself
      */
     public function insert($table, $columns, $includeAuditColumns = true)
     {
@@ -56,16 +56,16 @@ class Command extends \yii\db\Command
     /**
      * @inheritdoc
      *
-     * @param string  $table               The table that new rows will be inserted into.
-     * @param array   $columns             The column names.
-     * @param array   $rows                The rows to be batch inserted into the table.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param string $table               The table that new rows will be inserted into.
+     * @param array  $columns             The column names.
+     * @param array  $rows                The rows to be batch inserted into the table.
+     * @param bool   $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return $this The command object itself.
+     * @return static The command object itself.
      */
     public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
     {
-        if (!$rows) {
+        if (empty($rows)) {
             return $this;
         }
 
@@ -81,6 +81,7 @@ class Command extends \yii\db\Command
                 $row[] = $date;
                 $row[] = StringHelper::UUID();
             }
+            unset($row);
         }
 
         parent::batchInsert($table, $columns, $rows);
@@ -92,16 +93,16 @@ class Command extends \yii\db\Command
      * Creates a command that will insert some given data into a table, or update an existing row
      * in the event of a key constraint violation.
      *
-     * @param string  $table               The table that the row will be inserted into, or updated.
-     * @param array   $keyColumns          The key-constrained column data (name => value) to be inserted into the table
+     * @param string $table                The table that the row will be inserted into, or updated.
+     * @param array  $keyColumns           The key-constrained column data (name => value) to be inserted into the table
      *                                     in the event that a new row is getting created
-     * @param array   $updateColumns       The non-key-constrained column data (name => value) to be inserted into the table
+     * @param array  $updateColumns        The non-key-constrained column data (name => value) to be inserted into the table
      *                                     or updated in the existing row.
-     * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param bool   $includeAuditColumns  Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
      * @return Command The command object itself.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, bool $includeAuditColumns = true): Command
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
@@ -111,7 +112,7 @@ class Command extends \yii\db\Command
         }
 
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
+        $sql = $this->db->getQueryBuilder()->upsert($table, $keyColumns, $updateColumns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -121,20 +122,20 @@ class Command extends \yii\db\Command
      *
      * @param string       $table               The table to be updated.
      * @param array        $columns             The column data (name => value) to be updated.
-     * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+     * @param string|array $condition           The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
-     * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+     * @param bool         $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      *
-     * @return $this The command object itself.
+     * @return static The command object itself.
      */
-    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
-        parent::update($table, $columns, $conditions, $params);
+        parent::update($table, $columns, $condition, $params);
 
         return $this;
     }
@@ -142,17 +143,19 @@ class Command extends \yii\db\Command
     /**
      * Creates a SQL statement for replacing some text with other text in a given table column.
      *
-     * @param string $table   The table to be updated.
-     * @param string $column  The column to be searched.
-     * @param string $find    The text to be searched for.
-     * @param string $replace The replacement text.
+     * @param string       $table     The table to be updated.
+     * @param string       $column    The column to be searched.
+     * @param string       $find      The text to be searched for.
+     * @param string       $replace   The replacement text.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     *                                refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params    The parameters to be bound to the command.
      *
      * @return Command The command object itself.
      */
-    public function replace($table, $column, $find, $replace)
+    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): Command
     {
-        $params = [];
-        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
+        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }
@@ -164,86 +167,9 @@ class Command extends \yii\db\Command
      *
      * @return Command the command object itself
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table): Command
     {
         $sql = $this->db->getQueryBuilder()->dropTableIfExists($table);
-
-        return $this->setSql($sql);
-    }
-
-    /**
-     * Creates a SQL statement for adding a new DB column at the beginning of a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     *
-     * @return Command the command object itself
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        $sql = $this->db->getQueryBuilder()->addColumnFirst($table, $column, $type);
-
-        return $this->setSql($sql);
-    }
-
-    /**
-     * Creates a SQL statement for adding a new DB column before another column in a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     * @param string $before The name of the column that the new column should be placed before.
-     *
-     * @return Command the command object itself
-     */
-    public function addColumnBefore($table, $column, $type, $before)
-    {
-        $sql = $this->db->getQueryBuilder()->addColumnBefore($table, $column, $type, $before);
-
-        return $this->setSql($sql);
-    }
-
-    /**
-     * Creates a SQL statement for adding a new DB column after another column in a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     * @param string $after  The name of the column that the new column should be placed after.
-     *
-     * @return Command the command object itself
-     */
-    public function addColumnAfter($table, $column, $type, $after)
-    {
-        $sql = $this->db->getQueryBuilder()->addColumnAfter($table, $column, $type, $after);
-
-        return $this->setSql($sql);
-    }
-
-    /**
-     * Creates a SQL statement for changing the definition of a column.
-     *
-     * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
-     * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
-     *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
-     *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
-     *                             will become 'varchar(255) not null'.
-     * @param string|null $newName The new column name, if any.
-     * @param string|null $after   The column that this column should be placed after, if it should be moved.
-     *
-     * @return Command the command object itself
-     */
-    public function alterColumn($table, $column, $type, $newName = null, $after = null)
-    {
-        $sql = $this->db->getQueryBuilder()->alterColumn($table, $column, $type, $newName, $after);
 
         return $this->setSql($sql);
     }

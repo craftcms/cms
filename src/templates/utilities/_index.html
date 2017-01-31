@@ -1,0 +1,26 @@
+{% extends "_layouts/cp" %}
+
+{% set title = displayName %}
+
+{% block sidebar %}
+    <nav class="has-icons">
+        <ul>
+            {% for utility in utilities %}
+                {% set selected = utility.id == id %}
+                <li>
+                    <a class="{% if selected %}sel{% elseif utility.badgeCount %}has-badge{% endif %}" href="{{ url('utilities/'~utility.id) }}">
+                        <span class="icon">{{ utility.iconSvg|raw }}</span>
+                        <span class="label">{{ utility.displayName }}</span>
+                        {% if not selected and utility.badgeCount %}
+                            <span class="badge">{{ utility.badgeCount }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}
+
+{% block content %}
+    {{ contentHtml|raw }}
+{% endblock %}

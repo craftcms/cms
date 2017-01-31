@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
-use craft\app\db\Query;
-use craft\app\helpers\Html;
-use craft\app\helpers\Json;
+use craft\db\Query;
+use craft\helpers\Html;
+use craft\helpers\Json;
 
 /**
  * Route functions.
@@ -27,14 +27,14 @@ class Routes
      *
      * @return array
      */
-    public function getDbRoutes()
+    public function getDbRoutes(): array
     {
         $routes = [];
 
         $results = (new Query())
             ->select(['id', 'siteId', 'uriParts', 'template'])
-            ->from('{{%routes}}')
-            ->orderBy('sortOrder')
+            ->from(['{{%routes}}'])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {

@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Assets;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
+use craft\helpers\Image;
+use craft\web\Controller;
+use craft\web\UploadedFile;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -44,13 +44,13 @@ class RebrandController extends Controller
      *
      * @return Response
      */
-    public function actionUploadSiteImage()
+    public function actionUploadSiteImage(): Response
     {
         $this->requireAcceptsJson();
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        if (!in_array($type, $this->_allowedTypes)) {
+        if (!in_array($type, $this->_allowedTypes, true)) {
             return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
@@ -68,15 +68,18 @@ class RebrandController extends Controller
 
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
 
-                Io::ensureFolderExists($targetPath);
-                Io::clearFolder($targetPath);
+                if (!is_dir($targetPath)) {
+                    FileHelper::createDirectory($targetPath);
+                } else {
+                    FileHelper::clearDirectory($targetPath);
+                }
 
                 $fileDestination = $targetPath.'/'.$filename;
 
                 move_uploaded_file($file->tempName, $fileDestination);
 
-                Craft::$app->getImages()->loadImage($fileDestination)->scaleToFit(500,500)->saveAs($fileDestination);
-                $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+                Craft::$app->getImages()->loadImage($fileDestination)->scaleToFit(500, 500)->saveAs($fileDestination);
+                $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
                 return $this->asJson(['html' => $html]);
             }
@@ -93,18 +96,18 @@ class RebrandController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSiteImage()
+    public function actionDeleteSiteImage(): Response
     {
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        if (!in_array($type, $this->_allowedTypes)) {
+        if (!in_array($type, $this->_allowedTypes, true)) {
             $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
-        Io::clearFolder(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/');
+        FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath().'/'.$type);
 
-        $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
+        $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
         return $this->asJson(['html' => $html]);
     }

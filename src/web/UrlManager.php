@@ -5,12 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Url;
+use craft\base\ElementInterface;
+use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\UrlHelper;
 
 /**
  * @inheritdoc
@@ -20,6 +21,19 @@ use craft\app\helpers\Url;
  */
 class UrlManager extends \yii\web\UrlManager
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the Control Panel.
+     */
+    const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
+
+    /**
+     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the front-end site.
+     */
+    const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
+
     // Properties
     // =========================================================================
 
@@ -46,9 +60,9 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $config
      */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !Craft::$app->getConfig()->omitScriptNameInUrls();
+        $config['showScriptName'] = !Craft::$app->getConfig()->getOmitScriptNameInUrls();
         $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
@@ -67,7 +81,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (($route = $this->_getRequestRoute($request)) !== false) {
             // Merge in any additional route params
-            if ($this->_routeParams) {
+            if (!empty($this->_routeParams)) {
                 if (isset($route[1])) {
                     $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
                 } else {
@@ -102,7 +116,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return Url::getActionUrl($route, $params, $scheme);
+        return UrlHelper::actionUrl($route, $params, $scheme);
     }
 
     /**
@@ -120,7 +134,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @param array $params
      */
-    public function setRouteParams($params)
+    public function setRouteParams(array $params)
     {
         $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
     }
@@ -132,16 +146,17 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function getMatchedElement()
     {
-        if (!isset($this->_matchedElement)) {
-            $request = Craft::$app->getRequest();
-
-            if ($request->getIsSiteRequest()) {
-                $path = $request->getPathInfo();
-                $this->_getMatchedElementRoute($path);
-            } else {
-                $this->_matchedElement = false;
-            }
+        if ($this->_matchedElement !== null) {
+            return $this->_matchedElement;
         }
+
+        $request = Craft::$app->getRequest();
+
+        if (!$request->getIsSiteRequest()) {
+            return $this->_matchedElement = false;
+        }
+
+        $this->_getMatchedElementRoute($request->getPathInfo());
 
         return $this->_matchedElement;
     }
@@ -167,9 +182,7 @@ class UrlManager extends \yii\web\UrlManager
                 ) {
                     $rule['verb'] = explode(',', $matches[1]);
 
-                    if (!isset($rule['mode']) && !in_array('GET',
-                            $rule['verb'])
-                    ) {
+                    if (!isset($rule['mode']) && !in_array('GET', $rule['verb'], true)) {
                         $rule['mode'] = UrlRule::PARSING_ONLY;
                     }
 
@@ -192,7 +205,7 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns the rules that should be used for the current request.
      *
-     * @return array|null
+     * @return array|null The rules, or null if it's a console request
      */
     private function _getRules()
     {
@@ -204,18 +217,19 @@ class UrlManager extends \yii\web\UrlManager
 
         // Load the config file rules
         if ($request->getIsCpRequest()) {
-            $baseCpRoutesPath = Craft::$app->getPath()->getAppPath().'/config/cproutes';
-            $rules = require($baseCpRoutesPath.'/common.php');
+            $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
+            /** @var array $rules */
+            $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
 
             if (Craft::$app->getEdition() >= Craft::Client) {
-                $rules = array_merge($rules, require($baseCpRoutesPath.'/client.php'));
+                $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php');
 
-                if (Craft::$app->getEdition() == Craft::Pro) {
-                    $rules = array_merge($rules, require($baseCpRoutesPath.'/pro.php'));
+                if (Craft::$app->getEdition() === Craft::Pro) {
+                    $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
                 }
             }
 
-            $pluginHook = 'registerCpRoutes';
+            $eventName = self::EVENT_REGISTER_CP_URL_RULES;
         } else {
             $routesService = Craft::$app->getRoutes();
 
@@ -224,17 +238,15 @@ class UrlManager extends \yii\web\UrlManager
                 $routesService->getDbRoutes()
             );
 
-            $pluginHook = 'registerSiteRoutes';
+            $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
-        // Load the plugin-supplied rules
-        $allPluginRules = Craft::$app->getPlugins()->call($pluginHook);
+        $event = new RegisterUrlRulesEvent([
+            'rules' => $rules
+        ]);
+        $this->trigger($eventName, $event);
 
-        foreach ($allPluginRules as $pluginRules) {
-            $rules = array_merge($rules, $pluginRules);
-        }
-
-        return array_filter($rules);
+        return array_filter($event->rules);
     }
 
     /**
@@ -278,29 +290,24 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedElementRoute($path)
+    private function _getMatchedElementRoute(string $path)
     {
-        if (!isset($this->_matchedElementRoute)) {
-            $this->_matchedElement = false;
-            $this->_matchedElementRoute = false;
+        if ($this->_matchedElementRoute !== null) {
+            return $this->_matchedElementRoute;
+        }
 
-            if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
+        $this->_matchedElement = false;
+        $this->_matchedElementRoute = false;
 
-                if ($element) {
-                    // Do any plugins want a say in this?
-                    $route = Craft::$app->getPlugins()->callFirst('getElementRoute',
-                        [$element], true);
+        if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
-                    if (!$route) {
-                        // Give the element type a chance
-                        $route = $element::getElementRoute($element);
-                    }
+            if ($element) {
+                $route = $element->getRoute();
 
-                    if ($route) {
-                        $this->_matchedElement = $element;
-                        $this->_matchedElementRoute = $route;
-                    }
+                if ($route) {
+                    $this->_matchedElement = $element;
+                    $this->_matchedElementRoute = $route;
                 }
             }
         }
@@ -315,7 +322,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return mixed
      */
-    private function _getMatchedUrlRoute($request)
+    private function _getMatchedUrlRoute(Request $request)
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule UrlRule */
@@ -335,9 +342,9 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * Returns whether the current path is "public" (no segments that start with the privateTemplateTrigger).
      *
-     * @return boolean
+     * @return bool
      */
-    private function _isPublicTemplatePath()
+    private function _isPublicTemplatePath(): bool
     {
         $request = Craft::$app->getRequest();
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
@@ -345,10 +352,9 @@ class UrlManager extends \yii\web\UrlManager
         } else {
             $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
         }
-        $length = strlen($trigger);
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (strncmp($requestPathSeg, $trigger, $length) === 0) {
+            if (strpos($requestPathSeg, $trigger) === 0) {
                 return false;
             }
         }

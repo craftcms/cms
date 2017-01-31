@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\records\User as UserRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\records\UserGroup as UserGroupRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -27,17 +27,17 @@ class UserGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
@@ -53,8 +53,8 @@ class UserGroup extends Model
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
-            [['handle'], HandleValidator::class, 'reservedWords' => 'id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserRecord::class],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserGroupRecord::class],
         ];
     }
 
@@ -63,7 +63,7 @@ class UserGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }
@@ -73,9 +73,9 @@ class UserGroup extends Model
      *
      * @param string $permission
      *
-     * @return boolean
+     * @return bool
      */
-    public function can($permission)
+    public function can(string $permission): bool
     {
         if ($this->id) {
             return Craft::$app->getUserPermissions()->doesGroupHavePermission($this->id, $permission);

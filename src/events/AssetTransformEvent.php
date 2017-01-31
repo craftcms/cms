@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\models\AssetTransform;
+use craft\models\AssetTransform;
+use yii\base\Event;
 
 /**
  * Asset transform event class.
@@ -21,12 +22,12 @@ class AssetTransformEvent extends Event
     // =========================================================================
 
     /**
-     * @var AssetTransform The asset transform model associated with the event.
+     * @var AssetTransform|null The asset transform model associated with the event.
      */
     public $assetTransform;
 
     /**
-     * @var boolean Whether the asset transform is brand new
+     * @var bool Whether the asset transform is brand new
      */
     public $isNew = false;
 }

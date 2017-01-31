@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Db;
-use craft\app\helpers\Search;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\Tag;
-use craft\app\models\TagGroup;
-use craft\app\web\Controller;
+use craft\elements\Tag;
+use craft\helpers\Db;
+use craft\helpers\Search;
+use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
+use craft\models\TagGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -37,7 +37,7 @@ class TagsController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionIndex()
+    public function actionIndex(): string
     {
         $this->requireAdmin();
 
@@ -51,13 +51,13 @@ class TagsController extends Controller
     /**
      * Edit a tag group.
      *
-     * @param integer  $tagGroupId The tag group’s ID, if any.
-     * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
+     * @param int|null      $tagGroupId The tag group’s ID, if any.
+     * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
+    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): string
     {
         $this->requireAdmin();
 
@@ -83,11 +83,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Tags'),
-                'url' => Url::getUrl('settings/tags')
+                'url' => UrlHelper::url('settings/tags')
             ]
         ];
 
@@ -135,20 +135,20 @@ class TagsController extends Controller
         $tagGroup->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getTags()->saveTagGroup($tagGroup)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
+        if (!Craft::$app->getTags()->saveTagGroup($tagGroup)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
 
-            return $this->redirectToPostedUrl($tagGroup);
+            // Send the tag group back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'tagGroup' => $tagGroup
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 
-        // Send the tag group back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'tagGroup' => $tagGroup
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($tagGroup);
     }
 
     /**
@@ -156,7 +156,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteTagGroup()
+    public function actionDeleteTagGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -174,7 +174,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionSearchForTags()
+    public function actionSearchForTags(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -187,7 +187,7 @@ class TagsController extends Controller
         $tags = Tag::find()
             ->groupId($tagGroupId)
             ->title(Db::escapeParam($search).'*')
-            ->where(['not in', 'elements.id', $excludeIds])
+            ->where(['not', ['elements.id' => $excludeIds]])
             ->all();
 
         $return = [];
@@ -236,7 +236,7 @@ class TagsController extends Controller
      *
      * @return Response
      */
-    public function actionCreateTag()
+    public function actionCreateTag(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();
@@ -244,8 +244,9 @@ class TagsController extends Controller
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
         $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
+        $tag->validateCustomFields = false;
 
-        if (Craft::$app->getTags()->saveTag($tag)) {
+        if (Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([
                 'success' => true,
                 'id' => $tag->id

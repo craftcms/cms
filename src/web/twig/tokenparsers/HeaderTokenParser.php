@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\HeaderNode;
+use craft\web\twig\nodes\HeaderNode;
 
 /**
  * Class HeaderTokenParser
@@ -26,10 +26,12 @@ class HeaderTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         $lineno = $token->getLine();
-        $header = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'header' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new HeaderNode(['header' => $header], [], $lineno, $this->getTag());
+        return new HeaderNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

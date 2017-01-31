@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Class VolumeFolder record.
  *
- * @property integer      $id       ID
- * @property integer      $parentId Parent ID
- * @property integer      $volumeId Volume ID
+ * @property int          $id       ID
+ * @property int          $parentId Parent ID
+ * @property int          $volumeId Volume ID
  * @property string       $name     Name
  * @property string       $path     Path
  * @property VolumeFolder $parent   Parent
@@ -35,11 +35,7 @@ class VolumeFolder extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['name'],
-                'unique',
-                'targetAttribute' => ['name', 'parentId', 'volumeId']
-            ],
+            [['name'], 'unique', 'targetAttribute' => ['name', 'parentId', 'volumeId']],
             [['name'], 'required'],
         ];
     }
@@ -49,7 +45,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%volumefolders}}';
     }
@@ -59,7 +55,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getParent()
+    public function getParent(): ActiveQueryInterface
     {
         return $this->hasOne(VolumeFolder::class, ['id' => 'parentId']);
     }
@@ -69,7 +65,7 @@ class VolumeFolder extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getVolume()
+    public function getVolume(): ActiveQueryInterface
     {
         return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }

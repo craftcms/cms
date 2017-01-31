@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\base\Element;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\SetStatusEvent;
+use craft\base\Element;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\SetStatusEvent;
 
 /**
  * SetStatus represents a Set Status element action.
@@ -26,7 +26,7 @@ class SetStatus extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The status elements should be set to
+     * @var string|null The status elements should be set to
      */
     public $status;
 
@@ -44,7 +44,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Set Status');
     }
@@ -79,7 +79,7 @@ class SetStatus extends ElementAction
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
         /** @var ElementQuery $query */
         // Figure out which element IDs we need to update
@@ -96,7 +96,7 @@ class SetStatus extends ElementAction
             ->update(
                 '{{%elements}}',
                 ['enabled' => $sqlNewStatus],
-                ['in', 'id', $elementIds])
+                ['id' => $elementIds])
             ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
@@ -106,9 +106,8 @@ class SetStatus extends ElementAction
                     '{{%elements_i18n}}',
                     ['enabled' => $sqlNewStatus],
                     [
-                        'and',
-                        ['in', 'elementId', $elementIds],
-                        ['siteId' => $query->siteId]
+                        'elementId' => $elementIds,
+                        'siteId' => $query->siteId,
                     ])
                 ->execute();
         }

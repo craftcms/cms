@@ -5,18 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\Entry;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\models\UserGroup;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\models\UserGroup;
 use DateTime;
+use yii\db\Connection;
 
 /**
  * EntryQuery represents a SELECT SQL statement for entries in a way that is independent of DBMS.
@@ -29,7 +30,7 @@ use DateTime;
  *
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth($n, $db = null)
+ * @method Entry|array|null nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -43,32 +44,27 @@ class EntryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * @var bool Whether to only return entries that the user has permission to edit.
      */
-    public $status = 'live';
+    public $editable = false;
 
     /**
-     * @var boolean Whether to only return entries that the user has permission to edit.
-     */
-    public $editable;
-
-    /**
-     * @var integer|integer[] The section ID(s) that the resulting entries must be in.
+     * @var int|int[]|null The section ID(s) that the resulting entries must be in.
      */
     public $sectionId;
 
     /**
-     * @var integer|integer[] The entry type ID(s) that the resulting entries must have.
+     * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
      */
     public $typeId;
 
     /**
-     * @var integer|integer[] The user ID(s) that the resulting entries’ authors must have.
+     * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
      */
     public $authorId;
 
     /**
-     * @var integer|integer[] The user group ID(s) that the resulting entries’ authors must be in.
+     * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
      */
     public $authorGroupId;
 
@@ -88,43 +84,50 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default status
+        if (!isset($config['status'])) {
+            $config['status'] = 'live';
+        }
+
+        parent::__construct($elementType, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'section': {
+            case 'section':
                 $this->section($value);
                 break;
-            }
-            case 'type': {
+            case 'type':
                 $this->type($value);
                 break;
-            }
-            case 'authorGroup': {
+            case 'authorGroup':
                 $this->authorGroup($value);
                 break;
-            }
-            case 'before': {
+            case 'before':
                 $this->before($value);
                 break;
-            }
-            case 'after': {
+            case 'after':
                 $this->after($value);
                 break;
-            }
-            default: {
+            default:
                 parent::__set($name, $value);
-            }
         }
     }
 
     /**
      * Sets the [[editable]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param bool $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function editable($value = true)
+    public function editable(bool $value = true)
     {
         $this->editable = $value;
 
@@ -134,22 +137,23 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property based on a given section(s)’s handle(s).
      *
-     * @param string|string[]|Section $value The property value
+     * @param string|string[]|Section|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function section($value)
     {
         if ($value instanceof Section) {
             $this->structureId = ($value->structureId ?: false);
             $this->sectionId = $value->id;
-        } else {
-            $query = new Query();
-            $this->sectionId = $query
-                ->select('id')
-                ->from('{{%sections}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+        } else if ($value !== null) {
+            $this->sectionId = (new Query())
+                ->select(['id'])
+                ->from(['{{%sections}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->sectionId = null;
         }
 
         return $this;
@@ -158,9 +162,9 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[sectionId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function sectionId($value)
     {
@@ -172,21 +176,22 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property based on a given entry type(s)’s handle(s).
      *
-     * @param string|string[]|EntryType $value The property value
+     * @param string|string[]|EntryType|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function type($value)
     {
         if ($value instanceof EntryType) {
             $this->typeId = $value->id;
-        } else {
-            $query = new Query();
-            $this->typeId = $query
-                ->select('id')
-                ->from('{{%entrytypes}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+        } else if ($value !== null) {
+            $this->typeId = (new Query())
+                ->select(['id'])
+                ->from(['{{%entrytypes}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->typeId = null;
         }
 
         return $this;
@@ -195,9 +200,9 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[typeId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function typeId($value)
     {
@@ -209,9 +214,9 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorId($value)
     {
@@ -223,21 +228,22 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property based on a given user group(s)’s handle(s).
      *
-     * @param string|string[]| $value The property value
+     * @param string|string[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorGroup($value)
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
-        } else {
-            $query = new Query();
-            $this->authorGroupId = $query
-                ->select('id')
-                ->from('{{%usergroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+        } else if ($value !== null) {
+            $this->authorGroupId = (new Query())
+                ->select(['id'])
+                ->from(['{{%usergroups}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
+        } else {
+            $this->authorGroupId = null;
         }
 
         return $this;
@@ -246,9 +252,9 @@ class EntryQuery extends ElementQuery
     /**
      * Sets the [[authorGroupId]] property.
      *
-     * @param integer|integer[] $value The property value
+     * @param int|int[]|null $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorGroupId($value)
     {
@@ -262,7 +268,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function postDate($value)
     {
@@ -276,7 +282,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function before($value)
     {
@@ -295,7 +301,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function after($value)
     {
@@ -314,7 +320,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function expiryDate($value)
     {
@@ -329,7 +335,7 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function beforePrepare()
+    protected function beforePrepare(): bool
     {
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
@@ -347,26 +353,26 @@ class EntryQuery extends ElementQuery
         ]);
 
         if ($this->postDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->postDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->postDate));
         }
 
         if ($this->expiryDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(Db::parseParam('entries.typeId', $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('entries.typeId', $this->typeId));
         }
 
         if (Craft::$app->getEdition() >= Craft::Client) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
-                    ->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = entries.authorId')
-                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId, $this->subQuery->params));
+                    ->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[entries.authorId]]')
+                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
 
@@ -374,11 +380,57 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        if ($this->orderBy === null && !$this->structureId) {
+        if (!$this->orderBy && !$this->structureId && !$this->fixedOrder) {
             $this->orderBy = 'postDate desc';
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusCondition(string $status)
+    {
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+
+        switch ($status) {
+            case Entry::STATUS_LIVE:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1'
+                    ],
+                    ['<=', 'entries.postDate', $currentTimeDb],
+                    [
+                        'or',
+                        ['entries.expiryDate' => null],
+                        ['>', 'entries.expiryDate', $currentTimeDb]
+                    ]
+                ];
+            case Entry::STATUS_PENDING:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1',
+                    ],
+                    ['>', 'entries.postDate', $currentTimeDb]
+                ];
+            case Entry::STATUS_EXPIRED:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1'
+                    ],
+                    ['not', ['entries.expiryDate' => null]],
+                    ['<=', 'entries.expiryDate', $currentTimeDb]
+                ];
+            default:
+                return parent::statusCondition($status);
+        }
     }
 
     // Private Methods
@@ -387,44 +439,34 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'editable' param to the query being prepared.
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
-            $user = Craft::$app->getUser()->getIdentity();
+        if (!$this->editable) {
+            return;
+        }
 
-            if (!$user) {
-                throw new QueryAbortedException();
-            }
+        $user = Craft::$app->getUser()->getIdentity();
 
-            // Limit the query to only the sections the user has permission to edit
-            $editableSectionIds = Craft::$app->getSections()->getEditableSectionIds();
-            $this->subQuery->andWhere([
-                'in',
-                'entries.sectionId',
-                $editableSectionIds
-            ]);
+        if (!$user) {
+            throw new QueryAbortedException();
+        }
 
-            // Enforce the editPeerEntries permissions for non-Single sections
-            $noPeerConditions = [];
+        // Limit the query to only the sections the user has permission to edit
+        $this->subQuery->andWhere([
+            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds()
+        ]);
 
-            foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-                if (
-                    $section->type != Section::TYPE_SINGLE &&
-                    !$user->can('editPeerEntries:'.$section->id)
-                ) {
-                    $noPeerConditions[] = [
-                        'or',
-                        'entries.sectionId != '.$section->id,
-                        'entries.authorId = '.$user->id
-                    ];
-                }
-            }
-
-            if ($noPeerConditions) {
-                array_unshift($noPeerConditions, 'and');
-                $this->subQuery->andWhere($noPeerConditions);
+        // Enforce the editPeerEntries permissions for non-Single sections
+        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:'.$section->id)) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['not', ['entries.sectionId' => $section->id]],
+                    ['entries.authorId' => $user->id]
+                ]);
             }
         }
     }
@@ -437,57 +479,54 @@ class EntryQuery extends ElementQuery
         if ($this->sectionId) {
             // Should we set the structureId param?
             if ($this->structureId === null && (!is_array($this->sectionId) || count($this->sectionId) === 1)) {
-                $query = new Query();
-                $this->structureId = $query
-                    ->select('structureId')
-                    ->from('{{%sections}}')
-                    ->where(Db::parseParam('id', $this->sectionId, $query->params))
+                $structureId = (new Query())
+                    ->select(['structureId'])
+                    ->from(['{{%sections}}'])
+                    ->where(Db::parseParam('id', $this->sectionId))
                     ->scalar();
+                $this->structureId = $structureId ? (int)$structureId : false;
             }
 
-            $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId));
         }
     }
 
     /**
      * Applies the 'ref' param to the query being prepared.
+     *
+     * @return void
      */
     private function _applyRefParam()
     {
-        if ($this->ref) {
-            $joinSections = false;
-            $refs = ArrayHelper::toArray($this->ref);
-            $conditionals = [];
+        if (!$this->ref) {
+            return;
+        }
 
-            foreach ($refs as $ref) {
-                $parts = array_filter(explode('/', $ref));
+        $refs = ArrayHelper::toArray($this->ref);
+        $joinSections = false;
+        $condition = ['or'];
 
-                if ($parts) {
-                    if (count($parts) == 1) {
-                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
-                    } else {
-                        $conditionals[] = [
-                            'and',
-                            Db::parseParam('sections.handle', $parts[0], $this->subQuery->params),
-                            Db::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
-                        ];
-                        $joinSections = true;
-                    }
-                }
-            }
+        foreach ($refs as $ref) {
+            $parts = array_filter(explode('/', $ref));
 
-            if ($conditionals) {
-                if (count($conditionals) == 1) {
-                    $this->subQuery->andWhere($conditionals[0]);
+            if (!empty($parts)) {
+                if (count($parts) == 1) {
+                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {
-                    array_unshift($conditionals, 'or');
-                    $this->subQuery->andWhere($conditionals);
-                }
-
-                if ($joinSections) {
-                    $this->subQuery->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId');
+                    $condition[] = [
+                        'and',
+                        Db::parseParam('sections.handle', $parts[0]),
+                        Db::parseParam('elements_i18n.slug', $parts[1])
+                    ];
+                    $joinSections = true;
                 }
             }
+        }
+
+        $this->subQuery->andWhere($condition);
+
+        if ($joinSections) {
+            $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
         }
     }
 }

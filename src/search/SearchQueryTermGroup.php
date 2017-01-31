@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\search;
+namespace craft\search;
 
 /**
  * Search Query Term Group class
@@ -21,7 +21,7 @@ class SearchQueryTermGroup
     // =========================================================================
 
     /**
-     * @var array
+     * @var array|null
      */
     public $terms;
 
@@ -32,10 +32,8 @@ class SearchQueryTermGroup
      * Constructor
      *
      * @param array $terms
-     *
-     * @return SearchQueryTermGroup
      */
-    public function __construct($terms = [])
+    public function __construct(array $terms = [])
     {
         $this->terms = $terms;
     }

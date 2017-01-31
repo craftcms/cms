@@ -1,5 +1,5 @@
 {% macro errorList(errors) %}
-	{% include "_includes/forms/errorList" %}
+    {% include "_includes/forms/errorList" %}
 {% endmacro %}
 
 
@@ -7,92 +7,92 @@
 
 
 {% macro hidden(config) -%}
-	{% include "_includes/forms/hidden" with config only %}
+    {% include "_includes/forms/hidden" with config only %}
 {%- endmacro %}
 
 
 {% macro text(config) %}
-	{% include "_includes/forms/text" with config only %}
+    {% include "_includes/forms/text" with config only %}
 {% endmacro %}
 
 
 {% macro password(config) %}
-	{% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
+    {% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
 {% endmacro %}
 
 
 {% macro date(config) %}
-	{% include "_includes/forms/date" with config only %}
+    {% include "_includes/forms/date" with config only %}
 {% endmacro %}
 
 
 {% macro time(config) %}
-	{% include "_includes/forms/time" with config only %}
+    {% include "_includes/forms/time" with config only %}
 {% endmacro %}
 
 
 {% macro color(config) %}
-	{% include "_includes/forms/color" with config only %}
+    {% include "_includes/forms/color" with config only %}
 {% endmacro %}
 
 
 {% macro textarea(config) %}
-	{% include "_includes/forms/textarea" with config only %}
+    {% include "_includes/forms/textarea" with config only %}
 {% endmacro %}
 
 
 {% macro select(config) %}
-	{% include "_includes/forms/select" with config only %}
+    {% include "_includes/forms/select" with config only %}
 {% endmacro %}
 
 
 {% macro multiselect(config) %}
-	{% include "_includes/forms/multiselect" with config only %}
+    {% include "_includes/forms/multiselect" with config only %}
 {% endmacro %}
 
 
 {% macro checkbox(config) %}
-	{% include "_includes/forms/checkbox" with config only %}
+    {% include "_includes/forms/checkbox" with config only %}
 {% endmacro %}
 
 
 {% macro checkboxGroup(config) %}
-	{% include "_includes/forms/checkboxGroup" with config only %}
+    {% include "_includes/forms/checkboxGroup" with config only %}
 {% endmacro %}
 
 
 {% macro checkboxSelect(config) %}
-	{% include "_includes/forms/checkboxSelect" with config only %}
+    {% include "_includes/forms/checkboxSelect" with config only %}
 {% endmacro %}
 
 
 {% macro radio(config) %}
-	{% include "_includes/forms/radio" with config only %}
+    {% include "_includes/forms/radio" with config only %}
 {% endmacro %}
 
 
 {% macro radioGroup(config) %}
-	{% include "_includes/forms/radioGroup" with config only %}
+    {% include "_includes/forms/radioGroup" with config only %}
 {% endmacro %}
 
 
 {% macro file(config) %}
-	{% include "_includes/forms/file" with config only %}
+    {% include "_includes/forms/file" with config only %}
 {% endmacro %}
 
 
 {% macro lightswitch(config) %}
-	{% include "_includes/forms/lightswitch" with config only %}
+    {% include "_includes/forms/lightswitch" with config only %}
 {% endmacro %}
 
 
 {% macro editableTable(config) %}
-	{% include "_includes/forms/editableTable" with config only %}
+    {% include "_includes/forms/editableTable" with config only %}
 {% endmacro %}
 
 
 {% macro elementSelect(config) %}
-	{% include "_includes/forms/elementSelect" with config only %}
+    {% include "_includes/forms/elementSelect" with config only %}
 {% endmacro %}
 
 
@@ -100,121 +100,137 @@
 
 
 {% macro field(config, input) %}
-	{% include "_includes/forms/field" with config|merge({ input: input }) only %}
+    {% include "_includes/forms/field" with config|merge({ input: input }) only %}
 {% endmacro %}
 
 
 {% macro textField(config) %}
-	{% if config.unit is defined %}
-		{% set input %}
-			<div class="flex">
-				<div class="textwrapper">{{ _self.text(config) }}</div>
-				<div class="label light">{{ config.unit }}</div>
-			</div>
-		{% endset %}
-	{% else %}
-		{% set input = _self.text(config) %}
-	{% endif %}
-	{{ _self.field(config, input) }}
+    {% import _self as forms %}
+    {% if config.unit is defined %}
+        {% set input %}
+            <div class="flex">
+                <div class="textwrapper">{{ forms.text(config) }}</div>
+                <div class="label light">{{ config.unit }}</div>
+            </div>
+        {% endset %}
+    {% else %}
+        {% set input = forms.text(config) %}
+    {% endif %}
+    {{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
-	{{ _self.field(config, _self.password(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.password(config)) }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
-	{{ _self.field(config, _self.date(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.date(config)) }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
-	{{ _self.field(config, _self.time(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.time(config)) }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
-	{{ _self.field(config, _self.color(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.color(config)) }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
-	{% set input %}
-		<div class="datetimewrapper">
-			{{ _self.date(config) }}
-			{{ _self.time(config) }}
-		</div>
-	{% endset %}
-	{{ _self.field(config, input) }}
+    {% import _self as forms %}
+    {% set input %}
+        <div class="datetimewrapper">
+            {{ forms.date(config) }}
+            {{ forms.time(config) }}
+        </div>
+    {% endset %}
+    {{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro textareaField(config) %}
-	{{ _self.field(config, _self.textarea(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.textarea(config)) }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
-	{{ _self.field(config, _self.select(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.select(config)) }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
-	{{ _self.field(config, _self.multiselect(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.multiselect(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxField(config) %}
-	{% if config.fieldLabel is defined %}
-		{{ _self.field(config|merge({label: config.fieldLabel}), _self.checkbox(config)) }}
-	{% else %}
-		{% set instructions = config.instructions ?? null -%}
-		{% set warning = config.warning ?? null -%}
-		<div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
-			{{ _self.checkbox(config) }}
-			{% if instructions %}
-				<div class="instructions">{{ instructions|md }}</div>
-			{% endif %}
-			{% if warning %}
-				<p class="warning">{{ warning }}</p>
-			{% endif %}
-		</div>
-	{% endif %}
+    {% import _self as forms %}
+    {% if config.fieldLabel is defined %}
+        {{ forms.field(config|merge({label: config.fieldLabel}), forms.checkbox(config)) }}
+    {% else %}
+        {% set instructions = config.instructions ?? null -%}
+        {% set warning = config.warning ?? null -%}
+        <div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
+            {{ forms.checkbox(config) }}
+            {% if instructions %}
+                <div class="instructions">{{ instructions|md }}</div>
+            {% endif %}
+            {% if warning %}
+                <p class="warning">{{ warning }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endmacro %}
 
 
 {% macro checkboxSelectField(config) %}
-	{{ _self.field(config, _self.checkboxSelect(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.checkboxSelect(config)) }}
 {% endmacro %}
 
 
 {% macro radioGroupField(config) %}
-	{{ _self.field(config, _self.radioGroup(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.radioGroup(config)) }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
-	{{ _self.field(config, _self.file(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.file(config)) }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
-	{% if config.labelId is not defined or not config.labelId %}
-		{% set config = config|merge({ labelId: 'label'~random() }) %}
-	{% endif %}
-	{{ _self.field(config, _self.lightswitch(config)) }}
+    {% import _self as forms %}
+    {% if config.labelId is not defined or not config.labelId %}
+        {% set config = config|merge({ labelId: 'label'~random() }) %}
+    {% endif %}
+    {{ forms.field(config, forms.lightswitch(config)) }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
-	{% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
-	{{ _self.field(config, input) }}
+    {% import _self as forms %}
+    {% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
+    {{ forms.field(config, input) }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
-	{{ _self.field(config, _self.elementSelect(config)) }}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.elementSelect(config)) }}
 {% endmacro %}
 
 
@@ -222,12 +238,12 @@
 
 
 {% macro optionShortcutLabel(key, shift, alt) %}
-	{%- spaceless %}
-		{% switch craft.app.request.getClientOs() %}
-			{% case 'Mac' %}
-				<span class="shortcut">{{ (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}</span>
-			{% default %}
-				<span class="shortcut">{{ 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}</span>
-		{% endswitch %}
-	{% endspaceless -%}
+    {%- spaceless %}
+        {% switch craft.app.request.getClientOs() %}
+            {% case 'Mac' %}
+                <span class="shortcut">{{ (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}</span>
+            {% default %}
+                <span class="shortcut">{{ 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}</span>
+        {% endswitch %}
+    {% endspaceless -%}
 {% endmacro %}

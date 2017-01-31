@@ -1,0 +1,33 @@
+{% extends "_layouts/cp" %}
+
+{% set title = "Charts"|t('app') %}
+{% block content %}
+    <div id="chart-div" style="width: 100%; height: 300px;"></div>
+{% endblock %}
+
+{% js %}
+
+var $chart = $('#chart-div'),
+chart = new Craft.charts.Area($chart);
+
+var chartDataTable = new Craft.charts.DataTable({
+    columns: [
+        { label: "Date", type: 'date' },
+        { label: "Total", type: 'number' },
+    ],
+    rows: [
+        ['2017-01-01', 11],
+        ['2017-01-02', 7],
+        ['2017-01-03', 5],
+        ['2017-01-04', 17],
+        ['2017-01-05', 15],
+        ['2017-01-06', 8],
+        ['2017-01-07', 12],
+        ['2017-01-08', 18],
+    ]
+});
+
+chart.draw(chartDataTable);
+
+{% endjs %}
+

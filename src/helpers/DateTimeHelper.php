@@ -5,12 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
-use craft\app\i18n\Locale;
+use craft\i18n\Locale;
+use DateTime;
 use yii\helpers\FormatConverter;
 
 /**
@@ -21,6 +20,48 @@ use yii\helpers\FormatConverter;
  */
 class DateTimeHelper
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * Number of seconds in a minute.
+     *
+     * @var int
+     */
+    const SECONDS_MINUTE = 60;
+
+    /**
+     * Number of seconds in an hour.
+     *
+     * @var int
+     */
+    const SECONDS_HOUR = 3600;
+
+    /**
+     * Number of seconds in a day.
+     *
+     * @var int
+     */
+    const SECONDS_DAY = 86400;
+
+    /**
+     * The number of seconds in a month.
+     *
+     * Based on a 30.4368 day month, with the product rounded.
+     *
+     * @var int
+     */
+    const SECONDS_MONTH = 2629740;
+
+    /**
+     * The number of seconds in a year.
+     *
+     * Based on a 365.2416 day year, with the product rounded.
+     *
+     * @var int
+     */
+    const SECONDS_YEAR = 31556874;
+
     // Properties
     // =========================================================================
 
@@ -43,13 +84,13 @@ class DateTimeHelper
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
      *
-     * @param mixed   $value                The value that should be converted to a DateTime object.
-     * @param boolean $assumeSystemTimeZone Whether it should be assumed that the value was set in the system time zone if the timezone was not specified. If this is false, UTC will be assumed. (Defaults to false.)
-     * @param boolean $setToSystemTimeZone  Whether to set the resulting DateTime object to the system time zone. (Defaults to true.)
+     * @param mixed $value                The value that should be converted to a DateTime object.
+     * @param bool  $assumeSystemTimeZone Whether it should be assumed that the value was set in the system time zone if the timezone was not specified. If this is false, UTC will be assumed. (Defaults to false.)
+     * @param bool  $setToSystemTimeZone  Whether to set the resulting DateTime object to the system time zone. (Defaults to true.)
      *
      * @return DateTime|false The DateTime object, or `false` if $object could not be converted to one
      */
-    public static function toDateTime($value, $assumeSystemTimeZone = false, $setToSystemTimeZone = true)
+    public static function toDateTime($value, bool $assumeSystemTimeZone = false, bool $setToSystemTimeZone = true)
     {
         if ($value instanceof \DateTime) {
             // Make sure it's a Craft DateTime object
@@ -211,10 +252,10 @@ class DateTimeHelper
      *
      * @return string|false The PHP time zone identifier, or `false` if it could not be determined
      */
-    public static function normalizeTimeZone($timeZone)
+    public static function normalizeTimeZone(string $timeZone)
     {
         // Is it already a PHP time zone identifier?
-        if (in_array($timeZone, timezone_identifiers_list())) {
+        if (in_array($timeZone, timezone_identifiers_list(), true)) {
             return $timeZone;
         }
 
@@ -245,15 +286,11 @@ class DateTimeHelper
      *
      * @param mixed $value The timestamp to check
      *
-     * @return boolean Whether the value is an ISO-8601 date string
+     * @return bool Whether the value is an ISO-8601 date string
      */
-    public static function isIso8601($value)
+    public static function isIso8601($value): bool
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
-            return true;
-        }
-
-        return false;
+        return is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value);
     }
 
     /**
@@ -277,15 +314,15 @@ class DateTimeHelper
     /**
      * @return DateTime
      */
-    public static function currentUTCDateTime()
+    public static function currentUTCDateTime(): DateTime
     {
         return new DateTime(null, new \DateTimeZone('UTC'));
     }
 
     /**
-     * @return integer
+     * @return int
      */
-    public static function currentTimeStamp()
+    public static function currentTimeStamp(): int
     {
         $date = static::currentUTCDateTime();
 
@@ -295,19 +332,19 @@ class DateTimeHelper
     /**
      * Translates the words in a formatted date string to the application’s language.
      *
-     * @param string $str      The formatted date string
-     * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     *                         [[\yii\base\Application::language|application language]] will be used.
+     * @param string      $str      The formatted date string
+     * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
+     *                              [[\yii\base\Application::language|application language]] will be used.
      *
      * @return string The translated date string
      */
-    public static function translateDate($str, $language = null)
+    public static function translateDate(string $str, string $language = null): string
     {
         if ($language === null) {
             $language = Craft::$app->language;
         }
 
-        if (strncmp($language, 'en', 2) === 0) {
+        if (strpos($language, 'en') === 0) {
             return $str;
         }
 
@@ -317,12 +354,12 @@ class DateTimeHelper
     }
 
     /**
-     * @param integer $seconds     The number of seconds
-     * @param boolean $showSeconds Whether to output seconds or not
+     * @param int  $seconds     The number of seconds
+     * @param bool $showSeconds Whether to output seconds or not
      *
      * @return string
      */
-    public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
+    public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true): string
     {
         $secondsInWeek = 604800;
         $secondsInDay = 86400;
@@ -330,17 +367,17 @@ class DateTimeHelper
         $secondsInMinute = 60;
 
         $weeks = floor($seconds / $secondsInWeek);
-        $seconds = $seconds % $secondsInWeek;
+        $seconds %= $secondsInWeek;
 
         $days = floor($seconds / $secondsInDay);
-        $seconds = $seconds % $secondsInDay;
+        $seconds %= $secondsInDay;
 
         $hours = floor($seconds / $secondsInHour);
-        $seconds = $seconds % $secondsInHour;
+        $seconds %= $secondsInHour;
 
         if ($showSeconds) {
             $minutes = floor($seconds / $secondsInMinute);
-            $seconds = $seconds % $secondsInMinute;
+            $seconds %= $secondsInMinute;
         } else {
             $minutes = round($seconds / $secondsInMinute);
             $seconds = 0;
@@ -349,41 +386,42 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($weeks) {
-            $timeComponents[] = $weeks.' '.($weeks == 1 ? Craft::t('app',
-                    'week') : Craft::t('app', 'weeks'));
+            $timeComponents[] = $weeks.' '.($weeks == 1 ? Craft::t('app', 'week') : Craft::t('app', 'weeks'));
         }
 
         if ($days) {
-            $timeComponents[] = $days.' '.($days == 1 ? Craft::t('app',
-                    'day') : Craft::t('app', 'days'));
+            $timeComponents[] = $days.' '.($days == 1 ? Craft::t('app', 'day') : Craft::t('app', 'days'));
         }
 
         if ($hours) {
-            $timeComponents[] = $hours.' '.($hours == 1 ? Craft::t('app',
-                    'hour') : Craft::t('app', 'hours'));
+            $timeComponents[] = $hours.' '.($hours == 1 ? Craft::t('app', 'hour') : Craft::t('app', 'hours'));
         }
 
         if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours)) {
-            $timeComponents[] = $minutes.' '.($minutes == 1 ? Craft::t('app',
-                    'minute') : Craft::t('app', 'minutes'));
+            $timeComponents[] = $minutes.' '.($minutes == 1 ? Craft::t('app', 'minute') : Craft::t('app', 'minutes'));
         }
 
         if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes)) {
-            $timeComponents[] = $seconds.' '.($seconds == 1 ? Craft::t('app',
-                    'second') : Craft::t('app', 'seconds'));
+            $timeComponents[] = $seconds.' '.($seconds == 1 ? Craft::t('app', 'second') : Craft::t('app', 'seconds'));
         }
 
         return implode(', ', $timeComponents);
     }
 
     /**
-     * @param $timestamp
+     * @param string|int $timestamp
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isValidTimeStamp($timestamp)
+    public static function isValidTimeStamp($timestamp): bool
     {
-        return (is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX));
+        if (!is_numeric($timestamp)) {
+            return false;
+        }
+
+        $timestamp = (int)$timestamp;
+
+        return $timestamp <= PHP_INT_MAX && $timestamp >= ~PHP_INT_MAX;
     }
 
     /**
@@ -391,9 +429,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is today, false otherwise.
+     * @return bool true if date is today, false otherwise.
      */
-    public static function isToday($date)
+    public static function isToday($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -406,9 +444,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date was yesterday, false otherwise.
+     * @return bool true if date was yesterday, false otherwise.
      */
-    public static function isYesterday($date)
+    public static function isYesterday($date): bool
     {
         $date = self::toDateTime($date);
         $yesterday = new DateTime('@'.strtotime('yesterday'));
@@ -421,9 +459,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is in this year, false otherwise.
+     * @return bool true if date is in this year, false otherwise.
      */
-    public static function isThisYear($date)
+    public static function isThisYear($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -436,9 +474,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if date is in this week, false otherwise.
+     * @return bool true if date is in this week, false otherwise.
      */
-    public static function isThisWeek($date)
+    public static function isThisWeek($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -451,9 +489,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean True if date is in this month, false otherwise.
+     * @return bool True if date is in this month, false otherwise.
      */
-    public static function isThisMonth($date)
+    public static function isThisMonth($date): bool
     {
         $date = self::toDateTime($date);
         $now = new DateTime();
@@ -468,12 +506,12 @@ class DateTimeHelper
      * @param mixed $timeInterval   The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
      *                              1 minute.
      *
-     * @return boolean Whether the $dateString was within the specified $timeInterval.
+     * @return bool Whether the $dateString was within the specified $timeInterval.
      */
-    public static function isWithinLast($date, $timeInterval)
+    public static function isWithinLast($date, $timeInterval): bool
     {
         if (is_numeric($timeInterval)) {
-            $timeInterval = $timeInterval.' days';
+            $timeInterval .= ' days';
         }
 
         $date = self::toDateTime($date);
@@ -494,9 +532,9 @@ class DateTimeHelper
      *
      * @param mixed $date The timestamp to check
      *
-     * @return boolean true if the specified date was in the past, false otherwise.
+     * @return bool true if the specified date was in the past, false otherwise.
      */
-    public static function isInThePast($date)
+    public static function isInThePast($date): bool
     {
         $date = self::toDateTime($date);
 
@@ -507,33 +545,104 @@ class DateTimeHelper
      * Takes a PHP time format string and converts it to seconds.
      * {@see http://www.php.net/manual/en/datetime.formats.time.php}
      *
-     * @param $timeFormatString
+     * @param string $timeFormatString
      *
-     * @return integer
+     * @return int|null
      */
-    public static function timeFormatToSeconds($timeFormatString)
+    public static function timeFormatToSeconds(string $timeFormatString)
     {
-        $interval = new DateInterval($timeFormatString);
+        $interval = new \DateInterval($timeFormatString);
 
-        return (int)$interval->toSeconds();
+        if ($interval === null) {
+            return null;
+        }
+
+        $seconds = (int)$interval->s;
+
+        if ($interval->i) {
+            $seconds += ((int)$interval->i * self::SECONDS_MINUTE);
+        }
+
+        if ($interval->h) {
+            $seconds += ((int)$interval->h * self::SECONDS_HOUR);
+        }
+
+        if ($interval->d) {
+            $seconds += ((int)$interval->d * self::SECONDS_DAY);
+        }
+
+        if ($interval->m) {
+            $seconds += ((int)$interval->m * self::SECONDS_MONTH);
+        }
+
+        if ($interval->y) {
+            $seconds += ((int)$interval->y * self::SECONDS_YEAR);
+        }
+
+        return (int)$seconds;
     }
 
     /**
      * Returns true if interval string is a valid interval.
      *
-     * @param $intervalString
+     * @param string $intervalString
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isValidIntervalString($intervalString)
+    public static function isValidIntervalString(string $intervalString): bool
     {
-        $interval = DateInterval::createFromDateString($intervalString);
+        $interval = \DateInterval::createFromDateString($intervalString);
 
-        if ($interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0) {
-            return true;
+        return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
+    }
+
+    /**
+     * Returns the interval in a human-friendly string.
+     *
+     * @param \DateInterval $dateInterval
+     * @param bool          $showSeconds
+     *
+     * @return string
+     */
+    public static function humanDurationFromInterval(\DateInterval $dateInterval, bool $showSeconds = true): string
+    {
+        $timeComponents = [];
+
+        if ($dateInterval->y) {
+            $timeComponents[] = $dateInterval->y.' '.($dateInterval->y > 1 ? Craft::t('app', 'years') : Craft::t('app', 'year'));
         }
 
-        return false;
+        if ($dateInterval->m) {
+            $timeComponents[] = $dateInterval->m.' '.($dateInterval->m > 1 ? Craft::t('app', 'months') : Craft::t('app', 'month'));
+        }
+
+        if ($dateInterval->d) {
+            $timeComponents[] = $dateInterval->d.' '.($dateInterval->d > 1 ? Craft::t('app', 'days') : Craft::t('app', 'day'));
+        }
+
+        if ($dateInterval->h) {
+            $timeComponents[] = $dateInterval->h.' '.($dateInterval->h > 1 ? Craft::t('app', 'hours') : Craft::t('app', 'hour'));
+        }
+
+        $minutes = $dateInterval->i;
+
+        if (!$showSeconds) {
+            if ($minutes && round($dateInterval->s / 60)) {
+                $minutes++;
+            } else if (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
+                return Craft::t('app', 'less than a minute');
+            }
+        }
+
+        if ($minutes) {
+            $timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('app', 'minutes') : Craft::t('app', 'minute'));
+        }
+
+        if ($showSeconds && $dateInterval->s) {
+            $timeComponents[] = $dateInterval->s.' '.($dateInterval->s > 1 ? Craft::t('app', 'seconds') : Craft::t('app', 'second'));
+        }
+
+        return implode(', ', $timeComponents);
     }
 
     // Private Methods
@@ -546,10 +655,10 @@ class DateTimeHelper
      *
      * @return array The translation pairs
      */
-    private static function _getDateTranslations($language)
+    private static function _getDateTranslations(string $language): array
     {
-        if (!isset(static::$_translationPairs[$language])) {
-            if (strncmp(Craft::$app->language, 'en', 2) === 0) {
+        if (!isset(self::$_translationPairs[$language])) {
+            if (strpos(Craft::$app->language, 'en') === 0) {
                 $sourceLocale = Craft::$app->getLocale();
             } else {
                 $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
@@ -560,7 +669,7 @@ class DateTimeHelper
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();
 
-            static::$_translationPairs[$language] = array_merge(
+            self::$_translationPairs[$language] = array_merge(
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
@@ -574,6 +683,6 @@ class DateTimeHelper
             );
         }
 
-        return static::$_translationPairs[$language];
+        return self::$_translationPairs[$language];
     }
 }

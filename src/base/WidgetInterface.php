@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
@@ -17,34 +17,32 @@ namespace craft\app\base;
  */
 interface WidgetInterface extends SavableComponentInterface
 {
-    // Public Methods
+    // Static
     // =========================================================================
 
     /**
-     * Performs any actions before a widget is saved.
+     * Returns the path to the widget’s SVG icon.
      *
-     * @return boolean Whether the widget should be saved
+     * @return string|null The path to the widget’s SVG icon
      */
-    public function beforeSave();
+    public static function iconPath();
 
     /**
-     * Performs any actions after a widget is saved.
+     * Returns the widget’s maximum colspan.
+     *
+     * @return int|null The widget’s maximum colspan, if it has one
      */
-    public function afterSave();
+    public static function maxColspan();
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * Returns the widget’s title.
      *
      * @return string The widget’s title.
      */
-    public function getTitle();
-
-    /**
-     * Returns the path to the widget’s SVG icon.
-     *
-     * @return string|null The path to the widget’s SVG icon, if it has one
-     */
-    public function getIconPath();
+    public function getTitle(): string;
 
     /**
      * Returns the widget's body HTML.
@@ -54,11 +52,4 @@ interface WidgetInterface extends SavableComponentInterface
      *                      to be selectable in the first place, use {@link isSelectable()}.)
      */
     public function getBodyHtml();
-
-    /**
-     * Returns the widget’s maximum colspan.
-     *
-     * @return integer|null The widget’s maximum colspan, if it has one
-     */
-    public function getMaxColspan();
 }

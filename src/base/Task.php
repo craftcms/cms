@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
 
@@ -40,23 +40,21 @@ abstract class Task extends SavableComponent implements TaskInterface
         return [
             [['id', 'currentStep', 'totalSteps'], 'number', 'integerOnly' => true],
             [['status'], 'in', 'range' => [self::STATUS_PENDING, self::STATUS_RUNNING, self::STATUS_ERROR]],
-            [['type'], 'required'],
-            [['type'], 'string', 'max' => 150],
         ];
     }
 
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): string
     {
-        return $this->description ?: $this->getDefaultDescription();
+        return $this->description ?: $this->defaultDescription();
     }
 
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         return 0;
     }
@@ -64,7 +62,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function getProgress()
+    public function getProgress(): float
     {
         if ($this->totalSteps !== null && $this->currentStep !== null) {
             return $this->currentStep / $this->totalSteps;
@@ -88,7 +86,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         return true;
     }
@@ -101,7 +99,7 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @return string The default task description
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return static::displayName();
     }
@@ -111,9 +109,9 @@ abstract class Task extends SavableComponent implements TaskInterface
      *
      * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return boolean
+     * @return bool
      */
-    protected function runSubTask($task)
+    protected function runSubTask($task): bool
     {
         $tasksService = Craft::$app->getTasks();
 

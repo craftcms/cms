@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\fields\BaseRelationField;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\fields\BaseRelationField;
 use yii\base\Component;
 
 /**
@@ -34,9 +34,9 @@ class Relations extends Component
      * @param array             $targetIds
      *
      * @throws \Exception
-     * @return boolean
+     * @return void
      */
-    public function saveRelations(BaseRelationField $field, ElementInterface $source, $targetIds)
+    public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {
         /** @var Element $source */
         if (!is_array($targetIds)) {
@@ -52,29 +52,26 @@ class Relations extends Component
             // Delete the existing relations
             $oldRelationConditions = [
                 'and',
-                'fieldId = :fieldId',
-                'sourceId = :sourceId'
-            ];
-            $oldRelationParams = [
-                ':fieldId' => $field->id,
-                ':sourceId' => $source->id
+                [
+                    'fieldId' => $field->id,
+                    'sourceId' => $source->id,
+                ]
             ];
 
             if ($field->localizeRelations) {
                 $oldRelationConditions[] = [
                     'or',
-                    'sourceSiteId is null',
-                    'sourceSiteId = :sourceSiteId'
+                    ['sourceSiteId' => null],
+                    ['sourceSiteId' => $source->siteId]
                 ];
-                $oldRelationParams[':sourceSiteId'] = $source->siteId;
             }
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)
+                ->delete('{{%relations}}', $oldRelationConditions)
                 ->execute();
 
             // Add the new ones
-            if ($targetIds) {
+            if (!empty($targetIds)) {
                 $values = [];
 
                 if ($field->localizeRelations) {

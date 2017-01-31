@@ -5,13 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Json;
-use craft\app\models\Section;
+use craft\base\Widget;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
+use craft\models\Section;
+use craft\web\assets\quickpost\QuickPostAsset;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -27,7 +28,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Quick Post');
     }
@@ -35,7 +36,41 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function populateModel($model, $config)
+    public static function iconPath()
+    {
+        return Craft::getAlias('@app/icons/newspaper.svg');
+    }
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var int|null The ID of the section that the widget should post to
+     */
+    public $section;
+
+    /**
+     * @var int|null The ID of the entry type that the widget should create
+     */
+    public $entryType;
+
+    /**
+     * @var int[]|null The IDs of the fields that the widget should show
+     */
+    public $fields;
+
+    /**
+     * @var
+     */
+    private $_section;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
     {
         // If we're saving the widget settings, all of the section-specific
         // attributes will be tucked away in a 'sections' array
@@ -49,34 +84,8 @@ class QuickPost extends Widget
             unset($config['sections']);
         }
 
-        parent::populateModel($model, $config);
+        parent::__construct($config);
     }
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var integer The ID of the section that the widget should post to
-     */
-    public $section;
-
-    /**
-     * @var integer The ID of the entry type that the widget should create
-     */
-    public $entryType;
-
-    /**
-     * @var integer[] The IDs of the fields that the widget should show
-     */
-    public $fields;
-
-    /**
-     * @var
-     */
-    private $_section;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -116,15 +125,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getIconPath()
-    {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle()
+    public function getTitle(): string
     {
         $section = $this->_getSection();
 
@@ -140,11 +141,13 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->registerTranslations('app', [
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(QuickPostAsset::class);
+        $view->registerTranslations('app', [
             'Entry saved.',
             'Couldn’t save entry.',
         ]);
-        Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
 
@@ -152,16 +155,16 @@ class QuickPost extends Widget
             return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
         }
 
-        $entryTypes = $section->getEntryTypes('id');
+        $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
-        if (!$entryTypes) {
+        if (empty($entryTypes)) {
             return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
             $entryTypeId = $this->entryType;
         } else {
-            $entryTypeId = ArrayHelper::getFirstKey($entryTypes);
+            $entryTypeId = ArrayHelper::firstKey($entryTypes);
         }
 
         $entryType = $entryTypes[$entryTypeId];
@@ -171,18 +174,18 @@ class QuickPost extends Widget
             'typeId' => $entryTypeId,
         ];
 
-        Craft::$app->getView()->startJsBuffer();
+        $view->startJsBuffer();
 
-        $html = Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/body',
+        $html = $view->renderTemplate('_components/widgets/QuickPost/body',
             [
                 'section' => $section,
                 'entryType' => $entryType,
                 'widget' => $this
             ]);
 
-        $fieldJs = Craft::$app->getView()->clearJsBuffer(false);
+        $fieldJs = $view->clearJsBuffer(false);
 
-        Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
+        $view->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.
             Json::encode($params).', '.
             "function() {\n".$fieldJs.

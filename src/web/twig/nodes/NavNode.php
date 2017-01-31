@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
 /**
  * Represents a nav node.
@@ -19,7 +19,7 @@ class NavNode extends \Twig_Node_For
     // =========================================================================
 
     /**
-     * @var NavItem_Node
+     * @var NavItem_Node|null
      */
     protected $navItemNode;
 
@@ -29,17 +29,7 @@ class NavNode extends \Twig_Node_For
     /**
      * @inheritdoc
      */
-    public function __construct(
-        \Twig_Node_Expression_AssignName $keyTarget,
-        \Twig_Node_Expression_AssignName $valueTarget,
-        \Twig_Node_Expression $seq,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $upperBody,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $lowerBody = null,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $indent = null,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $outdent = null,
-        $lineno,
-        $tag = null
-    )
+    public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_Node $upperBody, \Twig_Node $lowerBody = null, \Twig_Node $indent = null, \Twig_Node $outdent = null, $lineno, $tag = null)
     {
         $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
         $body = new \Twig_Node([$this->navItemNode, $upperBody]);

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
 
@@ -24,9 +24,9 @@ class Deprecator
     /**
      * Returns the total number of deprecation errors that have been logged.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalLogs()
+    public function getTotalLogs(): int
     {
         Craft::$app->getDeprecator()->log('craft.deprecator.getTotalLogs()', 'craft.deprecator.getTotalLogs() has been deprecated. Use craft.app.deprecator.totalLogs instead.');
 

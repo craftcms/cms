@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\PluginInterface;
-use craft\app\web\Controller;
+use craft\base\PluginInterface;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -41,7 +41,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionInstallPlugin()
+    public function actionInstallPlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -60,7 +60,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionUninstallPlugin()
+    public function actionUninstallPlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -79,7 +79,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionEnablePlugin()
+    public function actionEnablePlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -98,7 +98,7 @@ class PluginsController extends Controller
      *
      * @return Response
      */
-    public function actionDisablePlugin()
+    public function actionDisablePlugin(): Response
     {
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
@@ -115,20 +115,19 @@ class PluginsController extends Controller
     /**
      * Edits a plugin’s settings.
      *
-     * @param string               $pluginHandle The plugin’s handle
-     * @param PluginInterface|null $plugin       The plugin, if there were validation errors
+     * @param string               $pluginId The plugin’s module ID
+     * @param PluginInterface|null $plugin   The plugin, if there were validation errors
      *
      * @return string The plugin page HTML
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings($pluginHandle, PluginInterface $plugin = null)
+    public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null): string
     {
-        if ($plugin === null) {
-            $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-
-            if ($plugin === null) {
-                throw new NotFoundHttpException('Plugin not found');
-            }
+        if (
+            $plugin === null &&
+            ($plugin = Craft::$app->getPlugins()->getPluginByModuleId($pluginId)) === null
+        ) {
+            throw new NotFoundHttpException('Plugin not found');
         }
 
         return $plugin->getSettingsResponse();
@@ -151,19 +150,19 @@ class PluginsController extends Controller
             throw new NotFoundHttpException('Plugin not found');
         }
 
-        if (Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
+        if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the plugin back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'plugin' => $plugin
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 
-        // Send the plugin back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'plugin' => $plugin
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 }

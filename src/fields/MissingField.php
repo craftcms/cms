@@ -5,11 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
-use craft\app\base\Field;
-use craft\app\base\MissingComponentInterface;
-use craft\app\base\MissingComponentTrait;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
 
 /**
  * MissingField represents a field with an invalid class.
@@ -24,13 +25,13 @@ class MissingField extends Field implements MissingComponentInterface
 
     use MissingComponentTrait;
 
-    // Public Methods
+    // Static
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -41,7 +42,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return '<p class="error">'.$this->errorMessage.'</p>';
     }

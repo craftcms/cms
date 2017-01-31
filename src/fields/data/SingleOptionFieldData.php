@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
 /**
  * Single-select option field data class.
@@ -19,9 +19,9 @@ class SingleOptionFieldData extends OptionData
     // =========================================================================
 
     /**
-     * @var
+     * @var array
      */
-    private $_options;
+    private $_options = [];
 
     // Public Methods
     // =========================================================================
@@ -29,9 +29,9 @@ class SingleOptionFieldData extends OptionData
     /**
      * Returns the options.
      *
-     * @return array|null
+     * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->_options;
     }
@@ -43,7 +43,7 @@ class SingleOptionFieldData extends OptionData
      *
      * @return void
      */
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->_options = $options;
     }

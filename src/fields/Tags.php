@@ -5,13 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\Tag;
-use craft\app\models\TagGroup;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\Tag;
+use craft\models\TagGroup;
 
 /**
  * Tags represents a Tags field.
@@ -27,7 +28,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tags');
     }
@@ -35,7 +36,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         return Tag::class;
     }
@@ -43,27 +44,13 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add a tag');
     }
 
     // Properties
     // =========================================================================
-
-    /**
-     * Whether the field settings should allow multiple sources to be selected.
-     *
-     * @var boolean $allowMultipleSources
-     */
-    protected $allowMultipleSources = false;
-
-    /**
-     * Whether to allow the Limit setting.
-     *
-     * @var boolean $allowLimit
-     */
-    protected $allowLimit = false;
 
     /**
      * @var
@@ -76,8 +63,19 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function init()
     {
+        parent::init();
+        $this->allowMultipleSources = false;
+        $this->allowLimit = false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getInputHtml($value, ElementInterface $element = null): string
+    {
+        /** @var Element|null $element */
         if (!($value instanceof ElementQueryInterface)) {
             /** @var Element $class */
             $class = static::elementType();
@@ -95,9 +93,9 @@ class Tags extends BaseRelationField
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
-                    'targetSiteId' => $this->getTargetSiteId($element),
-                    'sourceElementId' => (!empty($element) ? $element->id : null),
-                    'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
+                    'targetSiteId' => $this->targetSiteId($element),
+                    'sourceElementId' => $element !== null ? $element->id : null,
+                    'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         } else {
             return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
@@ -116,7 +114,7 @@ class Tags extends BaseRelationField
     {
         $tagGroupId = $this->_getTagGroupId();
 
-        if ($tagGroupId) {
+        if ($tagGroupId !== false) {
             return Craft::$app->getTags()->getTagGroupById($tagGroupId);
         }
 
@@ -126,18 +124,18 @@ class Tags extends BaseRelationField
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return integer|false
+     * @return int|false
      */
     private function _getTagGroupId()
     {
-        if (!isset($this->_tagGroupId)) {
-            if (strncmp($this->source, 'taggroup:', 9) == 0) {
-                $this->_tagGroupId = (int)mb_substr($this->source, 9);
-            } else {
-                $this->_tagGroupId = false;
-            }
+        if ($this->_tagGroupId !== null) {
+            return $this->_tagGroupId;
         }
 
-        return $this->_tagGroupId;
+        if (!preg_match('/^taggroup:(\d+)$/', $this->source, $matches)) {
+            return $this->_tagGroupId = false;
+        }
+
+        return $this->_tagGroupId = (int)$matches[1];
     }
 }

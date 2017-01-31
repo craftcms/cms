@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\elements\Entry;
-use craft\app\models\EntryDraft;
-use craft\app\models\Section;
-use craft\app\web\Controller;
+use craft\elements\Entry;
+use craft\models\EntryDraft;
+use craft\models\Section;
+use craft\web\Controller;
 
 /**
  * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and
@@ -48,24 +48,23 @@ abstract class BaseEntriesController extends Controller
         $this->requirePermission('editEntries'.$permissionSuffix);
 
         // Is it a new entry?
-        if (!$entry->id) {
+        if ($entry->id === null) {
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {
-            switch ($entry::className()) {
-                case Entry::class: {
+            switch (get_class($entry)) {
+                case Entry::class:
                     // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
                     if (
                         $entry->authorId != $userSessionService->getIdentity()->id &&
-                        $entry->getSection()->type != Section::TYPE_SINGLE
+                        $entry->getSection()->type !== Section::TYPE_SINGLE
                     ) {
                         $this->requirePermission('editPeerEntries'.$permissionSuffix);
                     }
 
                     break;
-                }
 
-                case EntryDraft::class: {
+                case EntryDraft::class:
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
                     if ($entry->creatorId != $userSessionService->getIdentity()->id) {
@@ -73,7 +72,6 @@ abstract class BaseEntriesController extends Controller
                     }
 
                     break;
-                }
             }
         }
     }

@@ -5,17 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\dates\DateTime;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\i18n\Locale;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\i18n\Locale;
+use DateTime;
 use yii\db\Schema;
 
 /**
@@ -32,66 +33,63 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Date/Time');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['dateTime'])) {
-            switch ($config['dateTime']) {
-                case 'showBoth': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = true;
-
-                    break;
-                }
-                case 'showDate': {
-                    unset($config['dateTime']);
-                    $config['showDate'] = true;
-                    $config['showTime'] = false;
-
-                    break;
-                }
-                case 'showTime': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = false;
-
-                    break;
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var boolean Whether a datepicker should be shown as part of the input
+     * @var bool Whether a datepicker should be shown as part of the input
      */
     public $showDate = true;
 
     /**
-     * @var boolean Whether a timepicker should be shown as part of the input
+     * @var bool Whether a timepicker should be shown as part of the input
      */
     public $showTime = false;
 
     /**
-     * @var integer The number of minutes that the timepicker options should increment by
+     * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
 
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // dateTime => showDate + showTime
+        if (isset($config['dateTime'])) {
+            switch ($config['dateTime']) {
+                case 'showBoth':
+                    $config['showDate'] = true;
+                    $config['showTime'] = true;
+                    break;
+                case 'showDate':
+                    $config['showDate'] = true;
+                    $config['showTime'] = false;
+                    break;
+                case 'showTime':
+                    $config['showDate'] = false;
+                    $config['showTime'] = true;
+                    break;
+            }
+
+            unset($config['dateTime']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
@@ -117,7 +115,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_DATETIME;
     }
@@ -128,7 +126,7 @@ class Date extends Field implements PreviewableFieldInterface
     public function getSettingsHtml()
     {
         // If they are both selected or nothing is selected, the select showBoth.
-        if (($this->showDate && $this->showTime)) {
+        if ($this->showDate && $this->showTime) {
             $dateTimeValue = 'showBoth';
         } else if ($this->showDate) {
             $dateTimeValue = 'showDate';
@@ -165,7 +163,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         $variables = [
             'id' => Craft::$app->getView()->formatInputId($this->handle),
@@ -198,7 +196,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
             $formatter = Craft::$app->getFormatter();
@@ -213,7 +211,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;
@@ -230,7 +228,7 @@ class Date extends Field implements PreviewableFieldInterface
         if ($value !== null) {
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
         }
     }
 }

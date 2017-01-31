@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use creocoder\nestedsets\NestedSetsQueryBehavior;
 use yii\db\ActiveQuery;

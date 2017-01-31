@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\models\UserGroup;
-use craft\app\web\Controller;
+use craft\models\UserGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -41,7 +41,7 @@ class UserSettingsController extends Controller
     /**
      * Saves a user group.
      *
-     * @return Response|void
+     * @return Response|null
      * @throws NotFoundHttpException if the requested user group cannot be found
      */
     public function actionSaveGroup()
@@ -65,36 +65,35 @@ class UserSettingsController extends Controller
         $group->handle = $request->getBodyParam('handle');
 
         // Did it save?
-        if (Craft::$app->getUserGroups()->saveGroup($group)) {
-            // Save the new permissions
-            $permissions = $request->getBodyParam('permissions', []);
+        if (!Craft::$app->getUserGroups()->saveGroup($group)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
 
-            // See if there are any new permissions in here
-            if ($groupId && is_array($permissions)) {
-                foreach ($permissions as $permission) {
-                    if (!$group->can($permission)) {
-                        // Yep. This will require an elevated session
-                        $this->requireElevatedSession();
-                        break;
-                    }
-                }
-            }
+            // Send the group back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'group' => $group
+            ]);
 
-            Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
-
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
-
-            return $this->redirectToPostedUrl();
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
+        // Save the new permissions
+        $permissions = $request->getBodyParam('permissions', []);
 
-        // Send the group back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'group' => $group
-        ]);
+        // See if there are any new permissions in here
+        if ($groupId && is_array($permissions)) {
+            foreach ($permissions as $permission) {
+                if (!$group->can($permission)) {
+                    // Yep. This will require an elevated session
+                    $this->requireElevatedSession();
+                    break;
+                }
+            }
+        }
 
-        return null;
+        Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
+
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -102,7 +101,7 @@ class UserSettingsController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteGroup()
+    public function actionDeleteGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -122,26 +121,26 @@ class UserSettingsController extends Controller
     public function actionSaveUserSettings()
     {
         $this->requirePostRequest();
+        $settings = [];
 
         $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
         $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
         $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         $settings['photoVolumeId'] = Craft::$app->getRequest()->getBodyParam('photoVolumeId');
 
-        if (Craft::$app->getSystemSettings()->saveSettings('users', $settings)
-        ) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
+        if (!Craft::$app->getSystemSettings()->saveSettings('users', $settings)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the settings back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'settings' => $settings
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user settings.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
 
-        // Send the settings back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'settings' => $settings
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 }

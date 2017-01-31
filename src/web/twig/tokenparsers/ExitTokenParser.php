@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\ExitNode;
+use craft\web\twig\nodes\ExitNode;
 
 /**
  * Class ExitTokenParser
@@ -27,16 +27,15 @@ class ExitTokenParser extends \Twig_TokenParser
     {
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
+        $nodes = [];
 
         if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
-            $status = $this->parser->getExpressionParser()->parseExpression();
-        } else {
-            $status = null;
+            $nodes['status'] = $this->parser->getExpressionParser()->parseExpression();
         }
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new ExitNode(['status' => $status], [], $lineno, $this->getTag());
+        return new ExitNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

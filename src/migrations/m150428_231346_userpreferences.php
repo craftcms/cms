@@ -1,11 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\Json;
+use craft\helpers\MigrationHelper;
 
 /**
  * m150428_231346_userpreferences migration.
@@ -100,11 +100,13 @@ class m150428_231346_userpreferences extends Migration
     {
         $users = (new Query())
             ->select(['id', 'preferredLocale', 'weekStartDay'])
-            ->from($this->_usersTable)
+            ->from([$this->_usersTable])
             ->where([
-                'or',
-                'preferredLocale is not null',
-                'weekStartDay != \'0\''
+                'not',
+                [
+                    'preferredLocale' => null,
+                    'weekStartDay' => '0'
+                ]
             ])
             ->all($this->db);
 

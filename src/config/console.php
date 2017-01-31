@@ -2,10 +2,11 @@
 
 return [
     'components' => [
-        'request' => craft\app\console\Request::class,
-        'user' => craft\app\console\User::class,
+        'request' => craft\console\Request::class,
+        'user' => craft\console\User::class,
     ],
     'controllerMap' => [
-        'migrate' => craft\app\console\controllers\MigrateController::class,
-    ]
+        'migrate' => craft\console\controllers\MigrateController::class,
+    ],
+    'controllerNamespace' => 'craft\\console\\controllers',
 ];

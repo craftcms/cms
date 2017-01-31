@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
 use yii\web\Response;
@@ -28,11 +28,11 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionGetCustomizeSourcesModalData()
+    public function actionGetCustomizeSourcesModalData(): Response
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         // Get the source info
         $elementIndexesService = Craft::$app->getElementIndexes();
@@ -53,6 +53,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 ];
             }
         }
+        unset($source);
 
         // Get the available table attributes
         $availableTableAttributes = [];
@@ -75,11 +76,11 @@ class ElementIndexSettingsController extends BaseElementsController
      *
      * @return Response
      */
-    public function actionSaveCustomizeSourcesModalSettings()
+    public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $this->requireAdmin();
 
-        $elementType = $this->getElementType();
+        $elementType = $this->elementType();
 
         $request = Craft::$app->getRequest();
         $sourceOrder = $request->getBodyParam('sourceOrder', []);
@@ -98,6 +99,7 @@ class ElementIndexSettingsController extends BaseElementsController
         foreach ($sources as &$source) {
             $source['tableAttributes'] = array_filter($source['tableAttributes']);
         }
+        unset($source);
 
         $settings = [
             'sourceOrder' => $sourceOrder,

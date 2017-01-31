@@ -5,10 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
 
 /**
  * Class Info model.
@@ -18,39 +17,18 @@ use craft\app\validators\DateTimeValidator;
  */
 class Info extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        // Make sure $edition is going to be an integer
-        if (isset($config['edition'])) {
-            $config['edition'] = (int)$config['edition'];
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Version
+     * @var string|null Version
      */
-    public $version = '0';
-
-    /**
-     * @var integer Build
-     */
-    public $build = '0';
+    public $version;
 
     /**
      * @var string Schema version
@@ -58,14 +36,9 @@ class Info extends Model
     public $schemaVersion = '0';
 
     /**
-     * @var integer Edition
+     * @var int Edition
      */
-    public $edition = 0;
-
-    /**
-     * @var \DateTime Release date
-     */
-    public $releaseDate;
+    public $edition = \Craft::Personal;
 
     /**
      * @var string Timezone
@@ -73,37 +46,32 @@ class Info extends Model
     public $timezone = 'America/Los_Angeles';
 
     /**
-     * @var boolean On
+     * @var bool On
      */
     public $on = false;
 
     /**
-     * @var boolean Maintenance
+     * @var bool Maintenance
      */
     public $maintenance = false;
 
     /**
-     * @var string Track
-     */
-    public $track;
-
-    /**
-     * @var string Uid
+     * @var string|null Uid
      */
     public $uid;
 
     /**
      * @var string Field version
      */
-    public $fieldVersion;
+    public $fieldVersion = '000000000000';
 
     /**
-     * @var \DateTime Date updated
+     * @var \DateTime|null Date updated
      */
     public $dateUpdated;
 
     /**
-     * @var \DateTime Date created
+     * @var \DateTime|null Date created
      */
     public $dateCreated;
 
@@ -113,12 +81,14 @@ class Info extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function init()
     {
-        $names = parent::datetimeAttributes();
-        $names[] = 'releaseDate';
+        parent::init();
 
-        return $names;
+        // Make sure $edition is going to be an int
+        if (is_string($this->edition)) {
+            $this->edition = (int)$this->edition;
+        }
     }
 
     /**
@@ -127,58 +97,9 @@ class Info extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['build'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['edition'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['releaseDate'], DateTimeValidator::class],
-            [
-                [
-                    'version',
-                    'build',
-                    'schemaVersion',
-                    'edition',
-                    'releaseDate',
-                    'track'
-                ],
-                'required'
-            ],
+            [['id', 'edition'], 'number', 'integerOnly' => true],
+            [['version', 'schemaVersion', 'edition'], 'required'],
             [['timezone'], 'string', 'max' => 30],
-            [['track'], 'string', 'max' => 40],
-            [
-                [
-                    'id',
-                    'version',
-                    'build',
-                    'schemaVersion',
-                    'edition',
-                    'releaseDate',
-                    'timezone',
-                    'on',
-                    'maintenance',
-                    'track',
-                    'uid'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

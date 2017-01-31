@@ -5,11 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\mail\transportadaptors\TransportAdaptorInterface;
+use craft\base\Model;
 
 /**
  * MailSettings Model class.
@@ -23,27 +22,27 @@ class MailSettings extends Model
     // =========================================================================
 
     /**
-     * @var string The default email address that emails should be sent from
+     * @var string|null The default email address that emails should be sent from
      */
     public $fromEmail;
 
     /**
-     * @var string The default name that emails should be sent from
+     * @var string|null The default name that emails should be sent from
      */
     public $fromName;
 
     /**
-     * @var string The template that emails should be sent with
+     * @var string|null The template that emails should be sent with
      */
     public $template;
 
     /**
-     * @var TransportAdaptorInterface|string The transport type that should be used
+     * @var string|null The transport type that should be used
      */
     public $transportType;
 
     /**
-     * @var array The transport type’s settings
+     * @var array|null The transport type’s settings
      */
     public $transportSettings;
 
@@ -69,7 +68,7 @@ class MailSettings extends Model
     public function rules()
     {
         return [
-            [['fromEmail', 'fromName'], 'required'],
+            [['fromEmail', 'fromName', 'transportType'], 'required'],
             [['fromEmail'], 'email'],
         ];
     }

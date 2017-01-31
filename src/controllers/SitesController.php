@@ -5,22 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Field;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\elements\Category;
-use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroup_SiteSettings;
-use craft\app\models\Site;
-use craft\app\web\Controller;
-use yii\web\ForbiddenHttpException;
+use craft\helpers\Json;
+use craft\helpers\UrlHelper;
+use craft\models\Site;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
@@ -50,7 +43,7 @@ class SitesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionSettingsIndex()
+    public function actionSettingsIndex(): string
     {
         $allSites = Craft::$app->getSites()->getAllSites();
 
@@ -62,23 +55,25 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer $siteId The site’s ID, if editing an existing site
-     * @param Site    $site   The site being edited, if there were any validation errors
+     * @param int|null  $siteId The site’s ID, if editing an existing site
+     * @param Site|null $site   The site being edited, if there were any validation errors
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site cannot be found
      */
-    public function actionEditSite($siteId = null, Site $site = null)
+    public function actionEditSite(int $siteId = null, Site $site = null): string
     {
+        $variables = [];
+
         // Breadcrumbs
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => Url::getUrl('settings/sites')
+                'url' => UrlHelper::url('settings/sites')
             ]
         ];
 
@@ -142,20 +137,20 @@ class SitesController extends Controller
         $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
 
         // Save it
-        if (Craft::$app->getSites()->saveSite($site)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
+        if (!Craft::$app->getSites()->saveSite($site)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
 
-            return $this->redirectToPostedUrl($site);
+            // Send the site back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'site' => $site
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
 
-        // Send the site back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'site' => $site
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($site);
     }
 
     /**
@@ -163,7 +158,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionReorderSites()
+    public function actionReorderSites(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -179,7 +174,7 @@ class SitesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteSite()
+    public function actionDeleteSite(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

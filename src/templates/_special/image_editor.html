@@ -1,0 +1,40 @@
+<div class="tabs">
+    <ul>
+        <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
+        <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
+    </ul>
+</div>
+<div class="views">
+    <div class="rotate hidden" data-view="rotate" data-rotate="true">
+        <div class="rotate-buttons buttons">
+            <div class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</div>
+            <div class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</div>
+        </div>
+        <div class="flip-buttons buttons">
+            <div class="flip-vertical btn icon leftalign">{{ 'Flip Vertical'|t('app') }}</div>
+            <div class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</div>
+        </div>
+        <div class="buttons">
+            <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
+        </div>
+    </div>
+    <div class="crop hidden" data-view="crop" data-crop="true">
+        <div class="buttons">
+            <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
+        </div>
+
+    </div>
+</div>
+<div class="image-container">
+    <div class="image">
+        <canvas id="image-canvas">
+        </canvas>
+        <canvas id="cropping-canvas">
+        </canvas>
+    </div>
+    <div class="image-tools hidden">
+        <div data-view="transform" class="straightening">
+            <div id="slide-rule" class="slide-rule"></div>
+        </div>
+    </div>
+</div>

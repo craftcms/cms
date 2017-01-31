@@ -1,16 +1,15 @@
 {%- set class = [
-	'btn big',
-	(class is defined and class ? class : null)
+    'btn big',
+    (class is defined and class ? class : null)
 ]|filter|join(' ') %}
 
 <input class="{{ class }}" type="color" id="{{ id }}"
-	{%- if name is defined %} name="{{ name }}"{% endif %}
-	{%- if value is defined %} value="{{ value }}"{% endif %}
-	{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-	{%- if disabled is defined and disabled %} disabled {% endif %}>
+    {%- if name is defined %} name="{{ name }}"{% endif %}
+    {%- if value is defined %} value="{{ value }}"{% endif %}
+    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+    {%- if disabled is defined and disabled %} disabled {% endif %}>
 
-{%- registerjsresource "lib/colorpicker/js/colorpicker.js" -%}
-{%- registercssresource "lib/colorpicker/css/colorpicker.css" -%}
-{%- registerjs %}
-	new Craft.ColorPicker('{{ id|namespaceInputId }}');
-{% endregisterjs %}
+{%- do view.registerAssetBundle("craft\\web\\assets\\colorpicker\\ColorpickerAsset" -%}
+{%- js %}
+    new Craft.ColorPicker('{{ id|namespaceInputId }}');
+{% endjs %}

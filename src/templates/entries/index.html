@@ -1,10 +1,10 @@
 {% extends "_layouts/elementindex" %}
 {% set title = "Entries"|t('app') %}
-{% set elementType = 'craft\\app\\elements\\Entry' %}
+{% set elementType = 'craft\\elements\\Entry' %}
 
 
 {% if sectionHandle is defined %}
-	{% registerjs %}
-		window.defaultSectionHandle = '{{ sectionHandle }}';
-	{% endregisterjs %}
+    {% js %}
+        window.defaultSectionHandle = '{{ sectionHandle }}';
+    {% endjs %}
 {% endif %}

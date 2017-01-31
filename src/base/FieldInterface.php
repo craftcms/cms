@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\records\FieldGroup;
+use craft\elements\db\ElementQueryInterface;
+use craft\records\FieldGroup;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -26,9 +26,9 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns whether this field has a column in the content table.
      *
-     * @return boolean
+     * @return bool
      */
-    public static function hasContentColumn();
+    public static function hasContentColumn(): bool;
 
     // Public Methods
     // =========================================================================
@@ -44,7 +44,7 @@ interface FieldInterface extends SavableComponentInterface
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType();
+    public function getContentColumnType(): string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -53,7 +53,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The translation key
      */
-    public function getTranslationKey($element);
+    public function getTranslationKey(ElementInterface $element): string;
 
     /**
      * Returns the field’s input HTML.
@@ -65,8 +65,8 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * For more complex inputs, you might prefer to create a template, and render it via
-     * [[\craft\app\web\View::renderTemplate()]]. For example, the following code would render a template located at
-     * craft/plugins/myplugin/templates/_fieldinput.html, passing the $name and $value variables to it:
+     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * `path/to/myplugin/templates/_fieldinput.html`, passing the `$name` and `$value` variables to it:
      *
      * ```php
      * return Craft::$app->getView()->renderTemplate('myplugin/_fieldinput', [
@@ -76,7 +76,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\app\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
      * however your JavaScript code will be left untouched.
      *
      * For example, if getInputHtml() returns the following HTML:
@@ -106,11 +106,11 @@ interface FieldInterface extends SavableComponentInterface
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\app\web\View]] provides a couple handy methods that can help you deal with this:
+     * Thankfully, [[\craft\web\View]] provides a couple handy methods that can help you deal with this:
      *
-     * - [[\craft\app\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
-     * - [[\craft\app\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\app\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
+     * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
+     * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
+     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
@@ -144,15 +144,15 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * The same principles also apply if you’re including your JavaScript code with
-     * [[\craft\app\web\View::registerJs()]].
+     * [[\craft\web\View::registerJs()]].
      *
-     * @param mixed                 $value           The field’s value. This will either be the [[prepareValue() prepared value]],
+     * @param mixed                 $value           The field’s value. This will either be the [[normalizeValue() normalized value]],
      *                                               raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element         The element the field is associated with, if there is one
      *
      * @return string The input HTML.
      */
-    public function getInputHtml($value, $element);
+    public function getInputHtml($value, ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -164,24 +164,35 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, $element);
+    public function getStaticHtml($value, ElementInterface $element): string;
 
     /**
-     * Validates the field’s value.
+     * Returns the validation rules for an element with this field.
      *
-     * @param mixed            $value   The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
+     * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
+     * with one difference: you can skip the first argument (the attribute list).
      *
-     * @return string|string[]|null The error message(s) if there are any validation errors, or null if everything checks out.
-     *                              The messages can contain `{attribute}` and `{value}` tokens, which will be replaced with the
-     *                              field handle and value, respectively.
+     * Below are some examples:
+     *
+     * ```php
+     * [
+     *     // explicitly specify the field attribute
+     *     [$this->handle, 'string', 'min' => 3, 'max' => 12],
+     *     // skip the field attribute
+     *     ['string', 'min' => 3, 'max' => 12],
+     *     // you can only pass the validator class name/handle if not setting any params
+     *     'bool',
+     * ];
+     * ```
+     *
+     * @return array
      */
-    public function validateValue($value, $element);
+    public function getElementValidationRules(): array;
 
     /**
      * Returns the search keywords that should be associated with this field.
      *
-     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
      * @param mixed            $value   The field’s value
@@ -189,46 +200,34 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, $element);
+    public function getSearchKeywords($value, ElementInterface $element): string;
 
     /**
-     * Performs any actions before an element is saved.
-     *
-     * @param ElementInterface $element The element that is about to be saved
-     */
-    public function beforeElementSave(ElementInterface $element);
-
-    /**
-     * Performs any actions after the element has been saved.
-     *
-     * @param ElementInterface $element The element that was just saved
-     */
-    public function afterElementSave(ElementInterface $element);
-
-    /**
-     * Prepares the field’s value for use.
+     * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
-     * [[prepareValueForDb()]]’s $value arguments will be set to.
+     * [[serializeValue()]]’s $value arguments will be set to.
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return mixed The prepared field value
      */
-    public function prepareValue($value, $element);
+    public function normalizeValue($value, ElementInterface $element = null);
 
     /**
-     * Prepares the field’s value for DB storage.
+     * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
      *
-     * This method is called when the field’s value is about to be saved to the database.
+     * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     *
+     * @return mixed The serialized field value
      */
-    public function prepareValueForDb($value, $element);
+    public function serializeValue($value, ElementInterface $element = null);
 
     /**
      * Modifies an element query.
@@ -248,14 +247,55 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Sets whether the field is fresh.
      *
-     * @param boolean $isFresh Whether the field is fresh.
+     * @param bool|null $isFresh Whether the field is fresh.
      */
-    public function setIsFresh($isFresh);
+    public function setIsFresh(bool $isFresh = null);
 
     /**
      * Returns the field’s group.
      *
-     * @return FieldGroup
+     * @return FieldGroup|null
      */
     public function getGroup();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before an element is saved.
+     *
+     * @param ElementInterface $element The element that is about to be saved
+     * @param bool             $isNew   Whether the element is brand new
+     *
+     * @return bool Whether the element should be saved
+     */
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool;
+
+    /**
+     * Performs actions after the element has been saved.
+     *
+     * @param ElementInterface $element The element that was just saved
+     * @param bool             $isNew   Whether the element is brand new
+     *
+     * @return void
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew);
+
+    /**
+     * Performs actions before an element is deleted.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     *
+     * @return bool Whether the element should be deleted
+     */
+    public function beforeElementDelete(ElementInterface $element): bool;
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted
+     *
+     * @return void
+     */
+    public function afterElementDelete(ElementInterface $element);
 }

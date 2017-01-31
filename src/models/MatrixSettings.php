@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\fields\Matrix;
+use craft\base\Model;
+use craft\fields\Matrix;
 
 /**
  * MatrixSettings model class.
@@ -23,7 +23,7 @@ class MatrixSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer Max blocks
+     * @var int|null Max blocks
      */
     public $maxBlocks;
 
@@ -47,14 +47,7 @@ class MatrixSettings extends Model
     public function rules()
     {
         return [
-            [
-                ['maxBlocks'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['maxBlocks'], 'safe', 'on' => 'search'],
+            [['maxBlocks'], 'number', 'integerOnly' => true],
         ];
     }
 
@@ -83,48 +76,48 @@ class MatrixSettings extends Model
     /**
      * Returns the block types.
      *
-     * @return array
+     * @return MatrixBlockType[]
      */
-    public function getBlockTypes()
+    public function getBlockTypes(): array
     {
-        if (!isset($this->_blockTypes)) {
-            if (!empty($this->_matrixField->id)) {
-                $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->_matrixField->id);
-            } else {
-                $this->_blockTypes = [];
-            }
+        if ($this->_blockTypes !== null) {
+            return $this->_blockTypes;
         }
 
-        return $this->_blockTypes;
+        if (empty($this->_matrixField->id)) {
+            return [];
+        }
+
+        return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->_matrixField->id);
     }
 
     /**
      * Sets the block types.
      *
-     * @param array $blockTypes
+     * @param MatrixBlockType[] $blockTypes
      *
      * @return void
      */
-    public function setBlockTypes($blockTypes)
+    public function setBlockTypes(array $blockTypes)
     {
         $this->_blockTypes = $blockTypes;
     }
 
     /**
      * Validates all of the attributes for the current Model. Any attributes that fail validation will additionally get
-     * logged to the `craft/storage/logs` folder as a warning.
+     * logged to the `storage/logs/` folder as a warning.
      *
      * In addition, we validate the block type settings.
      *
-     * @param array|null $attributes
-     * @param boolean    $clearErrors
+     * @param array|null $attributeNames
+     * @param bool       $clearErrors
      *
-     * @return boolean
+     * @return bool
      */
-    public function validate($attributes = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         // Enforce $clearErrors without copying code if we don't have to
-        $validates = parent::validate($attributes, $clearErrors);
+        $validates = parent::validate($attributeNames, $clearErrors);
 
         if (!Craft::$app->getMatrix()->validateFieldSettings($this->getField())) {
             $validates = false;

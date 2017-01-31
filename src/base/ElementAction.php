@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\elements\db\ElementQueryInterface;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * ElementAction is the base class for classes representing element actions in terms of objects.
@@ -23,7 +23,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return false;
     }
@@ -42,7 +42,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return static::displayName();
     }
@@ -65,7 +65,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $criteria)
+    public function performAction(ElementQueryInterface $criteria): bool
     {
         return true;
     }
@@ -75,11 +75,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      */
     public function getMessage()
     {
-        if (isset($this->_message)) {
-            return $this->_message;
-        }
-
-        return null;
+        return $this->_message;
     }
 
     // Protected Methods
@@ -88,11 +84,11 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * Sets the message that should be displayed to the user after the action is performed.
      *
-     * @param array $message The message that should be displayed to the user after the action is performed.
+     * @param string $message The message that should be displayed to the user after the action is performed.
      *
      * @return void
      */
-    protected function setMessage($message)
+    protected function setMessage(string $message)
     {
         $this->_message = $message;
     }

@@ -1,16 +1,16 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.radioGroupField({
-	id: 'dateTime',
-	name: 'dateTime',
-	options: options,
-	value: value
+    id: 'dateTime',
+    name: 'dateTime',
+    options: options,
+    value: value
 }) }}
 
 {{ forms.selectField({
-	label: "Minute Increment"|t('app'),
-	id: 'minuteIncrement',
-	name: 'minuteIncrement',
-	options: incrementOptions,
-	value: field.minuteIncrement ? field.minuteIncrement : 30,
+    label: "Minute Increment"|t('app'),
+    id: 'minuteIncrement',
+    name: 'minuteIncrement',
+    options: incrementOptions,
+    value: field.minuteIncrement ? field.minuteIncrement : 30,
 }) }}

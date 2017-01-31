@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Class FieldLayoutField record.
  *
- * @property integer        $id        ID
- * @property integer        $layoutId  Layout ID
- * @property integer        $tabId     Tab ID
- * @property integer        $fieldId   Field ID
- * @property boolean        $required  Required
+ * @property int            $id        ID
+ * @property int            $layoutId  Layout ID
+ * @property int            $tabId     Tab ID
+ * @property int            $fieldId   Field ID
+ * @property bool           $required  Required
  * @property string         $sortOrder Sort order
  * @property FieldLayout    $layout    Layout
  * @property FieldLayoutTab $tab       Tab
@@ -37,11 +37,7 @@ class FieldLayoutField extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['layoutId'],
-                'unique',
-                'targetAttribute' => ['layoutId', 'fieldId']
-            ],
+            [['layoutId'], 'unique', 'targetAttribute' => ['layoutId', 'fieldId']],
         ];
     }
 
@@ -50,7 +46,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fieldlayoutfields}}';
     }
@@ -60,7 +56,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLayout()
+    public function getLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'layoutId']);
     }
@@ -70,7 +66,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getTab()
+    public function getTab(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayoutTab::class, ['id' => 'tabId']);
     }
@@ -80,7 +76,7 @@ class FieldLayoutField extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField()
+    public function getField(): ActiveQueryInterface
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }

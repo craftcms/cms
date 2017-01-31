@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\errors;
+namespace craft\errors;
 
-use craft\app\base\Model;
+use craft\base\Model;
 use yii\base\Exception;
 
 /**
@@ -24,9 +24,9 @@ class ValidationException extends Exception
 {
 
     /**
-     * @var Model
+     * @var Model|null
      */
-    private $_model = null;
+    private $_model;
 
     /**
      * Set the model that failed the validation.
@@ -45,7 +45,7 @@ class ValidationException extends Exception
      *
      * @return Model
      */
-    public function getModel()
+    public function getModel(): Model
     {
         return $this->_model;
     }

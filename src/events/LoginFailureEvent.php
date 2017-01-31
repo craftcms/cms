@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\User;
+use craft\elements\User;
+use yii\base\Event;
 
 /**
  * LoginFailureEvent class.
@@ -15,7 +16,7 @@ use craft\app\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class LoginFailureEvent extends \yii\base\Event
+class LoginFailureEvent extends Event
 {
     // Properties
     // =========================================================================

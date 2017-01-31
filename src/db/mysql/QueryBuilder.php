@@ -5,12 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\db\mysql;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\services\Config;
-use yii\base\Exception;
+use craft\db\Connection;
+use craft\services\Config;
 use yii\db\Expression;
 
 /**
@@ -26,13 +25,13 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     /**
      * @inheritdoc
      *
-     * @param string $table   the name of the table to be created. The name will be properly quoted by the method.
-     * @param array  $columns the columns (name => definition) in the new table.
-     * @param string $options additional SQL fragment that will be appended to the generated SQL.
+     * @param string      $table   the name of the table to be created. The name will be properly quoted by the method.
+     * @param array       $columns the columns (name => definition) in the new table.
+     * @param string|null $options additional SQL fragment that will be appended to the generated SQL.
      *
      * @return string the SQL statement for creating a new DB table.
      */
-    public function createTable($table, $columns, $options = null)
+    public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
         if ($options === null || strpos($options, 'ENGINE=') === false) {
@@ -42,11 +41,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         // Use the default charset
         if (strpos($options, 'DEFAULT CHARSET=') === false) {
             $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
-        }
-
-        // Use the default collation
-        if (strpos($options, 'COLLATE=') === false) {
-            $options .= ' COLLATE='.Craft::$app->getConfig()->get('collation', Config::CATEGORY_DB);
         }
 
         return parent::createTable($table, $columns, $options);
@@ -59,107 +53,9 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for dropping a DB table.
      */
-    public function dropTableIfExists($table)
+    public function dropTableIfExists(string $table): string
     {
         return 'DROP TABLE IF EXISTS '.$this->db->quoteTableName($table);
-    }
-
-    /**
-     * Builds a SQL statement for adding a new DB column before all other columns in the table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' FIRST';
-    }
-
-    /**
-     * Builds a SQL statement for adding a new DB column after another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $after  The name of the column that the new column should be placed after.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnAfter($table, $column, $type, $after)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' AFTER '.$this->db->quoteColumnName($after);
-    }
-
-    /**
-     * Builds a SQL statement for adding a new DB column before another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $before The name of the column that the new column should be placed before.
-     *
-     * @return string The SQL statement for adding a new column.
-     * @throws Exception If the $before column doesn't exist.
-     */
-    public function addColumnBefore($table, $column, $type, $before)
-    {
-        $tableInfo = $this->db->getTableSchema($table, true);
-        $columns = array_keys($tableInfo->columns);
-        $beforeIndex = array_search($before, $columns);
-
-        if ($beforeIndex === false) {
-            throw new Exception('A "'.$before.'" columns doesn’t exist on `'.$table.'`.');
-        }
-
-        if ($beforeIndex === 0) {
-            return $this->addColumnFirst($table, $column, $type);
-        }
-
-        $after = $columns[$beforeIndex - 1];
-
-        return $this->addColumnAfter($table, $column, $type, $after);
-    }
-
-    /**
-     * Builds a SQL statement for changing the definition of a column.
-     *
-     * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
-     * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
-     *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
-     *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
-     *                             will become 'varchar(255) not null'.
-     * @param string|null $newName The new column name, if any.
-     * @param string|null $after   The column that this column should be placed after, if it should be moved.
-     *
-     * @return string The SQL statement for changing the definition of a column.
-     */
-    public function alterColumn($table, $column, $type, $newName = null, $after = null)
-    {
-        if (!$newName) {
-            $newName = $column;
-        }
-
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).' CHANGE '.
-        $this->db->quoteColumnName($column).' '.
-        $this->db->quoteColumnName($newName).' '.
-        $this->getColumnType($type).
-        ($after ? ' AFTER '.$this->db->quoteColumnName($after) : '');
     }
 
     /**
@@ -176,7 +72,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, &$params)
+    public function upsert(string $table, array $keyColumns, array $updateColumns, array &$params): string
     {
         $schema = $this->db->getSchema();
 
@@ -202,7 +98,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
                     $params[$n] = $v;
                 }
             } else {
-                $phName = static::PARAM_PREFIX.count($params);
+                $phName = self::PARAM_PREFIX.count($params);
                 $placeholder = $phName;
                 $params[$phName] = !is_array($value) && isset($columnSchemas[$name]) ? $columnSchemas[$name]->dbTypecast($value) : $value;
             }
@@ -216,36 +112,39 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         return 'INSERT INTO '.$schema->quoteTableName($table).
-        ' ('.implode(', ', $names).') VALUES ('.
-        implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
-        implode(', ', $updates);
+            ' ('.implode(', ', $names).') VALUES ('.
+            implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
+            implode(', ', $updates);
     }
 
     /**
      * Builds a SQL statement for replacing some text with other text in a given table column.
      *
-     * @param string $table   The table to be updated.
-     * @param string $column  The column to be searched.
-     * @param string $find    The text to be searched for.
-     * @param string $replace The replacement text.
-     * @param array  $params  The binding parameters that will be generated by this method.
-     *                        They should be bound to the DB command later.
+     * @param string       $table     The table to be updated.
+     * @param string       $column    The column to be searched.
+     * @param string       $find      The text to be searched for.
+     * @param string       $replace   The replacement text.
+     * @param array|string $condition the condition that will be put in the WHERE part. Please
+     *                                refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params    The binding parameters that will be generated by this method.
+     *                                They should be bound to the DB command later.
      *
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace($table, $column, $find, $replace, &$params)
+    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
     {
-        $schema = $this->db->getSchema();
-        $column = $schema->quoteColumnName($column);
+        $column = $this->db->quoteColumnName($column);
 
-        $findPhName = static::PARAM_PREFIX.count($params);
+        $findPhName = self::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
 
-        $replacePhName = static::PARAM_PREFIX.count($params);
+        $replacePhName = self::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        return 'UPDATE '.$schema->quoteTableName($table).
-        " SET $column = REPLACE($column, $findPhName, $replacePhName)";
+        $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
+        $where = $this->buildWhere($condition, $params);
+
+        return $where === '' ? $sql : $sql.' '.$where;
     }
 
     /**
@@ -256,15 +155,14 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL expression.
      */
-    public function fixedOrder($column, $values)
+    public function fixedOrder(string $column, array $values): string
     {
-        $schema = $this->db->getSchema();
-
-        foreach ($values as $i => $value) {
-            $values[$i] = $schema->quoteValue($value);
+        $sql = 'FIELD('.$this->db->quoteColumnName($column);
+        foreach ($values as $value) {
+            $sql .= ','.$this->db->quoteValue($value);
         }
+        $sql .= ')';
 
-        return 'FIELD('.$this->db->quoteColumnName($column).', '.
-        implode(', ', $values).')';
+        return $sql;
     }
 }

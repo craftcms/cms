@@ -1,9 +1,14 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
+use craft\db\Migration;
+use craft\mail\Mailer;
+use craft\mail\transportadapters\Gmail;
+use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
+use craft\mail\transportadapters\Smtp;
 
 /**
  * m150617_213829_update_email_settings migration.
@@ -26,38 +31,37 @@ class m150617_213829_update_email_settings extends Migration
             $settings = [
                 'fromEmail' => $oldSettings['emailAddress'],
                 'fromName' => $oldSettings['senderName'],
-                'template' => isset($oldSettings['template']) ? $oldSettings['template'] : null,
+                'template' => $oldSettings['template'] ?? null,
             ];
 
             // Start assembling the Mailer config
             $mailerConfig = [
-                'class' => 'craft\app\mail\Mailer',
+                'class' => Mailer::class,
                 'from' => [$settings['fromEmail'] => $settings['fromName']],
                 'template' => $settings['template'],
             ];
 
             // Protocol-specific stuff
             switch ($oldSettings['protocol']) {
-                case 'sendmail': {
-                    $settings['transportType'] = 'craft\app\mail\transportadaptors\Sendmail';
+                case 'sendmail':
+                    $settings['transportType'] = Sendmail::class;
                     $mailerConfig['transport'] = [
-                        'class' => 'Swift_SendmailTransport'
+                        'class' => \Swift_SendmailTransport::class
                     ];
                     break;
-                }
-                case 'smtp': {
-                    $settings['transportType'] = 'craft\app\mail\transportadaptors\Smtp';
+                case 'smtp':
+                    $settings['transportType'] = Smtp::class;
                     $settings['transportSettings'] = [
-                        'host' => isset($oldSettings['host']) ? $oldSettings['host'] : null,
-                        'port' => isset($oldSettings['port']) ? $oldSettings['port'] : null,
-                        'useAuthentication' => isset($oldSettings['smtpAuth']) ? $oldSettings['smtpAuth'] : false,
-                        'username' => isset($oldSettings['username']) ? $oldSettings['username'] : null,
-                        'password' => isset($oldSettings['password']) ? $oldSettings['password'] : null,
-                        'encryptionMethod' => isset($oldSettings['smtpSecureTransportType']) && $oldSettings['smtpSecureTransportType'] != 'none' ? $oldSettings['smtpSecureTransportType'] : null,
-                        'timeout' => isset($oldSettings['timeout']) ? $oldSettings['timeout'] : 10,
+                        'host' => $oldSettings['host'] ?? null,
+                        'port' => $oldSettings['port'] ?? null,
+                        'useAuthentication' => $oldSettings['smtpAuth'] ?? false,
+                        'username' => $oldSettings['username'] ?? null,
+                        'password' => $oldSettings['password'] ?? null,
+                        'encryptionMethod' => isset($oldSettings['smtpSecureTransportType']) && $oldSettings['smtpSecureTransportType'] !== 'none' ? $oldSettings['smtpSecureTransportType'] : null,
+                        'timeout' => $oldSettings['timeout'] ?? 10,
                     ];
                     $mailerConfig['transport'] = [
-                        'class' => 'Swift_SmtpTransport',
+                        'class' => \Swift_SmtpTransport::class,
                         'host' => $settings['transportSettings']['host'],
                         'port' => $settings['transportSettings']['port'],
                         'timeout' => $settings['transportSettings']['timeout'],
@@ -70,16 +74,15 @@ class m150617_213829_update_email_settings extends Migration
                         $mailerConfig['encryption'] = $settings['transportSettings']['encryptionMethod'];
                     }
                     break;
-                }
-                case 'gmail': {
-                    $settings['transportType'] = 'craft\app\mail\transportadaptors\Gmail';
+                case 'gmail':
+                    $settings['transportType'] = Gmail::class;
                     $settings['transportSettings'] = [
-                        'username' => isset($oldSettings['username']) ? $oldSettings['username'] : null,
-                        'password' => isset($oldSettings['password']) ? $oldSettings['password'] : null,
-                        'timeout' => isset($oldSettings['timeout']) ? $oldSettings['timeout'] : 10,
+                        'username' => $oldSettings['username'] ?? null,
+                        'password' => $oldSettings['password'] ?? null,
+                        'timeout' => $oldSettings['timeout'] ?? 10,
                     ];
                     $mailerConfig['transport'] = [
-                        'class' => 'Swift_SmtpTransport',
+                        'class' => \Swift_SmtpTransport::class,
                         'host' => 'smtp.gmail.com',
                         'port' => 465,
                         'encryption' => 'ssl',
@@ -88,13 +91,11 @@ class m150617_213829_update_email_settings extends Migration
                         'timeout' => $settings['transportSettings']['timeout'],
                     ];
                     break;
-                }
-                default: {
-                    $settings['transportType'] = 'craft\app\mail\transportadaptors\Php';
+                default:
+                    $settings['transportType'] = Php::class;
                     $mailerConfig['transport'] = [
-                        'class' => 'Swift_MailTransport'
+                        'class' => \Swift_MailTransport::class
                     ];
-                }
             }
 
             // Save the new settings

@@ -5,17 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\helpers\Db;
-use craft\app\helpers\Html;
-use craft\app\helpers\StringHelper;
-use craft\app\records\Field as FieldRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\FieldElementEvent;
+use craft\helpers\Db;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
+use craft\records\Field as FieldRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -36,6 +37,36 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Constants
     // =========================================================================
 
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is saved
+     *
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
+     */
+    const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is saved
+     */
+    const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
+
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is deleted
+     *
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
+     */
+    const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is deleted
+     */
+    const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
+
+    // Translation methods
+    // -------------------------------------------------------------------------
+
     const TRANSLATION_METHOD_NONE = 'none';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_SITE = 'site';
@@ -47,7 +78,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return true;
     }
@@ -56,7 +87,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * @var boolean Whether the field is fresh.
+     * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
@@ -65,12 +96,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Public Methods
     // =========================================================================
 
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     /**
      * Use the translated field name as the string representation.
      *
      * @return string
      */
-    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -85,14 +116,13 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
-        // TODO: MySQL specific
-        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+        // Make sure the column name is under the databases maximum column length allowed.
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
         $rules = [
             [['name'], 'string', 'max' => 255],
-            [['type'], 'string', 'max' => 150],
             [['handle'], 'string', 'max' => $maxHandleLength],
-            [['name', 'handle', 'context', 'type', 'translationMethod'], 'required'],
+            [['name', 'handle', 'translationMethod'], 'required'],
             [['groupId'], 'number', 'integerOnly' => true],
             [
                 ['translationMethod'],
@@ -152,11 +182,11 @@ abstract class Field extends SavableComponent implements FieldInterface
         ];
 
         // Only validate the ID if it's not a new field
-        if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
+        if ($this->id !== null && strpos($this->id, 'new') !== 0) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
-        if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             $rules[] = [['translationKeyFormat'], 'required'];
         }
 
@@ -166,7 +196,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;
     }
@@ -174,7 +204,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getTranslationKey($element)
+    public function getTranslationKey(ElementInterface $element): string
     {
         /** @var Element $element */
         switch ($this->translationMethod) {
@@ -192,21 +222,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element)
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element)
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         return $value;
     }
@@ -214,7 +230,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
             [
@@ -226,7 +242,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
         Craft::$app->getView()->startJsBuffer();
@@ -240,19 +256,21 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules(): array
     {
-        if ($this->required && $this->isValueEmpty($value, $element)) {
-            return [Craft::t('yii', '{attribute} cannot be blank.')];
+        $rules = [];
+
+        if ($this->required) {
+            $rules[] = 'required';
         }
 
-        return [];
+        return $rules;
     }
 
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
     }
@@ -265,7 +283,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         $value = (string)$value;
 
@@ -275,7 +293,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, ElementInterface $element = null)
     {
         return Db::prepareValueForDb($value);
     }
@@ -294,7 +312,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
         }
 
         return null;
@@ -303,7 +321,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function setIsFresh($isFresh)
+    public function setIsFresh(bool $isFresh = null)
     {
         $this->_isFresh = $isFresh;
     }
@@ -316,6 +334,61 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
+    {
+        // Trigger a 'beforeElementSave' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew)
+    {
+        // Trigger an 'afterElementSave' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element): bool
+    {
+        // Trigger a 'beforeElementDelete' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDelete(ElementInterface $element)
+    {
+        // Trigger an 'afterElementDelete' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+            'element' => $element,
+        ]));
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -325,54 +398,33 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed            $value   The field’s value
      * @param ElementInterface $element The element the field is associated with, if there is one
      *
-     * @return boolean Whether the value should be considered "empty"
+     * @return bool Whether the value should be considered "empty"
      */
-    protected function isValueEmpty($value, $element)
+    protected function isValueEmpty($value, ElementInterface $element): bool
     {
         return empty($value);
     }
 
     /**
-     * Returns the location in POST that this field's content was pulled from.
+     * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with
      *
-     * @return string|null
+     * @return string|null The field’s param name on the request
      */
-    protected function getContentPostLocation($element)
+    protected function requestParamName(ElementInterface $element)
     {
-        if ($element) {
-            $elementContentPostLocation = $element->getContentPostLocation();
-
-            if ($elementContentPostLocation) {
-                return $elementContentPostLocation.'.'.$this->handle;
-            }
+        if (!$element) {
+            return null;
         }
 
-        return null;
-    }
+        $namespace = $element->getFieldParamNamespace();
 
-    /**
-     * Returns this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     *
-     * @return mixed The field’s value
-     */
-    protected function getElementValue(ElementInterface $element)
-    {
-        return $element->getFieldValue($this->handle);
-    }
+        if (!$namespace === null) {
+            return null;
+        }
 
-    /**
-     * Updates this field’s value on a given element.
-     *
-     * @param ElementInterface $element The element
-     * @param mixed            $value   The field’s new value
-     */
-    protected function setElementValue(ElementInterface $element, $value)
-    {
-        $element->setFieldValue($this->handle, $value);
+        return ($namespace ? $namespace.'.' : '').$this->handle;
     }
 
     /**
@@ -380,18 +432,18 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @param ElementInterface|null $element
      *
-     * @return boolean
+     * @return bool
      */
-    protected function isFresh($element)
+    protected function isFresh(ElementInterface $element = null): bool
     {
-        if (!isset($this->_isFresh)) {
-            if ($element) {
-                $this->_isFresh = $element->getHasFreshContent();
-            } else {
-                $this->_isFresh = true;
-            }
+        if ($this->_isFresh !== null) {
+            return $this->_isFresh;
         }
 
-        return $this->_isFresh;
+        if ($element) {
+            return $this->_isFresh = $element->getHasFreshContent();
+        }
+
+        return true;
     }
 }

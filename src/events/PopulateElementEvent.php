@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Element event class.
@@ -19,7 +19,7 @@ class PopulateElementEvent extends ElementEvent
     // =========================================================================
 
     /**
-     * @var array The element query’s result for this element.
+     * @var array|null The element query’s result for this element.
      */
     public $row;
 }

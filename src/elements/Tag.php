@@ -5,13 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\TagQuery;
-use craft\app\models\TagGroup;
+use craft\base\Element;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\TagQuery;
+use craft\models\TagGroup;
+use craft\records\Tag as TagRecord;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Tag represents a tag element.
@@ -27,7 +30,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Tag');
     }
@@ -35,7 +38,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -43,7 +46,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -51,7 +54,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -61,7 +64,7 @@ class Tag extends Element
      *
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new TagQuery(get_called_class());
     }
@@ -69,14 +72,13 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources(string $context = null): array
     {
         $sources = [];
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
-            $key = 'taggroup:'.$tagGroup->id;
-
-            $sources[$key] = [
+            $sources[] = [
+                'key' => 'taggroup:'.$tagGroup->id,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];
@@ -85,46 +87,11 @@ class Tag extends Element
         return $sources;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Tag $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'first' => true,
-                    'autofocus' => true,
-                    'required' => true
-                ]
-            ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Tag $element */
-        return Craft::$app->getTags()->saveTag($element);
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var integer Group ID
+     * @var int|null Group ID
      */
     public $groupId;
 
@@ -145,7 +112,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return true;
     }
@@ -167,32 +134,73 @@ class Tag extends Element
     /**
      * Returns the tag's group.
      *
-     * @return TagGroup|null
+     * @return TagGroup
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
     public function getGroup()
     {
-        if ($this->groupId) {
-            return Craft::$app->getTags()->getTagGroupById($this->groupId);
+        if ($this->groupId === null) {
+            throw new InvalidConfigException('Tag is missing its group ID');
         }
 
-        return null;
+        if (($group = Craft::$app->getTags()->getTagGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid tag group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
-    // Deprecated Methods
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
-     * Returns the tag's title.
-     *
-     * @deprecated Deprecated in 2.3. Use [[$title]] instead.
-     * @return string
-     *
-     * @todo       Remove this method in Craft 4.
+     * @inheritdoc
      */
-    public function getName()
+    public function getEditorHtml(): string
     {
-        Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'first' => true,
+                'autofocus' => true,
+                'required' => true
+            ]
+        ]);
 
-        return $this->title;
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave(bool $isNew)
+    {
+        // Get the tag record
+        if (!$isNew) {
+            $record = TagRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid tag ID: '.$this->id);
+            }
+        } else {
+            $record = new TagRecord();
+            $record->id = $this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 }

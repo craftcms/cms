@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
+use craft\db\Migration;
+use craft\db\MigrationManager;
+use craft\i18n\PhpMessageSource;
+use craft\web\Controller;
 use yii\base\Module;
 
 /**
@@ -29,30 +29,14 @@ class Plugin extends Module implements PluginInterface
 
     use PluginTrait;
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function hasCpSection()
-    {
-        return false;
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var Model|boolean The model used to store the plugin’s settings
+     * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettingsModel()
      */
     private $_settingsModel;
-
-    /**
-     * @var string The plugin’s base path
-     */
-    private $_basePath;
 
     // Public Methods
     // =========================================================================
@@ -66,24 +50,16 @@ class Plugin extends Module implements PluginInterface
 
         // Set up a translation message source for the plugin
         $i18n = Craft::$app->getI18n();
-        $handle = $this->getHandle();
 
-        if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
-            $i18n->translations[$handle] = [
-                'class' => \craft\app\i18n\PhpMessageSource::class,
+        /** @noinspection UnSafeIsSetOverArrayInspection */
+        if (!isset($i18n->translations[$this->handle]) && !isset($i18n->translations[$this->handle.'*'])) {
+            $i18n->translations[$this->handle] = [
+                'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => "@plugins/$handle/translations",
+                'basePath' => "@plugins/{$this->handle}/translations",
                 'allowOverrides' => true,
             ];
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getHandle()
-    {
-        return $this->id;
     }
 
     /**
@@ -100,10 +76,8 @@ class Plugin extends Module implements PluginInterface
         // Run the install migration, if there is one
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($migrator->migrateUp($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $migrator->migrateUp($migration) === false) {
+            return false;
         }
 
         // Mark all existing migrations as applied
@@ -119,7 +93,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update($fromVersion)
+    public function update(string $fromVersion)
     {
         if ($this->beforeUpdate() === false) {
             return false;
@@ -145,10 +119,8 @@ class Plugin extends Module implements PluginInterface
 
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($this->getMigrator()->migrateDown($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
+            return false;
         }
 
         $this->afterUninstall();
@@ -180,11 +152,10 @@ class Plugin extends Module implements PluginInterface
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
-        return $controller->renderTemplate('settings/plugins/_settings',
-            [
-                'plugin' => $this,
-                'settingsHtml' => $this->getSettingsHtml()
-            ]);
+        return $controller->renderTemplate('settings/plugins/_settings', [
+            'plugin' => $this,
+            'settingsHtml' => $this->settingsHtml()
+        ]);
     }
 
     /**
@@ -192,65 +163,18 @@ class Plugin extends Module implements PluginInterface
      *
      * @return MigrationManager The plugin’s migration manager
      */
-    public function getMigrator()
+    public function getMigrator(): MigrationManager
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
     /**
      * @inheritdoc
      */
-    public function getVariableDefinition()
+    public function defineTemplateComponent()
     {
         return null;
-    }
-
-    /**
-     * Returns the root directory of the module.
-     * It defaults to the directory containing the module class file.
-     *
-     * @return string the root directory of the module.
-     */
-    public function getBasePath()
-    {
-        if ($this->_basePath === null) {
-            $this->_basePath = Craft::$app->getPath()->getPluginsPath().'/'.$this->id;
-        }
-
-        return $this->_basePath;
-    }
-
-    // Component Registration
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the plugin’s available field types.
-     *
-     * @return FieldInterface[]|null
-     */
-    public function getFieldTypes()
-    {
-        return $this->getClassesInSubpath('fields');
-    }
-
-    /**
-     * Returns the plugin’s available widget types.
-     *
-     * @return WidgetInterface[]|null
-     */
-    public function getWidgetTypes()
-    {
-        return $this->getClassesInSubpath('widgets');
-    }
-
-    /**
-     * Returns the plugin’s available volume types.
-     *
-     * @return VolumeInterface[]|null
-     */
-    public function getVolumeTypes()
-    {
-        return $this->getClassesInSubpath('volumes');
     }
 
     // Protected Methods
@@ -265,65 +189,64 @@ class Plugin extends Module implements PluginInterface
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.'/Install.php';
+        $path = $migrator->migrationPath.DIRECTORY_SEPARATOR.'Install.php';
 
-        if (Io::fileExists($path)) {
-            require_once($path);
-
-            $class = $migrator->migrationNamespace.'\\Install';
-
-            return new $class;
+        if (!is_file($path)) {
+            return null;
         }
 
-        return null;
+        require_once $path;
+        $class = $migrator->migrationNamespace.'\\Install';
+
+        return new $class;
     }
 
     /**
-     * Performs any actions before the plugin is installed.
+     * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall()
+    protected function beforeInstall(): bool
     {
         return true;
     }
 
     /**
-     * Performs any actions after the plugin is installed.
+     * Performs actions after the plugin is installed.
      */
     protected function afterInstall()
     {
     }
 
     /**
-     * Performs any actions before the plugin is updated.
+     * Performs actions before the plugin is updated.
      *
-     * @return boolean Whether the plugin should be updated
+     * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate()
+    protected function beforeUpdate(): bool
     {
         return true;
     }
 
     /**
-     * Performs any actions after the plugin is updated.
+     * Performs actions after the plugin is updated.
      */
     protected function afterUpdate()
     {
     }
 
     /**
-     * Performs any actions before the plugin is installed.
+     * Performs actions before the plugin is installed.
      *
-     * @return boolean Whether the plugin should be installed
+     * @return bool Whether the plugin should be installed
      */
-    protected function beforeUninstall()
+    protected function beforeUninstall(): bool
     {
         return true;
     }
 
     /**
-     * Performs any actions after the plugin is installed.
+     * Performs actions after the plugin is installed.
      */
     protected function afterUninstall()
     {
@@ -342,40 +265,10 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
      *
-     * @return string The rendered settings HTML
+     * @return string|null The rendered settings HTML
      */
-    protected function getSettingsHtml()
+    protected function settingsHtml()
     {
         return null;
-    }
-
-    /**
-     * Returns the names of classes located within a subpath of this plugin’s base path.
-     *
-     * @param string  $subpath   The path to check relative to this plugin’s base path
-     * @param boolean $recursive Whether the path should be checked recursively
-     *
-     * @return string
-     */
-    protected function getClassesInSubpath($subpath = '', $recursive = true)
-    {
-        $path = $this->getBasePath().'/'.$subpath;
-        // Regex pulled from http://php.net/manual/en/language.oop5.basic.php
-        $files = Io::getFolderContents($path, $recursive,
-            ['\/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\.php$']);
-        $classes = [];
-
-        if (!empty($files)) {
-            $chop = strlen(Io::getRealPath($path));
-            $classPrefix = "craft\\plugins\\{$this->id}\\".trim(str_replace('/',
-                    '\\', $subpath), '\\').'\\';
-
-            foreach ($files as $file) {
-                $classes[] = $classPrefix.str_replace('/', '\\',
-                        substr($file, $chop, -4));
-            }
-        }
-
-        return $classes;
     }
 }

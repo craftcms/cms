@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
 use Craft;
 
@@ -26,7 +26,7 @@ class RichTextData extends \Twig_Markup
     private $_pages;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $_rawContent;
 
@@ -37,10 +37,8 @@ class RichTextData extends \Twig_Markup
      * Constructor
      *
      * @param string $content
-     *
-     * @return RichTextData
      */
-    public function __construct($content)
+    public function __construct(string $content)
     {
         // Save the raw content in case we need it later
         $this->_rawContent = $content;
@@ -56,7 +54,7 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getRawContent()
+    public function getRawContent(): string
     {
         return $this->_rawContent;
     }
@@ -66,25 +64,27 @@ class RichTextData extends \Twig_Markup
      *
      * @return string
      */
-    public function getParsedContent()
+    public function getParsedContent(): string
     {
-        return $this->content;
+        return (string)$this;
     }
 
     /**
      * Returns an array of the individual page contents.
      *
-     * @return array
+     * @return \Twig_Markup[]
      */
-    public function getPages()
+    public function getPages(): array
     {
-        if (!isset($this->_pages)) {
-            $this->_pages = [];
-            $pages = explode('<!--pagebreak-->', $this->content);
+        if ($this->_pages !== null) {
+            return $this->_pages;
+        }
 
-            foreach ($pages as $page) {
-                $this->_pages[] = new \Twig_Markup($page, $this->charset);
-            }
+        $this->_pages = [];
+        $pages = explode('<!--pagebreak-->', (string)$this);
+
+        foreach ($pages as $page) {
+            $this->_pages[] = new \Twig_Markup($page, Craft::$app->charset);
         }
 
         return $this->_pages;
@@ -93,11 +93,11 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns a specific page.
      *
-     * @param integer $pageNumber
+     * @param int $pageNumber
      *
      * @return string|null
      */
-    public function getPage($pageNumber)
+    public function getPage(int $pageNumber)
     {
         $pages = $this->getPages();
 
@@ -111,9 +111,9 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns the total number of pages.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalPages()
+    public function getTotalPages(): int
     {
         return count($this->getPages());
     }

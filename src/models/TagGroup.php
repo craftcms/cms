@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutBehavior;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\elements\Tag;
-use craft\app\records\TagGroup as TagGroupRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
+use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Tag;
+use craft\records\TagGroup as TagGroupRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * TagGroup model.
@@ -33,22 +33,22 @@ class TagGroup extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var integer Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
@@ -87,7 +87,7 @@ class TagGroup extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return Craft::t('site', $this->name);
     }

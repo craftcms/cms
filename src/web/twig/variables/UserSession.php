@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\elements\User;
+use craft\elements\User;
 
 /**
  * User session functions.
@@ -25,9 +25,9 @@ class UserSession
     /**
      * Returns whether the user is logged in.
      *
-     * @return boolean
+     * @return bool
      */
-    public function isLoggedIn()
+    public function isLoggedIn(): bool
     {
         Craft::$app->getDeprecator()->log('craft.session.isLoggedIn()', 'craft.session.isLoggedIn() has been deprecated. Use `not craft.app.user.isGuest` instead.');
 
@@ -49,9 +49,9 @@ class UserSession
     /**
      * Returns the number of seconds the user will be logged in for.
      *
-     * @return integer
+     * @return int
      */
-    public function getRemainingSessionTime()
+    public function getRemainingSessionTime(): int
     {
         Craft::$app->getDeprecator()->log('craft.session.getRemainingSessionTime()', 'craft.session.getRemainingSessionTime() has been deprecated. Use craft.app.user.remainingSessionTime instead.');
 
@@ -67,7 +67,7 @@ class UserSession
      *
      * @return string
      */
-    public function getRememberedUsername()
+    public function getRememberedUsername(): string
     {
         Craft::$app->getDeprecator()->log('craft.session.getRememberedUsername()', 'craft.session.getRememberedUsername() has been deprecated. Use craft.app.user.rememberedUsername instead.');
 
@@ -77,11 +77,11 @@ class UserSession
     /**
      * Returns the URL the user was trying to access before getting sent to the login page.
      *
-     * @param string $defaultUrl The default URL that should be returned if no return URL was stored.
+     * @param string|null $defaultUrl The default URL that should be returned if no return URL was stored.
      *
-     * @return string The return URL, or $defaultUrl.
+     * @return string The return URL, or|null $defaultUrl.
      */
-    public function getReturnUrl($defaultUrl = null)
+    public function getReturnUrl(string $defaultUrl = null): string
     {
         Craft::$app->getDeprecator()->log('craft.session.getReturnUrl()', 'craft.session.getReturnUrl() has been deprecated. Use craft.app.user.getReturnUrl() instead.');
 
@@ -91,11 +91,11 @@ class UserSession
     /**
      * Returns all flash data for the user.
      *
-     * @param boolean $delete
+     * @param bool $delete
      *
      * @return array
      */
-    public function getFlashes($delete = true)
+    public function getFlashes(bool $delete = true): array
     {
         Craft::$app->getDeprecator()->log('craft.session.getFlashes()', 'craft.session.getFlashes() has been deprecated. Use craft.app.session.getAllFlashes() instead.');
 
@@ -105,13 +105,13 @@ class UserSession
     /**
      * Returns a flash message by a given key.
      *
-     * @param string  $key
-     * @param mixed   $defaultValue
-     * @param boolean $delete
+     * @param string $key
+     * @param mixed  $defaultValue
+     * @param bool   $delete
      *
      * @return mixed
      */
-    public function getFlash($key, $defaultValue = null, $delete = true)
+    public function getFlash(string $key, $defaultValue = null, bool $delete = true)
     {
         Craft::$app->getDeprecator()->log('craft.session.getFlash()', 'craft.session.getFlash() has been deprecated. Use craft.app.session.getFlash() instead.');
 
@@ -125,7 +125,7 @@ class UserSession
      *
      * @return mixed
      */
-    public function hasFlash($key)
+    public function hasFlash(string $key)
     {
         Craft::$app->getDeprecator()->log('craft.session.hasFlash()', 'craft.session.hasFlash() has been deprecated. Use craft.app.session.hasFlash() instead.');
 

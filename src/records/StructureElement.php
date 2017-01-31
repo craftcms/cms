@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use craft\app\db\NestedSetsTrait;
-use yii\db\ActiveQueryInterface;
 use Craft;
-use craft\app\db\ActiveRecord;
-use craft\app\db\StructuredElementQuery;
+use craft\db\ActiveRecord;
+use craft\db\NestedSetsTrait;
+use craft\db\StructuredElementQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class StructureElement record.
  *
- * @property integer   $id          ID
- * @property integer   $structureId Structure ID
- * @property integer   $elementId   Element ID
- * @property integer   $root        Root
- * @property integer   $lft         Lft
- * @property integer   $rgt         Rgt
- * @property integer   $level       Level
+ * @property int       $id          ID
+ * @property int       $structureId Structure ID
+ * @property int       $elementId   Element ID
+ * @property int       $root        Root
+ * @property int       $lft         Lft
+ * @property int       $rgt         Rgt
+ * @property int       $level       Level
  * @property Structure $structure   Structure
  * @property Element   $element     Element
  *
@@ -46,39 +46,9 @@ class StructureElement extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['root'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [
-                ['structureId'],
-                'unique',
-                'targetAttribute' => ['structureId', 'elementId']
-            ],
+            [['root', 'lft', 'rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+            [['level'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+            [['structureId'], 'unique', 'targetAttribute' => ['structureId', 'elementId']],
         ];
     }
 
@@ -87,7 +57,7 @@ class StructureElement extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%structureelements}}';
     }
@@ -97,7 +67,7 @@ class StructureElement extends ActiveRecord
      *
      * @return StructuredElementQuery
      */
-    public static function find()
+    public static function find(): StructuredElementQuery
     {
         /** @var StructuredElementQuery $query */
         $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
@@ -110,7 +80,7 @@ class StructureElement extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getStructure()
+    public function getStructure(): ActiveQueryInterface
     {
         return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
@@ -120,7 +90,7 @@ class StructureElement extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
@@ -148,7 +118,7 @@ class StructureElement extends ActiveRecord
     public function transactions()
     {
         return [
-            static::SCENARIO_DEFAULT => static::OP_ALL,
+            self::SCENARIO_DEFAULT => self::OP_ALL,
         ];
     }
 }

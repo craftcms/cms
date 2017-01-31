@@ -7,102 +7,95 @@
 
 
 {% block content %}
-		<input type="hidden" name="action" value="volumes/save-volume">
-		{{ redirectInput('settings/assets') }}
-		{% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
+        <input type="hidden" name="action" value="volumes/save-volume">
+        {{ redirectInput('settings/assets') }}
+        {% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
 
-		<div id="assetvolume-settings">
-			{{ forms.textField({
-				first: true,
-				label: "Name"|t('app'),
-				id: 'name',
-				name: 'name',
-				value: (volume is defined ? volume.name : null),
-				errors: (volume is defined ? volume.getErrors('name') : null),
-				autofocus: true,
-				required: true,
-				translatable: true
-			}) }}
+        <div id="assetvolume-settings">
+            {{ forms.textField({
+                first: true,
+                label: "Name"|t('app'),
+                id: 'name',
+                name: 'name',
+                value: (volume is defined ? volume.name : null),
+                errors: (volume is defined ? volume.getErrors('name') : null),
+                autofocus: true,
+                required: true,
+                translatable: true
+            }) }}
 
             {{ forms.textField({
                 first: true,
                 label: "Handle"|t('app'),
                 id: 'handle',
                 name: 'handle',
+                class: 'code',
                 value: (volume is defined ? volume.handle : null),
                 errors: (volume is defined ? volume.getErrors('handle') : null),
                 required: true,
             }) }}
 
-            {% if CraftEdition == CraftPro %}
-				<hr>
+            {{ forms.lightswitchField({
+                label: "Assets in this volume have public URLs"|t,
+                name: 'hasUrls',
+                on:   volume.hasUrls,
+                toggle: "url-field"
+            }) }}
 
-				{% registerjsresource "js/asseteditvolumesettings.js" %}
+            <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
+                {{ forms.textField({
+                    label: "Base URL"|t('app'),
+                    instructions: "The base URL to the assets in this volume."|t('app'),
+                    id: 'url',
+                    class: 'ltr volume-url',
+                    name: 'url',
+                    value: (volume is defined ? volume.url : null),
+                    errors: (volume is defined ? volume.getErrors('url') : null),
+                    required: true,
+                    placeholder: "http://example.com/path/to/folder/"|t('app')
+                }) }}
+            </div>
 
-				{{ forms.selectField({
-					label: "Type"|t('app'),
-					instructions: "What type of volume is this?"|t('app'),
-					id: 'type',
-					name: 'type',
-					options: volumeTypeOptions,
-					value: volume.getType(),
-					toggle: true
-				}) }}
+            <hr>
 
-				{% for _volumeType in volumeTypes %}
-					{% set isCurrent = (_volumeType == volume.getType()) %}
+            {{ forms.selectField({
+                label: "Volume Type"|t('app'),
+                instructions: "What type of volume is this?"|t('app'),
+                id: 'type',
+                name: 'type',
+                options: volumeTypeOptions,
+                value: className(volume),
+                errors: volume.getErrors('type') ?? null,
+                toggle: true
+            }) }}
 
-					<div id="{{ _volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% namespace 'types['~_volumeType~']' %}
-							{% if isCurrent %}
-								{{ volume.getSettingsHtml()|raw }}
-							{% else %}
-								{{ volumeInstances[_volumeType].getSettingsHtml()|raw }}
-							{% endif %}
-						{% endnamespace %}
-					</div>
-				{% endfor %}
-			{% else %}
-				{% namespace 'types[craft\\app\\volumes\\Local]' %}
-					{{ volume.getSettingsHtml()|raw }}
-				{% endnamespace %}
-			{% endif %}
+            {% for volumeType in volumeTypes %}
+                {% set isCurrent = (volumeType == className(volume)) %}
 
-			{{ forms.lightswitchField({
-				label: "Assets in this volume have public URLs"|t,
-				name: 'hasUrls',
-				on:   volume.hasUrls,
-				toggle: "url-field"
-			}) }}
+                <div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+                    {% namespace 'types['~volumeType~']' %}
+                        {% if isCurrent %}
+                            {{ volume.getSettingsHtml()|raw }}
+                        {% else %}
+                            {{ volumeInstances[volumeType].getSettingsHtml()|raw }}
+                        {% endif %}
+                    {% endnamespace %}
+                </div>
+            {% endfor %}
+        </div>
 
-			<div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-				{{ forms.textField({
-					label: "URL"|t('app'),
-					instructions: "The URL to your files."|t('app'),
-					id: 'url',
-					class: 'ltr volume-url',
-					name: 'url',
-					value: (volume is defined ? volume.url : null),
-					errors: (volume is defined ? volume.getErrors('url') : null),
-					required: true,
-					placeholder: "http://example.com/path/to/folder/"|t('app')
-				}) }}
-			</div>
-
-		</div>
-
-		<div id="assetvolume-fieldlayout" class="hidden">
-			{% include "_includes/fieldlayoutdesigner" with {
-				fieldLayout: volume.getFieldLayout(),
-				customizableTabs: false,
-				tab: 'fieldlayout'
-			} only %}
-		</div>
+        <div id="assetvolume-fieldlayout" class="hidden">
+            {% include "_includes/fieldlayoutdesigner" with {
+                fieldLayout: volume.getFieldLayout(),
+                customizableTabs: false,
+                tab: 'fieldlayout'
+            } only %}
+        </div>
 {% endblock %}
 
 
 {% if volume is not defined or not volume.handle %}
-    {% registerjs %}
-		new Craft.HandleGenerator('#name', '#handle');
-	{% endregisterjs %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
 {% endif %}

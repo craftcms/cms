@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\User;
+use craft\elements\User;
 
 /**
  * User unsuspend event class.
@@ -15,13 +15,13 @@ use craft\app\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserUnsuspendEvent extends Event
+class UserUnsuspendEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var User|null The user model associated with the event.
      */
     public $user;
 }

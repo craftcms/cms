@@ -5,20 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\SiteIdValidator;
 
 /**
  * Class MatrixBlock record.
  *
- * @property integer         $id          ID
- * @property integer         $ownerId     Owner ID
- * @property integer         $ownerSiteId Owner site ID
- * @property integer         $fieldId     Field ID
- * @property integer         $typeId      Type ID
+ * @property int             $id          ID
+ * @property int             $ownerId     Owner ID
+ * @property int             $ownerSiteId Owner site ID
+ * @property int             $fieldId     Field ID
+ * @property int             $typeId      Type ID
  * @property string          $sortOrder   Sort order
  * @property Element         $element     Element
  * @property Element         $owner       Owner
@@ -37,20 +36,10 @@ class MatrixBlock extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['ownerSiteId'], SiteIdValidator::class],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%matrixblocks}}';
     }
@@ -60,7 +49,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getElement()
+    public function getElement(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'id']);
     }
@@ -70,7 +59,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner()
+    public function getOwner(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
@@ -80,7 +69,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwnerSite()
+    public function getOwnerSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
@@ -90,7 +79,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getField()
+    public function getField(): ActiveQueryInterface
     {
         return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
@@ -100,7 +89,7 @@ class MatrixBlock extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getType()
+    public function getType(): ActiveQueryInterface
     {
         return $this->hasOne(MatrixBlockType::class, ['id' => 'typeId']);
     }

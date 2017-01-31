@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Stores the available Craft update info.
@@ -18,110 +18,71 @@ use craft\app\validators\DateTimeValidator;
  */
 class AppUpdate extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof AppNewRelease) {
-                    $config['releases'][$key] = AppNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var string Local build
-     */
-    public $localBuild;
-
-    /**
-     * @var string Local version
+     * @var string|null Local version
      */
     public $localVersion;
 
     /**
-     * @var string Latest version
+     * @var string|null Latest version
      */
     public $latestVersion;
 
     /**
-     * @var string Latest build
-     */
-    public $latestBuild;
-
-    /**
-     * @var \DateTime Latest date
+     * @var \DateTime|null Latest date
      */
     public $latestDate;
 
     /**
-     * @var string Target version
+     * @var string|null Target version
      */
     public $targetVersion;
 
     /**
-     * @var string Target build
-     */
-    public $targetBuild;
-
-    /**
-     * @var string Real latest version
+     * @var string|null Real latest version
      */
     public $realLatestVersion;
 
     /**
-     * @var string Real latest build
-     */
-    public $realLatestBuild;
-
-    /**
-     * @var \DateTime Real latest date
+     * @var \DateTime|null Real latest date
      */
     public $realLatestDate;
 
     /**
-     * @var boolean Critical update available
+     * @var bool Critical update available
      */
     public $criticalUpdateAvailable = false;
 
     /**
-     * @var boolean Manual update required
+     * @var bool Manual update required
      */
     public $manualUpdateRequired = false;
 
     /**
-     * @var boolean Breakpoint release
+     * @var bool Breakpoint release
      */
     public $breakpointRelease = false;
 
     /**
-     * @var string License updated
+     * @var string|null License updated
      */
     public $licenseUpdated;
 
     /**
-     * @var string Version update status
+     * @var string|null Version update status
      */
     public $versionUpdateStatus;
 
     /**
-     * @var string Manual download endpoint
+     * @var string|null Manual download endpoint
      */
     public $manualDownloadEndpoint;
 
     /**
-     * @var AppNewRelease[] Releases
+     * @var AppUpdateRelease[] Releases
      */
     public $releases = [];
 
@@ -131,7 +92,23 @@ class AppUpdate extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
+    public function init()
+    {
+        parent::init();
+
+        if ($this->releases !== null) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof AppUpdateRelease) {
+                    $this->releases[$key] = new AppUpdateRelease($value);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
     {
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'latestDate';
@@ -147,29 +124,6 @@ class AppUpdate extends Model
     {
         return [
             [['latestDate', 'realLatestDate'], DateTimeValidator::class],
-            [
-                [
-                    'localBuild',
-                    'localVersion',
-                    'latestVersion',
-                    'latestBuild',
-                    'latestDate',
-                    'targetVersion',
-                    'targetBuild',
-                    'realLatestVersion',
-                    'realLatestBuild',
-                    'realLatestDate',
-                    'criticalUpdateAvailable',
-                    'manualUpdateRequired',
-                    'breakpointRelease',
-                    'licenseUpdated',
-                    'versionUpdateStatus',
-                    'manualDownloadEndpoint',
-                    'releases'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

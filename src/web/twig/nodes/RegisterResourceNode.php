@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
-use craft\app\web\View;
+use craft\web\View;
 use yii\base\NotSupportedException;
 
 /**
@@ -16,7 +16,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterResourceNode extends \Twig_Node
+class RegisterResourceNode extends \Twig_Node implements \Twig_NodeCaptureInterface
 {
     // Public Methods
     // =========================================================================
@@ -29,7 +29,7 @@ class RegisterResourceNode extends \Twig_Node
         $method = $this->getAttribute('method');
         $position = $this->getAttribute('position');
         $value = $this->getNode('value');
-        $options = $this->getNode('options');
+        $options = $this->hasNode('options') ? $this->getNode('options') : null;
 
         $compiler->addDebugInfo($this);
 

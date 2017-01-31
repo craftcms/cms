@@ -5,15 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\migrations\Install;
-use craft\app\models\AccountSettings;
-use craft\app\models\Site;
-use craft\app\web\Controller;
+use craft\elements\User;
+use craft\migrations\Install;
+use craft\models\Site;
+use craft\web\assets\installer\InstallerAsset;
+use craft\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
+
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -66,8 +69,12 @@ class InstallController extends Controller
         $server = Craft::$app->getRequest()->getServerName();
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
+
+        $vars = [];
         $vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
         $vars['defaultSiteUrl'] = 'http://'.$server;
+
+        $this->getView()->registerAssetBundle(InstallerAsset::class);
 
         return $this->renderTemplate('_special/install', $vars);
     }
@@ -77,21 +84,22 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateAccount()
+    public function actionValidateAccount(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $accountSettings = new AccountSettings();
+        $user = new User(['scenario' => User::SCENARIO_REGISTRATION]);
         $request = Craft::$app->getRequest();
-        $accountSettings->email = $request->getBodyParam('email');
-        $accountSettings->username = $request->getBodyParam('username', $accountSettings->email);
-        $accountSettings->password = $request->getBodyParam('password');
+        $user->email = $request->getBodyParam('email');
+        $user->username = $request->getBodyParam('username', $user->email);
+        $user->newPassword = $request->getBodyParam('password');
+        $return = [];
 
-        if ($accountSettings->validate()) {
+        if ($user->validate()) {
             $return['validates'] = true;
         } else {
-            $return['errors'] = $accountSettings->getErrors();
+            $return['errors'] = $user->getErrors();
         }
 
         return $this->asJson($return);
@@ -102,7 +110,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateSite()
+    public function actionValidateSite(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -113,6 +121,7 @@ class InstallController extends Controller
         $site->handle = 'default';
         $site->baseUrl = $request->getBodyParam('siteUrl');
         $site->language = $request->getBodyParam('siteLanguage');
+        $return = [];
 
         if ($site->validate()) {
             $return['validates'] = true;
@@ -128,7 +137,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionInstall()
+    public function actionInstall(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

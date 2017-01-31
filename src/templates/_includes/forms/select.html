@@ -1,6 +1,6 @@
 {%- set class = [
-	'select',
-	(class is defined ? class : null)
+    'select',
+    (class is defined ? class : null)
 ]|filter|join(' ') %}
 
 {%- set options = (options is defined ? options : []) %}
@@ -8,30 +8,30 @@
 {%- set hasOptgroups = false -%}
 
 <div class="{{ class }}">
-	<select
-		{%- if id is defined %} id="{{ id }}"{% endif %}
-		{%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}
-		{%- if name is defined %} name="{{ name }}"{% endif %}
-		{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-		{%- if disabled is defined and disabled %} disabled{% endif %}
-		{%- if targetPrefix is defined %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
-		{% for key, option in options %}
-			{% if option.optgroup is defined %}
-				{% if hasOptgroups %}
-					</optgroup>
-				{% else %}
-					{% set hasOptgroups = true %}
-				{% endif %}
-				<optgroup label="{{ option.optgroup }}">
-			{% else %}
-				{% set optionLabel = (option.label is defined ? option.label : option) %}
-				{% set optionValue = (option.value is defined ? option.value : key) %}
-				{% set optionDisabled = (option.disabled is defined ? option.disabled : false) %}
-				<option value="{{ optionValue }}"{% if optionValue == value %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
-			{% endif %}
-		{% endfor %}
-		{% if hasOptgroups %}
-			</optgroup>
-		{% endif %}
-	</select>
+    <select
+        {%- if id is defined %} id="{{ id }}"{% endif %}
+        {%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}
+        {%- if name is defined %} name="{{ name }}"{% endif %}
+        {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+        {%- if disabled is defined and disabled %} disabled{% endif %}
+        {%- if targetPrefix is defined %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
+        {% for key, option in options %}
+            {% if option.optgroup is defined %}
+                {% if hasOptgroups %}
+                    </optgroup>
+                {% else %}
+                    {% set hasOptgroups = true %}
+                {% endif %}
+                <optgroup label="{{ option.optgroup }}">
+            {% else %}
+                {% set optionLabel = (option.label is defined ? option.label : option) %}
+                {% set optionValue = (option.value is defined ? option.value : key) %}
+                {% set optionDisabled = (option.disabled is defined ? option.disabled : false) %}
+                <option value="{{ optionValue }}"{% if optionValue == value %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
+            {% endif %}
+        {% endfor %}
+        {% if hasOptgroups %}
+            </optgroup>
+        {% endif %}
+    </select>
 </div>

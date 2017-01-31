@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\elements\Entry;
-use craft\app\errors\EntryTypeNotFoundException;
-use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryTypeEvent;
-use craft\app\events\SectionEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\models\Section_SiteSettings;
-use craft\app\models\Structure;
-use craft\app\records\EntryType as EntryTypeRecord;
-use craft\app\records\Section as SectionRecord;
-use craft\app\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\app\tasks\ResaveElements;
+use craft\db\Query;
+use craft\elements\Entry;
+use craft\errors\EntryTypeNotFoundException;
+use craft\errors\SectionNotFoundException;
+use craft\events\EntryTypeEvent;
+use craft\events\SectionEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
+use craft\models\Structure;
+use craft\records\EntryType as EntryTypeRecord;
+use craft\records\Section as SectionRecord;
+use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use craft\tasks\ResaveElements;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -117,16 +117,18 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
-     * @return array All the sections’ IDs.
+     * @return int[] All the sections’ IDs.
      */
-    public function getAllSectionIds()
+    public function getAllSectionIds(): array
     {
-        if (!isset($this->_allSectionIds)) {
-            $this->_allSectionIds = [];
+        if ($this->_allSectionIds !== null) {
+            return $this->_allSectionIds;
+        }
 
-            foreach ($this->getAllSections() as $section) {
-                $this->_allSectionIds[] = $section->id;
-            }
+        $this->_allSectionIds = [];
+
+        foreach ($this->getAllSections() as $section) {
+            $this->_allSectionIds[] = $section->id;
         }
 
         return $this->_allSectionIds;
@@ -137,15 +139,17 @@ class Sections extends Component
      *
      * @return array All the editable sections’ IDs.
      */
-    public function getEditableSectionIds()
+    public function getEditableSectionIds(): array
     {
-        if (!isset($this->_editableSectionIds)) {
-            $this->_editableSectionIds = [];
+        if ($this->_editableSectionIds !== null) {
+            return $this->_editableSectionIds;
+        }
 
-            foreach ($this->getAllSectionIds() as $sectionId) {
-                if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
-                    $this->_editableSectionIds[] = $sectionId;
-                }
+        $this->_editableSectionIds = [];
+
+        foreach ($this->getAllSectionIds() as $sectionId) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+                $this->_editableSectionIds[] = $sectionId;
             }
         }
 
@@ -155,60 +159,42 @@ class Sections extends Component
     /**
      * Returns all sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the sections.
      */
-    public function getAllSections($indexBy = null)
+    public function getAllSections(): array
     {
-        if (!$this->_fetchedAllSections) {
-            $results = $this->_createSectionQuery()
-                ->all();
-
-            $this->_sectionsById = [];
-
-            foreach ($results as $result) {
-                $section = new Section($result);
-                $this->_sectionsById[$section->id] = $section;
-            }
-
-            $this->_fetchedAllSections = true;
+        if ($this->_fetchedAllSections) {
+            return array_values($this->_sectionsById);
         }
 
-        if ($indexBy == 'id') {
-            $sections = $this->_sectionsById;
-        } else if (!$indexBy) {
-            $sections = array_values($this->_sectionsById);
-        } else {
-            $sections = [];
+        $results = $this->_createSectionQuery()
+            ->all();
 
-            foreach ($this->_sectionsById as $section) {
-                $sections[$section->$indexBy] = $section;
-            }
+        $this->_sectionsById = [];
+
+        foreach ($results as $result) {
+            $section = new Section($result);
+            $this->_sectionsById[$section->id] = $section;
         }
 
-        return $sections;
+        $this->_fetchedAllSections = true;
+
+        return array_values($this->_sectionsById);
     }
 
     /**
      * Returns all editable sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the editable sections.
      */
-    public function getEditableSections($indexBy = null)
+    public function getEditableSections(): array
     {
         $editableSectionIds = $this->getEditableSectionIds();
         $editableSections = [];
 
         foreach ($this->getAllSections() as $section) {
-            if (in_array($section->id, $editableSectionIds)) {
-                if ($indexBy) {
-                    $editableSections[$section->$indexBy] = $section;
-                } else {
-                    $editableSections[] = $section;
-                }
+            if (in_array($section->id, $editableSectionIds, false)) {
+                $editableSections[] = $section;
             }
         }
 
@@ -223,7 +209,7 @@ class Sections extends Component
      *
      * @return Section[] All the sections of the given type.
      */
-    public function getSectionsByType($type)
+    public function getSectionsByType(string $type): array
     {
         $sections = [];
 
@@ -239,9 +225,9 @@ class Sections extends Component
     /**
      * Gets the total number of sections.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalSections()
+    public function getTotalSections(): int
     {
         return count($this->getAllSectionIds());
     }
@@ -249,9 +235,9 @@ class Sections extends Component
     /**
      * Gets the total number of sections that are editable by the current user.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalEditableSections()
+    public function getTotalEditableSections(): int
     {
         return count($this->getEditableSectionIds());
     }
@@ -259,40 +245,35 @@ class Sections extends Component
     /**
      * Returns a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
      * @return Section|null
      */
-    public function getSectionById($sectionId)
+    public function getSectionById(int $sectionId)
     {
         if (!$sectionId) {
             return null;
         }
 
-        // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
-        if (!$this->_fetchedAllSections &&
-            (!isset($this->_sectionsById) || !array_key_exists($sectionId,
-                    $this->_sectionsById))
-        ) {
-            $result = $this->_createSectionQuery()
-                ->where('sections.id = :sectionId',
-                    [':sectionId' => $sectionId])
-                ->one();
-
-            if ($result) {
-                $section = new Section($result);
-            } else {
-                $section = null;
-            }
-
-            $this->_sectionsById[$sectionId] = $section;
-        }
-
-        if (isset($this->_sectionsById[$sectionId])) {
+        if ($this->_sectionsById !== null && array_key_exists($sectionId, $this->_sectionsById)) {
             return $this->_sectionsById[$sectionId];
         }
 
-        return null;
+        // If we've already fetched all sections we can save ourselves a trip to
+        // the DB for section IDs that don't exist
+        if ($this->_fetchedAllSections) {
+            return null;
+        }
+
+        $result = $this->_createSectionQuery()
+            ->where(['sections.id' => $sectionId])
+            ->one();
+
+        if (!$result) {
+            return $this->_sectionsById[$sectionId] = null;
+        }
+
+        return $this->_sectionsById[$sectionId] = new Section($result);
     }
 
     /**
@@ -302,11 +283,10 @@ class Sections extends Component
      *
      * @return Section|null
      */
-    public function getSectionByHandle($sectionHandle)
+    public function getSectionByHandle(string $sectionHandle)
     {
         $result = $this->_createSectionQuery()
-            ->where('sections.handle = :sectionHandle',
-                [':sectionHandle' => $sectionHandle])
+            ->where(['sections.handle' => $sectionHandle])
             ->one();
 
         if ($result) {
@@ -322,25 +302,30 @@ class Sections extends Component
     /**
      * Returns a section’s site-specific settings.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param int $sectionId
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId, $indexBy = null)
+    public function getSectionSiteSettings(int $sectionId): array
     {
         $siteSettings = (new Query())
-            ->select('sections_i18n.*')
-            ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%sites}} sites', 'sites.id = sections_i18n.siteId')
-            ->where('sections_i18n.sectionId = :sectionId',
-                [':sectionId' => $sectionId])
-            ->orderBy('sites.sortOrder')
-            ->indexBy($indexBy)
+            ->select([
+                'sections_i18n.id',
+                'sections_i18n.sectionId',
+                'sections_i18n.siteId',
+                'sections_i18n.enabledByDefault',
+                'sections_i18n.hasUrls',
+                'sections_i18n.uriFormat',
+                'sections_i18n.template',
+            ])
+            ->from(['{{%sections_i18n}} sections_i18n'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
+            ->where(['sections_i18n.sectionId' => $sectionId])
+            ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = Section_SiteSettings::create($value);
+            $siteSettings[$key] = new Section_SiteSettings($value);
         }
 
         return $siteSettings;
@@ -350,13 +335,13 @@ class Sections extends Component
      * Saves a section.
      *
      * @param Section $section       The section to be saved
-     * @param boolean $runValidation Whether the section should be validated
+     * @param bool    $runValidation Whether the section should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSection(Section $section, $runValidation = true)
+    public function saveSection(Section $section, bool $runValidation = true): bool
     {
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
@@ -374,7 +359,14 @@ class Sections extends Component
                 throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
             }
 
-            $oldSection = Section::create($sectionRecord);
+            $oldSection = new Section($sectionRecord->toArray([
+                'id',
+                'structureId',
+                'name',
+                'handle',
+                'type',
+                'enableVersioning',
+            ]));
             $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
@@ -391,7 +383,7 @@ class Sections extends Component
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
 
-        if (!$allSiteSettings) {
+        if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
         }
 
@@ -408,7 +400,7 @@ class Sections extends Component
             // Do we need to create a structure?
             if ($section->type == Section::TYPE_STRUCTURE) {
                 /** @noinspection PhpUndefinedVariableInspection */
-                if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
+                if (!$isNewSection && $oldSection->type === Section::TYPE_STRUCTURE) {
                     $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
                     $isNewStructure = false;
                 } else {
@@ -417,7 +409,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels == 0) {
+                if ($section->maxLevels === 0) {
                     $section->maxLevels = null;
                 }
 
@@ -485,7 +477,7 @@ class Sections extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }
@@ -499,13 +491,12 @@ class Sections extends Component
             if (!$isNewSection) {
                 // Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
                 $entryTypeIds = (new Query())
-                    ->select('id')
-                    ->from('{{%entrytypes}}')
-                    ->where('sectionId = :sectionId',
-                        [':sectionId' => $section->id])
+                    ->select(['id'])
+                    ->from(['{{%entrytypes}}'])
+                    ->where(['sectionId' => $section->id])
                     ->column();
 
-                if ($entryTypeIds) {
+                if (!empty($entryTypeIds)) {
                     $entryTypeId = array_shift($entryTypeIds);
                 }
             }
@@ -537,10 +528,9 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             switch ($section->type) {
-                case Section::TYPE_SINGLE: {
+                case Section::TYPE_SINGLE:
                     // Make sure that there is one and only one Entry Type and Entry for this section.
                     $singleEntryId = null;
-
                     if (!$isNewSection) {
                         // Re-save the entrytype name if the section name just changed
                         /** @noinspection PhpUndefinedVariableInspection */
@@ -549,25 +539,29 @@ class Sections extends Component
                             $entryType->name = $section->name;
                             $this->saveEntryType($entryType);
                         }
-
                         // Make sure there's only one entry in this section
-                        $entryIds = (new Query())
-                            ->select('id')
-                            ->from('{{%entries}}')
-                            ->where('sectionId = :sectionId',
-                                [':sectionId' => $section->id])
-                            ->column();
-
-                        if ($entryIds) {
-                            $singleEntryId = array_shift($entryIds);
-
+                        $results = (new Query())
+                            ->select([
+                                'id' => 'e.id',
+                                'siteId' => (new Query())
+                                    ->select('i18n.siteId')
+                                    ->from('{{%elements_i18n}} i18n')
+                                    ->where('[[i18n.elementId]] = [[e.id]]')
+                                    ->limit(1)
+                            ])
+                            ->from(['{{%entries}} e'])
+                            ->where(['e.sectionId' => $section->id])
+                            ->all();
+                        if (!empty($results)) {
+                            $firstResult = array_shift($results);
+                            $singleEntryId = $firstResult['id'];
                             // If there are any more, get rid of them
-                            if ($entryIds) {
-                                Craft::$app->getElements()->deleteElementById($entryIds);
+                            if (!empty($results)) {
+                                foreach ($results as $result) {
+                                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+                                }
                             }
-
                             // Make sure it's enabled and all that.
-
                             $db->createCommand()
                                 ->update(
                                     '{{%elements}}',
@@ -579,7 +573,6 @@ class Sections extends Component
                                         'id' => $singleEntryId
                                     ])
                                 ->execute();
-
                             $db->createCommand()
                                 ->update(
                                     '{{%entries}}',
@@ -594,50 +587,42 @@ class Sections extends Component
                                     ])
                                 ->execute();
                         }
-
                         // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
-                        if ($entryTypeIds) {
+                        if (!empty($entryTypeIds)) {
                             foreach ($entryTypeIds as $entryTypeId) {
                                 $this->deleteEntryTypeById($entryTypeId);
                             }
                         }
                     }
-
                     if (!$singleEntryId) {
                         // Create it
-                        $firstSiteSettings = ArrayHelper::getFirstValue($allSiteSettings);
+                        $firstSiteSettings = reset($allSiteSettings);
                         $singleEntry = new Entry();
                         $singleEntry->siteId = $firstSiteSettings->siteId;
                         $singleEntry->sectionId = $section->id;
                         $singleEntry->typeId = $entryTypeId;
                         $singleEntry->title = $section->name;
-                        Craft::$app->getEntries()->saveEntry($singleEntry);
+                        Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
-
                     break;
-                }
-
-                case Section::TYPE_STRUCTURE: {
+                case Section::TYPE_STRUCTURE:
                     /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
+                        $query = Entry::find();
                         /** @noinspection PhpUndefinedVariableInspection */
-                        $query = Entry::find()
-                            ->siteId(ArrayHelper::getFirstKey($allOldSiteSettingsRecords))
-                            ->sectionId($section->id)
-                            ->status(null)
-                            ->enabledForSite(false)
-                            ->orderBy('elements.id');
-
+                        $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
+                        $query->sectionId($section->id);
+                        $query->status(null);
+                        $query->enabledForSite(false);
+                        $query->orderBy('elements.id');
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
                         }
                     }
-
                     break;
-                }
             }
 
             // Finally, deal with the existing entries...
@@ -648,7 +633,7 @@ class Sections extends Component
                 /** @noinspection PhpUndefinedVariableInspection */
                 $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
 
-                if ($siteIds) {
+                if (!empty($siteIds)) {
                     Craft::$app->getTasks()->queueTask([
                         'type' => ResaveElements::class,
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
@@ -683,12 +668,12 @@ class Sections extends Component
     /**
      * Deletes a section by its ID.
      *
-     * @param integer $sectionId
+     * @param int $sectionId
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSectionById($sectionId)
+    public function deleteSectionById(int $sectionId): bool
     {
         $section = $this->getSectionById($sectionId);
 
@@ -704,10 +689,10 @@ class Sections extends Component
      *
      * @param Section $section
      *
-     * @return boolean Whether the section was deleted successfully
+     * @return bool Whether the section was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteSection(Section $section)
+    public function deleteSection(Section $section): bool
     {
         // Fire a 'beforeDeleteSection' event
         $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
@@ -726,28 +711,30 @@ class Sections extends Component
 
             // Delete the field layout(s)
             $fieldLayoutIds = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}')
-                ->where(['in', 'id', $entryTypeIds])
+                ->select(['fieldLayoutId'])
+                ->from(['{{%entrytypes}}'])
+                ->where(['id' => $entryTypeIds])
                 ->column();
 
-            if ($fieldLayoutIds) {
+            if (!empty($fieldLayoutIds)) {
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 
-            // Grab the entry ids so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['sectionId' => $section->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->sectionId($section->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
+            }
 
             // Delete the structure, if there is one
             $structureId = (new Query())
-                ->select('structureId')
-                ->from('{{%sections}}')
+                ->select(['structureId'])
+                ->from(['{{%sections}}'])
                 ->where(['id' => $section->id])
                 ->scalar();
 
@@ -779,11 +766,11 @@ class Sections extends Component
      * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
-     * @param integer $siteId
+     * @param int     $siteId
      *
-     * @return boolean
+     * @return bool
      */
-    public function isSectionTemplateValid(Section $section, $siteId)
+    public function isSectionTemplateValid(Section $section, int $siteId): bool
     {
         $sectionSiteSettings = $section->getSiteSettings();
 
@@ -813,60 +800,74 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param int $sectionId
      *
-     * @return array
+     * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId, $indexBy = null)
+    public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $entryTypes = EntryTypeRecord::find()
+        $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
-            ->orderBy('sortOrder')
-            ->indexBy($indexBy)
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        foreach ($entryTypes as $key => $value) {
-            $entryTypes[$key] = EntryType::create($value);
+        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
+            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
-        return $entryTypes;
+        return $entryTypeRecords;
     }
 
     /**
      * Returns an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
      * @return EntryType|null
      */
-    public function getEntryTypeById($entryTypeId)
+    public function getEntryTypeById(int $entryTypeId)
     {
         if (!$entryTypeId) {
             return null;
         }
 
-        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
-
-            if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = EntryType::create($entryTypeRecord);
-            } else {
-                $this->_entryTypesById[$entryTypeId] = null;
-            }
+        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+            return $this->_entryTypesById[$entryTypeId];
         }
 
-        return $this->_entryTypesById[$entryTypeId];
+        if (($entryTypeRecord = EntryTypeRecord::findOne($entryTypeId)) === null) {
+            return $this->_entryTypesById[$entryTypeId] = null;
+        }
+
+        return $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+            'id',
+            'sectionId',
+            'fieldLayoutId',
+            'name',
+            'handle',
+            'hasTitleField',
+            'titleLabel',
+            'titleFormat',
+        ]));
     }
 
     /**
      * Returns entry types that have a given handle.
      *
-     * @param integer $entryTypeHandle
+     * @param int $entryTypeHandle
      *
      * @return EntryType[]
      */
-    public function getEntryTypesByHandle($entryTypeHandle)
+    public function getEntryTypesByHandle(int $entryTypeHandle): array
     {
         $entryTypes = [];
 
@@ -875,7 +876,16 @@ class Sections extends Component
         ]);
 
         foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = EntryType::create($record);
+            $entryTypes[] = new EntryType($record->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
         return $entryTypes;
@@ -885,13 +895,13 @@ class Sections extends Component
      * Saves an entry type.
      *
      * @param EntryType $entryType     The entry type to be saved
-     * @param boolean   $runValidation Whether the entry type should be validated
+     * @param bool      $runValidation Whether the entry type should be validated
      *
-     * @return boolean Whether the entry type was saved successfully
+     * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType, $runValidation = true)
+    public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -914,16 +924,24 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $oldEntryType = EntryType::create($entryTypeRecord);
+            $oldEntryType = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         } else {
             $entryTypeRecord = new EntryTypeRecord();
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->select('max(sortOrder)')
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(['sectionId' => $entryType->sectionId])
-                ->scalar();
+                ->max('[[sortOrder]]');
 
             $entryTypeRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
@@ -988,10 +1006,10 @@ class Sections extends Component
      *
      * @param array $entryTypeIds
      *
-     * @return boolean Whether the entry types were reordered successfully
+     * @return bool Whether the entry types were reordered successfully
      * @throws \Exception if reasons
      */
-    public function reorderEntryTypes($entryTypeIds)
+    public function reorderEntryTypes(array $entryTypeIds): bool
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1015,12 +1033,12 @@ class Sections extends Component
     /**
      * Deletes an entry type by its ID.
      *
-     * @param integer $entryTypeId
+     * @param int $entryTypeId
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryTypeById($entryTypeId)
+    public function deleteEntryTypeById(int $entryTypeId): bool
     {
         $entryType = $this->getEntryTypeById($entryTypeId);
 
@@ -1036,10 +1054,10 @@ class Sections extends Component
      *
      * @param EntryType $entryType
      *
-     * @return boolean Whether the entry type was deleted successfully
+     * @return bool Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteEntryType(EntryType $entryType)
+    public function deleteEntryType(EntryType $entryType): bool
     {
         // Fire a 'beforeSaveEntryType' event
         $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
@@ -1050,8 +1068,8 @@ class Sections extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}')
+                ->select(['fieldLayoutId'])
+                ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryType->id])
                 ->scalar();
 
@@ -1059,15 +1077,15 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the entry IDs so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['typeId' => $entryType->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->typeId($entryType->id)
+                ->all();
 
-            if ($entryIds) {
-                Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
             }
 
             // Delete the entry type.
@@ -1098,12 +1116,20 @@ class Sections extends Component
      *
      * @return Query
      */
-    private function _createSectionQuery()
+    private function _createSectionQuery(): Query
     {
         return (new Query())
-            ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
-            ->from('{{%sections}} sections')
-            ->orderBy('name');
+            ->select([
+                'sections.id',
+                'sections.structureId',
+                'sections.name',
+                'sections.handle',
+                'sections.type',
+                'sections.enableVersioning',
+                'structures.maxLevels',
+            ])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->from(['{{%sections}} sections'])
+            ->orderBy(['name' => SORT_ASC]);
     }
 }

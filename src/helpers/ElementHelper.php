@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\db\Query;
-use craft\app\errors\OperationAbortedException;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\db\Query;
+use craft\errors\OperationAbortedException;
 use yii\base\Exception;
 
 /**
@@ -59,7 +59,7 @@ class ElementHelper
      *
      * @return string
      */
-    public static function createSlug($str)
+    public static function createSlug(string $str): string
     {
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
@@ -85,7 +85,7 @@ class ElementHelper
         $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
-        if (!$uriFormat) {
+        if ($uriFormat === null) {
             $element->uri = null;
 
             return;
@@ -100,17 +100,12 @@ class ElementHelper
 
         $uniqueUriConditions = [
             'and',
-            'siteId = :siteId',
-            'uri = :uri'
-        ];
-
-        $uniqueUriParams = [
-            ':siteId' => $element->siteId
+            ['siteId' => $element->siteId],
+            '[[uri]]=:uri'
         ];
 
         if ($element->id) {
-            $uniqueUriConditions[] = 'elementId != :elementId';
-            $uniqueUriParams[':elementId'] = $element->id;
+            $uniqueUriConditions[] = ['not', ['elementId' => $element->id]];
         }
 
         $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
@@ -137,13 +132,13 @@ class ElementHelper
                 if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
                     // Chop off the overage amount from the slug
                     $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
+                    $testSlug = substr($testSlug, 0, -$overage);
 
                     // Update the slug
                     $element->slug = $testSlug;
 
                     // Let's try this again.
-                    $i -= 1;
+                    $i--;
                     continue;
                 } else {
                     // We're screwed, blow things up.
@@ -151,12 +146,10 @@ class ElementHelper
                 }
             }
 
-            $uniqueUriParams[':uri'] = $testUri;
-
             $totalElements = (new Query())
-                ->from('{{%elements_i18n}}')
-                ->where($uniqueUriConditions, $uniqueUriParams)
-                ->count('id');
+                ->from(['{{%elements_i18n}}'])
+                ->where($uniqueUriConditions, [':uri' => $testUri])
+                ->count('[[id]]');
 
             if ($totalElements == 0) {
                 // OMG!
@@ -177,9 +170,9 @@ class ElementHelper
      *
      * @param string $uriFormat
      *
-     * @return boolean
+     * @return bool
      */
-    public static function doesUriFormatHaveSlugTag($uriFormat)
+    public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
     {
         $element = (object)['slug' => StringHelper::randomString()];
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
@@ -197,7 +190,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function getSupportedSitesForElement(ElementInterface $element)
+    public static function supportedSitesForElement(ElementInterface $element): array
     {
         $sites = [];
 
@@ -207,7 +200,7 @@ class ElementHelper
                     'siteId' => $site,
                 ];
             } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in '.$element::className().'::getSupportedSites()');
+                throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
             }
             $sites[] = array_merge([
                 'enabledByDefault' => true,
@@ -222,13 +215,13 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @return boolean
+     * @return bool
      */
-    public static function isElementEditable(ElementInterface $element)
+    public static function isElementEditable(ElementInterface $element): bool
     {
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
-                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
                         return true;
                     }
@@ -248,13 +241,13 @@ class ElementHelper
      *
      * @return array
      */
-    public static function getEditableSiteIdsForElement(ElementInterface $element)
+    public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
 
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
-                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
@@ -265,5 +258,76 @@ class ElementHelper
         }
 
         return $siteIds;
+    }
+
+    /**
+     * Given an array of elements, will go through and set the appropriate "next"
+     * and "prev" elements on them.
+     *
+     * @param ElementInterface[] $elements The array of elements.
+     *
+     * @return void
+     */
+    public static function setNextPrevOnElements(array $elements)
+    {
+        /** @var ElementInterface $lastElement */
+        $lastElement = null;
+
+        foreach ($elements as $i => $element) {
+            if ($lastElement) {
+                $lastElement->setNext($element);
+                $element->setPrev($lastElement);
+            } else {
+                $element->setPrev(false);
+            }
+
+            $lastElement = $element;
+        }
+
+        if ($lastElement) {
+            $lastElement->setNext(false);
+        }
+    }
+
+    /**
+     * Returns an element type's source definition based on a given source key/path and context.
+     *
+     * @param string      $elementType The element type class
+     * @param string      $sourceKey   The source key/path
+     * @param string|null $context     The context
+     *
+     * @return array|null The source definition, or null if it cannot be found
+     */
+    public static function findSource(string $elementType, string $sourceKey, string $context = null)
+    {
+        /** @var string|ElementInterface $elementType */
+        $path = explode('/', $sourceKey);
+        $sources = $elementType::sources($context);
+
+        while (!empty($path)) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $testSource) {
+                if (isset($testSource['key']) && $testSource['key'] === $key) {
+                    $source = $testSource;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                return null;
+            }
+
+            // Is that the end of the path?
+            if (empty($path)) {
+                return $source;
+            }
+
+            // Prepare for searching nested sources
+            $sources = $source['nested'] ?? [];
+        }
+
+        return null;
     }
 }

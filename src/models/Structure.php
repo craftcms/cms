@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Class Structure model.
  *
- * @property boolean $isSortable whether elements in this structure can be sorted by the current user
+ * @property bool $isSortable whether elements in this structure can be sorted by the current user
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -24,12 +24,12 @@ class Structure extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Max levels
+     * @var int|null Max levels
      */
     public $maxLevels;
 
@@ -42,30 +42,16 @@ class Structure extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['maxLevels'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['id', 'maxLevels'], 'safe', 'on' => 'search'],
+            [['id', 'maxLevels'], 'number', 'integerOnly' => true],
         ];
     }
 
     /**
      * Returns whether elements in this structure can be sorted by the current user.
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsSortable()
+    public function getIsSortable(): bool
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:'.$this->id);
     }

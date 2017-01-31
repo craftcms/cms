@@ -1,8 +1,6 @@
 {% extends "_layouts/basecp" %}
 {% set title = "Tests" %}
-{% registercssresource "lib/qunit/qunit-2.0.1.css" %}
-{% registerjsresource "lib/qunit/qunit-2.0.1.js" %}
-{% registerjsresource "js/tests.js" %}
+{% do view.registerAssetBundle("craft\\web\\assets\\tests\\TestsAsset") %}
 
 {% block body %}
     <div id="body">
@@ -11,4 +9,4 @@
     </div>
 {% endblock %}
 
-{% registercss "#body { max-width: 800px; margin: 50px auto; }" %}
+{% css "#body { max-width: 800px; margin: 50px auto; }" %}

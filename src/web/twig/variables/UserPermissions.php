@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
 
@@ -28,7 +28,7 @@ class UserPermissions
      *
      * @return array
      */
-    public function getAllPermissions()
+    public function getAllPermissions(): array
     {
         Craft::$app->getDeprecator()->log('craft.userPermissions.getAllPermissions()', 'craft.userPermissions.getAllPermissions() has been deprecated. Use craft.app.userPermissions.allPermissions instead.');
 
@@ -38,11 +38,11 @@ class UserPermissions
     /**
      * Returns all of the group permissions a given user has.
      *
-     * @param integer $userId
+     * @param int $userId
      *
      * @return array
      */
-    public function getGroupPermissionsByUserId($userId)
+    public function getGroupPermissionsByUserId(int $userId): array
     {
         Craft::$app->getDeprecator()->log('craft.userPermissions.getGroupPermissionsByUserId()', 'craft.userPermissions.getGroupPermissionsByUserId() has been deprecated. Use craft.app.userPermissions.getGroupPermissionsByUserId() instead.');
 

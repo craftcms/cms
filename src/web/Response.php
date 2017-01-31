@@ -5,10 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\Io;
 use Exception;
 use yii\web\HttpException;
 
@@ -26,7 +25,7 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function setCacheHeaders()
     {
@@ -45,14 +44,14 @@ class Response extends \yii\web\Response
      *
      * @param string $path The file to read the last modified date from.
      *
-     * @return $this self reference
+     * @return static self reference
      */
-    public function setLastModifiedHeader($path)
+    public function setLastModifiedHeader(string $path)
     {
-        $modifiedTime = Io::getLastTimeModified($path);
+        $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime).' GMT');
         }
 
         return $this;
@@ -61,11 +60,11 @@ class Response extends \yii\web\Response
     /**
      * @inheritdoc \yii\web\Response::sendFile()
      *
-     * @param string $filePath
-     * @param string $attachmentName
-     * @param array  $options
+     * @param string      $filePath
+     * @param string|null $attachmentName
+     * @param array       $options
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
@@ -82,7 +81,7 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return $this self reference
+     * @return static self reference
      * @throws HttpException
      */
     public function sendContentAsFile($content, $attachmentName, $options = [])

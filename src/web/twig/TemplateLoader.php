@@ -5,11 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\helpers\Io;
-use craft\app\web\View;
+use craft\web\View;
 
 /**
  * Loads Craft templates into Twig.
@@ -25,7 +24,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     // =========================================================================
 
     /**
-     * @var View
+     * @var View|null
      */
     protected $view;
 
@@ -33,7 +32,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Constructor
+     *
+     * @param View $view
      */
     public function __construct(View $view)
     {
@@ -41,11 +42,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     }
 
     /**
-     * Checks if a template exists.
-     *
-     * @param string $name
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function exists($name)
     {
@@ -53,55 +50,42 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     }
 
     /**
-     * Gets the source code of a template.
-     *
-     * @param  string $name The name of the template to load, or a StringTemplate object.
-     *
-     * @return string|StringTemplate The template source code.
-     * @throws TemplateLoaderException if the template doesn’t exist or isn’t readable
+     * @inheritdoc
      */
-    public function getSource($name)
+    public function getSourceContext($name)
     {
-        if ($name instanceof StringTemplate) {
-            return $name->template;
-        }
-
         $template = $this->_resolveTemplate($name);
 
-        if (Io::isReadable($template)) {
-            return Io::getFileContents($template);
+        if (!is_readable($template)) {
+            throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
-        throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
+        return new \Twig_Source(file_get_contents($template), $name, $template);
     }
 
     /**
      * Gets the cache key to use for the cache for a given template.
      *
-     * @param StringTemplate|string $name The name of the template to load, or a StringTemplate object.
+     * @param string $name The name of the template to load
      *
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function getCacheKey($name)
+    public function getCacheKey($name): string
     {
-        if ($name instanceof StringTemplate) {
-            return $name->cacheKey;
-        }
-
         return $this->_resolveTemplate($name);
     }
 
     /**
      * Returns whether the cached template is still up-to-date with the latest template.
      *
-     * @param string  $name The template name, or a StringTemplate object.
-     * @param integer $time The last modification time of the cached template
+     * @param string $name The template name
+     * @param int    $time The last modification time of the cached template
      *
-     * @return boolean
+     * @return bool
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function isFresh($name, $time)
+    public function isFresh($name, $time): bool
     {
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
@@ -111,9 +95,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         }
 
         if (is_string($name)) {
-            $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
+            $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
 
-            return $sourceModifiedTime->getTimestamp() <= $time;
+            return $sourceModifiedTime <= $time;
         }
 
         return false;
@@ -125,12 +109,12 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     /**
      * Returns the path to a given template, or throws a TemplateLoaderException.
      *
-     * @param $name
+     * @param string $name
      *
      * @return string
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    private function _resolveTemplate($name)
+    private function _resolveTemplate(string $name): string
     {
         $template = $this->view->resolveTemplate($name);
 

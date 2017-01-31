@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\FieldInterface;
+use craft\base\FieldInterface;
+use yii\base\Event;
 
 /**
  * FieldEvent class.
@@ -21,12 +22,12 @@ class FieldEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldInterface The field associated with this event.
+     * @var FieldInterface|null The field associated with this event.
      */
     public $field;
 
     /**
-     * @var boolean Whether the field is brand new
+     * @var bool Whether the field is brand new
      */
     public $isNew = false;
 }

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The PluginUpdateStatus class is an abstract class that defines the different plugin version update status
@@ -16,7 +16,7 @@ namespace craft\app\enums;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class PluginUpdateStatus extends BaseEnum
+abstract class PluginUpdateStatus
 {
     // Constants
     // =========================================================================

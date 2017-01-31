@@ -8,16 +8,12 @@
 
 {% import "_includes/forms" as forms %}
 
-{% do craft.app.view.registerTranslations('app', [
+{% do view.registerTranslations('app', [
     "Are you sure you want to delete this photo?",
 ]) %}
 
-{% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}
-{% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
-{% registerjsresource "lib/jcrop/jquery.Jcrop.min.js" %}
-{% registerjsresource "js/profile.js" %}
-{% registercssresource "lib/jcrop/jquery.Jcrop.min.css" %}
-{% registercssresource "css/profile.css" %}
+{% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
 {% set photoInput %}
     {% include 'users/_photo' with {account: account} only %}
@@ -36,8 +32,8 @@
                 <div class="menu">
                     <ul>
                         <li><a class="formsubmit" data-redirect="{{ (isNewAccount ? 'users/{id}' : account.getCpEditUrl())|hash }}">
-                                {{ "Save and continue editing"|t('app') }}
                                 {{ forms.optionShortcutLabel('S') }}
+                                {{ "Save and continue editing"|t('app') }}
                             </a></li>
                         <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     </ul>
@@ -61,7 +57,7 @@
 {% block main %}
     <div class="grid" data-max-cols="3">
         <div class="item" data-position="left" data-colspan="2">
-            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
+            <form id="userform" class="pane" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
                 <input type="hidden" name="action" value="users/save-user">
                 {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
                 {{ hiddenInputs }}
@@ -185,8 +181,8 @@
 
                         {% if CraftEdition == CraftPro %}
                             {% include "_includes/fields" with {
-                            fields: craft.app.fields.getLayoutByType('craft\\app\\elements\\User').getFields(),
-                            element: account
+                                fields: craft.app.fields.getLayoutByType('craft\\elements\\User').getFields(),
+                                element: account
                             } only %}
 
                             {{ saveUserButtons }}
@@ -201,7 +197,7 @@
                             <h2>{{ "User Groups"|t('app') }}</h2>
 
                             {% set allGroups = craft.app.userGroups.getAllGroups() %}
-                            {% set userGroups = account.getGroups('id') %}
+                            {% set userGroupIds = account.getGroups()|column('id') %}
 
                             {% set userGroupsInput %}
                                 <input type="hidden" name="groups" value="">
@@ -214,7 +210,7 @@
                                                     label: group.name|t('site'),
                                                     name: 'groups[]',
                                                     value: group.id,
-                                                    checked: (group.id in userGroups|keys)
+                                                    checked: (group.id in userGroupIds)
                                                 }) }}
                                             </li>
                                         {% endfor %}
@@ -248,8 +244,8 @@
 
                         <div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
                             {% include "_includes/permissions" with {
-                            userOrGroup: (account.admin ? null : account),
-                            groupPermissions: craft.app.userPermissions.getGroupPermissionsByUserId(account.id)
+                                userOrGroup: (account.admin ? null : account),
+                                groupPermissions: account.id ? craft.app.userPermissions.getGroupPermissionsByUserId(account.id) : []
                             } only %}
                         </div>
 
@@ -341,7 +337,7 @@
     </div><!--/grid-->
 {% endblock %}
 
-{% registerjs %}
+{% js %}
     {% if account.getIsCurrent() %}
         var changeSidebarPicture = true;
     {% else %}
@@ -355,4 +351,4 @@
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'
     ]);
-{% endregisterjs %}
+{% endjs %}

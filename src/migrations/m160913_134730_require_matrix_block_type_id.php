@@ -1,11 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\MigrationHelper;
 
 /**
  * m160913_134730_require_matrix_block_type_id migration.
@@ -19,14 +18,14 @@ class m160913_134730_require_matrix_block_type_id extends Migration
     {
         // Are there any Matrix blocks that don't have a type?
         $typelessBlockIds = (new Query())
-            ->select('id')
-            ->from('{{%matrixblocks}}')
-            ->where('typeId is null')
+            ->select(['id'])
+            ->from(['{{%matrixblocks}}'])
+            ->where(['typeId' => null])
             ->column();
 
-        if ($typelessBlockIds) {
-            $this->delete('{{%elements}}', ['in', 'id', $typelessBlockIds]);
-            Craft::warning("Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds));
+        if (!empty($typelessBlockIds)) {
+            $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);
+            echo "    > Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds)."\n";
         }
 
         // Make typeId required
@@ -41,6 +40,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
     public function safeDown()
     {
         echo "m160913_134730_require_matrix_block_type_id cannot be reverted.\n";
+
         return false;
     }
 }

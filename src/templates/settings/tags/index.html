@@ -2,49 +2,49 @@
 {% set title = "Tag Groups"|t('app') %}
 
 {% set extraPageHeaderHtml %}
-	<div class="buttons right">
-		<a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
-	</div>
+    <div class="buttons right">
+        <a href="{{ url('settings/tags/new') }}" class="btn submit add icon">{{ "New tag group"|t('app') }}</a>
+    </div>
 {% endset %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 {% set docsUrl = 'http://craftcms.com/docs/tags' %}
 
 
 {% block content %}
-	<div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
-		<p>{{ "No tag groups exist yet."|t('app') }}</p>
-	</div>
+    <div id="notaggroups"{% if tagGroups|length %} class="hidden"{% endif %}>
+        <p>{{ "No tag groups exist yet."|t('app') }}</p>
+    </div>
 
-	{% if tagGroups|length %}
-		<table id="taggroups" class="data fullwidth collapsible">
-			<thead>
-				<th scope="col">{{ "Name"|t('app') }}</th>
-				<th scope="col">{{ "Handle"|t('app') }}</th>
-				<td class="thin"></td>
-			</thead>
-			<tbody>
-				{% for tagGroup in tagGroups %}
-					<tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
-						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
-						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
+    {% if tagGroups|length %}
+        <table id="taggroups" class="data fullwidth collapsible">
+            <thead>
+                <th scope="col">{{ "Name"|t('app') }}</th>
+                <th scope="col">{{ "Handle"|t('app') }}</th>
+                <td class="thin"></td>
+            </thead>
+            <tbody>
+                {% for tagGroup in tagGroups %}
+                    <tr data-id="{{ tagGroup.id }}" data-name="{{ tagGroup.name|t('site') }}">
+                        <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/tags/' ~ tagGroup.id) }}">{{ tagGroup.name|t('site') }}</a></th>
+                        <td data-title="{{ 'Handle'|t('app') }}"><code>{{ tagGroup.handle }}</code></td>
+                        <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 {% endblock %}
 
 
-{% registerjs %}
-	new Craft.AdminTable({
-		tableSelector: '#taggroups',
-		noItemsSelector: '#notaggroups',
-		deleteAction: 'tags/delete-tag-group',
-		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
-	});
-{% endregisterjs %}
+{% js %}
+    new Craft.AdminTable({
+        tableSelector: '#taggroups',
+        noItemsSelector: '#notaggroups',
+        deleteAction: 'tags/delete-tag-group',
+        confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its tags?"|t('app') }}',
+    });
+{% endjs %}

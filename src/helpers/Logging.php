@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 /**
  * Class Logging
@@ -21,20 +21,20 @@ class Logging
     /**
      * Will attempt to remove passwords from the log file.
      *
-     * @param $log
+     * @param string $log
      *
      * @return string
      */
-    public static function redact($log)
+    public static function redact(string $log): string
     {
         // Will match 'password => 'secretPassword', which gets logged in the POST params during debug mode.
-        $log = preg_replace("/'password' => (')(.*)('),/uim", "'password' => REDACTED,", $log);
+        $log = preg_replace("/'password' => (')(.*)('),/uim", '\'password\' => REDACTED,', $log);
 
         // Will match 'newPassword => 'secretPassword', which gets logged in the POST params during debug mode.
-        $log = preg_replace("/'newPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
+        $log = preg_replace("/'newPassword' => (')(.*)('),/uim", '\'newPassword\' => REDACTED,', $log);
 
         // Will match 'smtpPassword => 'secretPassword', which gets logged in the POST params during debug mode.
-        $log = preg_replace("/'smtpPassword' => (')(.*)('),/uim", "'newPassword' => REDACTED,", $log);
+        $log = preg_replace("/'smtpPassword' => (')(.*)('),/uim", '\'newPassword\' => REDACTED,', $log);
 
         return $log;
     }

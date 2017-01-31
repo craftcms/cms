@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\ElementInterface;
+use craft\base\ElementInterface;
+use yii\base\Event;
 
 /**
  * Element event class.
@@ -21,12 +22,12 @@ class ElementEvent extends Event
     // =========================================================================
 
     /**
-     * @var ElementInterface The element model associated with the event.
+     * @var ElementInterface|null The element model associated with the event.
      */
     public $element;
 
     /**
-     * @var boolean Whether the element is brand new
+     * @var bool Whether the element is brand new
      */
     public $isNew = false;
 }

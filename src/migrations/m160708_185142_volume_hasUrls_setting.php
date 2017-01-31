@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 use yii\helpers\Json;
 
 /**
@@ -20,13 +20,13 @@ class m160708_185142_volume_hasUrls_setting extends Migration
     public function safeUp()
     {
         if (!$this->db->columnExists('{{%volumes}}', 'hasUrls')) {
-            $this->addColumnBefore('{{%volumes}}', 'hasUrls', 'boolean', 'url');
+            $this->addColumn('{{%volumes}}', 'hasUrls', 'boolean');
         }
 
         // Update all Volumes and move the setting from settings column to it's own field
         $volumes = (new Query())
-            ->select('id, settings')
-            ->from('{{%volumes}}')
+            ->select(['id', 'settings'])
+            ->from(['{{%volumes}}'])
             ->all();
 
         foreach ($volumes as $volume) {

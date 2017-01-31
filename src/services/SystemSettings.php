@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\Json;
-use craft\app\records\SystemSettings as SystemSettingsRecord;
+use craft\helpers\Json;
+use craft\models\MailSettings;
+use craft\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
 /**
@@ -45,7 +45,7 @@ class SystemSettings extends Component
      *
      * @return array
      */
-    public function getSettings($category)
+    public function getSettings(string $category): array
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -63,27 +63,6 @@ class SystemSettings extends Component
     }
 
     /**
-     * Return the DateTime for when the category was last updated.
-     *
-     * @param $category
-     *
-     * @return null|DateTime
-     */
-    public function getCategoryTimeUpdated($category)
-    {
-        // Ensure fresh data.
-        unset($this->_settingsRecords[$category]);
-
-        $record = $this->_getSettingsRecord($category);
-
-        if ($record !== null) {
-            return $record->dateUpdated;
-        }
-
-        return null;
-    }
-
-    /**
      * Returns an individual system setting.
      *
      * @param string $category
@@ -91,7 +70,7 @@ class SystemSettings extends Component
      *
      * @return mixed
      */
-    public function getSetting($category, $key)
+    public function getSetting(string $category, string $key)
     {
         $settings = $this->getSettings($category);
 
@@ -105,12 +84,12 @@ class SystemSettings extends Component
     /**
      * Saves the system settings for a category.
      *
-     * @param string $category
-     * @param array  $settings
+     * @param string     $category
+     * @param array|null $settings
      *
-     * @return boolean Whether the new settings saved
+     * @return bool Whether the new settings saved
      */
-    public function saveSettings($category, $settings = null)
+    public function saveSettings(string $category, array $settings = null): bool
     {
         $record = $this->_getSettingsRecord($category);
 
@@ -138,6 +117,18 @@ class SystemSettings extends Component
         return !$record->hasErrors();
     }
 
+    /**
+     * Returns the email settings.
+     *
+     * @return MailSettings
+     */
+    public function getEmailSettings(): MailSettings
+    {
+        $settings = $this->getSettings('email');
+
+        return new MailSettings($settings);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -148,7 +139,7 @@ class SystemSettings extends Component
      *
      * @return SystemSettingsRecord|null The SystemSettings record or null
      */
-    private function _getSettingsRecord($category)
+    private function _getSettingsRecord(string $category)
     {
         if (!isset($this->_settingsRecords[$category])) {
             $record = SystemSettingsRecord::findOne([

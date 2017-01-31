@@ -2,7 +2,7 @@
 {% set element = element is defined ? element : null %}
 
 {% set value = (element ? element.getFieldValue(field.handle) : null) %}
-{% set errors = (element and not static ? element.getErrors('field__'~field.handle) : null) %}
+{% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
 {% set instructions = (not static and field.instructions ? field.instructions|t('site') : null) %}
 
 {% if not static %}
@@ -12,13 +12,13 @@
 {% endif %}
 
 {% if instructions or input %}
-	{% include "_includes/forms/field" with {
-		label: field.name|t('site')|e,
-		siteId: field.translationMethod != 'none' ? (siteId is defined ? siteId : (element ? element.siteId : craft.app.sites.currentSite.id)),
-		required: (not static ? required : false),
-		instructions: instructions|e,
-		id: field.handle,
-		errors: errors,
-		input: input
-	} only %}
+    {% include "_includes/forms/field" with {
+        label: field.name|t('site')|e,
+        siteId: ((element.isLocalized ?? true) and field.translationMethod != 'none') ? (siteId is defined ? siteId : (element ? element.siteId : craft.app.sites.currentSite.id)),
+        required: (not static ? required : false),
+        instructions: instructions|e,
+        id: field.handle,
+        errors: errors,
+        input: input
+    } only %}
 {% endif %}

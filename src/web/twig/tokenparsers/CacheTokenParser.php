@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\CacheNode;
+use craft\web\twig\nodes\CacheNode;
 
 /**
  * Class CacheTokenParser
@@ -23,7 +23,7 @@ class CacheTokenParser extends \Twig_TokenParser
     /**
      * @return string
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'cache';
     }
@@ -36,13 +36,7 @@ class CacheTokenParser extends \Twig_TokenParser
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
 
-        $nodes = [
-            'expiration' => null,
-            'conditions' => null,
-            'ignoreConditions' => null,
-            'key' => null,
-            'body' => null,
-        ];
+        $nodes = [];
 
         $attributes = [
             'global' => false,
@@ -115,9 +109,9 @@ class CacheTokenParser extends \Twig_TokenParser
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideCacheEnd(\Twig_Token $token)
+    public function decideCacheEnd(\Twig_Token $token): bool
     {
         return $token->test('endcache');
     }

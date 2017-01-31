@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\search\SearchQuery;
-use yii\base\Event;
+use craft\search\SearchQuery;
+use yii\base\Event as BaseEvent;
 
 /**
  * SearchEvent class.
@@ -16,24 +16,24 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SearchEvent extends Event
+class SearchEvent extends BaseEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var integer[] The list of element IDs to filter by the search query, or the filtered list of element IDs,
+     * @var int[] The list of element IDs to filter by the search query, or the filtered list of element IDs,
      *                depending on if this is a beforeSearch or afterSearch event
      */
     public $elementIds = true;
 
     /**
-     * @var SearchQuery The search query
+     * @var SearchQuery|null The search query
      */
     public $query;
 
     /**
-     * @var integer The site ID to filter by
+     * @var int|null The site ID to filter by
      */
     public $siteId;
 }

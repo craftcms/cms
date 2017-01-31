@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\base\PreviewableFieldInterface;
+use craft\db\Query;
+use craft\helpers\Json;
 use yii\base\Component;
 
 /**
@@ -37,16 +37,16 @@ class ElementIndexes extends Component
     /**
      * Returns the element index settings for a given element type.
      *
-     * @param ElementInterface|string $elementType The element type class
+     * @param string $elementType The element type class
      *
      * @return array|null
      */
-    public function getSettings($elementType)
+    public function getSettings(string $elementType)
     {
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
-                ->select('settings')
-                ->from('{{%elementindexsettings}}')
+                ->select(['settings'])
+                ->from(['{{%elementindexsettings}}'])
                 ->where(['type' => $elementType])
                 ->scalar();
 
@@ -63,35 +63,36 @@ class ElementIndexes extends Component
     /**
      * Saves new element index settings for a given element type.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param array                   $newSettings The new index settings
+     * @param string $elementType The element type class
+     * @param array  $newSettings The new index settings
      *
-     * @return boolean Whether the settings were saved successfully
+     * @return bool Whether the settings were saved successfully
      */
-    public function saveSettings($elementType, $newSettings)
+    public function saveSettings(string $elementType, array $newSettings): bool
     {
+        /** @var string|ElementInterface $elementType */
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources('index'));
+        $baseSources = $this->_normalizeSources($elementType::sources('index'));
 
         // Updating the source order?
         if (isset($newSettings['sourceOrder'])) {
             // Only actually save a custom order if it's different from the default order
             $saveSourceOrder = false;
 
-            if (count($newSettings['sourceOrder']) != count($baseSources)) {
+            if (count($newSettings['sourceOrder']) !== count($baseSources)) {
                 $saveSourceOrder = true;
             } else {
                 foreach ($baseSources as $i => $source) {
                     // Any differences?
                     if (
                         (array_key_exists('heading', $source) && (
-                                $newSettings['sourceOrder'][$i][0] != 'heading' ||
-                                $newSettings['sourceOrder'][$i][1] != $source['heading']
+                                $newSettings['sourceOrder'][$i][0] !== 'heading' ||
+                                $newSettings['sourceOrder'][$i][1] !== $source['heading']
                             )) ||
                         (array_key_exists('key', $source) && (
-                                $newSettings['sourceOrder'][$i][0] != 'key' ||
-                                $newSettings['sourceOrder'][$i][1] != $source['key']
+                                $newSettings['sourceOrder'][$i][0] !== 'key' ||
+                                $newSettings['sourceOrder'][$i][1] !== $source['key']
                             ))
                     ) {
                         $saveSourceOrder = true;
@@ -127,7 +128,7 @@ class ElementIndexes extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%elementindexsettings}}',
                 ['type' => $elementType],
                 ['settings' => Json::encode($settings)])
@@ -145,15 +146,16 @@ class ElementIndexes extends Component
     /**
      * Returns the element index sources in the custom groupings/order.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param string                  $context     The context
+     * @param string $elementType The element type class
+     * @param string $context     The context
      *
      * @return array
      */
-    public function getSources($elementType, $context = 'index')
+    public function getSources(string $elementType, string $context = 'index'): array
     {
+        /** @var string|ElementInterface $elementType */
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources($context));
+        $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
 
         // Should we output the sources in a custom order?
@@ -164,10 +166,8 @@ class ElementIndexes extends Component
             // Assemble the customized source list
             $pendingHeading = null;
 
-            foreach ($settings['sourceOrder'] as $source) {
-                list($type, $value) = $source;
-
-                if ($type == 'heading') {
+            foreach ($settings['sourceOrder'] as list($type, $value)) {
+                if ($type === 'heading') {
                     // Queue it up. We'll only add it if a real source follows
                     $pendingHeading = $value;
                 } else if (isset($indexedBaseSources[$value])) {
@@ -185,7 +185,7 @@ class ElementIndexes extends Component
             }
 
             // Append any remaining sources to the end of the list
-            if ($indexedBaseSources) {
+            if (!empty($indexedBaseSources)) {
                 $sources[] = ['heading' => ''];
 
                 foreach ($indexedBaseSources as $source) {
@@ -202,14 +202,15 @@ class ElementIndexes extends Component
     /**
      * Returns all of the available attributes that can be shown for a given element type source.
      *
-     * @param ElementInterface|string $elementType   The element type class
-     * @param boolean                 $includeFields Whether custom fields should be included in the list
+     * @param string $elementType   The element type class
+     * @param bool   $includeFields Whether custom fields should be included in the list
      *
      * @return array
      */
-    public function getAvailableTableAttributes($elementType, $includeFields = true)
+    public function getAvailableTableAttributes(string $elementType, bool $includeFields = true): array
     {
-        $attributes = $elementType::defineAvailableTableAttributes();
+        /** @var string|ElementInterface $elementType */
+        $attributes = $elementType::tableAttributes();
 
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
@@ -233,13 +234,19 @@ class ElementIndexes extends Component
     /**
      * Returns the attributes that should be shown for a given element type source.
      *
-     * @param ElementInterface|string $elementType The element type class
-     * @param string                  $sourceKey   The element type source key
+     * @param string $elementType The element type class
+     * @param string $sourceKey   The element type source key
      *
      * @return array
      */
-    public function getTableAttributes($elementType, $sourceKey)
+    public function getTableAttributes(string $elementType, string $sourceKey): array
     {
+        /** @var string|ElementInterface $elementType */
+        // If this is a source path, use the first segment
+        if (($slash = strpos($sourceKey, '/')) !== false) {
+            $sourceKey = substr($sourceKey, 0, $slash);
+        }
+
         $settings = $this->getSettings($elementType);
         $availableAttributes = $this->getAvailableTableAttributes($elementType);
         $attributes = [];
@@ -247,6 +254,7 @@ class ElementIndexes extends Component
         // Start with the first available attribute, no matter what
         $firstKey = null;
 
+        /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($availableAttributes as $key => $attributeInfo) {
             $firstKey = $key;
             $attributes[] = [$key, $attributeInfo];
@@ -257,7 +265,7 @@ class ElementIndexes extends Component
         if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
             $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
         } else {
-            $attributeKeys = $elementType::getDefaultTableAttributes($sourceKey);
+            $attributeKeys = $elementType::defaultTableAttributes($sourceKey);
         }
 
         // Assemble the remainder of the list
@@ -273,17 +281,18 @@ class ElementIndexes extends Component
     /**
      * Returns the fields that are available to be shown as table attributes.
      *
-     * @param ElementInterface|string $elementType The element type class
+     * @param string $elementType The element type class
      *
      * @return FieldInterface[]
      */
-    public function getAvailableTableFields($elementType)
+    public function getAvailableTableFields(string $elementType): array
     {
+        /** @var string|ElementInterface $elementType */
         $fields = Craft::$app->getFields()->getFieldsByElementType($elementType);
         $availableFields = [];
 
         foreach ($fields as $field) {
-            $fieldType = $field->getType();
+            $fieldType = get_class($field);
 
             if ($fieldType && $fieldType instanceof PreviewableFieldInterface) {
                 $availableFields[] = $field;
@@ -303,7 +312,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _normalizeSources($sources)
+    private function _normalizeSources(array $sources): array
     {
         if (!is_array($sources)) {
             return [];
@@ -312,7 +321,7 @@ class ElementIndexes extends Component
         $normalizedSources = [];
         $pendingHeading = null;
 
-        foreach ($sources as $key => $source) {
+        foreach ($sources as $source) {
             // Is this a heading?
             if (array_key_exists('heading', $source)) {
                 $pendingHeading = $source['heading'];
@@ -321,11 +330,6 @@ class ElementIndexes extends Component
                 if ($pendingHeading !== null) {
                     $normalizedSources[] = ['heading' => $pendingHeading];
                     $pendingHeading = null;
-                }
-
-                // Ensure the key is specified in the source
-                if (!is_numeric($key)) {
-                    $source['key'] = $key;
                 }
 
                 // Only allow sources that have a key
@@ -347,7 +351,7 @@ class ElementIndexes extends Component
      *
      * @return array
      */
-    private function _indexSourcesByKey($sources)
+    private function _indexSourcesByKey(array $sources): array
     {
         $indexedSources = [];
 

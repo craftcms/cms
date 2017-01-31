@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * SavableComponentInterface defines the common interface to be implemented by savable Craft component classes.
@@ -23,57 +23,29 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Returns whether the component should be selectable in component Type selects.
      *
-     * @return boolean whether the component should be selectable in component Type selects.
+     * @return bool whether the component should be selectable in component Type selects.
      */
-    public static function isSelectable();
+    public static function isSelectable(): bool;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * Performs any actions before a component is saved.
-     *
-     * @return boolean Whether the component should be saved
-     */
-    public function beforeSave();
-
-    /**
-     * Performs any actions after a component is saved.
-     *
-     * @return void
-     */
-    public function afterSave();
-
-    /**
-     * Performs any actions before a component is deleted.
-     *
-     * @return boolean Whether the component should be deleted
-     */
-    public function beforeDelete();
-
-    /**
-     * Performs any actions after a component is deleted.
-     *
-     * @return void
-     */
-    public function afterDelete();
-
-    /**
      * Returns whether the component is new (unsaved).
      *
-     * @return boolean Whether the component is new
+     * @return bool Whether the component is new
      */
-    public function getIsNew();
+    public function getIsNew(): bool;
 
     /**
      * Validates the component.
      *
-     * @param array   $attributeNames List of attribute names that should be validated.
-     *                                If this parameter is empty, it means any attribute listed in the applicable
-     *                                validation rules should be validated.
-     * @param boolean $clearErrors    Whether existing errors should be cleared before performing validation
+     * @param string[]|null $attributeNames List of attribute names that should be validated.
+     *                                      If this parameter is empty, it means any attribute listed in the applicable
+     *                                      validation rules should be validated.
+     * @param bool          $clearErrors    Whether existing errors should be cleared before performing validation
      *
-     * @return boolean Whether the validation is successful without any error.
+     * @return bool Whether the validation is successful without any error.
      */
     public function validate($attributeNames = null, $clearErrors = true);
 
@@ -86,14 +58,14 @@ interface SavableComponentInterface extends ComponentInterface
      * @return array The list of settings attribute names
      * @see getSettings()
      */
-    public function settingsAttributes();
+    public function settingsAttributes(): array;
 
     /**
      * Returns an array of the component’s settings.
      *
      * @return array The component’s settings.
      */
-    public function getSettings();
+    public function getSettings(): array;
 
     /**
      * Returns the component’s settings HTML.
@@ -105,8 +77,8 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * For more complex settings, you might prefer to create a template, and render it via
-     * [[\craft\app\web\View::renderTemplate()]]. For example, the following code would render a template loacated at
-     * craft/plugins/myplugin/templates/_settings.html, passing the settings to it:
+     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
+     * `path/to/myplugin/templates/_settings.html`, passing the settings to it:
      *
      * ```php
      * return Craft::$app->getView()->renderTemplate('myplugin/_settings', [
@@ -115,7 +87,7 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\app\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
      * however your JavaScript code will be left untouched.
      *
      * For example, if getSettingsHtml() returns the following HTML:
@@ -145,12 +117,12 @@ interface SavableComponentInterface extends ComponentInterface
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\app\web\View]] service provides a couple handy methods that can help you deal
+     * Thankfully, [[\craft\web\View]] service provides a couple handy methods that can help you deal
      * with this:
      *
-     * - [[\craft\app\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
-     * - [[\craft\app\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\app\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
+     * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
+     * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
+     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
@@ -183,9 +155,44 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * The same principles also apply if you’re including your JavaScript code with
-     * [[\craft\app\web\View::registerJs()]].
+     * [[\craft\web\View::registerJs()]].
      *
      * @return string|null
      */
     public function getSettingsHtml();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before a component is saved.
+     *
+     * @param bool $isNew Whether the component is brand new
+     *
+     * @return bool Whether the component should be saved
+     */
+    public function beforeSave(bool $isNew): bool;
+
+    /**
+     * Performs actions after a component is saved.
+     *
+     * @param bool $isNew Whether the component is brand new
+     *
+     * @return void
+     */
+    public function afterSave(bool $isNew);
+
+    /**
+     * Performs actions before a component is deleted.
+     *
+     * @return bool Whether the component should be deleted
+     */
+    public function beforeDelete(): bool;
+
+    /**
+     * Performs actions after a component is deleted.
+     *
+     * @return void
+     */
+    public function afterDelete();
 }

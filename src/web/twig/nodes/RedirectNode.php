@@ -5,7 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
+
+use craft\helpers\UrlHelper;
 
 /**
  * Class RedirectNode
@@ -25,9 +27,9 @@ class RedirectNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('\Craft::$app->getResponse()->redirect(\craft\app\helpers\Url::getUrl(')
+            ->write('\Craft::$app->getResponse()->redirect('.UrlHelper::class.'::url(')
             ->subcompile($this->getNode('path'))
-            ->raw("), ")
+            ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))
             ->raw(");\n")
             ->write('\Craft::$app->end();');

@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\RequireEditionNode;
+use craft\web\twig\nodes\RequireEditionNode;
 
 /**
  * Class RequireEditionTokenParser
@@ -26,10 +26,12 @@ class RequireEditionTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         $lineno = $token->getLine();
-        $editionName = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'editionName' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new RequireEditionNode(['editionName' => $editionName], [], $lineno, $this->getTag());
+        return new RequireEditionNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

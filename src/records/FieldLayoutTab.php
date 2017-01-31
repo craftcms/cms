@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Field record class.
  *
- * @property integer            $id        ID
- * @property integer            $layoutId  Layout ID
+ * @property int                $id        ID
+ * @property int                $layoutId  Layout ID
  * @property string             $name      Name
  * @property string             $sortOrder Sort order
  * @property FieldLayout        $layout    Layout
@@ -44,7 +44,7 @@ class FieldLayoutTab extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%fieldlayouttabs}}';
     }
@@ -54,7 +54,7 @@ class FieldLayoutTab extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLayout()
+    public function getLayout(): ActiveQueryInterface
     {
         return $this->hasOne(FieldLayout::class, ['id' => 'layoutId']);
     }
@@ -64,7 +64,7 @@ class FieldLayoutTab extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getFields()
+    public function getFields(): ActiveQueryInterface
     {
         return $this->hasMany(FieldLayoutField::class, ['tabId' => 'id']);
     }

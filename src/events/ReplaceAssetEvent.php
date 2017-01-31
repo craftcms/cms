@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Replace asset event class.
@@ -19,12 +19,12 @@ class ReplaceAssetEvent extends AssetEvent
     // =========================================================================
 
     /**
-     * @var string file on server that is being used to replace
+     * @var string|null file on server that is being used to replace
      */
     public $replaceWith;
 
     /**
-     * @var string the file name that will be used
+     * @var string|null the file name that will be used
      */
     public $filename;
 

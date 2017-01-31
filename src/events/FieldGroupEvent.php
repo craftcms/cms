@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\models\FieldGroup;
+use craft\models\FieldGroup;
+use yii\base\Event;
 
 /**
  * FieldGroupEvent class.
@@ -21,12 +22,12 @@ class FieldGroupEvent extends Event
     // =========================================================================
 
     /**
-     * @var FieldGroup The field group associated with this event.
+     * @var FieldGroup|null The field group associated with this event.
      */
     public $group;
 
     /**
-     * @var boolean Whether the field group is brand new
+     * @var bool Whether the field group is brand new
      */
     public $isNew = false;
 }

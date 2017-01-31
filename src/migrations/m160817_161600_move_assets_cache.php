@@ -1,10 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
 
 /**
  * m160817_161600_move_assets_cache migration.
@@ -23,14 +22,15 @@ class m160817_161600_move_assets_cache extends Migration
 
         $folders = ['icons', 'resized', 'sources'];
 
-        Craft::info('Moving Assets cache folder to their new homes!');
+        echo '    > Moving Assets cache folder to their new homes ... ';
 
-        foreach ($folders as $folder)
-        {
-            Io::move($basePath.'/'.$folder, $targetPath.'/'.$folder);
+        foreach ($folders as $folder) {
+            if (is_dir($basePath.DIRECTORY_SEPARATOR.$folder)) {
+                rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
+            }
         }
 
-        Craft::info('All done');
+        echo "done\n";
 
         return true;
     }
@@ -40,7 +40,8 @@ class m160817_161600_move_assets_cache extends Migration
      */
     public function safeDown()
     {
-        echo 'm160817_161600_move_assets_cache cannot be reverted.\n';
+        echo "m160817_161600_move_assets_cache cannot be reverted.\n";
+
         return false;
     }
 }

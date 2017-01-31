@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * FieldTrait implements the common methods and properties for field classes.
@@ -19,27 +19,27 @@ trait FieldTrait
     // =========================================================================
 
     /**
-     * @var integer The field’s group’s ID
+     * @var int|null The field’s group’s ID
      */
     public $groupId;
 
     /**
-     * @var string The field’s name
+     * @var string|null The field’s name
      */
     public $name;
 
     /**
-     * @var string The field’s handle
+     * @var string|null The field’s handle
      */
     public $handle;
 
     /**
-     * @var string The field’s context
+     * @var string|null The field’s context
      */
     public $context;
 
     /**
-     * @var string The field’s instructions
+     * @var string|null The field’s instructions
      */
     public $instructions;
 
@@ -49,17 +49,17 @@ trait FieldTrait
     public $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
     /**
-     * @var string The field’s translation key format, if [[translationMethod]] is "custom"
+     * @var string|null The field’s translation key format, if [[translationMethod]] is "custom"
      */
     public $translationKeyFormat;
 
     /**
-     * @var string The field’s previous handle
+     * @var string|null The field’s previous handle
      */
     public $oldHandle;
 
     /**
-     * @var string The field’s content column prefix
+     * @var string|null The field’s content column prefix
      */
     public $columnPrefix;
 
@@ -67,22 +67,22 @@ trait FieldTrait
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer The ID of the field layout that the field was fetched from
+     * @var int|null The ID of the field layout that the field was fetched from
      */
     public $layoutId;
 
     /**
-     * @var integer The tab ID of the field layout that the field was fetched from
+     * @var int|null The tab ID of the field layout that the field was fetched from
      */
     public $tabId;
 
     /**
-     * @var boolean Whether the field is required in the field layout it was fetched from
+     * @var bool|null Whether the field is required in the field layout it was fetched from
      */
     public $required;
 
     /**
-     * @var integer The field’s sort position in the field layout it was fetched from
+     * @var int|null The field’s sort position in the field layout it was fetched from
      */
     public $sortOrder;
 }

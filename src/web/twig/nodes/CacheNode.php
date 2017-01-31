@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
-use craft\app\helpers\StringHelper;
+use Craft;
+use craft\helpers\StringHelper;
 
 /**
  * Cache twig node.
@@ -33,20 +34,21 @@ class CacheNode extends \Twig_Node
      */
     public function compile(\Twig_Compiler $compiler)
     {
-        $n = static::$_cacheCount++;
+        $n = self::$_cacheCount++;
 
-        $conditions = $this->getNode('conditions');
-        $ignoreConditions = $this->getNode('ignoreConditions');
-        $key = $this->getNode('key');
+        $conditions = $this->hasNode('conditions') ? $this->getNode('conditions') : null;
+        $ignoreConditions = $this->hasNode('ignoreConditions') ? $this->getNode('ignoreConditions') : null;
+        $key = $this->hasNode('key') ? $this->getNode('key') : null;
+        $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
+
         $durationNum = $this->getAttribute('durationNum');
         $durationUnit = $this->getAttribute('durationUnit');
-        $expiration = $this->getNode('expiration');
         $global = $this->getAttribute('global') ? 'true' : 'false';
 
         $compiler
             ->addDebugInfo($this)
-            ->write("\$cacheService = \\Craft::\$app->getTemplateCaches();\n")
-            ->write("\$request = \\Craft::\$app->getRequest();\n")
+            ->write('$cacheService = '.Craft::class."::\$app->getTemplateCaches();\n")
+            ->write('$request = '.Craft::class."::\$app->getRequest();\n")
             ->write("\$ignoreCache{$n} = (\$request->getIsLivePreview() || \$request->getToken()");
 
         if ($conditions) {
@@ -75,7 +77,7 @@ class CacheNode extends \Twig_Node
 
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCaches(\$cacheKey{$n}, {$global});\n")
+            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
@@ -99,7 +101,7 @@ class CacheNode extends \Twig_Node
         if ($durationNum) {
             // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
 
-            if ($durationUnit == 'week') {
+            if ($durationUnit === 'week') {
                 if ($durationNum == 1) {
                     $durationNum = 7;
                     $durationUnit = 'days';

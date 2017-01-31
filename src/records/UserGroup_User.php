@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Class UserGroup_User record.
  *
- * @property integer   $id      ID
- * @property integer   $groupId Group ID
- * @property integer   $userId  User ID
+ * @property int       $id      ID
+ * @property int       $groupId Group ID
+ * @property int       $userId  User ID
  * @property UserGroup $group   Group
  * @property User      $user    User
  *
@@ -42,7 +42,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%usergroups_users}}';
     }
@@ -52,7 +52,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getGroup()
+    public function getGroup(): ActiveQueryInterface
     {
         return $this->hasOne(UserGroup::class, ['id' => 'groupId']);
     }
@@ -62,7 +62,7 @@ class UserGroup_User extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getUser()
+    public function getUser(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'userId']);
     }

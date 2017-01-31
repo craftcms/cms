@@ -2,34 +2,35 @@
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 
-{% registerassetbundle 'craft\\app\\web\\assets\\AppAsset' -%}
+{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
+{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) %}
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
-	{% block head %}
-	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta charset="utf-8">
-	<title>{{ docTitle ~ (docTitle and siteName ? ' - ') ~ siteName }}</title>
-	{{ head() }}
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    {% block head %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <title>{{ docTitle ~ (docTitle and siteName ? ' - ') ~ siteName }}</title>
+    {{ head() }}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-	<link rel="apple-touch-icon" sizes="76x76" href="{{ resourceUrl("images/touch-icons/ipad_1x.png") }}">
-	<link rel="apple-touch-icon" sizes="120x120" href="{{ resourceUrl("images/touch-icons/iphone_2x.png") }}">
-	<link rel="apple-touch-icon" sizes="152x152" href="{{ resourceUrl("images/touch-icons/ipad_2x.png") }}">
-	<link rel="apple-touch-icon" sizes="167x167" href="{{ resourceUrl("images/touch-icons/ipad-pro_2x.png") }}">
-	<link rel="apple-touch-icon" sizes="180x180" href="{{ resourceUrl("images/touch-icons/iphone_3x.png") }}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ cpAssetUrl }}/images/touch-icons/ipad_1x.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ cpAssetUrl }}/images/touch-icons/iphone_2x.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ cpAssetUrl }}/images/touch-icons/ipad_2x.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="{{ cpAssetUrl }}/images/touch-icons/ipad-pro_2x.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ cpAssetUrl }}/images/touch-icons/iphone_3x.png">
 
-	<script type="text/javascript">
-		// Fix for Firefox autofocus CSS bug
-		// See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
-	</script>
-	{% endblock %}
+    <script type="text/javascript">
+        // Fix for Firefox autofocus CSS bug
+        // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
+    </script>
+    {% endblock %}
 </head>
 <body class="{{ bodyClass }}">
-	{{ beginBody() }}
-	{% block body %}{% endblock %}
-	{% block foot %}{% endblock %}
-	{{ endBody() }}
+    {{ beginBody() }}
+    {% block body %}{% endblock %}
+    {% block foot %}{% endblock %}
+    {{ endBody() }}
 </body>
 </html>

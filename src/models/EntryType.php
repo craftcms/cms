@@ -5,15 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\helpers\Url;
-use craft\app\records\EntryType as EntryTypeRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
+use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Entry;
+use craft\helpers\UrlHelper;
+use craft\records\EntryType as EntryTypeRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * EntryType model class.
@@ -32,32 +34,32 @@ class EntryType extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Field layout ID
+     * @var int|null Field layout ID
      */
     public $fieldLayoutId;
 
     /**
-     * @var string Name
+     * @var string|null Name
      */
     public $name;
 
     /**
-     * @var string Handle
+     * @var string|null Handle
      */
     public $handle;
 
     /**
-     * @var boolean Has title field
+     * @var bool Has title field
      */
     public $hasTitleField = true;
 
@@ -67,7 +69,7 @@ class EntryType extends Model
     public $titleLabel = 'Title';
 
     /**
-     * @var string Title format
+     * @var string|null Title format
      */
     public $titleFormat;
 
@@ -81,8 +83,8 @@ class EntryType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\app\elements\Entry::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Entry::class
             ],
         ];
     }
@@ -123,9 +125,9 @@ class EntryType extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
-        return $this->handle;
+        return (string)$this->handle;
     }
 
     /**
@@ -133,9 +135,9 @@ class EntryType extends Model
      *
      * @return string
      */
-    public function getCpEditUrl()
+    public function getCpEditUrl(): string
     {
-        return Url::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
     }
 
     /**

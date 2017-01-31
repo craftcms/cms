@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\GlobalSet;
+use craft\elements\GlobalSet;
 
 /**
  * Global Set event class.
@@ -15,18 +15,18 @@ use craft\app\elements\GlobalSet;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GlobalSetEvent extends Event
+class GlobalSetEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var GlobalSet The global set model associated with the event.
+     * @var GlobalSet|null The global set model associated with the event.
      */
     public $globalSet;
 
     /**
-     * @var boolean Whether the global set is brand new
+     * @var bool Whether the global set is brand new
      */
     public $isNew = false;
 }

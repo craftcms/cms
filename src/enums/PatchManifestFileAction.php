@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The PatchManifestFileAction class is an abstract class that defines all of the different path manifest file actions
@@ -16,7 +16,7 @@ namespace craft\app\enums;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class PatchManifestFileAction extends BaseEnum
+abstract class PatchManifestFileAction
 {
     // Constants
     // =========================================================================

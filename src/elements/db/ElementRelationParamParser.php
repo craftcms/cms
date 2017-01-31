@@ -5,20 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\Site;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\Site;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
  *
- * @param boolean $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
+ * @property bool $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -31,42 +32,25 @@ class ElementRelationParamParser
     /**
      * @var int
      */
-    private $_joinSourceMatrixBlocksCount;
+    private $_joinSourceMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private $_joinTargetMatrixBlocksCount;
+    private $_joinTargetMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private $_joinSourcesCount;
+    private $_joinSourcesCount = 0;
 
     /**
      * @var int
      */
-    private $_joinTargetsCount;
-
-    /**
-     * @var int
-     */
-    private $_sourceSiteParamCount;
+    private $_joinTargetsCount = 0;
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->_joinSourceMatrixBlocksCount = 0;
-        $this->_joinTargetMatrixBlocksCount = 0;
-        $this->_joinSourcesCount = 0;
-        $this->_joinTargetsCount = 0;
-        $this->_sourceSiteParamCount = 0;
-    }
 
     /**
      * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
@@ -82,7 +66,7 @@ class ElementRelationParamParser
         if (is_string($relatedTo)) {
             $relatedTo = ArrayHelper::toArray($relatedTo);
         } else if (!is_array($relatedTo)) {
-            $relatedTo = [$relatedTo];
+            $relatedTo = (array)$relatedTo;
         }
 
         if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement'])) {
@@ -91,13 +75,13 @@ class ElementRelationParamParser
 
         $conditions = [];
 
-        if ($relatedTo[0] == 'and' || $relatedTo[0] == 'or') {
+        if ($relatedTo[0] === 'and' || $relatedTo[0] === 'or') {
             $glue = array_shift($relatedTo);
         } else {
             $glue = 'or';
         }
 
-        if ($glue == 'or') {
+        if ($glue === 'or') {
             // Group all of the unspecified elements, so we avoid adding massive JOINs to the query
             $unspecifiedElements = [];
 
@@ -108,7 +92,7 @@ class ElementRelationParamParser
                 }
             }
 
-            if ($unspecifiedElements) {
+            if (!empty($unspecifiedElements)) {
                 $relatedTo[] = ['element' => $unspecifiedElements];
             }
         }
@@ -118,15 +102,15 @@ class ElementRelationParamParser
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue == 'or') {
+            } else if ($glue === 'or') {
                 continue;
             } else {
                 return false;
             }
         }
 
-        if ($conditions) {
-            if (count($conditions) == 1) {
+        if (!empty($conditions)) {
+            if (count($conditions) === 1) {
                 return $conditions[0];
             }
 
@@ -141,15 +125,15 @@ class ElementRelationParamParser
     /**
      * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
      *
-     * @return boolean
+     * @return bool
      */
-    public function getIsRelationFieldQuery()
+    public function getIsRelationFieldQuery(): bool
     {
         return (
-            $this->_joinSourcesCount == 1 &&
-            !$this->_joinTargetsCount &&
-            !$this->_joinSourceMatrixBlocksCount &&
-            !$this->_joinTargetMatrixBlocksCount
+            $this->_joinSourcesCount === 1 &&
+            $this->_joinTargetsCount === 0 &&
+            $this->_joinSourceMatrixBlocksCount === 0 &&
+            $this->_joinTargetMatrixBlocksCount === 0
         );
     }
 
@@ -208,7 +192,7 @@ class ElementRelationParamParser
             if (isset($relCriteria[$elementParam])) {
                 $elements = ArrayHelper::toArray($relCriteria[$elementParam]);
 
-                if (isset($elements[0]) && ($elements[0] == 'and' || $elements[0] == 'or')) {
+                if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
                     $glue = array_shift($elements);
                 }
 
@@ -218,7 +202,9 @@ class ElementRelationParamParser
                     } else if ($element instanceof ElementInterface) {
                         $relElementIds[] = $element->id;
                     } else if ($element instanceof ElementQueryInterface) {
-                        $relElementIds = array_merge($relElementIds, $element->ids());
+                        foreach ($element->ids() as $id) {
+                            $relElementIds[] = $id;
+                        }
                     }
                 }
 
@@ -226,7 +212,7 @@ class ElementRelationParamParser
             }
         }
 
-        if (!$relElementIds) {
+        if (empty($relElementIds)) {
             return false;
         }
 
@@ -248,7 +234,7 @@ class ElementRelationParamParser
         }
 
         // Do we need to check for *all* of the element IDs?
-        if ($glue == 'and') {
+        if ($glue === 'and') {
             // Spread it across multiple relation sub-params
             $newRelatedToParam = ['and'];
 
@@ -268,7 +254,6 @@ class ElementRelationParamParser
             $fields = ArrayHelper::toArray($relCriteria['field']);
 
             foreach ($fields as $field) {
-                $fieldModel = null;
 
                 if (is_numeric($field)) {
                     $fieldHandleParts = null;
@@ -284,7 +269,7 @@ class ElementRelationParamParser
 
                 /** @var Field $fieldModel */
                 // Is this a Matrix field?
-                if ($fieldModel->type == 'Matrix') {
+                if (get_class($fieldModel) == Matrix::class) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
@@ -303,7 +288,7 @@ class ElementRelationParamParser
                             }
                         }
 
-                        if (!$blockTypeFieldIds) {
+                        if (empty($blockTypeFieldIds)) {
                             continue;
                         }
                     }
@@ -317,33 +302,29 @@ class ElementRelationParamParser
 
                         $relationsJoinConditions = [
                             'and',
-                            $sourcesAlias.'.targetId = elements.id'
+                            "[[{$sourcesAlias}.targetId]] = [[elements.id]]"
                         ];
-                        $relationsJoinParams = [];
 
                         if ($relCriteria['sourceSite']) {
-                            $this->_sourceSiteParamCount++;
-                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $sourcesAlias.'.sourceSiteId is null',
-                                $sourcesAlias.'.sourceSiteId = '.$sourceSiteParam
+                                [$sourcesAlias.'.sourceSiteId' => null],
+                                [$sourcesAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                             ];
-                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
-                        $query->leftJoin('{{%relations}} '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
-                        $query->leftJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
+                        $query->leftJoin("{{%relations}} {$sourcesAlias}", $relationsJoinConditions);
+                        $query->leftJoin("{{%matrixblocks}} {$targetMatrixBlocksAlias}", "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]");
 
                         $condition = [
                             'and',
-                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
-                            $targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
+                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
+                            [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
-                        if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                        if (!empty($blockTypeFieldIds)) {
+                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     } else {
                         $this->_joinSourceMatrixBlocksCount++;
@@ -352,33 +333,28 @@ class ElementRelationParamParser
 
                         $relationsJoinConditions = [
                             'and',
-                            $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id'
+                            "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]"
                         ];
-                        $relationsJoinParams = [];
 
                         if ($relCriteria['sourceSite']) {
-                            $this->_sourceSiteParamCount++;
-                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
-
                             $relationsJoinConditions[] = [
                                 'or',
-                                $matrixBlockTargetsAlias.'.sourceSiteId is null',
-                                $matrixBlockTargetsAlias.'.sourceSiteId = '.$sourceSiteParam
+                                [$matrixBlockTargetsAlias.'.sourceSiteId' => null],
+                                [$matrixBlockTargetsAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                             ];
-                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
-                        $query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-                        $query->leftJoin('{{%relations}} '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
+                        $query->leftJoin("{{%matrixblocks}} {$sourceMatrixBlocksAlias}", "[[{$sourceMatrixBlocksAlias}.ownerId]] = [[elements.id]]");
+                        $query->leftJoin("{{%relations}} {$matrixBlockTargetsAlias}", $relationsJoinConditions);
 
                         $condition = [
                             'and',
-                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
-                            $sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
+                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
+                            [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
-                        if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                        if (!empty($blockTypeFieldIds)) {
+                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     }
 
@@ -391,7 +367,7 @@ class ElementRelationParamParser
 
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
-        if ($relCriteria['field'] || $normalFieldIds) {
+        if ($relCriteria['field'] || !empty($normalFieldIds)) {
             if (isset($relCriteria['sourceElement'])) {
                 $this->_joinSourcesCount++;
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;
@@ -407,37 +383,32 @@ class ElementRelationParamParser
 
             $relationsJoinConditions = [
                 'and',
-                $relTableAlias.'.'.$relElementColumn.' = elements.id'
+                "[[{$relTableAlias}.{$relElementColumn}]] = [[elements.id]]"
             ];
-            $relationsJoinParams = [];
 
             if ($relCriteria['sourceSite']) {
-                $this->_sourceSiteParamCount++;
-                $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
-
                 $relationsJoinConditions[] = [
                     'or',
-                    $relTableAlias.'.sourceSiteId is null',
-                    $relTableAlias.'.sourceSiteId = '.$sourceSiteParam
+                    [$relTableAlias.'.sourceSiteId' => null],
+                    [$relTableAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                 ];
-                $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
             }
 
-            $query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
-            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
+            $query->leftJoin("{{%relations}} {$relTableAlias}", $relationsJoinConditions);
+            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds);
 
-            if ($normalFieldIds) {
+            if (!empty($normalFieldIds)) {
                 $condition = [
                     'and',
                     $condition,
-                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
+                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds)
                 ];
             }
 
             $conditions[] = $condition;
         }
 
-        if ($conditions) {
+        if (!empty($conditions)) {
             if (count($conditions) == 1) {
                 return $conditions[0];
             }

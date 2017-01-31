@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 /**
  * Class TemplateLoaderException
@@ -19,7 +19,7 @@ class TemplateLoaderException extends \Twig_Error_Loader
     // =========================================================================
 
     /**
-     * @var string
+     * @var string|null
      */
     public $template;
 
@@ -30,7 +30,7 @@ class TemplateLoaderException extends \Twig_Error_Loader
      * @param string $template The requested template
      * @param string $message  The exception message
      */
-    public function __construct($template, $message)
+    public function __construct(string $template, string $message)
     {
         $this->template = $template;
         parent::__construct($message);

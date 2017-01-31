@@ -5,18 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\fields\Matrix;
-use craft\app\helpers\ElementHelper;
-use craft\app\models\MatrixBlockType;
-use craft\app\validators\SiteIdValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\MatrixBlockQuery;
+use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\models\MatrixBlockType;
+use craft\records\MatrixBlock as MatrixBlockRecord;
+use craft\validators\SiteIdValidator;
+use craft\web\assets\matrix\MatrixAsset;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -33,7 +36,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Matrix Block');
     }
@@ -41,7 +44,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -49,7 +52,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -59,7 +62,7 @@ class MatrixBlock extends Element
      *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new MatrixBlockQuery(get_called_class());
     }
@@ -67,36 +70,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
-    {
-        /** @var MatrixBlockQuery $query */
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId);
-
-        // Preload all of the fields up front to save ourselves some DB queries, and discard
-        $contexts = [];
-        foreach ($blockTypes as $blockType) {
-            $contexts[] = 'matrixBlockType:'.$blockType->id;
-        }
-        Craft::$app->getFields()->getAllFields(null, $contexts);
-
-        // Now assemble the actual fields list
-        $fields = [];
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                $field->columnPrefix = $fieldColumnPrefix;
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -109,7 +83,7 @@ class MatrixBlock extends Element
 
         // Get the block type
         $matrixFieldId = $sourceElements[0]->fieldId;
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId, 'handle');
+        $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {
             // Not a valid block type handle (assuming all $sourceElements are blocks from the same Matrix field)
@@ -123,7 +97,7 @@ class MatrixBlock extends Element
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
 
-        $map = parent::getEagerLoadingMap($sourceElements, $fieldHandle);
+        $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
         $contentService->fieldContext = $originalFieldContext;
 
@@ -134,42 +108,42 @@ class MatrixBlock extends Element
     // =========================================================================
 
     /**
-     * @var integer Field ID
+     * @var int|null Field ID
      */
     public $fieldId;
 
     /**
-     * @var integer Owner ID
+     * @var int|null Owner ID
      */
     public $ownerId;
 
     /**
-     * @var integer Owner site ID
+     * @var int|null Owner site ID
      */
     public $ownerSiteId;
 
     /**
-     * @var integer Type ID
+     * @var int|null Type ID
      */
     public $typeId;
 
     /**
-     * @var integer Sort order
+     * @var int|null Sort order
      */
     public $sortOrder;
 
     /**
-     * @var boolean Collapsed
+     * @var bool Collapsed
      */
     public $collapsed = false;
 
     /**
-     * @var ElementInterface The owner element
+     * @var ElementInterface|false|null The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 
     /**
-     * @var
+     * @var ElementInterface[]|null
      */
     private $_eagerLoadedBlockTypeElements;
 
@@ -193,24 +167,18 @@ class MatrixBlock extends Element
      */
     public function getFieldLayout()
     {
-        $blockType = $this->getType();
-
-        if ($blockType) {
-            return $blockType->getFieldLayout();
-        }
-
-        return null;
+        return $this->getType()->getFieldLayout();
     }
 
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
         // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
 
-        if ($this->ownerSiteId) {
+        if ($this->ownerSiteId !== null) {
             return [$this->ownerSiteId];
         }
 
@@ -220,7 +188,7 @@ class MatrixBlock extends Element
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::getSupportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 
@@ -238,7 +206,7 @@ class MatrixBlock extends Element
      */
     public function getType()
     {
-        if (!$this->typeId) {
+        if ($this->typeId === null) {
             throw new InvalidConfigException('Matrix block is missing its type ID');
         }
 
@@ -258,19 +226,23 @@ class MatrixBlock extends Element
      */
     public function getOwner()
     {
-        if (!isset($this->_owner) && $this->ownerId) {
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId);
-
-            if (!$this->_owner) {
-                $this->_owner = false;
-            }
+        if ($this->_owner !== null) {
+            return $this->_owner !== false ? $this->_owner : null;
         }
 
-        if ($this->_owner) {
-            return $this->_owner;
+        if ($this->ownerId === null) {
+            return null;
         }
 
-        return null;
+        if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
+            // Be forgiving of invalid ownerId's in this case, since the field
+            // could be in the process of being saved to a new element/site
+            $this->_owner = false;
+
+            return null;
+        }
+
+        return $this->_owner;
     }
 
     /**
@@ -286,7 +258,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getContentTable()
+    public function getContentTable(): string
     {
         return Craft::$app->getMatrix()->getContentTableName($this->_getField());
     }
@@ -294,7 +266,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldColumnPrefix()
+    public function getFieldColumnPrefix(): string
     {
         return 'field_'.$this->getType()->handle.'_';
     }
@@ -304,7 +276,7 @@ class MatrixBlock extends Element
      *
      * @return string
      */
-    public function getFieldContext()
+    public function getFieldContext(): string
     {
         return 'matrixBlockType:'.$this->typeId;
     }
@@ -312,7 +284,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function hasEagerLoadedElements($handle)
+    public function hasEagerLoadedElements(string $handle): bool
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle.':'.$handle;
@@ -327,7 +299,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getEagerLoadedElements($handle)
+    public function getEagerLoadedElements(string $handle)
     {
         // See if we have this stored with a block type-specific handle
         $blockTypeHandle = $this->getType()->handle.':'.$handle;
@@ -342,11 +314,11 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle.':';
-        if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0) {
+        if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
             parent::setEagerLoadedElements($handle, $elements);
@@ -356,12 +328,58 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getHasFreshContent()
+    public function getHasFreshContent(): bool
     {
         // Defer to the owner element
         $owner = $this->getOwner();
 
         return $owner ? $owner->getHasFreshContent() : false;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave(bool $isNew)
+    {
+        // Get the block record
+        if (!$isNew) {
+            $record = MatrixBlockRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid Matrix block ID: '.$this->id);
+            }
+        } else {
+            $record = new MatrixBlockRecord();
+            $record->id = $this->id;
+        }
+
+        $record->fieldId = $this->fieldId;
+        $record->ownerId = $this->ownerId;
+        $record->ownerSiteId = $this->ownerSiteId;
+        $record->typeId = $this->typeId;
+        $record->sortOrder = $this->sortOrder;
+        $record->save(false);
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Tell the browser to forget about this block
+            $session = Craft::$app->getSession();
+            $session->addAssetBundleFlash(MatrixAsset::class);
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+        }
+
+        parent::afterDelete();
     }
 
     // Private Methods
@@ -372,8 +390,9 @@ class MatrixBlock extends Element
      *
      * @return Matrix
      */
-    private function _getField()
+    private function _getField(): Matrix
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

@@ -5,65 +5,79 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ContentBehavior;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ContentTrait;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\Event;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Html;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\i18n\Locale;
-use craft\app\models\FieldLayout;
-use craft\app\models\Site;
-use craft\app\validators\DateTimeValidator;
-use craft\app\validators\SiteIdValidator;
-use craft\app\web\UploadedFile;
+use craft\behaviors\ContentBehavior;
+use craft\behaviors\ContentTrait;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\ElementStructureEvent;
+use craft\events\ModelEvent;
+use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementDefaultTableAttributesEvent;
+use craft\events\RegisterElementHtmlAttributesEvent;
+use craft\events\RegisterElementSearchableAttributesEvent;
+use craft\events\RegisterElementSortOptionsEvent;
+use craft\events\RegisterElementSourcesEvent;
+use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\SetElementRouteEvent;
+use craft\events\SetElementTableAttributeHtmlEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
+use craft\helpers\Template;
+use craft\helpers\UrlHelper;
+use craft\i18n\Locale;
+use craft\models\FieldLayout;
+use craft\models\Site;
+use craft\validators\DateTimeValidator;
+use craft\validators\SiteIdValidator;
+use craft\web\UploadedFile;
+use DateTime;
+use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\validators\Validator;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property FieldLayout|null      $fieldLayout         The field layout used by this element
- * @property integer[]             $supportedSiteIds    The site IDs this element is available in
- * @property string|null           $uriFormat           The URI format used to generate this element’s URL
- * @property string|null           $url                 The element’s full URL
- * @property \Twig_Markup|null     $link                An anchor pre-filled with this element’s URL and title
- * @property string|null           $ref                 The reference string to this element
- * @property boolean               $isEditable          Whether the current user can edit the element
- * @property string|null           $cpEditUrl           The element’s CP edit URL
- * @property string|null           $thumbUrl            The URL to the element’s thumbnail, if there is one
- * @property string|null           $iconUrl             The URL to the element’s icon image, if there is one
- * @property string|null           $status              The element’s status
- * @property Element               $next                The next element relative to this one, from a given set of criteria
- * @property Element               $prev                The previous element relative to this one, from a given set of criteria
- * @property Element               $parent              The element’s parent
- * @property integer|null          $structureId         The ID of the structure that the element is associated with, if any
- * @property ElementQueryInterface $ancestors           The element’s ancestors
- * @property ElementQueryInterface $descendants         The element’s descendants
- * @property ElementQueryInterface $children            The element’s children
- * @property ElementQueryInterface $siblings            All of the element’s siblings
- * @property Element               $prevSibling         The element’s previous sibling
- * @property Element               $nextSibling         The element’s next sibling
- * @property boolean               $hasDescendants      Whether the element has descendants
- * @property integer               $totalDescendants    The total number of descendants that the element has
- * @property string                $title               The element’s title
- * @property array                 $contentFromPost     The raw content from the post data, as it was given to [[setFieldValuesFromPost]]
- * @property string|null           $contentPostLocation The location in POST that the content was pulled from
- * @property string                $contentTable        The name of the table this element’s content is stored in
- * @property string                $fieldColumnPrefix   The field column prefix this element’s content uses
- * @property string                $fieldContext        The field context this element’s content uses
+ * @property FieldLayout|null      $fieldLayout           The field layout used by this element
+ * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
+ * @property int[]                 $supportedSiteIds      The site IDs this element is available in
+ * @property string|null           $uriFormat             The URI format used to generate this element’s URL
+ * @property string|null           $url                   The element’s full URL
+ * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
+ * @property string|null           $ref                   The reference string to this element
+ * @property string                $indexHtml             The element index HTML
+ * @property bool                  $isEditable            Whether the current user can edit the element
+ * @property string|null           $cpEditUrl             The element’s CP edit URL
+ * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
+ * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
+ * @property string|null           $status                The element’s status
+ * @property Element               $next                  The next element relative to this one, from a given set of criteria
+ * @property Element               $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element               $parent                The element’s parent
+ * @property mixed                 $route                 The route that should be used when the element’s URI is requested
+ * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
+ * @property ElementQueryInterface $ancestors             The element’s ancestors
+ * @property ElementQueryInterface $descendants           The element’s descendants
+ * @property ElementQueryInterface $children              The element’s children
+ * @property ElementQueryInterface $siblings              All of the element’s siblings
+ * @property Element               $prevSibling           The element’s previous sibling
+ * @property Element               $nextSibling           The element’s next sibling
+ * @property bool                  $hasDescendants        Whether the element has descendants
+ * @property int                   $totalDescendants      The total number of descendants that the element has
+ * @property string                $title                 The element’s title
+ * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
+ * @property string                $contentTable          The name of the table this element’s content is stored in
+ * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
+ * @property string                $fieldContext          The field context this element’s content uses
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -74,8 +88,7 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     use ElementTrait;
-    use /** @noinspection PhpUndefinedClassInspection */
-        ContentTrait;
+    use ContentTrait;
 
     // Constants
     // =========================================================================
@@ -85,16 +98,85 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ARCHIVED = 'archived';
 
     /**
-     * @event Event The event that is triggered before the element is saved
+     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
+     */
+    const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     */
+    const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementSearchableAttributesEvent The event that is triggered when registering the searchable attributes for the element type.
+     */
+    const EVENT_REGISTER_SEARCHABLE_ATTRIBUTES = 'registerSearchableAttributes';
+
+    /**
+     * @event RegisterElementSortOptionsEvent The event that is triggered when registering the sort options for the element type.
+     */
+    const EVENT_REGISTER_SORT_OPTIONS = 'registerSortOptions';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES = 'registerDefaultTableAttributes';
+
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
+     */
+    const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+
+    /**
+     * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the Control Panel.
+     */
+    const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+
+    /**
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     */
+    const EVENT_SET_ROUTE = 'setRoute';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the element from getting saved.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event Event The event that is triggered after the element is saved
+     * @event ModelEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is deleted
+     *
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is deleted
+     */
+    const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
+     *
+     * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
+     */
+    const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     */
+    const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
     // Static
     // =========================================================================
@@ -102,7 +184,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function refHandle()
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasContent(): bool
     {
         return false;
     }
@@ -110,7 +200,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return false;
     }
@@ -118,7 +208,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return false;
     }
@@ -126,7 +216,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return false;
     }
@@ -134,7 +224,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses(): array
     {
         return [
             self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
@@ -147,7 +237,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementQueryInterface
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new ElementQuery(get_called_class());
     }
@@ -171,37 +261,86 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources(string $context = null): array
     {
-        return false;
+        $sources = static::defineSources($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSourcesEvent([
+            'context' => $context,
+            'sources' => $sources
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+
+        return $event->sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function actions(string $source): array
     {
-        $contextKey = ($context ? $context : '*');
+        $actions = static::defineActions($source);
 
-        if (!isset(self::$_sourcesByContext[$contextKey])) {
-            self::$_sourcesByContext[$contextKey] = static::getSources($context);
-        }
+        // Give plugins a chance to modify them
+        $event = new RegisterElementActionsEvent([
+            'source' => $source,
+            'actions' => $actions
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
-        return static::_findSource($key, self::$_sourcesByContext[$contextKey]);
+        return $event->actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function searchableAttributes(): array
+    {
+        $attributes = static::defineSearchableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSearchableAttributesEvent([
+            'attributes' => $attributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+
+        return $event->attributes;
+    }
+
+    /**
+     * Defines the sources that elements of this type may belong to.
+     *
+     * @param string|null $context The context ('index' or 'modal').
+     *
+     * @return array The sources.
+     * @see sources()
+     */
+    protected static function defineSources(string $context = null): array
     {
         return [];
     }
 
     /**
-     * @inheritdoc
+     * Defines the available element actions for a given source (if one is provided).
+     *
+     * @param string|null $source The selected source’s key, if any.
+     *
+     * @return array The available element actions.
+     * @see actions()
      */
-    public static function defineSearchableAttributes()
+    protected static function defineActions(string $source = null): array
+    {
+        return [];
+    }
+
+    /**
+     * Defines which element attributes should be searchable.
+     *
+     * @return string[] The element attributes that should be searchable
+     * @see searchableAttributes()
+     */
+    protected static function defineSearchableAttributes(): array
     {
         return [];
     }
@@ -212,27 +351,26 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+    public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string
     {
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
-            'elementType' => new static(),
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
         ];
 
         // Special case for sorting by structure
-        if (isset($viewState['order']) && $viewState['order'] == 'structure') {
-            $source = static::getSourceByKey($sourceKey, $context);
+        if (isset($viewState['order']) && $viewState['order'] === 'structure') {
+            $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
             if (isset($source['structureId'])) {
-                $elementQuery->orderBy('lft asc');
+                $elementQuery->orderBy(['lft' => SORT_ASC]);
                 $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                 // Are they allowed to make changes to this structure?
-                if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
                     $variables['structureEditable'] = true;
 
                     // Let StructuresController know that this user can make changes to the structure
@@ -241,15 +379,14 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 unset($viewState['order']);
             }
-        } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
+        } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::defineSortableAttributes();
+            $sortOptions = static::sortOptions();
 
-            if ($sortableAttributes) {
-                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'],
-                        ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
+            if (!empty($sortOptions)) {
+                $order = (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortOptions);
+                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
                 // and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -263,17 +400,13 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        switch ($viewState['mode']) {
-            case 'table': {
-                // Get the table columns
-                $variables['attributes'] = static::getTableAttributesForSource($sourceKey);
+        if ($viewState['mode'] === 'table') {
+            // Get the table columns
+            $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
 
-                // Give each attribute a chance to modify the criteria
-                foreach ($variables['attributes'] as $attribute) {
-                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
-                }
-
-                break;
+            // Give each attribute a chance to modify the criteria
+            foreach ($variables['attributes'] as $attribute) {
+                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
             }
         }
 
@@ -287,158 +420,97 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortOptions(): array
     {
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
-        $sortableAttributes = [];
+        $sortOptions = static::defineSortOptions();
 
-        foreach ($tableAttributes as $key => $labelInfo) {
-            $sortableAttributes[$key] = $labelInfo['label'];
-        }
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSortOptionsEvent([
+            'sortOptions' => $sortOptions
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
 
-        return $sortableAttributes;
+        return $event->sortOptions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes(): array
+    {
+        $tableAttributes = static::defineTableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementTableAttributesEvent([
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function defaultTableAttributes(string $source): array
+    {
+        $tableAttributes = static::defineDefaultTableAttributes($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementDefaultTableAttributesEvent([
+            'source' => $source,
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
+    }
+
+    /**
+     * Returns the sort options for the element type.
+     *
+     * @return array The attributes that elements can be sorted by
+     * @see sortOptions()
+     */
+    protected static function defineSortOptions(): array
+    {
+        // Default to the available table attributes
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $sortOptions = [];
+
+        foreach ($tableAttributes as $key => $labelInfo) {
+            $sortOptions[$key] = $labelInfo['label'];
+        }
+
+        return $sortOptions;
+    }
+
+    /**
+     * Defines all of the available columns that can be shown in table views.
+     *
+     * @return array The table attributes.
+     * @see tableAttributes()
+     */
+    protected static function defineTableAttributes(): array
     {
         return [];
     }
 
     /**
-     * @inheritdoc
+     * Returns the list of table attribute keys that should be shown by default.
+     *
+     * @param string $source The selected source’s key
+     *
+     * @return string[] The table attributes.
+     * @see defaultTableAttributes()
+     * @see tableAttributes()
      */
-    public static function getDefaultTableAttributes($source = null)
+    protected static function defineDefaultTableAttributes(string $source): array
     {
-        $availableTableAttributes = static::defineAvailableTableAttributes();
+        // Return all of them by default
+        $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Element $element */
-        switch ($attribute) {
-            case 'link': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                }
-
-                return '';
-            }
-
-            case 'uri': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    $value = $element->uri;
-
-                    if ($value == '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app',
-                                'Homepage').'"></span>';
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $value);
-                    }
-
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                }
-
-                return '';
-            }
-
-            default: {
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        /** @var Field $field */
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $element->hasEagerLoadedElements($field->handle)) {
-                                $value = $element->getEagerLoadedElements($field->handle);
-                            } else {
-                                $value = $element->getFieldValue($field->handle);
-                            }
-
-                            return $field->getTableAttributeHtml($value, $element);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $element->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
-                }
-
-                return Html::encode($value);
-            }
-        }
-    }
-
-    /**
-     * Returns the attributes that should be shown for the given source.
-     *
-     * @param string $sourceKey The source key
-     *
-     * @return array The attributes that should be shown for the given source
-     */
-    protected static function getTableAttributesForSource($sourceKey)
-    {
-        $elementType = static::class;
-
-        // Give plugins a chance to customize them
-        $pluginAttributes = Craft::$app->getPlugins()->callFirst('getTableAttributesForSource', [
-            $elementType,
-            $sourceKey
-        ], true);
-
-        if ($pluginAttributes !== null) {
-            return $pluginAttributes;
-        }
-
-        return Craft::$app->getElementIndexes()->getTableAttributes($elementType, $sourceKey);
-    }
-
-    // Methods for customizing the content table
-    // -----------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
-    {
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'global';
-        $fields = Craft::$app->getFields()->getAllFields();
-        $contentService->fieldContext = $originalFieldContext;
-
-        return $fields;
     }
 
     // Methods for customizing element queries
@@ -447,71 +519,66 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle)
     {
         // Eager-loading descendants or direct children?
-        if ($handle == 'descendants' || $handle == 'children') {
+        if ($handle === 'descendants' || $handle === 'children') {
             // Get the source element IDs
-            $sourceElementIds = [];
-
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
+            $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
             // Get the structure data for these elements
-            // @todo: case sql is MySQL-specific
-            $selectSql = 'structureId, elementId, lft, rgt';
+            $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
 
-            if ($handle == 'children') {
-                $selectSql .= ', level';
+            if ($handle === 'children') {
+                $selectColumns[] = 'level';
             }
 
             $structureData = (new Query())
-                ->select($selectSql)
-                ->from('{{%structureelements}}')
-                ->where(['in', 'elementId', $sourceElementIds])
+                ->select($selectColumns)
+                ->from(['{{%structureelements}}'])
+                ->where(['elementId' => $sourceElementIds])
                 ->all();
 
-            $conditions = ['or'];
-            $params = [];
+            $db = Craft::$app->getDb();
+            $qb = $db->getQueryBuilder();
+            $query = new Query();
             $sourceSelectSql = '(CASE';
+            $condition = ['or'];
 
             foreach ($structureData as $i => $elementStructureData) {
-                $thisElementConditions = [
+                $thisElementCondition = [
                     'and',
-                    'structureId=:structureId'.$i,
-                    'lft>:lft'.$i,
-                    'rgt<:rgt'.$i
+                    ['structureId' => $elementStructureData['structureId']],
+                    ['>', 'lft', $elementStructureData['lft']],
+                    ['<', 'rgt', $elementStructureData['rgt']],
                 ];
 
-                if ($handle == 'children') {
-                    $thisElementConditions[] = 'level=:level'.$i;
-                    $params[':level'.$i] = $elementStructureData['level'] + 1;
+                if ($handle === 'children') {
+                    $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
                 }
 
-                $conditions[] = $thisElementConditions;
-                $sourceSelectSql .= " WHEN structureId=:structureId{$i} AND lft>:lft{$i} AND rgt<:rgt{$i} THEN :sourceId{$i}";
-                $params[':structureId'.$i] = $elementStructureData['structureId'];
-                $params[':lft'.$i] = $elementStructureData['lft'];
-                $params[':rgt'.$i] = $elementStructureData['rgt'];
-                $params[':sourceId'.$i] = $elementStructureData['elementId'];
+                $condition[] = $thisElementCondition;
+                $sourceSelectSql .= ' WHEN '.
+                    $qb->buildCondition(
+                        [
+                            'and',
+                            ['structureId' => $elementStructureData['structureId']],
+                            ['>', 'lft', $elementStructureData['lft']],
+                            ['<', 'rgt', $elementStructureData['rgt']]
+                        ],
+                        $query->params).
+                    " THEN :sourceId{$i}";
+                $query->params[':sourceId'.$i] = $elementStructureData['elementId'];
             }
 
             $sourceSelectSql .= ' END) as source';
 
             // Return any child elements
-            $map = (new Query())
-                ->select($sourceSelectSql.', elementId as target')
-                ->from('structureelements')
-                ->where($conditions, $params)
-                ->orderBy('structureId, lft')
+            $map = $query
+                ->select([$sourceSelectSql, 'elementId as target'])
+                ->from(['{{%structureelements}}'])
+                ->where($condition)
+                ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
                 ->all();
 
             return [
@@ -541,7 +608,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
         /** @var ElementQuery $elementQuery */
         // Is this a custom field?
@@ -560,71 +627,15 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    // Element methods
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $html = '';
-
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
-            Craft::$app->getView()->setNamespace($namespace);
-
-            foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field',
-                    [
-                        'element' => $element,
-                        'field' => $field,
-                        'required' => $field->required
-                    ]);
-
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
-            }
-
-            Craft::$app->getView()->setNamespace($originalNamespace);
-        }
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Element $element */
-        return Craft::$app->getElements()->saveElement($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var array
+     * @var bool|null Whether custom fields rules should be included when validating the element.
+     *
+     * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
      */
-    private static $_sourcesByContext;
+    public $validateCustomFields;
 
     /**
      * @var
@@ -634,17 +645,12 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var
      */
-    private $_contentPostLocation;
+    private $_fieldParamNamePrefix;
 
     /**
-     * @var
+     * @var array|null Record of the fields whose values have already been normalized
      */
-    private $_rawPostContent;
-
-    /**
-     * @var array Stores a record of the fields that have already prepared their values
-     */
-    private $_preparedFields;
+    private $_normalizedFieldValues;
 
     /**
      * @var
@@ -657,7 +663,7 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var integer|boolean The structure ID that the element is associated with
+     * @var int|false|null The structure ID that the element is associated with
      * @see getStructureId()
      * @see setStructureId()
      */
@@ -679,7 +685,7 @@ abstract class Element extends Component implements ElementInterface
     private $_nextSibling;
 
     /**
-     * @var
+     * @var ElementInterface[]|null
      */
     private $_eagerLoadedElements;
 
@@ -707,15 +713,11 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $name The property name
      *
-     * @return boolean Whether the property is set
+     * @return bool Whether the property is set
      */
-    public function __isset($name)
+    public function __isset($name): bool
     {
-        if ($name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name)) {
-            return true;
-        }
-
-        return false;
+        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->fieldByHandle($name);
     }
 
     /**
@@ -734,7 +736,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        if ($name == 'locale') {
+        if ($name === 'locale') {
             Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
 
             return $this->getSite()->handle;
@@ -746,7 +748,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Give custom fields priority over other getters so we have a chance to prepare their values
-        $field = $this->getFieldByHandle($name);
+        $field = $this->fieldByHandle($name);
         if ($field !== null) {
             return $this->getFieldValue($name);
         }
@@ -759,7 +761,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function behaviors()
     {
-        /** @noinspection PhpUndefinedClassInspection */
         return [
             'customFields' => ContentBehavior::class,
         ];
@@ -772,7 +773,7 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if (!$this->siteId) {
+        if ($this->siteId === null && Craft::$app->getIsInstalled()) {
             $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
     }
@@ -785,13 +786,12 @@ abstract class Element extends Component implements ElementInterface
         $names = parent::attributes();
 
         // Include custom field handles
-        /** @noinspection PhpUndefinedClassInspection */
         $class = new \ReflectionClass(ContentBehavior::class);
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $name = $property->getName();
 
-            if ($name !== 'owner' && !in_array($name, $names)) {
+            if ($name !== 'owner' && !in_array($name, $names, true)) {
                 $names[] = $name;
             }
         }
@@ -817,18 +817,91 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true],
+            [
+                ['id', 'contentId', 'root', 'lft', 'rgt', 'level'],
+                'number',
+                'integerOnly' => true,
+                'on' => self::SCENARIO_DEFAULT
+            ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
             [['title'], 'string', 'max' => 255],
         ];
 
         // Require the title?
-        if ($this::hasTitles()) {
+        if (static::hasTitles()) {
             $rules[] = [['title'], 'required'];
         }
 
+        // Are we validating custom fields?
+        if ($this->validateCustomFields() && ($fieldLayout = $this->getFieldLayout())) {
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                $fieldRules = $field->getElementValidationRules();
+
+                foreach ($fieldRules as $rule) {
+                    if ($rule instanceof Validator) {
+                        $rules[] = $rule;
+                    } else {
+                        if (is_string($rule)) {
+                            // "Validator" syntax
+                            $rule = [$field->handle, $rule];
+                        }
+
+                        if (is_array($rule) && isset($rule[0])) {
+                            if (!isset($rule[1])) {
+                                // ["Validator"] syntax
+                                array_unshift($rule, $field->handle);
+                            }
+
+                            if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+                                // InlineValidator assumes that the closure is on the model being validated
+                                // so it won’t pass a reference to the element
+                                $rule = [
+                                    $rule[0],
+                                    'validateCustomFieldAttribute',
+                                    'params' => [
+                                        $field,
+                                        $rule[1],
+                                        $rule['params'] ?? null,
+                                    ]
+                                ];
+                            }
+
+                            $rules[] = $rule;
+                        } else {
+                            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                        }
+                    }
+                }
+            }
+        }
+
         return $rules;
+    }
+
+    /**
+     * Calls a custom validation function on a custom field.
+     *
+     * This will be called by [[yii\validators\InlineValidator]] if a custom field specified
+     * a closure or the name of a class-level method as the validation type.
+     *
+     * @param string     $attribute The field handle
+     * @param array|null $params
+     *
+     * @return void
+     */
+    public function validateCustomFieldAttribute(string $attribute, array $params = null)
+    {
+        /** @var Field $field */
+        /** @var array|null $params */
+        list($field, $method, $fieldParams) = $params;
+
+        if (is_string($method)) {
+            $method = [$field, $method];
+        }
+
+        $method($this, $fieldParams);
     }
 
     /**
@@ -844,13 +917,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getFieldLayout()
     {
-        return Craft::$app->getFields()->getLayoutByType($this->getType());
+        return Craft::$app->getFields()->getLayoutByType(static::class);
     }
 
     /**
      * @inheritdoc
      */
-    public function getSupportedSites()
+    public function getSupportedSites(): array
     {
         if (static::isLocalized()) {
             return Craft::$app->getSites()->getAllSiteIds();
@@ -864,6 +937,23 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUriFormat()
     {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        // Give plugins a chance to set this
+        $event = new SetElementRouteEvent();
+        $this->trigger(self::EVENT_SET_ROUTE, $event);
+
+        if ($event->route !== null) {
+            return $event->route;
+        }
+
+        return $this->route();
     }
 
     /**
@@ -872,10 +962,9 @@ abstract class Element extends Component implements ElementInterface
     public function getUrl()
     {
         if ($this->uri !== null) {
-            $path = ($this->uri == '__home__') ? '' : $this->uri;
-            $url = Url::getSiteUrl($path, null, null, $this->siteId);
+            $path = ($this->uri === '__home__') ? '' : $this->uri;
 
-            return $url;
+            return UrlHelper::siteUrl($path, null, null, $this->siteId);
         }
 
         return null;
@@ -891,7 +980,7 @@ abstract class Element extends Component implements ElementInterface
         if ($url !== null) {
             $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
 
-            return Template::getRaw($link);
+            return Template::raw($link);
         }
 
         return null;
@@ -907,7 +996,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    public function getIsEditable(): bool
     {
         return false;
     }
@@ -917,12 +1006,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getCpEditUrl()
     {
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = null)
+    public function getThumbUrl(int $size)
     {
         return null;
     }
@@ -948,15 +1038,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getNext($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_nextElement)) {
+        if ($criteria !== false || $this->_nextElement === null) {
             return $this->_getRelativeElement($criteria, 1);
         }
 
-        if ($this->_nextElement !== false) {
-            return $this->_nextElement;
+        if ($this->_nextElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_nextElement;
     }
 
     /**
@@ -964,15 +1054,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPrev($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_prevElement)) {
+        if ($criteria !== false || $this->_prevElement === null) {
             return $this->_getRelativeElement($criteria, -1);
         }
 
-        if ($this->_prevElement !== false) {
-            return $this->_prevElement;
+        if ($this->_prevElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_prevElement;
     }
 
     /**
@@ -1013,7 +1103,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setParent($parent)
+    public function setParent(ElementInterface $parent = null)
     {
         $this->_parent = $parent;
 
@@ -1054,10 +1144,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getAncestors($dist = null)
+    public function getAncestors(int $dist = null)
     {
         return static::find()
             ->structureId($this->getStructureId())
@@ -1068,14 +1156,12 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getDescendants($dist = null)
+    public function getDescendants(int $dist = null)
     {
         // Eager-loaded?
-        if ($this->hasEagerLoadedElements('descendants')) {
-            return $this->getEagerLoadedElements('descendants');
+        if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
+            return $descendants;
         }
 
         return static::find()
@@ -1087,14 +1173,12 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
     public function getChildren()
     {
         // Eager-loaded?
-        if ($this->hasEagerLoadedElements('children')) {
-            return $this->getEagerLoadedElements('children');
+        if (($children = $this->getEagerLoadedElements('children')) !== null) {
+            return $children;
         }
 
         return $this->getDescendants(1);
@@ -1102,8 +1186,6 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
     public function getSiblings()
     {
@@ -1118,7 +1200,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementQueryInterface
      */
-    public function getPrevSibling()
+    public function getPrevSibling(): ElementQueryInterface
     {
         if ($this->_prevSibling === null) {
             /** @var ElementQuery $query */
@@ -1143,7 +1225,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementQueryInterface
      */
-    public function getNextSibling()
+    public function getNextSibling(): ElementQueryInterface
     {
         if ($this->_nextSibling === null) {
             /** @var ElementQuery $query */
@@ -1166,15 +1248,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getHasDescendants()
+    public function getHasDescendants(): bool
     {
-        return ($this->lft && $this->rgt && $this->rgt > $this->lft + 1);
+        return ($this->lft !== null && $this->rgt !== null && $this->rgt > $this->lft + 1);
     }
 
     /**
      * @inheritdoc
      */
-    public function getTotalDescendants()
+    public function getTotalDescendants(): int
     {
         if ($this->getHasDescendants()) {
             return ($this->rgt - $this->lft - 1) / 2;
@@ -1186,7 +1268,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isAncestorOf(ElementInterface $element)
+    public function isAncestorOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->lft < $element->lft && $this->rgt > $element->rgt);
@@ -1195,7 +1277,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isDescendantOf(ElementInterface $element)
+    public function isDescendantOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
@@ -1204,7 +1286,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isParentOf(ElementInterface $element)
+    public function isParentOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->level == $element->level - 1 && $this->isAncestorOf($element));
@@ -1213,7 +1295,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isChildOf(ElementInterface $element)
+    public function isChildOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
@@ -1222,10 +1304,10 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isSiblingOf(ElementInterface $element)
+    public function isSiblingOf(ElementInterface $element): bool
     {
         /** @var Element $element */
-        if ($this->root == $element->root && $this->level && $this->level == $element->level) {
+        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
             if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
             }
@@ -1243,7 +1325,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isPrevSiblingOf(ElementInterface $element)
+    public function isPrevSiblingOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
@@ -1252,7 +1334,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function isNextSiblingOf(ElementInterface $element)
+    public function isNextSiblingOf(ElementInterface $element): bool
     {
         /** @var Element $element */
         return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
@@ -1263,28 +1345,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        if ($offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
-            return true;
-        }
-
-        return false;
+        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
     }
 
     /**
      * @inheritdoc
      */
-    public function getFieldValues($fieldHandles = null, $except = [])
+    public function getFieldValues(array $fieldHandles = null): array
     {
         $values = [];
 
-        foreach ($this->getFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+        foreach ($this->fieldLayoutFields() as $field) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $values[$field->handle] = $this->getFieldValue($field->handle);
             }
-        }
-
-        foreach ($except as $handle) {
-            unset($values[$handle]);
         }
 
         return $values;
@@ -1293,7 +1367,24 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValues($values)
+    public function getSerializedFieldValues(array $fieldHandles = null): array
+    {
+        $serializedValues = [];
+
+        foreach ($this->fieldLayoutFields() as $field) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
+                $value = $this->getFieldValue($field->handle);
+                $serializedValues[$field->handle] = $field->serializeValue($value, $this);
+            }
+        }
+
+        return $serializedValues;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setFieldValues(array $values)
     {
         foreach ($values as $fieldHandle => $value) {
             $this->setFieldValue($fieldHandle, $value);
@@ -1303,97 +1394,71 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValue($fieldHandle)
+    public function getFieldValue(string $fieldHandle)
     {
         // Is this the first time this field value has been accessed?
-        if (!isset($this->_preparedFields[$fieldHandle])) {
-            $this->prepareFieldValue($fieldHandle);
+        if (!isset($this->_normalizedFieldValues[$fieldHandle])) {
+            $this->normalizeFieldValue($fieldHandle);
         }
 
-        $behavior = $this->getBehavior('customFields');
-
-        return $behavior->$fieldHandle;
+        return $this->getBehavior('customFields')->$fieldHandle;
     }
 
     /**
      * @inheritdoc
      */
-    public function setFieldValue($fieldHandle, $value)
+    public function setFieldValue(string $fieldHandle, $value)
     {
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $value;
+
+        // Don't assume that $value has been normalized
+        unset($this->_normalizedFieldValues[$fieldHandle]);
     }
 
     /**
      * @inheritdoc
      */
-    public function setFieldValuesFromPost($values)
+    public function setFieldValuesFromRequest(string $paramNamespace = '')
     {
-        if (is_string($values)) {
-            // Keep track of where the post data is coming from, in case any field types need to know where to
-            // look in $_FILES
-            $this->setContentPostLocation($values);
-            $values = Craft::$app->getRequest()->getBodyParam($values, []);
-        }
+        $this->setFieldParamNamespace($paramNamespace);
+        $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->fieldLayoutFields() as $field) {
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$field->handle)) {
+            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix.'.'.$field->handle)) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
                 continue;
             }
+
             $this->setFieldValue($field->handle, $value);
-            $this->setRawPostValueForField($field->handle, $value);
         }
     }
 
     /**
-     * Sets a field’s raw post content.
-     *
-     * @param string       $handle The field handle.
-     * @param string|array The     posted field value.
+     * @inheritdoc
      */
-    public function setRawPostValueForField($handle, $value)
+    public function getFieldParamNamespace()
     {
-        $this->_rawPostContent[$handle] = $value;
+        return $this->_fieldParamNamePrefix;
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentFromPost()
+    public function setFieldParamNamespace(string $namespace)
     {
-        if (isset($this->_rawPostContent)) {
-            return $this->_rawPostContent;
-        }
-
-        return [];
+        $this->_fieldParamNamePrefix = $namespace;
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentPostLocation()
-    {
-        return $this->_contentPostLocation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setContentPostLocation($contentPostLocation)
-    {
-        $this->_contentPostLocation = $contentPostLocation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentTable()
+    public function getContentTable(): string
     {
         return Craft::$app->getContent()->contentTable;
     }
@@ -1401,7 +1466,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldColumnPrefix()
+    public function getFieldColumnPrefix(): string
     {
         return Craft::$app->getContent()->fieldColumnPrefix;
     }
@@ -1409,7 +1474,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldContext()
+    public function getFieldContext(): string
     {
         return Craft::$app->getContent()->fieldContext;
     }
@@ -1419,9 +1484,9 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $handle The handle of the eager-loaded elements
      *
-     * @return boolean Whether elements have been eager-loaded with the given handle
+     * @return bool Whether elements have been eager-loaded with the given handle
      */
-    public function hasEagerLoadedElements($handle)
+    public function hasEagerLoadedElements(string $handle): bool
     {
         return isset($this->_eagerLoadedElements[$handle]);
     }
@@ -1433,13 +1498,15 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return ElementInterface[]|null The eager-loaded elements, or null
      */
-    public function getEagerLoadedElements($handle)
+    public function getEagerLoadedElements(string $handle)
     {
-        if (isset($this->_eagerLoadedElements[$handle])) {
-            return $this->_eagerLoadedElements[$handle];
+        if (!isset($this->_eagerLoadedElements[$handle])) {
+            return null;
         }
 
-        return null;
+        ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
+
+        return $this->_eagerLoadedElements[$handle];
     }
 
     /**
@@ -1450,7 +1517,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return void
      */
-    public function setEagerLoadedElements($handle, $elements)
+    public function setEagerLoadedElements(string $handle, array $elements)
     {
         $this->_eagerLoadedElements[$handle] = $elements;
     }
@@ -1458,9 +1525,76 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getHasFreshContent()
+    public function getHasFreshContent(): bool
     {
-        return (!$this->contentId && !$this->hasErrors());
+        return ($this->contentId === null && !$this->hasErrors());
+    }
+
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtmlAttributes(string $context): array
+    {
+        $htmlAttributes = $this->htmlAttributes($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementHtmlAttributesEvent([
+            'htmlAttributes' => $htmlAttributes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
+
+        return $event->htmlAttributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(string $attribute): string
+    {
+        // Give plugins a chance to set this
+        $event = new SetElementTableAttributeHtmlEvent([
+            'attribute' => $attribute
+        ]);
+        $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
+
+        if ($event->html !== null) {
+            return $event->html;
+        }
+
+        return $this->tableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml(): string
+    {
+        $html = '';
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout) {
+            $originalNamespace = Craft::$app->getView()->getNamespace();
+            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
+            Craft::$app->getView()->setNamespace($namespace);
+
+            foreach ($fieldLayout->getFields() as $field) {
+                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
+                    'element' => $this,
+                    'field' => $field,
+                    'required' => $field->required
+                ]);
+
+                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
+            }
+
+            Craft::$app->getView()->setNamespace($originalNamespace);
+        }
+
+        return $html;
     }
 
     // Events
@@ -1469,15 +1603,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function beforeSave(bool $isNew): bool
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
-            $field->beforeElementSave($this);
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementSave($this, $isNew)) {
+                return false;
+            }
         }
 
         // Trigger a 'beforeSave' event
-        $event = new Event();
+        $event = new ModelEvent([
+            'isNew' => $isNew,
+        ]);
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
         return $event->isValid;
@@ -1486,39 +1624,121 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function afterSave()
+    public function afterSave(bool $isNew)
     {
         // Tell the fields about it
-        foreach ($this->getFields() as $field) {
-            $field->afterElementSave($this);
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementSave($this, $isNew);
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
+        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete(): bool
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            if (!$field->beforeElementDelete($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeDelete' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Tell the fields about it
+        foreach ($this->fieldLayoutFields() as $field) {
+            $field->afterElementDelete($this);
+        }
+
+        // Trigger an 'afterDelete' event
+        $this->trigger(self::EVENT_AFTER_DELETE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeMoveInStructure(int $structureId): bool
+    {
+        // Trigger a 'beforeMoveInStructure' event
+        $event = new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure(int $structureId)
+    {
+        // Trigger an 'afterMoveInStructure' event
+        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]));
     }
 
     // Protected Methods
     // =========================================================================
 
     /**
-     * Prepares a field’s value for use.
+     * Returns whether custom fields should be validated.
+     *
+     * @return bool
+     */
+    protected function validateCustomFields(): bool
+    {
+        if (!static::hasContent()) {
+            return false;
+        }
+
+        if ($this->validateCustomFields === true) {
+            return true;
+        }
+
+        if ($this->validateCustomFields !== false && $this->enabled && $this->enabledForSite) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
      *
      * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
-    protected function prepareFieldValue($fieldHandle)
+    protected function normalizeFieldValue(string $fieldHandle)
     {
-        $field = $this->getFieldByHandle($fieldHandle);
+        $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
             throw new Exception('Invalid field handle: '.$fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->prepareValue($behavior->$fieldHandle, $this);
-        $this->_preparedFields[$fieldHandle] = true;
+        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     /**
@@ -1526,19 +1746,22 @@ abstract class Element extends Component implements ElementInterface
      *
      * This method is internally called by [[findOne()]] and [[findAll()]].
      *
-     * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
-     * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
+     * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
+     * @param bool  $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return $this|$this[]
+     * @return static|static[]
      */
-    protected static function findByCondition($criteria, $one)
+    protected static function findByCondition($criteria, bool $one)
     {
-        if ($criteria !== null && !ArrayHelper::isAssociative($criteria)) {
-            $criteria = ['id' => $criteria];
-        }
-
         /** @var ElementQueryInterface $query */
-        $query = static::find()->configure($criteria);
+        $query = static::find();
+
+        if ($criteria !== null) {
+            if (!ArrayHelper::isAssociative($criteria)) {
+                $criteria = ['id' => $criteria];
+            }
+            Craft::configure($query, $criteria);
+        }
 
         if ($one) {
             /** @var Element $result */
@@ -1558,20 +1781,17 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return Field|null
      */
-    protected function getFieldByHandle($handle)
+    protected function fieldByHandle(string $handle)
     {
-        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle,
-                $this->_fieldsByHandle)
-        ) {
-            $contentService = Craft::$app->getContent();
-
-            $originalFieldContext = $contentService->fieldContext;
-            $contentService->fieldContext = $this->getFieldContext();
-
-            $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
-
-            $contentService->fieldContext = $originalFieldContext;
+        if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
+            return $this->_fieldsByHandle[$handle];
         }
+
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = $this->getFieldContext();
+        $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
+        $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
     }
@@ -1581,7 +1801,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @return Field[] This element’s fields
      */
-    protected function getFields()
+    protected function fieldLayoutFields(): array
     {
         $fieldLayout = $this->getFieldLayout();
 
@@ -1598,9 +1818,9 @@ abstract class Element extends Component implements ElementInterface
      * @return Site
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
-    public function getSite()
+    public function getSite(): Site
     {
-        if ($this->siteId) {
+        if ($this->siteId !== null) {
             $site = Craft::$app->getSites()->getSiteById($this->siteId);
         }
 
@@ -1614,7 +1834,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the ID of the structure that the element is inherently associated with, if any.
      *
-     * @return integer|null
+     * @return int|null
      * @see getStructureId()
      */
     protected function resolveStructureId()
@@ -1622,55 +1842,141 @@ abstract class Element extends Component implements ElementInterface
         return null;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Returns the HTML that should be shown for a given attribute in Table View.
+     *
+     * @param string $attribute The attribute name.
+     *
+     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @see getTableAttributeHtml()
+     */
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url !== null) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url !== null) {
+                    $value = $this->uri;
+
+                    if ($value === '__home__') {
+                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator.'<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $value);
+                    }
+
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        /** @var Field $field */
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $this->getFieldValue($field->handle);
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                }
+
+                return Html::encode($value);
+        }
+    }
 
     /**
-     * Finds a source by its key, even if it's nested.
+     * Returns the route that should be used when the element’s URI is requested.
      *
-     * @param array  $sources
-     * @param string $key
-     *
-     * @return array|null
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     * @see getRoute()
      */
-    private static function _findSource($key, $sources)
+    protected function route()
     {
-        if (isset($sources[$key])) {
-            return $sources[$key];
-        }
-
-        // Look through any nested sources
-        foreach ($sources as $source) {
-            if (!empty($source['nested']) && ($nestedSource = static::_findSource($key, $source['nested']))) {
-                return $nestedSource;
-            }
-        }
-
         return null;
     }
 
     /**
+     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     *
+     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     *
+     * @return array
+     * @see getHtmlAttributes()
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        return [];
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
-     * @param mixed   $criteria
-     * @param integer $dir
+     * @param mixed $criteria
+     * @param int   $dir
      *
      * @return ElementInterface|null
      */
-    private function _getRelativeElement($criteria, $dir)
+    private function _getRelativeElement($criteria, int $dir)
     {
-        if ($this->id) {
+        if ($this->id !== null) {
             if ($criteria instanceof ElementQueryInterface) {
                 $query = $criteria;
             } else {
                 $query = static::find()
-                    ->siteId($this->siteId)
-                    ->configure($criteria);
+                    ->siteId($this->siteId);
+
+                if ($criteria) {
+                    Craft::configure($query, $criteria);
+                }
             }
 
             /** @var ElementQuery $query */
             $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds);
+            $key = array_search($this->id, $elementIds, false);
 
             if ($key !== false && isset($elementIds[$key + $dir])) {
                 return static::find()

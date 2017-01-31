@@ -5,10 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\web\assets\positionselect\PositionSelectAsset;
 use yii\db\Schema;
 
 /**
@@ -25,21 +27,9 @@ class PositionSelect extends Field
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Position Select');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['options'])) {
-            $config['options'] = array_values(array_filter($config['options']));
-        }
-
-        parent::populateModel($model, $config);
     }
 
     /**
@@ -47,7 +37,7 @@ class PositionSelect extends Field
      *
      * @return array
      */
-    private static function _getOptions()
+    private static function _getOptions(): array
     {
         return [
             'left' => Craft::t('app', 'Left'),
@@ -63,7 +53,7 @@ class PositionSelect extends Field
     // =========================================================================
 
     /**
-     * @var string[] The position options that should be shown in the field
+     * @var string[]|null The position options that should be shown in the field
      */
     public $options;
 
@@ -78,14 +68,16 @@ class PositionSelect extends Field
         parent::init();
 
         if ($this->options === null) {
-            $this->options = array_keys(static::_getOptions());
+            $this->options = array_keys(self::_getOptions());
+        } else {
+            $this->options = array_values(array_filter($this->options));
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING.'(100)';
     }
@@ -98,29 +90,31 @@ class PositionSelect extends Field
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/settings',
             [
                 'field' => $this,
-                'allOptions' => array_keys(static::_getOptions()),
+                'allOptions' => array_keys(self::_getOptions()),
             ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         if (empty($this->options)) {
             return '<p><em>'.Craft::t('app', 'No options selected.').'</em></p>';
         }
 
-        Craft::$app->getView()->registerJsResource('js/PositionSelectInput.js');
+        $view = Craft::$app->getView();
 
-        $id = Craft::$app->getView()->formatInputId($this->handle);
-        Craft::$app->getView()->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
+        $view->registerAssetBundle(PositionSelectAsset::class);
 
-        if (!$value && $this->options) {
+        $id = $view->formatInputId($this->handle);
+        $view->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
+
+        if (!$value && !empty($this->options)) {
             $value = $this->options[0];
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/input',
+        return $view->renderTemplate('_components/fieldtypes/PositionSelect/input',
             [
                 'id' => $id,
                 'name' => $this->handle,

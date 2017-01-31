@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\web\Controller;
+use craft\web\Controller;
 use yii\web\Response;
 
 /**
@@ -39,7 +39,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionSaveRoute()
+    public function actionSaveRoute(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -71,7 +71,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionDeleteRoute()
+    public function actionDeleteRoute(): Response
     {
         $this->requirePostRequest();
 
@@ -86,7 +86,7 @@ class RoutesController extends Controller
      *
      * @return Response
      */
-    public function actionUpdateRouteOrder()
+    public function actionUpdateRouteOrder(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();

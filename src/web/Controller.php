@@ -5,12 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\Header;
-use craft\app\helpers\Io;
-use craft\app\helpers\Url;
+use craft\helpers\Header;
+use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -21,6 +20,7 @@ use yii\web\Response as YiiResponse;
  *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -32,7 +32,7 @@ abstract class Controller extends \yii\web\Controller
     // =========================================================================
 
     /**
-     * @var boolean|string[] Whether this controller’s actions can be accessed anonymously
+     * @var bool|string[] Whether this controller’s actions can be accessed anonymously
      *
      * If set to false, you are required to be logged in to execute any of the given controller's actions.
      *
@@ -72,22 +72,21 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Renders a template.
      *
-     * @param mixed $template      The name of the template to load in a format supported by
-     *                             [[\craft\app\web\View::resolveTemplate()]], or a [[\craft\app\web\twig\StringTemplate]] object.
-     * @param array $variables     The variables that should be available to the template.
+     * @param string $template  The name of the template to load
+     * @param array  $variables The variables that should be available to the template
      *
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate(string $template, array $variables = []): string
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!Header::isHeaderSet('Content-Type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
-            $extension = Io::getExtension($templateFile, 'html');
+            $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if ($extension == 'twig') {
+            if ($extension === 'twig') {
                 $extension = 'html';
             }
 
@@ -141,7 +140,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
-    public function requirePermission($permissionName)
+    public function requirePermission(string $permissionName)
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
@@ -156,7 +155,7 @@ abstract class Controller extends \yii\web\Controller
      * @return void
      * @throws ForbiddenHttpException if the current user is not authorized
      */
-    public function requireAuthorization($action)
+    public function requireAuthorization(string $action)
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action');
@@ -172,7 +171,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireElevatedSession()
     {
         if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(403, Craft::t('app', 'This action may only be performed with an elevated session.'));
+            throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed with an elevated session.'));
         }
     }
 
@@ -198,7 +197,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireAcceptsJson()
     {
         if (!Craft::$app->getRequest()->getAcceptsJson()) {
-            //throw new BadRequestHttpException('Request must accept JSON in response');
+            throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
 
@@ -218,14 +217,14 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Redirects to the URI specified in the POST.
      *
-     * @param mixed  $object  Object containing properties that should be parsed for in the URL.
-     * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
-     *                        null, then the current request’s path will be used.
+     * @param mixed       $object  Object containing properties that should be parsed for in the URL.
+     * @param string|null $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
+     *                             null, then the current request’s path will be used.
      *
      * @return YiiResponse
      * @throws BadRequestHttpException if the redirect param was tampered with
      */
-    public function redirectToPostedUrl($object = null, $default = null)
+    public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
     {
         $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
@@ -238,12 +237,13 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object, true);
+            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
         }
 
         return $this->redirect($url);
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSON.
      *
@@ -251,7 +251,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJson($var = [])
+    public function asJson($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -260,6 +260,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSONP.
      *
@@ -267,7 +268,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asJsonP($var = [])
+    public function asJsonP($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -276,6 +277,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as RAW.
      *
@@ -283,7 +285,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asRaw($var = [])
+    public function asRaw($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -292,6 +294,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as XML.
      *
@@ -299,7 +302,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse The response object.
      */
-    public function asXml($var = [])
+    public function asXml($var = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $response->data = $var;
@@ -315,7 +318,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function asErrorJson($error)
+    public function asErrorJson(string $error): YiiResponse
     {
         return $this->asJson(['error' => $error]);
     }
@@ -325,10 +328,10 @@ abstract class Controller extends \yii\web\Controller
      *
      * @return YiiResponse
      */
-    public function redirect($url, $statusCode = 302)
+    public function redirect($url, $statusCode = 302): YiiResponse
     {
         if (is_string($url)) {
-            $url = Url::getUrl($url);
+            $url = UrlHelper::url($url);
         }
 
         if ($url !== null) {

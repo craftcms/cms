@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
+use craft\helpers\FileHelper;
 
 /**
  * m151016_133600_delete_asset_thumbnails migration.
@@ -19,9 +19,10 @@ class m151016_133600_delete_asset_thumbnails extends Migration
      */
     public function safeUp()
     {
-        Craft::info("Deleting Asset thumbnails");
-        $folder = Craft::$app->getPath()->getAssetsPath().'/thumbs';
-        Io::deleteFolder($folder);
+        $folder = Craft::$app->getPath()->getAssetsPath().DIRECTORY_SEPARATOR.'thumbs';
+        echo "    > Removing directory: {$folder} ... ";
+        FileHelper::removeDirectory($folder);
+        echo "done\n";
     }
 
     /**

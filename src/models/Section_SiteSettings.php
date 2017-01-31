@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\validators\SingleSectionUriValidator;
-use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriFormatValidator;
+use craft\base\Model;
+use craft\validators\SingleSectionUriValidator;
+use craft\validators\SiteIdValidator;
+use craft\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -26,42 +26,42 @@ class Section_SiteSettings extends Model
     // =========================================================================
 
     /**
-     * @var integer ID
+     * @var int|null ID
      */
     public $id;
 
     /**
-     * @var integer Section ID
+     * @var int|null Section ID
      */
     public $sectionId;
 
     /**
-     * @var integer Site ID
+     * @var int|null Site ID
      */
     public $siteId;
 
     /**
-     * @var boolean Enabled by default
+     * @var bool Enabled by default
      */
     public $enabledByDefault = true;
 
     /**
-     * @var boolean Has URLs?
+     * @var bool|null Has URLs?
      */
     public $hasUrls;
 
     /**
-     * @var string URI format
+     * @var string|null URI format
      */
     public $uriFormat;
 
     /**
-     * @var string Entry template
+     * @var string|null Entry template
      */
     public $template;
 
     /**
-     * @var Section
+     * @var Section|null
      */
     private $_section;
 
@@ -72,16 +72,20 @@ class Section_SiteSettings extends Model
      * Returns the section.
      *
      * @return Section
-     * @throws InvalidConfigException if the section is invalid
+     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
-    public function getSection()
+    public function getSection(): Section
     {
-        if (!isset($this->_section) && $this->sectionId) {
-            $this->_section = Craft::$app->getSections()->getSectionById($this->sectionId);
+        if ($this->_section !== null) {
+            return $this->_section;
         }
 
-        if (!$this->_section) {
-            throw new InvalidConfigException('Invalid section');
+        if (!$this->sectionId) {
+            throw new InvalidConfigException('Section site settings model is missing its section ID');
+        }
+
+        if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
         }
 
         return $this->_section;

@@ -5,7 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
+
+use Craft;
 
 /**
  * Class NamespaceNode
@@ -30,8 +32,8 @@ class NamespaceNode extends \Twig_Node
             ->raw(";\n")
             ->write("if (\$_namespace) {\n")
             ->indent()
-            ->write("\$_originalNamespace = \\Craft::\$app->getView()->getNamespace();\n")
-            ->write("\\Craft::\$app->getView()->setNamespace(\\Craft::\$app->getView()->namespaceInputName(\$_namespace));\n")
+            ->write('$_originalNamespace = '.Craft::class."::\$app->getView()->getNamespace();\n")
+            ->write(Craft::class.'::$app->getView()->setNamespace('.Craft::class."::\$app->getView()->namespaceInputName(\$_namespace));\n")
             ->write("ob_start();\n")
             ->write("try {\n")
             ->indent()
@@ -43,8 +45,8 @@ class NamespaceNode extends \Twig_Node
             ->write("throw \$e;\n")
             ->outdent()
             ->write("}\n")
-            ->write("echo \\Craft::\$app->getView()->namespaceInputs(ob_get_clean(), \$_namespace);\n")
-            ->write("\\Craft::\$app->getView()->setNamespace(\$_originalNamespace);\n")
+            ->write('echo '.Craft::class."::\$app->getView()->namespaceInputs(ob_get_clean(), \$_namespace);\n")
+            ->write(Craft::class."::\$app->getView()->setNamespace(\$_originalNamespace);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()

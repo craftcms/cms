@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
+use craft\db\ActiveRecord;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
 
 /**
  * Stores entry drafts.
  *
- * @property integer $id        ID
- * @property integer $entryId   Entry ID
- * @property integer $sectionId Section ID
- * @property integer $creatorId Creator ID
- * @property integer $siteId    Site ID
+ * @property int     $id        ID
+ * @property int     $entryId   Entry ID
+ * @property int     $sectionId Section ID
+ * @property int     $creatorId Creator ID
+ * @property int     $siteId    Site ID
  * @property string  $name      Name
  * @property string  $notes     Notes
  * @property array   $data      Data
@@ -39,7 +39,7 @@ class EntryDraft extends ActiveRecord
      *
      * @return string
      */
-    public static function tableName()
+    public static function tableName(): string
     {
         return '{{%entrydrafts}}';
     }
@@ -49,7 +49,7 @@ class EntryDraft extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getEntry()
+    public function getEntry(): ActiveQueryInterface
     {
         return $this->hasOne(Entry::class, ['id' => 'entryId']);
     }
@@ -59,7 +59,7 @@ class EntryDraft extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSection()
+    public function getSection(): ActiveQueryInterface
     {
         return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
@@ -69,7 +69,7 @@ class EntryDraft extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getCreator()
+    public function getCreator(): ActiveQueryInterface
     {
         return $this->hasOne(User::class, ['id' => 'creatorId']);
     }
@@ -79,7 +79,7 @@ class EntryDraft extends ActiveRecord
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getSite()
+    public function getSite(): ActiveQueryInterface
     {
         return $this->hasOne(Site::class, ['id' => 'siteId']);
     }

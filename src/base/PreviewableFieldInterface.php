@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * PreviewableFieldInterface defines the common interface to be implemented by field classes
@@ -27,5 +27,5 @@ interface PreviewableFieldInterface
      *
      * @return string|null The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, $element);
+    public function getTableAttributeHtml($value, ElementInterface $element);
 }

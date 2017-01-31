@@ -1,9 +1,9 @@
 <?php
 
-use craft\app\models\DeprecationError;
+use craft\models\DeprecationError;
 
 /** @var $log DeprecationError */
-/** @var $panel craft\app\debug\DeprecatedPanel */
+/** @var $panel craft\debug\DeprecatedPanel */
 ?>
     <h1><?= $log->key ?></h1>
 
@@ -38,7 +38,7 @@ foreach ($log->traces as $i => $trace) {
         $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>', $trace['file']).' ('.$trace['line'].')';
     }
 
-    $values[] = [($totalTraces - $i), $info];
+    $values[] = [$totalTraces - $i, $info];
 }
 
 echo $this->render('../table', [

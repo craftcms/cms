@@ -1,13 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\MigrationHelper;
 use yii\db\Expression;
-use yii\helpers\ArrayHelper;
 
 /**
  * m160912_230520_require_entry_type_id migration.
@@ -21,10 +19,10 @@ class m160912_230520_require_entry_type_id extends Migration
     {
         // Get all of the sections' primary entry type IDs
         $subQuery = (new Query())
-            ->select('et.id')
-            ->from('{{%entrytypes}} et')
-            ->where('et.sectionId = s.id')
-            ->orderBy('sortOrder asc')
+            ->select(['et.id'])
+            ->from(['{{%entrytypes}} et'])
+            ->where('[[et.sectionId]] = [[s.id]]')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->limit(1);
 
         $results = (new Query())
@@ -32,10 +30,10 @@ class m160912_230520_require_entry_type_id extends Migration
                 'sectionId' => 's.id',
                 'typeId' => $subQuery
             ])
-            ->from('{{%sections}} s')
+            ->from(['{{%sections}} s'])
             ->all();
 
-        if ($results) {
+        if (!empty($results)) {
             // Build the mapping case SQL
             $caseSql = 'case';
 
@@ -57,14 +55,14 @@ class m160912_230520_require_entry_type_id extends Migration
 
         // Are there any entries that still don't have a type?
         $typelessEntryIds = (new Query())
-            ->select('id')
-            ->from('{{%entries}}')
-            ->where('typeId is null')
+            ->select(['id'])
+            ->from(['{{%entries}}'])
+            ->where(['typeId' => null])
             ->column();
 
-        if ($typelessEntryIds) {
-            $this->delete('{{%elements}}', ['in', 'id', $typelessEntryIds]);
-            Craft::warning("Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds));
+        if (!empty($typelessEntryIds)) {
+            $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
+            echo "    > Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds)."\n";
         }
 
         // Make typeId required
@@ -79,6 +77,7 @@ class m160912_230520_require_entry_type_id extends Migration
     public function safeDown()
     {
         echo "m160912_230520_require_entry_type_id cannot be reverted.\n";
+
         return false;
     }
 }

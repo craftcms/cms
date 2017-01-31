@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
-use craft\app\helpers\Db;
-use craft\app\helpers\StringHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 
 /**
  * Active Record base class.
@@ -25,16 +25,6 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     // Static
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     *
-     * @return string[]
-     */
-    public static function primaryKey()
-    {
-        return ['id'];
-    }
-
     // Public Methods
     // =========================================================================
 
@@ -43,18 +33,24 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      */
     public function beforeSave($insert)
     {
-        // Prepare the values
-        $now = Db::prepareDateForDb(new \DateTime());
+        foreach ($this->fields() as $attribute) {
+            $this->$attribute = Db::prepareValueForDb($this->$attribute);
+        }
 
-        foreach ($this->attributes() as $attribute) {
-            if ($attribute === 'dateCreated' && $this->getIsNewRecord()) {
+        if ($this->getIsNewRecord()) {
+            // Prepare the values
+            $now = Db::prepareDateForDb(new \DateTime());
+
+            if ($this->hasAttribute('dateCreated')) {
                 $this->dateCreated = $now;
-            } else if ($attribute === 'dateUpdated') {
+            }
+
+            if ($this->hasAttribute('dateUpdated')) {
                 $this->dateUpdated = $now;
-            } else if ($attribute === 'uid' && $this->getIsNewRecord()) {
+            }
+
+            if ($this->hasAttribute('uid')) {
                 $this->uid = StringHelper::UUID();
-            } else {
-                $this->$attribute = Db::prepareValueForDb($this->$attribute);
             }
         }
 

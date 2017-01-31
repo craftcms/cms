@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Stores all of the available update info.
@@ -17,30 +17,11 @@ use craft\app\base\Model;
  */
 class Update extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['plugins'])) {
-            foreach ($config['plugins'] as $key => $value) {
-                if (!$value instanceof PluginUpdate) {
-                    $config['plugins'][$key] = PluginUpdate::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
     /**
-     * @var AppUpdate App
+     * @var AppUpdate|null App
      */
     public $app;
 
@@ -50,9 +31,9 @@ class Update extends Model
     public $plugins = [];
 
     /**
-     * @var array Errors
+     * @var array|null Response errors
      */
-    public $errors;
+    public $responseErrors;
 
     // Public Methods
     // =========================================================================
@@ -60,10 +41,16 @@ class Update extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function init()
     {
-        return [
-            [['app', 'plugins', 'errors'], 'safe', 'on' => 'search'],
-        ];
+        parent::init();
+
+        if ($this->plugins !== null) {
+            foreach ($this->plugins as $packageName => $pluginUpdate) {
+                if (!$pluginUpdate instanceof PluginUpdate) {
+                    $this->plugins[$packageName] = new PluginUpdate($pluginUpdate);
+                }
+            }
+        }
     }
 }

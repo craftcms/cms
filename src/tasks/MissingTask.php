@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
-use craft\app\base\Task;
-use craft\app\base\MissingComponentInterface;
-use craft\app\base\MissingComponentTrait;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
+use craft\base\Task;
 
 /**
  * MissingWidget represents a widget with an invalid class.
@@ -30,8 +30,8 @@ class MissingTask extends Task implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
-        return $this->type;
+        return $this->expectedType;
     }
 }

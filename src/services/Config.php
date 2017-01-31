@@ -5,25 +5,43 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
+use craft\base\Plugin;
+use craft\db\Connection;
+use craft\elements\User;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\InvalidParamException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
+ *
+ * @property bool           $omitScriptNameInUrls Whether generated URLs should omit “index.php”
+ * @property int            $cacheDuration
+ * @property bool           $useFileLocks
+ * @property int            $dbPort
+ * @property string         $cpSetPasswordPath
+ * @property bool|int       $elevatedSessionDuration
+ * @property string         $loginPath
+ * @property string         $dbTablePrefix
+ * @property string         $cpLogoutPath
+ * @property string         $logoutPath
+ * @property string         $cpLoginPath
+ * @property string         $resourceTrigger
+ * @property array|string[] $allowedFileExtensions
+ * @property bool           $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -39,24 +57,36 @@ class Config extends Component
     const CATEGORY_DBCACHE = 'dbcache';
     const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_APC = 'apc';
+    const CATEGORY_GUZZLE = 'guzzle';
+    const CATEGORY_VOLUMES = 'volumes';
 
     // Properties
     // =========================================================================
 
     /**
-     * @var
+     * @var int|null
      */
     private $_cacheDuration;
 
     /**
-     * @var
+     * @var bool|null
      */
     private $_omitScriptNameInUrls;
 
     /**
-     * @var
+     * @var bool|null
      */
     private $_usePathInfo;
+
+    /**
+     * @var bool|null
+     */
+    private $_useFileLocks;
+
+    /**
+     * @var string[]|null
+     */
+    private $_allowedFileExtensions;
 
     /**
      * @var array
@@ -72,9 +102,9 @@ class Config extends Component
      * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked and returned.
      *
-     * By default, `get()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `get()` will check `config/general.php`, and fall back on the default values specified in
+     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that
+     * Craft will check for.
      *
      * ```php
      * $isDevMode = Craft::$app->getConfig()->get('devMode');
@@ -82,7 +112,7 @@ class Config extends Component
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
      * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
+     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
      * $myConfigSetting = Craft::$app->getConfig()->get('myConfigSetting', 'myplugin');
@@ -93,7 +123,7 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function get($item, $category = self::CATEGORY_GENERAL)
+    public function get(string $item, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -107,9 +137,9 @@ class Config extends Component
     /**
      * Overrides the value of a config setting to a given value.
      *
-     * By default, `set()` will update the config array that came from craft/config/general.php.
-     * See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `set()` will update the config array that came from `config/general.php`.
+     * See `vendor/craftcms/cms/src/config/defaults/general.php` for a full list of config settings that Craft
+     * will check for.
      *
      * ```php
      * Craft::$app->getConfig()->set('devMode', true);
@@ -128,7 +158,7 @@ class Config extends Component
      *
      * @return void
      */
-    public function set($item, $value, $category = self::CATEGORY_GENERAL)
+    public function set(string $item, $value, string $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
         $this->_configSettings[$category][$item] = $value;
@@ -150,36 +180,34 @@ class Config extends Component
      * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
      * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
-     * @param string $item       The name of the config setting.
-     * @param string $siteHandle The site handle to return. Defaults to the current site.
-     * @param string $category   The name of the config file (sans .php). Defaults to 'general'.
+     * @param string      $item       The name of the config setting.
+     * @param string|null $siteHandle The site handle to return. Defaults to the current site.
+     * @param string      $category   The name of the config file (sans .php). Defaults to 'general'.
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized($item, $siteHandle = null, $category = self::CATEGORY_GENERAL)
+    public function getLocalized(string $item, string $siteHandle = null, string $category = self::CATEGORY_GENERAL)
     {
         $value = $this->get($item, $category);
 
-        if (is_array($value)) {
-            if (!$siteHandle) {
-                $siteHandle = Craft::$app->getSites()->currentSite->handle;
-            }
+        if (!is_array($value)) {
+            return $value;
+        }
 
-            if (isset($value[$siteHandle])) {
-                return $value[$siteHandle];
-            }
-
-            if ($value) {
-                // Just return the first value
-                $keys = array_keys($value);
-
-                return $value[$keys[0]];
-            }
-
+        if (empty($value)) {
             return null;
         }
 
-        return $value;
+        if ($siteHandle === null) {
+            $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        }
+
+        if (isset($value[$siteHandle])) {
+            return $value[$siteHandle];
+        }
+
+        // Just return the first value
+        return reset($value);
     }
 
     /**
@@ -188,27 +216,27 @@ class Config extends Component
      * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
      * only values from config arrays that match the current request’s environment will be checked.
      *
-     * By default, `exists()` will check craft/config/general.php, and fall back on the default values specified in
-     * craft/app/config/defaults/general.php. See [Craft’s documentation](http://craftcms.com/docs/config-settings)
-     * for a full list of config settings that Craft will check for within that file.
+     * By default, `exists()` will check `config/general.php`, and fall back on the default values specified in
+     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that Craft
+     * will check for.
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
      * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * craft/plugins/PluginHandle]/config.php file and use the array it returns as the list of default values.
+     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
      * if (Craft::$app->getConfig()->exists('myConfigSetting', 'myplugin'))
      * {
-     *     Craft::info('This site has some pretty useless config settings.');
+     *     Craft::info('This site has some pretty useless config settings.', __METHOD__);
      * }
      * ```
      *
      * @param string $item     The name of the config setting.
      * @param string $category The name of the config file (sans .php). Defaults to 'general'.
      *
-     * @return boolean Whether the config setting value exists.
+     * @return bool Whether the config setting value exists.
      */
-    public function exists($item, $category = self::CATEGORY_GENERAL)
+    public function exists(string $item, string $category = self::CATEGORY_GENERAL): bool
     {
         $this->_loadConfigSettings($category);
 
@@ -226,7 +254,7 @@ class Config extends Component
      *
      * @return array The config settings.
      */
-    public function getConfigSettings($category)
+    public function getConfigSettings(string $category): array
     {
         $this->_loadConfigSettings($category);
 
@@ -245,21 +273,27 @@ class Config extends Component
      * Craft::$app->getConfig()->getCacheDuration();   // 86400
      * ```
      *
-     * @return integer The cacheDuration config setting value, in seconds.
+     * @return int The cacheDuration config setting value, in seconds.
      */
-    public function getCacheDuration()
+    public function getCacheDuration(): int
     {
-        if (!isset($this->_cacheDuration)) {
-            $duration = $this->get('cacheDuration');
-
-            if ($duration) {
-                $this->_cacheDuration = DateTimeHelper::timeFormatToSeconds($duration);
-            } else {
-                $this->_cacheDuration = 0;
-            }
+        if ($this->_cacheDuration !== null) {
+            return $this->_cacheDuration;
         }
 
-        return $this->_cacheDuration;
+        $duration = $this->get('cacheDuration');
+
+        if (!$duration) {
+            return $this->_cacheDuration = 0;
+        }
+
+        $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+
+        if ($seconds === null) {
+            $seconds = 0;
+        }
+
+        return $this->_cacheDuration = $seconds;
     }
 
     /**
@@ -279,57 +313,53 @@ class Config extends Component
      * Results of the redirect test request will be cached for the amount of time specified by the
      * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
-     * @return boolean Whether generated URLs should omit “index.php”.
+     * @return bool Whether generated URLs should omit “index.php”.
      */
-    public function omitScriptNameInUrls()
+    public function getOmitScriptNameInUrls(): bool
     {
-        if (!isset($this->_omitScriptNameInUrls)) {
-            $this->_omitScriptNameInUrls = 'n';
-
-            // Check if the config value has actually been set to true/false
-            $configVal = $this->get('omitScriptNameInUrls');
-
-            if (is_bool($configVal)) {
-                $this->_omitScriptNameInUrls = ($configVal === true ? 'y' : 'n');
-            } else {
-                // Check if it's cached
-                $cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls');
-
-                if ($cachedVal !== false) {
-                    $this->_omitScriptNameInUrls = $cachedVal;
-                } else {
-                    // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-                    // *unless* the URI looks like a file, in which case it'll just throw a 404.
-                    if (App::isPhpDevServer()) {
-                        $this->_omitScriptNameInUrls = false;
-                    } else {
-                        // Cache it early so the testScriptNameRedirect request isn't checking for it too
-                        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
-
-                        // Test the server for it
-                        try {
-                            $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
-                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl,
-                                    '/')).'/testScriptNameRedirect';
-
-                            $response = (new Client())->get($url,
-                                ['connect_timeout' => 2, 'timeout' => 4]);
-
-                            if ((string)$response->getBody() === 'success') {
-                                $this->_omitScriptNameInUrls = 'y';
-                            }
-                        } catch (RequestException $e) {
-                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
-                        }
-                    }
-
-                    // Cache it
-                    Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
-                }
-            }
+        if ($this->_omitScriptNameInUrls !== null) {
+            return $this->_omitScriptNameInUrls;
         }
 
-        return ($this->_omitScriptNameInUrls == 'y');
+        // Check if the config value has actually been set to true/false
+        if (is_bool($configVal = $this->get('omitScriptNameInUrls'))) {
+            return $this->_omitScriptNameInUrls = $configVal;
+        }
+
+        // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
+        // *unless* the URI looks like a file, in which case it'll just throw a 404.
+        if (App::isPhpDevServer()) {
+            return $this->_omitScriptNameInUrls = false;
+        }
+
+        // Check if it's cached
+        if (($cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls')) !== false) {
+            return $this->_omitScriptNameInUrls = ($cachedVal === 'y');
+        }
+
+        // Cache it early so the testScriptNameRedirect request isn't checking for it too
+        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
+
+        // Test the server for it
+        $this->_omitScriptNameInUrls = false;
+
+        try {
+            $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
+            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+
+            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
+
+            if ((string)$response->getBody() === 'success') {
+                $this->_omitScriptNameInUrls = true;
+            }
+        } catch (RequestException $e) {
+            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache it
+        Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls ? 'y' : 'n');
+
+        return $this->_omitScriptNameInUrls;
     }
 
     /**
@@ -355,59 +385,56 @@ class Config extends Component
      * Results of the PATH_INFO test request will be cached for the amount of time specified by the
      * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
-     * @return boolean Whether generaletd URLs should be formatted using PATH_INFO.
+     * @return bool Whether generated URLs should be formatted using PATH_INFO
      */
-    public function usePathInfo()
+    public function getUsePathInfo(): bool
     {
-        if (!isset($this->_usePathInfo)) {
-            $this->_usePathInfo = 'n';
-
-            // Check if the config value has actually been set to true/false
-            $configVal = $this->get('usePathInfo');
-
-            if (is_bool($configVal)) {
-                $this->_usePathInfo = ($configVal === true ? 'y' : 'n');
-            } else {
-                // Check if it's cached
-                $cachedVal = Craft::$app->getCache()->get('usePathInfo');
-
-                if ($cachedVal !== false) {
-                    $this->_usePathInfo = $cachedVal;
-                } else {
-                    // If there is already a PATH_INFO var available, we know it supports it.
-                    // Added the !empty() check for nginx.
-                    if (!empty($_SERVER['PATH_INFO'])) {
-                        $this->_usePathInfo = 'y';
-                    }
-                    // PHP Dev Server supports path info, and doesn't support simultaneous requests, so we need to
-                    // explicitly check for that.
-                    else if (App::isPhpDevServer()) {
-                        $this->_usePathInfo = 'y';
-                    } else {
-                        // Cache it early so the testPathInfo request isn't checking for it too
-                        Craft::$app->getCache()->set('usePathInfo', 'n');
-
-                        // Test the server for it
-                        try {
-                            $url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
-                            $response = (new Client())->get($url,
-                                ['connect_timeout' => 2, 'timeout' => 4]);
-
-                            if ((string)$response->getBody() === 'success') {
-                                $this->_usePathInfo = 'y';
-                            }
-                        } catch (RequestException $e) {
-                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
-                        }
-                    }
-
-                    // Cache it
-                    Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo);
-                }
-            }
+        if ($this->_usePathInfo !== null) {
+            return $this->_usePathInfo;
         }
 
-        return ($this->_usePathInfo == 'y');
+        // Check if the config value has actually been set to true/false
+        if (is_bool($configVal = $this->get('usePathInfo'))) {
+            return $this->_usePathInfo = $configVal;
+        }
+
+        // If there is already a PATH_INFO var available, we know it supports it.
+        if (!empty($_SERVER['PATH_INFO'])) {
+            return $this->_usePathInfo = true;
+        }
+
+        // PHP Dev Server supports path info, and doesn't support simultaneous
+        //requests, so we need to explicitly check for that.
+        if (App::isPhpDevServer()) {
+            return $this->_usePathInfo = true;
+        }
+
+        // Check if it's cached
+        if (($cachedVal = Craft::$app->getCache()->get('usePathInfo')) !== false) {
+            return $this->_usePathInfo = ($cachedVal === 'y');
+        }
+
+        // Cache it early so the testPathInfo request isn't checking for it too
+        Craft::$app->getCache()->set('usePathInfo', 'n');
+
+        // Test the server for it
+        $this->_usePathInfo = false;
+
+        try {
+            $url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
+            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
+
+            if ((string)$response->getBody() === 'success') {
+                $this->_usePathInfo = true;
+            }
+        } catch (RequestException $e) {
+            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache it
+        Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo ? 'y' : 'n');
+
+        return $this->_usePathInfo;
     }
 
     /**
@@ -440,13 +467,13 @@ class Config extends Component
      * should be used with the $remembered param. If rememberedUserSessionDuration’s value is empty (disabling the
      * feature) then userSessionDuration will be used regardless of $remembered.
      *
-     * @param boolean $remembered Whether the rememberedUserSessionDuration config setting should be used if it’s set.
+     * @param bool $remembered    Whether the rememberedUserSessionDuration config setting should be used if it’s set.
      *                            Default is `false`.
      *
-     * @return integer|null The user session duration in seconds, or `null` if user sessions should expire along with the
+     * @return int|null The user session duration in seconds, or `null` if user sessions should expire along with the
      *                  HTTP session.
      */
-    public function getUserSessionDuration($remembered = false)
+    public function getUserSessionDuration(bool $remembered = false)
     {
         if ($remembered) {
             $duration = $this->get('rememberedUserSessionDuration');
@@ -468,7 +495,7 @@ class Config extends Component
     /**
      * Returns the configured elevated session duration in seconds.
      *
-     * @return integer|boolean The elevated session duration in seconds or false if it has been disabled.
+     * @return int|bool The elevated session duration in seconds or false if it has been disabled.
      */
     public function getElevatedSessionDuration()
     {
@@ -480,7 +507,11 @@ class Config extends Component
         }
 
         if ($duration) {
-            return DateTimeHelper::timeFormatToSeconds($duration);
+            $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+
+            if ($seconds !== null) {
+                return $seconds;
+            }
         }
 
         // Default to 5 minutes
@@ -495,7 +526,7 @@ class Config extends Component
      *
      * @return string The login path.
      */
-    public function getLoginPath()
+    public function getLoginPath(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -514,7 +545,7 @@ class Config extends Component
      *
      * @return string The logout path.
      */
-    public function getLogoutPath()
+    public function getLogoutPath(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -528,10 +559,10 @@ class Config extends Component
     /**
      * Returns a user’s Set Password path with a given activation code and user’s UID.
      *
-     * @param string  $code The activation code.
-     * @param string  $uid  The user’s UID.
-     * @param User    $user The user.
-     * @param boolean $full Whether a full URL should be returned. Defaults to `false`.
+     * @param string $code The activation code.
+     * @param string $uid  The user’s UID.
+     * @param User   $user The user.
+     * @param bool   $full Whether a full URL should be returned. Defaults to `false`.
      *
      * @return string The Set Password path.
      *
@@ -544,19 +575,19 @@ class Config extends Component
      * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
      * time being, with deprecation logs.
      */
-    public function getSetPasswordPath($code, $uid, $user, $full = false)
+    public function getSetPasswordPath(string $code, string $uid, User $user, bool $full = false): string
     {
         if ($user->can('accessCp')) {
             $url = $this->getCpSetPasswordPath();
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = Url::getCpUrl($url, [
+                    $url = UrlHelper::cpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = Url::getCpUrl($url, [
+                    $url = UrlHelper::cpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);
@@ -567,12 +598,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = Url::getUrl($url, [
+                    $url = UrlHelper::url($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = Url::getUrl($url, [
+                    $url = UrlHelper::url($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);
@@ -588,7 +619,7 @@ class Config extends Component
      *
      * @return string The Set Password path.
      */
-    public function getCpSetPasswordPath()
+    public function getCpSetPasswordPath(): string
     {
         return 'setpassword';
     }
@@ -598,7 +629,7 @@ class Config extends Component
      *
      * @return string The Login path.
      */
-    public function getCpLoginPath()
+    public function getCpLoginPath(): string
     {
         return 'login';
     }
@@ -608,29 +639,9 @@ class Config extends Component
      *
      * @return string The Logout path.
      */
-    public function getCpLogoutPath()
+    public function getCpLogoutPath(): string
     {
         return 'logout';
-    }
-
-    /**
-     * Parses a string for any [environment variables](http://craftcms.com/docs/multi-environment-configs#environment-specific-variables).
-     *
-     * This method simply loops through all of the elements in the
-     * [environmentVariables](http://craftcms.com/docs/config-settings#environmentVariables) config setting’s
-     * value, and replaces any {tag}s in the string that have matching keys with their corresponding values.
-     *
-     * @param string $str The string that should be parsed for environment variables.
-     *
-     * @return string The parsed string.
-     */
-    public function parseEnvironmentString($str)
-    {
-        foreach ($this->get('environmentVariables') as $key => $value) {
-            $str = str_replace('{'.$key.'}', $value, $str);
-        }
-
-        return $str;
     }
 
     /**
@@ -641,7 +652,7 @@ class Config extends Component
      *
      * @return string The Resource Request trigger word.
      */
-    public function getResourceTrigger()
+    public function getResourceTrigger(): string
     {
         $request = Craft::$app->getRequest();
 
@@ -655,13 +666,13 @@ class Config extends Component
     /**
      * Returns whether the system is allowed to be auto-updated to the latest release.
      *
-     * @return boolean Whether the system is allowed to be auto-updated to the latest release.
+     * @return bool Whether the system is allowed to be auto-updated to the latest release.
      */
-    public function allowAutoUpdates()
+    public function allowAutoUpdates(): bool
     {
-        $updateInfo = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
-        if (!$updateInfo) {
+        if (!$update) {
             return false;
         }
 
@@ -671,29 +682,106 @@ class Config extends Component
             return $configVal;
         }
 
-        if ($configVal === 'build-only') {
-            // Return whether the version number has changed at all
-            return ($updateInfo->app->latestVersion === Craft::$app->version);
+        if ($configVal === 'patch-only') {
+            // Return true if the major and minor versions are still the same
+            return (App::majorMinorVersion($update->app->latestVersion) === App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
-            // Return whether the major version number has changed
-            $localMajorVersion = array_shift(explode('.', Craft::$app->version));
-            $updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
-
-            return ($localMajorVersion === $updateMajorVersion);
+            // Return true if the major version is still the same
+            return (App::majorVersion($update->app->latestVersion) === App::majorVersion(Craft::$app->version));
         }
 
         return false;
     }
 
+    /**
+     * Returns whether to use file locks when writing to files.
+     *
+     * @return bool
+     */
+    public function getUseFileLocks(): bool
+    {
+        if ($this->_useFileLocks !== null) {
+            return $this->_useFileLocks;
+        }
+
+        if (is_bool($configVal = $this->get('useFileLocks'))) {
+            return $this->_useFileLocks = $configVal;
+        }
+
+        // Do we have it cached?
+        if (($cachedVal = Craft::$app->getCache()->get('useFileLocks')) !== false) {
+            return $this->_useFileLocks = ($cachedVal === 'y');
+        }
+
+        // Try a test lock
+        $this->_useFileLocks = false;
+
+        try {
+            $mutex = Craft::$app->getMutex();
+            $name = uniqid('test_lock', true);
+            if (!$mutex->acquire($name)) {
+                throw new Exception('Unable to acquire test lock.');
+            }
+            if (!$mutex->release($name)) {
+                throw new Exception('Unable to release test lock.');
+            }
+            $this->_useFileLocks = true;
+        } catch (\Exception $e) {
+            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache for two months
+        $cachedValue = $this->_useFileLocks ? 'y' : 'n';
+        Craft::$app->getCache()->set('useFileLocks', $cachedValue, 5184000);
+
+        return $this->_useFileLocks;
+    }
+
+    /**
+     * Returns an array of allowed file extensions.
+     *
+     * @return string[] The allowed file extensions
+     */
+    public function getAllowedFileExtensions(): array
+    {
+        if ($this->_allowedFileExtensions !== null) {
+            return $this->_allowedFileExtensions;
+        }
+
+        $this->_allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
+        $extra = Craft::$app->getConfig()->get('extraAllowedFileExtensions');
+
+        if (!empty($extra)) {
+            $extra = ArrayHelper::toArray($extra);
+            $this->_allowedFileExtensions = array_merge($this->_allowedFileExtensions, $extra);
+        }
+
+        $this->_allowedFileExtensions = array_map('strtolower', $this->_allowedFileExtensions);
+
+        return $this->_allowedFileExtensions;
+    }
+
+    /**
+     * Returns whether a given extension is allowed to be uploaded, per the
+     * allowedFileExtensions and extraAllowedFileExtensions config settings.
+     *
+     * @param string $extension The extension in question
+     *
+     * @return bool Whether the extension is allowed
+     */
+    public function isExtensionAllowed(string $extension): bool
+    {
+        return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
+    }
 
     /**
      * Returns the application’s configured DB table prefix.
      *
      * @return string
      */
-    public function getDbTablePrefix()
+    public function getDbTablePrefix(): string
     {
         // Table prefixes cannot be longer than 5 characters
         $tablePrefix = rtrim($this->get('tablePrefix', self::CATEGORY_DB), '_');
@@ -711,14 +799,45 @@ class Config extends Component
         return $tablePrefix;
     }
 
+    /**
+     * If a custom database port has been set in config/db.php, will return that value.
+     * Otherwise, will return the default port depending on the database type that is
+     * selected.
+     *
+     * @return int
+     */
+    public function getDbPort(): int
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->get('port', Config::CATEGORY_DB);
+        $driver = $config->get('driver', Config::CATEGORY_DB);
+
+        if ($port === '') {
+            switch ($driver) {
+                case Connection::DRIVER_MYSQL:
+                    $port = 3306;
+                    break;
+                case Connection::DRIVER_PGSQL:
+                    $port = 5432;
+                    break;
+            }
+        }
+
+        return $port;
+    }
+
     // Private Methods
     // =========================================================================
 
     /**
-     * @param $category
+     * @param string $category
+     *
+     * @throws InvalidParamException if $category is not supported
      */
-    private function _loadConfigSettings($category)
+    private function _loadConfigSettings(string $category)
     {
+        $category = strtolower($category);
+
         // Have we already loaded this category?
         if (isset($this->_configSettings[$category])) {
             return;
@@ -727,52 +846,71 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
-            $defaultsPath = $pathService->getAppPath().'/config/defaults/'.$category.'.php';
+        if (in_array($category, [
+            self::CATEGORY_FILECACHE,
+            self::CATEGORY_GENERAL,
+            self::CATEGORY_DB,
+            self::CATEGORY_DBCACHE,
+            self::CATEGORY_MEMCACHE,
+            self::CATEGORY_APC,
+            self::CATEGORY_GUZZLE,
+            self::CATEGORY_VOLUMES,
+        ], true)) {
+            $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
+        } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
+            /** @var Plugin $plugin */
+            $defaultsPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'config.php';
         } else {
-            $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
+            throw new InvalidParamException("Unsupported config category: {$category}");
         }
 
-        if (Io::fileExists($defaultsPath)) {
-            $configSettings = @require_once($defaultsPath);
+        if (is_file($defaultsPath)) {
+            $configSettings = @require $defaultsPath;
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($configSettings) || !is_array($configSettings)) {
             $configSettings = [];
         }
 
         // Little extra logic for the general config category.
-        if ($category == self::CATEGORY_GENERAL) {
-            // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
-            $filePath = $pathService->getConfigPath().'/general.php';
+        if ($category === self::CATEGORY_GENERAL) {
+            // Does config/general.php exist? (It used to be called blocks.php so maybe not.)
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {
-                if (is_array($customConfig = @include($filePath))) {
+                if (is_array($customConfig = @include $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 }
             } else {
-                $filePath = $pathService->getConfigPath().'/blocks.php';
+                $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'blocks.php';
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-                    if (is_array($customConfig = require_once($filePath))) {
+                    if (is_array($customConfig = require $filePath)) {
                         $this->_mergeConfigs($configSettings, $customConfig);
-                    } else if (isset($blocksConfig)) {
-                        $configSettings = array_merge($configSettings, $blocksConfig);
-                        unset($blocksConfig);
+                    } else {
+                        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                        if (isset($blocksConfig)) {
+                            $configSettings = array_merge($configSettings, $blocksConfig);
+                            unset($blocksConfig);
+                        }
                     }
                 }
             }
         } else {
-            $filePath = $pathService->getConfigPath().'/'.$category.'.php';
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.$category.'.php';
 
-            if (Io::fileExists($filePath)) {
+            if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
-                if (is_array($customConfig = require_once($filePath))) {
+                if (is_array($customConfig = require $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
-                } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
-                    $configSettings = array_merge($configSettings, $dbConfig);
-                    unset($dbConfig);
+                } else {
+                    /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                    if ($category === self::CATEGORY_DB && isset($dbConfig)) {
+                        $configSettings = array_merge($configSettings, $dbConfig);
+                        unset($dbConfig);
+                    }
                 }
             }
         }
@@ -788,21 +926,24 @@ class Config extends Component
      *
      * @return void
      */
-    private function _mergeConfigs(&$baseConfig, $customConfig)
+    private function _mergeConfigs(array &$baseConfig, array $customConfig)
     {
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {
-            $mergedCustomConfig = [];
+            // If no environment was specified, just look in the '*' array
+            if (Craft::$app->env === null) {
+                $customConfig = $customConfig['*'];
+            } else {
+                $mergedCustomConfig = [];
 
-            foreach ($customConfig as $env => $envConfig) {
-                if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT,
-                        $env)
-                ) {
-                    $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                foreach ($customConfig as $env => $envConfig) {
+                    if ($env === '*' || StringHelper::contains(Craft::$app->env, $env)) {
+                        $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
+                    }
                 }
-            }
 
-            $customConfig = $mergedCustomConfig;
+                $customConfig = $mergedCustomConfig;
+            }
         }
 
         $baseConfig = array_merge($baseConfig, $customConfig);

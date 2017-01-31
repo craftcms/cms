@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
 
@@ -21,18 +21,20 @@ class SystemSettings
     // Public Methods
     // =========================================================================
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a setting category exists.
      *
      * @param string $category
      *
-     * @return boolean
+     * @return bool
      */
-    public function __isset($category)
+    public function __isset(string $category): bool
     {
         return true;
     }
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns the system settings for a category.
      *
@@ -40,7 +42,7 @@ class SystemSettings
      *
      * @return array
      */
-    public function __get($category)
+    public function __get(string $category): array
     {
         Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.systemSettings.getSettings(\'category\') instead.');
 

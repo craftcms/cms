@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\models\EntryDraft;
-use craft\app\models\EntryVersion;
+use craft\models\EntryDraft;
+use craft\models\EntryVersion;
 use yii\base\Exception;
 
 /**
@@ -30,17 +30,17 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param integer $entryId
-     * @param string  $siteHandle
+     * @param int         $entryId
+     * @param string|null $siteHandle
      *
-     * @return array
-     * @throws Exception if $siteHandle is invalid
+     * @return EntryDraft[]
+     * @throws Exception if|null $siteHandle is invalid
      */
-    public function getDraftsByEntryId($entryId, $siteHandle = null)
+    public function getDraftsByEntryId(int $entryId, string $siteHandle = null): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -58,17 +58,17 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param integer $entryId
-     * @param string  $siteHandle
+     * @param int         $entryId
+     * @param string|null $siteHandle
      *
-     * @return array
-     * @throws Exception if $siteHandle is invalid
+     * @return EntryDraft[]
+     * @throws Exception if|null $siteHandle is invalid
      */
-    public function getEditableDraftsByEntryId($entryId, $siteHandle = null)
+    public function getEditableDraftsByEntryId(int $entryId, string $siteHandle = null): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -86,11 +86,11 @@ class EntryRevisions
     /**
      * Returns an entry draft by its offset.
      *
-     * @param integer $draftId
+     * @param int $draftId
      *
      * @return EntryDraft|null
      */
-    public function getDraftById($draftId)
+    public function getDraftById(int $draftId)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftById()', 'craft.entryRevisions.getDraftById() has been deprecated. Use craft.app.entryRevisions.getDraftById() instead.');
 
@@ -103,13 +103,13 @@ class EntryRevisions
     /**
      * Returns entry versions by an entry ID.
      *
-     * @param integer $entryId
-     * @param string  $siteHandle
+     * @param int    $entryId
+     * @param string $siteHandle
      *
-     * @return array
+     * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
-    public function getVersionsByEntryId($entryId, $siteHandle)
+    public function getVersionsByEntryId(int $entryId, string $siteHandle): array
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
 
@@ -131,11 +131,11 @@ class EntryRevisions
     /**
      * Returns an entry version by its ID.
      *
-     * @param integer $versionId
+     * @param int $versionId
      *
      * @return EntryVersion|null
      */
-    public function getVersionById($versionId)
+    public function getVersionById(int $versionId)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionById()', 'craft.entryRevisions.getVersionById() has been deprecated. Use craft.app.entryRevisions.getVersionById() instead.');
 

@@ -5,10 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
-use Craft;
-use craft\app\helpers\ArrayHelper;
+use craft\helpers\ArrayHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;
 use yii\validators\UniqueValidator as YiiUniqueValidator;
@@ -33,7 +32,7 @@ class UniqueValidator extends YiiUniqueValidator
     public $pk;
 
     /**
-     * @var Model The model that is being validated
+     * @var Model|null The model that is being validated
      */
     protected $originalModel;
 

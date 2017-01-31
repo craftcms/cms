@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\App as AppHelper;
-use craft\app\helpers\Io as IoHelper;
+use craft\helpers\App as AppHelper;
+use craft\helpers\Assets;
 
 /**
  * Io variable.
@@ -25,13 +25,13 @@ class Io
     /**
      * Return max upload size in bytes.
      *
-     * @return integer
+     * @return int
      */
-    public function getMaxUploadSize()
+    public function getMaxUploadSize(): int
     {
-        $maxUpload = AppHelper::getPhpConfigValueInBytes('upload_max_filesize');
-        $maxPost = AppHelper::getPhpConfigValueInBytes('post_max_size');
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
+        $maxUpload = AppHelper::phpConfigValueInBytes('upload_max_filesize');
+        $maxPost = AppHelper::phpConfigValueInBytes('post_max_size');
+        $memoryLimit = AppHelper::phpConfigValueInBytes('memory_limit');
 
         $uploadInBytes = min($maxUpload, $maxPost);
 
@@ -53,8 +53,8 @@ class Io
      *
      * @return array
      */
-    public function getFileKinds()
+    public function getFileKinds(): array
     {
-        return IoHelper::getFileKinds();
+        return Assets::getFileKinds();
     }
 }

@@ -6,17 +6,17 @@
 {% set fullPageForm = true %}
 
 {% set crumbs = [
-	{ label: "Settings"|t('app'), url: url('settings') },
-	{ label: "Users"|t('app'), url: url('settings/users') },
-	{ label: "User Groups"|t('app'), url: url('settings/users') }
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Users"|t('app'), url: url('settings/users') },
+    { label: "User Groups"|t('app'), url: url('settings/users') }
 ] %}
 
 {% set docsUrl = 'http://craftcms.com/docs/users#user-groups' %}
 
 
 {% if group is not defined and groupId is defined %}
-	{% set group = craft.app.userGroups.getGroupById(groupId) %}
-	{% if not group %}{% exit 404 %}{% endif %}
+    {% set group = craft.app.userGroups.getGroupById(groupId) %}
+    {% if not group %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
@@ -24,57 +24,57 @@
 
 
 {% if isNewGroup %}
-	{% set title = "Create a new user group"|t('app') %}
+    {% set title = "Create a new user group"|t('app') %}
 {% else %}
-	{% set title = group.name %}
+    {% set title = group.name %}
 {% endif %}
 
 
 {% block content %}
-	<input type="hidden" name="action" value="user-settings/save-group">
-	{{ redirectInput('settings/users') }}
+    <input type="hidden" name="action" value="user-settings/save-group">
+    {{ redirectInput('settings/users') }}
 
-	{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
+    {% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 
-	{{ forms.textField({
-		first: true,
-		label: "Name"|t('app'),
-		id: 'name',
-		name: 'name',
-		value: (group is defined ? group.name : null),
-		errors: (group is defined ? group.getErrors('name') : null),
-		autofocus: true,
-		required: true,
-		translatable: true
-	}) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        id: 'name',
+        name: 'name',
+        value: (group is defined ? group.name : null),
+        errors: (group is defined ? group.getErrors('name') : null),
+        autofocus: true,
+        required: true,
+        translatable: true
+    }) }}
 
-	{{ forms.textField({
-		label: "Handle"|t('app'),
-		id: 'handle',
-		name: 'handle',
-		class: 'code',
-		value: (group is defined ? group.handle : null),
-		errors: (group is defined ? group.getErrors('handle') : null),
-		required: true
-	}) }}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        value: (group is defined ? group.handle : null),
+        errors: (group is defined ? group.getErrors('handle') : null),
+        required: true
+    }) }}
 
-	<hr>
+    <hr>
 
-	<h2>{{ "Permissions"|t('app') }}</h2>
+    <h2>{{ "Permissions"|t('app') }}</h2>
 
-	<div id="permissions">
-		{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
-	</div>
+    <div id="permissions">
+        {% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}
+    </div>
 {% endblock %}
 
-{% registerjs %}
-	{% if group is not defined or not group.handle %}
-		new Craft.HandleGenerator('#name', '#handle');
-	{% endif %}
+{% js %}
+    {% if group is not defined or not group.handle %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endif %}
 
-	{% if not isNewGroup %}
-		new Craft.ElevatedSessionForm('#container', [
-			'#permissions input[type="checkbox"]:not(:checked)'
-		]);
-	{% endif %}
-{% endregisterjs %}
+    {% if not isNewGroup %}
+        new Craft.ElevatedSessionForm('#container', [
+            '#permissions input[type="checkbox"]:not(:checked)'
+        ]);
+    {% endif %}
+{% endjs %}

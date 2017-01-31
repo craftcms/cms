@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
 
@@ -21,12 +21,17 @@ class App
     // =========================================================================
 
     /**
-     * @var null
+     * @var bool
      */
-    private static $_isPhpDevServer = null;
+    private static $_isComposerInstall;
 
     /**
-     * @var
+     * @var bool
+     */
+    private static $_isPhpDevServer;
+
+    /**
+     * @var bool
      */
     private static $_iconv;
 
@@ -34,22 +39,37 @@ class App
     // =========================================================================
 
     /**
-     * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
+     * Returns whether Craft was installed via Composer.
      *
-     * @return boolean Whether Craft is running on the PHP Dev Server.
+     * @return bool
      */
-    public static function isPhpDevServer()
+    public static function isComposerInstall(): bool
     {
-        if (!isset(static::$_isPhpDevServer)) {
-            if (isset($_SERVER['SERVER_SOFTWARE'])) {
-                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'],
-                        'PHP', 3) == 0);
-            } else {
-                static::$_isPhpDevServer = false;
-            }
+        if (self::$_isComposerInstall !== null) {
+            return self::$_isComposerInstall;
         }
 
-        return static::$_isPhpDevServer;
+        // If this was installed via a craftcms.com zip, there will be an index.php file
+        // at the root of the vendor directory.
+        return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
+    }
+
+    /**
+     * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
+     *
+     * @return bool Whether Craft is running on the PHP Dev Server.
+     */
+    public static function isPhpDevServer(): bool
+    {
+        if (self::$_isPhpDevServer !== null) {
+            return self::$_isPhpDevServer;
+        }
+
+        if (isset($_SERVER['SERVER_SOFTWARE'])) {
+            return self::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
+        }
+
+        return self::$_isPhpDevServer = false;
     }
 
     /**
@@ -57,7 +77,7 @@ class App
      *
      * @return array All the known Craft editions’ IDs.
      */
-    public static function getEditions()
+    public static function editions(): array
     {
         return [Craft::Personal, Craft::Client, Craft::Pro];
     }
@@ -65,11 +85,11 @@ class App
     /**
      * Returns the name of the given Craft edition.
      *
-     * @param integer $edition An edition’s ID.
+     * @param int $edition An edition’s ID.
      *
      * @return string The edition’s name.
      */
-    public static function getEditionName($edition)
+    public static function editionName(int $edition): string
     {
         switch ($edition) {
             case Craft::Client:
@@ -86,27 +106,31 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      *
-     * @return boolean Whether $edition is a valid edition ID.
+     * @return bool Whether $edition is a valid edition ID.
      */
-    public static function isValidEdition($edition)
+    public static function isValidEdition($edition): bool
     {
-        return (is_numeric($edition) && in_array($edition,
-                static::getEditions()));
+        if ($edition === false || $edition === null) {
+            return false;
+        }
+
+        return (is_numeric((int)$edition) && in_array((int)$edition, static::editions(), true));
     }
 
     /**
-     * Retrieves a boolean PHP config setting and normalizes it to an actual bool.
+     * Retrieves a bool PHP config setting and normalizes it to an actual bool.
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return boolean Whether it is set to the php.ini equivelant of `true`.
+     * @return bool Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function getPhpConfigValueAsBool($var)
+    public static function phpConfigValueAsBool(string $var): bool
     {
         $value = ini_get($var);
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
-        return ($value == '1' || strtolower($value) == 'on');
+        /** @noinspection TypeUnsafeComparisonInspection */
+        return ($value == 1 || strtolower($value) === 'on');
     }
 
     /**
@@ -114,30 +138,33 @@ class App
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return integer The size in bytes.
+     * @return int The size in bytes.
      */
-    public static function getPhpConfigValueInBytes($var)
+    public static function phpConfigValueInBytes(string $var): int
     {
         $value = ini_get($var);
 
         // See if we can recognize that.
-        if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches)) {
+        if (!preg_match('/(\d+)(K|M|G|T)/i', $value, $matches)) {
             return (int)$value;
         }
 
+        $value = (int)$matches[1];
+
         // Multiply! Falling through here is intentional.
-        switch (strtolower($matches[1])) {
-            /** @noinspection PhpMissingBreakStatementInspection */
+        switch (strtolower($matches[2])) {
             case 't':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+            // no break
             case 'g':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+            // no break
             case 'm':
                 $value *= 1024;
+            // no break
             case 'k':
                 $value *= 1024;
+            // no break
         }
 
         return $value;
@@ -150,10 +177,10 @@ class App
      *
      * @return string The normalized version number
      */
-    public static function normalizeVersionNumber($version)
+    public static function normalizeVersionNumber(string $version): string
     {
         // Periods before/after non-numeric sequences
-        $version = preg_replace('/[^0-9]+/', '.$0.', $version);
+        $version = preg_replace('/\D+/', '.$0.', $version);
 
         // Convert sequences of ./-/+'s into single periods
         $version = preg_replace('/[\._\-\+]+/', '.', $version);
@@ -171,7 +198,7 @@ class App
      *
      * @return string|null The major version
      */
-    public static function getMajorVersion($version)
+    public static function majorVersion(string $version)
     {
         $version = static::normalizeVersionNumber($version);
         $parts = explode('.', $version, 2);
@@ -183,18 +210,51 @@ class App
         return null;
     }
 
-    public static function checkForValidIconv()
+    /**
+     * Returns the major and minor (X.Y) versions from a given version number.
+     *
+     * @param string $version The full version number
+     *
+     * @return string|null The X.Y parts of the version number
+     */
+    public static function majorMinorVersion(string $version)
     {
-        if (!isset(static::$_iconv)) {
-            // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-            // don't consider iconv "installed" if it's there but "unusable".
-            if (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK) {
-                static::$_iconv = true;
-            } else {
-                static::$_iconv = false;
-            }
+        preg_match('/^\d+\.\d+/', $version, $matches);
+
+        if (isset($matches[0])) {
+            return $matches[0];
         }
 
-        return static::$_iconv;
+        return null;
+    }
+
+    /**
+     * Returns the Craft download URL for a given version.
+     *
+     * @param string $version The Craft version
+     *
+     * @return string The download URL
+     */
+    public static function craftDownloadUrl(string $version): string
+    {
+        $xy = self::majorMinorVersion($version);
+
+        return "https://download.craftcdn.com/craft/{$xy}/{$version}/Craft-{$version}.zip";
+    }
+
+    /**
+     * Returns whether the server has a valid version of the iconv extension installed.
+     *
+     * @return bool
+     */
+    public static function checkForValidIconv(): bool
+    {
+        if (self::$_iconv !== null) {
+            return self::$_iconv;
+        }
+
+        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
+        // don't consider iconv "installed" if it's there but "unusable".
+        return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
     }
 }

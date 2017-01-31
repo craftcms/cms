@@ -5,22 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\CategoryGroupNotFoundException;
-use craft\app\errors\CategoryNotFoundException;
-use craft\app\events\CategoryEvent;
-use craft\app\elements\Category;
-use craft\app\events\CategoryGroupEvent;
-use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroup_SiteSettings;
-use craft\app\models\FieldLayout;
-use craft\app\models\Structure;
-use craft\app\records\Category as CategoryRecord;
-use craft\app\records\CategoryGroup as CategoryGroupRecord;
-use craft\app\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
+use craft\db\Query;
+use craft\elements\Category;
+use craft\errors\CategoryGroupNotFoundException;
+use craft\events\CategoryGroupEvent;
+use craft\models\CategoryGroup;
+use craft\models\CategoryGroup_SiteSettings;
+use craft\models\FieldLayout;
+use craft\models\Structure;
+use craft\records\CategoryGroup as CategoryGroupRecord;
+use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -36,26 +33,6 @@ class Categories extends Component
 {
     // Constants
     // =========================================================================
-
-    /**
-     * @event CategoryEvent The event that is triggered before a category is saved.
-     */
-    const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
-
-    /**
-     * @event CategoryEvent The event that is triggered after a category is saved.
-     */
-    const EVENT_AFTER_SAVE_CATEGORY = 'afterSaveCategory';
-
-    /**
-     * @event CategoryEvent The event that is triggered before a category is deleted.
-     */
-    const EVENT_BEFORE_DELETE_CATEGORY = 'beforeDeleteCategory';
-
-    /**
-     * @event CategoryEvent The event that is triggered after a category is deleted.
-     */
-    const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
@@ -81,17 +58,17 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var int[]|null
      */
     private $_allGroupIds;
 
     /**
-     * @var
+     * @var int[]|null
      */
     private $_editableGroupIds;
 
     /**
-     * @var
+     * @var CategoryGroup[]|null
      */
     private $_categoryGroupsById;
 
@@ -109,38 +86,40 @@ class Categories extends Component
     /**
      * Returns all of the group IDs.
      *
-     * @return integer[]
+     * @return int[]
      */
-    public function getAllGroupIds()
+    public function getAllGroupIds(): array
     {
-        if (!isset($this->_allGroupIds)) {
-            if ($this->_fetchedAllCategoryGroups) {
-                $this->_allGroupIds = array_keys($this->_categoryGroupsById);
-            } else {
-                $this->_allGroupIds = (new Query())
-                    ->select('id')
-                    ->from('{{%categorygroups}}')
-                    ->column();
-            }
+        if ($this->_allGroupIds !== null) {
+            return $this->_allGroupIds;
         }
 
-        return $this->_allGroupIds;
+        if ($this->_fetchedAllCategoryGroups) {
+            return $this->_allGroupIds = array_keys($this->_categoryGroupsById);
+        }
+
+        return $this->_allGroupIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%categorygroups}}'])
+            ->column();
     }
 
     /**
      * Returns all of the category group IDs that are editable by the current user.
      *
-     * @return integer[]
+     * @return int[]
      */
-    public function getEditableGroupIds()
+    public function getEditableGroupIds(): array
     {
-        if (!isset($this->_editableGroupIds)) {
-            $this->_editableGroupIds = [];
+        if ($this->_editableGroupIds !== null) {
+            return $this->_editableGroupIds;
+        }
 
-            foreach ($this->getAllGroupIds() as $groupId) {
-                if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
-                    $this->_editableGroupIds[] = $groupId;
-                }
+        $this->_editableGroupIds = [];
+
+        foreach ($this->getAllGroupIds() as $groupId) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
+                $this->_editableGroupIds[] = $groupId;
             }
         }
 
@@ -150,66 +129,44 @@ class Categories extends Component
     /**
      * Returns all category groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups(): array
     {
-        if (!$this->_fetchedAllCategoryGroups) {
-            /** @var CategoryGroupRecord[] $groupRecords */
-            $groupRecords = CategoryGroupRecord::find()
-                ->orderBy('name asc')
-                ->with('structure')
-                ->all();
-
-            if (!isset($this->_categoryGroupsById)) {
-                $this->_categoryGroupsById = [];
-            }
-
-            foreach ($groupRecords as $groupRecord) {
-                $this->_categoryGroupsById[$groupRecord->id] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_fetchedAllCategoryGroups = true;
-        }
-
-        if ($indexBy == 'id') {
-            return $this->_categoryGroupsById;
-        }
-
-        if (!$indexBy) {
+        if ($this->_fetchedAllCategoryGroups) {
             return array_values($this->_categoryGroupsById);
         }
 
-        $groups = [];
+        $this->_categoryGroupsById = [];
 
-        foreach ($this->_categoryGroupsById as $group) {
-            $groups[$group->$indexBy] = $group;
+        /** @var CategoryGroupRecord[] $groupRecords */
+        $groupRecords = CategoryGroupRecord::find()
+            ->orderBy(['name' => SORT_ASC])
+            ->with('structure')
+            ->all();
+
+        foreach ($groupRecords as $groupRecord) {
+            $this->_categoryGroupsById[$groupRecord->id] = $this->_createCategoryGroupFromRecord($groupRecord);
         }
 
-        return $groups;
+        $this->_fetchedAllCategoryGroups = true;
+
+        return array_values($this->_categoryGroupsById);
     }
 
     /**
      * Returns all editable groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups(): array
     {
         $editableGroupIds = $this->getEditableGroupIds();
         $editableGroups = [];
 
         foreach ($this->getAllGroups() as $group) {
-            if (in_array($group->id, $editableGroupIds)) {
-                if ($indexBy) {
-                    $editableGroups[$group->$indexBy] = $group;
-                } else {
-                    $editableGroups[] = $group;
-                }
+            if (in_array($group->id, $editableGroupIds, false)) {
+                $editableGroups[] = $group;
             }
         }
 
@@ -219,9 +176,9 @@ class Categories extends Component
     /**
      * Gets the total number of category groups.
      *
-     * @return integer
+     * @return int
      */
-    public function getTotalGroups()
+    public function getTotalGroups(): int
     {
         return count($this->getAllGroupIds());
     }
@@ -229,27 +186,31 @@ class Categories extends Component
     /**
      * Returns a group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
      * @return CategoryGroup|null
      */
-    public function getGroupById($groupId)
+    public function getGroupById(int $groupId)
     {
-        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId, $this->_categoryGroupsById)) {
-            $groupRecord = CategoryGroupRecord::find()
-                ->where(['id' => $groupId])
-                ->with('structure')
-                ->one();
-
-            if ($groupRecord) {
-                /** @var CategoryGroupRecord $groupRecord */
-                $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
-            } else {
-                $this->_categoryGroupsById[$groupId] = null;
-            }
+        if ($this->_categoryGroupsById !== null && array_key_exists($groupId, $this->_categoryGroupsById)) {
+            return $this->_categoryGroupsById[$groupId];
         }
 
-        return $this->_categoryGroupsById[$groupId];
+        if ($this->_fetchedAllCategoryGroups) {
+            return null;
+        }
+
+        $groupRecord = CategoryGroupRecord::find()
+            ->where(['id' => $groupId])
+            ->with('structure')
+            ->one();
+
+        if ($groupRecord === null) {
+            return $this->_categoryGroupsById[$groupId] = null;
+        }
+
+        /** @var CategoryGroupRecord $groupRecord */
+        return $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
     }
 
     /**
@@ -259,7 +220,7 @@ class Categories extends Component
      *
      * @return CategoryGroup|null
      */
-    public function getGroupByHandle($groupHandle)
+    public function getGroupByHandle(string $groupHandle)
     {
         $groupRecord = CategoryGroupRecord::findOne([
             'handle' => $groupHandle
@@ -278,20 +239,26 @@ class Categories extends Component
     /**
      * Returns a group's site settings.
      *
-     * @param integer     $groupId
-     * @param string|null $indexBy
+     * @param int $groupId
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings($groupId, $indexBy = null)
+    public function getGroupSiteSettings(int $groupId): array
     {
-        $siteSettings = CategoryGroup_SiteSettingsRecord::find()
+        $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
-            ->indexBy($indexBy)
             ->all();
+        $siteSettings = [];
 
-        foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = CategoryGroup_SiteSettings::create($value);
+        foreach ($results as $result) {
+            $siteSettings[] = new CategoryGroup_SiteSettings($result->toArray([
+                'id',
+                'groupId',
+                'siteId',
+                'hasUrls',
+                'uriFormat',
+                'template',
+            ]));
         }
 
         return $siteSettings;
@@ -301,13 +268,13 @@ class Categories extends Component
      * Saves a category group.
      *
      * @param CategoryGroup $group         The category group to be saved
-     * @param boolean       $runValidation Whether the category group should be validated
+     * @param bool          $runValidation Whether the category group should be validated
      *
-     * @return boolean Whether the category group was saved successfully
+     * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
      * @throws \Exception if reasons
      */
-    public function saveGroup(CategoryGroup $group, $runValidation = true)
+    public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
         if ($runValidation && !$group->validate()) {
             Craft::info('Category group not saved due to validation error.', __METHOD__);
@@ -330,14 +297,19 @@ class Categories extends Component
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            /** @var CategoryGroup $oldCategoryGroup */
-            $oldCategoryGroup = CategoryGroup::create($groupRecord);
+            $oldCategoryGroup = new CategoryGroup($groupRecord->toArray([
+                'id',
+                'structureId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+            ]));
         } else {
             $groupRecord = new CategoryGroupRecord();
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-        if ($group->maxLevels == 0) {
+        if ($group->maxLevels === 0) {
             $group->maxLevels = null;
         }
 
@@ -454,7 +426,7 @@ class Categories extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }
@@ -471,44 +443,20 @@ class Categories extends Component
                     ->limit(null)
                     ->ids();
 
-                // Should we be deleting
-                /** @noinspection PhpUndefinedVariableInspection */
-                if ($categoryIds && $droppedSiteIds) {
-                    $db->createCommand()
-                        ->delete(
-                            '{{%elements_i18n}}',
-                            [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
-                            ])
-                        ->execute();
-                    $db->createCommand()
-                        ->delete(
-                            '{{%content}}',
-                            [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
-                            ])
-                        ->execute();
-                }
-
                 // Are there any sites left?
-                if ($allSiteSettings) {
+                if (!empty($allSiteSettings)) {
                     // Drop the old category URIs for any site settings that don't have URLs
-                    if ($sitesNowWithoutUrls) {
+                    if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
                                 '{{%elements_i18n}}',
                                 ['uri' => null],
                                 [
-                                    'and',
-                                    ['in', 'elementId', $categoryIds],
-                                    ['in', 'siteId', $sitesNowWithoutUrls]
+                                    'elementId' => $categoryIds,
+                                    'siteId' => $sitesNowWithoutUrls,
                                 ])
                             ->execute();
-                    } else if ($sitesWithNewUriFormats) {
+                    } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -549,12 +497,12 @@ class Categories extends Component
     /**
      * Deletes a category group by its ID.
      *
-     * @param integer $groupId
+     * @param int $groupId
      *
-     * @return boolean Whether the category group was deleted successfully
+     * @return bool Whether the category group was deleted successfully
      * @throws \Exception if reasons
      */
-    public function deleteGroupById($groupId)
+    public function deleteGroupById(int $groupId): bool
     {
         if (!$groupId) {
             return false;
@@ -575,8 +523,8 @@ class Categories extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%categorygroups}}')
+                ->select(['fieldLayoutId'])
+                ->from(['{{%categorygroups}}'])
                 ->where(['id' => $groupId])
                 ->scalar();
 
@@ -584,14 +532,16 @@ class Categories extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the category ids so we can clean the elements table.
-            $categoryIds = (new Query())
-                ->select('id')
-                ->from('{{%categories}}')
-                ->where(['groupId' => $groupId])
-                ->column();
+            // Delete the categories
+            $categories = Category::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->groupId($groupId)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($categoryIds);
+            foreach ($categories as $category) {
+                Craft::$app->getElements()->deleteElement($category);
+            }
 
             Craft::$app->getDb()->createCommand()
                 ->delete(
@@ -618,11 +568,11 @@ class Categories extends Component
      * Returns whether a group’s categories have URLs for the given site ID, and if the group’s template path is valid.
      *
      * @param CategoryGroup $group
-     * @param integer       $siteId
+     * @param int           $siteId
      *
-     * @return boolean
+     * @return bool
      */
-    public function isGroupTemplateValid(CategoryGroup $group, $siteId)
+    public function isGroupTemplateValid(CategoryGroup $group, int $siteId): bool
     {
         $categoryGroupSiteSettings = $group->getSiteSettings();
 
@@ -652,12 +602,12 @@ class Categories extends Component
     /**
      * Returns a category by its ID.
      *
-     * @param integer      $categoryId
-     * @param integer|null $siteId
+     * @param int      $categoryId
+     * @param int|null $siteId
      *
      * @return Category|null
      */
-    public function getCategoryById($categoryId, $siteId = null)
+    public function getCategoryById(int $categoryId, int $siteId = null)
     {
         if (!$categoryId) {
             return null;
@@ -665,9 +615,9 @@ class Categories extends Component
 
         // Get the structure ID
         $structureId = (new Query())
-            ->select('categorygroups.structureId')
-            ->from('{{%categories}} categories')
-            ->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+            ->select(['categorygroups.structureId'])
+            ->from(['{{%categories}} categories'])
+            ->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]')
             ->where(['categories.id' => $categoryId])
             ->scalar();
 
@@ -676,203 +626,35 @@ class Categories extends Component
             return null;
         }
 
-        return Category::find()
-            ->id($categoryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
-    }
+        $query = Category::find();
+        $query->id($categoryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
 
-    /**
-     * Saves a category.
-     *
-     * @param Category $category
-     * @param boolean $runValidation Whether the category should be validated
-     *
-     * @return boolean Whether the category was saved successfully
-     * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
-     * @throws \Exception if reasons
-     */
-    public function saveCategory(Category $category, $runValidation = true)
-    {
-        if ($runValidation && !$category->validate()) {
-            Craft::info('Category not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
-        $isNewCategory = !$category->id;
-
-        // Fire a 'beforeSaveCategory' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, new CategoryEvent([
-            'category' => $category,
-            'isNew' => $isNewCategory
-        ]));
-
-        $hasNewParent = $this->_checkForNewParent($category);
-
-        if ($hasNewParent) {
-            if ($category->newParentId) {
-                $parentCategory = $this->getCategoryById($category->newParentId, $category->siteId);
-
-                if (!$parentCategory) {
-                    throw new CategoryNotFoundException("No category exists with the ID '{$category->newParentId}'");
-                }
-            } else {
-                $parentCategory = null;
-            }
-
-            $category->setParent($parentCategory);
-        }
-
-        // Category data
-        if (!$isNewCategory) {
-            $categoryRecord = CategoryRecord::findOne($category->id);
-
-            if (!$categoryRecord) {
-                throw new CategoryNotFoundException("No category exists with the ID '{$category->id}'");
-            }
-        } else {
-            $categoryRecord = new CategoryRecord();
-        }
-
-        $categoryRecord->groupId = $category->groupId;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            $success = Craft::$app->getElements()->saveElement($category);
-
-            // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
-            if (!$success) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
-            // Now that we have an element ID, save it on the other stuff
-            if ($isNewCategory) {
-                $categoryRecord->id = $category->id;
-            }
-
-            $categoryRecord->save(false);
-
-            // Has the parent changed?
-            if ($hasNewParent) {
-                if (!$category->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
-                } else {
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
-                }
-            }
-
-            // Update the category's descendants, who may be using this category's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        // Fire an 'afterSaveCategory' event
-        $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY, new CategoryEvent([
-            'category' => $category,
-            'isNew' => $isNewCategory,
-        ]));
-
-        return true;
-    }
-
-    /**
-     * Deletes a category(s).
-     *
-     * @param Category|Category[] $categories
-     *
-     * @return boolean Whether the category was deleted successfully
-     * @throws \Exception if reasons
-     */
-    public function deleteCategory($categories)
-    {
-        if (!$categories) {
-            return false;
-        }
-
-        if (is_array($categories)) {
-            // Order in reverse-hierarchical order, so as we are looping through
-            // them and deleting their descendants, we don't have to worry about
-            // descendants conflicting with other $categories
-            usort($categories, function(Category $a, Category $b) {
-                return ($a->lft > $b->lft) ? -1 : 1;
-            });
-        } else {
-            $categories = [$categories];
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $success = $this->_deleteCategories($categories, true);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        return $success;
-    }
-
-    /**
-     * Deletes an category(s) by its ID.
-     *
-     * @param integer|integer[] $categoryId
-     *
-     * @return boolean
-     */
-    public function deleteCategoryById($categoryId)
-    {
-        if (!$categoryId) {
-            return false;
-        }
-
-        $categories = Category::find()
-            ->id($categoryId)
-            ->limit(null)
-            ->status(null)
-            ->enabledForSite(false)
-            ->all();
-
-        if ($categories) {
-            return $this->deleteCategory($categories);
-        }
-
-        return false;
+        return $query->one();
     }
 
     /**
      * Updates a list of category IDs, filling in any gaps in the family tree.
      *
-     * @param integer[] $ids The original list of category IDs
+     * @param int[] $ids The original list of category IDs
      *
-     * @return integer[] The list of category IDs with all the gaps filled in.
+     * @return int[] The list of category IDs with all the gaps filled in.
      */
-    public function fillGapsInCategoryIds($ids)
+    public function fillGapsInCategoryIds(array $ids): array
     {
         $completeIds = [];
 
-        if ($ids) {
+        if (!empty($ids)) {
             // Make sure that for each selected category, all of its parents are also selected.
-            $categories = Category::find()
-                ->id($ids)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
-                ->all();
+            $categoryQuery = Category::find();
+            $categoryQuery->id($ids);
+            $categoryQuery->status(null);
+            $categoryQuery->enabledForSite(false);
+            $categoryQuery->limit(null);
+            $categories = $categoryQuery->all();
 
             $prevCategory = null;
 
@@ -885,6 +667,7 @@ class Categories extends Component
                 ) {
                     // Merge in all of the entry's ancestors
                     $ancestorIds = $category->getAncestors()->ids();
+                    /** @noinspection SlowArrayOperationsInLoopInspection */
                     $completeIds = array_merge($completeIds, $ancestorIds);
                 }
 
@@ -906,108 +689,24 @@ class Categories extends Component
      *
      * @return CategoryGroup|null
      */
-    private function _createCategoryGroupFromRecord($groupRecord)
+    private function _createCategoryGroupFromRecord(CategoryGroupRecord $groupRecord = null)
     {
         if (!$groupRecord) {
             return null;
         }
 
-        $group = CategoryGroup::create($groupRecord);
+        $group = new CategoryGroup($groupRecord->toArray([
+            'id',
+            'structureId',
+            'fieldLayoutId',
+            'name',
+            'handle',
+        ]));
 
         if ($groupRecord->structure) {
             $group->maxLevels = $groupRecord->structure->maxLevels;
         }
 
         return $group;
-    }
-
-    /**
-     * Checks if an category was submitted with a new parent category selected.
-     *
-     * @param Category $category
-     *
-     * @return boolean
-     */
-    private function _checkForNewParent(Category $category)
-    {
-        // Is it a brand new category?
-        if (!$category->id) {
-            return true;
-        }
-
-        // Was a new parent ID actually submitted?
-        if ($category->newParentId === null) {
-            return false;
-        }
-
-        // Is it set to the top level now, but it hadn't been before?
-        if ($category->newParentId === '' && $category->level != 1) {
-            return true;
-        }
-
-        // Is it set to be under a parent now, but didn't have one before?
-        if ($category->newParentId !== '' && $category->level == 1) {
-            return true;
-        }
-
-        // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentId = Category::find()
-            ->ancestorOf($category)
-            ->ancestorDist(1)
-            ->status(null)
-            ->siteId($category->siteId)
-            ->enabledForSite(false)
-            ->select('elements.id')
-            ->scalar();
-
-        if ($category->newParentId != $oldParentId) {
-            return true;
-        }
-
-        // Must be set to the same one then
-        return false;
-    }
-
-    /**
-     * Deletes categories, and their descendants.
-     *
-     * @param Category[] $categories
-     * @param boolean    $deleteDescendants
-     *
-     * @return boolean
-     */
-    private function _deleteCategories($categories, $deleteDescendants = true)
-    {
-        $categoryIds = [];
-
-        foreach ($categories as $category) {
-            if ($deleteDescendants) {
-                // Delete the descendants in reverse order, so structures don't get wonky
-                /** @var Category[] $descendants */
-                $descendants = $category->getDescendants()->status(null)->enabledForSite(false)->orderBy('lft desc')->all();
-                $this->_deleteCategories($descendants, false);
-            }
-
-            // Fire a 'beforeDeleteCategory' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY, new CategoryEvent([
-                'category' => $category
-            ]));
-
-            $categoryIds[] = $category->id;
-        }
-
-        // Delete 'em
-        $success = Craft::$app->getElements()->deleteElementById($categoryIds);
-
-        if ($success) {
-            foreach ($categories as $category) {
-                // Fire an 'afterDeleteCategory' event
-                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
-                    'category' => $category
-                ]));
-            }
-        }
-
-        return $success;
     }
 }

@@ -5,9 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\PluginInterface;
+use craft\base\PluginInterface;
+use yii\base\Event;
 
 /**
  * PluginEvent class.
@@ -15,13 +16,13 @@ use craft\app\base\PluginInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PluginEvent extends \yii\base\Event
+class PluginEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var PluginInterface The plugin associated with this event
+     * @var PluginInterface|null The plugin associated with this event
      */
     public $plugin;
 }

@@ -1,0 +1,26 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+    label: "Username"|t('app'),
+    id: 'username',
+    name: 'username',
+    value: adapter.username,
+    errors: adapter.getErrors('username')
+}) }}
+
+{{ forms.passwordField({
+    label: "Password"|t('app'),
+    id: 'password',
+    name: 'password',
+    value: adapter.password,
+    errors: adapter.getErrors('password')
+}) }}
+
+{{ forms.textField({
+    label: "Timeout"|t('app'),
+    id: 'timeout',
+    name: 'timeout',
+    value: adapter.timeout,
+    size: 2,
+    errors: adapter.getErrors('timeout')
+}) }}

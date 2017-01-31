@@ -1,10 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\fields\RichText;
+use craft\helpers\Json;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -18,12 +19,10 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
     {
         // Update permissions
         $fields = (new Query())
-            ->select('id, settings')
-            ->from('{{%fields}}')
-            ->where('type = :type', [':type' => 'craft\app\fields\RichText'])
+            ->select(['id', 'settings'])
+            ->from(['{{%fields}}'])
+            ->where(['type' => RichText::class])
             ->all();
-
-        echo '';
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);

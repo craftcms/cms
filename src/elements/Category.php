@@ -5,21 +5,23 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\controllers\ElementIndexesController;
-use craft\app\db\Query;
-use craft\app\elements\actions\Delete;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\NewChild;
-use craft\app\elements\actions\SetStatus;
-use craft\app\elements\actions\View;
-use craft\app\elements\db\CategoryQuery;
-use craft\app\helpers\Url;
-use craft\app\models\CategoryGroup;
+use craft\base\Element;
+use craft\controllers\ElementIndexesController;
+use craft\db\Query;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Edit;
+use craft\elements\actions\NewChild;
+use craft\elements\actions\SetStatus;
+use craft\elements\actions\View;
+use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\UrlHelper;
+use craft\models\CategoryGroup;
+use craft\records\Category as CategoryRecord;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -36,7 +38,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function displayName()
+    public static function displayName(): string
     {
         return Craft::t('app', 'Category');
     }
@@ -44,7 +46,15 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasContent()
+    public static function refHandle()
+    {
+        return 'category';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasContent(): bool
     {
         return true;
     }
@@ -52,7 +62,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasTitles()
+    public static function hasTitles(): bool
     {
         return true;
     }
@@ -60,7 +70,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function isLocalized()
+    public static function isLocalized(): bool
     {
         return true;
     }
@@ -68,7 +78,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function hasStatuses()
+    public static function hasStatuses(): bool
     {
         return true;
     }
@@ -78,7 +88,7 @@ class Category extends Element
      *
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find()
+    public static function find(): ElementQueryInterface
     {
         return new CategoryQuery(get_called_class());
     }
@@ -86,20 +96,19 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources(string $context = null): array
     {
         $sources = [];
 
-        if ($context == 'index') {
+        if ($context === 'index') {
             $groups = Craft::$app->getCategories()->getEditableGroups();
         } else {
             $groups = Craft::$app->getCategories()->getAllGroups();
         }
 
         foreach ($groups as $group) {
-            $key = 'group:'.$group->id;
-
-            $sources[$key] = [
+            $sources[] = [
+                'key' => 'group:'.$group->id,
                 'label' => Craft::t('site', $group->name),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
@@ -108,17 +117,13 @@ class Category extends Element
             ];
         }
 
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyCategorySources',
-            [&$sources, $context]);
-
         return $sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    protected static function defineActions(string $source = null): array
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -171,42 +176,28 @@ class Category extends Element
             ]);
         }
 
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions',
-            [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
-        }
-
         return $actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    protected static function defineSortOptions(): array
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes',
-            [&$attributes]);
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        return [
             'title' => ['label' => Craft::t('app', 'Title')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -214,196 +205,36 @@ class Category extends Element
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalCategoryTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    protected static function defineDefaultTableAttributes(string $source): array
     {
-        $attributes = ['link'];
-
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Category $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml',
-            [$element, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        return parent::getTableAttributeHtml($element, $attribute);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Category $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'first' => true,
-                    'autofocus' => true,
-                    'required' => true
-                ]
-            ]);
-
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Slug'),
-                    'siteId' => $element->siteId,
-                    'id' => 'slug',
-                    'name' => 'slug',
-                    'value' => $element->slug,
-                    'errors' => $element->getErrors('slug'),
-                    'required' => true
-                ]
-            ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Category $element */
-        if (isset($params['slug'])) {
-            $element->slug = $params['slug'];
-        }
-
-        return Craft::$app->getCategories()->saveCategory($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        /** @var Category $element */
-        // Make sure the category group is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
-        $categoryGroupSiteSettings = $element->getGroup()->getSiteSettings();
-
-        if (isset($categoryGroupSiteSettings[$siteId]) && $categoryGroupSiteSettings[$siteId]->hasUrls) {
-            return [
-                'templates/render',
-                [
-                    'template' => $categoryGroupSiteSettings[$siteId]->template,
-                    'variables' => [
-                        'category' => $element
-                    ]
-                ]
-            ];
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-        /** @var Category $element */
-        // Was the category moved within its group's structure?
-        if ($element->getGroup()->structureId == $structureId) {
-            // Update its URI
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
-
-            // Make sure that each of the category's ancestors are related wherever the category is related
-            $newRelationValues = [];
-
-            $ancestorIds = $element->getAncestors()->ids();
-
-            $sources = (new Query())
-                ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
-                ->where('targetId = :categoryId',
-                    [':categoryId' => $element->id])
-                ->all();
-
-            foreach ($sources as $source) {
-                $existingAncestorRelations = (new Query())
-                    ->select('targetId')
-                    ->from('{{%relations}}')
-                    ->where([
-                        'and',
-                        'fieldId = :fieldId',
-                        'sourceId = :sourceId',
-                        'sourceSiteId = :sourceSiteId',
-                        ['in', 'targetId', $ancestorIds]
-                    ], [
-                        ':fieldId' => $source['fieldId'],
-                        ':sourceId' => $source['sourceId'],
-                        ':sourceSiteId' => $source['sourceSiteId']
-                    ])
-                    ->column();
-
-                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
-
-                foreach ($missingAncestorRelations as $categoryId) {
-                    $newRelationValues[] = [
-                        $source['fieldId'],
-                        $source['sourceId'],
-                        $source['sourceSiteId'],
-                        $categoryId
-                    ];
-                }
-            }
-
-            if ($newRelationValues) {
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        '{{%relations}}',
-                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
-                        $newRelationValues)
-                    ->execute();
-            }
-        }
+        return [
+            'link',
+        ];
     }
 
     // Properties
     // =========================================================================
 
     /**
-     * @var integer Group ID
+     * @var int|null Group ID
      */
     public $groupId;
 
     /**
-     * @var integer New parent ID
+     * @var int|null New parent ID
      */
     public $newParentId;
+
+    /**
+     * @var bool|null
+     * @see _hasNewParent()
+     */
+    private $_hasNewParent;
 
     // Public Methods
     // =========================================================================
@@ -444,7 +275,30 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getIsEditable()
+    protected function route()
+    {
+        // Make sure the category group is set to have URLs for this site
+        $siteId = Craft::$app->getSites()->currentSite->id;
+        $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
+
+        if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
+            return null;
+        }
+
+        return [
+            'templates/render', [
+                'template' => $categoryGroupSiteSettings[$siteId]->template,
+                'variables' => [
+                    'category' => $this,
+                ]
+            ]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editCategories:'.$this->groupId);
     }
@@ -456,7 +310,7 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = UrlHelper::cpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
         if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
             $url .= '/'.$this->getSite()->handle;
@@ -471,9 +325,9 @@ class Category extends Element
      * @return CategoryGroup
      * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
-    public function getGroup()
+    public function getGroup(): CategoryGroup
     {
-        if (!$this->groupId) {
+        if ($this->groupId === null) {
             throw new InvalidConfigException('Category is missing its group ID');
         }
 
@@ -486,6 +340,167 @@ class Category extends Element
         return $group;
     }
 
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml(): string
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'first' => true,
+                'autofocus' => true,
+                'required' => true
+            ]
+        ]);
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Slug'),
+                'siteId' => $this->siteId,
+                'id' => 'slug',
+                'name' => 'slug',
+                'value' => $this->slug,
+                'errors' => $this->getErrors('slug'),
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId !== null) {
+                $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
+
+                if (!$parentCategory) {
+                    throw new Exception('Invalid category ID: '.$this->newParentId);
+                }
+            } else {
+                $parentCategory = null;
+            }
+
+            $this->setParent($parentCategory);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave(bool $isNew)
+    {
+        $group = $this->getGroup();
+
+        // Get the category record
+        if (!$isNew) {
+            $record = CategoryRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid category ID: '.$this->id);
+            }
+        } else {
+            $record = new CategoryRecord();
+            $record->id = $this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->save(false);
+
+        // Has the parent changed?
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId === null) {
+                Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
+            } else {
+                Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
+            }
+        }
+
+        // Update the category's descendants, who may be using this category's URI in their own URIs
+        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure(int $structureId)
+    {
+        // Was the category moved within its group's structure?
+        if ($this->getGroup()->structureId == $structureId) {
+            // Update its URI
+            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+
+            // Make sure that each of the category's ancestors are related wherever the category is related
+            $newRelationValues = [];
+
+            $ancestorIds = $this->getAncestors()->ids();
+
+            $sources = (new Query())
+                ->select(['fieldId', 'sourceId', 'sourceSiteId'])
+                ->from(['{{%relations}}'])
+                ->where(['targetId' => $this->id])
+                ->all();
+
+            foreach ($sources as $source) {
+                $existingAncestorRelations = (new Query())
+                    ->select(['targetId'])
+                    ->from(['{{%relations}}'])
+                    ->where([
+                        'fieldId' => $source['fieldId'],
+                        'sourceId' => $source['sourceId'],
+                        'sourceSiteId' => $source['sourceSiteId'],
+                        'targetId' => $ancestorIds,
+                    ])
+                    ->column();
+
+                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
+
+                foreach ($missingAncestorRelations as $categoryId) {
+                    $newRelationValues[] = [
+                        $source['fieldId'],
+                        $source['sourceId'],
+                        $source['sourceSiteId'],
+                        $categoryId
+                    ];
+                }
+            }
+
+            if (!empty($newRelationValues)) {
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%relations}}',
+                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
+                        $newRelationValues)
+                    ->execute();
+            }
+        }
+
+        parent::afterMoveInStructure($structureId);
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -495,5 +510,61 @@ class Category extends Element
     protected function resolveStructureId()
     {
         return $this->getGroup()->structureId;
+    }
+
+    /**
+     * Returns whether the category has been assigned a new parent entry.
+     *
+     * @return bool
+     * @see beforeSave()
+     * @see afterSave()
+     */
+    private function _hasNewParent(): bool
+    {
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
+        }
+
+        return $this->_hasNewParent = $this->_checkForNewParent();
+    }
+
+    /**
+     * Checks if an category was submitted with a new parent category selected.
+     *
+     * @return bool
+     */
+    private function _checkForNewParent(): bool
+    {
+        // Is it a brand new category?
+        if ($this->id === null) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if ($this->newParentId === null) {
+            return false;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if ($this->newParentId === '' && $this->level != 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->newParentId !== '' && $this->level == 1) {
+            return true;
+        }
+
+        // Is the newParentId set to a different category ID than its previous parent?
+        $oldParentQuery = Category::find();
+        $oldParentQuery->ancestorOf($this);
+        $oldParentQuery->ancestorDist(1);
+        $oldParentQuery->status(null);
+        $oldParentQuery->siteId($this->siteId);
+        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->select('elements.id');
+        $oldParentId = $oldParentQuery->scalar();
+
+        return $this->newParentId != $oldParentId;
     }
 }

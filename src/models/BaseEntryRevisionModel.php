@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\helpers\ElementHelper;
-use craft\app\elements\Entry;
-use craft\app\elements\User;
+use craft\base\Field;
+use craft\elements\Entry;
+use craft\elements\User;
+use craft\helpers\ElementHelper;
 
 /**
  * Class BaseEntryRevision model.
@@ -25,7 +25,7 @@ class BaseEntryRevisionModel extends Entry
     // =========================================================================
 
     /**
-     * @var integer The revision creator’s user ID
+     * @var int|null The revision creator’s user ID
      */
     public $creatorId;
 
@@ -50,7 +50,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return void
      */
-    public function setContentFromRevision($content)
+    public function setContentFromRevision(array $content)
     {
         // Swap the field IDs with handles
         $contentByFieldHandles = [];
@@ -65,7 +65,7 @@ class BaseEntryRevisionModel extends Entry
         }
 
         // Set the values and prep them
-        $this->setFieldValuesFromPost($contentByFieldHandles);
+        $this->setFieldValues($contentByFieldHandles);
     }
 
     /**
@@ -83,7 +83,7 @@ class BaseEntryRevisionModel extends Entry
      *
      * @return string
      */
-    public function getUrl()
+    public function getUrl(): string
     {
         if ($this->uri === null) {
             ElementHelper::setUniqueUri($this);

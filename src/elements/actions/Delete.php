@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\elements\db\ElementQueryInterface;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * Delete represents a Delete element action.
@@ -23,12 +23,12 @@ class Delete extends ElementAction
     // =========================================================================
 
     /**
-     * @var string The confirmation message that should be shown before the elements get deleted
+     * @var string|null The confirmation message that should be shown before the elements get deleted
      */
     public $confirmationMessage;
 
     /**
-     * @var string The message that should be shown after the elements get deleted
+     * @var string|null The message that should be shown after the elements get deleted
      */
     public $successMessage;
 
@@ -38,7 +38,7 @@ class Delete extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerLabel()
+    public function getTriggerLabel(): string
     {
         return Craft::t('app', 'Delete…');
     }
@@ -46,7 +46,7 @@ class Delete extends ElementAction
     /**
      * @inheritdoc
      */
-    public static function isDestructive()
+    public static function isDestructive(): bool
     {
         return true;
     }
@@ -65,9 +65,12 @@ class Delete extends ElementAction
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $query)
+    public function performAction(ElementQueryInterface $query): bool
     {
-        Craft::$app->getElements()->deleteElementById($query->ids());
+        foreach ($query->all() as $element) {
+            Craft::$app->getElements()->deleteElement($element);
+        }
+
         $this->setMessage($this->successMessage);
 
         return true;

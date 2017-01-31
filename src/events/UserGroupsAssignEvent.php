@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * User Groups assign event class.
@@ -13,18 +13,18 @@ namespace craft\app\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserGroupsAssignEvent extends Event
+class UserGroupsAssignEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The user ID associated with this event
+     * @var int|null The user ID associated with this event
      */
     public $userId;
 
     /**
-     * @var integer[] The user group IDs being assigned to the user
+     * @var int[]|null The user group IDs being assigned to the user
      */
     public $groupIds;
 }

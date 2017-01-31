@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Task;
+use craft\base\Task;
 
 /**
  * GeneratePendingTransforms represents a Generate Pending Transforms background task.
@@ -22,7 +22,7 @@ class GeneratePendingTransforms extends Task
     // =========================================================================
 
     /**
-     * @var integer[] The pending transform index IDs
+     * @var int[]|null The pending transform index IDs
      */
     private $_indexIds;
 
@@ -32,7 +32,7 @@ class GeneratePendingTransforms extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         // Get all of the pending transform index IDs
         $this->_indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
@@ -43,7 +43,7 @@ class GeneratePendingTransforms extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         // Don't let an exception stop us from processing the rest
         try {
@@ -56,6 +56,7 @@ class GeneratePendingTransforms extends Task
 
             Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
         } catch (\Exception $e) {
+            // Swallow it.
         }
 
         return true;
@@ -67,7 +68,7 @@ class GeneratePendingTransforms extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Generating pending image transforms');
     }

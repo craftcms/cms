@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 /**
  * Class Path
@@ -23,14 +23,14 @@ class Path
      *
      * @param string $path
      *
-     * @return boolean
+     * @return bool
      */
-    public static function ensurePathIsContained($path)
+    public static function ensurePathIsContained(string $path): bool
     {
         // Sanitize
         $path = StringHelper::convertToUtf8($path);
 
-        $segs = explode('/', $path);
+        $segs = preg_split('/[\\/\\\\]/', $path);
         $level = 0;
 
         foreach ($segs as $seg) {

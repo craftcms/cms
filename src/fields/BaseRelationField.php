@@ -5,19 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\EagerLoadingFieldInterface;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\Element;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\helpers\StringHelper;
-use craft\app\tasks\LocalizeRelations;
+use craft\base\EagerLoadingFieldInterface;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
+use craft\tasks\LocalizeRelations;
+use craft\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
 /**
@@ -34,7 +36,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public static function hasContentColumn()
+    public static function hasContentColumn(): bool
     {
         return false;
     }
@@ -45,7 +47,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @return string The Element class name
      * @throws NotSupportedException if the method hasn't been implemented by the subclass
      */
-    protected static function elementType()
+    protected static function elementType(): string
     {
         throw new NotSupportedException('"elementType()" is not implemented.');
     }
@@ -55,7 +57,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string The default selection label
      */
-    public static function defaultSelectionLabel()
+    public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Choose');
     }
@@ -64,52 +66,52 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     // =========================================================================
 
     /**
-     * @var string[] The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
+     * @var string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
     public $sources;
 
     /**
-     * @var string The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
+     * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
      */
     public $source;
 
     /**
-     * @var integer The site that this field should relate elements from
+     * @var int|null The site that this field should relate elements from
      */
     public $targetSiteId;
 
     /**
-     * @var string The view mode
+     * @var string|null The view mode
      */
     public $viewMode;
 
     /**
-     * @var integer The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
+     * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true)
      */
     public $limit;
 
     /**
-     * @var string The label that should be used on the selection input
+     * @var string|null The label that should be used on the selection input
      */
     public $selectionLabel;
 
     /**
-     * @var integer Whether each site should get its own unique set of relations
+     * @var int Whether each site should get its own unique set of relations
      */
     public $localizeRelations = false;
 
     /**
-     * @var boolean Whether to allow multiple source selection in the settings
+     * @var bool Whether to allow multiple source selection in the settings
      */
     protected $allowMultipleSources = true;
 
     /**
-     * @var boolean Whether to allow the Limit setting
+     * @var bool Whether to allow the Limit setting
      */
     protected $allowLimit = true;
 
     /**
-     * @var boolean Whether to allow the “Large Thumbnails” view mode
+     * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected $allowLargeThumbsView = false;
 
@@ -124,12 +126,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected $inputJsClass;
 
     /**
-     * @var boolean Whether the elements have a custom sort order
+     * @var bool Whether the elements have a custom sort order
      */
     protected $sortable = true;
 
     /**
-     * @var boolean Whether existing relations should be made translatable after the field is saved
+     * @var bool Whether existing relations should be made translatable after the field is saved
      */
     private $_makeExistingRelationsTranslatable = false;
 
@@ -139,7 +141,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function settingsAttributes()
+    public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'sources';
@@ -156,49 +158,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave()
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if ($this->id && $this->localizeRelations) {
-            /** @var Field $existingField */
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::class,
-                'fieldId' => $this->id,
-            ]);
-        }
-
-        parent::afterSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings',
             [
                 'allowMultipleSources' => $this->allowMultipleSources,
                 'allowLimit' => $this->allowLimit,
-                'sources' => $this->getSourceOptions(),
-                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
+                'sources' => $this->sourceOptions(),
+                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
+                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
                 'defaultSelectionLabel' => static::defaultSelectionLabel(),
@@ -208,40 +176,31 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules(): array
     {
-        /** @var ElementQuery $value */
-        $errors = [];
-
-        // Do we need to validate the number of selections?
-        if ($this->required || ($this->allowLimit && $this->limit)) {
-            $total = $value->count();
-
-            if ($this->required && $total == 0) {
-                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
-            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
-                if ($this->limit == 1) {
-                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
-                } else {
-                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
-                }
-            }
-        }
-
-        return $errors;
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            [
+                ArrayValidator::class,
+                'min' => $this->required ? 1 : null,
+                'max' => $this->allowLimit && $this->limit ? $this->limit : null,
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
+            ],
+        ];
     }
 
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, ElementInterface $element = null)
     {
         /** @var Element $element */
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
-            ->siteId($this->getTargetSiteId($element));
+            ->siteId($this->targetSiteId($element));
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -256,15 +215,15 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ]);
 
             if ($this->sortable) {
-                $query->orderBy('sortOrder');
+                $query->orderBy(['sortOrder' => SORT_ASC]);
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = $class::getSourceByKey($this->source);
+                $source = ElementHelper::findSource($class, $this->source);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    $query->configure($source['criteria']);
+                    Craft::configure($query, $source['criteria']);
                 }
             }
         } else {
@@ -286,17 +245,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
-        if ($value == 'not :empty:') {
+        if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
-        if ($value == ':notempty:' || $value == ':empty:') {
+        if ($value === ':notempty:' || $value === ':empty:') {
             $alias = 'relations_'.$this->handle;
-            $operator = ($value == ':notempty:' ? '!=' : '=');
+            $operator = ($value === ':notempty:' ? '!=' : '=');
             $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = {$paramHandle}) {$operator} 0",
+                "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
                 [$paramHandle => $this->id]
             );
         } else if ($value !== null) {
@@ -309,10 +268,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, $element)
+    public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var ElementQuery $value */
-        $variables = $this->getInputTemplateVariables($value, $element);
+        $variables = $this->inputTemplateVariables($value, $element);
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
     }
@@ -320,13 +279,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($value->all() as $element) {
-            $titles[] = (string)$element;
+        foreach ($value->all() as $relatedElement) {
+            $titles[] = (string)$relatedElement;
         }
 
         return parent::getSearchKeywords($titles, $element);
@@ -335,23 +294,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
-    {
-        $value = $this->getElementValue($element);
-
-        if ($value instanceof ElementQueryInterface) {
-            $value = $value->id;
-        }
-
-        if ($value !== null) {
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml($value, $element)
+    public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         if (count($value)) {
@@ -375,12 +318,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, $element)
+    public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value instanceof ElementQueryInterface) {
             $element = $value->first();
         } else {
-            $element = isset($value[0]) ? $value[0] : null;
+            $element = $value[0] ?? null;
         }
 
         if ($element) {
@@ -395,10 +338,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getEagerLoadingMap($sourceElements)
+    public function getEagerLoadingMap(array $sourceElements)
     {
         /** @var Element|null $firstElement */
-        $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
+        $firstElement = $sourceElements[0] ?? null;
 
         // Get the source element IDs
         $sourceElementIds = [];
@@ -409,24 +352,25 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
-            ->select('sourceId as source, targetId as target')
-            ->from('{{%relations}}')
-            ->where(
+            ->select(['sourceId as source', 'targetId as target'])
+            ->from(['{{%relations}}'])
+            ->where([
+                'and',
                 [
-                    'and',
-                    'fieldId=:fieldId',
-                    ['in', 'sourceId', $sourceElementIds],
-                    ['or', 'sourceSiteId=:sourceSiteId', 'sourceSiteId is null']
+                    'fieldId' => $this->id,
+                    'sourceId' => $sourceElementIds,
                 ],
                 [
-                    ':fieldId' => $this->id,
-                    ':sourceSiteId' => ($firstElement ? $firstElement->siteId : null),
-                ])
-            ->orderBy('sortOrder')
+                    'or',
+                    ['sourceSiteId' => $firstElement ? $firstElement->siteId : null],
+                    ['sourceSiteId' => null]
+                ]
+            ])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         // Figure out which target site to use
-        $targetSite = $this->getTargetSiteId($firstElement);
+        $targetSite = $this->targetSiteId($firstElement);
 
         return [
             'elementType' => static::elementType(),
@@ -437,6 +381,63 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         ];
     }
 
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        $this->_makeExistingRelationsTranslatable = false;
+
+        if ($this->id && $this->localizeRelations) {
+            /** @var Field $existingField */
+            $existingField = Craft::$app->getFields()->getFieldById($this->id);
+
+            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+                $this->_makeExistingRelationsTranslatable = true;
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave(bool $isNew)
+    {
+        if ($this->_makeExistingRelationsTranslatable) {
+            Craft::$app->getTasks()->queueTask([
+                'type' => LocalizeRelations::class,
+                'fieldId' => $this->id,
+            ]);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, bool $isNew)
+    {
+        $value = $element->getFieldValue($this->handle);
+
+        if ($value instanceof ElementQueryInterface) {
+            /** @var ElementQuery $value */
+            $value = $value->id;
+            /** @var int|int[]|false|null $value */
+        }
+
+        if ($value) {
+            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        }
+
+        parent::afterElementSave($element, $isNew);
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -444,11 +445,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Returns an array of variables that should be passed to the input template.
      *
      * @param ElementQueryInterface|null $selectedElementsQuery
-     * @param ElementInterface           $element
+     * @param ElementInterface|null      $element
      *
      * @return array
      */
-    protected function getInputTemplateVariables($selectedElementsQuery, $element)
+    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
     {
         if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
             /** @var Element $class */
@@ -461,9 +462,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 ->enabledForSite(false);
         }
 
-        $selectionCriteria = $this->getInputSelectionCriteria();
+        $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        $selectionCriteria['siteId'] = $this->getTargetSiteId($element);
+        $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
         return [
             'jsClass' => $this->inputJsClass,
@@ -473,12 +474,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             'storageKey' => 'field.'.$this->id,
             'name' => $this->handle,
             'elements' => $selectedElementsQuery,
-            'sources' => $this->getInputSources($element),
+            'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
-            'sourceElementId' => (!empty($element->id) ? $element->id : null),
-            'limit' => ($this->allowLimit ? $this->limit : null),
-            'viewMode' => $this->getViewMode(),
-            'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
+            'sourceElementId' => !empty($element->id) ? $element->id : null,
+            'limit' => $this->allowLimit ? $this->limit : null,
+            'viewMode' => $this->viewMode(),
+            'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
         ];
     }
 
@@ -487,9 +488,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface|null $element
      *
-     * @return array
+     * @return array|string
      */
-    protected function getInputSources($element)
+    protected function inputSources(ElementInterface $element = null)
     {
         if ($this->allowMultipleSources) {
             $sources = $this->sources;
@@ -505,7 +506,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getInputSelectionCriteria()
+    protected function inputSelectionCriteria(): array
     {
         return [];
     }
@@ -515,9 +516,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface|null $element
      *
-     * @return integer
+     * @return int
      */
-    protected function getTargetSiteId($element)
+    protected function targetSiteId(ElementInterface $element = null): int
     {
         /** @var Element|null $element */
         if (Craft::$app->getIsMultiSite()) {
@@ -525,7 +526,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 return $this->targetSiteId;
             }
 
-            if (!empty($element)) {
+            if ($element !== null) {
                 return $element->siteId;
             }
         }
@@ -538,7 +539,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string|null
      */
-    protected function getTargetSiteFieldHtml()
+    protected function targetSiteFieldHtml()
     {
         /** @var Element $class */
         $class = static::elementType();
@@ -576,12 +577,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getSourceOptions()
+    protected function sourceOptions(): array
     {
         $options = [];
         $optionNames = [];
 
-        foreach ($this->getAvailableSources() as $source) {
+        foreach ($this->availableSources() as $source) {
             // Make sure it's not a heading
             if (!isset($source['heading'])) {
                 $options[] = [
@@ -603,11 +604,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string|null
      */
-    protected function getViewModeFieldHtml()
+    protected function viewModeFieldHtml()
     {
-        $supportedViewModes = $this->getSupportedViewModes();
+        $supportedViewModes = $this->supportedViewModes();
 
-        if (!$supportedViewModes || count($supportedViewModes) == 1) {
+        if (count($supportedViewModes) === 1) {
             return null;
         }
 
@@ -632,9 +633,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns the field’s supported view modes.
      *
-     * @return array|null
+     * @return array
      */
-    protected function getSupportedViewModes()
+    protected function supportedViewModes(): array
     {
         $viewModes = [
             'list' => Craft::t('app', 'List'),
@@ -652,9 +653,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return string
      */
-    protected function getViewMode()
+    protected function viewMode(): string
     {
-        $supportedViewModes = $this->getSupportedViewModes();
+        $supportedViewModes = $this->supportedViewModes();
         $viewMode = $this->viewMode;
 
         if ($viewMode && isset($supportedViewModes[$viewMode])) {
@@ -669,8 +670,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @return array
      */
-    protected function getAvailableSources()
+    protected function availableSources(): array
     {
-        return Craft::$app->getElementIndexes()->getSources($this::elementType(), 'modal');
+        return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
     }
 }

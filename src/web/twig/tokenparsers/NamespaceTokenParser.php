@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\NamespaceNode;
+use craft\web\twig\nodes\NamespaceNode;
 
 /**
  * Class NamespaceTokenParser
@@ -35,22 +35,23 @@ class NamespaceTokenParser extends \Twig_TokenParser
     {
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
-        $namespace = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'namespace' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-        $body = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
+        $nodes['body'] = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new NamespaceNode(['namespace' => $namespace, 'body' => $body],
-            [], $lineno, $this->getTag());
+        return new NamespaceNode($nodes, [], $lineno, $this->getTag());
     }
 
 
     /**
      * @param \Twig_Token $token
      *
-     * @return boolean
+     * @return bool
      */
-    public function decideNamespaceEnd(\Twig_Token $token)
+    public function decideNamespaceEnd(\Twig_Token $token): bool
     {
         return $token->test('endnamespace');
     }

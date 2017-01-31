@@ -5,14 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\helpers\Cp as CpHelper;
-use craft\app\helpers\Io as IoHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
+use craft\base\Plugin;
+use craft\base\UtilityInterface;
+use craft\events\RegisterCpNavItemsEvent;
+use craft\helpers\Cp as CpHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
+use yii\base\Component;
 
 /**
  * CP functions
@@ -20,36 +22,46 @@ use craft\app\helpers\Url;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Cp
+class Cp extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterCpNavItemsEvent The event that is triggered when registering Control Panel nav items.
+     */
+    const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
+
     // Public Methods
     // =========================================================================
 
     /**
-     * Get the sections of the CP.
-     *
-     * @param integer $iconSize The icon size
+     * Returns the Control Panel nav items.
      *
      * @return array
      */
-    public function nav($iconSize = 32)
+    public function nav(): array
     {
-        $nav['dashboard'] = [
-            'label' => Craft::t('app', 'Dashboard'),
-            'icon' => 'gauge'
+        $navItems = [
+            [
+                'label' => Craft::t('app', 'Dashboard'),
+                'url' => 'dashboard',
+                'icon' => 'gauge'
+            ],
         ];
 
         if (Craft::$app->getSections()->getTotalEditableSections()) {
-            $nav['entries'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
+                'url' => 'entries',
                 'icon' => 'section'
             ];
         }
 
         $globals = Craft::$app->getGlobals()->getEditableSets();
 
-        if ($globals) {
-            $nav['globals'] = [
+        if (!empty($globals)) {
+            $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals/'.$globals[0]->handle,
                 'icon' => 'globe'
@@ -57,22 +69,25 @@ class Cp
         }
 
         if (Craft::$app->getCategories()->getEditableGroupIds()) {
-            $nav['categories'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
+                'url' => 'categories',
                 'icon' => 'categories'
             ];
         }
 
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
-            $nav['assets'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
+                'url' => 'assets',
                 'icon' => 'assets'
             ];
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
-            $nav['users'] = [
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+            $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
+                'url' => 'users',
                 'icon' => 'users'
             ];
         }
@@ -82,59 +97,88 @@ class Cp
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if ($plugin::hasCpSection()) {
-                $pluginHandle = $plugin->getHandle();
+            if (
+                $plugin->hasCpSection &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle)
+            ) {
+                $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
 
-                if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $lcHandle = StringHelper::toLowerCase($pluginHandle);
-                    $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
-
-                    if (IoHelper::fileExists($iconPath)) {
-                        $iconSvg = IoHelper::getFileContents($iconPath);
-                    } else {
-                        $iconSvg = false;
-                    }
-
-                    $nav[$lcHandle] = [
-                        'label' => $plugin->name,
-                        'iconSvg' => $iconSvg
-                    ];
+                if (is_file($iconPath)) {
+                    $iconSvg = file_get_contents($iconPath);
+                } else {
+                    $iconSvg = false;
                 }
+
+                $navItems[] = [
+                    'label' => $plugin->name,
+                    'url' => $plugin->id,
+                    'iconSvg' => $iconSvg
+                ];
             }
         }
 
+        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+
+        if (!empty($utilities)) {
+            $badgeCount = 0;
+
+            foreach ($utilities as $class) {
+                /** @var UtilityInterface $class */
+                $badgeCount += $class::badgeCount();
+            }
+
+            $navItems[] = [
+                'url' => 'utilities',
+                'label' => Craft::t('app', 'Utilities'),
+                'icon' => 'tool',
+                'badgeCount' => $badgeCount
+            ];
+        }
+
         if (Craft::$app->getUser()->getIsAdmin()) {
-            $nav['settings'] = [
+            $navItems[] = [
+                'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
             ];
         }
 
         // Allow plugins to modify the nav
-        Craft::$app->getPlugins()->call('modifyCpNav', [&$nav]);
+        $event = new RegisterCpNavItemsEvent([
+            'navItems' => $navItems
+        ]);
+        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+        $navItems = $event->navItems;
 
         // Figure out which item is selected, and normalize the items
-        $firstSegment = Craft::$app->getRequest()->getSegment(1);
+        $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($firstSegment == 'myaccount') {
-            $firstSegment = 'users';
+        if ($path === 'myaccount') {
+            $path = 'users';
         }
 
-        foreach ($nav as $handle => &$item) {
-            if (is_string($item)) {
-                $item = ['label' => $item];
-            }
+        $foundSelectedItem = false;
 
-            $item['sel'] = ($handle == $firstSegment);
-
-            if (isset($item['url'])) {
-                $item['url'] = Url::getUrl($item['url']);
+        foreach ($navItems as &$item) {
+            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'].'/'))) {
+                $item['sel'] = true;
+                $foundSelectedItem = true;
             } else {
-                $item['url'] = Url::getUrl($handle);
+                $item['sel'] = false;
+            }
+
+            if (!isset($item['id'])) {
+                $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
+            }
+
+            $item['url'] = UrlHelper::url($item['url']);
+
+            if (!isset($item['badgeCount'])) {
+                $item['badgeCount'] = 0;
             }
         }
 
-        return $nav;
+        return $navItems;
     }
 
     /**
@@ -142,63 +186,65 @@ class Cp
      *
      * @return array
      */
-    public function settings()
+    public function settings(): array
     {
+        $settings = [];
+
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'icon' => 'general',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/sliders.svg')),
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'icon' => 'world',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/world.svg')),
             'label' => Craft::t('app', 'Sites')
         ];
         $settings[$label]['routes'] = [
-            'icon' => 'routes',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/routes.svg')),
             'label' => Craft::t('app', 'Routes')
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $settings[$label]['users'] = [
-                'icon' => 'users',
+                'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
                 'label' => Craft::t('app', 'Users')
             ];
         }
 
         $settings[$label]['email'] = [
-            'icon' => 'mail',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/envelope.svg')),
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'icon' => 'plugin',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/plugin.svg')),
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'icon' => 'field',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/field.svg')),
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'icon' => 'section',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/newspaper.svg')),
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'icon' => 'assets',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/photo.svg')),
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'icon' => 'globe',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/globe.svg')),
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'icon' => 'categories',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/folder-open.svg')),
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'icon' => 'tags',
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/tags.svg')),
             'label' => Craft::t('app', 'Tags')
         ];
 
@@ -209,11 +255,9 @@ class Cp
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->hasSettings) {
-                $pluginHandle = $plugin->getHandle();
-
-                $settings[$label][$pluginHandle] = [
-                    'url' => 'settings/plugins/'.StringHelper::toLowerCase($pluginHandle),
-                    'iconSvg' => $pluginsService->getPluginIconSvg($pluginHandle),
+                $settings[$label][$plugin->id] = [
+                    'url' => 'settings/plugins/'.$plugin->id,
+                    'iconSvg' => $pluginsService->getPluginIconSvg($plugin->handle),
                     'label' => $plugin->name
                 ];
             }
@@ -225,9 +269,9 @@ class Cp
     /**
      * Returns whether the CP alerts are cached.
      *
-     * @return boolean
+     * @return bool
      */
-    public function areAlertsCached()
+    public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Elliott request
         return (Craft::$app->getEt()->getLicenseKeyStatus() !== false);
@@ -238,8 +282,8 @@ class Cp
      *
      * @return array
      */
-    public function getAlerts()
+    public function getAlerts(): array
     {
-        return CpHelper::getAlerts(Craft::$app->getRequest()->getPathInfo());
+        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
     }
 }

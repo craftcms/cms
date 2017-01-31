@@ -5,16 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\App;
-use craft\app\helpers\Template;
-use craft\app\web\Controller;
+use craft\helpers\App;
+use craft\helpers\Template;
+use craft\web\Controller;
 use ErrorException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ServerErrorHttpException;
+
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
@@ -41,16 +43,16 @@ class TemplatesController extends Controller
     /**
      * Renders a template.
      *
-     * @param       $template
-     * @param array $variables
+     * @param string $template
+     * @param array  $variables
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested template cannot be found
      */
-    public function actionRender($template, array $variables = [])
+    public function actionRender(string $template, array $variables = []): string
     {
         // Does that template exist?
-        if (Craft::$app->getView()->doesTemplateExist($template)) {
+        if ($this->getView()->doesTemplateExist($template)) {
             return $this->renderTemplate($template, $variables);
         }
 
@@ -62,10 +64,10 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionOffline()
+    public function actionOffline(): string
     {
         // If this is a site request, make sure the offline template exists
-        $view = Craft::$app->getView();
+        $view = $this->getView();
         if (Craft::$app->getRequest()->getIsSiteRequest() && !$view->doesTemplateExist('offline')) {
             $view->setTemplateMode($view::TEMPLATE_MODE_CP);
         }
@@ -79,31 +81,17 @@ class TemplatesController extends Controller
      *
      * @return string The rendering result
      */
-    public function actionManualUpdateNotification()
+    public function actionManualUpdateNotification(): string
     {
         return $this->renderTemplate('_special/dbupdate');
     }
 
     /**
-     * Renders the Manual Update template.
-     *
-     * @return string The rendering result
-     */
-    public function actionManualUpdate()
-    {
-        return $this->renderTemplate('updates/_go', [
-            'handle' => Craft::$app->getRequest()->getSegment(2)
-        ]);
-    }
-
-    /**
-     * @return string The rendering result
+     * @return string|null The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
-
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
@@ -114,19 +102,20 @@ class TemplatesController extends Controller
                 $message = '<br /><br />';
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
-                    if ($req['failed'] === true) {
+                    if ($req['error'] === true) {
                         $message .= $req['memo'].'<br />';
                     }
                 }
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
-                return $this->renderTemplate('_special/cantrun',
-                    ['reqCheck' => $reqCheck]);
+                return $this->renderTemplate('_special/cantrun', [
+                    'reqCheck' => $reqCheck
+                ]);
             }
         } else {
-            // Cache the app path.
-            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
+            // Cache the base path.
+            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
         }
 
         return null;
@@ -137,7 +126,7 @@ class TemplatesController extends Controller
      *
      * @return string
      */
-    public function actionRenderError()
+    public function actionRenderError(): string
     {
         /** @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
@@ -152,17 +141,18 @@ class TemplatesController extends Controller
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->get('errorTemplatePrefix');
 
-            if (Craft::$app->getView()->doesTemplateExist($prefix.$statusCode)) {
+            if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
                 $template = $prefix.$statusCode;
-            } else if ($statusCode == 503 && Craft::$app->getView()->doesTemplateExist($prefix.'offline')) {
+            } else if ($statusCode == 503 && $this->getView()->doesTemplateExist($prefix.'offline')) {
                 $template = $prefix.'offline';
-            } else if (Craft::$app->getView()->doesTemplateExist($prefix.'error')) {
+            } else if ($this->getView()->doesTemplateExist($prefix.'error')) {
                 $template = $prefix.'error';
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
-            $view = Craft::$app->getView();
+            $view = $this->getView();
             $view->setTemplateMode($view::TEMPLATE_MODE_CP);
 
             if ($view->doesTemplateExist($statusCode)) {
@@ -181,8 +171,8 @@ class TemplatesController extends Controller
 
         // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
-        if ($exception instanceof ErrorException && App::getPhpConfigValueAsBool('html_errors')) {
-            $variables['message'] = Template::getRaw($variables['message']);
+        if ($exception instanceof ErrorException && App::phpConfigValueAsBool('html_errors')) {
+            $variables['message'] = Template::raw($variables['message']);
         }
 
         return $this->renderTemplate($template, $variables);

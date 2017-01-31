@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Class UpgradeInfo model.
@@ -21,22 +21,22 @@ class UpgradeInfo extends Model
     // =========================================================================
 
     /**
-     * @var array Available editions
+     * @var array|null Available editions
      */
     public $editions;
 
     /**
-     * @var string The Stripe publishable key
+     * @var string|null The Stripe publishable key
      */
     public $stripePublicKey;
 
     /**
-     * @var array Known countries
+     * @var array|null Known countries
      */
     public $countries;
 
     /**
-     * @var array Known states
+     * @var array|null Known states
      */
     public $states;
 
@@ -49,10 +49,7 @@ class UpgradeInfo extends Model
     public function rules()
     {
         return [
-            [
-                ['editions', 'stripePublicKey', 'countries', 'states'],
-                'required'
-            ],
+            [['editions', 'stripePublicKey', 'countries', 'states'], 'required'],
         ];
     }
 }

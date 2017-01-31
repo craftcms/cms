@@ -4,39 +4,39 @@
 {% set context = 'index' %}
 
 {% if not elementInstance %}
-	{% exit 404 %}
+    {% exit 404 %}
 {% endif %}
 
 {% set sources = craft.app.elementIndexes.getSources(elementType, 'index') %}
 {% set customizableSources = (sources is not empty and context == 'index' and currentUser.admin) %}
 
 {% block sidebar %}
-	{% if sources is not empty %}
-		<nav>
-			{% include "_elements/sources" %}
-		</nav>
+    {% if sources is not empty %}
+        <nav>
+            {% include "_elements/sources" %}
+        </nav>
 
-		{% if customizableSources %}
-			<div class="heading"><span></span></div>
-			<a class="customize-sources settings icon" title="{{ 'Customize sources'|t }}"></a>
-		{% endif %}
-	{% endif %}
+        {% if customizableSources %}
+            <div class="heading"><span></span></div>
+            <a class="customize-sources settings icon" title="{{ 'Customize sources'|t }}"></a>
+        {% endif %}
+    {% endif %}
 {% endblock %}
 
 
 {% block content %}
-	<div class="elementindex">
-		{% include "_elements/indexcontainer" %}
-	</div>
+    <div class="elementindex">
+        {% include "_elements/indexcontainer" %}
+    </div>
 {% endblock %}
 
 
 {% block initJs %}
-	Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
-		context:        '{{ context }}',
-		storageKey:     'elementindex.{{ elementType }}',
-		criteria:       { enabledForSite: null }
-	});
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#main'), {
+        context:        '{{ context }}',
+        storageKey:     'elementindex.{{ elementType }}',
+        criteria:       { enabledForSite: null }
+    });
 {% endblock %}
 
-{% registerjs block('initJs') %}
+{% js block('initJs') %}

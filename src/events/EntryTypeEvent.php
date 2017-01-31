@@ -5,7 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
+
+use yii\base\Event;
 
 /**
  * Entry type event class.
@@ -19,12 +21,12 @@ class EntryTypeEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryType The entry type model associated with the event.
+     * @var \craft\models\EntryType|null The entry type model associated with the event.
      */
     public $entryType;
 
     /**
-     * @var boolean Whether the entry type is brand new
+     * @var bool Whether the entry type is brand new
      */
     public $isNew = false;
 }

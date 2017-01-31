@@ -5,7 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
+
+use Craft;
 
 /**
  * Class RequireAdminNode
@@ -25,6 +27,6 @@ class RequireAdminNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write("\\Craft::\$app->controller->requireAdmin();\n");
+            ->write(Craft::class."::\$app->controller->requireAdmin();\n");
     }
 }

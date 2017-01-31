@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.
@@ -21,42 +21,9 @@ interface ComponentInterface
     // =========================================================================
 
     /**
-     * Returns the fully qualified name of this class.
-     *
-     * @return string The fully qualified name of this class.
-     */
-    public static function className();
-
-    /**
      * Returns the display name of this class.
      *
      * @return string The display name of this class.
      */
-    public static function displayName();
-
-    /**
-     * Returns a unique handle that can be used to refer to this class.
-     *
-     * @return string The class handle.
-     */
-    public static function classHandle();
-
-    /**
-     * Instantiates and returns a new component object.
-     *
-     * @param array $config The config settings to populate the component with
-     *
-     * @return $this The new component object
-     */
-    public static function create($config);
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the class name that should be used to represent the field.
-     *
-     * @return string The class name that should be used to represent the field.
-     */
-    public function getType();
+    public static function displayName(): string;
 }

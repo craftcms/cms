@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Task;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Task;
 
 /**
  * UpdateElementSlugsAndUris represents an Update Element Slugs and URIs background task.
@@ -24,27 +24,27 @@ class UpdateElementSlugsAndUris extends Task
     // =========================================================================
 
     /**
-     * @var integer|integer[] The ID(s) of the element(s) to update
+     * @var int|int[]|null The ID(s) of the element(s) to update
      */
     public $elementId;
 
     /**
-     * @var string|ElementInterface The type of elements to update.
+     * @var string|ElementInterface|null The type of elements to update.
      */
     public $elementType;
 
     /**
-     * @var integer The site ID of the elements to update.
+     * @var int|null The site ID of the elements to update.
      */
     public $siteId;
 
     /**
-     * @var boolean Whether the elements’ other sites should be updated as well.
+     * @var bool Whether the elements’ other sites should be updated as well.
      */
     public $updateOtherSites = true;
 
     /**
-     * @var boolean Whether the elements’ descendants should be updated as well.
+     * @var bool Whether the elements’ descendants should be updated as well.
      */
     public $updateDescendants = true;
 
@@ -64,7 +64,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    public function getTotalSteps()
+    public function getTotalSteps(): int
     {
         $this->_elementIds = (array)$this->elementId;
         $this->_skipRemainingEntries = false;
@@ -75,7 +75,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    public function runStep($step)
+    public function runStep(int $step)
     {
         if ($this->_skipRemainingEntries) {
             return true;
@@ -108,7 +108,7 @@ class UpdateElementSlugsAndUris extends Task
                 ->siteId($element->siteId)
                 ->ids();
 
-            if ($childIds) {
+            if (!empty($childIds)) {
                 $this->runSubTask([
                     'type' => static::class,
                     'description' => Craft::t('app', 'Updating children'),
@@ -133,7 +133,7 @@ class UpdateElementSlugsAndUris extends Task
     /**
      * @inheritdoc
      */
-    protected function getDefaultDescription()
+    protected function defaultDescription(): string
     {
         return Craft::t('app', 'Updating element slugs and URIs');
     }

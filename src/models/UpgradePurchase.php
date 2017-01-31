@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Used to hold edition upgrade purchase order data.
@@ -21,92 +21,92 @@ class UpgradePurchase extends Model
     // =========================================================================
 
     /**
-     * @var string CC token ID
+     * @var string|null CC token ID
      */
     public $ccTokenId;
 
     /**
-     * @var integer CC expiry month
+     * @var int|null CC expiry month
      */
     public $expMonth;
 
     /**
-     * @var integer CC expiry year
+     * @var int|null CC expiry year
      */
     public $expYear;
 
     /**
-     * @var integer Edition
+     * @var int|null Edition
      */
     public $edition;
 
     /**
-     * @var integer Expected price
+     * @var int|null Expected price
      */
     public $expectedPrice;
 
     /**
-     * @var string Customer name
+     * @var string|null Customer name
      */
     public $name;
 
     /**
-     * @var string Customer email
+     * @var string|null Customer email
      */
     public $email;
 
     /**
-     * @var string Business name
+     * @var string|null Business name
      */
     public $businessName;
 
     /**
-     * @var string Business address 1
+     * @var string|null Business address 1
      */
     public $businessAddress1;
 
     /**
-     * @var string Business address 2
+     * @var string|null Business address 2
      */
     public $businessAddress2;
 
     /**
-     * @var string Business city
+     * @var string|null Business city
      */
     public $businessCity;
 
     /**
-     * @var string Business state
+     * @var string|null Business state
      */
     public $businessState;
 
     /**
-     * @var string Business country
+     * @var string|null Business country
      */
     public $businessCountry;
 
     /**
-     * @var string Business zip
+     * @var string|null Business zip
      */
     public $businessZip;
 
     /**
-     * @var string Business tax ID
+     * @var string|null Business tax ID
      */
     public $businessTaxId;
 
     /**
-     * @var string Purchase notes
+     * @var string|null Purchase notes
      */
     public $purchaseNotes;
 
     /**
-     * @var string Coupon code
+     * @var string|null Coupon code
      */
     public $couponCode;
 
     /**
-     * @var boolean Success
+     * @var bool Success
      */
     public $success = false;
 
@@ -119,22 +119,11 @@ class UpgradePurchase extends Model
     public function rules()
     {
         $rules = [
-            [
-                ['edition'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['edition'], 'number', 'integerOnly' => true],
             [['edition', 'expectedPrice', 'name', 'email'], 'required'],
-            [
-                ['ccTokenId', 'edition', 'expectedPrice', 'success'],
-                'safe',
-                'on' => 'search'
-            ],
         ];
 
-        if ($this->expectedPrice != 0) {
+        if ($this->expectedPrice !== 0) {
             // CC info is also required
             $rules[] = [['ccTokenId', 'expMonth', 'expYear'], 'required'];
         }

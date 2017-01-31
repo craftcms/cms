@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -17,17 +17,23 @@ class m151215_000000_rename_asset_permissions extends Migration
     {
         // Update permissions
         $permissions = (new Query())
-            ->select('id, name')
-            ->from('{{%userpermissions}}')
-            ->where(['like', 'name', '%volume%', false])
+            ->select(['id', 'name'])
+            ->from(['{{%userpermissions}}'])
+            ->where(['like', 'name', 'volume'])
             ->all();
 
         foreach ($permissions as $permission) {
-            $newName = str_replace('uploadtovolume', 'saveassetinvolume', $permission['name']);
-            $newName = str_replace('createsubfoldersinvolume', 'createfoldersinvolume', $newName);
-            $newName = str_replace('removefromvolume', 'deletefilesandfoldersinvolume', $newName);
-            $this->update('{{%userpermissions}}', ['name' => $newName],
-                ['id' => $permission['id']], [], false);
+            $newName = str_replace([
+                'uploadtovolume',
+                'createsubfoldersinvolume',
+                'removefromvolume'
+            ], [
+                'saveassetinvolume',
+                'createfoldersinvolume',
+                'deletefilesandfoldersinvolume'
+            ], $permission['name']);
+
+            $this->update('{{%userpermissions}}', ['name' => $newName], ['id' => $permission['id']], [], false);
         }
     }
 
