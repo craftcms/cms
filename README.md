@@ -18,7 +18,7 @@ To install the Craft 3 Beta, follow the [installation instructions](https://gith
 - [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/)
 
 #### Community Resources
-- [Mijingo learning resources](https://mijingo.com/craft)
-- [Envato Tuts+ learning resources](https://webdesign.tutsplus.com/categories/craft-cms/courses) offers a collection of video courses as well.
-- [Straight Up Craft](http://straightupcraft.com/)
-- [Craft Cookbook](http://craftcookbook.net/) 
+- [Mijingo](https://mijingo.com/craft) – Video courses and other learning resources
+- [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses
+- [Straight Up Craft](http://straightupcraft.com/) – Articles, tutorials, and more
+- [pluginfactory.io](https://pluginfactory.io/) – Craft plugin scaffold generator
