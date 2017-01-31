@@ -8,6 +8,7 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 .imageeditor { background: #222; color: #fff; opacity: 1; user-select: none;}
 .imageeditor.modal { border-radius: 0; }
+.imageeditor.modal .body:after { display: none; }
 
 .imageeditor .btn:not(.submit):not(.noborder) { background: #444; color: #fff; }
 .imageeditor .btn:not(.submit):not(.noborder):hover { background: #3e3e3e; }
