@@ -16,7 +16,6 @@
     "docs": "https://github.com/craftcms/docs",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
-  "minimum-stability": "stable",
   "require": {
     "php": ">=7.0.0",
     "yiisoft/yii2": "2.0.10",
