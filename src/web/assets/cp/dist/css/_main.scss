@@ -192,6 +192,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .readable blockquote.note.tip:before { content: 'lightbulb'; color: $linkcolor; }
 
 /* text styles */
+.leftalign { @include alignleft; }
 .topalign { vertical-align: top; }
 .rightalign { @include alignright; }
 .centeralign { text-align: center !important; }

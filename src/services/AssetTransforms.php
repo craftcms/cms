@@ -941,6 +941,19 @@ class AssetTransforms extends Component
     }
 
     /**
+     * Delete all image sources queued up for deletion.
+     *
+     * @return void
+     */
+    public function deleteQueuedSourceFiles()
+    {
+        foreach ($this->_sourcesToBeDeleted as $source)
+        {
+            FileHelper::removeFile($source);
+        }
+    }
+
+    /**
      * Store a local image copy to a destination path.
      *
      * @param string $source

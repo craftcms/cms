@@ -232,6 +232,9 @@ body.rtl .readable blockquote.note:before { right: 16px; }
 .readable blockquote.note.tip:before { content: 'lightbulb'; color: #0d78f2; }
 
 /* text styles */
+body.ltr .leftalign { text-align: left; }
+body.rtl .leftalign { text-align: right; }
+
 .topalign { vertical-align: top; }
 
 body.ltr .rightalign { text-align: right; }
