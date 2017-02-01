@@ -877,7 +877,7 @@ class UsersController extends Controller
             $newEmail = $request->getBodyParam('email');
 
             // Make sure it actually changed
-            if ($newEmail && $newEmail == $user->email) {
+            if ($newEmail && $newEmail === $user->email) {
                 $newEmail = null;
             }
 
@@ -951,7 +951,7 @@ class UsersController extends Controller
                     $this->requireElevatedSession();
                 }
 
-                $user->admin = $adminParam;
+                $user->admin = (bool)$adminParam;
             }
         }
 
