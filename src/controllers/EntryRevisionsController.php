@@ -265,7 +265,7 @@ class EntryRevisionsController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->authorId != $userSessionService->getIdentity()->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those

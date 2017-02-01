@@ -443,7 +443,7 @@ class EntryRevisions extends Component
     public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
-        if ($version->getSection()->type == Section::TYPE_SINGLE) {
+        if ($version->getSection()->type === Section::TYPE_SINGLE) {
             $version->title = $version->getSection()->name;
         }
 
