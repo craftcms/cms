@@ -64,7 +64,7 @@ class EntriesController extends BaseEntriesController
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null): string
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): string
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
