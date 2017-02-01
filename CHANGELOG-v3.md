@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- Got rid of the `useMemcached` config setting and hardcoded it to `true` in the “memCache” component since there is not a PHP 7 compatible version of memcache. (ostark)
+
 ### Fixed
 - Fixed a bug where `craft\feeds\Feeds::getFeedItems()` was returning `null` when the results were not already cached, resulting in an “unknown error” on the Dashboard.
 

@@ -10,12 +10,12 @@
 
 return [
     /**
-     * An array of memcache servers to use.
+     * An array of memcached servers to use.
      */
     'servers' => [
         [
             /**
-             * A memcache server hostname or IP address.
+             * A memcached server hostname or IP address.
              */
             'host' => 'localhost',
             /**
@@ -23,7 +23,7 @@ return [
              */
             'persistent' => true,
             /**
-             * The memcache server port.
+             * The memcached server port.
              */
             'port' => 11211,
             /**
@@ -44,14 +44,4 @@ return [
             'weight' => 1,
         ],
     ],
-    /**
-     * Whether to use memcached or memcache as the underlying caching extension.
-     *
-     * If true [memcached](http://pecl.php.net/package/memcached) will be used.
-     *
-     * If false [memcache](http://pecl.php.net/package/memcache). will be used.
-     *
-     * Defaults to true, since the memcached extension has support for PHP 7 
-     */
-    'useMemcached' => true,
 ];
