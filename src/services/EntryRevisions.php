@@ -89,37 +89,37 @@ class EntryRevisions extends Component
     {
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
-        if ($draftRecord) {
-            $config = $draftRecord->toArray([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'name',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ]);
-            $config['data'] = Json::decode($config['data']);
-            $draft = new EntryDraft($config);
-
-            // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
-            // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
-            // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
-
-            $draft->root = $entry->root;
-            $draft->lft = $entry->lft;
-            $draft->rgt = $entry->rgt;
-            $draft->level = $entry->level;
-
-            return $draft;
+        if ($draftRecord === null) {
+            return null;
         }
 
-        return null;
+        $config = $draftRecord->toArray([
+            'id',
+            'entryId',
+            'sectionId',
+            'creatorId',
+            'siteId',
+            'name',
+            'notes',
+            'data',
+            'dateCreated',
+            'dateUpdated',
+            'uid',
+        ]);
+        $config['data'] = Json::decode($config['data']);
+        $draft = new EntryDraft($config);
+
+        // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
+        // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
+        // reason to store the level along with the other draft data.
+        $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
+
+        $draft->root = $entry->root;
+        $draft->lft = $entry->lft;
+        $draft->rgt = $entry->rgt;
+        $draft->level = $entry->level;
+
+        return $draft;
     }
 
     /**
@@ -332,26 +332,26 @@ class EntryRevisions extends Component
     {
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
-        if ($versionRecord) {
-            $config = $versionRecord->toArray([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'num',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ]);
-            $config['data'] = Json::decode($config['data']);
-
-            return new EntryVersion($config);
+        if ($versionRecord === null) {
+            return null;
         }
 
-        return null;
+        $config = $versionRecord->toArray([
+            'id',
+            'entryId',
+            'sectionId',
+            'creatorId',
+            'siteId',
+            'num',
+            'notes',
+            'data',
+            'dateCreated',
+            'dateUpdated',
+            'uid',
+        ]);
+        $config['data'] = Json::decode($config['data']);
+
+        return new EntryVersion($config);
     }
 
     /**
