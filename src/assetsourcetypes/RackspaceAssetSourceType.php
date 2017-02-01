@@ -1175,7 +1175,7 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private function _getFileList($prefix = '')
 	{
-		$targetUri = $this->_prepareRequestURI($this->getSettings()->container).'?prefix='.$prefix.'&format=json';
+		$targetUri = $this->_prepareRequestURI($this->getSettings()->container).'?prefix='.urlencode($prefix).'&format=json';
 		$response = $this->_doAuthenticatedRequest(static::RACKSPACE_STORAGE_OPERATION, $targetUri);
 
 		$extractedResponse = static::_extractRequestResponse($response);
