@@ -1582,6 +1582,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->$property = $class::find()
                 ->id($this->$property)
                 ->siteId($this->siteId)
+                ->structureId($this->structureId)
                 ->one();
 
             if ($this->$property === null) {
