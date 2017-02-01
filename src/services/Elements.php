@@ -379,10 +379,7 @@ class Elements extends Component
 
             // Get the element record
             if (!$isNewElement) {
-                $elementRecord = ElementRecord::findOne([
-                    'id' => $element->id,
-                    'type' => get_class($element)
-                ]);
+                $elementRecord = ElementRecord::findOne($element->id);
 
                 if (!$elementRecord) {
                     throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");

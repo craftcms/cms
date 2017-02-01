@@ -15,6 +15,7 @@ use craft\errors\EntryDraftNotFoundException;
 use craft\events\DraftEvent;
 use craft\events\VersionEvent;
 use craft\helpers\Json;
+use craft\models\BaseEntryRevisionModel;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
@@ -109,15 +110,7 @@ class EntryRevisions extends Component
         $config['data'] = Json::decode($config['data']);
         $draft = new EntryDraft($config);
 
-        // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
-        // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
-        // reason to store the level along with the other draft data.
-        $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
-
-        $draft->root = $entry->root;
-        $draft->lft = $entry->lft;
-        $draft->rgt = $entry->rgt;
-        $draft->level = $entry->level;
+        $this->_configureRevisionWithEntryProperties($draft);
 
         return $draft;
     }
@@ -350,8 +343,11 @@ class EntryRevisions extends Component
             'uid',
         ]);
         $config['data'] = Json::decode($config['data']);
+        $version = new EntryVersion($config);
 
-        return new EntryVersion($config);
+        $this->_configureRevisionWithEntryProperties($version);
+
+        return $version;
     }
 
     /**
@@ -534,5 +530,22 @@ class EntryRevisions extends Component
         }
 
         return $revisionData;
+    }
+
+    /**
+     * Updates a revision model with entry properties that aren't saved in the revision tables.
+     *
+     * @param BaseEntryRevisionModel $revision
+     *
+     * @return void
+     */
+    private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision)
+    {
+        $entry = Craft::$app->getEntries()->getEntryById($revision->id, $revision->siteId);
+        $revision->contentId = $entry->contentId;
+        $revision->root = $entry->root;
+        $revision->lft = $entry->lft;
+        $revision->rgt = $entry->rgt;
+        $revision->level = $entry->level;
     }
 }

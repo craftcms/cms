@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the “Publish draft” entry draft Save menu option would take you to a 404.
 - Fixed a bug where the “Delete draft” entry draft Save menu options would take you to a 404.
 - Fixed a bug where the “Delete” category button would take you to a 404.
+- #1037: Fixed a bug where the “Revert entry to this version” button on entry version pages would result in an “No element exists with the ID 'X'” exception.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
