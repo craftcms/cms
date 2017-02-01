@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Removed
-- Removed support for Memcached (with a d) for now, as it is not compatible with PHP 7 yet. (ostark)
+- Removed support for Memcache (without a d), as it is not compatible with PHP 7. (ostark)
 
 ### Fixed
 - Fixed a bug where `craft\feeds\Feeds::getFeedItems()` was returning `null` when the results were not already cached, resulting in an “unknown error” on the Dashboard.
