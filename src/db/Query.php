@@ -141,6 +141,34 @@ class Query extends \yii\db\Query
     }
 
     /**
+     * @inheritdoc
+     */
+    public function scalar($db = null)
+    {
+        try {
+            return parent::scalar($db);
+        } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function column($db = null)
+    {
+        try {
+            return parent::column($db);
+        } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return [];
+        }
+    }
+
+    /**
      * Executes the query and returns a single row of result at a given offset.
      *
      * @param int                $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
