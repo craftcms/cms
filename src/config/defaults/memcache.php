@@ -51,7 +51,7 @@ return [
      *
      * If false [memcache](http://pecl.php.net/package/memcache). will be used.
      *
-     * Defaults to false.
+     * Defaults to true, since the memcached extension has support for PHP 7 
      */
-    'useMemcached' => false,
+    'useMemcached' => true,
 ];
