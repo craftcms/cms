@@ -112,7 +112,7 @@ class EntryRevisions extends Component
         // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
         // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
         // reason to store the level along with the other draft data.
-        $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
+        $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
 
         $draft->root = $entry->root;
         $draft->lft = $entry->lft;
