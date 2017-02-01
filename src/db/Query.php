@@ -93,23 +93,23 @@ class Query extends \yii\db\Query
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
-
-            if (!empty($rows)) {
-                $columns = array_keys($rows[0]);
-
-                if (count($columns) < 2) {
-                    throw new Exception('Less than two columns were selected');
-                }
-
-                $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
-            }
-
-            return $rows;
         } catch (QueryAbortedException $e) {
             Craft::$app->getErrorHandler()->logException($e);
 
             return [];
         }
+
+        if (!empty($rows)) {
+            $columns = array_keys($rows[0]);
+
+            if (count($columns) < 2) {
+                throw new Exception('Less than two columns were selected');
+            }
+
+            $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
+        }
+
+        return $rows;
     }
 
     /**
