@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- Craft now logs `craft\db\QueryAbortedException`s.
+
 ### Removed
 - Removed support for Memcache (without a d), as it is not compatible with PHP 7. (ostark)
 

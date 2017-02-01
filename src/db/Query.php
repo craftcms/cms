@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -105,6 +106,8 @@ class Query extends \yii\db\Query
 
             return $rows;
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return [];
         }
     }
@@ -117,6 +120,8 @@ class Query extends \yii\db\Query
         try {
             return parent::all($db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return [];
         }
     }
@@ -129,6 +134,8 @@ class Query extends \yii\db\Query
         try {
             return parent::one($db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return false;
         }
     }
@@ -161,6 +168,8 @@ class Query extends \yii\db\Query
         try {
             return parent::queryScalar($selectExpression, $db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return false;
         }
     }
