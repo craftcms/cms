@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Craft now logs `craft\db\QueryAbortedException`s.
 - Element queries will now throw `craft\db\QueryAbortedException`s if any structure params are set, but `structureId` is not set.
+- Updated to Yii 2.0.11.
 
 ### Removed
 - Removed support for Memcache (without a d), as it is not compatible with PHP 7. (ostark)
