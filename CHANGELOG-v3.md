@@ -15,6 +15,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the “Delete draft” entry draft Save menu options would take you to a 404.
 - Fixed a bug where the “Delete” category button would take you to a 404.
 
+### Added
+- Added redis support and redis default config file.
+
 ## 3.0.0-beta.1 - 2017-01-29
 
 ### Added
