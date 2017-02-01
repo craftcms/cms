@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a bug where `craft\feeds\Feeds::getFeedItems()` was returning `null` when the results were not already cached, resulting in an “unknown error” on the Dashboard.
 - Fixed a bug where swapping between entries in a section enabled for multiple sites would cause a PHP type error. (carlcs)
+- Fixed an InvalidConfigException that would get thrown when attempting to edit an entry version with an author that had been deleted.
 - Fixed a bug where the “Save as a draft” entry Save menu option would take you to a 404.
 - Fixed a bug where the “Publish draft” entry draft Save menu option would take you to a 404.
 - Fixed a bug where the “Delete draft” entry draft Save menu options would take you to a 404.
