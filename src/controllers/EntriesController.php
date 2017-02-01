@@ -21,6 +21,7 @@ use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
 use DateTime;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -112,10 +113,13 @@ class EntriesController extends BaseEntriesController
                 'can' => $authorPermission,
             ];
 
-            $variables['author'] = $entry->getAuthor();
-
-            if (!$variables['author']) {
-                // Default to the current user
+            try {
+                if (($variables['author'] = $entry->getAuthor()) === null) {
+                    // Default to the current user
+                    $variables['author'] = $currentUser;
+                }
+            } catch (InvalidConfigException $e) {
+                // The author doesn't exist anymore
                 $variables['author'] = $currentUser;
             }
         }
