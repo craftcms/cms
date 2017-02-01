@@ -160,6 +160,16 @@ return [
                     'useMemcached' => true,
                 ];
                 break;
+            case 'redis':
+                $config = [
+                    'class' => yii\redis\Cache::class,
+                    'redis' => [
+                        'localhost' => $configService->get('localhost',Config::CATEGORY_REDIS),
+                        'port' => $configService->get('port',Config::CATEGORY_REDIS),
+                        'database' => $configService->get('database',Config::CATEGORY_REDIS)
+                    ]
+                ];
+                break;
             case 'wincache':
                 $config = yii\caching\WinCache::class;
                 break;
