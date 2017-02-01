@@ -915,6 +915,34 @@ class Config extends Component
             }
         }
 
+        if ($category === self::CATEGORY_DB && $configSettings['url']) {
+            $url = parse_url($configSettings['url']);
+
+            if (isset($url['scheme'])) {
+                $configSettings['driver'] = $url['scheme'];
+            }
+
+            if (isset($url['user'])) {
+                $configSettings['user'] = $url['user'];
+            }
+
+            if (isset($url['password'])) {
+                $configSettings['database'] = $url['pass'];
+            }
+
+            if (isset($url['host'])) {
+                $configSettings['server'] = $url['host'];
+            }
+
+            if (isset($url['port'])) {
+                $configSettings['port'] = $url['port'];
+            }
+
+            if (isset($url['path'])) {
+                $configSettings['database'] = trim($url['path'], '/');
+            }
+        }
+
         $this->_configSettings[$category] = $configSettings;
     }
 
