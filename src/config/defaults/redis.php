@@ -11,11 +11,11 @@
 return [
 
     /**
-     * The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * The redis hostname. Usually 'localhost' or '127.0.0.1'.
      */
-    'server' => 'localhost',
+    'hostname' => 'localhost',
     /**
-     * The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * The redis server port. Defaults to 6379.
      */
     'port' => '6379',
     /**

@@ -164,7 +164,7 @@ return [
                 $config = [
                     'class' => yii\redis\Cache::class,
                     'redis' => [
-                        'localhost' => $configService->get('localhost',Config::CATEGORY_REDIS),
+                        'hostname' => $configService->get('hostname',Config::CATEGORY_REDIS),
                         'port' => $configService->get('port',Config::CATEGORY_REDIS),
                         'database' => $configService->get('database',Config::CATEGORY_REDIS)
                     ]
