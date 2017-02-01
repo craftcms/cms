@@ -112,8 +112,8 @@ return [
      */
     'cacheDuration' => 'P1D',
     /**
-     * The caching method that Craft should use.  Valid values are 'apc', 'db', 'eaccelerator', 'file', 'memcache',
-     * 'redis', 'wincache', 'xcache', and 'zenddata',
+     * The caching method that Craft should use.  Valid values are 'apc', 'db', 'file', 'memcache' (Memcached),
+     * 'wincache', 'xcache', and 'zenddata'.
      *
      * Defaults to 'file'.
      */

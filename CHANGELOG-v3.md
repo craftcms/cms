@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where saving a user with no permissions would result in a PHP type error.
 - #1037: Fixed a bug where the “Revert entry to this version” button on entry version pages would result in an “No element exists with the ID 'X'” exception.
 - #1311: Fixed a bug where creating a new user would cause a PHP type error.
+- #1314: Fixed a bug where `src/config/defaults/general.php` was listing `'redis'` as a possible `cacheMethod` setting value, but Yii 2 does not have native support for Redis.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
