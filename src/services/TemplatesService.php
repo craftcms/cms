@@ -255,7 +255,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$result = $twig->render($template, $variables);
 		}
-		catch (\Exception $e)
+		catch (\RuntimeException $e)
 		{
 			if (!craft()->config->get('devMode'))
 			{
@@ -293,7 +293,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$result = call_user_func_array(array($twigTemplate, 'get'.$macro), $args);
 		}
-		catch (\Exception $e)
+		catch (\RuntimeException $e)
 		{
 			if (!craft()->config->get('devMode'))
 			{
@@ -396,7 +396,7 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->enableStrictVariables();
 			}
 		}
-		catch (\Exception $e)
+		catch (\RuntimeException $e)
 		{
 			if (!craft()->config->get('devMode'))
 			{

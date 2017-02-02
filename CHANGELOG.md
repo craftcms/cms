@@ -3,6 +3,13 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2960 - 2017-02-02
+
+### Fixed
+
+- Fixed a bug where `{% exit %}` tags would always result in a 500 error regardless of the exit code passed in, when Dev Mode was disabled.
+- Fixed a bug where it was impossible to replace files on Rackspace Sources with whitespaces in the filename. (Thanks Thoai.)
+
 ## 2.6.2959 - 2017-01-30
 
 ### Changed
@@ -10,7 +17,6 @@ Craft CMS Changelog
 - Increased the size of number fields to `10`.
 - Updated element-resize-detector.js to 1.1.10.
 - Updated Garnish to 0.1.12.
-- Changed it so that it is much harder to enumerate valid user accounts from a login page based on timing attacks.
 
 ### Fixed
 - Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
@@ -22,6 +28,7 @@ Craft CMS Changelog
 
 ### Security
 - Craft now catches runtime exceptions thrown by Twig and throws generic ones instead when Dev Mode is disabled, as they may include internal file/directory paths.
+- Made it much harder to enumerate valid user accounts from a login page based on timing attacks.
 
 ## 2.6.2958 - 2017-01-03
 
