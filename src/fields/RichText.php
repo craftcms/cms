@@ -85,7 +85,7 @@ class RichText extends Field
     public $availableVolumes = [];
 
     /**
-     * @var array The transforms available when selecting an image
+     * @var string|array The transforms available when selecting an image
      */
     public $availableTransforms = [];
 
@@ -512,7 +512,7 @@ class RichText extends Field
         $transformList = [];
 
         foreach ($allTransforms as $transform) {
-            if (!empty($this->availableTransforms) && !in_array($transform->id, $this->availableTransforms, false)) {
+            if (is_array($this->availableTransforms) && !in_array($transform->id, $this->availableTransforms, false)) {
                 continue;
             }
             $transformList[] = (object)[

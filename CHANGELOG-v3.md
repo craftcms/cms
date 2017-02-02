@@ -30,6 +30,7 @@ Craft CMS 3.0 Working Changelog
 - #1316: Fixed some `TypeError`s in controller action responses.
 - #1313: Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field.
 - Fixed a bug where deleting all the selections in a relation field would result in no changes being made to the field on save.
+- #1322: Fixed a PHP error that occurred when editing a Rich Text field with the “Available Transforms” setting set to `*`.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
