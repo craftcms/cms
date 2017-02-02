@@ -358,11 +358,11 @@ class UtilitiesController extends Controller
     /**
      * Performs a DB Backup action
      *
-     * @return Response
+     * @return Response|null
      * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
      * @throws Exception if the backup could not be created
      */
-    public function actionDbBackupPerformAction(): Response
+    public function actionDbBackupPerformAction()
     {
         $this->requirePermission('utility:db-backup');
 

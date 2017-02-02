@@ -167,9 +167,9 @@ class VolumesController extends Controller
     /**
      * Saves an asset volume.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionSaveVolume(): Response
+    public function actionSaveVolume()
     {
         $this->requirePostRequest();
 

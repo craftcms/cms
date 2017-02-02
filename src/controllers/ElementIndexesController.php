@@ -249,10 +249,10 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @return array
+     * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
-    private function _source(): array
+    private function _source()
     {
         if ($this->_sourceKey === null) {
             return null;
@@ -400,9 +400,9 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the available actions for the current source.
      *
-     * @return ElementActionInterface[]
+     * @return ElementActionInterface[]|null
      */
-    private function _availableActions(): array
+    private function _availableActions()
     {
         if (Craft::$app->getRequest()->isMobileBrowser()) {
             return null;

@@ -326,80 +326,80 @@ class UsersController extends Controller
     /**
      * Sets a user's password once they've verified they have access to their email.
      *
-     * @return string The rendering result
+     * @return string|null The rendering result
      */
-    public function actionSetPassword(): string
+    public function actionSetPassword()
     {
         // Have they just submitted a password, or are we just displaying the page?
         if (!Craft::$app->getRequest()->getIsPost()) {
-            if ($info = $this->_processTokenRequest()) {
-                $userToProcess = $info['userToProcess'];
-                $id = $info['id'];
-                $code = $info['code'];
-
-                Craft::$app->getUser()->sendUsernameCookie($userToProcess);
-
-                // Send them to the set password template.
-                return $this->_renderSetPasswordTemplate($userToProcess, [
-                    'code' => $code,
-                    'id' => $id,
-                    'newUser' => $userToProcess->password ? false : true,
-                ]);
-            }
-        } else {
-            // POST request. They've just set the password.
-            $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
-            $id = Craft::$app->getRequest()->getRequiredParam('id');
-            $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
-
-            // See if we still have a valid token.
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
-
-            if (!$userToProcess || !$isCodeValid) {
-                $this->_processInvalidToken($userToProcess);
+            if (!($info = $this->_processTokenRequest())) {
+                return null;
             }
 
-            $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
-            $userToProcess->setScenario(User::SCENARIO_PASSWORD);
+            $userToProcess = $info['userToProcess'];
+            $id = $info['id'];
+            $code = $info['code'];
 
-            if (Craft::$app->getElements()->saveElement($userToProcess)) {
-                if ($userToProcess->getStatus() == User::STATUS_PENDING) {
-                    // Activate them
-                    Craft::$app->getUsers()->activateUser($userToProcess);
+            Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
-                    // Treat this as an activation request
-                    if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
-                        return $response;
-                    }
-                }
-
-                // Can they access the CP?
-                if ($userToProcess->can('accessCp')) {
-                    // Send them to the CP login page
-                    $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getCpLoginPath());
-                } else {
-                    // Send them to the 'setPasswordSuccessPath'.
-                    $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
-                    $url = UrlHelper::siteUrl($setPasswordSuccessPath);
-                }
-
-                return $this->redirect($url);
-            }
-
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Couldn’t update password.'));
-
-            $errors = $userToProcess->getErrors('newPassword');
-
+            // Send them to the set password template.
             return $this->_renderSetPasswordTemplate($userToProcess, [
-                'errors' => $errors,
                 'code' => $code,
                 'id' => $id,
                 'newUser' => $userToProcess->password ? false : true,
             ]);
         }
 
-        return null;
+        // POST request. They've just set the password.
+        $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
+        $id = Craft::$app->getRequest()->getRequiredParam('id');
+        $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
+
+        // See if we still have a valid token.
+        $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
+
+        if (!$userToProcess || !$isCodeValid) {
+            $this->_processInvalidToken($userToProcess);
+        }
+
+        $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
+        $userToProcess->setScenario(User::SCENARIO_PASSWORD);
+
+        if (Craft::$app->getElements()->saveElement($userToProcess)) {
+            if ($userToProcess->getStatus() == User::STATUS_PENDING) {
+                // Activate them
+                Craft::$app->getUsers()->activateUser($userToProcess);
+
+                // Treat this as an activation request
+                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                    return $response;
+                }
+            }
+
+            // Can they access the CP?
+            if ($userToProcess->can('accessCp')) {
+                // Send them to the CP login page
+                $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getCpLoginPath());
+            } else {
+                // Send them to the 'setPasswordSuccessPath'.
+                $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
+                $url = UrlHelper::siteUrl($setPasswordSuccessPath);
+            }
+
+            return $this->redirect($url);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app',
+            'Couldn’t update password.'));
+
+        $errors = $userToProcess->getErrors('newPassword');
+
+        return $this->_renderSetPasswordTemplate($userToProcess, [
+            'errors' => $errors,
+            'code' => $code,
+            'id' => $id,
+            'newUser' => $userToProcess->password ? false : true,
+        ]);
     }
 
     /**
@@ -409,26 +409,26 @@ class UsersController extends Controller
      */
     public function actionVerifyEmail()
     {
-        if ($info = $this->_processTokenRequest()) {
-            $userToProcess = $info['userToProcess'];
-            $userIsPending = $userToProcess->status == User::STATUS_PENDING;
-
-            Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
-
-            if ($userIsPending) {
-                // They were just activated, so treat this as an activation request
-                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
-                    return $response;
-                }
-            }
-
-            // Redirect to the site/CP root
-            $url = UrlHelper::url('');
-
-            return $this->redirect($url);
+        if (!($info = $this->_processTokenRequest())) {
+            return null;
         }
 
-        return null;
+        $userToProcess = $info['userToProcess'];
+        $userIsPending = $userToProcess->status == User::STATUS_PENDING;
+
+        Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
+
+        if ($userIsPending) {
+            // They were just activated, so treat this as an activation request
+            if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                return $response;
+            }
+        }
+
+        // Redirect to the site/CP root
+        $url = UrlHelper::url('');
+
+        return $this->redirect($url);
     }
 
     /**
@@ -1289,6 +1289,8 @@ class UsersController extends Controller
 
     /**
      * Deletes a user.
+     *
+     * @return Response|null
      */
     public function actionDeleteUser()
     {
@@ -1428,7 +1430,7 @@ class UsersController extends Controller
      * @param string|null $authError
      * @param User|null   $user
      *
-     * @return null|Response
+     * @return Response|null
      */
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
@@ -1839,7 +1841,7 @@ class UsersController extends Controller
      * @param string[]    $errors
      * @param string|null $loginName
      *
-     * @return null|Response
+     * @return Response|null
      */
     private function _handleSendPasswordResetError(array $errors, string $loginName = null)
     {
@@ -1848,13 +1850,13 @@ class UsersController extends Controller
             $errors = implode(', ', $errors);
 
             return $this->asErrorJson($errors);
-        } else {
-            // Send the data back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'errors' => $errors,
-                'loginName' => $loginName,
-            ]);
         }
+
+        // Send the data back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'errors' => $errors,
+            'loginName' => $loginName,
+        ]);
 
         return null;
     }

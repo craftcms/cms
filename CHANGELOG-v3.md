@@ -26,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - #1314: Fixed a bug where `src/config/defaults/general.php` was listing `'redis'` as a possible `cacheMethod` setting value, but Yii 2 does not have native support for Redis.
 - Fixed a bug where `craft\db\QueryAbortedException`s were not getting caught when calling `craft\db\Query::scalar()` or `column()`.
 - #1321: Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty.
+- #1316: Fixed some `TypeError`s in controller action responses.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
