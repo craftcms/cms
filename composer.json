@@ -19,7 +19,7 @@
   },
   "require": {
     "php": ">=7.0.0",
-    "yiisoft/yii2": "2.0.11",
+    "yiisoft/yii2": "2.0.11.1",
     "yiisoft/yii2-debug": "2.0.7",
     "yiisoft/yii2-swiftmailer": "2.0.6",
     "guzzlehttp/guzzle": "6.2.2",
