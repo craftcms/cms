@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\services\Categories::fillGapsInCategoryIds()` now has a required `$structureId` argument.
 - #1331: Added `type` and `value` to the list of reserved field handles.
 - Console requests now get the CP template mode by default.
+- #1335: Site requests now resolve plugin template paths as if they were CP requests when rendering with the CP template mode.
 - Updated Yii to 2.0.11.1.
 
 ### Removed

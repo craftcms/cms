@@ -529,7 +529,7 @@ class View extends \yii\web\View
 
         // Only attempt to match against a plugin's templates if this is a CP or action request.
 
-        if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->getRequest()->getIsActionRequest())) {
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             // Sanitize
             $name = StringHelper::convertToUtf8($name);
 
