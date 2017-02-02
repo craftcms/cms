@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - #1323: Fixed a PHP error that occurred when generating image transforms.
 - Fixed a bug where Assets fields’ “Sources” settings weren’t working.
 - #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Contror Panel indexes.
+- Fixed a bug where creating a Number field type on PostgreSQL would result a SQL error.
 
 ## 3.0.0-beta.1 - 2017-01-29
 

@@ -167,7 +167,7 @@ class Db
             $type .= "($length)";
         }
 
-        if ($unsigned) {
+        if ($unsigned && Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
             $type .= ' unsigned';
         }
 
