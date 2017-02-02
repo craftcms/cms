@@ -28,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - #1321: Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty.
 - #1316: Fixed some `TypeError`s in controller action responses.
 - #1313: Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field.
+- Fixed a bug where deleting all the selections in a relation field would result in no changes being made to the field on save.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
