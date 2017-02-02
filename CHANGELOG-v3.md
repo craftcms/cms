@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now logs `craft\db\QueryAbortedException`s.
 - Element queries will now throw `craft\db\QueryAbortedException`s if any structure params are set, but `structureId` is not set.
 - `craft\services\Categories::fillGapsInCategoryIds()` now has a required `$structureId` argument.
+- #1331: Added `type` and `value` to the list of reserved field handles.
 - Updated Yii to 2.0.11.1.
 
 ### Removed

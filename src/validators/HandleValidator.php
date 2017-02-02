@@ -48,7 +48,9 @@ class HandleValidator extends Validator
         'fields',
         'content',
         'rawContent',
-        'section'
+        'section',
+        'type',
+        'value',
     ];
 
     // Properties
