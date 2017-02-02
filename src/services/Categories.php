@@ -639,11 +639,12 @@ class Categories extends Component
     /**
      * Updates a list of category IDs, filling in any gaps in the family tree.
      *
-     * @param int[] $ids The original list of category IDs
+     * @param int[] $ids         The original list of category IDs
+     * @param int   $structureId The structure ID
      *
      * @return int[] The list of category IDs with all the gaps filled in.
      */
-    public function fillGapsInCategoryIds(array $ids): array
+    public function fillGapsInCategoryIds(array $ids, int $structureId): array
     {
         $completeIds = [];
 
@@ -654,6 +655,7 @@ class Categories extends Component
             $categoryQuery->status(null);
             $categoryQuery->enabledForSite(false);
             $categoryQuery->limit(null);
+            $categoryQuery->structureId($structureId);
             $categories = $categoryQuery->all();
 
             $prevCategory = null;
