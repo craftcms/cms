@@ -534,18 +534,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
          */
         getViewParams: function() {
             var criteria = $.extend({
+                status: this.status,
+                siteId: this.siteId,
+                search: this.searchText,
                 limit: this.settings.batchSize
             }, this.settings.criteria);
-
-            if (this.status) {
-                criteria.status = this.status;
-            }
-            if (this.siteId) {
-                criteria.siteId = this.siteId;
-            }
-            if (this.searchText) {
-                criteria.search = this.searchText;
-            }
 
             var params = {
                 context: this.settings.context,
