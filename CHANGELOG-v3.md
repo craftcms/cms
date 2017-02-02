@@ -27,6 +27,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where `craft\db\QueryAbortedException`s were not getting caught when calling `craft\db\Query::scalar()` or `column()`.
 - #1321: Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty.
 - #1316: Fixed some `TypeError`s in controller action responses.
+- #1313: Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
