@@ -141,7 +141,7 @@ class View extends \yii\web\View
 
         // Set the initial template mode based on whether this is a CP or Site request
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
@@ -510,8 +510,7 @@ class View extends \yii\web\View
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getIsInstalled()) {
+        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
             $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->currentSite->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
