@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where deleting all the selections in a relation field would result in no changes being made to the field on save.
 - #1322: Fixed a PHP error that occurred when editing a Rich Text field with the “Available Transforms” setting set to `*`.
 - #1312: Fixed a PHP error that occurred when editing an image with GD selected as the image driver.
+- #1323: Fixed a PHP error where trying to generate a transform would result in an error.
 
 ## 3.0.0-beta.1 - 2017-01-29
 

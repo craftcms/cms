@@ -1368,7 +1368,7 @@ class AssetTransforms extends Component
                 $image->scaleAndCrop($transform->width, $transform->height, true, $position);
         }
 
-        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);
+        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.$index->detectedFormat;
         $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
         $image->saveAs($tempPath);
 
