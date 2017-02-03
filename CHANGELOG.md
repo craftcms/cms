@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2960 - 2017-02-02
+
 ### Fixed
 
 - Fixed a bug where `{% exit %}` tags would always result in a 500 error regardless of the exit code passed in, when Dev Mode was disabled.
