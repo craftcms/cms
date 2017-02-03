@@ -262,24 +262,7 @@ class Entry extends Element
 
             // Set Status
             if ($canSetStatus) {
-                /** @var SetStatus $setStatusAction */
-                $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::class);
-                $setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS,
-                    function(SetStatusEvent $event) {
-                        if ($event->status == self::STATUS_ENABLED) {
-                            // Set a Post Date as well
-                            Craft::$app->getDb()->createCommand()
-                                ->update(
-                                    '{{%entries}}',
-                                    ['postDate' => Db::prepareDateForDb(new \DateTime())],
-                                    [
-                                        'id' => $event->elementIds,
-                                        'postDate' => null,
-                                    ])
-                                ->execute();
-                        }
-                    });
-                $actions[] = $setStatusAction;
+                $actions[] = SetStatus::class;
             }
 
             // Edit

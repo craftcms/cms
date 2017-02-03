@@ -3,6 +3,13 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
+- The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
+
+### Removed
+- Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
+
 ### Fixed
 - Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
 - Fixed some asterisk icons.
