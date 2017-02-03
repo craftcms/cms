@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed some asterisk icons.
 - Fixed a bug where it was impossible to upload user photo, site logo or site icon.
 - #8: Fixed a bug where it was possible to select multiple default options for Dropdown and Radio Buttons fields.
+- #9: Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals. 
 
 ## 3.0.0-beta.2 - 2017-02-02
 

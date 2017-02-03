@@ -29,6 +29,23 @@ class GlobalsController extends Controller
     // =========================================================================
 
     /**
+     * Index
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user isn't authorized to edit any global sets
+     */
+    public function actionIndex()
+    {
+        $editableSets = Craft::$app->getGlobals()->getEditableSets();
+
+        if (empty($editableSets)) {
+            throw new ForbiddenHttpException('User not permitted to edit any global content');
+        }
+
+        return $this->redirect('globals/'.$editableSets[0]->handle);
+    }
+
+    /**
      * Saves a global set.
      *
      * @return Response|null
