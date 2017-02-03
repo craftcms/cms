@@ -2,7 +2,7 @@
 @import "../../../shared";
 
 @mixin container-topbar-styles {
-	border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
+    border-bottom: 1px solid rgba(0,0,0,0.05); background: rgba(0,0,0,0.03);
 }
 
 html,
@@ -15,16 +15,16 @@ body { overflow-x: hidden; }
 #alerts li a.go { text-decoration: none; white-space: nowrap; border: 1px solid rgba(255,255,255,0.5); border-radius: $btnBorderRadius; padding: 3px 5px; margin: 0 2px; }
 #alerts li a.go:after { color: #fff; }
 #alerts li a.go:hover { border-color: #fff;
-	@include transition(border-color linear 100ms);
+    @include transition(border-color linear 100ms);
 }
 
 
 /* Shared sidebar/container styles */
 #container,
 #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out;
-	overflow-y: scroll; /* has to be scroll, not auto */
-	-webkit-overflow-scrolling: touch;
-	z-index: 13;
+    overflow-y: scroll; /* has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
+    z-index: 13;
 }
 
 .topbar { @include display-flex; @include align-items(stretch); }
@@ -37,10 +37,10 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
 
 #global-sidebar a { color: hsl($hue, 5%, 85%);
-	@include transition(color linear 100ms);
+    @include transition(color linear 100ms);
 }
 #global-sidebar a .icon {
-	@include transition(opacity linear 100ms);
+    @include transition(opacity linear 100ms);
 }
 
 #global-sidebar a:hover,
@@ -96,8 +96,8 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #conatiner > #footer { min-height: -webkit-min-content; min-height: -moz-min-content; }
 
 body.mobile #container {
-	overflow-y: scroll; /* has to be scroll, not auto */
-	-webkit-overflow-scrolling: touch;
+    overflow-y: scroll; /* has to be scroll, not auto */
+    -webkit-overflow-scrolling: touch;
 }
 
 #main { @include flex-grow(1); }
@@ -109,7 +109,7 @@ body.mobile #container {
 
 @media only screen and (min-width: 993px)
 {
-	#container { @include padding-left(220px); }
+    #container { @include padding-left(220px); }
 }
 
 @media only screen and (max-width: 992px)
@@ -127,7 +127,7 @@ body.mobile #container {
 
 @media print
 {
-	#container { @include padding-left(220px); }
+    #container { @include padding-left(220px); }
 }
 
 #tasks-hud { padding: 0; overflow: auto; }
@@ -168,15 +168,15 @@ body.mobile #container {
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
 #notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
-	@include light-on-dark-text;
-	@include box-shadow(0 0 5px rgba(0,0,0,0.25));
+    @include light-on-dark-text;
+    @include box-shadow(0 0 5px rgba(0,0,0,0.25));
 }
 #notifications .notification.notice { background: $noticecolor; }
 #notifications .notification.error { background: $submitcolor; }
 
 #container .topbar:not(:empty) { padding: 0 24px; @include container-topbar-styles; }
 #container .topbar .show-nav { width: 24px; height: 24px; padding: 10px; display: block; line-height: 22px; color: $secondarySubmitColor; text-align: center;
-	@include margin-left(-24px);
+    @include margin-left(-24px);
 }
 #container .topbar .show-nav:before { @include icon; content: 'menu'; font-size: 16px; line-height: 0; }
 
@@ -189,7 +189,7 @@ body.focused #page-header.fixed { position: absolute; }
 
 @media only screen and (max-width: 992px)
 {
-	#page-header.fixed { left: 0; }
+    #page-header.fixed { left: 0; }
 }
 
 #page-header #page-title { @include flex-grow(1); color: $submitcolor; }
@@ -209,8 +209,8 @@ body.focused #page-header.fixed { position: absolute; }
 #crumbs:after { @include clearafter; }
 #crumbs li { display: inline-block; font-size: 13px; }
 #crumbs li:after { @include icon; margin: -1px 5px 0; font-size: 11px; color: $mediumtextcolor;
-	body.ltr & { content: 'rightangle'; }
-	body.rtl & { content: 'leftangle'; }
+    body.ltr & { content: 'rightangle'; }
+    body.rtl & { content: 'leftangle'; }
 }
 #crumbs li a { display: inline-block; padding: 14px 0; color: $mediumtextcolor; }
 #crumbs li a:hover { color: $linkcolor; text-decoration: none; }
@@ -224,8 +224,8 @@ body.focused #page-header.fixed { position: absolute; }
 .tabs .tab.sel { @include pane; }
 
 .pane > .tabs { margin: -24px -24px 24px; padding: 0 0; font-size: 0; border-radius: 4px 4px 0 0; overflow: hidden;
-	@include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
-	@include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
+    @include linear-gradient(hsl($hue, 8%, 97%), hsl($hue, 8%, 96%));
+    @include box-shadow(inset 0 -1px 0 rgba(0,0,0,0.05));
 }
 .pane > .tabs li { display: inline-block; font-size: 13px; }
 .pane > .tabs li a { color: #555; }
@@ -331,8 +331,8 @@ $fldGuideColor: #f4f3fb;
 .fld-field { color: $fldChalkColor; font-family: 'Coming Soon', sans-serif; font-style: italic; text-transform: uppercase; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png);
-	body.ltr & { background-position: 25px 24px; }
-	body.rtl & { background-position: calc(100% - 24px) 24px; }
+    body.ltr & { background-position: 25px 24px; }
+    body.rtl & { background-position: calc(100% - 24px) 24px; }
 }
 .fieldlayoutform:after { @include clearafter; }
 .fieldlayoutform h2 { margin: 3px 0 27px !important; font-size: 20px; line-height: 30px; font-weight: normal; text-decoration: underline; color: $fldChalkColor; margin-bottom: 30px; }
@@ -346,7 +346,7 @@ $fldGuideColor: #f4f3fb;
 
 .fieldlayoutform .newtabbtn-container { @include margin(0, 0, 58px, 0); }
 .fieldlayoutform .newtabbtn-container .btn.add { @include margin-right(15px); border: 1px solid $fldChalkColor; padding: 2px 10px 0; line-height: 27px; color: $fldChalkColor; background: transparent;
-	@include box-shadow(none);
+    @include box-shadow(none);
 }
 .fieldlayoutform .newtabbtn-container .btn.add:before { margin-top: -2px; }
 .fieldlayoutform .newtabbtn-container h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; }
@@ -396,7 +396,7 @@ $fldGuideColor: #f4f3fb;
 .fld-tab.draghelper .tabs .tab,
 .fld-tab.draghelper .fld-tabcontent,
 .fld-field.draghelper { background: #fff;
-	@include box-shadow(0 2px 10px -2px rgba(0,0,0,0.25));
+    @include box-shadow(0 2px 10px -2px rgba(0,0,0,0.25));
 }
 .fld-tab.draghelper .tabs .tab { border-bottom-color: #fff; }
 
@@ -416,7 +416,7 @@ $fldGuideColor: #f4f3fb;
 .lp-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
 .lp-editor { padding: 0 24px; overflow: auto; @include box-shadow(0 0 0 1px rgba(0,0,0,0.1));
-	@include box-sizing(border-box);
+    @include box-sizing(border-box);
 }
 .lp-editor header { margin: 0 -24px 24px; padding: 14px 24px 13px; background: rgba(0, 0, 0, 0.03); }
 .lp-editor header .btn { @include floatleft; }
@@ -479,25 +479,25 @@ body > .sidebar li { width: auto !important; }
 
 @media only screen and (max-width: 768px) {
 
-	#content.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(0); }
+    #content.content.has-sidebar:not(.hiding-sidebar) { @include margin-left(0); }
 
-	#sidebar.sidebar { width: 100vw; height: auto !important; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff; }
-	#sidebar.sidebar { @include margin(-24px, 0, 24px, -24px); @include box-shadow(0 0 32px 0 rgba(0,0,0,0.05)); }
+    #sidebar.sidebar { width: 100vw; height: auto !important; min-height: auto; z-index: 10; border-bottom: 1px solid #eee; background: #fff; }
+    #sidebar.sidebar { @include margin(-24px, 0, 24px, -24px); @include box-shadow(0 0 32px 0 rgba(0,0,0,0.05)); }
 
-	#sidebar.sidebar .btngroup { float: none !important; }
-	#sidebar.sidebar .btngroup .btn { display: inline-block; }
+    #sidebar.sidebar .btngroup { float: none !important; }
+    #sidebar.sidebar .btngroup .btn { display: inline-block; }
 
-	#content:not(.showing-sidebar) .sidebar { display: none; }
+    #content:not(.showing-sidebar) .sidebar { display: none; }
 }
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
-	   only screen and (     -o-min-device-pixel-ratio: 3/2),
-	   only screen and (        min-device-pixel-ratio: 1.5),
-	   only screen and (        min-resolution: 1.5dppx)
+       only screen and (   -moz-min-device-pixel-ratio: 1.5),
+       only screen and (     -o-min-device-pixel-ratio: 3/2),
+       only screen and (        min-device-pixel-ratio: 1.5),
+       only screen and (        min-resolution: 1.5dppx)
 {
-	.fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
-	#upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
-	#upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
+    .fieldlayoutform { background-image: url(../images/fieldlayoutform-bg_2x.png); background-size: 30px 30px; }
+    #upgrademodal.loading { background-image: url(../images/spinner_big_2x.gif); background-size: 48px; }
+    #upgrademodal-success .message { background-image: url(../images/success_2x.png); background-size: 48px; }
 }
