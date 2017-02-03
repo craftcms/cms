@@ -10,7 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
-use craft\enums\ColumnType;
+use craft\db\mysql\Schema as MysqlSchema;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -171,16 +171,16 @@ class Db
         switch ($db->getDriverName()) {
             case Connection::DRIVER_MYSQL:
                 switch ($columnType) {
-                    case ColumnType::TinyText:
+                    case MysqlSchema::TYPE_TINYTEXT:
                         // 255 bytes
                         return 255;
-                    case ColumnType::Text:
+                    case Schema::TYPE_TEXT:
                         // 65k
                         return 65535;
-                    case ColumnType::MediumText:
+                    case MysqlSchema::TYPE_MEDIUMTEXT:
                         // 16MB
                         return 16777215;
-                    case ColumnType::LongText:
+                    case MysqlSchema::TYPE_LONGTEXT:
                         // 4GB
                         return 4294967295;
                     default:
@@ -210,21 +210,21 @@ class Db
 
         switch ($db->getDriverName()) {
             case Connection::DRIVER_MYSQL:
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_TINYTEXT)) {
                     return Schema::TYPE_STRING;
                 }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(Schema::TYPE_TEXT)) {
                     return Schema::TYPE_TEXT;
                 }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_MEDIUMTEXT)) {
                     // Yii doesn't support 'mediumtext' so we use our own.
-                    return ColumnType::MediumText;
+                    return MysqlSchema::TYPE_MEDIUMTEXT;
                 }
 
                 // Yii doesn't support 'longtext' so we use our own.
-                return ColumnType::LongText;
+                return MysqlSchema::TYPE_LONGTEXT;
             case Connection::DRIVER_PGSQL:
                 return Schema::TYPE_TEXT;
             default:
