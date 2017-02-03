@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
 - The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
+- Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
