@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
 - The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
 - Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
+- `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
@@ -20,6 +21,7 @@ Craft CMS 3.0 Working Changelog
 - #9: Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals. 
 - #1341: Fixed a bug that occurred when generating transforms for images with focal points/
 - #1342: Fixed a bug where the utility status was overlapping the submit button in Utilities.
+- Fixed a bug where `craft\helpers\Db::getNumericalColumnType()` could return a column type that wouldn’t actually fix the `$max` argument in PostgreSQL.
 
 ## 3.0.0-beta.2 - 2017-02-02
 

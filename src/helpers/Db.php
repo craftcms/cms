@@ -30,6 +30,15 @@ class Db
      */
     private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
+    /**
+     * @var array Types of integer columns and how many bytes they can store
+     */
+    private static $_integerSizeRanges = [
+        Schema::TYPE_SMALLINT => [-32768, 32767],
+        Schema::TYPE_INTEGER => [-2147483648, 2147483647],
+        Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
+    ];
+
     // Public Methods
     // =========================================================================
 
@@ -103,19 +112,6 @@ class Db
     }
 
     /**
-     * Integer column sizes.
-     *
-     * @var int[]
-     */
-    private static $_intColumnSizes = [
-        ColumnType::TinyInt => 128,
-        ColumnType::SmallInt => 32768,
-        ColumnType::MediumInt => 8388608,
-        ColumnType::Int => 2147483648,
-        ColumnType::BigInt => 9223372036854775808
-    ];
-
-    /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
      * @param int|null $min
@@ -123,55 +119,38 @@ class Db
      * @param int|null $decimals
      *
      * @return string
+     * @throws Exception if no column types can contain this
      */
     public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
-        $type = '';
-
         // Normalize the arguments
         if (!is_numeric($min)) {
-            $min = -self::$_intColumnSizes[ColumnType::Int];
+            $min = self::$_integerSizeRanges[Schema::TYPE_INTEGER][0];
         }
 
         if (!is_numeric($max)) {
-            $max = self::$_intColumnSizes[ColumnType::Int] - 1;
+            $max = self::$_integerSizeRanges[Schema::TYPE_INTEGER][1];
         }
 
         $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
-        // Unsigned?
-        $unsigned = ($min >= 0);
-
         // Figure out the max length
-        $maxAbsSize = (int)($unsigned ? $max : max(abs($min), abs($max)));
+        $maxAbsSize = (int)max(abs($min), abs($max));
         $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
         if ($decimals > 0) {
-            $type = Schema::TYPE_DECIMAL."($length,$decimals)";
-        } else {
-            // Figure out the smallest possible int column type that will fit our min/max
-            foreach (self::$_intColumnSizes as $type => $size) {
-                if ($unsigned) {
-                    if ($max < $size * 2) {
-                        break;
-                    }
-                } else {
-                    if ($min >= -$size && $max < $size) {
-                        break;
-                    }
-                }
+            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+        }
+
+        // Figure out the smallest possible int column type that will fit our min/max
+        foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
+            if ($min >= $typeMin && $max <= $typeMax) {
+                return $type."({$length})";
             }
-
-            /** @noinspection PhpUndefinedVariableInspection */
-            $type .= "($length)";
         }
 
-        if ($unsigned && Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
-            $type .= ' unsigned';
-        }
-
-        return $type;
+        throw new Exception("No integer column type can contain numbers between {$min} and {$max}");
     }
 
     /**
