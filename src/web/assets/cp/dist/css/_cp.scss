@@ -379,7 +379,7 @@ $fldGuideColor: #f4f3fb;
 
 .fld-field { padding: 8px 8px 3px; cursor: move; }
 .fld-field + .fld-field { margin-top: 7px; }
-.fld-field.fld-required span:after { @include icon; @include margin(-2px, 0, 0, 5px); color: $fldChalkColor; content: '*'; font-size: 8px; }
+.fld-field.fld-required span:after { @include icon; @include margin(-2px, 0, 0, 5px); color: $fldChalkColor; content: 'asterisk'; font-size: 8px; }
 .fld-field .icon { @include floatright; }
 
 .fld-tab.unused .tabs .tab,
