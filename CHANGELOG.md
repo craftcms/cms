@@ -3,6 +3,10 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+
+- Fixed a bug where you could get a `json_encode` “Invalid UTF-8 sequence” error on some servers when specifying a `depth` in an element query.
+
 ## 2.6.2960 - 2017-02-02
 
 ### Fixed
