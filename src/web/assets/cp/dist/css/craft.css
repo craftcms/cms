@@ -252,7 +252,7 @@ body.rtl .rightalign { text-align: left; }
 
 input.checkbox + label.smalltext { padding-top: 2px; }
 
-.required:after { content: '*'; font-size: 7px; color: #da5a47; }
+.required:after { content: 'asterisk'; font-size: 7px; color: #da5a47; }
 body.ltr .required:after { margin: -2px 0 0 7px ; }
 body.rtl .required:after { margin: -2px 7px 0 0 ; }
 
@@ -284,7 +284,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .token[data-name='*'] span { opacity: 0; }
 
-.token[data-name='*']:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 9px; line-height: 17px; content: '*'; text-indent: 0; }
+.token[data-name='*']:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 9px; line-height: 17px; content: 'asterisk'; text-indent: 0; }
 
 .token:focus { border-color: #8f98a3; background: #aaa; outline: none; }
 
@@ -2447,7 +2447,7 @@ body.rtl .fld-tab .tabs .tab { float: right; }
 
 .fld-field + .fld-field { margin-top: 7px; }
 
-.fld-field.fld-required span:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; color: #2f1fb5; content: '*'; font-size: 8px; }
+.fld-field.fld-required span:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; color: #2f1fb5; content: 'asterisk'; font-size: 8px; }
 body.ltr .fld-field.fld-required span:after { margin: -2px 0 0 5px ; }
 body.rtl .fld-field.fld-required span:after { margin: -2px 5px 0 0 ; }
 
