@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-02 */
+/*! Craft 3.0.0 - 2017-02-03 */
 (function($){
 
 /** global: Craft */
@@ -16655,7 +16655,8 @@ Craft.Uploader = Garnish.Base.extend(
             maxFileSize: Craft.maxUploadSize,
             allowedKinds: null,
             events: {},
-            canAddMoreFiles: null
+            canAddMoreFiles: null,
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
         }
     });
 

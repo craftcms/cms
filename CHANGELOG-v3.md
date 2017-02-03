@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
 - Fixed some asterisk icons.
+- Fixed a bug where it was impossible to upload user photo, site logo or site icon.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
