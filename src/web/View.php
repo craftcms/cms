@@ -141,7 +141,7 @@ class View extends \yii\web\View
 
         // Set the initial template mode based on whether this is a CP or Site request
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
@@ -226,8 +226,8 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
-     * @thorws Exception in case of failure
-     * @throws \Exception in case of failure
+     * @throws Exception in case of failure
+     * @throws \RuntimeException in case of failure
      */
     public function renderTemplate($template, array $variables = []): string
     {
@@ -240,7 +240,7 @@ class View extends \yii\web\View
 
         try {
             $output = $this->getTwig()->render($template, $variables);
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             if (!Craft::$app->getConfig()->get('devMode')) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
@@ -287,8 +287,8 @@ class View extends \yii\web\View
      * @param array  $args     Any arguments that should be passed to the macro.
      *
      * @return string The rendered macro output.
-     * @thorws Exception in case of failure
-     * @throws \Exception in case of failure
+     * @throws Exception in case of failure
+     * @throws \RuntimeException in case of failure
      */
     public function renderTemplateMacro(string $template, string $macro, array $args = []): string
     {
@@ -300,7 +300,7 @@ class View extends \yii\web\View
 
         try {
             $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             if (!Craft::$app->getConfig()->get('devMode')) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
@@ -342,8 +342,8 @@ class View extends \yii\web\View
      * @param mixed  $object   The object that should be passed into the template.
      *
      * @return string The rendered template.
-     * @thorws Exception in case of failure
-     * @throws \Exception in case of failure
+     * @throws Exception in case of failure
+     * @throws \RuntimeException in case of failure
      */
     public function renderObjectTemplate(string $template, $object): string
     {
@@ -386,7 +386,7 @@ class View extends \yii\web\View
             if ($strictVariables) {
                 $twig->enableStrictVariables();
             }
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
             if (!Craft::$app->getConfig()->get('devMode')) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
@@ -510,8 +510,7 @@ class View extends \yii\web\View
         $basePaths = [];
 
         // Should we be looking for a localized version of the template?
-        $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getIsInstalled()) {
+        if ($this->_templateMode === self::TEMPLATE_MODE_SITE && Craft::$app->getIsInstalled()) {
             $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->currentSite->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
@@ -530,7 +529,7 @@ class View extends \yii\web\View
 
         // Only attempt to match against a plugin's templates if this is a CP or action request.
 
-        if (!$request->getIsConsoleRequest() && ($request->getIsCpRequest() || Craft::$app->getRequest()->getIsActionRequest())) {
+        if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             // Sanitize
             $name = StringHelper::convertToUtf8($name);
 

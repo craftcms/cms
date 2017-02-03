@@ -65,6 +65,23 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        if (is_array($value)) {
+            // Get the structure ID
+            $firstCategory = Category::findOne($value[0]);
+            $structureId = $firstCategory->getGroup()->structureId;
+
+            // Fill in any gaps
+            $value = Craft::$app->getCategories()->fillGapsInCategoryIds($value, $structureId);
+        }
+
+        return parent::normalizeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
@@ -77,28 +94,5 @@ class Categories extends BaseRelationField
         }
 
         return parent::getInputHtml($value, $element);
-    }
-
-    // Events
-    // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element, bool $isNew)
-    {
-        $value = $element->getFieldValue($this->handle);
-
-        // Make sure something was actually posted
-        if ($value !== null) {
-            $ids = $value->ids();
-
-            // Fill in any gaps
-            $ids = Craft::$app->getCategories()->fillGapsInCategoryIds($ids);
-
-            Craft::$app->getRelations()->saveRelations($this, $element, $ids);
-        }
-
-        parent::afterElementSave($element, $isNew);
     }
 }

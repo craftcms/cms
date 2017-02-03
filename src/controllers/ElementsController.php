@@ -164,20 +164,26 @@ class ElementsController extends BaseElementsController
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
 
-        // Fill in the gaps
-        $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
+        $categories = [];
 
         if (!empty($categoryIds)) {
-            /** @var CategoryQuery $categoryQuery */
-            $categoryQuery = Category::find()
-                ->id($categoryIds)
-                ->siteId($request->getParam('siteId'))
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit($request->getParam('limit'));
-            $categories = $categoryQuery->all();
-        } else {
-            $categories = [];
+            // Get the structure ID
+            $firstCategory = Category::findOne($categoryIds[0]);
+            $structureId = $firstCategory->getGroup()->structureId;
+
+            // Fill in the gaps
+            $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds, $structureId);
+
+            if (!empty($categoryIds)) {
+                $categories = Category::find()
+                    ->id($categoryIds)
+                    ->siteId($request->getParam('siteId'))
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->limit($request->getParam('limit'))
+                    ->structureId($structureId)
+                    ->all();
+            }
         }
 
         $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',

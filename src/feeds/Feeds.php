@@ -142,6 +142,8 @@ class Feeds extends Component
         }
 
         Craft::$app->getCache()->set($key, $return, $cacheDuration);
+
+        return $return;
     }
 
     // Private Methods

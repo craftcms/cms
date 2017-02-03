@@ -15,6 +15,7 @@ use craft\errors\EntryDraftNotFoundException;
 use craft\events\DraftEvent;
 use craft\events\VersionEvent;
 use craft\helpers\Json;
+use craft\models\BaseEntryRevisionModel;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
@@ -89,37 +90,29 @@ class EntryRevisions extends Component
     {
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
-        if ($draftRecord) {
-            $config = $draftRecord->toArray([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'name',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ]);
-            $config['data'] = Json::decode($config['data']);
-            $draft = new EntryDraft($config);
-
-            // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
-            // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
-            // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
-
-            $draft->root = $entry->root;
-            $draft->lft = $entry->lft;
-            $draft->rgt = $entry->rgt;
-            $draft->level = $entry->level;
-
-            return $draft;
+        if ($draftRecord === null) {
+            return null;
         }
 
-        return null;
+        $config = $draftRecord->toArray([
+            'id',
+            'entryId',
+            'sectionId',
+            'creatorId',
+            'siteId',
+            'name',
+            'notes',
+            'data',
+            'dateCreated',
+            'dateUpdated',
+            'uid',
+        ]);
+        $config['data'] = Json::decode($config['data']);
+        $draft = new EntryDraft($config);
+
+        $this->_configureRevisionWithEntryProperties($draft);
+
+        return $draft;
     }
 
     /**
@@ -332,26 +325,29 @@ class EntryRevisions extends Component
     {
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
-        if ($versionRecord) {
-            $config = $versionRecord->toArray([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'num',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ]);
-            $config['data'] = Json::decode($config['data']);
-
-            return new EntryVersion($config);
+        if ($versionRecord === null) {
+            return null;
         }
 
-        return null;
+        $config = $versionRecord->toArray([
+            'id',
+            'entryId',
+            'sectionId',
+            'creatorId',
+            'siteId',
+            'num',
+            'notes',
+            'data',
+            'dateCreated',
+            'dateUpdated',
+            'uid',
+        ]);
+        $config['data'] = Json::decode($config['data']);
+        $version = new EntryVersion($config);
+
+        $this->_configureRevisionWithEntryProperties($version);
+
+        return $version;
     }
 
     /**
@@ -443,7 +439,7 @@ class EntryRevisions extends Component
     public function revertEntryToVersion(EntryVersion $version, bool $runValidation = true): bool
     {
         // If this is a single, we'll have to set the title manually
-        if ($version->getSection()->type == Section::TYPE_SINGLE) {
+        if ($version->getSection()->type === Section::TYPE_SINGLE) {
             $version->title = $version->getSection()->name;
         }
 
@@ -534,5 +530,22 @@ class EntryRevisions extends Component
         }
 
         return $revisionData;
+    }
+
+    /**
+     * Updates a revision model with entry properties that aren't saved in the revision tables.
+     *
+     * @param BaseEntryRevisionModel $revision
+     *
+     * @return void
+     */
+    private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision)
+    {
+        $entry = Craft::$app->getEntries()->getEntryById($revision->id, $revision->siteId);
+        $revision->contentId = $entry->contentId;
+        $revision->root = $entry->root;
+        $revision->lft = $entry->lft;
+        $revision->rgt = $entry->rgt;
+        $revision->level = $entry->level;
     }
 }

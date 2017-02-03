@@ -3,6 +3,13 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2960 - 2017-02-02
+
+### Fixed
+
+- Fixed a bug where `{% exit %}` tags would always result in a 500 error regardless of the exit code passed in, when Dev Mode was disabled.
+- Fixed a bug where it was impossible to replace files on Rackspace Sources with whitespaces in the filename. (Thanks Thoai.)
+
 ## 2.6.2959 - 2017-01-30
 
 ### Changed

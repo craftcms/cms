@@ -863,11 +863,11 @@ class Sections extends Component
     /**
      * Returns entry types that have a given handle.
      *
-     * @param int $entryTypeHandle
+     * @param string $entryTypeHandle
      *
      * @return EntryType[]
      */
-    public function getEntryTypesByHandle(int $entryTypeHandle): array
+    public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
         $entryTypes = [];
 

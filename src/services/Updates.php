@@ -424,7 +424,7 @@ class Updates extends Component
                     // Prep the new release
                     $currentRelease = $releases[] = new UpdateRelease();
                     $currentRelease->version = $match[1];
-                    $releaseDate = DateTimeHelper::toDateTime($match[2]);
+                    $releaseDate = DateTimeHelper::toDateTime($match[2], true);
 
                     if ($releaseDate === false) {
                         $releaseDate = null;

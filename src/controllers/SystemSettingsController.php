@@ -230,7 +230,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      *
-     * @return null
+     * @return void
      */
     public function actionTestEmailSettings()
     {
@@ -292,8 +292,6 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adapter' => $adapter
         ]);
-
-        return null;
     }
 
     /**

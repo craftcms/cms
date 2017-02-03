@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
@@ -92,21 +93,23 @@ class Query extends \yii\db\Query
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
-
-            if (!empty($rows)) {
-                $columns = array_keys($rows[0]);
-
-                if (count($columns) < 2) {
-                    throw new Exception('Less than two columns were selected');
-                }
-
-                $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
-            }
-
-            return $rows;
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return [];
         }
+
+        if (!empty($rows)) {
+            $columns = array_keys($rows[0]);
+
+            if (count($columns) < 2) {
+                throw new Exception('Less than two columns were selected');
+            }
+
+            $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
+        }
+
+        return $rows;
     }
 
     /**
@@ -117,6 +120,8 @@ class Query extends \yii\db\Query
         try {
             return parent::all($db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return [];
         }
     }
@@ -129,7 +134,37 @@ class Query extends \yii\db\Query
         try {
             return parent::one($db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scalar($db = null)
+    {
+        try {
+            return parent::scalar($db);
+        } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function column($db = null)
+    {
+        try {
+            return parent::column($db);
+        } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
+            return [];
         }
     }
 
@@ -161,6 +196,8 @@ class Query extends \yii\db\Query
         try {
             return parent::queryScalar($selectExpression, $db);
         } catch (QueryAbortedException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return false;
         }
     }

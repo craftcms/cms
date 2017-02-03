@@ -138,7 +138,7 @@ class Assets extends BaseRelationField
             if (!isset($volume['heading'])) {
                 $folderOptions[] = [
                     'label' => $volume['label'],
-                    'value' => $key
+                    'value' => $volume['key']
                 ];
             }
         }

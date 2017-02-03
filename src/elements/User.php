@@ -334,7 +334,7 @@ class User extends Element implements IdentityInterface
 
         if ($user !== null) {
             /** @var static $user */
-            if ($user->getStatus() == self::STATUS_ACTIVE) {
+            if ($user->getStatus() === self::STATUS_ACTIVE) {
                 return $user;
             }
 

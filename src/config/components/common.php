@@ -157,7 +157,7 @@ return [
                 $config = [
                     'class' => yii\caching\MemCache::class,
                     'servers' => $configService->get('servers', Config::CATEGORY_MEMCACHE),
-                    'useMemcached' => $configService->get('useMemcached', Config::CATEGORY_MEMCACHE),
+                    'useMemcached' => true,
                 ];
                 break;
             case 'wincache':

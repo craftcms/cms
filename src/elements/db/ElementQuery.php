@@ -1555,6 +1555,14 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($this->level) {
                 $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
             }
+        } else {
+            $structureParams = ['ancestorOf', 'descendantOf', 'siblingOf', 'prevSiblingOf', 'nextSiblingOf', 'positionedBefore', 'positionedAfter', 'level'];
+
+            foreach ($structureParams as $param) {
+                if ($this->$param !== null) {
+                    throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
+                }
+            }
         }
     }
 
@@ -1574,6 +1582,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->$property = $class::find()
                 ->id($this->$property)
                 ->siteId($this->siteId)
+                ->structureId($this->structureId)
                 ->one();
 
             if ($this->$property === null) {

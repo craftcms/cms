@@ -275,7 +275,7 @@ body.rtl #footer #edition.hot:hover #edition-logo > .edition-trial:before { bord
 #upgrademodal.loading { background-image: url(../images/spinner_big.gif); background-repeat: no-repeat; background-position: 50% 50%; }
 #upgrademodal .body { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto; }
 
-#upgrademodal .logo { margin: 0 auto 24px; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
+#upgrademodal .logo { margin: 0 auto 24px !important; font-weight: 500; font-size: 18px; color: $submitcolor; letter-spacing: 3.3px; line-height: 14px; border: 1px solid $submitcolor; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
 
 #upgrademodal-compare table th,
 #upgrademodal-compare table td { width: 33.33%; }

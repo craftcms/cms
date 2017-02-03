@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodes;
 
+use craft\helpers\Template;
+
 /**
  * Internal node used by the nav node.
  *
@@ -38,9 +40,9 @@ class NavItem_Node extends \Twig_Node
     {
         $compiler
             // Get this item's level
-            ->write('$_thisItemLevel = (int)$this->getAttribute(')
+            ->write('$_thisItemLevel = (int)'.Template::class.'::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
-            ->raw(", 'level', [], Twig_TemplateInterface::ANY_CALL, false, true);\n")
+            ->raw(', \'level\', [], '.\Twig_Template::class."::ANY_CALL, false, true);\n")
             // Was there a previous item?
             ->write("if (isset(\$_contextsByLevel)) {\n")
             ->indent()

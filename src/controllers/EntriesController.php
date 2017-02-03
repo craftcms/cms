@@ -21,6 +21,7 @@ use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
 use DateTime;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -54,17 +55,17 @@ class EntriesController extends BaseEntriesController
     /**
      * Called when a user beings up an entry for editing before being displayed.
      *
-     * @param string     $sectionHandle The section’s handle
-     * @param int|null   $entryId       The entry’s ID, if editing an existing entry.
-     * @param int|null   $draftId       The entry draft’s ID, if editing an existing draft.
-     * @param int|null   $versionId     The entry version’s ID, if editing an existing version.
-     * @param int|null   $siteHandle    The site handle, if specified.
-     * @param Entry|null $entry         The entry being edited, if there were any validation errors.
+     * @param string      $sectionHandle The section’s handle
+     * @param int|null    $entryId       The entry’s ID, if editing an existing entry.
+     * @param int|null    $draftId       The entry draft’s ID, if editing an existing draft.
+     * @param int|null    $versionId     The entry version’s ID, if editing an existing version.
+     * @param string|null $siteHandle    The site handle, if specified.
+     * @param Entry|null  $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, int $siteHandle = null, Entry $entry = null): string
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): string
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
@@ -112,10 +113,13 @@ class EntriesController extends BaseEntriesController
                 'can' => $authorPermission,
             ];
 
-            $variables['author'] = $entry->getAuthor();
-
-            if (!$variables['author']) {
-                // Default to the current user
+            try {
+                if (($variables['author'] = $entry->getAuthor()) === null) {
+                    // Default to the current user
+                    $variables['author'] = $currentUser;
+                }
+            } catch (InvalidConfigException $e) {
+                // The author doesn't exist anymore
                 $variables['author'] = $currentUser;
             }
         }

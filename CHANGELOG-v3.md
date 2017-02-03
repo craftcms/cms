@@ -1,6 +1,47 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.2 - 2017-02-02
+
+### Changed
+- Craft now logs `craft\db\QueryAbortedException`s.
+- Element queries will now throw `craft\db\QueryAbortedException`s if any structure params are set, but `structureId` is not set.
+- `craft\services\Categories::fillGapsInCategoryIds()` now has a required `$structureId` argument.
+- #1331: Added `type` and `value` to the list of reserved field handles.
+- Console requests now get the CP template mode by default.
+- #1335: Site requests now resolve plugin template paths as if they were CP requests when rendering with the CP template mode.
+- Updated Yii to 2.0.11.1.
+
+### Removed
+- Removed support for Memcache (without a d), as it is not compatible with PHP 7. (ostark)
+
+### Fixed
+- Fixed a bug where `craft\feeds\Feeds::getFeedItems()` was returning `null` when the results were not already cached, resulting in an “unknown error” on the Dashboard.
+- Fixed an InvalidConfigException that would get thrown when attempting to edit an entry version with an author that had been deleted.
+- Fixed a bug where swapping between entries in a section enabled for multiple sites would cause a PHP type error. (carlcs)
+- Fixed a bug where the “Save as a draft” entry Save menu option would take you to a 404.
+- Fixed a bug where the “Publish draft” entry draft Save menu option would take you to a 404.
+- Fixed a bug where the “Delete draft” entry draft Save menu options would take you to a 404.
+- Fixed a bug where the “Delete” category button would take you to a 404.
+- Fixed a bug where saving a user with no permissions would result in a PHP type error.
+- Fixed a bug where removing a user’s admin permissions using PostgreSQL would result in a SQL error.
+- #1037: Fixed a bug where the “Revert entry to this version” button on entry version pages would result in an “No element exists with the ID 'X'” exception.
+- #1311: Fixed a bug where creating a new user would cause a PHP type error.
+- #1314: Fixed a bug where `src/config/defaults/general.php` was listing `'redis'` as a possible `cacheMethod` setting value, but Yii 2 does not have native support for Redis.
+- Fixed a bug where `craft\db\QueryAbortedException`s were not getting caught when calling `craft\db\Query::scalar()` or `column()`.
+- #1321: Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty.
+- #1316: Fixed some `TypeError`s in controller action responses.
+- #1313: Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field.
+- Fixed a bug where deleting all the selections in a relation field would result in no changes being made to the field on save.
+- #1322: Fixed a PHP error that occurred when editing a Rich Text field with the “Available Transforms” setting set to `*`.
+- #1312: Fixed a PHP error that occurred when editing an image using GD.
+- #1323: Fixed a PHP error that occurred when generating image transforms.
+- Fixed a bug where Assets fields’ “Sources” settings weren’t working.
+- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Contror Panel indexes.
+- Fixed a bug where creating a Number field type on PostgreSQL would result a SQL error.
+- #1326: Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. (my2ter)
+- Fixed a bug where plugin updates colud be displayed with the wrong date if the system time zone was behind UTC.
+
 ## 3.0.0-beta.1 - 2017-01-29
 
 ### Added

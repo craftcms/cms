@@ -285,11 +285,11 @@ class Users extends Component
     /**
      * Returns a user’s preferences.
      *
-     * @param int $userId The user’s ID
+     * @param int|null $userId The user’s ID
      *
      * @return array The user’s preferences
      */
-    public function getUserPreferences(int $userId): array
+    public function getUserPreferences(int $userId = null): array
     {
         // TODO: Remove try/catch after next breakpoint
         try {
