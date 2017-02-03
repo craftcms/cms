@@ -11,7 +11,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
-- Removed `craft\web\assets\jcrop\JcropAsset`..
+- Removed `craft\web\assets\jcrop\JcropAsset`.
 
 ### Fixed
 - Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
