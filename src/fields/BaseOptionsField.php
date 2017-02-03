@@ -136,6 +136,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                         'default' => [
                             'heading' => Craft::t('app', 'Default?'),
                             'type' => 'checkbox',
+                            'radioMode' => !$this->multi,
                             'class' => 'thin'
                         ],
                     ],
