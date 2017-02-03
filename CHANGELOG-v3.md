@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed some asterisk icons.
+
 ## 3.0.0-beta.2 - 2017-02-02
 
 ### Changed
