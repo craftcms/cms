@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.2 - 2017-02-02
 
 ### Changed
 - Craft now logs `craft\db\QueryAbortedException`s.
