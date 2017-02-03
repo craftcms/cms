@@ -42,10 +42,10 @@ Craft CMS 3.0 Working Changelog
 - #1312: Fixed a PHP error that occurred when editing an image using GD.
 - #1323: Fixed a PHP error that occurred when generating image transforms.
 - Fixed a bug where Assets fields’ “Sources” settings weren’t working.
-- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Contror Panel indexes.
+- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Control Panel indexes.
 - Fixed a bug where creating a Number field type on PostgreSQL would result a SQL error.
 - #1326: Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. (my2ter)
-- Fixed a bug where plugin updates colud be displayed with the wrong date if the system time zone was behind UTC.
+- Fixed a bug where plugin updates could be displayed with the wrong date if the system time zone was behind UTC.
 
 ## 3.0.0-beta.1 - 2017-01-29
 
