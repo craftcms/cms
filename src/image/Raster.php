@@ -241,7 +241,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPosition = 'center-center')
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
