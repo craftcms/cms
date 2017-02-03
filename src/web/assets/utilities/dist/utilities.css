@@ -7,7 +7,9 @@
 .sidebar nav li a.has-badge span.badge { display: block; position: absolute; top: 10px; right: 5px; background: #8f98a3; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; }
 
 /* Utilities */
-form.utility .utility-status { display: inline-block; position: relative; width: 60px; height: 40px; }
+form.utility .utility-status { display: block; position: relative; width: 60px; height: 40px; }
+body.ltr form.utility .utility-status { float: left; }
+body.rtl form.utility .utility-status { float: right; }
 body.ltr form.utility .utility-status { margin-left: 10px; }
 body.rtl form.utility .utility-status { margin-right: 10px; }
 
