@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
 - Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
 - `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
+- The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
