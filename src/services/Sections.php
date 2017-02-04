@@ -998,6 +998,25 @@ class Sections extends Component
             'isNew' => $isNewEntryType,
         ]));
 
+        if (!$isNewEntryType) {
+            // Re-save the entries of this type
+            $section = $entryType->getSection();
+            $siteIds = array_keys($section->getSiteSettings());
+
+            Craft::$app->getTasks()->queueTask([
+                'type' => ResaveElements::class,
+                'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
+                'elementType' => Entry::class,
+                'criteria' => [
+                    'siteId' => $siteIds[0],
+                    'sectionId' => $section->id,
+                    'typeId' => $entryType->id,
+                    'status' => null,
+                    'enabledForSite' => false,
+                ]
+            ]);
+        }
+
         return true;
     }
 

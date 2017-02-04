@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
 - `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
+- When an entry type is updated, Craft now re-saves all entries of that type.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
@@ -28,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - #1341: Fixed a bug that occurred when generating transforms for images with focal points/
 - #1342: Fixed a bug where the utility status was overlapping the submit button in Utilities.
 - Fixed a bug where `craft\helpers\Db::getNumericalColumnType()` could return a column type that wouldn’t actually fix the `$max` argument in PostgreSQL.
+- #15: Fixed a bug where entry URIs weren’t getting updated after an entry type was updated when the URI format referenced entry type properties.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
