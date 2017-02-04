@@ -22,6 +22,11 @@ use yii\db\Schema;
  */
 class Db
 {
+    // Constants
+    // =========================================================================
+
+    const TYPE_NUMERIC = 'numeric';
+
     // Properties
     // =========================================================================
 
@@ -37,6 +42,30 @@ class Db
         Schema::TYPE_SMALLINT => [-32768, 32767],
         Schema::TYPE_INTEGER => [-2147483648, 2147483647],
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
+    ];
+
+    /**
+     * @var array Column type => simplified type mapping
+     */
+    private static $_simplifiedColumnTypes = [
+        Schema::TYPE_PK => self::TYPE_NUMERIC,
+        Schema::TYPE_UPK => self::TYPE_NUMERIC,
+        Schema::TYPE_BIGPK => self::TYPE_NUMERIC,
+        Schema::TYPE_UBIGPK => self::TYPE_NUMERIC,
+        Schema::TYPE_CHAR => Schema::TYPE_STRING,
+        Schema::TYPE_STRING => Schema::TYPE_STRING,
+        Schema::TYPE_TEXT => Schema::TYPE_STRING,
+        Schema::TYPE_SMALLINT => self::TYPE_NUMERIC,
+        Schema::TYPE_INTEGER => self::TYPE_NUMERIC,
+        Schema::TYPE_BIGINT => self::TYPE_NUMERIC,
+        Schema::TYPE_FLOAT => self::TYPE_NUMERIC,
+        Schema::TYPE_DOUBLE => self::TYPE_NUMERIC,
+        Schema::TYPE_DECIMAL => self::TYPE_NUMERIC,
+        Schema::TYPE_BOOLEAN => self::TYPE_NUMERIC,
+        MysqlSchema::TYPE_TINYTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_MEDIUMTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_LONGTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_ENUM => Schema::TYPE_STRING,
     ];
 
     // Public Methods
@@ -230,6 +259,36 @@ class Db
             default:
                 throw new Exception('Unsupported connection type: '.$db->getDriverName());
         }
+    }
+
+    /**
+     * Returns a simplified version of a given column type.
+     *
+     * @param string $type
+     *
+     * @return string
+     */
+    public static function getSimplifiedColumnType($type)
+    {
+        if (!preg_match('/^\w+/', $type, $matches)) {
+            return $type;
+        }
+
+        return self::$_simplifiedColumnTypes[$matches[0]] ?? $matches[0];
+    }
+
+    /**
+     * Returns whether two column type definitions are relatively compatible with each other.
+     *
+     * @param string $typeA
+     * @param string $typeB
+     *
+     * @return bool
+     */
+    public static function areColumnTypesCompatible($typeA, $typeB)
+    {
+        return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
+
     }
 
     /**
