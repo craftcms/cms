@@ -9,7 +9,7 @@
         <div class="select">
             <select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
                 {% for site in craft.app.sites.getEditableSites() %}
-                    <option value="{{ site.id }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                    <option value="{{ site.handle }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
                 {% endfor %}
             </select>
         </div>

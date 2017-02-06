@@ -50,6 +50,7 @@ Craft CMS 3.0 Working Changelog
 - #1349: Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language.
 - #1351: Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`.
 - #1350: Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings.
+- #1355: Fixed a 404 error that would occur when switching sites when editing a global set.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
