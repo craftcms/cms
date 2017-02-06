@@ -232,8 +232,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if ($this->allowLimit && $this->limit) {
             $query->limit($this->limit);
-        } else {
-            $query->limit(null);
         }
 
         return $query;
@@ -425,13 +423,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $value = $element->getFieldValue($this->handle);
 
-        if ($value instanceof ElementQueryInterface) {
+        if ($value instanceof ElementQueryInterface && $value->id !== null) {
             /** @var ElementQuery $value */
             $value = $value->id ?: [];
             /** @var int|int[]|false|null $value */
+            Craft::$app->getRelations()->saveRelations($this, $element, $value);
         }
-
-        Craft::$app->getRelations()->saveRelations($this, $element, $value);
 
         parent::afterElementSave($element, $isNew);
     }

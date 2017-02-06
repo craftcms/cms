@@ -44,6 +44,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug with transforming images on external sources.
 - #1344: `config/app.php` can now be a multi-environment config.
 - #1345: Fixed a PHP error that occurred when creating a new tag.
+- #1360: Fixed a bug where relations would be dropped when running the Resave Elements task.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
