@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
 - Removed `craft\enums\ColumnType`.
+- Removed `craft\models\SiteSettings`.
 - Removed `craft\web\assets\jcrop\JcropAsset`.
 
 ### Fixed
