@@ -142,7 +142,7 @@ class Tags extends Component
     public function getTagGroupById(int $groupId)
     {
         if ($this->_tagGroupsById !== null && array_key_exists($groupId, $this->_tagGroupsById)) {
-            return $this->_tagGroupsById;
+            return $this->_tagGroupsById[$groupId];
         }
 
         if ($this->_fetchedAllTagGroups) {
