@@ -17,7 +17,6 @@ return [
     'assetIndexer' => craft\services\AssetIndexer::class,
     'assetTransforms' => craft\services\AssetTransforms::class,
     'categories' => craft\services\Categories::class,
-    'config' => craft\services\Config::class,
     'content' => craft\services\Content::class,
     'dashboard' => craft\services\Dashboard::class,
     'deprecator' => craft\services\Deprecator::class,
