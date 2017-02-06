@@ -63,9 +63,9 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar .topbar > a:focus { background: none; }
 
 #global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
-#global-sidebar .topbar a.site-name { @include flex-grow(1); padding: 14px; min-width: 0; }
-#global-sidebar .topbar a.site-name .photo-container { @include margin-right(14px); flex-shrink: 0; }
-#global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
+#global-sidebar .topbar a.system-name { @include flex-grow(1); padding: 14px; min-width: 0; }
+#global-sidebar .topbar a.system-name .photo-container { @include margin-right(14px); flex-shrink: 0; }
+#global-sidebar .topbar a.system-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 #global-sidebar .topbar .settings { @include padding-right(0); }
 #global-sidebar .topbar .settingsmenu { @include padding-left(0); }
 

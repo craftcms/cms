@@ -581,6 +581,9 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
+        if (isset($row['siteName'])) {
+            $row['name'] = $row['siteName'];
+        }
         unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         return $this->_info = new Info($row);

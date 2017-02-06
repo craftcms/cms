@@ -1,4 +1,4 @@
-{% set siteName = craft.app.sites.currentSite.name ?? null -%}
+{% set systemName = craft.app.info.name|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 
@@ -11,7 +11,7 @@
     {% block head %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta charset="utf-8">
-    <title>{{ docTitle ~ (docTitle and siteName ? ' - ') ~ siteName }}</title>
+    <title>{{ docTitle ~ (docTitle and systemName ? ' - ') ~ systemName }}</title>
     {{ head() }}
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 

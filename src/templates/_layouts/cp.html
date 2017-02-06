@@ -141,7 +141,7 @@
         {% endif %}
 
         <div class="topbar">
-            <a class="site-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
+            <a class="system-name{% if CraftEdition >= CraftClient and craft.rebrand.isIconUploaded %} has-icon{% endif %}" href="{{ siteUrl }}" title="{{ 'Site Homepage'|t('app') }}" target="_blank">
 
                 {% if CraftEdition >= CraftClient %}
                     {% if craft.rebrand.isIconUploaded %}
@@ -151,7 +151,7 @@
                     {% endif %}
                 {% endif %}
 
-                <h2>{{ siteName|t('site') }}</h2>
+                <h2>{{ systemName }}</h2>
             </a>
         </div>
 
