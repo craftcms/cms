@@ -170,8 +170,13 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, string $cropPositions = 'center-center')
+    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
     {
+        // TODO If we encounter a focal point, rasterize and crop with focal.
+        if (is_array($cropPosition)) {
+            throw new ImageException(Craft::t('app', 'Currently SVG images do not support focal point.'));
+        }
+
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -179,7 +184,7 @@ class Svg extends Image
             $this->resize($targetWidth, $targetHeight);
 
             // Reverse the components
-            $cropPositions = implode('-', array_reverse(explode('-', $cropPositions)));
+            $cropPositions = implode('-', array_reverse(explode('-', $cropPosition)));
 
             $value = 'x'.strtr($cropPositions, [
                     'left' => 'Min',
