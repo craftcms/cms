@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
 - When an entry type is updated, Craft now re-saves all entries of that type.
+- Added a `string` return type declaration to `craft\base\PreviewableFieldInterface::getTableAttributeHtml()`.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
@@ -34,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when saving an entry with a Matrix field on a multi-site install, in some cases.
 - #1332: Fixed a PHP error that occurred when saving an element with a Date/Time field.
 - #1354: Fixed a Twig syntax error when editing an element with a Color field.
+- Fixed a bug where fields that implemented `craft\base\PreviewableFieldInterface` were not showing up as options on element indexes.
 
 ## 3.0.0-beta.2 - 2017-02-02
 

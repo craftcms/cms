@@ -91,7 +91,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element)
+    public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value) {
             return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';

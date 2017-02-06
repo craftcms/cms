@@ -281,9 +281,9 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @param mixed            $value   The field’s value
      * @param ElementInterface $element The element the field is associated with
      *
-     * @return string|null The HTML that should be shown for this field in Table View
+     * @return string The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, ElementInterface $element)
+    public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         $value = (string)$value;
 
