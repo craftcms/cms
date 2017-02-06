@@ -2,7 +2,7 @@
 {% set static = static is defined ? static : false %}
 
 {{ textField({
-	label: entry.getType().titleLabel|t,
+	label: entry.getType().titleLabel|t|e,
 	locale: entry.locale,
 	id: 'title',
 	name: 'title',
