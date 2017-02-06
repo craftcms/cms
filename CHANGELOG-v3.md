@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
 - When an entry type is updated, Craft now re-saves all entries of that type.
 - Added a `string` return type declaration to `craft\base\PreviewableFieldInterface::getTableAttributeHtml()`.
+- Updated Craft Server Check to 1.0.8.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.

@@ -41,7 +41,7 @@
     "bower-asset/velocity": "1.4.2",
     "bower-asset/fabric": "1.7.3",
     "zendframework/zend-feed": "2.7.0",
-    "craftcms/server-check": "1.0.7"
+    "craftcms/server-check": "1.0.8"
   },
   "require-dev": {
     "codeception/codeception": "2.2.8",
