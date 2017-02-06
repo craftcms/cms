@@ -45,6 +45,14 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'globalset';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
