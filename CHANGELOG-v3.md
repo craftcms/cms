@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - #1332: Fixed a bug that broke site administration.
 - Fixed a PHP error that occurred when saving an entry with a Matrix field on a multi-site install, in some cases.
 - #1332: Fixed a PHP error that occurred when saving an element with a Date/Time field.
+- #1354: Fixed a Twig syntax error when editing an element with a Color field.
 
 ## 3.0.0-beta.2 - 2017-02-02
 

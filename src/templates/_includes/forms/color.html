@@ -9,7 +9,7 @@
     {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
     {%- if disabled is defined and disabled %} disabled {% endif %}>
 
-{%- do view.registerAssetBundle("craft\\web\\assets\\colorpicker\\ColorpickerAsset" -%}
+{%- do view.registerAssetBundle("craft\\web\\assets\\colorpicker\\ColorpickerAsset") -%}
 {%- js %}
     new Craft.ColorPicker('{{ id|namespaceInputId }}');
 {% endjs %}
