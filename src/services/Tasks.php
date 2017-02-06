@@ -253,7 +253,7 @@ class Tasks extends Component
         /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
 
-        if ($task && $task->level === 0) {
+        if ($task && $task->level == 0) {
             $task->currentStep = null;
             $task->totalSteps = null;
             $task->status = Task::STATUS_PENDING;
