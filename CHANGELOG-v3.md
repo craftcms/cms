@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - #15: Fixed a bug where entry URIs weren’t getting updated after an entry type was updated when the URI format referenced entry type properties.
 - #1332: Fixed a bug that broke site administration.
 - Fixed a PHP error that occurred when saving an entry with a Matrix field on a multi-site install, in some cases.
+- #1332: Fixed a PHP error that occurred when saving an element with a Date/Time field.
 
 ## 3.0.0-beta.2 - 2017-02-02
 

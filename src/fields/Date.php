@@ -196,6 +196,14 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTableAttributeHtml($value, ElementInterface $element)
     {
         if ($value) {
