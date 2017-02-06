@@ -4,6 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- #1338: Added the new “System Name” general setting, which defines the name that should be visible in the global CP sidebar.
 - Added `craft\helpers\Db::getSimplifiedColumnType()`.
 - Added `craft\helpers\Db::areColumnTypesCompatible()`.
 - Added `craft\base\ElementInterface::getSearchKeywords()`.
@@ -20,6 +21,7 @@ Craft CMS 3.0 Working Changelog
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
 - Removed `craft\enums\ColumnType`.
+- Removed `craft\models\SiteSettings`.
 - Removed `craft\web\assets\jcrop\JcropAsset`.
 
 ### Fixed

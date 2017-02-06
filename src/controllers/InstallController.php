@@ -71,7 +71,7 @@ class InstallController extends Controller
         array_pop($words);
 
         $vars = [];
-        $vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
+        $vars['defaultSystemName'] = implode(' ', array_map('ucfirst', $words));
         $vars['defaultSiteUrl'] = 'http://'.$server;
 
         $this->getView()->registerAssetBundle(InstallerAsset::class);
@@ -117,7 +117,7 @@ class InstallController extends Controller
 
         $request = Craft::$app->getRequest();
         $site = new Site();
-        $site->name = $request->getBodyParam('siteName');
+        $site->name = $request->getBodyParam('systemName');
         $site->handle = 'default';
         $site->baseUrl = $request->getBodyParam('siteUrl');
         $site->language = $request->getBodyParam('siteLanguage');
@@ -150,7 +150,7 @@ class InstallController extends Controller
         $username = $request->getBodyParam('username', $email);
 
         $site = new Site([
-            'name' => $request->getBodyParam('siteName'),
+            'name' => $request->getBodyParam('systemName'),
             'handle' => 'default',
             'hasUrls' => true,
             'baseUrl' => $request->getBodyParam('siteUrl'),

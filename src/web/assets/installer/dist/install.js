@@ -49,13 +49,13 @@
             validateSite: function(event) {
                 event.preventDefault();
 
-                var inputs = ['siteName', 'siteUrl', 'siteLanguage'];
+                var inputs = ['systemName', 'siteUrl', 'siteLanguage'];
                 this.validate('site', inputs, $.proxy(this, 'showInstallScreen'));
             },
 
             showInstallScreen: function() {
                 this.showScreen(3, $.proxy(function() {
-                    var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'siteLanguage'];
+                    var inputs = ['username', 'email', 'password', 'systemName', 'siteUrl', 'siteLanguage'];
 
                     var data = {};
 

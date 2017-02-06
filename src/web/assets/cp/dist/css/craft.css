@@ -1987,13 +1987,13 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 
 #global-sidebar .topbar { min-height: -webkit-min-content; min-height: -moz-min-content; }
 
-#global-sidebar .topbar a.site-name { flex-grow: 1; -ms-flex: 1; padding: 14px; min-width: 0; }
+#global-sidebar .topbar a.system-name { flex-grow: 1; -ms-flex: 1; padding: 14px; min-width: 0; }
 
-#global-sidebar .topbar a.site-name .photo-container { flex-shrink: 0; }
-body.ltr #global-sidebar .topbar a.site-name .photo-container { margin-right: 14px; }
-body.rtl #global-sidebar .topbar a.site-name .photo-container { margin-left: 14px; }
+#global-sidebar .topbar a.system-name .photo-container { flex-shrink: 0; }
+body.ltr #global-sidebar .topbar a.system-name .photo-container { margin-right: 14px; }
+body.rtl #global-sidebar .topbar a.system-name .photo-container { margin-left: 14px; }
 
-#global-sidebar .topbar a.site-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
+#global-sidebar .topbar a.system-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 
 body.ltr #global-sidebar .topbar .settings { padding-right: 0; }
 body.rtl #global-sidebar .topbar .settings { padding-left: 0; }

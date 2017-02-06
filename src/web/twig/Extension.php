@@ -772,6 +772,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['POS_LOAD'] = View::POS_LOAD;
 
         if ($isInstalled && !Craft::$app->getIsUpdating()) {
+            $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
             $globals['siteName'] = $site->name;
             $globals['siteUrl'] = $site->baseUrl;
@@ -782,6 +783,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
                 }
             }
         } else {
+            $globals['systemName'] = null;
             $globals['siteName'] = null;
             $globals['siteUrl'] = null;
         }

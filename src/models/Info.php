@@ -41,6 +41,11 @@ class Info extends Model
     public $edition = \Craft::Personal;
 
     /**
+     * @var string System name
+     */
+    public $name = '';
+
+    /**
      * @var string Timezone
      */
     public $timezone = 'America/Los_Angeles';
@@ -98,7 +103,7 @@ class Info extends Model
     {
         return [
             [['id', 'edition'], 'number', 'integerOnly' => true],
-            [['version', 'schemaVersion', 'edition'], 'required'],
+            [['version', 'schemaVersion', 'edition', 'name'], 'required'],
             [['timezone'], 'string', 'max' => 30],
         ];
     }

@@ -27,7 +27,7 @@
             {%- set padding = logo.height + 30 -%}
         class="has-logo" style="background-image: url(\'{{ logo.url }}\'); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ ((353+padding)/2)|round }}px"
                 {%- endif %}>' +
-            '{% if not hasLogo -%}<h1>{{ siteName }}</h1>{%- endif %}'+
+            '{% if not hasLogo -%}<h1>{{ systemName }}</h1>{%- endif %}'+
             '{% set placeHolderText = (craft.app.config.get('useEmailAsUsername') ? "Email"|t('app') : "Username or Email"|t('app')) %}' +
             '{{ forms.textField({ id: "loginName", name: "username", placeholder: placeHolderText, value: username })|e("js") }}' +
 

@@ -127,8 +127,8 @@ class Connection extends \yii\db\Connection
     {
         // Determine the backup file path
         $currentVersion = 'v'.Craft::$app->version;
-        $siteName = FileHelper::sanitizeFilename($this->_getFixedSiteName(), ['asciiOnly' => true]);
-        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
+        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
+        $filename = ($systemName ? $systemName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
         $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
         $this->backupTo($file);
@@ -439,11 +439,11 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * TODO: remove this method after the next breakpoint and just use getPrimarySite() directly.
+     * TODO: remove this method after the next breakpoint and just use getInfo()->name directly.
      *
      * @return string
      */
-    private function _getFixedSiteName(): string
+    private function _getFixedSystemName(): string
     {
         try {
             return (new Query())
@@ -451,7 +451,7 @@ class Connection extends \yii\db\Connection
                 ->from(['{{%info}}'])
                 ->column()[0];
         } catch (\Exception $e) {
-            return Craft::$app->getSites()->getPrimarySite()->name;
+            return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
         }
     }
 }
