@@ -137,16 +137,6 @@ trait ApplicationTrait
     private $_info;
 
     /**
-     * @var
-     */
-    private $_siteName;
-
-    /**
-     * @var
-     */
-    private $_siteUrl;
-
-    /**
      * @var bool|null
      */
     private $_isDbConfigValid;
