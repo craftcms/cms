@@ -199,12 +199,12 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param int      $globalSetHandle
+     * @param string   $globalSetHandle
      * @param int|null $siteId
      *
      * @return GlobalSet|null
      */
-    public function getSetByHandle(int $globalSetHandle, int $siteId = null)
+    public function getSetByHandle(string $globalSetHandle, int $siteId = null)
     {
         $currentSiteId = Craft::$app->getSites()->currentSite->id;
 
