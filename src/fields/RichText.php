@@ -659,7 +659,9 @@ class RichText extends Field
 
         $am = Craft::$app->getAssetManager();
         $view = Craft::$app->getView();
-        $view->registerJsFile($am->getPublishedUrl($redactorPath).$subPath);
+        $view->registerJsFile($am->getPublishedUrl($redactorPath).$subPath, [
+            'depends' => RedactorAsset::class
+        ]);
         self::$_redactorLang = $lang;
 
         return true;

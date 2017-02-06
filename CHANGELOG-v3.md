@@ -46,6 +46,7 @@ Craft CMS 3.0 Working Changelog
 - #1345: Fixed a PHP error that occurred when creating a new tag.
 - #1360: Fixed a bug where relations would be dropped when running the Resave Elements task.
 - #1346: Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element.
+- #1349: Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
