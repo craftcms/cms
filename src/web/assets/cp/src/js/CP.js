@@ -1285,7 +1285,12 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 case 'rerun': {
                     Craft.postActionRequest('tasks/rerun-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
-                            this.updateStatus(response.task);
+                            if (response.task) {
+                                this.updateStatus(response.task);
+                            } else {
+                                // Doesn't exist anymore
+                                this.destroy();
+                            }
 
                             if (this.hud.completed) {
                                 this.hud.updateTasks();
