@@ -41,6 +41,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where fields that implemented `craft\base\PreviewableFieldInterface` were not showing up as options on element indexes.
 - Fixed task re-running.
 - Fixed a bug with transforming SVG files.
+- Fixed a bug with transforming images on external sources.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
