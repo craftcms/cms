@@ -27,6 +27,7 @@ use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -938,6 +939,14 @@ abstract class Element extends Component implements ElementInterface
     public function getUriFormat()
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSearchKeywords(string $attribute): string
+    {
+        return StringHelper::toString($this->$attribute);
     }
 
     /**

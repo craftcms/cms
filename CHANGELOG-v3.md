@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\helpers\Db::getSimplifiedColumnType()`.
 - Added `craft\helpers\Db::areColumnTypesCompatible()`.
+- Added `craft\base\ElementInterface::getSearchKeywords()`.
 
 ### Changed
 - #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
