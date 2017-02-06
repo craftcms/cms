@@ -85,6 +85,9 @@ Craft CMS 3.0 Working Changelog
 - #1326: Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. (my2ter)
 - Fixed a bug where plugin updates could be displayed with the wrong date if the system time zone was behind UTC.
 
+### Added
+- Added redis support and redis default config file.
+
 ## 3.0.0-beta.1 - 2017-01-29
 
 ### Added

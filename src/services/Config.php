@@ -60,6 +60,7 @@ class Config extends Component
     const CATEGORY_APC = 'apc';
     const CATEGORY_GUZZLE = 'guzzle';
     const CATEGORY_VOLUMES = 'volumes';
+    const CATEGORY_REDIS = 'redis';
 
     // Properties
     // =========================================================================
@@ -869,6 +870,7 @@ class Config extends Component
             self::CATEGORY_APC,
             self::CATEGORY_GUZZLE,
             self::CATEGORY_VOLUMES,
+            self::CATEGORY_REDIS
         ], true)) {
             $defaultsPath = $this->appDefaultsDir.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
