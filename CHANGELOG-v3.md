@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
 - When an entry type is updated, Craft now re-saves all entries of that type.
 - Added a `string` return type declaration to `craft\base\PreviewableFieldInterface::getTableAttributeHtml()`.
+- Updated Craft Server Check to 1.0.8.
 
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
@@ -47,6 +48,7 @@ Craft CMS 3.0 Working Changelog
 - #1360: Fixed a bug where relations would be dropped when running the Resave Elements task.
 - #1346: Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element.
 - #1349: Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language.
+- #1351: Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`.
 - #1350: Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings.
 
 ## 3.0.0-beta.2 - 2017-02-02
