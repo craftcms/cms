@@ -44,6 +44,14 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'matrixblock';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
