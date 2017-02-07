@@ -8,10 +8,12 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\ElementInterface::getSearchKeywords()`.
 - Added `craft\helpers\Db::areColumnTypesCompatible()`.
 - Added `craft\helpers\Db::getSimplifiedColumnType()`.
+- Added `craft\services\Security::redactIfSensitive()`.
 
 ### Changed
 - #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
 - The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
+- #1328: Sensitive global values are now redacted from the logs.
 - Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
 - `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
@@ -22,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 ### Removed
 - Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
 - Removed `craft\enums\ColumnType`.
+- Removed `craft\helpers\Logging`.
 - Removed `craft\models\SiteSettings`.
 - Removed `craft\web\assets\jcrop\JcropAsset`.
 
