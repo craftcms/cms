@@ -55,6 +55,10 @@
         <tr class="logos">
             <td></td>
             <th scope="col">
+                <h1 class="logo">Personal</h1>
+                <p>{{ "For sites built by and for the developer."|t('app') }}</p>
+            </th>
+            <th scope="col">
                 <h1 class="logo">Client</h1>
                 <p>{{ "For sites built for clients with only one content manager."|t('app') }}</p>
             </th>
@@ -63,19 +67,20 @@
                 <p>{{ "For everything else."|t('app') }}</p>
             </th>
         </tr>
-        {% if CraftEdition > CraftPersonal or licensedEdition > CraftPersonal %}
-            <tr class="license-statuses">
-                <td></td>
-                <td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
-                <td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
-            </tr>
-        {% endif %}
+        <tr class="license-statuses">
+            <td></td>
+            <td>{{ statusBadge(CraftPersonal, licensedEdition) }}</td>
+            <td>{{ statusBadge(CraftClient, licensedEdition) }}</td>
+            <td>{{ statusBadge(CraftPro, licensedEdition) }}</td>
+        </tr>
         <tr class="price">
             <th scope="row" class="feature">One-Time Price</th>
+            <td>{{ "Free"|t('app') }}</td>
             <td>{{ price(CraftClient, editions[CraftClient]) }}</td>
             <td>{{ price(CraftPro, editions[CraftPro]) }}</td>
         </tr>
         <tr class="buybtns">
+            <td></td>
             <td></td>
             <td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
             <td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
@@ -83,52 +88,53 @@
         </thead>
         <tbody>
         <tr>
-            <th class="group" colspan="3" data-icon="users">{{ "User Accounts"|t('app') }}</th>
+            <th class="group" colspan="4">{{ "User Accounts"|t('app') }}</th>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Additional user accounts"|t('app') }}</th>
+            <td>{{ "One Admin account"|t('app') }}</td>
             <td>{{ "One “Client” account"|t('app') }}</td>
             <td>{{ "Unlimited"|t('app') }}</td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "User groups"|t('app') }}</th>
             <td></td>
+            <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "User permissions"|t('app') }}</th>
+            <td></td>
             <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Public user registration"|t('app') }}</th>
             <td></td>
+            <td></td>
             <td><span data-icon="check"></span></td>
         </tr>
 
         <tr>
-            <th class="group" colspan="3" data-icon="brush">{{ "System Branding"|t('app') }}</th>
+            <th class="group" colspan="4">{{ "System Branding"|t('app') }}</th>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Custom login screen logo"|t('app') }}</th>
+            <td></td>
             <td><span data-icon="check"></span></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Custom HTML email template"|t('app') }}</th>
+            <td></td>
             <td><span data-icon="check"></span></td>
             <td><span data-icon="check"></span></td>
         </tr>
         <tr>
             <th class="feature" scope="row">{{ "Custom email message wording"|t('app') }}</th>
-            <td><span data-icon="check"></span></td>
-            <td><span data-icon="check"></span></td>
-        </tr>
-
-        <tr class="buybtns">
             <td></td>
-            <td>{{ buybtn(CraftClient, editions[CraftClient], licensedEdition, canTestEditions) }}</td>
-            <td>{{ buybtn(CraftPro, editions[CraftPro], licensedEdition, canTestEditions) }}</td>
+            <td><span data-icon="check"></span></td>
+            <td><span data-icon="check"></span></td>
         </tr>
         </tbody>
     </table>
