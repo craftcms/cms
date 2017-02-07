@@ -94,6 +94,8 @@ class PhpInfo extends Utility
         unset($sections[0]);
 
         $phpInfo = [];
+        $security = Craft::$app->getSecurity();
+
         foreach ($sections as $section) {
             $heading = substr($section, 0, strpos($section, '</h2>'));
 
@@ -108,7 +110,8 @@ class PhpInfo extends Utility
                         $value = array_slice($row, 2);
                     }
 
-                    $phpInfo[$heading][$row[1]] = $value;
+                    $name = $row[1];
+                    $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
                 }
             }
         }

@@ -26,31 +26,13 @@ class FileTarget extends \yii\log\FileTarget
     {
         $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
+        $security = Craft::$app->getSecurity();
+
         foreach ($context as $key => $value) {
-            $value = $this->_redactSensitiveData($key, $value);
+            $value = $security->redactIfSensitive($key, $value);
             $result[] = "\${$key} = ".VarDumper::dumpAsString($value);
         }
 
         return implode("\n\n", $result);
-    }
-
-    /**
-     * Searches through the global variables to see if there's anything that should be redacted.
-     *
-     * @param string|array $value
-     *
-     * @return string|array
-     */
-    private function _redactSensitiveData($name, $value)
-    {
-        if (is_array($value)) {
-            foreach ($value as $n => $v) {
-                $value[$n] = $this->_redactSensitiveData($n, $value[$n]);
-            }
-        } else if (is_string($value)) {
-            $value = Craft::$app->getSecurity()->redactIfSensitive($name, $value);
-        }
-
-        return $value;
     }
 }
