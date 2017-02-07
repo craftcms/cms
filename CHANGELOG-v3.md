@@ -53,6 +53,7 @@ Craft CMS 3.0 Working Changelog
 - #1355: Fixed a 404 error that would occur when switching sites when editing a global set.
 - #1359: Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags.
 - #1358: Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs.
+- Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
 
 ## 3.0.0-beta.2 - 2017-02-02
 

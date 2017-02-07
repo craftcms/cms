@@ -275,8 +275,8 @@ return [
         } else {
             $target['logFile'] = '@storage/logs/web.log';
 
-            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
-            if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {
+            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+            if (!$configService->get('devMode') && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
                 $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
         }
