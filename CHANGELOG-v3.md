@@ -1,6 +1,14 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Added
+- Added `craft\base\PluginInterface::setSettings()`.
+
+### Fixed
+- #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
+
 ## 3.0.0-beta.3 - 2017-02-07
 
 ### Added

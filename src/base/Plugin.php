@@ -147,6 +147,14 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public function setSettings(array $settings)
+    {
+        $this->getSettings()->setAttributes($settings, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSettingsResponse()
     {
         /** @var Controller $controller */
