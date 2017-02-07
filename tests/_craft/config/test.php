@@ -15,8 +15,12 @@ $vendorPath = $basePath.'/vendor';
 $config = ArrayHelper::merge(
     [
         'components' => [
-            'config' => Config::class,
-        ]
+            'config' => [
+                'class' => Config::class,
+                'configDir' => __DIR__,
+                'appDefaultsDir' => $srcPath.'/config/defaults',
+            ],
+        ],
     ],
     require $srcPath.'/config/main.php',
     require $srcPath.'/config/common.php',
