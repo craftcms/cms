@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.3 - 2017-02-07
 
 ### Added
 - #1338: Added the new “System Name” general setting, which defines the name that should be visible in the global CP sidebar.
