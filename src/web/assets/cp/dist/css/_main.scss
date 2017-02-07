@@ -1514,7 +1514,7 @@ body .redactor-box textarea,
 .texticon.clearable .text { @include padding-right(22px); }
 .texticon .clear { position: absolute; top: 6px; @include right(9px); color: $lighttextcolor; cursor: pointer; }
 .texticon .clear:hover { color: $mediumtextcolor; }
-.texticon .clear:before { @include icon; content: 'close'; }
+.texticon .clear:before { @include icon; content: 'remove'; }
 
 .texthint-container { position: relative; height: 0; }
 .texthint { position: absolute; top: -1px; width: 100%; color: $lighttextcolor; cursor: text; }

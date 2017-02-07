@@ -57,6 +57,7 @@ Craft CMS 3.0 Working Changelog
 - #1359: Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags.
 - #1358: Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs.
 - Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
+- #1356: Fixed the “x” button’s icon that appears in search inputs, used to clear the search input.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
