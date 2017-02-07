@@ -2302,6 +2302,8 @@ body.rtl #footer #upgradepromo a .go:after { padding-right: 5px; }
 
 #upgrademodal .logo { margin: 0 auto 24px !important; font-weight: 500; font-size: 18px; color: #da5a47; letter-spacing: 3.3px; line-height: 14px; border: 1px solid #da5a47; border-radius: 3px; padding: 10px 6.7px 9px 10px; text-transform: uppercase; display: inline-block; }
 
+#upgrademodal-compare table { table-layout: fixed; }
+
 #upgrademodal-compare table th, #upgrademodal-compare table td { width: 33.33%; }
 
 #upgrademodal-compare table th.feature { font-weight: normal; color: #8f98a3; }
@@ -2332,7 +2334,7 @@ body.rtl #footer #upgradepromo a .go:after { padding-right: 5px; }
 body.ltr #upgrademodal-compare table thead tr.price td .listedprice { margin-right: 5px; }
 body.rtl #upgrademodal-compare table thead tr.price td .listedprice { margin-left: 5px; }
 
-#upgrademodal-compare table thead tr.price th:before, #upgrademodal-compare table thead tr.price td:before { position: absolute; top: 0; display: block; width: 24px; height: 1px; content: '.'; font-size: 0; background: #e3e5e8; }
+#upgrademodal-compare table thead tr.price td:before { position: absolute; top: 0; display: block; width: 24px; height: 1px; content: '.'; font-size: 0; background: #e3e5e8; }
 
 body.ltr #upgrademodal-compare table thead tr.price th:before { left: 0; }
 body.rtl #upgrademodal-compare table thead tr.price th:before { right: 0; }
