@@ -59,6 +59,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
 - #1356: Fixed the “x” button’s icon that appears in search inputs, used to clear the search input.
 - Fixed a bug where you would get a validation error if you tried to purchase Craft with a 100%-off coupon code.
+- Fixed a migration error that was preventing Craft 2.6 installs from being able to update to Craft 3. 
 
 ## 3.0.0-beta.2 - 2017-02-02
 
