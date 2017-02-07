@@ -34,9 +34,12 @@ class Security extends \yii\base\Security
      */
     public $sensitiveKeywords = [
         'key',
+        'pass',
         'password',
         'pw',
         'secret',
+        'tok',
+        'token',
     ];
 
     /**
