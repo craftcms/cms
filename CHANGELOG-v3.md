@@ -58,6 +58,7 @@ Craft CMS 3.0 Working Changelog
 - #1358: Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs.
 - Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
 - #1356: Fixed the “x” button’s icon that appears in search inputs, used to clear the search input.
+- Fixed a bug where you would get a validation error if you tried to purchase Craft with a 100% off coupon code.
 
 ## 3.0.0-beta.2 - 2017-02-02
 
