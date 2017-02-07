@@ -30,14 +30,6 @@ class SetStatus extends ElementAction
      */
     public $status;
 
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event SetStatusEvent The event that is triggered after the statuses have been updated.
-     */
-    const EVENT_AFTER_SET_STATUS = 'afterSetStatus';
-
     // Public Methods
     // =========================================================================
 
@@ -81,48 +73,47 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        /** @var ElementQuery $query */
-        // Figure out which element IDs we need to update
-        if ($this->status == Element::STATUS_ENABLED) {
-            $sqlNewStatus = '1';
+        $elementsService = Craft::$app->getElements();
+        $enabled = ($this->status === Element::STATUS_ENABLED);
+
+        /** @var Element[] $elements */
+        $elements = $query->all();
+        $someFailed = false;
+
+        foreach ($elements as $element) {
+            // Skip if there's nothing to change
+            if ($element->enabled == $enabled && (!$enabled || $element->enabledForSite)) {
+                continue;
+            }
+
+            if ($enabled) {
+                // Also enable for this site
+                $element->enabled = $element->enabledForSite = true;
+            } else {
+                $element->enabled = false;
+            }
+
+            if ($elementsService->saveElement($element) === false) {
+                // Validation error
+                $someFailed = true;
+            }
+        }
+
+        if ($someFailed === true) {
+            if (count($elements) === 1) {
+                $this->setMessage(Craft::t('app', 'Could not update status due to a validation error.'));
+            } else {
+                $this->setMessage(Craft::t('app', 'Could not update some statuses due to validation errors.'));
+            }
+
+            return false;
+        }
+
+        if (count($elements) === 1) {
+            $this->setMessage(Craft::t('app', 'Status updated.'));
         } else {
-            $sqlNewStatus = '0';
+            $this->setMessage(Craft::t('app', 'Statuses updated.'));
         }
-
-        $elementIds = $query->ids();
-
-        // Update their statuses
-        Craft::$app->getDb()->createCommand()
-            ->update(
-                '{{%elements}}',
-                ['enabled' => $sqlNewStatus],
-                ['id' => $elementIds])
-            ->execute();
-
-        if ($this->status == Element::STATUS_ENABLED) {
-            // Enable for the site as well
-            Craft::$app->getDb()->createCommand()
-                ->update(
-                    '{{%elements_i18n}}',
-                    ['enabled' => $sqlNewStatus],
-                    [
-                        'elementId' => $elementIds,
-                        'siteId' => $query->siteId,
-                    ])
-                ->execute();
-        }
-
-        // Clear their template caches
-        Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds);
-
-        // Fire an 'afterSetStatus' event
-        $this->trigger(self::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
-            'elementQuery' => $query,
-            'elementIds' => $elementIds,
-            'status' => $this->status,
-        ]));
-
-        $this->setMessage(Craft::t('app', 'Statuses updated.'));
 
         return true;
     }

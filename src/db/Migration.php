@@ -13,7 +13,8 @@ use yii\db\ColumnSchemaBuilder;
 /**
  * @inheritdoc
  *
- * @property Connection $db Connection the DB connection that this command is associated with.
+ * @property Connection $db the DB connection that this command is associated with
+ * @method Connection getDb() returns the connection the DB connection that this command is associated with
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

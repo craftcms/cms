@@ -51,6 +51,7 @@ class Config extends Component
     // Constants
     // =========================================================================
 
+    const CATEGORY_APP = 'app';
     const CATEGORY_FILECACHE = 'filecache';
     const CATEGORY_GENERAL = 'general';
     const CATEGORY_DB = 'db';
@@ -62,6 +63,21 @@ class Config extends Component
 
     // Properties
     // =========================================================================
+
+    /**
+     * @var string|null The environment ID Craft is currently running in.
+     */
+    public $env;
+
+    /**
+     * @var string The path to the config directory
+     */
+    public $configDir = '';
+
+    /**
+     * @var string The path to the directory containing the default application config settings
+     */
+    public $appDefaultsDir = '';
 
     /**
      * @var int|null
@@ -107,7 +123,7 @@ class Config extends Component
      * Craft will check for.
      *
      * ```php
-     * $isDevMode = Craft::$app->getConfig()->get('devMode');
+     * $isDevMode = $this->get('devMode');
      * ```
      *
      * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
@@ -115,7 +131,7 @@ class Config extends Component
      * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
-     * $myConfigSetting = Craft::$app->getConfig()->get('myConfigSetting', 'myplugin');
+     * $myConfigSetting = $this->get('myConfigSetting', 'myplugin');
      * ```
      *
      * @param string $item     The name of the config setting.
@@ -142,14 +158,14 @@ class Config extends Component
      * will check for.
      *
      * ```php
-     * Craft::$app->getConfig()->set('devMode', true);
+     * $this->set('devMode', true);
      * ```
      *
      * If you want to set a config setting from a different config file (e.g. config/myplugin.php), you can specify
      * its filename as a third argument.
      *
      * ```php
-     * Craft::$app->getConfig()->set('myConfigSetting', 'foo', 'myplugin');
+     * $this->set('myConfigSetting', 'foo', 'myplugin');
      * ```
      *
      * @param string $item     The name of the config setting.
@@ -225,7 +241,7 @@ class Config extends Component
      * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
      *
      * ```php
-     * if (Craft::$app->getConfig()->exists('myConfigSetting', 'myplugin'))
+     * if ($this->exists('myConfigSetting', 'myplugin'))
      * {
      *     Craft::info('This site has some pretty useless config settings.', __METHOD__);
      * }
@@ -269,8 +285,8 @@ class Config extends Component
      * [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php).
      *
      * ```php
-     * Craft::$app->getConfig()->get('cacheDuration'); // 'P1D'
-     * Craft::$app->getConfig()->getCacheDuration();   // 86400
+     * $this->get('cacheDuration'); // 'P1D'
+     * $this->getCacheDuration();   // 86400
      * ```
      *
      * @return int The cacheDuration config setting value, in seconds.
@@ -750,8 +766,8 @@ class Config extends Component
             return $this->_allowedFileExtensions;
         }
 
-        $this->_allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
-        $extra = Craft::$app->getConfig()->get('extraAllowedFileExtensions');
+        $this->_allowedFileExtensions = ArrayHelper::toArray($this->get('allowedFileExtensions'));
+        $extra = $this->get('extraAllowedFileExtensions');
 
         if (!empty($extra)) {
             $extra = ArrayHelper::toArray($extra);
@@ -808,9 +824,8 @@ class Config extends Component
      */
     public function getDbPort(): int
     {
-        $config = Craft::$app->getConfig();
-        $port = $config->get('port', Config::CATEGORY_DB);
-        $driver = $config->get('driver', Config::CATEGORY_DB);
+        $port = $this->get('port', Config::CATEGORY_DB);
+        $driver = $this->get('driver', Config::CATEGORY_DB);
 
         if ($port === '') {
             switch ($driver) {
@@ -843,10 +858,9 @@ class Config extends Component
             return;
         }
 
-        $pathService = Craft::$app->getPath();
-
         // Is this a valid Craft config category?
         if (in_array($category, [
+            self::CATEGORY_APP,
             self::CATEGORY_FILECACHE,
             self::CATEGORY_GENERAL,
             self::CATEGORY_DB,
@@ -856,7 +870,7 @@ class Config extends Component
             self::CATEGORY_GUZZLE,
             self::CATEGORY_VOLUMES,
         ], true)) {
-            $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
+            $defaultsPath = $this->appDefaultsDir.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */
             $defaultsPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'config.php';
@@ -876,14 +890,14 @@ class Config extends Component
         // Little extra logic for the general config category.
         if ($category === self::CATEGORY_GENERAL) {
             // Does config/general.php exist? (It used to be called blocks.php so maybe not.)
-            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
+            $filePath = $this->configDir.DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {
                 if (is_array($customConfig = @include $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 }
             } else {
-                $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'blocks.php';
+                $filePath = $this->configDir.DIRECTORY_SEPARATOR.'blocks.php';
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
@@ -899,7 +913,7 @@ class Config extends Component
                 }
             }
         } else {
-            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.$category.'.php';
+            $filePath = $this->configDir.DIRECTORY_SEPARATOR.$category.'.php';
 
             if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
@@ -931,13 +945,13 @@ class Config extends Component
         // Is this a multi-environment config?
         if (array_key_exists('*', $customConfig)) {
             // If no environment was specified, just look in the '*' array
-            if (Craft::$app->env === null) {
+            if ($this->env === null) {
                 $customConfig = $customConfig['*'];
             } else {
                 $mergedCustomConfig = [];
 
                 foreach ($customConfig as $env => $envConfig) {
-                    if ($env === '*' || StringHelper::contains(Craft::$app->env, $env)) {
+                    if ($env === '*' || StringHelper::contains($this->env, $env)) {
                         $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
                     }
                 }

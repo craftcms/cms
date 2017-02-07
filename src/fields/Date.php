@@ -196,7 +196,15 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element)
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        return '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($value) {
             $formatter = Craft::$app->getFormatter();

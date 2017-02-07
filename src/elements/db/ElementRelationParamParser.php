@@ -66,7 +66,7 @@ class ElementRelationParamParser
         if (is_string($relatedTo)) {
             $relatedTo = ArrayHelper::toArray($relatedTo);
         } else if (!is_array($relatedTo)) {
-            $relatedTo = (array)$relatedTo;
+            $relatedTo = [$relatedTo];
         }
 
         if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement'])) {
@@ -190,7 +190,7 @@ class ElementRelationParamParser
 
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
-                $elements = ArrayHelper::toArray($relCriteria[$elementParam]);
+                $elements = ArrayHelper::toArray($relCriteria[$elementParam], [], false);
 
                 if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
                     $glue = array_shift($elements);
@@ -367,7 +367,7 @@ class ElementRelationParamParser
 
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
-        if ($relCriteria['field'] || !empty($normalFieldIds)) {
+        if (empty($relCriteria['field']) || !empty($normalFieldIds)) {
             if (isset($relCriteria['sourceElement'])) {
                 $this->_joinSourcesCount++;
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;

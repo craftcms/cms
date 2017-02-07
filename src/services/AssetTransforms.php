@@ -843,12 +843,6 @@ class AssetTransforms extends Component
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
                 ->scaleToFit($size, $size)
                 ->saveAs($thumbPath);
-
-            $volume = $asset->getVolume();
-
-            if (!$volume instanceof LocalVolumeInterface) {
-                $this->queueSourceForDeletingIfNecessary($imageSource);
-            }
         }
 
         return $thumbPath;
@@ -933,7 +927,6 @@ class AssetTransforms extends Component
         if (!($this->getCachedCloudImageSize() > 0)) {
             $this->_sourcesToBeDeleted[] = $imageSource;
 
-            // TODO this method seems to be gone.
             if (count($this->_sourcesToBeDeleted) === 1) {
                 Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'deleteQueuedSourceFiles']);
             }
@@ -947,6 +940,7 @@ class AssetTransforms extends Component
      */
     public function deleteQueuedSourceFiles()
     {
+        $this->_sourcesToBeDeleted = array_unique($this->_sourcesToBeDeleted);
         foreach ($this->_sourcesToBeDeleted as $source)
         {
             FileHelper::removeFile($source);

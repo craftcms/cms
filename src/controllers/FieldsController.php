@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
@@ -145,7 +146,40 @@ class FieldsController extends Controller
         // Field types
         // ---------------------------------------------------------------------
 
-        $allFieldTypes = $fieldsService->getAllFieldTypes();
+        /** @var string[]|FieldInterface[] $allFieldTypes */
+
+        if (!$field->id) {
+            // Can be anything
+            $allFieldTypes = $fieldsService->getAllFieldTypes();
+        } else if ($field::hasContentColumn()) {
+            // Can only be field types with compatible column types
+            $allFieldTypes = $fieldsService->getAllFieldTypes();
+            $fieldColumnType = $field->getContentColumnType();
+
+            foreach ($allFieldTypes as $i => $class) {
+                if ($class === get_class($field)) {
+                    continue;
+                }
+
+                if (!$class::hasContentColumn()) {
+                    $compatible = false;
+                } else {
+                    /** @var FieldInterface $tempField */
+                    $tempField = new $class();
+                    $compatible = Db::areColumnTypesCompatible($fieldColumnType, $tempField->getContentColumnType());
+                }
+
+                if (!$compatible) {
+                    unset($allFieldTypes[$i]);
+                }
+            }
+
+            // Reset keys
+            $allFieldTypes = array_values($allFieldTypes);
+        } else {
+            // No column so no compatible field types
+            $allFieldTypes = [get_class($field)];
+        }
 
         // Make sure the selected field class is in there
         if (!in_array(get_class($field), $allFieldTypes, true)) {

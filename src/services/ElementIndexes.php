@@ -224,7 +224,7 @@ class ElementIndexes extends Component
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
                 /** @var Field $field */
-                $attributes['field:'.$field->id] = ['label' => Craft::t($field->name, 'site')];
+                $attributes['field:'.$field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }
 
@@ -292,9 +292,7 @@ class ElementIndexes extends Component
         $availableFields = [];
 
         foreach ($fields as $field) {
-            $fieldType = get_class($field);
-
-            if ($fieldType && $fieldType instanceof PreviewableFieldInterface) {
+            if ($field instanceof PreviewableFieldInterface) {
                 $availableFields[] = $field;
             }
         }

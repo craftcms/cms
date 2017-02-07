@@ -9,11 +9,11 @@
 #status #error { margin: 24px auto; border-radius: 3px; border: 1px solid $hairlineColor; padding: 24px; width: 600px; max-width: calc(100% - 96px); max-height: 100px; overflow: auto; text-align: left; }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
-	   only screen and (     -o-min-device-pixel-ratio: 3/2),
-	   only screen and (        min-device-pixel-ratio: 1.5),
-	   only screen and (        min-resolution: 1.5dppx)
+       only screen and (   -moz-min-device-pixel-ratio: 1.5),
+       only screen and (     -o-min-device-pixel-ratio: 3/2),
+       only screen and (        min-device-pixel-ratio: 1.5),
+       only screen and (        min-resolution: 1.5dppx)
 {
-	#graphic.error { background-image: url(images/error_2x.png); background-size: 48px; }
-	#graphic.success { background-image: url(images/success_2x.png); background-size: 48px; }
+    #graphic.error { background-image: url(images/error_2x.png); background-size: 48px; }
+    #graphic.success { background-image: url(images/success_2x.png); background-size: 48px; }
 }

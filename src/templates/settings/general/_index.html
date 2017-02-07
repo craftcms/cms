@@ -21,6 +21,14 @@
     <input type="hidden" name="action" value="system-settings/save-general-settings">
     {{ redirectInput('settings') }}
 
+    {{ forms.textField({
+        first: true,
+        label: "System Name"|t,
+        id: 'name',
+        name: 'name',
+        value: info.name
+    }) }}
+
     {{ forms.lightswitchField({
         first: true,
         label: "System Status"|t,

@@ -337,10 +337,10 @@ class m160807_144858_sites extends Migration
 
         $this->dropTable('{{%locales}}');
 
-        // Drop the site columns from the info table
+        // Update the site columns from the info table
         // ---------------------------------------------------------------------
 
-        $this->dropColumn('{{%info}}', 'siteName');
+        $this->renameColumn('{{%info}}', 'siteName', 'name');
         $this->dropColumn('{{%info}}', 'siteUrl');
 
         // Modify sections and categorygroups tables

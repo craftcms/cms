@@ -409,6 +409,15 @@ interface ElementInterface extends ComponentInterface
     public function getUriFormat();
 
     /**
+     * Returns the search keywords for a given search attribute.
+     *
+     * @param string $attribute
+     *
+     * @return string
+     */
+    public function getSearchKeywords(string $attribute): string;
+
+    /**
      * Returns the route that should be used when the element’s URI is requested.
      *
      * @return mixed The route that the request should use, or null if no special action should be taken

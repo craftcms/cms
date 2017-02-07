@@ -1,6 +1,66 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.3 - 2017-02-07
+
+### Added
+- #1338: Added the new “System Name” general setting, which defines the name that should be visible in the global CP sidebar.
+- Added `craft\base\ElementInterface::getSearchKeywords()`.
+- Added `craft\helpers\Db::areColumnTypesCompatible()`.
+- Added `craft\helpers\Db::getSimplifiedColumnType()`.
+- Added `craft\services\Security::redactIfSensitive()`.
+
+### Changed
+- #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
+- The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
+- #1328: Sensitive global values are now redacted from the logs.
+- Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
+- `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
+- The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
+- When an entry type is updated, Craft now re-saves all entries of that type.
+- Added a `string` return type declaration to `craft\base\PreviewableFieldInterface::getTableAttributeHtml()`.
+- Updated Craft Server Check to 1.0.8.
+
+### Removed
+- Removed the `afterSetStatus` event from `craft\elements\actions\SetStatus`.
+- Removed `craft\enums\ColumnType`.
+- Removed `craft\helpers\Logging`.
+- Removed `craft\models\SiteSettings`.
+- Removed `craft\web\assets\jcrop\JcropAsset`.
+
+### Fixed
+- Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
+- Fixed some asterisk icons.
+- #1334 Fixed a bug where it was impossible to upload user photo, site logo or site icon.
+- #8: Fixed a bug where it was possible to select multiple default options for Dropdown and Radio Buttons fields.
+- #9: Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals. 
+- #1341: Fixed a bug that occurred when generating transforms for images with focal points/
+- #1342: Fixed a bug where the utility status was overlapping the submit button in Utilities.
+- Fixed a bug where `craft\helpers\Db::getNumericalColumnType()` could return a column type that wouldn’t actually fix the `$max` argument in PostgreSQL.
+- #15: Fixed a bug where entry URIs weren’t getting updated after an entry type was updated when the URI format referenced entry type properties.
+- #1332: Fixed a bug that broke site administration.
+- Fixed a PHP error that occurred when saving an entry with a Matrix field on a multi-site install, in some cases.
+- #1332: Fixed a PHP error that occurred when saving an element with a Date/Time field.
+- #1354: Fixed a Twig syntax error when editing an element with a Color field.
+- Fixed a bug where fields that implemented `craft\base\PreviewableFieldInterface` were not showing up as options on element indexes.
+- Fixed task re-running.
+- Fixed a bug with transforming SVG files.
+- Fixed a bug with transforming images on external sources.
+- #1344: `config/app.php` can now be a multi-environment config.
+- #1345: Fixed a PHP error that occurred when creating a new tag.
+- #1360: Fixed a bug where relations would be dropped when running the Resave Elements task.
+- #1346: Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element.
+- #1349: Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language.
+- #1351: Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`.
+- #1350: Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings.
+- #1355: Fixed a 404 error that would occur when switching sites when editing a global set.
+- #1359: Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags.
+- #1358: Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs.
+- Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
+- #1356: Fixed the “x” button’s icon that appears in search inputs, used to clear the search input.
+- Fixed a bug where you would get a validation error if you tried to purchase Craft with a 100%-off coupon code.
+- #1347: Fixed a migration error that was preventing Craft 2.6 installs from being able to update to Craft 3. 
+
 ## 3.0.0-beta.2 - 2017-02-02
 
 ### Changed
@@ -37,10 +97,10 @@ Craft CMS 3.0 Working Changelog
 - #1312: Fixed a PHP error that occurred when editing an image using GD.
 - #1323: Fixed a PHP error that occurred when generating image transforms.
 - Fixed a bug where Assets fields’ “Sources” settings weren’t working.
-- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Contror Panel indexes.
+- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Control Panel indexes.
 - Fixed a bug where creating a Number field type on PostgreSQL would result a SQL error.
 - #1326: Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. (my2ter)
-- Fixed a bug where plugin updates colud be displayed with the wrong date if the system time zone was behind UTC.
+- Fixed a bug where plugin updates could be displayed with the wrong date if the system time zone was behind UTC.
 
 ## 3.0.0-beta.1 - 2017-01-29
 

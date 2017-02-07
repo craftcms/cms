@@ -187,7 +187,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'type' => Local::class,
             'name' => $name,
             'handle' => $handle,
-            'hasUrls' => null,
+            'hasUrls' => false,
             'url' => null,
             'settings' => Json::encode(['path' => $this->_basePath]),
             'fieldLayoutId' => null,

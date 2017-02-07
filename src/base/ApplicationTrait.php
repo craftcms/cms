@@ -137,16 +137,6 @@ trait ApplicationTrait
     private $_info;
 
     /**
-     * @var
-     */
-    private $_siteName;
-
-    /**
-     * @var
-     */
-    private $_siteUrl;
-
-    /**
      * @var bool|null
      */
     private $_isDbConfigValid;
@@ -590,6 +580,9 @@ trait ApplicationTrait
             }
 
             $row['version'] = $version;
+        }
+        if (isset($row['siteName'])) {
+            $row['name'] = $row['siteName'];
         }
         unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 

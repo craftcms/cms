@@ -7,7 +7,9 @@
 
 namespace craft\log;
 
-use craft\helpers\Logging;
+use Craft;
+use craft\helpers\ArrayHelper;
+use yii\helpers\VarDumper;
 
 /**
  * Class FileTarget
@@ -22,9 +24,15 @@ class FileTarget extends \yii\log\FileTarget
      */
     protected function getContextMessage()
     {
-        $message = parent::getContextMessage();
+        $context = ArrayHelper::filter($GLOBALS, $this->logVars);
+        $result = [];
+        $security = Craft::$app->getSecurity();
 
-        // Remove any sensitive info.
-        return Logging::redact($message);
+        foreach ($context as $key => $value) {
+            $value = $security->redactIfSensitive($key, $value);
+            $result[] = "\${$key} = ".VarDumper::dumpAsString($value);
+        }
+
+        return implode("\n\n", $result);
     }
 }

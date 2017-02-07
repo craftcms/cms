@@ -38,6 +38,14 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function refHandle()
+    {
+        return 'tag';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

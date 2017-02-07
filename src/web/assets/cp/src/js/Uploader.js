@@ -241,6 +241,7 @@ Craft.Uploader = Garnish.Base.extend(
             maxFileSize: Craft.maxUploadSize,
             allowedKinds: null,
             events: {},
-            canAddMoreFiles: null
+            canAddMoreFiles: null,
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
         }
     });

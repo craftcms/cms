@@ -136,6 +136,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                         'default' => [
                             'heading' => Craft::t('app', 'Default?'),
                             'type' => 'checkbox',
+                            'radioMode' => !$this->multi,
                             'class' => 'thin'
                         ],
                     ],
@@ -204,7 +205,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element)
+    public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($this->multi) {
             /** @var MultiOptionsFieldData $value */
@@ -218,7 +219,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         /** @var SingleOptionFieldData $value */
-        return $value->value;
+        return (string)$value->value;
     }
 
     // Protected Methods

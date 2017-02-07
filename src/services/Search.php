@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Connection;
 use craft\db\Query;
-use craft\enums\ColumnType;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
@@ -24,6 +23,7 @@ use craft\search\SearchQueryTermGroup;
 use Exception;
 use yii\base\Component;
 use yii\db\Exception as DbException;
+use yii\db\Schema;
 
 /**
  * Handles search operations.
@@ -90,8 +90,7 @@ class Search extends Component
         }
 
         foreach ($searchableAttributes as $attribute) {
-            $value = $element->$attribute;
-            $value = StringHelper::toString($value);
+            $value = $element->getSearchKeywords($attribute);
             $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
@@ -273,7 +272,7 @@ class Search extends Component
 
         $cleanKeywordsLength = strlen($cleanKeywords);
 
-        $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
+        $maxDbColumnSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
 
         if ($maxDbColumnSize !== null) {
             // Give ourselves 10% wiggle room.

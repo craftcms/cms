@@ -22,7 +22,6 @@ use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use DateTime;
 use yii\base\Exception;
-use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -118,6 +117,7 @@ class SystemSettingsController extends Controller
 
         $info = Craft::$app->getInfo();
 
+        $info->name = Craft::$app->getRequest()->getBodyParam('name');
         $info->on = (bool)Craft::$app->getRequest()->getBodyParam('on');
         $info->timezone = Craft::$app->getRequest()->getBodyParam('timezone');
 
@@ -257,16 +257,12 @@ class SystemSettingsController extends Controller
 
             $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adapter::displayName();
 
+            $security = Craft::$app->getSecurity();
+
             foreach ($adapter->settingsAttributes() as $name) {
                 if (!empty($adapter->$name)) {
                     $label = $adapter->getAttributeLabel($name);
-                    $value = $adapter->$name;
-
-                    // Hide passwords/keys
-                    if (preg_match('/\b(key|password|secret)\b/', Inflector::camel2words($name, false))) {
-                        $value = str_repeat('•', strlen($value));
-                    }
-
+                    $value = $security->redactIfSensitive($name, $adapter->$name);
                     $includedSettings[] = '<strong>'.$label.':</strong> '.$value;
                 }
             }

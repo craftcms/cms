@@ -9,6 +9,7 @@
 
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
+use craft\services\Config;
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -139,39 +140,17 @@ error_reporting(E_ALL);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
+// Initialize the Config service
+$configService = new Config();
+$configService->env = $environment;
+$configService->configDir = $configPath;
+$configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
 
 // We need to special case devMode in the config because YII_DEBUG has to be set as early as possible.
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = false;
-    $generalConfigPath = $configPath.'/general.php';
-
-    if (file_exists($generalConfigPath)) {
-        $generalConfig = require $generalConfigPath;
-
-        if (is_array($generalConfig)) {
-            // Normalize it to a multi-environment config
-            if (!array_key_exists('*', $generalConfig)) {
-                $generalConfig = ['*' => $generalConfig];
-            }
-
-            // If no environment was specified, just look in the '*' array
-            if ($environment === null) {
-                $devMode = $generalConfig['*']['devMode'] ?? false;
-            } else {
-                // Loop through all of the environment configs, figuring out what the final word is on Dev Mode
-                foreach ($generalConfig as $env => $envConfig) {
-                    if (
-                        ($env === '*' || strpos($environment, $env) !== false) &&
-                        isset($envConfig['devMode'])
-                    ) {
-                        $devMode = $envConfig['devMode'];
-                    }
-                }
-            }
-        }
-    }
+    $devMode = $configService->get('devMode');
 }
 
 if ($devMode) {
@@ -210,30 +189,27 @@ Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 
 // Load the config
+$components = [
+    'config' => $configService,
+];
+
+if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
+    $components['sites'] = [
+        'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE,
+    ];
+}
+
 $config = ArrayHelper::merge(
+    [
+        'vendorPath' => $vendorPath,
+        'env' => $environment,
+        'components' => $components,
+    ],
     require $srcPath.'/config/main.php',
     require $srcPath.'/config/common.php',
-    require $srcPath.'/config/'.$appType.'.php'
+    require $srcPath.'/config/'.$appType.'.php',
+    $configService->getConfigSettings(Config::CATEGORY_APP)
 );
-
-$config['vendorPath'] = $vendorPath;
-$config['env'] = $environment;
-
-// Set the current site
-if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-    $config = ArrayHelper::merge($config, [
-        'components' => [
-            'sites' => [
-                'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE,
-            ],
-        ],
-    ]);
-}
-
-// Allow sites to make custom changes to this
-if (file_exists($configPath.'/app.php')) {
-    $config = ArrayHelper::merge($config, require $configPath.'/app.php');
-}
 
 // Initialize the application
 $class = 'craft\\'.$appType.'\\Application';

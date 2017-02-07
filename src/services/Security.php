@@ -13,6 +13,7 @@ use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
+use yii\helpers\Inflector;
 
 /**
  * Class Security service.
@@ -26,6 +27,20 @@ class Security extends \yii\base\Security
 {
     // Properties
     // =========================================================================
+
+    /**
+     * @var string[] Keywords used to reference sensitive data
+     * @see redactIfSensitive()
+     */
+    public $sensitiveKeywords = [
+        'key',
+        'pass',
+        'password',
+        'pw',
+        'secret',
+        'tok',
+        'token',
+    ];
 
     /**
      * @var mixed
@@ -157,5 +172,29 @@ class Security extends \yii\base\Security
         }
 
         return parent::validateData($data, $key, $rawHash);
+    }
+
+    /**
+     * Checks the given key to see if it looks like it contains sensitive info, and if so, redacts the given value.
+     *
+     * @param string $name
+     * @param string|array $value
+     *
+     * @return string|array The possibly-redacted value
+     */
+    public function redactIfSensitive(string $name, $value)
+    {
+        if (is_array($value)) {
+            foreach ($value as $n => &$v) {
+                $v = $this->redactIfSensitive($n, $v);
+            }
+        } else if (
+            is_string($value) &&
+            preg_match('/\b('.implode('|', $this->sensitiveKeywords).')\b/', Inflector::camel2words($name, false))
+        ) {
+            $value = str_repeat('•', strlen($value));
+        }
+
+        return $value;
     }
 }

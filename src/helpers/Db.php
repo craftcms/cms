@@ -10,7 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
-use craft\enums\ColumnType;
+use craft\db\mysql\Schema as MysqlSchema;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -22,6 +22,11 @@ use yii\db\Schema;
  */
 class Db
 {
+    // Constants
+    // =========================================================================
+
+    const TYPE_NUMERIC = 'numeric';
+
     // Properties
     // =========================================================================
 
@@ -29,6 +34,39 @@ class Db
      * @var array
      */
     private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+
+    /**
+     * @var array Types of integer columns and how many bytes they can store
+     */
+    private static $_integerSizeRanges = [
+        Schema::TYPE_SMALLINT => [-32768, 32767],
+        Schema::TYPE_INTEGER => [-2147483648, 2147483647],
+        Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
+    ];
+
+    /**
+     * @var array Column type => simplified type mapping
+     */
+    private static $_simplifiedColumnTypes = [
+        Schema::TYPE_PK => self::TYPE_NUMERIC,
+        Schema::TYPE_UPK => self::TYPE_NUMERIC,
+        Schema::TYPE_BIGPK => self::TYPE_NUMERIC,
+        Schema::TYPE_UBIGPK => self::TYPE_NUMERIC,
+        Schema::TYPE_CHAR => Schema::TYPE_STRING,
+        Schema::TYPE_STRING => Schema::TYPE_STRING,
+        Schema::TYPE_TEXT => Schema::TYPE_STRING,
+        Schema::TYPE_SMALLINT => self::TYPE_NUMERIC,
+        Schema::TYPE_INTEGER => self::TYPE_NUMERIC,
+        Schema::TYPE_BIGINT => self::TYPE_NUMERIC,
+        Schema::TYPE_FLOAT => self::TYPE_NUMERIC,
+        Schema::TYPE_DOUBLE => self::TYPE_NUMERIC,
+        Schema::TYPE_DECIMAL => self::TYPE_NUMERIC,
+        Schema::TYPE_BOOLEAN => self::TYPE_NUMERIC,
+        MysqlSchema::TYPE_TINYTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_MEDIUMTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_LONGTEXT => Schema::TYPE_STRING,
+        MysqlSchema::TYPE_ENUM => Schema::TYPE_STRING,
+    ];
 
     // Public Methods
     // =========================================================================
@@ -103,19 +141,6 @@ class Db
     }
 
     /**
-     * Integer column sizes.
-     *
-     * @var int[]
-     */
-    private static $_intColumnSizes = [
-        ColumnType::TinyInt => 128,
-        ColumnType::SmallInt => 32768,
-        ColumnType::MediumInt => 8388608,
-        ColumnType::Int => 2147483648,
-        ColumnType::BigInt => 9223372036854775808
-    ];
-
-    /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
      * @param int|null $min
@@ -123,55 +148,38 @@ class Db
      * @param int|null $decimals
      *
      * @return string
+     * @throws Exception if no column types can contain this
      */
     public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
     {
-        $type = '';
-
         // Normalize the arguments
         if (!is_numeric($min)) {
-            $min = -self::$_intColumnSizes[ColumnType::Int];
+            $min = self::$_integerSizeRanges[Schema::TYPE_INTEGER][0];
         }
 
         if (!is_numeric($max)) {
-            $max = self::$_intColumnSizes[ColumnType::Int] - 1;
+            $max = self::$_integerSizeRanges[Schema::TYPE_INTEGER][1];
         }
 
         $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
-        // Unsigned?
-        $unsigned = ($min >= 0);
-
         // Figure out the max length
-        $maxAbsSize = (int)($unsigned ? $max : max(abs($min), abs($max)));
+        $maxAbsSize = (int)max(abs($min), abs($max));
         $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
         if ($decimals > 0) {
-            $type = Schema::TYPE_DECIMAL."($length,$decimals)";
-        } else {
-            // Figure out the smallest possible int column type that will fit our min/max
-            foreach (self::$_intColumnSizes as $type => $size) {
-                if ($unsigned) {
-                    if ($max < $size * 2) {
-                        break;
-                    }
-                } else {
-                    if ($min >= -$size && $max < $size) {
-                        break;
-                    }
-                }
+            return Schema::TYPE_DECIMAL."({$length},{$decimals})";
+        }
+
+        // Figure out the smallest possible int column type that will fit our min/max
+        foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
+            if ($min >= $typeMin && $max <= $typeMax) {
+                return $type."({$length})";
             }
-
-            /** @noinspection PhpUndefinedVariableInspection */
-            $type .= "($length)";
         }
 
-        if ($unsigned && Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
-            $type .= ' unsigned';
-        }
-
-        return $type;
+        throw new Exception("No integer column type can contain numbers between {$min} and {$max}");
     }
 
     /**
@@ -192,16 +200,16 @@ class Db
         switch ($db->getDriverName()) {
             case Connection::DRIVER_MYSQL:
                 switch ($columnType) {
-                    case ColumnType::TinyText:
+                    case MysqlSchema::TYPE_TINYTEXT:
                         // 255 bytes
                         return 255;
-                    case ColumnType::Text:
+                    case Schema::TYPE_TEXT:
                         // 65k
                         return 65535;
-                    case ColumnType::MediumText:
+                    case MysqlSchema::TYPE_MEDIUMTEXT:
                         // 16MB
                         return 16777215;
-                    case ColumnType::LongText:
+                    case MysqlSchema::TYPE_LONGTEXT:
                         // 4GB
                         return 4294967295;
                     default:
@@ -231,26 +239,56 @@ class Db
 
         switch ($db->getDriverName()) {
             case Connection::DRIVER_MYSQL:
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_TINYTEXT)) {
                     return Schema::TYPE_STRING;
                 }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(Schema::TYPE_TEXT)) {
                     return Schema::TYPE_TEXT;
                 }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_MEDIUMTEXT)) {
                     // Yii doesn't support 'mediumtext' so we use our own.
-                    return ColumnType::MediumText;
+                    return MysqlSchema::TYPE_MEDIUMTEXT;
                 }
 
                 // Yii doesn't support 'longtext' so we use our own.
-                return ColumnType::LongText;
+                return MysqlSchema::TYPE_LONGTEXT;
             case Connection::DRIVER_PGSQL:
                 return Schema::TYPE_TEXT;
             default:
                 throw new Exception('Unsupported connection type: '.$db->getDriverName());
         }
+    }
+
+    /**
+     * Returns a simplified version of a given column type.
+     *
+     * @param string $type
+     *
+     * @return string
+     */
+    public static function getSimplifiedColumnType($type)
+    {
+        if (!preg_match('/^\w+/', $type, $matches)) {
+            return $type;
+        }
+
+        return self::$_simplifiedColumnTypes[$matches[0]] ?? $matches[0];
+    }
+
+    /**
+     * Returns whether two column type definitions are relatively compatible with each other.
+     *
+     * @param string $typeA
+     * @param string $typeB
+     *
+     * @return bool
+     */
+    public static function areColumnTypesCompatible($typeA, $typeB)
+    {
+        return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
+
     }
 
     /**

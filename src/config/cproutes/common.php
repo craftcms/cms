@@ -15,6 +15,7 @@ return [
     'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-{slug})?>/<siteHandle:{handle}>' => 'entries/edit-entry',
     'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-{slug}?)?>/drafts/<draftId:\d+>' => 'entries/edit-entry',
     'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-{slug})?>/versions/<versionId:\d+>' => 'entries/edit-entry',
+    'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'updates' => 'update/index',

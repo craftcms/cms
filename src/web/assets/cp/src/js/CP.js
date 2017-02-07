@@ -11,8 +11,8 @@ Craft.CP = Garnish.Base.extend(
         $alerts: null,
         $globalSidebar: null,
         $globalSidebarTopbar: null,
-        $siteNameLink: null,
-        $siteName: null,
+        $systemNameLink: null,
+        $systemName: null,
         $nav: null,
         $subnav: null,
         $pageHeader: null,
@@ -78,8 +78,8 @@ Craft.CP = Garnish.Base.extend(
             this.$pageHeader = $('#page-header');
             this.$containerTopbar = $('#container').find('.topbar');
             this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
-            this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
-            this.$siteName = this.$siteNameLink.children('h2');
+            this.$systemNameLink = this.$globalSidebarTopbar.children('a.system-name');
+            this.$systemName = this.$systemNameLink.children('h2');
             this.$nav = $('#nav');
             this.$subnav = $('#subnav');
             this.$sidebar = $('#sidebar');
@@ -1285,7 +1285,12 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 case 'rerun': {
                     Craft.postActionRequest('tasks/rerun-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
-                            this.updateStatus(response.task);
+                            if (response.task) {
+                                this.updateStatus(response.task);
+                            } else {
+                                // Doesn't exist anymore
+                                this.destroy();
+                            }
 
                             if (this.hud.completed) {
                                 this.hud.updateTasks();

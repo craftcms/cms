@@ -158,4 +158,14 @@ class Number extends Field implements PreviewableFieldInterface
             'size' => $this->size
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        return [
+            ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null],
+        ];
+    }
 }

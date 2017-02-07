@@ -474,6 +474,8 @@ class Elements extends Component
                 $masterFieldValues = $element->getFieldValues();
             }
 
+            $contentService = Craft::$app->getContent();
+
             foreach ($supportedSites as $siteInfo) {
                 if (isset($siteSettingsRecords[$siteInfo['siteId']])) {
                     $siteSettingsRecord = $siteSettingsRecords[$siteInfo['siteId']];
@@ -511,7 +513,7 @@ class Elements extends Component
 
                         if (!$isNewElement) {
                             // Do we already have a content row for this site?
-                            $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
+                            $fieldValues = $contentService->getContentRow($localizedElement);
 
                             if ($fieldValues !== false) {
                                 $localizedElement->contentId = $fieldValues['id'];
@@ -548,7 +550,7 @@ class Elements extends Component
                         $localizedElement->setFieldValues($fieldValues);
                     }
 
-                    Craft::$app->getContent()->saveContent($localizedElement);
+                    $contentService->saveContent($localizedElement);
                 }
 
                 // Capture the original slug, in case it's entirely composed of invalid characters

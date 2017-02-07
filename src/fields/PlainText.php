@@ -105,4 +105,14 @@ class PlainText extends Field implements PreviewableFieldInterface
                 'field' => $this,
             ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        return [
+            ['string', 'max' => $this->maxLength ?: null],
+        ];
+    }
 }

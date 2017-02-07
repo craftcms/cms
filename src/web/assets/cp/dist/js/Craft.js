@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-02 */
+/*! Craft 3.0.0 - 2017-02-06 */
 (function($){
 
 /** global: Craft */
@@ -7592,8 +7592,8 @@ Craft.CP = Garnish.Base.extend(
         $alerts: null,
         $globalSidebar: null,
         $globalSidebarTopbar: null,
-        $siteNameLink: null,
-        $siteName: null,
+        $systemNameLink: null,
+        $systemName: null,
         $nav: null,
         $subnav: null,
         $pageHeader: null,
@@ -7659,8 +7659,8 @@ Craft.CP = Garnish.Base.extend(
             this.$pageHeader = $('#page-header');
             this.$containerTopbar = $('#container').find('.topbar');
             this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
-            this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
-            this.$siteName = this.$siteNameLink.children('h2');
+            this.$systemNameLink = this.$globalSidebarTopbar.children('a.system-name');
+            this.$systemName = this.$systemNameLink.children('h2');
             this.$nav = $('#nav');
             this.$subnav = $('#subnav');
             this.$sidebar = $('#sidebar');
@@ -8866,7 +8866,12 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 case 'rerun': {
                     Craft.postActionRequest('tasks/rerun-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
-                            this.updateStatus(response.task);
+                            if (response.task) {
+                                this.updateStatus(response.task);
+                            } else {
+                                // Doesn't exist anymore
+                                this.destroy();
+                            }
 
                             if (this.hud.completed) {
                                 this.hud.updateTasks();
@@ -9589,6 +9594,8 @@ Craft.EditableTable = Garnish.Base.extend(
         $tbody: null,
         $addRowBtn: null,
 
+        radioCheckboxes: {},
+
         init: function(id, baseName, columns, settings) {
             this.id = id;
             this.baseName = baseName;
@@ -9819,6 +9826,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }
 
                     textareasByColId[colId] = $textarea;
+                } else if (col.type == 'checkbox' && col.radioMode) {
+                    var $checkbox = $('input[type="checkbox"]', this.$tds[i]);
+                    if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
+                        this.table.radioCheckboxes[colId] = [];
+                    }
+                    this.table.radioCheckboxes[colId].push($checkbox[0]);
+
+                    this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
                 }
 
                 i++;
@@ -9868,6 +9883,15 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     $textarea.val(val);
                 }
             }, 0);
+        },
+
+        onRadioCheckboxChange: function(ev) {
+            if (ev.currentTarget.checked) {
+                for (var i = 0; i < this.table.radioCheckboxes[ev.data.colId].length; i++) {
+                    var checkbox = this.table.radioCheckboxes[ev.data.colId][i];
+                    checkbox.checked = (checkbox === ev.currentTarget);
+                }
+            }
         },
 
         ignoreNextTextareaFocus: function(ev) {
@@ -16655,7 +16679,8 @@ Craft.Uploader = Garnish.Base.extend(
             maxFileSize: Craft.maxUploadSize,
             allowedKinds: null,
             events: {},
-            canAddMoreFiles: null
+            canAddMoreFiles: null,
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
         }
     });
 

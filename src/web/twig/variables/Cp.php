@@ -58,12 +58,10 @@ class Cp extends Component
             ];
         }
 
-        $globals = Craft::$app->getGlobals()->getEditableSets();
-
-        if (!empty($globals)) {
+        if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => 'globals/'.$globals[0]->handle,
+                'url' => 'globals',
                 'icon' => 'globe'
             ];
         }

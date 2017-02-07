@@ -119,7 +119,9 @@ class TasksController extends Controller
         if (!Craft::$app->getTasks()->getIsTaskRunning()) {
             Json::sendJsonHeaders();
             $response = Craft::$app->getResponse();
-            $response->content = Json::encode($task);
+            $response->content = Json::encode([
+                'task' => $task
+            ]);
             $response->sendAndClose();
 
             Craft::$app->getTasks()->runPendingTasks();
