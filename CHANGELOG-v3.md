@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
 - Fixed a PHP type error if you tried to save a Number field’s setting with “Min Value” set to nothing.
+- Fixed a bug where it was not possible to rename a file with the Asset "Rename File" action.
 
 ## 3.0.0-beta.3 - 2017-02-07
 
