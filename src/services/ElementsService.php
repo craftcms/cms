@@ -810,7 +810,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			$criteria->relatedTo = $relatedTo;
-            craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
+			craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
 		}
 
 		if ($criteria->relatedTo)
@@ -1135,12 +1135,12 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
-            if (!$criteria->level && $criteria->depth)
-            {
-                $criteria->level = $criteria->depth;
-                $criteria->depth = null;
-                craft()->deprecator->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
-            }
+			if (!$criteria->level && $criteria->depth)
+			{
+				$criteria->level = $criteria->depth;
+				$criteria->depth = null;
+				craft()->deprecator->log('element_depth_param', 'The \'depth\' element param has been deprecated. Use \'level\' instead.');
+			}
 
 			if ($criteria->level)
 			{

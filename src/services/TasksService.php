@@ -481,7 +481,7 @@ class TasksService extends BaseApplicationComponent
 	/**
 	 * Returns the total number of active tasks.
 	 *
-	 * @return bool
+	 * @return int
 	 */
 	public function getTotalTasks()
 	{
