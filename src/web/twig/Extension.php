@@ -209,7 +209,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter(string $message, string $category = null, array $params = null, string $language = null): string
+    public function translateFilter(string $message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
