@@ -35,8 +35,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             if (this.isVisible()) {
                 this.initialize();
-            }
-            else {
+            } else {
                 // Give everything a chance to initialize
                 Garnish.requestAnimationFrame($.proxy(this, 'initializeIfVisible'));
             }
