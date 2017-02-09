@@ -258,7 +258,7 @@ class Content extends Component
                 $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);
-            } else if (!in_array($column, ['id', 'elementId', 'dateCreated', 'dateUpdated', 'uid', 'siteId'])) {
+            } else if (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
                 unset($row[$column]);
             }
         }

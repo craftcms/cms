@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP type error if you tried to save a Number field’s setting with “Min Value” set to nothing.
 - Fixed a bug where it was not possible to rename a file with the Asset "Rename File" action.
 - #1367: Fixed a PHP error that occurred when uploading a user photo.
+- #1365: Fixed a bug where element titles were not translatable.
 
 ## 3.0.0-beta.3 - 2017-02-07
 
