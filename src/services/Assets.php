@@ -868,7 +868,7 @@ class Assets extends Component
             throw new AssetLogicException();
         }
         $volume = $folder->getVolume();
-        $fileList = $volume->getFileList($folder->path, false);
+        $fileList = $volume->getFileList((string)$folder->path, false);
 
         // Flip the array for faster lookup
         $existingFiles = [];
