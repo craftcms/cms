@@ -1,12 +1,13 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2961 - 2017-02-08
 
 ### Fixed
 
-- Fixed a bug where you could get a `json_encode` “Invalid UTF-8 sequence” error on some servers when specifying a `depth` in an element query.
-- Fixed a bug where an Entry Type’s “Title Field Label” wasn’t being HTML encoded on the edit entry page.
+- Fixed an “Invalid UTF-8 sequence” error that occurred on some servers when using the deprecated `depth` element criteria param.
+- Fixed a bug where custom Title field labels weren’t getting HTML-encoded on Edit Entry pages.
+- Fixed a bug where editable tables may not be responsive until the window had been resized.
 
 ## 2.6.2960 - 2017-02-02
 
