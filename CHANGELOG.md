@@ -1,6 +1,12 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Changed
+
+- Improved the Asset index progress bar to remain in the middle when scrolling the index down during an upload.
+
 ## 2.6.2961 - 2017-02-08
 
 ### Fixed
