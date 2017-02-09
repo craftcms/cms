@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - #1367: Fixed a PHP error that occurred when uploading a user photo.
 - #1365: Fixed a bug where element titles were not translatable.
 - #1366: Fixed a PHP error that occurred on the Settings → General page if the `timezone` config setting was set.
+- Fixed a bug where some Control Panel message strings were getting translated with the `site` translation category rather than `app`.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

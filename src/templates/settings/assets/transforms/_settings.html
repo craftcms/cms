@@ -114,16 +114,16 @@
         }) }}
 
         {{ forms.selectField({
-            label: "Quality"|t,
+            label: "Quality"|t('app'),
             id: "quality",
             name: "quality",
             options: {
-                '0': "Auto"|t,
-                '10': "Low"|t,
-                '30': "Medium"|t,
-                '60': "High"|t,
-                '82': "Very High (Recommended)"|t,
-                '100': "Maximum"|t
+                '0': "Auto"|t('app'),
+                '10': "Low"|t('app'),
+                '30': "Medium"|t('app'),
+                '60': "High"|t('app'),
+                '82': "Very High (Recommended)"|t('app'),
+                '100': "Maximum"|t('app')
             },
             value: (transform is defined ? transform.quality : 82),
             errors: (transform is defined ? transform.getErrors('quality') : null),
@@ -141,7 +141,7 @@
             label: "Image Format"|t('app'),
             id: "format",
             name: "format",
-            instructions: "The image format that transformed images should use."|t,
+            instructions: "The image format that transformed images should use."|t('app'),
             value: (transform is defined ? transform.format : null),
             errors: (transform is defined ? transform.getErrors('format') : null),
             options: formatOptions,

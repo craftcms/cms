@@ -33,8 +33,8 @@
 {{ forms.checkboxSelectField({
     id: 'availableVolumes',
     name: 'availableVolumes',
-    label: 'Available Volumes'|t,
-    instructions: 'The volumes that should be available when selecting assets (if the selected config has an Image or File buttin).'|t,
+    label: 'Available Volumes'|t('app'),
+    instructions: 'The volumes that should be available when selecting assets (if the selected config has an Image or File buttin).'|t('app'),
     options: volumeOptions,
     value: 1,
     values: field.availableVolumes,
@@ -43,8 +43,8 @@
 {{ forms.checkboxSelectField({
     id: 'availableTransforms',
     name: 'availableTransforms',
-    label: 'Available Transforms'|t,
-    instructions: 'The Transforms that should be available for Image selection.'|t,
+    label: 'Available Transforms'|t('app'),
+    instructions: 'The Transforms that should be available for Image selection.'|t('app'),
     options: transformOptions,
     value: 1,
     values: field.availableTransforms,

@@ -1,21 +1,21 @@
 {% if logs %}
     <div class="buttons first">
-        <div id="clearall" class="btn submit">{{ "Clear All"|t }}</div>
+        <div id="clearall" class="btn submit">{{ "Clear All"|t('app') }}</div>
     </div>
 {% endif %}
 
 
 <div class="readable">
-    <p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t }}</p>
+    <p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t('app') }}</p>
 
     {% if logs %}
         <table id="deprecationerrors" class="data fullwidth">
             <thead>
                 <tr>
-                    <th>{{ "Message"|t }}</th>
-                    <th>{{ "Origin"|t }}</th>
-                    <th class="centeralign">{{ "Last Occurrence"|t }}</th>
-                    <th class="thin nowrap centeralign">{{ "Stack Trace"|t }}</th>
+                    <th>{{ "Message"|t('app') }}</th>
+                    <th>{{ "Origin"|t('app') }}</th>
+                    <th class="centeralign">{{ "Last Occurrence"|t('app') }}</th>
+                    <th class="thin nowrap centeralign">{{ "Stack Trace"|t('app') }}</th>
                     <th class="thin"></th>
                 </tr>
             </thead>
@@ -26,8 +26,8 @@
                     <td>{{ log.getOrigin()|replace('/', '/<wbr>')|raw }}</td>
                     <td class="centeralign">{{ log.lastOccurrence|date('short') }}</td>
                     {#<td class="centeralign">{{ log.lastOccurrence.localeDate() }}</td>#}
-                    <td class="thin nowrap centeralign viewtraces"><a role="button">{{ "View"|t }}</a></td>
-                    <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
+                    <td class="thin nowrap centeralign viewtraces"><a role="button">{{ "View"|t('app') }}</a></td>
+                    <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
                 </tr>
             {% endfor %}
             </tbody>
