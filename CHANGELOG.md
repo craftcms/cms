@@ -7,6 +7,10 @@ Craft CMS Changelog
 
 - Improved the Asset index progress bar to remain in the middle when scrolling the index down during an upload.
 
+### Fixed
+
+- Fixed a bug where a PHP error could occur when auto-updating Craft if the Zend OPcache “restrict_api” config setting was set.
+
 ## 2.6.2961 - 2017-02-08
 
 ### Fixed
