@@ -151,7 +151,7 @@ class Update
 
                 // Invalidate opcache
                 if (function_exists('opcache_invalidate')) {
-                    opcache_invalidate($destPath, true);
+                   @opcache_invalidate($destPath, true);
                 }
             }
         } catch (\Exception $e) {
