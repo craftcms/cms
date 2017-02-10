@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - #1366: Fixed a PHP error that occurred on the Settings → General page if the `timezone` config setting was set.
 - Fixed a bug where some Control Panel message strings were getting translated with the `site` translation category rather than `app`.
 - Fixed a bug where pagination URLs would define page numbers using a `pg` query string param if the `pageTrigger` config setting was set to `'?p'` and the `pathParam` config setting was set to something besides `'p'`.
+- Fixed a bug where if a Craft update failed and the attempt to restore the database from a backup failed, the UI would still show that the restore was successful.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

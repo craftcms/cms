@@ -108,14 +108,8 @@ class Update
 
             return false;
         }
-        try {
-            Craft::$app->getDb()->restore($fullBackupPath);
-        } catch (\Exception $e) {
-            Craft::error("There was a problem restoring the database backup file \"{$fullBackupPath}\": ".$e->getMessage(), __METHOD__);
 
-            return false;
-        }
-
+        Craft::$app->getDb()->restore($fullBackupPath);
         return true;
     }
 
