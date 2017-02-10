@@ -353,7 +353,7 @@ class MigrationHelper
                 $onDelete = $fk['deleteType'];
             }
 
-            static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete);
+            static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete, $migration);
         }
 
         // Restore indexes.
@@ -378,7 +378,9 @@ class MigrationHelper
         }
 
         // Restore FK's the column was linking to.
-        foreach ($columnFks as list($fk, $key)) {
+        foreach ($columnFks as $key => $fkInfo) {
+            $fk = $fkInfo[0];
+
             // Get the reference table.
             $refTable = $fk[0];
 
@@ -410,7 +412,7 @@ class MigrationHelper
 
             // If this is a self referencing key, it might already exist.
             if (!static::doesForeignKeyExist($tableName, $columns)) {
-                static::restoreForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete);
+                static::restoreForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete, $migration);
             }
         }
 
@@ -434,12 +436,16 @@ class MigrationHelper
         $fks = [];
 
         foreach ($allTables as $otherTable) {
-            foreach ($otherTable->foreignKeys as $key => $fk) {
+            $counter = 0;
+
+            foreach ($otherTable->foreignKeys as $fkName => $fk) {
                 if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
-                    $fk['updateType'] = $otherTable->getExtendedForeignKeys()[$key]['updateType'];
-                    $fk['deleteType'] = $otherTable->getExtendedForeignKeys()[$key]['deleteType'];
+                    $fk['updateType'] = $otherTable->getExtendedForeignKeys()[$counter]['updateType'];
+                    $fk['deleteType'] = $otherTable->getExtendedForeignKeys()[$counter]['deleteType'];
                     $fks[$otherTable->name][] = $fk;
                 }
+
+                $counter++;
             }
         }
 
