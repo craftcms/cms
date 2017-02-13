@@ -48,13 +48,18 @@
     "bower-asset/velocity": "1.4.2",
     "bower-asset/fabric": "1.7.3",
     "zendframework/zend-feed": "2.7.0",
-    "craftcms/server-check": "1.0.8"
+    "craftcms/server-check": "1.0.9"
   },
   "require-dev": {
     "codeception/codeception": "2.2.8",
     "codeception/verify": "0.3.2",
     "codeception/specify": "0.4.5",
     "codeception/mockery-module": "0.2.2"
+  },
+  "suggest": {
+    "ext-imagick": "Adds support for more image processing formats and options.",
+    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+    "ext-intl": "Adds rich internationalization support."
   },
   "autoload": {
     "psr-4": {
