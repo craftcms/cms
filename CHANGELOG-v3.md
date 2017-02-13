@@ -5,6 +5,20 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\base\PluginInterface::setSettings()`.
+- Added `craft\base\FolderVolumeInterface` that should be used by all Volumes supporting discrete folders.
+- Added `craft\base\FolderVolume` that should be used by all Volumes supporting discrete folders.
+
+### Changed
+- `craft\volumes\Local` now extends `craft\base\FolderVolume` instead of `craft\base\Volume`.
+
+### Removed
+- Removed `craft\base\VolumeInterface::createDir()`.
+- Removed `craft\base\VolumeInterface::deleteDir()`.
+- Removed `craft\base\VolumeInterface::renameDir()`.
+- Removed `craft\base\Volume::folderExists()`.
+- Removed `craft\base\Volume::createDir()`.
+- Removed `craft\base\Volume::deleteDir()`.
+- Removed `craft\base\Volume::renameDir()`.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
