@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\base\PluginInterface::setSettings()`.
+- Added `craft\helpers\FileHelper::lastModifiedTime()`.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.

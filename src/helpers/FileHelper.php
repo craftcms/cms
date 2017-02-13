@@ -8,6 +8,10 @@
 namespace craft\helpers;
 
 use Craft;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use yii\base\ErrorException;
 use yii\base\InvalidParamException;
 
@@ -325,5 +329,32 @@ class FileHelper extends \yii\helpers\FileHelper
             }
         }
         closedir($handle);
+    }
+
+    /**
+     * Returns the last modification time for the given path.
+     *
+     * If the path is a directory, any nested files/directories will be checked as well.
+     *
+     * @param string $path the directory to be checked
+     *
+     * @return int Unix timestamp representing the last modification time
+     */
+    public static function lastModifiedTime($path)
+    {
+        if (is_file($path)) {
+            return filemtime($path);
+        }
+
+        $times = [filemtime($path)];
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST);
+
+        foreach ($iterator as $p => $info) {
+            $times[] = filemtime($p);
+        }
+
+        return max($times);
     }
 }
