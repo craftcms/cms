@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\FolderVolumeInterface;
 use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
@@ -171,7 +172,7 @@ class Assets extends Component
             ->filename(Db::escapeParam($asset->filename))
             ->one();
 
-        if ($existingAsset && $existingAsset->id != $asset->id) {
+        if ($existingAsset && $existingAsset->id !== $asset->id) {
             throw new AssetConflictException(Craft::t('app',
                 'A file with the name “{filename}” already exists in the folder.',
                 ['filename' => $asset->filename]));
@@ -465,7 +466,7 @@ class Assets extends Component
             'name' => $folder->name
         ]);
 
-        if ($existingFolder && (!$folder->id || $folder->id != $existingFolder)) {
+        if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder)) {
             throw new AssetConflictException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
@@ -473,15 +474,19 @@ class Assets extends Component
 
         $volume = $parent->getVolume();
 
-        // Explicitly re-throw VolumeObjectExistsException
-        try {
-            $volume->createDir(rtrim($folder->path, '/'));
-        } catch (VolumeObjectExistsException $exception) {
-            // Rethrow exception unless this is a temporary Volume.
-            if ($folder->volumeId !== null) {
-                throw $exception;
+        // If Volume has discrete folders
+        if ($volume instanceof FolderVolumeInterface) {
+            // Explicitly re-throw VolumeObjectExistsException
+            try {
+                $volume->createDir(rtrim($folder->path, '/'));
+            } catch (VolumeObjectExistsException $exception) {
+                // Rethrow exception unless this is a temporary Volume.
+                if ($folder->volumeId !== null) {
+                    throw $exception;
+                }
             }
         }
+
         $this->storeFolderRecord($folder);
     }
 
@@ -524,22 +529,51 @@ class Assets extends Component
                 ['folderName' => $folder->name]));
         }
 
+        $parentFolderPath = dirname($folder->path);
+        $newFolderPath = (($parentFolderPath && $parentFolderPath !== '.') ? $parentFolderPath.'/' : '').$newName.'/';
+
         $volume = $folder->getVolume();
 
-        $volume->renameDir(rtrim($folder->path, '/'), $newName);
+        // If Volume has discrete folders
+        if ($volume instanceof FolderVolumeInterface) {
+            $volume->renameDir(rtrim($folder->path, '/'), $newName);
+        } else {
+            // Otherwise, get a list of all files and rename them.
+            $contents = $volume->getFileList($folder->path, true);
+            $dirs = [];
+
+            foreach ($contents as $item) {
+                // Store directories for later.
+                if ($item['type'] === 'dir') {
+                    $dirs[] = $item;
+                    continue;
+                }
+
+                $newFilePath = preg_replace('#^'.$folder->path.'#', $newFolderPath, $item['path']);
+                $volume->renameFile($item['path'], $newFilePath);
+            }
+
+            // Deal as best as we can with pseudo-directories. With fire.
+            if (!empty($dirs)) {
+                foreach ($dirs as $dir) {
+                    $volume->deleteFile($dir['path']);
+                }
+            }
+
+            // Remove the original folder as well.
+            $volume->deleteFile(rtrim($folder->path, '/'));
+        }
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
-        $parentPath = dirname($folder->path);
-        $newFullPath = ($parentPath && $parentPath !== '.' ? $parentPath.'/' : '').$newName.'/';
 
         foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath.'/', $descendantFolder->path);
+            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFolderPath, $descendantFolder->path);
             $this->storeFolderRecord($descendantFolder);
         }
 
         // Now change the affected folder
         $folder->name = $newName;
-        $folder->path = $newFullPath;
+        $folder->path = $newFolderPath;
         $this->storeFolderRecord($folder);
 
         return $newName;
@@ -549,20 +583,30 @@ class Assets extends Component
      * Deletes a folder by its ID.
      *
      * @param array|int $folderIds
-     * @param bool      $deleteFolder Should the folder be deleted along the record. Defaults to true.
+     * @param bool      $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
      *
      * @throws VolumeException If deleting a single folder and it cannot be deleted.
      * @return void
      */
-    public function deleteFoldersByIds($folderIds, bool $deleteFolder = true)
+    public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
     {
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
 
             if ($folder) {
-                if ($deleteFolder) {
+                if ($deleteDir) {
                     $volume = $folder->getVolume();
-                    $volume->deleteDir($folder->path);
+
+                    // If Volume has discrete folders, just nuke it.
+                    if ($volume instanceof FolderVolumeInterface) {
+                        $volume->deleteDir($folder->path);
+                    } else {
+                        // Otherwise, get a list of all files and delete them.
+                        $files = $volume->getFileList($folder->path, true);
+                        foreach ($files as $file) {
+                            @$volume->deleteFile($file['path']);
+                        }
+                    }
                 }
 
                 VolumeFolderRecord::deleteAll(['id' => $folderId]);
@@ -872,7 +916,7 @@ class Assets extends Component
         $existingFiles = [];
 
         foreach ($fileList as $file) {
-            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) == StringHelper::toLowerCase($file['dirname'])) {
+            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) === StringHelper::toLowerCase($file['dirname'])) {
                 $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
             }
         }
@@ -913,7 +957,7 @@ class Assets extends Component
                 break;
             }
 
-            if ($increment == 50) {
+            if ($increment === 50) {
                 throw new AssetLogicException(Craft::t('app',
                     'Could not find a suitable replacement filename for “{filename}”.',
                     ['filename' => $filename]));
@@ -952,7 +996,7 @@ class Assets extends Component
             ->filename(Db::escapeParam($filename))
             ->one();
 
-        if ($existingAsset && $existingAsset->id != $asset->id) {
+        if ($existingAsset && $existingAsset->id !== $asset->id) {
             throw new AssetConflictException(Craft::t('app',
                 'A file with the name “{filename}” already exists in the folder.',
                 ['filename' => $filename]));
@@ -1035,7 +1079,7 @@ class Assets extends Component
      */
     public function storeFolderRecord(VolumeFolder $folder)
     {
-        if (empty($folder->id)) {
+        if (!$folder->id) {
             $record = new VolumeFolderRecord();
         } else {
             $record = VolumeFolderRecord::findOne(['id' => $folder->id]);
@@ -1119,8 +1163,8 @@ class Assets extends Component
 
         // Move inside the source.
         $assetTransforms = Craft::$app->getAssetTransforms();
-        if ($asset->volumeId == $targetFolder->volumeId) {
-            if ($fromPath == $toPath) {
+        if ($asset->volumeId === $targetFolder->volumeId) {
+            if ($fromPath === $toPath) {
                 return;
             }
 
