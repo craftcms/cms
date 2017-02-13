@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where if a Craft update failed and the attempt to restore the database from a backup failed, the UI would still show that the restore was successful.
 - Fixed several migration related bugs that were preventing some Craft 2.6 installs from being able to update to Craft 3.
 - Fixed a bug where renaming a folder would remove it’s trailing slash from path.
+- #1371: Fixed a bug where asset bundles weren’t always getting re-published when a sub-file(s) had been updated.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

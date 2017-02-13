@@ -7,6 +7,9 @@
 
 namespace craft\web;
 
+use Craft;
+use craft\helpers\FileHelper;
+
 /**
  * @inheritdoc
  *
@@ -62,20 +65,14 @@ class AssetManager extends \yii\web\AssetManager
     /**
      * @inheritdoc
      */
-    protected function publishDirectory($src, $options)
+    protected function hash($path)
     {
-        // See if any of the nested files/folders have a more recent modify date than $src
-        $srcModTime = filemtime($src);
-        $objects = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($src, \FilesystemIterator::SKIP_DOTS));
-
-        foreach ($objects as $object) {
-            /** @var \SplFileInfo $object */
-            if (filemtime($object->getPath()) > $srcModTime) {
-                @touch($src);
-                break;
-            }
+        if (is_callable($this->hashCallback)) {
+            return call_user_func($this->hashCallback, $path);
         }
 
-        return parent::publishDirectory($src, $options);
+        $path = (is_file($path) ? dirname($path) : $path).FileHelper::lastModifiedTime($path);
+
+        return sprintf('%x', crc32($path.Craft::getVersion()));
     }
 }
