@@ -16,7 +16,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where some Control Panel message strings were getting translated with the `site` translation category rather than `app`.
 - Fixed a bug where pagination URLs would define page numbers using a `pg` query string param if the `pageTrigger` config setting was set to `'?p'` and the `pathParam` config setting was set to something besides `'p'`.
 - Fixed a bug where if a Craft update failed and the attempt to restore the database from a backup failed, the UI would still show that the restore was successful.
-- Fixed several `craft\helpers\MigrationHelper` bugs that were preventing some Craft 2.6 installs from being able to update to Craft 3.
+- Fixed several migration related bugs that were preventing some Craft 2.6 installs from being able to update to Craft 3.
 - Fixed a bug where renaming a folder would remove it’s trailing slash from path.
 
 ## 3.0.0-beta.3 - 2017-02-07
