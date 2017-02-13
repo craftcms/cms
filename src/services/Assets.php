@@ -142,7 +142,7 @@ class Assets extends Component
      */
     public function saveAsset(Asset $asset)
     {
-        $isNew = empty($asset->id);
+        $isNew = !$asset->id;
 
         if ($isNew) {
             $asset->folderPath = $asset->getFolder()->path;
@@ -153,7 +153,7 @@ class Assets extends Component
                 'A new Asset cannot be created without a file.'));
         }
 
-        if (empty($asset->folderId)) {
+        if (!$asset->folderId) {
             throw new AssetLogicException(Craft::t('app',
                 'All Assets must have folder ID set.'));
         }
@@ -258,8 +258,6 @@ class Assets extends Component
     {
         $targetVolume = $assetToReplace->getVolume();
 
-        // TODO purge cached files for remote Volumes.
-
         // Clear all thumb and transform data
         if (Image::isImageManipulatable($assetToReplace->getExtension())) {
             Craft::$app->getAssetTransforms()->deleteAllTransformData($assetToReplace);
@@ -357,9 +355,9 @@ class Assets extends Component
         }
 
         // Re-use the same filename
-        if (StringHelper::toLowerCase($asset->filename) == StringHelper::toLowerCase($filename)) {
+        if (StringHelper::toLowerCase($asset->filename) === StringHelper::toLowerCase($filename)) {
             // The case is changing in the filename
-            if ($asset->filename != $filename) {
+            if ($asset->filename !== $filename) {
                 // Delete old, change the name, upload the new
                 $volume->deleteFile($asset->getUri());
                 $asset->newFilename = $filename;
@@ -467,9 +465,9 @@ class Assets extends Component
             'name' => $folder->name
         ]);
 
-        if ($existingFolder && (empty($folder->id) || $folder->id != $existingFolder)) {
+        if ($existingFolder && (!$folder->id || $folder->id != $existingFolder)) {
             throw new AssetConflictException(Craft::t('app',
-                'A folder with the name “{folderName}” already exists in the folder.',
+                'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
         }
 
