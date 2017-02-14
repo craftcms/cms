@@ -812,6 +812,10 @@ Craft.CP = Garnish.Base.extend(
 			return;
 		}
 
+		if (typeof delay === 'undefined') {
+            delay = Craft.CP.taskTrackerUpdateInterval;
+		}
+
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
 			Craft.queueActionRequest('tasks/getRunningTaskInfo', $.proxy(function(taskInfo, textStatus)
@@ -833,7 +837,7 @@ Craft.CP = Garnish.Base.extend(
 					}
 				}
 			}, this));
-		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
+		}, this), delay);
 	},
 
 	stopTrackingTaskProgress: function()
