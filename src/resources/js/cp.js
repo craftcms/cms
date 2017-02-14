@@ -825,15 +825,18 @@ Craft.CP = Garnish.Base.extend(
 					this.trackTaskProgressTimeout = null;
 					this.setRunningTaskInfo(taskInfo, true);
 
-					if (taskInfo.status == 'running')
+					if (taskInfo)
 					{
-						// Check again in one second
-						this.trackTaskProgress();
-					}
-					else if (taskInfo.status == 'pending')
-					{
-						// Check again in 30 seconds
-						this.trackTaskProgress(30000);
+						if (taskInfo.status == 'running')
+						{
+							// Check again in one second
+							this.trackTaskProgress();
+						}
+						else if (taskInfo.status == 'pending')
+						{
+							// Check again in 30 seconds
+							this.trackTaskProgress(30000);
+						}
 					}
 				}
 			}, this));
