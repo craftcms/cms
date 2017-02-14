@@ -1159,8 +1159,6 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 var TaskProgressHUD = Garnish.HUD.extend(
 {
-	icon: null,
-
 	tasksById: null,
 	completedTasks: null,
 	updateTasksTimeout: null,
@@ -1169,11 +1167,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 	init: function()
 	{
-		this.icon = Craft.cp.taskProgressIcon;
 		this.tasksById = {};
 		this.completedTasks = [];
 
-		this.base(this.icon.$a);
+		this.base(Craft.cp.taskProgressIcon.$a);
 
 		this.$main.attr('id', 'tasks-hud');
 
