@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2962 - 2017-02-15
 
 ### Added
 - The Control Panel now recognizes potentially-stalled tasks, and gives the user the option to retry or cancel them.
