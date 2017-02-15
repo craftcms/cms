@@ -347,7 +347,7 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Set a dummy title if there isn't one already and the element type has titles
-        if ($element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
+        if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
             if ($isNewElement) {
                 $element->title = Craft::t('app', 'New Element');
             } else {
