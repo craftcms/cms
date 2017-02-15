@@ -137,8 +137,8 @@ var Route = Garnish.Base.extend(
 			}
 		}
 
-		this.$url.html(urlHtml);
-		this.$template.html(this.modal.$templateInput.val());
+		this.$url.text(urlHtml);
+		this.$template.text(this.modal.$templateInput.val());
 	}
 
 });

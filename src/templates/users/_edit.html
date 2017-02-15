@@ -196,7 +196,7 @@
 										{% for group in allGroups %}
 											<li>
 												{{ forms.checkbox({
-													label: group.name|t,
+													label: group.name|t|e,
 													name: 'groups[]',
 													value: group.id,
 													checked: (group.id in userGroups|keys)
