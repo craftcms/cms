@@ -1799,7 +1799,8 @@ abstract class Element extends Component implements ElementInterface
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = $this->getFieldContext();
-        $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
+        $fieldLayout = $this->getFieldLayout();
+        $this->_fieldsByHandle[$handle] = $fieldLayout ? $fieldLayout->getFieldByHandle($handle) : null;
         $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];

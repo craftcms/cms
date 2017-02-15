@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added `craft\services\Tasks::getTaskInfo()`.
 - Added Craft’s required PHP extensions to `composer.json`.
+- Added `craft\models\FieldLayout::getFieldByhandle()`
 
 ### Changed
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
@@ -29,6 +30,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft would generate warning when trying to index images with no content in them.
 - #1372: Fixed a bug where the Database Backup utility wouldn’t show an error when the backup failed.
 - Fixed a bug where saving preexisting Active Record objects was not updating the `dateUpdated` column automatically.
+- #1380: Fixed a bug where required fields on a field layout were not being enforced.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

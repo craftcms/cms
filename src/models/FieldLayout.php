@@ -111,6 +111,25 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns a field by its handle.
+     *
+     * @param string $handle The field handle.
+     *
+     * @return Field|FieldInterface|null
+     */
+    public function getFieldByHandle(string $handle)
+    {
+        foreach ($this->getFields() as $field) {
+            /** @var Field $field */
+            if ($field->handle === $handle) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Sets the layout’s tabs.
      *
      * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
