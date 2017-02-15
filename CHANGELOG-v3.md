@@ -22,6 +22,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where renaming a folder would remove it’s trailing slash from path.
 - #1371: Fixed a bug where asset bundles weren’t always getting re-published when a sub-file(s) had been updated.
 - Fixed a bug where SVG images without a viewbox defined would not be scaled correctly.
+- Fixed a bug where Craft would generate warning when trying to index images with no content in them.
 
 ## 3.0.0-beta.3 - 2017-02-07
 
