@@ -184,7 +184,6 @@ class Tasks extends Component
             $taskRecord->totalSteps = $task->totalSteps;
             $taskRecord->currentStep = $task->currentStep;
             $taskRecord->settings = $task->getSettings();
-            $taskRecord->dateUpdated = new DateTime();
 
             if (!$task->getIsNew()) {
                 $taskRecord->save(false);
