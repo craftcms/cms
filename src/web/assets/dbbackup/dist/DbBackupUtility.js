@@ -40,18 +40,27 @@
                                 };
 
                                 Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
-                                        if (response && response.error) {
-                                            alert(response.error);
+                                        if(textStatus == 'success')
+                                        {
+                                            if (response && response.error) {
+                                                alert(response.error);
+                                            }
+
+                                            this.updateProgressBar();
+
+                                            if (response && response.backupFile) {
+                                                var $iframe = $('<iframe/>', {'src': Craft.getActionUrl('utilities/download-backup-file', {'filename': response.backupFile})}).hide();
+                                                this.$form.append($iframe);
+                                            }
+
+                                            setTimeout($.proxy(this, 'onComplete'), 300);
                                         }
+                                        else
+                                        {
+                                            Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
 
-                                        this.updateProgressBar();
-
-                                        if (response && response.backupFile) {
-                                            var $iframe = $('<iframe/>', {'src': Craft.getActionUrl('utilities/download-backup-file', {'filename': response.backupFile})}).hide();
-                                            this.$form.append($iframe);
+                                            this.onComplete(false);
                                         }
-
-                                        setTimeout($.proxy(this, 'onComplete'), 300);
 
                                     }, this),
                                     {
@@ -75,7 +84,8 @@
                 this.progressBar.setProgressPercentage(width);
             },
 
-            onComplete: function() {
+            onComplete: function(showAllDone) {
+
                 if (!this.$allDone) {
                     this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
                     this.$allDone.css('opacity', 0);
@@ -83,7 +93,10 @@
 
                 this.progressBar.$progressBar.velocity({opacity: 0}, {
                     duration: 'fast', complete: $.proxy(function() {
-                        this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
+                        if(typeof showAllDone === 'undefined' || showAllDone === true) {
+                            this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
+                        }
+
                         this.$trigger.removeClass('disabled');
                         this.$trigger.focus();
                     }, this)
