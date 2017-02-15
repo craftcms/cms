@@ -795,13 +795,13 @@ Craft.CP = Garnish.Base.extend(
 			{
 				if (textStatus == 'success')
 				{
-					this.trackTaskProgress(0);
+					this.trackTaskProgress(false);
 				}
 			}, this));
 		}
 		else
 		{
-			this.trackTaskProgress(0);
+			this.trackTaskProgress(false);
 		}
 	},
 
@@ -813,12 +813,28 @@ Craft.CP = Garnish.Base.extend(
 			return;
 		}
 
-		if (typeof delay === 'undefined')
+		if (delay === true)
 		{
-			delay = Craft.CP.taskTrackerUpdateInterval;
+			// Determine the delay based on the age of the working task
+			var workingTask = this.getWorkingTaskInfo();
+
+			if (workingTask)
+			{
+				delay = workingTask.age * 1000;
+
+				// Keep it between .5 and 60 seconds
+				delay = Math.min(60000, Math.max(500, delay));
+			}
+			else
+			{
+				// No working task. Try again in a minute.
+				delay = 60000;
+			}
 		}
 
-		if (delay == 0)
+        console.log(workingTask ? workingTask.age : null, delay);
+
+		if (!delay)
 		{
 			this._trackTaskProgressInternal();
 		}
@@ -837,18 +853,10 @@ Craft.CP = Garnish.Base.extend(
 				this.trackTaskProgressTimeout = null;
 				this.setTaskInfo(taskInfo, true);
 
-				if (this.runningTaskInfo)
+				if (this.runningTaskInfo && this.runningTaskInfo.status === 'running')
 				{
-					if (this.runningTaskInfo.status == 'running')
-					{
-						// Check again in one second
-						this.trackTaskProgress();
-					}
-					else if (this.runningTaskInfo.status == 'pending')
-					{
-						// Check again in 30 seconds
-						this.trackTaskProgress(30000);
-					}
+					// Check again after a delay
+					this.trackTaskProgress(true);
 				}
 			}
 		}, this));
@@ -880,6 +888,20 @@ Craft.CP = Garnish.Base.extend(
 				{
 					return this.taskInfo[j];
 				}
+			}
+		}
+	},
+
+	/**
+	 * Returns the current working task, regardless of level.
+	 */
+	getWorkingTaskInfo: function()
+	{
+		for (var i = this.taskInfo.length - 1; i >= 0; i--)
+		{
+			if (this.taskInfo[i].status === 'running')
+			{
+				return this.taskInfo[i];
 			}
 		}
 	},
@@ -935,9 +957,7 @@ Craft.CP = Garnish.Base.extend(
 	baseNavWidth: 30,
 	subnavHeight: 38,
 	baseSubnavWidth: 30,
-	notificationDuration: 2000,
-
-	taskTrackerUpdateInterval: 1000
+	notificationDuration: 2000
 });
 
 Craft.cp = new Craft.CP();
@@ -1416,7 +1436,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 					if (textStatus == 'success')
 					{
 						this.updateStatus(taskInfo);
-						Craft.cp.trackTaskProgress(0);
+						Craft.cp.trackTaskProgress(false);
 					}
 				}, this));
 				break;
@@ -1428,7 +1448,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 					if (textStatus == 'success')
 					{
 						this.destroy();
-						Craft.cp.trackTaskProgress(0);
+						Craft.cp.trackTaskProgress(false);
 					}
 				}, this));
 			}
