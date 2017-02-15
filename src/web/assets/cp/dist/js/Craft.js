@@ -8372,10 +8372,10 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _trackTaskProgressInternal: function() {
-            Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(taskInfo, textStatus) {
+            Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
                 if (textStatus == 'success') {
                     this.trackTaskProgressTimeout = null;
-                    this.setTaskInfo(taskInfo, true);
+                    this.setTaskInfo(response.tasks, true);
 
                     if (this.workingTaskInfo) {
                         // Check again after a delay
