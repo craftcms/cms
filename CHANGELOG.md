@@ -4,17 +4,14 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-
 - Improved the Asset index progress bar to remain in the middle when scrolling the index down during an upload.
 
 ### Fixed
-
 - Fixed a bug where a PHP error could occur when auto-updating Craft if the Zend OPcache “restrict_api” config setting was set.
 
 ## 2.6.2961 - 2017-02-08
 
 ### Fixed
-
 - Fixed an “Invalid UTF-8 sequence” error that occurred on some servers when using the deprecated `depth` element criteria param.
 - Fixed a bug where custom Title field labels weren’t getting HTML-encoded on Edit Entry pages.
 - Fixed a bug where editable tables may not be responsive until the window had been resized.
@@ -22,7 +19,6 @@ Craft CMS Changelog
 ## 2.6.2960 - 2017-02-02
 
 ### Fixed
-
 - Fixed a bug where `{% exit %}` tags would always result in a 500 error regardless of the exit code passed in, when Dev Mode was disabled.
 - Fixed a bug where it was impossible to replace files on Rackspace Sources with whitespaces in the filename. (Thanks Thoai.)
 
