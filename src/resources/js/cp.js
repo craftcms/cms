@@ -965,7 +965,7 @@ Craft.CP = Garnish.Base.extend(
 	normalizeTaskStatus: function(status)
 	{
 		return (status === 'running' && Craft.cp.areTasksStalled) ? 'stalled' : status;
-	},
+	}
 });
 
 Craft.cp = new Craft.CP();
