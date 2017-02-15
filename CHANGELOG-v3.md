@@ -9,7 +9,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added `craft\services\Tasks::getTaskInfo()`.
 - Added Craft’s required PHP extensions to `composer.json`.
-- Added `craft\models\FieldLayout::getFieldByhandle()`
+- Added `craft\models\FieldLayout::getFieldByHandle()`.
 
 ### Changed
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
