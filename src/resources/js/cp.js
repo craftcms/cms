@@ -1284,12 +1284,28 @@ var TaskProgressHUD = Garnish.HUD.extend(
 					this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
 
 					// Place it before the next already known task
+					var placed = false;
 					for (var j = i + 1; j < Craft.cp.taskInfo.length; j++)
 					{
 						if (this.tasksById[Craft.cp.taskInfo[j].id])
 						{
 							this.tasksById[info.id].$container.insertBefore(this.tasksById[Craft.cp.taskInfo[j].id].$container);
+							placed = true;
 							break;
+						}
+					}
+
+					if (!placed)
+					{
+						// Place it before the resize <object> if there is one
+						var $object = this.$main.children('object');
+						if ($object.length)
+						{
+							this.tasksById[info.id].$container.insertBefore($object);
+						}
+						else
+						{
+							this.tasksById[info.id].$container.appendTo(this.$main);
 						}
 					}
 				}
@@ -1326,7 +1342,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		this.level = info.level;
 		this.description = info.description;
 
-		this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
+		this.$container = $('<div class="task"/>');
 		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
 		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
 
