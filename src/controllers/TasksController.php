@@ -68,36 +68,6 @@ class TasksController extends BaseController
 	}
 
 	/**
-	 * Returns the completion percentage for the running task.
-	 *
-	 * @return null
-	 */
-	public function actionGetRunningTaskInfo()
-	{
-		$this->requireAjaxRequest();
-		craft()->userSession->requirePermission('accessCp');
-
-		if ($task = craft()->tasks->getRunningTask())
-		{
-			$this->returnJson($task->getInfo());
-		}
-
-		// No running tasks left? Check for a failed one
-		if (craft()->tasks->haveTasksFailed())
-		{
-			$this->returnJson(array('status' => 'error'));
-		}
-
-		// Any pending tasks?
-		if ($task = craft()->tasks->getNextPendingTask())
-		{
-			$this->returnJson($task->getInfo());
-		}
-
-		craft()->end();
-	}
-
-	/**
 	 * Re-runs a failed task.
 	 *
 	 * @return null

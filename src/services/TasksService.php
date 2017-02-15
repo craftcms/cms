@@ -94,6 +94,7 @@ class TasksService extends BaseApplicationComponent
 		$taskRecord->description = $task->description;
 		$taskRecord->totalSteps  = $task->totalSteps;
 		$taskRecord->currentStep = $task->currentStep;
+		$taskRecord->dateUpdated = new DateTime();
 
 		if (!$task->parentId || !$task->isNew())
 		{
