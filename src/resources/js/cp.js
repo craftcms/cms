@@ -1271,21 +1271,9 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		// Now display the tasks that are still around
 		if (Craft.cp.taskInfo && Craft.cp.taskInfo.length)
 		{
-			var anyTasksRunning = false,
-				anyTasksFailed = false;
-
 			for (var i = 0; i < Craft.cp.taskInfo.length; i++)
 			{
 				var info = Craft.cp.taskInfo[i];
-
-				if (!anyTasksRunning && info.status == 'running')
-				{
-					anyTasksRunning = true;
-				}
-				else if (!anyTasksFailed && info.status == 'error')
-				{
-					anyTasksFailed = true;
-				}
 
 				if (this.tasksById[info.id])
 				{
