@@ -138,6 +138,11 @@ class ImagesService extends BaseApplicationComponent
 			craft()->config->maxPowerCaptain();
 		}
 
+		// Probably enough for a non-file.
+		if (!filesize($filePath)) {
+		    return true;
+        }
+
 		// Find out how much memory this image is going to need.
 		$imageInfo = getimagesize($filePath);
 		$K64 = 65536;
