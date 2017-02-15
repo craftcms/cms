@@ -10,6 +10,7 @@ Craft CMS Changelog
 ### Fixed
 
 - Fixed a bug where a PHP error could occur when auto-updating Craft if the Zend OPcache “restrict_api” config setting was set.
+- Fixed 4 potential XSS vulnerabilities in the control panel.
 
 ## 2.6.2961 - 2017-02-08
 
