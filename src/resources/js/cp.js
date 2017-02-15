@@ -813,35 +813,45 @@ Craft.CP = Garnish.Base.extend(
 			return;
 		}
 
-		if (typeof delay === 'undefined') {
+		if (typeof delay === 'undefined')
+		{
 			delay = Craft.CP.taskTrackerUpdateInterval;
 		}
 
-		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
+		if (delay == 0)
 		{
-			Craft.queueActionRequest('tasks/getTaskInfo', $.proxy(function(taskInfo, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					this.trackTaskProgressTimeout = null;
-					this.setTaskInfo(taskInfo, true);
+			this._trackTaskProgressInternal();
+		}
+		else
+		{
+			this.trackTaskProgressTimeout = setTimeout($.proxy(this, '_trackTaskProgressInternal'), delay);
+		}
+	},
 
-					if (this.runningTaskInfo)
+	_trackTaskProgressInternal: function()
+	{
+		Craft.queueActionRequest('tasks/getTaskInfo', $.proxy(function(taskInfo, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.trackTaskProgressTimeout = null;
+				this.setTaskInfo(taskInfo, true);
+
+				if (this.runningTaskInfo)
+				{
+					if (this.runningTaskInfo.status == 'running')
 					{
-						if (this.runningTaskInfo.status == 'running')
-						{
-							// Check again in one second
-							this.trackTaskProgress();
-						}
-						else if (this.runningTaskInfo.status == 'pending')
-						{
-							// Check again in 30 seconds
-							this.trackTaskProgress(30000);
-						}
+						// Check again in one second
+						this.trackTaskProgress();
+					}
+					else if (this.runningTaskInfo.status == 'pending')
+					{
+						// Check again in 30 seconds
+						this.trackTaskProgress(30000);
 					}
 				}
-			}, this));
-		}, this), delay);
+			}
+		}, this));
 	},
 
 	setTaskInfo: function(taskInfo, animateIcon)
