@@ -101,14 +101,11 @@
 %}
 
 
-{% set task = craft.tasks.getRunningTask() %}
-{% if task %}
-	{% includejs 'Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');' %}
-	{% includejs 'Craft.cp.trackTaskProgress();' %}
+{% includejs 'Craft.cp.setTaskInfo('~craft.tasks.getTaskInfo()|json_encode|raw~', false);' %}
+{% if craft.tasks.isTaskRunning() %}
+	{% includejs 'Craft.cp.trackTaskProgress(true);' %}
 {% elseif craft.tasks.areTasksPending() %}
 	{% includejs 'Craft.cp.runPendingTasks();' %}
-{% elseif craft.tasks.haveTasksFailed() %}
-	{% includejs 'Craft.cp.setRunningTaskInfo({ status: "error" });' %}
 {% endif %}
 
 

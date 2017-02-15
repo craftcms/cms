@@ -55,7 +55,8 @@ Craft.CP = Garnish.Base.extend(
 	fixedNotifications: false,
 
 	taskInfo: null,
-	runningTaskInfo: null,
+	workingTaskInfo: null,
+	areTasksStalled: false,
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
 
@@ -816,11 +817,9 @@ Craft.CP = Garnish.Base.extend(
 		if (delay === true)
 		{
 			// Determine the delay based on the age of the working task
-			var workingTask = this.getWorkingTaskInfo();
-
-			if (workingTask)
+			if (this.workingTaskInfo)
 			{
-				delay = workingTask.age * 1000;
+				delay = this.workingTaskInfo.age * 1000;
 
 				// Keep it between .5 and 60 seconds
 				delay = Math.min(60000, Math.max(500, delay));
@@ -851,7 +850,7 @@ Craft.CP = Garnish.Base.extend(
 				this.trackTaskProgressTimeout = null;
 				this.setTaskInfo(taskInfo, true);
 
-				if (this.runningTaskInfo && this.runningTaskInfo.status === 'running')
+				if (this.workingTaskInfo)
 				{
 					// Check again after a delay
 					this.trackTaskProgress(true);
@@ -864,8 +863,10 @@ Craft.CP = Garnish.Base.extend(
 	{
 		this.taskInfo = taskInfo;
 
-		// Update the "running" task info
-		this.setRunningTaskInfo(this.getRunningTaskInfo(), animateIcon);
+		// Update the "running" and "working" task info
+		this.workingTaskInfo = this.getWorkingTaskInfo();
+		this.areTasksStalled = (this.workingTaskInfo && this.workingTaskInfo.status === 'running' && this.workingTaskInfo.age >= Craft.CP.minStalledTaskAge);
+		this.updateTaskIcon(this.getRunningTaskInfo(), animateIcon);
 
 		// Fire a setTaskInfo event
 		this.trigger('setTaskInfo');
@@ -880,9 +881,9 @@ Craft.CP = Garnish.Base.extend(
 
 		for (var i = 0; i < statuses.length; i++)
 		{
-			for (var j = 0; i < this.taskInfo.length; j++)
+			for (var j = 0; j < this.taskInfo.length; j++)
 			{
-				if (this.taskInfo[j].status === statuses[i])
+				if (this.taskInfo[j].level == 0 && this.taskInfo[j].status === statuses[i])
 				{
 					return this.taskInfo[j];
 				}
@@ -891,7 +892,7 @@ Craft.CP = Garnish.Base.extend(
 	},
 
 	/**
-	 * Returns the current working task, regardless of level.
+	 * Returns the currently "working" task/subtask
 	 */
 	getWorkingTaskInfo: function()
 	{
@@ -904,10 +905,8 @@ Craft.CP = Garnish.Base.extend(
 		}
 	},
 
-	setRunningTaskInfo: function(taskInfo, animateIcon)
+	updateTaskIcon: function(taskInfo, animate)
 	{
-		this.runningTaskInfo = taskInfo;
-
 		if (taskInfo)
 		{
 			if (!this.taskProgressIcon)
@@ -915,15 +914,19 @@ Craft.CP = Garnish.Base.extend(
 				this.taskProgressIcon = new TaskProgressIcon();
 			}
 
-			if (taskInfo.status == 'running' || taskInfo.status == 'pending')
+			if (this.areTasksStalled)
+			{
+				this.taskProgressIcon.showFailMode(Craft.t('Stalled task'));
+			}
+			else if (taskInfo.status == 'running' || taskInfo.status == 'pending')
 			{
 				this.taskProgressIcon.hideFailMode();
 				this.taskProgressIcon.setDescription(taskInfo.description);
-				this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
+				this.taskProgressIcon.setProgress(taskInfo.progress, animate);
 			}
 			else if (taskInfo.status == 'error')
 			{
-				this.taskProgressIcon.showFailMode();
+				this.taskProgressIcon.showFailMode(Craft.t('Failed task'));
 			}
 		}
 		else
@@ -955,7 +958,14 @@ Craft.CP = Garnish.Base.extend(
 	baseNavWidth: 30,
 	subnavHeight: 38,
 	baseSubnavWidth: 30,
-	notificationDuration: 2000
+	notificationDuration: 2000,
+
+	minStalledTaskAge: 300, // 5 minutes
+
+	normalizeTaskStatus: function(status)
+	{
+		return (status === 'running' && Craft.cp.areTasksStalled) ? 'stalled' : status;
+	},
 });
 
 Craft.cp = new Craft.CP();
@@ -1081,7 +1091,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		}
 	},
 
-	showFailMode: function()
+	showFailMode: function(message)
 	{
 		if (this.failMode)
 		{
@@ -1104,7 +1114,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 			this._progressBar.setProgressPercentage(50);
 		}
 
-		this.setDescription(Craft.t('Failed task'));
+		this.setDescription(message);
 	},
 
 	hideFailMode: function()
@@ -1359,10 +1369,9 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 
 	updateStatus: function(info)
 	{
-		if (this.status != info.status)
+		if (this.status !== (this.status = Craft.CP.normalizeTaskStatus(info.status)))
 		{
 			this.$statusContainer.empty();
-			this.status = info.status;
 
 			switch (this.status)
 			{
@@ -1377,9 +1386,10 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 					this._progressBar.showProgressBar();
 					break;
 				}
+				case 'stalled':
 				case 'error':
 				{
-					$('<span class="error">'+Craft.t('Failed')+'</span>').appendTo(this.$statusContainer);
+					$('<span class="error">'+(this.status === 'stalled' ? Craft.t('Stalled') : Craft.t('Failed'))+'</span>').appendTo(this.$statusContainer);
 
 					if (this.level == 0)
 					{

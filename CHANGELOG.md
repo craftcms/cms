@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- The Control Panel now recognizes potentially-stalled tasks, and gives the user the option to retry or cancel them.
+
 ### Changed
 - Improved the Asset index progress bar to remain in the middle when scrolling the index down during an upload.
 - The Control Panel now polls for updated background task information at a variable frequency based on the speed of the currently-running task.
