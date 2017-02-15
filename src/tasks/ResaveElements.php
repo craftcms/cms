@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Task;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
+use yii\helpers\Inflector;
 
 /**
  * ResaveElements represents a Resave Elements background task.
@@ -117,8 +118,10 @@ class ResaveElements extends Task
      */
     protected function defaultDescription(): string
     {
+        $classParts = explode('\\', $this->elementType);
+
         return Craft::t('app', 'Resaving {class} elements', [
-            'class' => StringHelper::toLowerCase($this->elementType)
+            'class' => StringHelper::toLowerCase(Inflector::camel2words(array_pop($classParts)))
         ]);
     }
 }

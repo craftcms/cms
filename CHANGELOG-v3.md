@@ -9,6 +9,9 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Tasks::getTaskInfo()`.
 - Added Craft’s required PHP extensions to `composer.json`.
 
+### Changed
+- The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
+
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
 - Fixed a PHP type error if you tried to save a Number field’s setting with “Min Value” set to nothing.
