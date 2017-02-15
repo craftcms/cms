@@ -66,43 +66,6 @@ class TasksController extends Controller
     }
 
     /**
-     * Returns the completion percentage for the running task.
-     *
-     * @return Response
-     */
-    public function actionGetRunningTaskInfo(): Response
-    {
-        $this->requireAcceptsJson();
-        $this->requirePermission('accessCp');
-
-        $tasksService = Craft::$app->getTasks();
-
-        if ($task = $tasksService->getRunningTask()) {
-            return $this->asJson([
-                'task' => $task
-            ]);
-        }
-
-        // No running tasks left? Check for a failed one
-        if ($tasksService->getHaveTasksFailed()) {
-            return $this->asJson([
-                'task' => ['status' => 'error']
-            ]);
-        }
-
-        // Any pending tasks?
-        if ($task = $tasksService->getNextPendingTask()) {
-            return $this->asJson([
-                'task' => $task
-            ]);
-        }
-
-        return $this->asJson([
-            'task' => null
-        ]);
-    }
-
-    /**
      * Re-runs a failed task.
      *
      * @return Response
@@ -166,7 +129,7 @@ class TasksController extends Controller
         $this->requirePermission('accessCp');
 
         return $this->asJson([
-            'tasks' => Craft::$app->getTasks()->getAllTasks()
+            'tasks' => Craft::$app->getTasks()->getTaskInfo(),
         ]);
     }
 }

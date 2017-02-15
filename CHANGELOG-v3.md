@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\base\PluginInterface::setSettings()`.
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
+- Added `craft\services\Tasks::getTaskInfo()`.
 - Added Craft’s required PHP extensions to `composer.json`.
 
 ### Fixed

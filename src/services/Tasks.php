@@ -13,12 +13,14 @@ use craft\base\TaskInterface;
 use craft\db\Query;
 use craft\errors\MissingComponentException;
 use craft\events\TaskEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Header;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\records\Task as TaskRecord;
 use craft\tasks\MissingTask;
+use DateTime;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\web\Response;
@@ -182,6 +184,7 @@ class Tasks extends Component
             $taskRecord->totalSteps = $task->totalSteps;
             $taskRecord->currentStep = $task->currentStep;
             $taskRecord->settings = $task->getSettings();
+            $taskRecord->dateUpdated = new DateTime();
 
             if (!$task->getIsNew()) {
                 $taskRecord->save(false);
@@ -432,6 +435,26 @@ class Tasks extends Component
         }
 
         return $tasks;
+    }
+
+    /**
+     * Returns information about all the tasks.
+     *
+     * @return array
+     */
+    public function getTaskInfo(): array
+    {
+        $taskInfo = [];
+
+        foreach ($this->getAllTasks() as $task) {
+            /** @var Task $task */
+            $info = ArrayHelper::toArray($task);
+            // Include how many seconds it's been since it was updated
+            $info['age'] = time() - $task->dateUpdated->getTimestamp();
+            $taskInfo[] = $info;
+        }
+
+        return $taskInfo;
     }
 
     /**

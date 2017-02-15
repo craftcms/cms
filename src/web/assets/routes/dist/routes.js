@@ -121,8 +121,8 @@
                     }
                 }
 
-                this.$uri.html(uriHtml);
-                this.$template.html(this.modal.$templateInput.val());
+                this.$uri.text(uriHtml);
+                this.$template.text(this.modal.$templateInput.val());
             }
 
         });
