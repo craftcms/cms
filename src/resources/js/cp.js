@@ -832,8 +832,6 @@ Craft.CP = Garnish.Base.extend(
 			}
 		}
 
-        console.log(workingTask ? workingTask.age : null, delay);
-
 		if (!delay)
 		{
 			this._trackTaskProgressInternal();
