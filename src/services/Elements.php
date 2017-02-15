@@ -26,6 +26,7 @@ use craft\errors\ElementNotFoundException;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -348,12 +349,11 @@ class Elements extends Component
 
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
+            $humanClass = ucfirst(App::humanizeClass(get_class($element)));
             if ($isNewElement) {
-                $element->title = Craft::t('app', 'New Element');
+                $element->title = Craft::t('app', 'New {class}', ['class' => $humanClass]);
             } else {
-                $element->title = Craft::t('app', 'Element {id}', [
-                    'id' => $element->id
-                ]);
+                $element->title = "{$humanClass} {$element->id}";
             }
         }
 
