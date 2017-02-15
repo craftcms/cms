@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - Improved the Asset index progress bar to remain in the middle when scrolling the index down during an upload.
 
+### Removed
+- Removed `TasksController::actionGetRunningTaskInfo()`.
+
 ### Fixed
 - Fixed a bug where a PHP error could occur when auto-updating Craft if the Zend OPcache “restrict_api” config setting was set.
 
