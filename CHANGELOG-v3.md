@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added `craft\models\FieldLayout::getFieldByHandle()`.
 - Added `craft\services\Tasks::getTaskInfo()`.
+- Added the `$maybeAutoRun` argument to `craft\services\Tasks::queueTask()`.
 - Added Craft’s required PHP extensions to `composer.json`.
 
 ### Changed

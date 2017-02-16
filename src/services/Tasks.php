@@ -87,12 +87,13 @@ class Tasks extends Component
     /**
      * Saves a new task and queues it up to be run at the earliest opportunity.
      *
-     * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param TaskInterface|array|string $task         The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param bool                       $maybeAutoRun Whether this request should maybe be turned into a task runner
      *
      * @throws \Exception
      * @return TaskInterface The task
      */
-    public function queueTask($task): TaskInterface
+    public function queueTask($task, $maybeAutoRun = true): TaskInterface
     {
         if (!$task instanceof TaskInterface) {
             $task = $this->createTask($task);
@@ -100,9 +101,13 @@ class Tasks extends Component
 
         $this->saveTask($task);
 
-        if (!$this->_listeningForResponse && Craft::$app->getConfig()->get('runTasksAutomatically') && !Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE,
-                [$this, 'handleResponse']);
+        if (
+            $maybeAutoRun === true &&
+            $this->_listeningForResponse === false &&
+            Craft::$app->getConfig()->get('runTasksAutomatically') &&
+            !Craft::$app->getRequest()->getIsConsoleRequest()
+        ) {
+            Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
             $this->_listeningForResponse = true;
         }
 
@@ -712,10 +717,7 @@ class Tasks extends Component
         $request = Craft::$app->getRequest();
         $response = Craft::$app->getResponse();
 
-        $response->off(Response::EVENT_AFTER_PREPARE, [
-            $this,
-            'handleResponse'
-        ]);
+        $response->off(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
 
         // Ignore if tasks are already running
         if ($this->getIsTaskRunning()) {
