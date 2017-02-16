@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
 - Elements no longer get a default title on save, unless they’re being saved without validation.
+- Updated Garnish to 0.1.13.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
