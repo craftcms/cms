@@ -199,11 +199,11 @@ class Users extends Component
      * $user = Craft::$app->getUsers()->getUserByUid($userUid);
      * ```
      *
-     * @param int $uid The user’s UID.
+     * @param string $uid The user’s UID.
      *
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
-    public function getUserByUid(int $uid)
+    public function getUserByUid(string $uid)
     {
         return User::find()
             ->uid($uid)
@@ -233,8 +233,9 @@ class Users extends Component
             $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
             $duration = new \DateInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
             $minCodeIssueDate->sub($duration);
+            $verificationCodeIssuedDate = new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'));
 
-            $valid = $userRecord->verificationCodeIssuedDate > $minCodeIssueDate;
+            $valid = $verificationCodeIssuedDate > $minCodeIssueDate;
 
             if (!$valid) {
                 // It's expired, go ahead and remove it from the record so if they click the link again, it'll throw an
