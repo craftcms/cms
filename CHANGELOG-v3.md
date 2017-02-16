@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - #1372: Fixed a bug where the Database Backup utility wouldn’t show an error when the backup failed.
 - Fixed a bug where saving preexisting Active Record objects was not updating the `dateUpdated` column automatically.
 - #1380: Fixed a bug where required fields on a field layout were not being enforced.
+- Fixed a bug where required Plain Text fields were not getting a validation error if left blank.
 
 ## 3.0.0-beta.3 - 2017-02-07
 
