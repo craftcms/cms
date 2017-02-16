@@ -24,7 +24,7 @@
 	{%- endif %}
 	{%- for key, option in options %}
 		{%- set optionLabel = (option.label is defined ? option.label : option) %}
-		{%- set optionValue = (option.value is defined ? option.value : key) -%}
+		{%- set optionValue = (option.value is defined ? option.value : key)~'' -%}
 		{% if not showAllOption or optionValue != allValue %}
 			<div>
 				{% include "_includes/forms/checkbox" with {
