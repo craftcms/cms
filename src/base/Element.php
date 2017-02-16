@@ -664,13 +664,6 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var int|false|null The structure ID that the element is associated with
-     * @see getStructureId()
-     * @see setStructureId()
-     */
-    private $_structureId;
-
-    /**
      * @var
      */
     private $_parent;
@@ -1126,38 +1119,10 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getStructureId()
-    {
-        if ($this->_structureId === null) {
-            $this->setStructureId($this->resolveStructureId());
-        }
-
-        if ($this->_structureId !== false) {
-            return $this->_structureId;
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setStructureId($structureId)
-    {
-        if (!empty($structureId)) {
-            $this->_structureId = $structureId;
-        } else {
-            $this->_structureId = false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getAncestors(int $dist = null)
     {
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->ancestorOf($this)
             ->siteId($this->siteId)
             ->ancestorDist($dist);
@@ -1174,7 +1139,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->descendantOf($this)
             ->siteId($this->siteId)
             ->descendantDist($dist);
@@ -1199,7 +1164,7 @@ abstract class Element extends Component implements ElementInterface
     public function getSiblings()
     {
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->siblingOf($this)
             ->siteId($this->siteId);
     }
@@ -1212,7 +1177,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_prevSibling === null) {
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
-            $query->structureId = $this->getStructureId();
+            $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->status = null;
@@ -1235,7 +1200,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_nextSibling === null) {
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
-            $query->structureId = $this->getStructureId();
+            $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->status = null;
@@ -1835,17 +1800,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $site;
-    }
-
-    /**
-     * Returns the ID of the structure that the element is inherently associated with, if any.
-     *
-     * @return int|null
-     * @see getStructureId()
-     */
-    protected function resolveStructureId()
-    {
-        return null;
     }
 
     /**

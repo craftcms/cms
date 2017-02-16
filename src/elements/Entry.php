@@ -965,17 +965,6 @@ EOD;
         parent::afterMoveInStructure($structureId);
     }
 
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolveStructureId()
-    {
-        return $this->getSection()->structureId;
-    }
-
     // Private Methods
     // =========================================================================
 

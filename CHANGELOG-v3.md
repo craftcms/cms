@@ -4,7 +4,9 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added the `withStructure` param to element queries (defaults to `true` for entry and category queries).
 - Added `craft\base\PluginInterface::setSettings()`.
+- Added `craft\elements\db\ElementQueryInterface::withStructure()`.
 - Added `craft\helpers\App::humanizeClass()`.
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added `craft\models\FieldLayout::getFieldByHandle()`.
@@ -15,6 +17,11 @@ Craft CMS 3.0 Working Changelog
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
 - Elements no longer get a default title on save, unless they’re being saved without validation.
 - Updated Garnish to 0.1.13.
+
+### Removed
+- Removed `craft\base\Element::resolveStructureId()`.
+- Removed `craft\base\ElementInterface::getStructureId()`.
+- Removed `craft\base\ElementInterface::setStructureId()`.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
@@ -36,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 - #1380: Fixed a bug where required fields on a field layout were not being enforced.
 - Fixed a bug where required Plain Text fields were not getting a validation error if left blank.
 - Fixed a PHP type error that occurred when calling `craft\base\Element::getPrevSibling()` or `getNextSibling()`.
+- #1375: Fixed a bug where Structure-related element methods (e.g. `getParent()`) weren’t working for elements that weren’t queried with the `structureId` param set.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

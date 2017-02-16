@@ -190,6 +190,15 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function with($value);
 
     /**
+     * Sets the [[withStructure]] property.
+     *
+     * @param bool $value The property value (defaults to true)
+     *
+     * @return static self reference
+     */
+    public function withStructure(bool $value = true);
+
+    /**
      * Sets the [[structureId]] property.
      *
      * @param int|null $value The property value

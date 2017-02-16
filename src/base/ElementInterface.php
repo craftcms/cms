@@ -528,20 +528,6 @@ interface ElementInterface extends ComponentInterface
     public function setParent(ElementInterface $parent = null);
 
     /**
-     * Returns the ID of the structure that the element is associated with, if any.
-     *
-     * @return int|null|false The ID of the structure, or null if there isn’t one
-     */
-    public function getStructureId();
-
-    /**
-     * Sets the ID of the structure that the element is associated with.
-     *
-     * @param int|false|null $structureId The ID of the structure, or null to remove the previous association.
-     */
-    public function setStructureId($structureId);
-
-    /**
      * Returns the element’s ancestors.
      *
      * @param int|null $dist
