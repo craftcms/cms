@@ -815,6 +815,16 @@ class Asset extends Element
     }
 
     /**
+     * Get a stream of the actual file.
+     *
+     * @return resource
+     */
+    public function getStream()
+    {
+        return $this->getVolume()->getFileStream($this->getUri());
+    }
+
+    /**
      * Return whether the Asset has a URL.
      *
      * @return bool

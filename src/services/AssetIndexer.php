@@ -7,6 +7,7 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\errors\AssetException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -189,23 +190,39 @@ class AssetIndexer extends Component
 
             if ($asset->kind === 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
+                $dimensions = [];
 
                 if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
                     if (!$volume instanceof LocalVolumeInterface) {
-                        $volume->saveFileLocally($uriPath, $targetPath);
+                        $indexed = false;
 
-                        // Store the local source for now and set it up for deleting, if needed
-                        $assetTransforms = Craft::$app->getAssetTransforms();
-                        $assetTransforms->storeLocalSource(
-                            $targetPath
-                        );
-                        $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                        try {
+                            $stream = $asset->getStream();
+
+                            if (is_resource($stream)) {
+                                $dimensions = Image::imageSizeByStream($stream);
+                                fclose($stream);
+                                $indexed = is_array($dimensions);
+                            }
+                        } catch (AssetException $e) {
+                            Craft::info($e->getMessage());
+                        }
+
+                        if (!$indexed) {
+                            $volume->saveFileLocally($uriPath, $targetPath);
+                            // Store the local source for now and set it up for deleting, if needed
+                            $assetTransforms = Craft::$app->getAssetTransforms();
+                            $assetTransforms->storeLocalSource($targetPath);
+                            $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                        }
                     }
 
-                    clearstatcache();
-                    list ($asset->width, $asset->height) = Image::imageSize(
-                        $targetPath
-                    );
+                    if (empty($dimensions)) {
+                        clearstatcache();
+                        $dimensions = Image::imageSize($targetPath);
+                    }
+
+                    list ($asset->width, $asset->height) = $dimensions;
                 }
             }
 
