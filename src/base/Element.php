@@ -60,17 +60,17 @@ use yii\validators\Validator;
  * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
  * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
  * @property string|null           $status                The element’s status
- * @property Element               $next                  The next element relative to this one, from a given set of criteria
- * @property Element               $prev                  The previous element relative to this one, from a given set of criteria
- * @property Element               $parent                The element’s parent
+ * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
+ * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element|null          $parent                The element’s parent
  * @property mixed                 $route                 The route that should be used when the element’s URI is requested
  * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors             The element’s ancestors
  * @property ElementQueryInterface $descendants           The element’s descendants
  * @property ElementQueryInterface $children              The element’s children
  * @property ElementQueryInterface $siblings              All of the element’s siblings
- * @property Element               $prevSibling           The element’s previous sibling
- * @property Element               $nextSibling           The element’s next sibling
+ * @property Element|null          $prevSibling           The element’s previous sibling
+ * @property Element|null          $nextSibling           The element’s next sibling
  * @property bool                  $hasDescendants        Whether the element has descendants
  * @property int                   $totalDescendants      The total number of descendants that the element has
  * @property string                $title                 The element’s title
@@ -1206,10 +1206,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getPrevSibling(): ElementQueryInterface
+    public function getPrevSibling()
     {
         if ($this->_prevSibling === null) {
             /** @var ElementQuery $query */
@@ -1231,10 +1229,8 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getNextSibling(): ElementQueryInterface
+    public function getNextSibling()
     {
         if ($this->_nextSibling === null) {
             /** @var ElementQuery $query */
