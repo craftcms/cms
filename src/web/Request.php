@@ -803,13 +803,25 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the request will accept a JSON response.
+     * Returns whether the request will accept a given content type3
+     *
+     * @param string $contentType
+     *
+     * @return bool
      */
-    public function getAcceptsJson()
+    public function accepts(string $contentType): bool
     {
-        $acceptableContentTypes = $this->getAcceptableContentTypes();
+        return array_key_exists($contentType, $this->getAcceptableContentTypes());
+    }
 
-        return array_key_exists('application/json', $acceptableContentTypes);
+    /**
+     * Returns whether the request will accept a JSON response.
+     *
+     * @return bool
+     */
+    public function getAcceptsJson(): bool
+    {
+        return $this->accepts('application/json');
     }
 
     // Protected Methods
