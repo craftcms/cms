@@ -1685,9 +1685,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } else if ($this->structureId) {
-                $this->orderBy = 'structureelements.lft';
+                $this->orderBy = ['structureelements.lft' => SORT_ASC];
             } else {
-                $this->orderBy = 'elements.dateCreated desc';
+                $this->orderBy = ['elements.dateCreated' => SORT_DESC];
             }
         }
 
