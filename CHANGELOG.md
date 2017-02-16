@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- #1378: Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`.
+
 ## 2.6.2962 - 2017-02-15
 
 ### Added
