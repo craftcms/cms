@@ -54,6 +54,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where required Plain Text fields were not getting a validation error if left blank.
 - Fixed a PHP type error that occurred when calling `craft\base\Element::getPrevSibling()` or `getNextSibling()`.
 - #1375: Fixed a bug where Structure-related element methods (e.g. `getParent()`) weren’t working for elements that weren’t queried with the `structureId` param set.
+- #1389: Fixed a bug where an exception was thrown when saving an element with a slug that was more than 255 characters long, rather than giving the slug a validation error.
 
 ## 3.0.0-beta.3 - 2017-02-07
 

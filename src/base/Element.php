@@ -819,7 +819,7 @@ abstract class Element extends Component implements ElementInterface
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
-            [['title'], 'string', 'max' => 255],
+            [['title', 'slug'], 'string', 'max' => 255],
         ];
 
         // Require the title?
