@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\fields\BaseRelationField::viewModeFieldHtml()` to `getViewModeFieldHtml()`, and now it’s public.
 - It’s now possible for field types that extend `craft\fields\BaseRelationField` to override the settings template by setting the `$settingsTemplate` property.
 - `craft\volumes\Local` now extends `craft\base\FolderVolume` instead of `craft\base\Volume`.
+- Replaced `craft\services::fillGapsInCategoryIds()` with `fillGapsInCategories()`.
 - Updated Garnish to 0.1.13.
 
 ### Removed

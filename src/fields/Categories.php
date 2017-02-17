@@ -80,24 +80,23 @@ class Categories extends BaseRelationField
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if (is_array($value)) {
-            // Get the structure ID
-            $firstCategory = Category::findOne($value[0]);
-            $structureId = $firstCategory->getGroup()->structureId;
+            /** @var Category[] $categories */
+            $categories = Category::find()
+                ->id($value)
+                ->status(null)
+                ->enabledForSite(false)
+                ->all();
 
             // Fill in any gaps
             $categoriesService = Craft::$app->getCategories();
-            $value = $categoriesService->fillGapsInCategoryIds($value, $structureId);
+            $categoriesService->fillGapsInCategories($categories);
 
+            // Enforce the branch limit
             if ($this->branchLimit) {
-                /** @var Category[] $categories */
-                $categories = Category::find()
-                    ->id($value)
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->all();
                 $categoriesService->applyBranchLimitToCategories($categories, $this->branchLimit);
-                $value = ArrayHelper::getColumn($categories, 'id');
             }
+
+            $value = ArrayHelper::getColumn($categories, 'id');
         }
 
         return parent::normalizeValue($value, $element);

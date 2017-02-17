@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\models\CategoryGroup;
@@ -637,48 +638,43 @@ class Categories extends Component
     }
 
     /**
-     * Updates a list of category IDs, filling in any gaps in the family tree.
+     * Patches an array of categories, filling in any gaps in the tree.
      *
-     * @param int[] $ids         The original list of category IDs
-     * @param int   $structureId The structure ID
+     * @param Category[] $categories
      *
-     * @return int[] The list of category IDs with all the gaps filled in.
+     * @return void
      */
-    public function fillGapsInCategoryIds(array $ids, int $structureId): array
+    public function fillGapsInCategories(array &$categories)
     {
-        $completeIds = [];
+        /** @var Category|null $prevCategory */
+        $prevCategory = null;
+        $patchedCategories = [];
 
-        if (!empty($ids)) {
-            // Make sure that for each selected category, all of its parents are also selected.
-            $categoryQuery = Category::find();
-            $categoryQuery->id($ids);
-            $categoryQuery->status(null);
-            $categoryQuery->enabledForSite(false);
-            $categoryQuery->limit(null);
-            $categoryQuery->structureId($structureId);
-            $categories = $categoryQuery->all();
+        foreach ($categories as $i => $category) {
+            // Did we just skip any categories?
+            if ($category->level != 1 && (
+                    ($i == 0) ||
+                    (!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
+                )
+            ) {
+                // Merge in any missing ancestors
+                /** @var CategoryQuery $ancestorQuery */
+                $ancestorQuery = $category->getAncestors();
 
-            $prevCategory = null;
-
-            foreach ($categories as $i => $category) {
-                // Did we just skip any categories?
-                if ($category->level != 1 && (
-                        ($i == 0) ||
-                        (!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
-                    )
-                ) {
-                    // Merge in all of the entry's ancestors
-                    $ancestorIds = $category->getAncestors()->ids();
-                    /** @noinspection SlowArrayOperationsInLoopInspection */
-                    $completeIds = array_merge($completeIds, $ancestorIds);
+                if ($prevCategory) {
+                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);
                 }
 
-                $completeIds[] = $category->id;
-                $prevCategory = $category;
+                foreach ($ancestorQuery->all() as $ancestor) {
+                    $patchedCategories[] = $ancestor;
+                }
             }
+
+            $patchedCategories[] = $category;
+            $prevCategory = $category;
         }
 
-        return $completeIds;
+        $categories = $patchedCategories;
     }
 
     /**
