@@ -2,6 +2,10 @@
 
 {% import "_includes/forms" as forms %}
 
+{% set folderOptions = field.getFolderOptions() %}
+{% set fileKindOptions = field.getFileKindOptions() %}
+{% set isMatrix = craft.app.view.getNamespace()[0:26] == 'types[Matrix][blockTypes][' %}
+
 {% macro uploadLocationInput(name, field, sourceOptions) %}
     {% from "_includes/forms" import select, text %}
     <table class="inputs fullwidth">
@@ -55,7 +59,7 @@
             {% if folderOptions %}
                 {{ forms.checkboxSelectField({
                     label: "Sources"|t('app'),
-                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: displayName|lower }),
+                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: field.displayName()|lower }),
                     id: 'sources',
                     name: 'sources',
                     options: folderOptions,

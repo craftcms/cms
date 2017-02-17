@@ -18,6 +18,12 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
 - Elements no longer get a default title on save, unless they’re being saved without validation.
+- `craft\fields\BaseRelationField::$allowMultipleSources` is now public.
+- `craft\fields\BaseRelationField::$allowLimit` is now public.
+- Renamed `craft\fields\BaseRelationField::sourceOptions()` to `getSourceOptions()`, and now it’s public.
+- Renamed `craft\fields\BaseRelationField::targetSiteFieldHtml()` to `getTargetSiteFieldHtml()`, and now it’s public.
+- Renamed `craft\fields\BaseRelationField::viewModeFieldHtml()` to `getViewModeFieldHtml()`, and now it’s public.
+- It’s now possible for field types that extend `craft\fields\BaseRelationField` to override the settings template by setting the `$settingsTemplate` property.
 - Updated Garnish to 0.1.13.
 
 ### Removed
