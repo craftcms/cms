@@ -35,13 +35,13 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Element::resolveStructureId()`.
 - Removed `craft\base\ElementInterface::getStructureId()`.
 - Removed `craft\base\ElementInterface::setStructureId()`.
+- Removed `craft\base\Volume::createDir()`.
+- Removed `craft\base\Volume::deleteDir()`.
+- Removed `craft\base\Volume::folderExists()`.
+- Removed `craft\base\Volume::renameDir()`.
 - Removed `craft\base\VolumeInterface::createDir()`.
 - Removed `craft\base\VolumeInterface::deleteDir()`.
 - Removed `craft\base\VolumeInterface::renameDir()`.
-- Removed `craft\base\Volume::folderExists()`.
-- Removed `craft\base\Volume::createDir()`.
-- Removed `craft\base\Volume::deleteDir()`.
-- Removed `craft\base\Volume::renameDir()`.
 - Removed the `table.inputs` styles. Use `div.flex` instead.
 
 ### Fixed
