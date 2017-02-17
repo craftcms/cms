@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-15 */
+/*! Craft 3.0.0 - 2017-02-16 */
 (function($){
 
 /** global: Craft */
@@ -6783,7 +6783,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                 siteId: elements[0].siteId,
                 id: this.settings.id,
                 name: this.settings.name,
-                limit: this.settings.limit,
+                branchLimit: this.settings.branchLimit,
                 selectionLabel: this.settings.selectionLabel
             };
 
