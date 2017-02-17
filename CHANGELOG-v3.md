@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Element::resolveStructureId()`.
 - Removed `craft\base\ElementInterface::getStructureId()`.
 - Removed `craft\base\ElementInterface::setStructureId()`.
+- Removed the `table.inputs` styles. Use `div.flex` instead.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
