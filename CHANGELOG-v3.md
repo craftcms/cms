@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
 - Added an option to Asset indexing that allow for whole image downloading for caching purposes.
+- `craft\base\Volume::filesystem()` now accepts a config parameter.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
