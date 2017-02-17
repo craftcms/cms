@@ -314,17 +314,12 @@ ul.icons li a:hover { text-decoration: none; background-color: #f9f9f9; border-c
 
 .toolbar { position: relative; margin-bottom: 28px; min-height: 30px; }
 .toolbar.fixed { position: fixed; z-index: 1; top: 0; margin: 0 -1px; padding: 7px 1px; background: #fff; @include box-shadow(0 1px 0 rgba(0,0,0,0.05)); }
-.toolbar .spinner { position: absolute; top: 0; @include right(-24px); }
-
-table.inputs td { vertical-align: top; }
-table.inputs td:not(:first-child) { @include padding-left(14px); }
-table.inputs :not(.btngroup) > .btn,
-table.inputs .btngroup { display: block; float: none; }
 
 div.flex { @include display-flex; @include align-items(center); align-content: stretch; }
 div.flex > .label { white-space: nowrap; }
-div.flex > *:not(:last-child) { @include margin-right(7px !important); }
+div.flex > *:not(:first-child) { @include margin-left(7px !important); }
 div.flex > .flex-grow { @include flex-grow(1); }
+div.flex > .invisible { visibility: hidden; }
 
 .buttons { position: relative; margin: 24px 0; min-height: 30px; }
 .buttons:before { @include clearafter; margin-bottom: -5px; }
@@ -1591,9 +1586,10 @@ body .redactor-toolbar { z-index: 102; }
  * https://bugzilla.mozilla.org/show_bug.cgi?id=649849
  */
 @mixin select-styles { position: relative; border-radius: $btnBorderRadius; white-space: nowrap; }
-@mixin select-container-styles { display: inline-block; position: relative;
+@mixin select-container-styles { position: relative;
     @include linear-gradient(#fff, hsl($hue, 5%, 98%));
     @include box-shadow(inset 0 0 0 1px rgba(0,0,0,0.1), 0 0px 3px rgba(0,0,0,0.07));
+    :not(.flex) > & { display: inline-block; }
 };
 @mixin select-arrow-styles { @include icon; position: absolute; z-index: 1; top: calc(50% - 5px); @include right(9px); font-size: 10px; content: 'downangle'; @include user-select(none); pointer-events: none; }
 @mixin select-input-styles { display: block; position: relative; border: 0; @include padding(7px, 22px, 7px, 10px); font-size: 13px; line-height: 16px; color: $textcolor; background: none;

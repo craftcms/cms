@@ -43,7 +43,7 @@ class Routes
 
             foreach ($uriParts as $part) {
                 if (is_string($part)) {
-                    $uriDisplayHtml .= $part;
+                    $uriDisplayHtml .= Html::encode($part);
                 } else {
                     $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
                         [

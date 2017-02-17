@@ -19,6 +19,13 @@
   },
   "require": {
     "php": ">=7.0.0",
+    "ext-pcre": "*",
+    "ext-pdo": "*",
+    "ext-openssl": "*",
+    "ext-mbstring": "*",
+    "ext-json": "*",
+    "ext-curl": "*",
+    "ext-zip": "*",
     "yiisoft/yii2": "2.0.11.1",
     "yiisoft/yii2-debug": "2.0.7",
     "yiisoft/yii2-swiftmailer": "2.0.6",
@@ -33,7 +40,7 @@
     "bower-asset/d3-format": "1.0.2.0",
     "bower-asset/d3-time-format": "2.0.3.0",
     "bower-asset/element-resize-detector": "1.1.10",
-    "bower-asset/garnishjs": "0.1.12",
+    "bower-asset/garnishjs": "0.1.13",
     "bower-asset/jquery.payment": "3.0.0",
     "bower-asset/picturefill": "3.0.2",
     "bower-asset/selectize": "0.12.4",
@@ -41,13 +48,18 @@
     "bower-asset/velocity": "1.4.2",
     "bower-asset/fabric": "1.7.3",
     "zendframework/zend-feed": "2.7.0",
-    "craftcms/server-check": "1.0.8"
+    "craftcms/server-check": "1.0.9"
   },
   "require-dev": {
     "codeception/codeception": "2.2.8",
     "codeception/verify": "0.3.2",
     "codeception/specify": "0.4.5",
     "codeception/mockery-module": "0.2.2"
+  },
+  "suggest": {
+    "ext-imagick": "Adds support for more image processing formats and options.",
+    "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8.",
+    "ext-intl": "Adds rich internationalization support."
   },
   "autoload": {
     "psr-4": {

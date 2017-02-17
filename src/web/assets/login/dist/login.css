@@ -21,7 +21,9 @@ html, body { height: 100%; }
 
 #login-form.reset-password #loginName { border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
 
-#password { margin-top: -1px; padding: 14px 5em 14px 16px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+#password { margin-top: -1px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+body.ltr #password { padding: 14px 5em 14px 16px; }
+body.rtl #password { padding: 14px 16px 14px 5em; }
 
 #password-field .passwordwrapper .password-toggle { top: 14px; }
 body.ltr #password-field .passwordwrapper .password-toggle { right: 14px; }

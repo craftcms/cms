@@ -132,11 +132,9 @@ class Number extends Field implements PreviewableFieldInterface
         // Is this a post request?
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsPost()) {
+        if (!$request->getIsConsoleRequest() && $request->getIsPost() && $this->required) {
             // Normalize the number and make it look like this is what was posted
-            if ($value === '') {
-                $value = 0;
-            } else {
+            if ($value !== '') {
                 $value = Localization::normalizeNumber($value);
             }
         }
@@ -149,13 +147,13 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        if ($this->isFresh($element) && ($value < $this->min || $value > $this->max)) {
-            $value = $this->min;
-        }
-
         $decimals = $this->decimals;
-        $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-        $value = number_format($value, $decimals, $decimalSeparator, '');
+
+        // If decimals is 0 (or null, empty for whatever reason), don't run this
+        if ($decimals) {
+            $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+            $value = number_format($value, $decimals, $decimalSeparator, '');
+        }
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'name' => $this->handle,
@@ -169,8 +167,9 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function getElementValidationRules(): array
     {
-        return [
-            ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null],
-        ];
+        $rules = parent::getElementValidationRules();
+        $rules[] = ['number', 'min' => $this->min ?: null, 'max' => $this->max ?: null];
+
+        return $rules;
     }
 }

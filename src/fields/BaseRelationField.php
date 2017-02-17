@@ -103,17 +103,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var bool Whether to allow multiple source selection in the settings
      */
-    protected $allowMultipleSources = true;
+    public $allowMultipleSources = true;
 
     /**
      * @var bool Whether to allow the Limit setting
      */
-    protected $allowLimit = true;
+    public $allowLimit = true;
 
     /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected $allowLargeThumbsView = false;
+
+    /**
+     * @var string Temlpate to use for settings rendering
+     */
+    protected $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 
     /**
      * @var string Template to use for field rendering
@@ -160,17 +165,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings',
-            [
-                'allowMultipleSources' => $this->allowMultipleSources,
-                'allowLimit' => $this->allowLimit,
-                'sources' => $this->sourceOptions(),
-                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
-                'field' => $this,
-                'displayName' => static::displayName(),
-                'defaultSelectionLabel' => static::defaultSelectionLabel(),
-            ]);
+        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, [
+            'field' => $this,
+        ]);
     }
 
     /**
@@ -433,6 +430,102 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         parent::afterElementSave($element, $isNew);
     }
 
+    /**
+     * Normalizes the available sources into select input options.
+     *
+     * @return array
+     */
+    public function getSourceOptions(): array
+    {
+        $options = [];
+        $optionNames = [];
+
+        foreach ($this->availableSources() as $source) {
+            // Make sure it's not a heading
+            if (!isset($source['heading'])) {
+                $options[] = [
+                    'label' => $source['label'],
+                    'value' => $source['key']
+                ];
+                $optionNames[] = $source['label'];
+            }
+        }
+
+        // Sort alphabetically
+        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
+
+        return $options;
+    }
+
+    /**
+     * Returns the HTML for the Target Site setting.
+     *
+     * @return string|null
+     */
+    public function getTargetSiteFieldHtml()
+    {
+        /** @var Element $class */
+        $class = static::elementType();
+
+        if (Craft::$app->getIsMultiSite() && $class::isLocalized()) {
+            $siteOptions = [
+                ['label' => Craft::t('app', 'Same as source'), 'value' => null]
+            ];
+
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                $siteOptions[] = [
+                    'label' => Craft::t('site', $site->name),
+                    'value' => $site->id
+                ];
+            }
+
+            return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
+                [
+                    [
+                        'label' => Craft::t('app', 'Target Site'),
+                        'instructions' => Craft::t('app', 'Which site do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
+                        'id' => 'targetSiteId',
+                        'name' => 'targetSiteId',
+                        'options' => $siteOptions,
+                        'value' => $this->targetSiteId
+                    ]
+                ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the HTML for the View Mode setting.
+     *
+     * @return string|null
+     */
+    public function getViewModeFieldHtml()
+    {
+        $supportedViewModes = $this->supportedViewModes();
+
+        if (count($supportedViewModes) === 1) {
+            return null;
+        }
+
+        $viewModeOptions = [];
+
+        foreach ($supportedViewModes as $key => $label) {
+            $viewModeOptions[] = ['label' => $label, 'value' => $key];
+        }
+
+        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+            [
+                'label' => Craft::t('app', 'View Mode'),
+                'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
+                'id' => 'viewMode',
+                'name' => 'viewMode',
+                'options' => $viewModeOptions,
+                'value' => $this->viewMode
+            ]
+        ]);
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -527,102 +620,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         return Craft::$app->getSites()->currentSite->id;
-    }
-
-    /**
-     * Returns the HTML for the Target Site setting.
-     *
-     * @return string|null
-     */
-    protected function targetSiteFieldHtml()
-    {
-        /** @var Element $class */
-        $class = static::elementType();
-
-        if (Craft::$app->getIsMultiSite() && $class::isLocalized()) {
-            $siteOptions = [
-                ['label' => Craft::t('app', 'Same as source'), 'value' => null]
-            ];
-
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                $siteOptions[] = [
-                    'label' => Craft::t('site', $site->name),
-                    'value' => $site->id
-                ];
-            }
-
-            return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
-                [
-                    [
-                        'label' => Craft::t('app', 'Target Site'),
-                        'instructions' => Craft::t('app', 'Which site do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
-                        'id' => 'targetSiteId',
-                        'name' => 'targetSiteId',
-                        'options' => $siteOptions,
-                        'value' => $this->targetSiteId
-                    ]
-                ]);
-        }
-
-        return null;
-    }
-
-    /**
-     * Normalizes the available sources into select input options.
-     *
-     * @return array
-     */
-    protected function sourceOptions(): array
-    {
-        $options = [];
-        $optionNames = [];
-
-        foreach ($this->availableSources() as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                $options[] = [
-                    'label' => $source['label'],
-                    'value' => $source['key']
-                ];
-                $optionNames[] = $source['label'];
-            }
-        }
-
-        // Sort alphabetically
-        array_multisort($optionNames, SORT_NATURAL | SORT_FLAG_CASE, $options);
-
-        return $options;
-    }
-
-    /**
-     * Returns the HTML for the View Mode setting.
-     *
-     * @return string|null
-     */
-    protected function viewModeFieldHtml()
-    {
-        $supportedViewModes = $this->supportedViewModes();
-
-        if (count($supportedViewModes) === 1) {
-            return null;
-        }
-
-        $viewModeOptions = [];
-
-        foreach ($supportedViewModes as $key => $label) {
-            $viewModeOptions[] = ['label' => $label, 'value' => $key];
-        }
-
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-            [
-                'label' => Craft::t('app', 'View Mode'),
-                'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
-                'id' => 'viewMode',
-                'name' => 'viewMode',
-                'options' => $viewModeOptions,
-                'value' => $this->viewMode
-            ]
-        ]);
     }
 
     /**

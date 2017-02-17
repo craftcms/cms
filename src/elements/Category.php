@@ -501,16 +501,8 @@ class Category extends Element
         parent::afterMoveInStructure($structureId);
     }
 
-    // Protected Methods
+    // Private Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolveStructureId()
-    {
-        return $this->getGroup()->structureId;
-    }
 
     /**
      * Returns whether the category has been assigned a new parent entry.

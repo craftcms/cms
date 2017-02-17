@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use yii\helpers\Inflector;
 
 /**
  * App helper.
@@ -256,5 +257,19 @@ class App
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
         return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
+    }
+
+    /**
+     * Returns a humanized class name.
+     *
+     * @param string $class
+     *
+     * @return string
+     */
+    public static function humanizeClass(string $class): string
+    {
+        $classParts = explode('\\', $class);
+
+        return StringHelper::toLowerCase(Inflector::camel2words(array_pop($classParts)));
     }
 }

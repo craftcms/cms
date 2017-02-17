@@ -117,24 +117,21 @@ class Assets extends BaseRelationField
     {
         parent::init();
         $this->allowLargeThumbsView = true;
+        $this->settingsTemplate = '_components/fieldtypes/Assets/settings';
         $this->inputTemplate = '_components/fieldtypes/Assets/input';
         $this->inputJsClass = 'Craft.AssetSelectInput';
     }
 
     /**
-     * @inheritdoc
+     * Returns the available folder options for the settings
+     *
+     * @return array
      */
-    public function getSettingsHtml()
+    public function getFolderOptions(): array
     {
-        // Create a list of folder options for the main Source setting, and source options for the upload location
-        // settings.
         $folderOptions = [];
-        $sourceOptions = [];
 
-        /** @var Asset $class */
-        $class = static::elementType();
-
-        foreach ($class::sources('settings') as $key => $volume) {
+        foreach (Asset::sources('settings') as $key => $volume) {
             if (!isset($volume['heading'])) {
                 $folderOptions[] = [
                     'label' => $volume['label'],
@@ -142,6 +139,16 @@ class Assets extends BaseRelationField
                 ];
             }
         }
+
+        return $folderOptions;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceOptions(): array
+    {
+        $sourceOptions = [];
 
         foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
             /** @var Volume $volume */
@@ -151,28 +158,23 @@ class Assets extends BaseRelationField
             ];
         }
 
+        return $sourceOptions;
+    }
+
+    /**
+     * Returns the available file kind options for the settings
+     *
+     * @return array
+     */
+    public function getFileKindOptions(): array
+    {
         $fileKindOptions = [];
 
         foreach (AssetsHelper::getFileKinds() as $value => $kind) {
             $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
         }
 
-        $namespace = Craft::$app->getView()->getNamespace();
-        $isMatrix = (strpos($namespace, 'types[Matrix][blockTypes][') === 0);
-
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
-            [
-                'allowLimit' => $this->allowLimit,
-                'folderOptions' => $folderOptions,
-                'sourceOptions' => $sourceOptions,
-                'targetSiteFieldHtml' => $this->targetSiteFieldHtml(),
-                'viewModeFieldHtml' => $this->viewModeFieldHtml(),
-                'field' => $this,
-                'displayName' => static::displayName(),
-                'fileKindOptions' => $fileKindOptions,
-                'isMatrix' => $isMatrix,
-                'defaultSelectionLabel' => static::defaultSelectionLabel(),
-            ]);
+        return $fileKindOptions;
     }
 
     /**
