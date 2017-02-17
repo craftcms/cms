@@ -1863,7 +1863,12 @@ abstract class Element extends Component implements ElementInterface
                             if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
                                 $value = $this->getEagerLoadedElements($field->handle);
                             } else {
-                                $value = $this->getFieldValue($field->handle);
+                                // The field might not actually belong to this element
+                                try {
+                                    $value = $this->getFieldValue($field->handle);
+                                } catch (\Exception $e) {
+                                    $value = $field->normalizeValue(null);
+                                }
                             }
 
                             return $field->getTableAttributeHtml($value, $this);
