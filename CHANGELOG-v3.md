@@ -7,6 +7,14 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\PluginInterface::setSettings()`.
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added Craft’s required PHP extensions to `composer.json`.
+- Added `craft\helpers\Image::imageSizeByStream()`.
+- Added `craft\elements\Asset::getStream()`.
+- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\base\Volume::getFileStream()`
+
+### Changed
+- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
+- Added an option to Asset indexing that allow for whole image downloading for caching purposes.
 
 ### Fixed
 - #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
