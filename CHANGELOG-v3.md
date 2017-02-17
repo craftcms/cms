@@ -7,6 +7,8 @@ Craft CMS 3.0 Working Changelog
 - #1388: Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting.
 - Added the `withStructure` param to element queries (defaults to `true` for entry and category queries).
 - Added `craft\base\PluginInterface::setSettings()`.
+- Added `craft\base\FolderVolumeInterface` that should be used by all Volumes supporting discrete folders.
+- Added `craft\base\FolderVolume` that should be used by all Volumes supporting discrete folders.
 - Added `craft\elements\db\ElementQueryInterface::withStructure()`.
 - Added `craft\helpers\App::humanizeClass()`.
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
@@ -26,12 +28,20 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\fields\BaseRelationField::targetSiteFieldHtml()` to `getTargetSiteFieldHtml()`, and now it’s public.
 - Renamed `craft\fields\BaseRelationField::viewModeFieldHtml()` to `getViewModeFieldHtml()`, and now it’s public.
 - It’s now possible for field types that extend `craft\fields\BaseRelationField` to override the settings template by setting the `$settingsTemplate` property.
+- `craft\volumes\Local` now extends `craft\base\FolderVolume` instead of `craft\base\Volume`.
 - Updated Garnish to 0.1.13.
 
 ### Removed
 - Removed `craft\base\Element::resolveStructureId()`.
 - Removed `craft\base\ElementInterface::getStructureId()`.
 - Removed `craft\base\ElementInterface::setStructureId()`.
+- Removed `craft\base\VolumeInterface::createDir()`.
+- Removed `craft\base\VolumeInterface::deleteDir()`.
+- Removed `craft\base\VolumeInterface::renameDir()`.
+- Removed `craft\base\Volume::folderExists()`.
+- Removed `craft\base\Volume::createDir()`.
+- Removed `craft\base\Volume::deleteDir()`.
+- Removed `craft\base\Volume::renameDir()`.
 - Removed the `table.inputs` styles. Use `div.flex` instead.
 
 ### Fixed
