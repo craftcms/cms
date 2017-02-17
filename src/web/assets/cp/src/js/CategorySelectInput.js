@@ -39,7 +39,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                 siteId: elements[0].siteId,
                 id: this.settings.id,
                 name: this.settings.name,
-                limit: this.settings.limit,
+                branchLimit: this.settings.branchLimit,
                 selectionLabel: this.settings.selectionLabel
             };
 

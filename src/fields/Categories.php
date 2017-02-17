@@ -10,6 +10,8 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
 /**
@@ -47,6 +49,14 @@ class Categories extends BaseRelationField
         return Craft::t('app', 'Add a category');
     }
 
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var int|null Branch limit
+     */
+    public $branchLimit;
+
     // Public Methods
     // =========================================================================
 
@@ -56,7 +66,9 @@ class Categories extends BaseRelationField
     public function init()
     {
         parent::init();
+        $this->allowLimit = false;
         $this->allowMultipleSources = false;
+        $this->settingsTemplate = '_components/fieldtypes/Categories/settings';
         $this->inputTemplate = '_components/fieldtypes/Categories/input';
         $this->inputJsClass = 'Craft.CategorySelectInput';
         $this->sortable = false;
@@ -73,7 +85,19 @@ class Categories extends BaseRelationField
             $structureId = $firstCategory->getGroup()->structureId;
 
             // Fill in any gaps
-            $value = Craft::$app->getCategories()->fillGapsInCategoryIds($value, $structureId);
+            $categoriesService = Craft::$app->getCategories();
+            $value = $categoriesService->fillGapsInCategoryIds($value, $structureId);
+
+            if ($this->branchLimit) {
+                /** @var Category[] $categories */
+                $categories = Category::find()
+                    ->id($value)
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->all();
+                $categoriesService->applyBranchLimitToCategories($categories, $this->branchLimit);
+                $value = ArrayHelper::getColumn($categories, 'id');
+            }
         }
 
         return parent::normalizeValue($value, $element);
@@ -94,5 +118,16 @@ class Categories extends BaseRelationField
         }
 
         return parent::getInputHtml($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    {
+        $variables = parent::inputTemplateVariables($selectedElementsQuery, $element);
+        $variables['branchLimit'] = $this->branchLimit;
+
+        return $variables;
     }
 }

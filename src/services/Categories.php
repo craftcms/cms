@@ -681,6 +681,35 @@ class Categories extends Component
         return $completeIds;
     }
 
+    /**
+     * Filters an array of categories down to only <= X branches.
+     *
+     * @param Category[] $categories
+     * @param int        $branchLimit
+     *
+     * @return void
+     */
+    public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
+    {
+        $branchCount = 0;
+        $prevCategory = null;
+
+        foreach ($categories as $i => $category) {
+            // Is this a new branch?
+            if ($prevCategory === null || !$category->isDescendantOf($prevCategory)) {
+                $branchCount++;
+
+                // Have we gone over?
+                if ($branchCount > $branchLimit) {
+                    array_splice($categories, $i);
+                    break;
+                }
+            }
+
+            $prevCategory = $category;
+        }
+    }
+
     // Private Methods
     // =========================================================================
 

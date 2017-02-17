@@ -4,12 +4,14 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- #1388: Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting.
 - Added the `withStructure` param to element queries (defaults to `true` for entry and category queries).
 - Added `craft\base\PluginInterface::setSettings()`.
 - Added `craft\elements\db\ElementQueryInterface::withStructure()`.
 - Added `craft\helpers\App::humanizeClass()`.
 - Added `craft\helpers\FileHelper::lastModifiedTime()`.
 - Added `craft\models\FieldLayout::getFieldByHandle()`.
+- Added `craft\services\Categories::applyBranchLimitToCategories()`.
 - Added `craft\services\Tasks::getTaskInfo()`.
 - Added `craft\web\Request::accepts()`.
 - Added the `$maybeAutoRun` argument to `craft\services\Tasks::queueTask()`.
