@@ -207,7 +207,7 @@
                                         {% for group in allGroups %}
                                             <li>
                                                 {{ forms.checkbox({
-                                                    label: group.name|t('site'),
+                                                    label: group.name|t('site')|e,
                                                     name: 'groups[]',
                                                     value: group.id,
                                                     checked: (group.id in userGroupIds)

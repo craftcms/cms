@@ -50,8 +50,8 @@
                 var subject = this.modal.$subjectInput.val(),
                     body = this.modal.$bodyInput.val().replace(/\n/g, '<br>');
 
-                this.$subject.html(subject);
-                this.$body.html(body);
+                this.$subject.text(subject);
+                this.$body.text(body);
             }
 
         });

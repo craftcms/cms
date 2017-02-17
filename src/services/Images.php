@@ -196,8 +196,14 @@ class Images extends Component
             Craft::$app->getConfig()->maxPowerCaptain();
         }
 
+        // If the file is 0bytes, we probably have enough memory
+        if (!filesize($filePath)) {
+            return true;
+        }
+
         // Find out how much memory this image is going to need.
         $imageInfo = getimagesize($filePath);
+
         $K64 = 65536;
         $tweakFactor = 1.7;
         $bits = $imageInfo['bits'] ?? 8;

@@ -702,15 +702,15 @@ class Plugins extends Component
             return null;
         }
 
+        // Set its settings
+        if (isset($row['settings'])) {
+            $config['settings'] = $row['settings'];
+        }
+
         // Create the plugin
         /** @var Plugin $plugin */
         $moduleId = Inflector::camel2id($config['handle']);
         $plugin = Craft::createObject($config, [$moduleId, Craft::$app]);
-
-        // Set its settings
-        if (isset($row['settings'])) {
-            $plugin->getSettings()->setAttributes($row['settings'], false);
-        }
 
         if (isset($row['id'])) {
             $this->_setPluginMigrator($plugin, $row['id']);

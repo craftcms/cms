@@ -185,9 +185,10 @@ class Request extends \yii\web\Request
         if ($pageTrigger[0] === '?') {
             $pageTrigger = trim($pageTrigger, '?=');
 
-            if ($pageTrigger === 'p') {
-                // Avoid conflict with the main 'p' param
-                $pageTrigger = 'pg';
+            // Avoid conflict with the path param
+            $pathParam = Craft::$app->getConfig()->get('pathParam');
+            if ($pageTrigger === $pathParam) {
+                $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
             }
 
             $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
@@ -802,13 +803,25 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns whether the request will accept a JSON response.
+     * Returns whether the request will accept a given content type3
+     *
+     * @param string $contentType
+     *
+     * @return bool
      */
-    public function getAcceptsJson()
+    public function accepts(string $contentType): bool
     {
-        $acceptableContentTypes = $this->getAcceptableContentTypes();
+        return array_key_exists($contentType, $this->getAcceptableContentTypes());
+    }
 
-        return array_key_exists('application/json', $acceptableContentTypes);
+    /**
+     * Returns whether the request will accept a JSON response.
+     *
+     * @return bool
+     */
+    public function getAcceptsJson(): bool
+    {
+        return $this->accepts('application/json');
     }
 
     // Protected Methods

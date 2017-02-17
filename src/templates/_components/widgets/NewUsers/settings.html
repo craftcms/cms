@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.selectField({
-    label: "Date Range"|t,
+    label: "Date Range"|t('app'),
     id: 'dateRange',
     name: 'dateRange',
     value: widget.dateRange,
@@ -31,13 +31,13 @@
 
 {% if userGroups|length > 0 %}
 
-    {% set userGroupsOptions = [{ label: 'All'|t, value: '' }] %}
+    {% set userGroupsOptions = [{ label: 'All'|t('app'), value: '' }] %}
     {% for userGroup in userGroups %}
-        {% set userGroupsOptions = userGroupsOptions|merge([{ label: userGroup.name|t, value: userGroup.id }]) %}
+        {% set userGroupsOptions = userGroupsOptions|merge([{ label: userGroup.name|t('site'), value: userGroup.id }]) %}
     {% endfor %}
 
     {{ forms.selectField({
-        label: "User Group"|t,
+        label: "User Group"|t('app'),
         id: 'userGroupId',
         name: 'userGroupId',
         value: widget.userGroupId,

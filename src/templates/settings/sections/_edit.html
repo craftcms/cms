@@ -94,8 +94,8 @@
     {% endfor %}
 
     {{ forms.editableTableField({
-        label: "Site Settings"|t,
-        instructions: "Choose which sites this section should be available in, and configure the site-specific settings."|t,
+        label: "Site Settings"|t('app'),
+        instructions: "Choose which sites this section should be available in, and configure the site-specific settings."|t('app'),
         id: 'sites',
         name: 'sites',
         cols: {

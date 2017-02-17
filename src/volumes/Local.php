@@ -2,8 +2,8 @@
 namespace craft\volumes;
 
 use Craft;
+use craft\base\FolderVolume;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\FileHelper;
@@ -22,7 +22,7 @@ use League\Flysystem\FileNotFoundException;
  * @package    craft.app.volumes
  * @since      3.0
  */
-class Local extends Volume implements LocalVolumeInterface
+class Local extends FolderVolume implements LocalVolumeInterface
 {
     // Static
     // =========================================================================

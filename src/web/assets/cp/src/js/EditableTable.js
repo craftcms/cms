@@ -35,9 +35,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
             if (this.isVisible()) {
                 this.initialize();
-            }
-            else {
-                this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
+            } else {
+                // Give everything a chance to initialize
+                Garnish.requestAnimationFrame($.proxy(this, 'initializeIfVisible'));
             }
         },
 
@@ -64,8 +64,12 @@ Craft.EditableTable = Garnish.Base.extend(
         },
 
         initializeIfVisible: function() {
+            this.removeListener(Garnish.$win, 'resize');
+
             if (this.isVisible()) {
                 this.initialize();
+            } else {
+                this.addListener(Garnish.$win, 'resize', 'initializeIfVisible');
             }
         },
 

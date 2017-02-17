@@ -9,6 +9,8 @@
 
 #content #status { margin: 20px auto 250px; text-align: center; font-size: 16px; line-height: 20px; color: #666; }
 
+#content .update + .update { margin-top: 24px; }
+
 /* Keep this LTR since the actual release notes are only LTR */
 #content .update .update-header { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: center; align-items: center; padding-bottom: 10px; border-bottom: 1px solid #e3e5e8; margin-bottom: 16px; }
 

@@ -200,6 +200,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
+     * @var bool|null Whether element structure data should automatically be left-joined into the query.
+     */
+    public $withStructure;
+
+    /**
      * @var int|false|null The structure ID that should be used to join in the structureelements table.
      */
     public $structureId;
@@ -697,6 +702,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function with($value)
     {
         $this->with = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function withStructure(bool $value = true)
+    {
+        $this->withStructure = $value;
 
         return $this;
     }
@@ -1433,19 +1448,28 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->structureId) {
+        if ($this->withStructure || $this->structureId) {
             $this->query
                 ->addSelect([
                     'structureelements.root',
                     'structureelements.lft',
                     'structureelements.rgt',
                     'structureelements.level',
-                ])
-                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
+                ]);
 
-            $this->subQuery
-                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
-                ->andWhere(['structureelements.structureId' => $this->structureId]);
+            if ($this->structureId) {
+                $this->query
+                    ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
+                $this->subQuery
+                    ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
+                    ->andWhere(['structureelements.structureId' => $this->structureId]);
+            } else {
+                $this->query
+                    ->addSelect(['structureelements.structureId'])
+                    ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
+                $this->subQuery
+                    ->leftJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]');
+            }
 
             if ($this->ancestorOf) {
                 /** @var Element $ancestorOf */
@@ -1685,9 +1709,14 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
             } else if ($this->structureId) {
-                $this->orderBy = 'structureelements.lft';
+                $this->orderBy = ['structureelements.lft' => SORT_ASC];
+            } else if ($this->withStructure) {
+                $this->orderBy = [
+                    'structureelements.lft' => SORT_ASC,
+                    'elements.dateCreated' => SORT_DESC,
+                ];
             } else {
-                $this->orderBy = 'elements.dateCreated desc';
+                $this->orderBy = ['elements.dateCreated' => SORT_DESC];
             }
         }
 

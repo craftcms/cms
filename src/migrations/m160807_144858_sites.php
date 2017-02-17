@@ -325,7 +325,7 @@ class m160807_144858_sites extends Migration
                 // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
                 foreach ($columns as $refColumn) {
                     $newColumn = $refColumn.'__siteId';
-                    $isNotNull = $originalRefTable->getColumn($refColumn)->allowNull;
+                    $isNotNull = !$originalRefTable->getColumn($refColumn)->allowNull;
                     $this->addSiteColumn($refTable, $newColumn, $isNotNull, $refColumn);
                     $this->addForeignKey($this->db->getForeignKeyName($refTable, $newColumn), $refTable, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
@@ -552,6 +552,11 @@ class m160807_144858_sites extends Migration
         $this->update($table, [
             $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
         ], '', [], false);
+
+        // In case there were any referenced locales that no longer exist.
+        if ($table === '{{%searchindex}}') {
+            $this->delete($table, ['siteId' => null]);
+        }
 
         if ($isNotNull) {
             $this->alterColumn($table, $column, $type->notNull());

@@ -78,7 +78,7 @@ class SetStatus extends ElementAction
 
         /** @var Element[] $elements */
         $elements = $query->all();
-        $someFailed = false;
+        $failCount = 0;
 
         foreach ($elements as $element) {
             // Skip if there's nothing to change
@@ -95,24 +95,29 @@ class SetStatus extends ElementAction
 
             if ($elementsService->saveElement($element) === false) {
                 // Validation error
-                $someFailed = true;
+                $failCount++;
             }
         }
 
-        if ($someFailed === true) {
+        // Did all of them fail?
+        if ($failCount === count($elements)) {
             if (count($elements) === 1) {
                 $this->setMessage(Craft::t('app', 'Could not update status due to a validation error.'));
             } else {
-                $this->setMessage(Craft::t('app', 'Could not update some statuses due to validation errors.'));
+                $this->setMessage(Craft::t('app', 'Could not update statuses due to validation errors.'));
             }
 
             return false;
         }
 
-        if (count($elements) === 1) {
-            $this->setMessage(Craft::t('app', 'Status updated.'));
+        if ($failCount !== 0) {
+            $this->setMessage(Craft::t('app', 'Status updated, with some failures due to validation errors.'));
         } else {
-            $this->setMessage(Craft::t('app', 'Statuses updated.'));
+            if (count($elements) === 1) {
+                $this->setMessage(Craft::t('app', 'Status updated.'));
+            } else {
+                $this->setMessage(Craft::t('app', 'Statuses updated.'));
+            }
         }
 
         return true;

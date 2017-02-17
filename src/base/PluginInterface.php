@@ -54,6 +54,13 @@ interface PluginInterface
     public function getSettings();
 
     /**
+     * Sets the plugin settings
+     *
+     * @param array $settings The plugin settings that should be set on the settings model
+     */
+    public function setSettings(array $settings);
+
+    /**
      * Returns the settings page response.
      *
      * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings()]]

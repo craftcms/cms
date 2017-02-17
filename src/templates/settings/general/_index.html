@@ -1,15 +1,15 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
-{% set title = "General Settings"|t %}
+{% set title = "General Settings"|t('app') %}
 {% set fullPageForm = true %}
 
 {% set crumbs = [
-    { label: "Settings"|t, url: url('settings') }
+    { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 
 {% macro configWarning(setting, file) -%}
-    {{ "This is being overridden by the {setting} config setting."|t({
+    {{ "This is being overridden by the {setting} config setting."|t('app', {
         setting: '<a href="http://craftcms.com/docs/config-settings#'~setting~'" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
@@ -23,7 +23,7 @@
 
     {{ forms.textField({
         first: true,
-        label: "System Name"|t,
+        label: "System Name"|t('app'),
         id: 'name',
         name: 'name',
         value: info.name
@@ -31,7 +31,7 @@
 
     {{ forms.lightswitchField({
         first: true,
-        label: "System Status"|t,
+        label: "System Status"|t('app'),
         warning: (craft.app.config.get('isSystemOn') is same as(true) or craft.app.config.get('isSystemOn') is same as(false) ? configWarning('isSystemOn')),
         id: 'on',
         name: 'on',
@@ -39,7 +39,7 @@
     }) }}
 
     {{ forms.selectField({
-        label: "Timezone"|t,
+        label: "Timezone"|t('app'),
         warning: (craft.app.config.get('timezone') ? configWarning('timezone')),
         id: 'timezone',
         name: 'timezone',
@@ -58,11 +58,11 @@
         {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
         {{ forms.field({
-            label: "Login Page Logo"|t
+            label: "Login Page Logo"|t('app')
         }, include('settings/general/_images/logo')) }}
 
         {{ forms.field({
-            label: "Site Icon"|t
+            label: "Site Icon"|t('app')
         }, include('settings/general/_images/icon')) }}
 
         <div class="clear"></div>

@@ -1,6 +1,76 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.4 - 2017-02-17
+
+### Added
+- #1388: Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting.
+- Added the `withStructure` param to element queries (defaults to `true` for entry and category queries).
+- Added `craft\base\PluginInterface::setSettings()`.
+- Added `craft\base\FolderVolumeInterface` that should be used by all Volumes supporting discrete folders.
+- Added `craft\base\FolderVolume` that should be used by all Volumes supporting discrete folders.
+- Added `craft\elements\db\ElementQueryInterface::withStructure()`.
+- Added `craft\helpers\App::humanizeClass()`.
+- Added `craft\helpers\FileHelper::lastModifiedTime()`.
+- Added `craft\models\FieldLayout::getFieldByHandle()`.
+- Added `craft\services\Categories::applyBranchLimitToCategories()`.
+- Added `craft\services\Tasks::getTaskInfo()`.
+- Added `craft\web\Request::accepts()`.
+- Added the `$maybeAutoRun` argument to `craft\services\Tasks::queueTask()`.
+- Added Craft’s required PHP extensions to `composer.json`.
+
+### Changed
+- The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
+- Elements no longer get a default title on save, unless they’re being saved without validation.
+- `craft\fields\BaseRelationField::$allowMultipleSources` is now public.
+- `craft\fields\BaseRelationField::$allowLimit` is now public.
+- Renamed `craft\fields\BaseRelationField::sourceOptions()` to `getSourceOptions()`, and now it’s public.
+- Renamed `craft\fields\BaseRelationField::targetSiteFieldHtml()` to `getTargetSiteFieldHtml()`, and now it’s public.
+- Renamed `craft\fields\BaseRelationField::viewModeFieldHtml()` to `getViewModeFieldHtml()`, and now it’s public.
+- It’s now possible for field types that extend `craft\fields\BaseRelationField` to override the settings template by setting the `$settingsTemplate` property.
+- `craft\volumes\Local` now extends `craft\base\FolderVolume` instead of `craft\base\Volume`.
+- Replaced `craft\services::fillGapsInCategoryIds()` with `fillGapsInCategories()`.
+- Updated Garnish to 0.1.13.
+
+### Removed
+- Removed `craft\base\Element::resolveStructureId()`.
+- Removed `craft\base\ElementInterface::getStructureId()`.
+- Removed `craft\base\ElementInterface::setStructureId()`.
+- Removed `craft\base\Volume::createDir()`.
+- Removed `craft\base\Volume::deleteDir()`.
+- Removed `craft\base\Volume::folderExists()`.
+- Removed `craft\base\Volume::renameDir()`.
+- Removed `craft\base\VolumeInterface::createDir()`.
+- Removed `craft\base\VolumeInterface::deleteDir()`.
+- Removed `craft\base\VolumeInterface::renameDir()`.
+- Removed the `table.inputs` styles. Use `div.flex` instead.
+
+### Fixed
+- #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
+- Fixed a PHP type error if you tried to save a Number field’s setting with “Min Value” set to nothing.
+- Fixed a bug where it was not possible to rename a file with the Asset "Rename File" action.
+- #1367: Fixed a PHP error that occurred when uploading a user photo.
+- #1365: Fixed a bug where element titles were not translatable.
+- #1366: Fixed a PHP error that occurred on the Settings → General page if the `timezone` config setting was set.
+- Fixed a bug where some Control Panel message strings were getting translated with the `site` translation category rather than `app`.
+- Fixed a bug where pagination URLs would define page numbers using a `pg` query string param if the `pageTrigger` config setting was set to `'?p'` and the `pathParam` config setting was set to something besides `'p'`.
+- Fixed a bug where if a Craft update failed and the attempt to restore the database from a backup failed, the UI would still show that the restore was successful.
+- Fixed several migration related bugs that were preventing some Craft 2.6 installs from being able to update to Craft 3.
+- Fixed a bug where renaming a folder would remove it’s trailing slash from path.
+- #1371: Fixed a bug where asset bundles weren’t always getting re-published when a sub-file(s) had been updated.
+- Fixed a bug where SVG images without a viewbox defined would not be scaled correctly.
+- Fixed a bug where Craft would generate warning when trying to index images with no content in them.
+- #1372: Fixed a bug where the Database Backup utility wouldn’t show an error when the backup failed.
+- Fixed a bug where saving preexisting Active Record objects was not updating the `dateUpdated` column automatically.
+- #1380: Fixed a bug where required fields on a field layout were not being enforced.
+- Fixed a bug where required Plain Text fields were not getting a validation error if left blank.
+- Fixed a PHP type error that occurred when calling `craft\base\Element::getPrevSibling()` or `getNextSibling()`.
+- #1375: Fixed a bug where Structure-related element methods (e.g. `getParent()`) weren’t working for elements that weren’t queried with the `structureId` param set.
+- #1389: Fixed a bug where an exception was thrown when saving an element with a slug that was more than 255 characters long, rather than giving the slug a validation error.
+- #1391: Fixed a bug where the Password input on the Control Panel Login page was getting extra padding on the right side instead of the left side for browsers that preferred a RTL language.
+- Fixed several issues and unexpected behaviors around the Number field, its default values, min and max settings and required validation.
+- Fixed a bug where the element listing wouldn’t get refreshed after running the “Set status” action, if any of the elements couldn’t be enabled due to validation errors.
+
 ## 3.0.0-beta.3 - 2017-02-07
 
 ### Added
@@ -292,7 +362,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\Session::addAssetBundleFlash()`.
 - Added `craft\web\Session::getAssetBundleFlashes()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
-- Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
+- Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure` events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
 - Added the `beforeRestoreBackup` and `afterRestoreBackup` events to `craft\db\Connection`.
 - Added the `registerActions` event to `craft\base\Element`.

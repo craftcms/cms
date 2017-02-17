@@ -62,6 +62,18 @@ class CategoryQuery extends ElementQuery
     }
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->withStructure === null) {
+            $this->withStructure = true;
+        }
+
+        parent::init();
+    }
+
+    /**
      * Sets the [[editable]] property.
      *
      * @param bool $value The property value (defaults to true)

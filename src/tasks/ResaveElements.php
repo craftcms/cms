@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Task;
 use craft\elements\db\ElementQuery;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 
 /**
@@ -118,7 +119,7 @@ class ResaveElements extends Task
     protected function defaultDescription(): string
     {
         return Craft::t('app', 'Resaving {class} elements', [
-            'class' => StringHelper::toLowerCase($this->elementType)
+            'class' => App::humanizeClass($this->elementType)
         ]);
     }
 }

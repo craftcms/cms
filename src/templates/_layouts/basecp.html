@@ -65,8 +65,8 @@
             datepickerOptions: {
                 constrainInput: false,
                 dateFormat: "{{ craft.app.locale.getDateFormat('short', 'jui')|e('js') }}",
-                prevText: '{{ "Prev"|t|e('js') }}',
-                nextText: '{{ "Next"|t|e('js') }}',
+                prevText: '{{ "Prev"|t('app')|e('js') }}',
+                nextText: '{{ "Next"|t('app')|e('js') }}',
                 firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.app.config.get('defaultWeekStartDay') }},
                 dayNames: {{ localeData.getWeekDayNames('full', true)|json_encode|raw }},
                 dayNamesShort: {{ localeData.getWeekDayNames('short', true)|json_encode|raw }},
@@ -85,14 +85,14 @@
                         {% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
                             {
                                 id: {{ section.id }},
-                                name: "{{ section.name|t|e('js') }}",
+                                name: "{{ section.name|t('site')|e('js') }}",
                                 handle: "{{ section.handle|e('js') }}",
                                 type: "{{ section.type }}",
                                 entryTypes: [
                                     {% for entryType in section.getEntryTypes() %}
                                         {
                                             id: {{ entryType.id }},
-                                            name: "{{ entryType.name|t|e('js') }}",
+                                            name: "{{ entryType.name|t('site')|e('js') }}",
                                             handle: "{{ entryType.handle|e('js') }}"
                                         }{% if not loop.last %},{% endif %}
                                     {% endfor %}
@@ -105,7 +105,7 @@
             editableCategoryGroups: [
                 {% if isInstalled %}
                     {% for group in craft.app.categories.getEditableGroups() %}
-                        {id: {{ group.id }}, name: "{{ group.name|t|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+                        {id: {{ group.id }}, name: "{{ group.name|t('site')|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
                     {% endfor %}
                 {% endif %}
             ]
