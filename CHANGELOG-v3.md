@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.4 - 2017-02-17
 
 ### Added
 - #1388: Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting.
