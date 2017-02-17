@@ -346,7 +346,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\Session::addAssetBundleFlash()`.
 - Added `craft\web\Session::getAssetBundleFlashes()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
-- Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
+- Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure` events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.
 - Added the `beforeRestoreBackup` and `afterRestoreBackup` events to `craft\db\Connection`.
 - Added the `registerActions` event to `craft\base\Element`.
