@@ -27,7 +27,7 @@
     "ext-curl": "*",
     "ext-zip": "*",
     "yiisoft/yii2": "2.0.11.1",
-    "yiisoft/yii2-debug": "2.0.7",
+    "yiisoft/yii2-debug": "2.0.8",
     "yiisoft/yii2-swiftmailer": "2.0.6",
     "guzzlehttp/guzzle": "6.2.2",
     "danielstjules/stringy": "2.3.2",
