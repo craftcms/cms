@@ -26,13 +26,12 @@ class RedactorAsset extends AssetBundle
             JqueryAsset::class,
         ];
 
-        // TODO: Create compressed versions of redactor.css and redactor.js with our hacks
         $this->css = [
-            'redactor.css',
+            'redactor.min.css',
         ];
 
         $this->js = [
-            'redactor.js',
+            'redactor'.$this->dotJs(),
         ];
 
         parent::init();

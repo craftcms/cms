@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
+- #1392: Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
