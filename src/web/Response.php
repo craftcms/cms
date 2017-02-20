@@ -29,10 +29,9 @@ class Response extends \yii\web\Response
      */
     public function setCacheHeaders()
     {
-        $headers = $this->getHeaders();
-
         $cacheTime = 31536000; // 1 year
-        $headers->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
+        $this->getHeaders()
+            ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age='.$cacheTime);
 

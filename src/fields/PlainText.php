@@ -111,8 +111,9 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getElementValidationRules(): array
     {
-        return [
-            ['string', 'max' => $this->maxLength ?: null],
-        ];
+        $rules = parent::getElementValidationRules();
+        $rules[] = ['string', 'max' => $this->maxLength ?: null];
+
+        return $rules;
     }
 }

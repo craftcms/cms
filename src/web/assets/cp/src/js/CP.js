@@ -54,7 +54,9 @@ Craft.CP = Garnish.Base.extend(
         fixedHeader: false,
         fixedNotifications: false,
 
-        runningTaskInfo: null,
+        taskInfo: null,
+        workingTaskInfo: null,
+        areTasksStalled: false,
         trackTaskProgressTimeout: null,
         taskProgressIcon: null,
 
@@ -737,12 +739,12 @@ Craft.CP = Garnish.Base.extend(
             if (Craft.runTasksAutomatically) {
                 Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus) {
                     if (textStatus == 'success') {
-                        this.trackTaskProgress(0);
+                        this.trackTaskProgress(false);
                     }
                 }, this));
             }
             else {
-                this.trackTaskProgress(0);
+                this.trackTaskProgress(false);
             }
         },
 
@@ -752,49 +754,96 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            this.trackTaskProgressTimeout = setTimeout($.proxy(function() {
-                Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
-                        this.trackTaskProgressTimeout = null;
-                        this.setRunningTaskInfo(response.task, true);
+            if (delay === true) {
+                // Determine the delay based on the age of the working task
+                if (this.workingTaskInfo) {
+                    delay = this.workingTaskInfo.age * 1000;
 
-                        if (response.task) {
-                            if (response.task.status == 'running') {
-                                // Check again in one second
-                                this.trackTaskProgress();
-                            }
-                            else if (response.task.status == 'pending') {
-                                // Check again in 30 seconds
-                                this.trackTaskProgress(30000);
-                            }
-                        }
-                    }
-                }, this));
-            }, this), (delay !== undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
-        },
+                    // Keep it between .5 and 60 seconds
+                    delay = Math.min(60000, Math.max(500, delay));
+                }
+                else {
+                    // No working task. Try again in a minute.
+                    delay = 60000;
+                }
+            }
 
-        stopTrackingTaskProgress: function() {
-            if (this.trackTaskProgressTimeout) {
-                clearTimeout(this.trackTaskProgressTimeout);
-                this.trackTaskProgressTimeout = null;
+            if (!delay) {
+                this._trackTaskProgressInternal();
+            }
+            else {
+                this.trackTaskProgressTimeout = setTimeout($.proxy(this, '_trackTaskProgressInternal'), delay);
             }
         },
 
-        setRunningTaskInfo: function(taskInfo, animateIcon) {
-            this.runningTaskInfo = taskInfo;
+        _trackTaskProgressInternal: function() {
+            Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
+                if (textStatus == 'success') {
+                    this.trackTaskProgressTimeout = null;
+                    this.setTaskInfo(response.tasks, true);
 
+                    if (this.workingTaskInfo) {
+                        // Check again after a delay
+                        this.trackTaskProgress(true);
+                    }
+                }
+            }, this));
+        },
+
+        setTaskInfo: function(taskInfo, animateIcon) {
+            this.taskInfo = taskInfo;
+
+            // Update the "running" and "working" task info
+            this.workingTaskInfo = this.getWorkingTaskInfo();
+            this.areTasksStalled = (this.workingTaskInfo && this.workingTaskInfo.status === 'running' && this.workingTaskInfo.age >= Craft.CP.minStalledTaskAge);
+            this.updateTaskIcon(this.getRunningTaskInfo(), animateIcon);
+
+            // Fire a setTaskInfo event
+            this.trigger('setTaskInfo');
+        },
+
+        /**
+         * Returns the first "running" task
+         */
+        getRunningTaskInfo: function() {
+            var statuses = ['running', 'error', 'pending'];
+
+            for (var i = 0; i < statuses.length; i++) {
+                for (var j = 0; j < this.taskInfo.length; j++) {
+                    if (this.taskInfo[j].level == 0 && this.taskInfo[j].status === statuses[i]) {
+                        return this.taskInfo[j];
+                    }
+                }
+            }
+        },
+
+        /**
+         * Returns the currently "working" task/subtask
+         */
+        getWorkingTaskInfo: function() {
+            for (var i = this.taskInfo.length - 1; i >= 0; i--) {
+                if (this.taskInfo[i].status === 'running') {
+                    return this.taskInfo[i];
+                }
+            }
+        },
+
+        updateTaskIcon: function(taskInfo, animate) {
             if (taskInfo) {
                 if (!this.taskProgressIcon) {
                     this.taskProgressIcon = new TaskProgressIcon();
                 }
 
-                if (taskInfo.status == 'running' || taskInfo.status == 'pending') {
+                if (this.areTasksStalled) {
+                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Stalled task'));
+                }
+                else if (taskInfo.status == 'running' || taskInfo.status == 'pending') {
                     this.taskProgressIcon.hideFailMode();
                     this.taskProgressIcon.setDescription(taskInfo.description);
-                    this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
+                    this.taskProgressIcon.setProgress(taskInfo.progress, animate);
                 }
                 else if (taskInfo.status == 'error') {
-                    this.taskProgressIcon.showFailMode();
+                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Failed task'));
                 }
             }
             else {
@@ -823,8 +872,11 @@ Craft.CP = Garnish.Base.extend(
         baseSubnavWidth: 30,
         notificationDuration: 2000,
 
-        taskTrackerUpdateInterval: 1000,
-        taskTrackerHudUpdateInterval: 500
+        minStalledTaskAge: 300, // 5 minutes
+
+        normalizeTaskStatus: function(status) {
+            return (status === 'running' && Craft.cp.areTasksStalled) ? 'stalled' : status;
+        }
     });
 
 Craft.cp = new Craft.CP();
@@ -840,7 +892,6 @@ var TaskProgressIcon = Garnish.Base.extend(
         $label: null,
 
         hud: null,
-        completed: false,
         failMode: false,
 
         _canvasSupported: null,
@@ -921,8 +972,6 @@ var TaskProgressIcon = Garnish.Base.extend(
         },
 
         complete: function() {
-            this.completed = true;
-
             if (this._canvasSupported) {
                 this._animateArc(0, 1, $.proxy(function() {
                     this._$bgCanvas.velocity('fadeOut');
@@ -939,7 +988,7 @@ var TaskProgressIcon = Garnish.Base.extend(
             }
         },
 
-        showFailMode: function() {
+        showFailMode: function(message) {
             if (this.failMode) {
                 return;
             }
@@ -958,7 +1007,7 @@ var TaskProgressIcon = Garnish.Base.extend(
                 this._progressBar.setProgressPercentage(50);
             }
 
-            this.setDescription(Craft.t('app', 'Failed task'));
+            this.setDescription(message);
         },
 
         hideFailMode: function() {
@@ -1044,46 +1093,28 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 var TaskProgressHUD = Garnish.HUD.extend(
     {
-        icon: null,
-
         tasksById: null,
         completedTasks: null,
-        updateTasksTimeout: null,
-
-        completed: false,
+        updateViewProxy: null,
 
         init: function() {
-            this.icon = Craft.cp.taskProgressIcon;
             this.tasksById = {};
             this.completedTasks = [];
+            this.updateViewProxy = $.proxy(this, 'updateView');
 
-            this.base(this.icon.$a);
+            this.base(Craft.cp.taskProgressIcon.$a);
 
             this.$main.attr('id', 'tasks-hud');
-
-            // Use the known task as a starting point
-            if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error') {
-                this.showTaskInfo([Craft.cp.runningTaskInfo]);
-            }
-
-            this.$main.trigger('resize');
         },
 
         onShow: function() {
-            Craft.cp.stopTrackingTaskProgress();
-
-            this.updateTasks();
+            Craft.cp.on('setTaskInfo', this.updateViewProxy);
+            this.updateView();
             this.base();
         },
 
         onHide: function() {
-            if (this.updateTasksTimeout) {
-                clearTimeout(this.updateTasksTimeout);
-            }
-
-            if (!this.completed) {
-                Craft.cp.trackTaskProgress();
-            }
+            Craft.cp.off('setTaskInfo', this.updateViewProxy);
 
             // Clear out any completed tasks
             if (this.completedTasks.length) {
@@ -1097,31 +1128,17 @@ var TaskProgressHUD = Garnish.HUD.extend(
             this.base();
         },
 
-        updateTasks: function() {
-            this.completed = false;
-
-            Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
-                    this.showTaskInfo(response.tasks);
-                }
-            }, this));
-        },
-
-        showTaskInfo: function(taskInfo) {
+        updateView: function() {
             // First remove any tasks that have completed
             var newTaskIds = [];
 
-            if (taskInfo) {
-                for (var i = 0; i < taskInfo.length; i++) {
-                    newTaskIds.push(taskInfo[i].id);
+            if (Craft.cp.taskInfo) {
+                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                    newTaskIds.push(Craft.cp.taskInfo[i].id);
                 }
             }
 
             for (var id in this.tasksById) {
-                if (!this.tasksById.hasOwnProperty(id)) {
-                    continue;
-                }
-
                 if (!Craft.inArray(id, newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);
@@ -1130,19 +1147,9 @@ var TaskProgressHUD = Garnish.HUD.extend(
             }
 
             // Now display the tasks that are still around
-            if (taskInfo && taskInfo.length) {
-                var anyTasksRunning = false,
-                    anyTasksFailed = false;
-
-                for (var i = 0; i < taskInfo.length; i++) {
-                    var info = taskInfo[i];
-
-                    if (!anyTasksRunning && info.status == 'running') {
-                        anyTasksRunning = true;
-                    }
-                    else if (!anyTasksFailed && info.status == 'error') {
-                        anyTasksFailed = true;
-                    }
+            if (Craft.cp.taskInfo && Craft.cp.taskInfo.length) {
+                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                    var info = Craft.cp.taskInfo[i];
 
                     if (this.tasksById[info.id]) {
                         this.tasksById[info.id].updateStatus(info);
@@ -1151,29 +1158,29 @@ var TaskProgressHUD = Garnish.HUD.extend(
                         this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
 
                         // Place it before the next already known task
-                        for (var j = i + 1; j < taskInfo.length; j++) {
-                            if (this.tasksById[taskInfo[j].id]) {
-                                this.tasksById[info.id].$container.insertBefore(this.tasksById[taskInfo[j].id].$container);
+                        var placed = false;
+                        for (var j = i + 1; j < Craft.cp.taskInfo.length; j++) {
+                            if (this.tasksById[Craft.cp.taskInfo[j].id]) {
+                                this.tasksById[info.id].$container.insertBefore(this.tasksById[Craft.cp.taskInfo[j].id].$container);
+                                placed = true;
                                 break;
+                            }
+                        }
+
+                        if (!placed) {
+                            // Place it before the resize <object> if there is one
+                            var $object = this.$main.children('object');
+                            if ($object.length) {
+                                this.tasksById[info.id].$container.insertBefore($object);
+                            }
+                            else {
+                                this.tasksById[info.id].$container.appendTo(this.$main);
                             }
                         }
                     }
                 }
-
-                if (anyTasksRunning) {
-                    this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
-                }
-                else {
-                    this.completed = true;
-
-                    if (anyTasksFailed) {
-                        Craft.cp.setRunningTaskInfo({status: 'error'});
-                    }
-                }
             }
             else {
-                this.completed = true;
-                Craft.cp.setRunningTaskInfo(null);
                 this.hide();
             }
         }
@@ -1202,7 +1209,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
             this.level = info.level;
             this.description = info.description;
 
-            this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
+            this.$container = $('<div class="task"/>');
             this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
             this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
 
@@ -1217,9 +1224,8 @@ TaskProgressHUD.Task = Garnish.Base.extend(
         },
 
         updateStatus: function(info) {
-            if (this.status != info.status) {
+            if (this.status !== (this.status = Craft.CP.normalizeTaskStatus(info.status))) {
                 this.$statusContainer.empty();
-                this.status = info.status;
 
                 switch (this.status) {
                     case 'pending': {
@@ -1231,8 +1237,9 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                         this._progressBar.showProgressBar();
                         break;
                     }
+                    case 'stalled':
                     case 'error': {
-                        $('<span class="error">' + Craft.t('app', 'Failed') + '</span>').appendTo(this.$statusContainer);
+                        $('<span class="error">' + (this.status === 'stalled' ? Craft.t('app', 'Stalled') : Craft.t('app', 'Failed')) + '</span>').appendTo(this.$statusContainer);
 
                         if (this.level == 0) {
                             var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
@@ -1257,11 +1264,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 
             if (this.status == 'running') {
                 this._progressBar.setProgressPercentage(info.progress * 100);
-
-                if (this.level == 0) {
-                    // Update the task icon
-                    Craft.cp.setRunningTaskInfo(info, true);
-                }
             }
         },
 
@@ -1291,10 +1293,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                                 // Doesn't exist anymore
                                 this.destroy();
                             }
-
-                            if (this.hud.completed) {
-                                this.hud.updateTasks();
-                            }
                         }
                     }, this));
                     break;
@@ -1303,10 +1301,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                     Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
                             this.destroy();
-
-                            if (this.hud.completed) {
-                                this.hud.updateTasks();
-                            }
                         }
                     }, this));
                 }

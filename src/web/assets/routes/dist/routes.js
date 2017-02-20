@@ -121,8 +121,8 @@
                     }
                 }
 
-                this.$uri.html(uriHtml);
-                this.$template.html(this.modal.$templateInput.val());
+                this.$uri.text(uriHtml);
+                this.$template.text(this.modal.$templateInput.val());
             }
 
         });
@@ -168,17 +168,16 @@
 
                 if (Craft.isMultiSite) {
                     containerHtml +=
-                        '<table class="inputs fullwidth">' +
-                        '<tr>' +
-                        '<td>';
+                        '<div class="flex">' +
+                            '<div class="flex-grow">';
                 }
 
                 containerHtml += '<div id="uri" class="text uri ltr"></div>';
 
                 if (Craft.isMultiSite) {
                     containerHtml +=
-                        '</td>' +
-                        '<td class="thin">' +
+                        '</div>' +
+                        '<div>' +
                         '<div class="select">' +
                         '<select class="site">' +
                         '<option value="">' + Craft.t('app', 'Global') + '</option>';
@@ -191,9 +190,8 @@
                     containerHtml +=
                         '</select>' +
                         '</div>' +
-                        '</td>' +
-                        '</tr>' +
-                        '</table>';
+                        '</div>' +
+                        '</div>';
                 }
 
                 containerHtml +=

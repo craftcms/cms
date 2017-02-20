@@ -1,13 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  Any Volume type must extend this class.
+ * The base class for all asset Volumes.  Any Volume type that does not support discrete folders must extend this class.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://craftcms.com/license Craft License Agreement
- * @see        http://craftcms.com
- * @package    craft.app.base
- * @since      1.0
+ * @since      3.0
  */
 
 namespace craft\base;
@@ -160,18 +156,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function fileExists(string $path): bool
     {
         return $this->filesystem()->has($path);
-    }
-
-    /**
-     * Checks whether a folder exists at the given path.
-     *
-     * @param string $path The path to the folder to check.
-     *
-     * @return array|bool|null
-     */
-    public function folderExists(string $path)
-    {
-        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**

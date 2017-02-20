@@ -239,15 +239,14 @@ Craft.AuthManager = Garnish.Base.extend(
                 var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
                     $body = $('<div class="body"><h2>' + Craft.t('app', 'Your session has ended.') + '</h2><p>' + Craft.t('app', 'Enter your password to log back in.') + '</p></div>').appendTo($form),
                     $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-                    $inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
-                    $inputsRow = $('<tr/>').appendTo($inputsTable),
-                    $passwordCell = $('<td/>').appendTo($inputsRow),
-                    $buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
-                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
+                    $inputsFlexContainer = $('<div class="flex"/>').appendTo($inputContainer),
+                    $passwordContainer = $('<div class="flex-grow"/>').appendTo($inputsFlexContainer),
+                    $buttonContainer = $('<div/>').appendTo($inputsFlexContainer),
+                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonCell);
+                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonContainer);
                 this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
                 this.loginModal = new Garnish.Modal($form, {

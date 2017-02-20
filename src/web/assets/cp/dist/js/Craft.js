@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-09 */
+/*! Craft 3.0.0 - 2017-02-17 */
 (function($){
 
 /** global: Craft */
@@ -1521,7 +1521,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         customizeSourcesModal: null,
 
         $toolbar: null,
-        $toolbarTableRow: null,
+        $toolbarFlexContainer: null,
         toolbarOffset: null,
 
         $search: null,
@@ -1545,7 +1545,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $structureSortAttribute: null,
 
         $elements: null,
-        $viewModeBtnTd: null,
         $viewModeBtnContainer: null,
         viewModeBtns: null,
         viewMode: null,
@@ -1558,6 +1557,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $selectAllContainer: null,
         $selectAllCheckbox: null,
         showingActionTriggers: false,
+        _$detachedToolbarItems: null,
         _$triggers: null,
 
         // Public methods
@@ -1592,18 +1592,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.$main = this.$container.find('.main');
             this.$toolbar = this.$container.find('.toolbar:first');
-            this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
-            this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
-            this.$siteMenuBtn = this.$toolbarTableRow.find('.sitemenubtn:first');
-            this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
-            this.$search = this.$toolbarTableRow.find('.search:first input:first');
-            this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
-            this.$mainSpinner = this.$toolbar.find('.spinner:first');
+            this.$toolbarFlexContainer = this.$toolbar.children('.flex');
+            this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
+            this.$siteMenuBtn = this.$toolbarFlexContainer.find('.sitemenubtn:first');
+            this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
+            this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
+            this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
+            this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
-            this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
-            this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
 
             // Keep the toolbar at the top of the window
             if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
@@ -2087,7 +2085,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this.$toolbarTableRow.children().not(this.$selectAllContainer).addClass('hidden');
+            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer).not(this.$mainSpinner);
+            this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
                 this._createTriggers();
@@ -2162,9 +2161,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            this._$detachedToolbarItems.insertBefore(this.$mainSpinner);
             this._$triggers.detach();
 
-            this.$toolbarTableRow.children().not(this.$selectAllContainer).removeClass('hidden');
+            this.$toolbarFlexContainer.children().not(this.$selectAllContainer).removeClass('hidden');
 
             // Unset the min toolbar height
             this.$toolbar.css('min-height', '');
@@ -2313,7 +2313,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ----------------------------------------------------------------------
 
             // Clear out any previous view mode data
-            this.$viewModeBtnContainer.empty();
+            if (this.$viewModeBtnContainer) {
+                this.$viewModeBtnContainer.remove();
+            }
+
             this.viewModeBtns = {};
             this.viewMode = null;
 
@@ -2322,7 +2325,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Create the buttons if there's more than one mode available to this source
             if (this.sourceViewModes.length > 1) {
-                this.$viewModeBtnTd.removeClass('hidden');
+                this.$viewModeBtnContainer = $('<div class="btngroup"/>').insertBefore(this.$mainSpinner);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
                     var viewMode = this.sourceViewModes[i];
@@ -2341,9 +2344,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         this.updateElements();
                     });
                 }
-            }
-            else {
-                this.$viewModeBtnTd.addClass('hidden');
             }
 
             // Figure out which mode we should start with
@@ -2595,12 +2595,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setIndexBusy: function() {
-            this.$mainSpinner.removeClass('hidden');
+            this.$mainSpinner.removeClass('invisible');
             this.isIndexBusy = true;
         },
 
         setIndexAvailable: function() {
-            this.$mainSpinner.addClass('hidden');
+            this.$mainSpinner.addClass('invisible');
             this.isIndexBusy = false;
         },
 
@@ -2871,7 +2871,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 // First time?
                 if (!this.$selectAllContainer) {
                     // Create the select all button
-                    this.$selectAllContainer = $('<td class="selectallcontainer thin"/>');
+                    this.$selectAllContainer = $('<div class="selectallcontainer"/>');
                     this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
                     this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
 
@@ -2906,7 +2906,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 // Place the select all button at the beginning of the toolbar
-                this.$selectAllContainer.prependTo(this.$toolbarTableRow);
+                this.$selectAllContainer.prependTo(this.$toolbarFlexContainer);
             }
 
             // Update the view with the new container + elements HTML
@@ -3004,14 +3004,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 triggers.push($menuTrigger);
             }
 
-            // Add a filler TD
-            triggers.push('');
-
             this._$triggers = $();
 
             for (var i = 0; i < triggers.length; i++) {
-                var $td = $('<td class="' + (i < triggers.length - 1 ? 'thin' : '') + '"/>').append(triggers[i]);
-                this._$triggers = this._$triggers.add($td);
+                var $div = $('<div/>').append(triggers[i]);
+                this._$triggers = this._$triggers.add($div);
             }
 
             this._$triggers.insertAfter(this.$selectAllContainer);
@@ -6379,15 +6376,14 @@ Craft.AuthManager = Garnish.Base.extend(
                 var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
                     $body = $('<div class="body"><h2>' + Craft.t('app', 'Your session has ended.') + '</h2><p>' + Craft.t('app', 'Enter your password to log back in.') + '</p></div>').appendTo($form),
                     $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-                    $inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
-                    $inputsRow = $('<tr/>').appendTo($inputsTable),
-                    $passwordCell = $('<td/>').appendTo($inputsRow),
-                    $buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
-                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
+                    $inputsFlexContainer = $('<div class="flex"/>').appendTo($inputContainer),
+                    $passwordContainer = $('<div class="flex-grow"/>').appendTo($inputsFlexContainer),
+                    $buttonContainer = $('<div/>').appendTo($inputsFlexContainer),
+                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonCell);
+                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonContainer);
                 this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
                 this.loginModal = new Garnish.Modal($form, {
@@ -6783,7 +6779,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                 siteId: elements[0].siteId,
                 id: this.settings.id,
                 name: this.settings.name,
-                limit: this.settings.limit,
+                branchLimit: this.settings.branchLimit,
                 selectionLabel: this.settings.selectionLabel
             };
 
@@ -7649,7 +7645,9 @@ Craft.CP = Garnish.Base.extend(
         fixedHeader: false,
         fixedNotifications: false,
 
-        runningTaskInfo: null,
+        taskInfo: null,
+        workingTaskInfo: null,
+        areTasksStalled: false,
         trackTaskProgressTimeout: null,
         taskProgressIcon: null,
 
@@ -8332,12 +8330,12 @@ Craft.CP = Garnish.Base.extend(
             if (Craft.runTasksAutomatically) {
                 Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus) {
                     if (textStatus == 'success') {
-                        this.trackTaskProgress(0);
+                        this.trackTaskProgress(false);
                     }
                 }, this));
             }
             else {
-                this.trackTaskProgress(0);
+                this.trackTaskProgress(false);
             }
         },
 
@@ -8347,49 +8345,96 @@ Craft.CP = Garnish.Base.extend(
                 return;
             }
 
-            this.trackTaskProgressTimeout = setTimeout($.proxy(function() {
-                Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
-                        this.trackTaskProgressTimeout = null;
-                        this.setRunningTaskInfo(response.task, true);
+            if (delay === true) {
+                // Determine the delay based on the age of the working task
+                if (this.workingTaskInfo) {
+                    delay = this.workingTaskInfo.age * 1000;
 
-                        if (response.task) {
-                            if (response.task.status == 'running') {
-                                // Check again in one second
-                                this.trackTaskProgress();
-                            }
-                            else if (response.task.status == 'pending') {
-                                // Check again in 30 seconds
-                                this.trackTaskProgress(30000);
-                            }
-                        }
-                    }
-                }, this));
-            }, this), (delay !== undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
-        },
+                    // Keep it between .5 and 60 seconds
+                    delay = Math.min(60000, Math.max(500, delay));
+                }
+                else {
+                    // No working task. Try again in a minute.
+                    delay = 60000;
+                }
+            }
 
-        stopTrackingTaskProgress: function() {
-            if (this.trackTaskProgressTimeout) {
-                clearTimeout(this.trackTaskProgressTimeout);
-                this.trackTaskProgressTimeout = null;
+            if (!delay) {
+                this._trackTaskProgressInternal();
+            }
+            else {
+                this.trackTaskProgressTimeout = setTimeout($.proxy(this, '_trackTaskProgressInternal'), delay);
             }
         },
 
-        setRunningTaskInfo: function(taskInfo, animateIcon) {
-            this.runningTaskInfo = taskInfo;
+        _trackTaskProgressInternal: function() {
+            Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
+                if (textStatus == 'success') {
+                    this.trackTaskProgressTimeout = null;
+                    this.setTaskInfo(response.tasks, true);
 
+                    if (this.workingTaskInfo) {
+                        // Check again after a delay
+                        this.trackTaskProgress(true);
+                    }
+                }
+            }, this));
+        },
+
+        setTaskInfo: function(taskInfo, animateIcon) {
+            this.taskInfo = taskInfo;
+
+            // Update the "running" and "working" task info
+            this.workingTaskInfo = this.getWorkingTaskInfo();
+            this.areTasksStalled = (this.workingTaskInfo && this.workingTaskInfo.status === 'running' && this.workingTaskInfo.age >= Craft.CP.minStalledTaskAge);
+            this.updateTaskIcon(this.getRunningTaskInfo(), animateIcon);
+
+            // Fire a setTaskInfo event
+            this.trigger('setTaskInfo');
+        },
+
+        /**
+         * Returns the first "running" task
+         */
+        getRunningTaskInfo: function() {
+            var statuses = ['running', 'error', 'pending'];
+
+            for (var i = 0; i < statuses.length; i++) {
+                for (var j = 0; j < this.taskInfo.length; j++) {
+                    if (this.taskInfo[j].level == 0 && this.taskInfo[j].status === statuses[i]) {
+                        return this.taskInfo[j];
+                    }
+                }
+            }
+        },
+
+        /**
+         * Returns the currently "working" task/subtask
+         */
+        getWorkingTaskInfo: function() {
+            for (var i = this.taskInfo.length - 1; i >= 0; i--) {
+                if (this.taskInfo[i].status === 'running') {
+                    return this.taskInfo[i];
+                }
+            }
+        },
+
+        updateTaskIcon: function(taskInfo, animate) {
             if (taskInfo) {
                 if (!this.taskProgressIcon) {
                     this.taskProgressIcon = new TaskProgressIcon();
                 }
 
-                if (taskInfo.status == 'running' || taskInfo.status == 'pending') {
+                if (this.areTasksStalled) {
+                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Stalled task'));
+                }
+                else if (taskInfo.status == 'running' || taskInfo.status == 'pending') {
                     this.taskProgressIcon.hideFailMode();
                     this.taskProgressIcon.setDescription(taskInfo.description);
-                    this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
+                    this.taskProgressIcon.setProgress(taskInfo.progress, animate);
                 }
                 else if (taskInfo.status == 'error') {
-                    this.taskProgressIcon.showFailMode();
+                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Failed task'));
                 }
             }
             else {
@@ -8418,8 +8463,11 @@ Craft.CP = Garnish.Base.extend(
         baseSubnavWidth: 30,
         notificationDuration: 2000,
 
-        taskTrackerUpdateInterval: 1000,
-        taskTrackerHudUpdateInterval: 500
+        minStalledTaskAge: 300, // 5 minutes
+
+        normalizeTaskStatus: function(status) {
+            return (status === 'running' && Craft.cp.areTasksStalled) ? 'stalled' : status;
+        }
     });
 
 Craft.cp = new Craft.CP();
@@ -8435,7 +8483,6 @@ var TaskProgressIcon = Garnish.Base.extend(
         $label: null,
 
         hud: null,
-        completed: false,
         failMode: false,
 
         _canvasSupported: null,
@@ -8516,8 +8563,6 @@ var TaskProgressIcon = Garnish.Base.extend(
         },
 
         complete: function() {
-            this.completed = true;
-
             if (this._canvasSupported) {
                 this._animateArc(0, 1, $.proxy(function() {
                     this._$bgCanvas.velocity('fadeOut');
@@ -8534,7 +8579,7 @@ var TaskProgressIcon = Garnish.Base.extend(
             }
         },
 
-        showFailMode: function() {
+        showFailMode: function(message) {
             if (this.failMode) {
                 return;
             }
@@ -8553,7 +8598,7 @@ var TaskProgressIcon = Garnish.Base.extend(
                 this._progressBar.setProgressPercentage(50);
             }
 
-            this.setDescription(Craft.t('app', 'Failed task'));
+            this.setDescription(message);
         },
 
         hideFailMode: function() {
@@ -8639,46 +8684,28 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 var TaskProgressHUD = Garnish.HUD.extend(
     {
-        icon: null,
-
         tasksById: null,
         completedTasks: null,
-        updateTasksTimeout: null,
-
-        completed: false,
+        updateViewProxy: null,
 
         init: function() {
-            this.icon = Craft.cp.taskProgressIcon;
             this.tasksById = {};
             this.completedTasks = [];
+            this.updateViewProxy = $.proxy(this, 'updateView');
 
-            this.base(this.icon.$a);
+            this.base(Craft.cp.taskProgressIcon.$a);
 
             this.$main.attr('id', 'tasks-hud');
-
-            // Use the known task as a starting point
-            if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error') {
-                this.showTaskInfo([Craft.cp.runningTaskInfo]);
-            }
-
-            this.$main.trigger('resize');
         },
 
         onShow: function() {
-            Craft.cp.stopTrackingTaskProgress();
-
-            this.updateTasks();
+            Craft.cp.on('setTaskInfo', this.updateViewProxy);
+            this.updateView();
             this.base();
         },
 
         onHide: function() {
-            if (this.updateTasksTimeout) {
-                clearTimeout(this.updateTasksTimeout);
-            }
-
-            if (!this.completed) {
-                Craft.cp.trackTaskProgress();
-            }
+            Craft.cp.off('setTaskInfo', this.updateViewProxy);
 
             // Clear out any completed tasks
             if (this.completedTasks.length) {
@@ -8692,31 +8719,17 @@ var TaskProgressHUD = Garnish.HUD.extend(
             this.base();
         },
 
-        updateTasks: function() {
-            this.completed = false;
-
-            Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
-                    this.showTaskInfo(response.tasks);
-                }
-            }, this));
-        },
-
-        showTaskInfo: function(taskInfo) {
+        updateView: function() {
             // First remove any tasks that have completed
             var newTaskIds = [];
 
-            if (taskInfo) {
-                for (var i = 0; i < taskInfo.length; i++) {
-                    newTaskIds.push(taskInfo[i].id);
+            if (Craft.cp.taskInfo) {
+                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                    newTaskIds.push(Craft.cp.taskInfo[i].id);
                 }
             }
 
             for (var id in this.tasksById) {
-                if (!this.tasksById.hasOwnProperty(id)) {
-                    continue;
-                }
-
                 if (!Craft.inArray(id, newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);
@@ -8725,19 +8738,9 @@ var TaskProgressHUD = Garnish.HUD.extend(
             }
 
             // Now display the tasks that are still around
-            if (taskInfo && taskInfo.length) {
-                var anyTasksRunning = false,
-                    anyTasksFailed = false;
-
-                for (var i = 0; i < taskInfo.length; i++) {
-                    var info = taskInfo[i];
-
-                    if (!anyTasksRunning && info.status == 'running') {
-                        anyTasksRunning = true;
-                    }
-                    else if (!anyTasksFailed && info.status == 'error') {
-                        anyTasksFailed = true;
-                    }
+            if (Craft.cp.taskInfo && Craft.cp.taskInfo.length) {
+                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                    var info = Craft.cp.taskInfo[i];
 
                     if (this.tasksById[info.id]) {
                         this.tasksById[info.id].updateStatus(info);
@@ -8746,29 +8749,29 @@ var TaskProgressHUD = Garnish.HUD.extend(
                         this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
 
                         // Place it before the next already known task
-                        for (var j = i + 1; j < taskInfo.length; j++) {
-                            if (this.tasksById[taskInfo[j].id]) {
-                                this.tasksById[info.id].$container.insertBefore(this.tasksById[taskInfo[j].id].$container);
+                        var placed = false;
+                        for (var j = i + 1; j < Craft.cp.taskInfo.length; j++) {
+                            if (this.tasksById[Craft.cp.taskInfo[j].id]) {
+                                this.tasksById[info.id].$container.insertBefore(this.tasksById[Craft.cp.taskInfo[j].id].$container);
+                                placed = true;
                                 break;
+                            }
+                        }
+
+                        if (!placed) {
+                            // Place it before the resize <object> if there is one
+                            var $object = this.$main.children('object');
+                            if ($object.length) {
+                                this.tasksById[info.id].$container.insertBefore($object);
+                            }
+                            else {
+                                this.tasksById[info.id].$container.appendTo(this.$main);
                             }
                         }
                     }
                 }
-
-                if (anyTasksRunning) {
-                    this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
-                }
-                else {
-                    this.completed = true;
-
-                    if (anyTasksFailed) {
-                        Craft.cp.setRunningTaskInfo({status: 'error'});
-                    }
-                }
             }
             else {
-                this.completed = true;
-                Craft.cp.setRunningTaskInfo(null);
                 this.hide();
             }
         }
@@ -8797,7 +8800,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
             this.level = info.level;
             this.description = info.description;
 
-            this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
+            this.$container = $('<div class="task"/>');
             this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
             this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
 
@@ -8812,9 +8815,8 @@ TaskProgressHUD.Task = Garnish.Base.extend(
         },
 
         updateStatus: function(info) {
-            if (this.status != info.status) {
+            if (this.status !== (this.status = Craft.CP.normalizeTaskStatus(info.status))) {
                 this.$statusContainer.empty();
-                this.status = info.status;
 
                 switch (this.status) {
                     case 'pending': {
@@ -8826,8 +8828,9 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                         this._progressBar.showProgressBar();
                         break;
                     }
+                    case 'stalled':
                     case 'error': {
-                        $('<span class="error">' + Craft.t('app', 'Failed') + '</span>').appendTo(this.$statusContainer);
+                        $('<span class="error">' + (this.status === 'stalled' ? Craft.t('app', 'Stalled') : Craft.t('app', 'Failed')) + '</span>').appendTo(this.$statusContainer);
 
                         if (this.level == 0) {
                             var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
@@ -8852,11 +8855,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 
             if (this.status == 'running') {
                 this._progressBar.setProgressPercentage(info.progress * 100);
-
-                if (this.level == 0) {
-                    // Update the task icon
-                    Craft.cp.setRunningTaskInfo(info, true);
-                }
             }
         },
 
@@ -8886,10 +8884,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                                 // Doesn't exist anymore
                                 this.destroy();
                             }
-
-                            if (this.hud.completed) {
-                                this.hud.updateTasks();
-                            }
                         }
                     }, this));
                     break;
@@ -8898,10 +8892,6 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                     Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
                             this.destroy();
-
-                            if (this.hud.completed) {
-                                this.hud.updateTasks();
-                            }
                         }
                     }, this));
                 }
@@ -10530,15 +10520,14 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 var $passwordModal = $('<form id="elevatedsessionmodal" class="modal secure fitted"/>'),
                     $body = $('<div class="body"><p>' + Craft.t('app', 'Enter your password to continue.') + '</p></div>').appendTo($passwordModal),
                     $inputContainer = $('<div class="inputcontainer">').appendTo($body),
-                    $inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
-                    $inputsRow = $('<tr/>').appendTo($inputsTable),
-                    $passwordCell = $('<td/>').appendTo($inputsRow),
-                    $buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
-                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
+                    $inputsFlexContainer = $('<div class="flex"/>').appendTo($inputContainer),
+                    $passwordContainer = $('<div class="flex-grow"/>').appendTo($inputsFlexContainer),
+                    $buttonContainer= $('<td/>').appendTo($inputsFlexContainer),
+                    $passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordContainer);
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Submit') + '" />').appendTo($buttonCell);
+                this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Submit') + '" />').appendTo($buttonContainer);
                 this.$errorPara = $('<p class="error"/>').appendTo($body);
 
                 this.passwordModal = new Garnish.Modal($passwordModal, {

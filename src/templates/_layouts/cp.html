@@ -99,21 +99,15 @@
     "“{name}” deleted.",
 ]) %}
 
-{% set task = craft.app.tasks.getRunningTask() %}
-{% if task %}
-    {% js %}
-        Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');
-        Craft.cp.trackTaskProgress();
-    {% endjs %}
-{% elseif craft.app.tasks.areTasksPending() %}
-    {% js %}
+
+{% js %}
+    Craft.cp.setTaskInfo({{ craft.app.tasks.getTaskInfo()|json_encode|raw }}, false);
+    {% if craft.app.tasks.getIsTaskRunning() %}
+        Craft.cp.trackTaskProgress(true);
+    {% elseif craft.app.tasks.areTasksPending() %}
         Craft.cp.runPendingTasks();
-    {% endjs %}
-{% elseif craft.app.tasks.getHaveTasksFailed() %}
-    {% js %}
-        Craft.cp.setRunningTaskInfo({ status: "error" });
-    {% endjs %}
-{% endif %}
+    {% endif %}
+{% endjs %}
 
 
 {% set forceConfirmUnload = craft.app.session.hasFlash('error') %}

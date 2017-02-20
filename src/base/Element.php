@@ -60,17 +60,17 @@ use yii\validators\Validator;
  * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
  * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
  * @property string|null           $status                The element’s status
- * @property Element               $next                  The next element relative to this one, from a given set of criteria
- * @property Element               $prev                  The previous element relative to this one, from a given set of criteria
- * @property Element               $parent                The element’s parent
+ * @property Element|null          $next                  The next element relative to this one, from a given set of criteria
+ * @property Element|null          $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element|null          $parent                The element’s parent
  * @property mixed                 $route                 The route that should be used when the element’s URI is requested
  * @property int|null              $structureId           The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors             The element’s ancestors
  * @property ElementQueryInterface $descendants           The element’s descendants
  * @property ElementQueryInterface $children              The element’s children
  * @property ElementQueryInterface $siblings              All of the element’s siblings
- * @property Element               $prevSibling           The element’s previous sibling
- * @property Element               $nextSibling           The element’s next sibling
+ * @property Element|null          $prevSibling           The element’s previous sibling
+ * @property Element|null          $nextSibling           The element’s next sibling
  * @property bool                  $hasDescendants        Whether the element has descendants
  * @property int                   $totalDescendants      The total number of descendants that the element has
  * @property string                $title                 The element’s title
@@ -664,13 +664,6 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var int|false|null The structure ID that the element is associated with
-     * @see getStructureId()
-     * @see setStructureId()
-     */
-    private $_structureId;
-
-    /**
      * @var
      */
     private $_parent;
@@ -826,7 +819,7 @@ abstract class Element extends Component implements ElementInterface
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
-            [['title'], 'string', 'max' => 255],
+            [['title', 'slug'], 'string', 'max' => 255],
         ];
 
         // Require the title?
@@ -1126,38 +1119,10 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getStructureId()
-    {
-        if ($this->_structureId === null) {
-            $this->setStructureId($this->resolveStructureId());
-        }
-
-        if ($this->_structureId !== false) {
-            return $this->_structureId;
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setStructureId($structureId)
-    {
-        if (!empty($structureId)) {
-            $this->_structureId = $structureId;
-        } else {
-            $this->_structureId = false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getAncestors(int $dist = null)
     {
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->ancestorOf($this)
             ->siteId($this->siteId)
             ->ancestorDist($dist);
@@ -1174,7 +1139,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->descendantOf($this)
             ->siteId($this->siteId)
             ->descendantDist($dist);
@@ -1199,22 +1164,20 @@ abstract class Element extends Component implements ElementInterface
     public function getSiblings()
     {
         return static::find()
-            ->structureId($this->getStructureId())
+            ->structureId($this->structureId)
             ->siblingOf($this)
             ->siteId($this->siteId);
     }
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getPrevSibling(): ElementQueryInterface
+    public function getPrevSibling()
     {
         if ($this->_prevSibling === null) {
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
-            $query->structureId = $this->getStructureId();
+            $query->structureId = $this->structureId;
             $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->status = null;
@@ -1231,15 +1194,13 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
-     *
-     * @return ElementQueryInterface
      */
-    public function getNextSibling(): ElementQueryInterface
+    public function getNextSibling()
     {
         if ($this->_nextSibling === null) {
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
-            $query->structureId = $this->getStructureId();
+            $query->structureId = $this->structureId;
             $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->status = null;
@@ -1799,7 +1760,8 @@ abstract class Element extends Component implements ElementInterface
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = $this->getFieldContext();
-        $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
+        $fieldLayout = $this->getFieldLayout();
+        $this->_fieldsByHandle[$handle] = $fieldLayout ? $fieldLayout->getFieldByHandle($handle) : null;
         $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
@@ -1838,17 +1800,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $site;
-    }
-
-    /**
-     * Returns the ID of the structure that the element is inherently associated with, if any.
-     *
-     * @return int|null
-     * @see getStructureId()
-     */
-    protected function resolveStructureId()
-    {
-        return null;
     }
 
     /**
@@ -1912,7 +1863,12 @@ abstract class Element extends Component implements ElementInterface
                             if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
                                 $value = $this->getEagerLoadedElements($field->handle);
                             } else {
-                                $value = $this->getFieldValue($field->handle);
+                                // The field might not actually belong to this element
+                                try {
+                                    $value = $this->getFieldValue($field->handle);
+                                } catch (\Exception $e) {
+                                    $value = $field->normalizeValue(null);
+                                }
                             }
 
                             return $field->getTableAttributeHtml($value, $this);

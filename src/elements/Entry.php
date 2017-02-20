@@ -19,10 +19,8 @@ use craft\elements\actions\View;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
-use craft\events\SetStatusEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -965,17 +963,6 @@ EOD;
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function resolveStructureId()
-    {
-        return $this->getSection()->structureId;
     }
 
     // Private Methods
