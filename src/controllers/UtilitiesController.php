@@ -203,7 +203,6 @@ class UtilitiesController extends Controller
                             'sessionId' => $sessionId,
                             'sourceId' => $sourceId,
                             'total' => $indexList['total'],
-                            'offset' => $i,
                             'process' => 1
                         ]
                     ];
@@ -231,7 +230,7 @@ class UtilitiesController extends Controller
             ]);
         } else if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['sourceId']);
 
             return $this->asJson([
                 'success' => true

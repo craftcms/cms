@@ -42,6 +42,16 @@ interface VolumeInterface extends SavableComponentInterface
     public function getFileList(string $directory, bool $recursive): array;
 
     /**
+     * Return the metadata about a file.
+     *
+     * @param string $uri URI to the file on the volume.
+     *
+     * @return array
+     * @throws VolumeObjectNotFoundException if the file cannot be found.
+     */
+    public function getFileMetadata(string $uri): array;
+
+    /**
      * Creates a file.
      *
      * @param string   $path   The path of the file, relative to the source’s root.

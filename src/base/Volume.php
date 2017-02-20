@@ -119,7 +119,26 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFileList(string $directory, bool $recursive): array
     {
-        return $this->filesystem()->listContents($directory, $recursive);
+        $fileList =  $this->filesystem()->listContents($directory, $recursive);
+        $output = [];
+
+        foreach ($fileList as $entry) {
+            $output[$entry['path']] = $entry;
+        }
+
+        return $output;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileMetadata(string $uri): array
+    {
+        try {
+            return $this->filesystem()->getMetadata($uri);
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException($exception->getMessage());
+        }
     }
 
     /**

@@ -735,7 +735,7 @@ class Assets extends Component
         foreach ($results as $result) {
             $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
-            $folders[] = $folder;
+            $folders[$folder->id] = $folder;
         }
 
         return $folders;

@@ -37,11 +37,6 @@ class AssetIndexData extends Model
     public $sessionId;
 
     /**
-     * @var int|null Offset
-     */
-    public $offset;
-
-    /**
      * @var string|null URI
      */
     public $uri;
@@ -60,6 +55,16 @@ class AssetIndexData extends Model
      * @var DateTime|null The index timestamp
      */
     public $timestamp;
+
+    /**
+     * @var bool Is completed
+     */
+    public $completed = false;
+
+    /**
+     * @var bool In progress
+     */
+    public $inProgress = false;
 
     // Public Methods
     // =========================================================================
@@ -81,7 +86,8 @@ class AssetIndexData extends Model
     public function rules()
     {
         return [
-            [['id', 'volumeId', 'offset', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
+            [['id', 'volumeId', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
+            [['completed', 'inProgress'], 'boolean'],
         ];
     }
 

@@ -8,10 +8,31 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\elements\Asset::getStream()`.
 - Added `craft\base\VolumeInterface::getFileStream()`
 - Added `craft\base\Volume::getFileStream()`
+- Added `craft\base\VolumeInterface::getFileMetadata()`
+- Added `craft\base\Volume::getFileMetadata()`
+- Added `craft\services\AssetIndexer::getIndexListOnVolume()`
+- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::storeIndexList()`
+- Added `craft\services\AssetIndexer::processIndexForVolume()`
+- Added `craft\services\AssetIndexer::getNextIndexEntry()`
+- Added `craft\services\AssetIndexer::updateIndexEntry()`
 
 ### Changed
 - Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
+- Refactored Asset Indexing and got rid of offset-based indexing.
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
+- `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
+- `craft\base\Volume::indexFile()` now requires an instance of `craft\base\Volume` (instead of `craft\base\VolumeInterface`) and a URI path as parameters.
+- `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
+
+### Removed
+ - Removed `craft\services\AssetIndexer::processIndexForVolume()`
+ - Removed `craft\services\AssetIndexer::storeIndexEntry()`
+ - Removed `craft\services\AssetIndexer::getIndexEntry()`
+ - Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`
+ - Removed the offset property field from `craft\models\AssetIndexData`
+ - Removed the offset property field from `craft\records\AssetIndexData`
 
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
