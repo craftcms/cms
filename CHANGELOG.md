@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Fixed
 - #1378: Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`.
+- #1387: Fixed a bug where hidden login page inputs were still focusable by pressing Tab after clicking the “Forget your password?” link.
 
 ## 2.6.2962 - 2017-02-15
 
