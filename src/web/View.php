@@ -167,7 +167,7 @@ class View extends \yii\web\View
         $this->_twig->addExtension(new \Twig_Extension_StringLoader());
         $this->_twig->addExtension(new Extension($this, $this->_twig));
 
-        if (Craft::$app->getConfig()->get('devMode')) {
+        if (YII_DEBUG) {
             $this->_twig->addExtension(new \Twig_Extension_Debug());
         }
 
@@ -241,7 +241,7 @@ class View extends \yii\web\View
         try {
             $output = $this->getTwig()->render($template, $variables);
         } catch (\RuntimeException $e) {
-            if (!Craft::$app->getConfig()->get('devMode')) {
+            if (!YII_DEBUG) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
             }
@@ -301,7 +301,7 @@ class View extends \yii\web\View
         try {
             $output = call_user_func_array([$twigTemplate, 'macro_'.$macro], $args);
         } catch (\RuntimeException $e) {
-            if (!Craft::$app->getConfig()->get('devMode')) {
+            if (!YII_DEBUG) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
             }
@@ -387,7 +387,7 @@ class View extends \yii\web\View
                 $twig->enableStrictVariables();
             }
         } catch (\RuntimeException $e) {
-            if (!Craft::$app->getConfig()->get('devMode')) {
+            if (!YII_DEBUG) {
                 // Throw a generic exception instead
                 throw new Exception('An error occurred when rendering a template.', 0, $e);
             }
@@ -1187,7 +1187,7 @@ class View extends \yii\web\View
             'charset' => Craft::$app->charset,
         ];
 
-        if (Craft::$app->getConfig()->get('devMode')) {
+        if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
         }
