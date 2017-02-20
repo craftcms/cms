@@ -261,6 +261,18 @@ class Formatter extends \yii\i18n\Formatter
         return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function asText($value)
+    {
+        if ($value instanceof DateTime) {
+            return $this->asDatetime($value);
+        }
+
+        return parent::asText($value);
+    }
+
     // Private Methods
     // =========================================================================
 

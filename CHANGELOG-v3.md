@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Unreleased
 
+### Changed
+- `craft\i18n\Formatter::asText` will now format DateTime objects to text.
+
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
 
