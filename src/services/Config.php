@@ -281,9 +281,6 @@ class Config extends Component
      * Returns the value of the [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting,
      * normalized into seconds.
      *
-     * The actual value of the cacheDuration config setting is supposed to be set using the
-     * [PHP interval specification](http://php.net/manual/en/dateinterval.construct.php).
-     *
      * ```php
      * $this->get('cacheDuration'); // 'P1D'
      * $this->getCacheDuration();   // 86400
@@ -303,10 +300,14 @@ class Config extends Component
             return $this->_cacheDuration = 0;
         }
 
-        $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+        if (is_int($duration)) {
+            $seconds = $duration;
+        } else {
+            $seconds = DateTimeHelper::timeFormatToSeconds($duration);
 
-        if ($seconds === null) {
-            $seconds = 0;
+            if ($seconds === null) {
+                $seconds = 0;
+            }
         }
 
         return $this->_cacheDuration = $seconds;

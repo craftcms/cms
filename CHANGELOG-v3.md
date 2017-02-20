@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
+- The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - Updated the Yii Debug Toolbar to 2.0.8.
 
 ### Fixed
