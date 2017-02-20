@@ -8,6 +8,15 @@ Craft CMS 3.0 Working Changelog
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - Updated the Yii Debug Toolbar to 2.0.8.
+- Updated d3.js to 4.6.0.0.
+- Updated timepicker to 1.11.10.
+- Updated Velocity to 1.4.3.
+- Updated Fabric to 1.7.6.
+- Updated Codeception to 2.2.9.
+- Updated Codeception Verify to 0.3.3.
+- Updated Codeception Specify to 0.4.6.
+- Updated Flysystem to 1.0.35.
+- Updated Yii to 2.0.11.2.
 
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
