@@ -249,8 +249,6 @@ class CategoriesController extends Controller
             'category' => $category
         ];
 
-        $this->_prepEditCategoryVariables($variables);
-
         if ($siteHandle !== null) {
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
@@ -258,6 +256,8 @@ class CategoriesController extends Controller
                 throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
             }
         }
+
+        $this->_prepEditCategoryVariables($variables);
 
         /** @var Site $site */
         $site = $variables['site'];

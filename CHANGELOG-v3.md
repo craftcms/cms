@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the `cacheDuration` config setting wasn’t getting applied to data caches, so everything was getting cached indefinitely by default.
 - #1390: Fixed a PHP error that occurred when saving a new entry draft, if the entry’s section only had one entry type.
 - Fixed a bug where entries’ “Title” field would receive two identical validation errors if a brand new entry was immediately saved as a draft, and didn’t have a title yet.
+- #1403: Fixed a bug where it was not possible to edit categories on anything but the primary site.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
