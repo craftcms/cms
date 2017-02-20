@@ -1,5 +1,17 @@
 Craft CMS 3.0 Working Changelog
 ===============================
+## Unreleased
+
+### Added
+
+- Added `craft\helpers\Image::imageSizeByStream()`.
+- Added `craft\elements\Asset::getStream()`.
+- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\base\Volume::getFileStream()`
+
+### Changed
+- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
+- `craft\base\Volume::filesystem()` now accepts a config parameter.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
@@ -18,15 +30,6 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\web\Request::accepts()`.
 - Added the `$maybeAutoRun` argument to `craft\services\Tasks::queueTask()`.
 - Added Craft’s required PHP extensions to `composer.json`.
-- Added `craft\helpers\Image::imageSizeByStream()`.
-- Added `craft\elements\Asset::getStream()`.
-- Added `craft\base\VolumeInterface::getFileStream()`
-- Added `craft\base\Volume::getFileStream()`
-
-### Changed
-- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
-- Added an option to Asset indexing that allow for whole image downloading for caching purposes.
-- `craft\base\Volume::filesystem()` now accepts a config parameter.
 
 ### Changed
 - The Resave Elements task now shows a more humanized version of the element type’s class name in its default descriptions.
