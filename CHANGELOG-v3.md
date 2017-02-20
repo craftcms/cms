@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
+- `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
 - Updated the Yii Debug Toolbar to 2.0.8.
 - Updated d3.js to 4.6.0.0.
 - Updated timepicker to 1.11.10.
@@ -18,6 +19,9 @@ Craft CMS 3.0 Working Changelog
 - Updated Flysystem to 1.0.35.
 - Updated Yii to 2.0.11.2.
 
+### Removed
+- Removed `craft\errors\SendEmailException`.
+
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
 - #1392: Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`.
@@ -26,6 +30,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where entries’ “Title” field would receive two identical validation errors if a brand new entry was immediately saved as a draft, and didn’t have a title yet.
 - #1403: Fixed a bug where it was not possible to edit categories on anything but the primary site.
 - Fixed a PHP type error that could occur when editing an entry or category, if its corresponding template was `NULL` in the database, for some reason.
+- #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
 
 ## 3.0.0-beta.4 - 2017-02-17
 

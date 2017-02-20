@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\errors\SendEmailException;
 use craft\errors\UploadFailedException;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
@@ -1046,15 +1045,15 @@ class UsersController extends Controller
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            try {
-                if ($isNewUser) {
-                    // Send the activation email
-                    Craft::$app->getUsers()->sendActivationEmail($user);
-                } else {
-                    // Send the standard verification email
-                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-                }
-            } catch (SendEmailException $e) {
+            if ($isNewUser) {
+                // Send the activation email
+                $success = Craft::$app->getUsers()->sendActivationEmail($user);
+            } else {
+                // Send the standard verification email
+                $success = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+            }
+
+            if (!$success) {
                 Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
             }
 

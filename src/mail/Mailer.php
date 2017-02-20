@@ -9,7 +9,6 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\errors\SendEmailException;
 use craft\events\MailFailureEvent;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -176,8 +175,6 @@ class Mailer extends \yii\swiftmailer\Mailer
                 'variables' => $message->variables,
                 'error' => $error,
             ]));
-
-            throw new SendEmailException('Error sending email: '.($error ?: 'Unknown'));
         }
 
         return $isSuccessful;
