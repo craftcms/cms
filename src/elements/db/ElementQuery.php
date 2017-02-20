@@ -575,7 +575,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $site = Craft::$app->getSites()->getSiteByHandle($value);
 
             if (!$site) {
-                throw new Exception('Invalid site hadle: '.$value);
+                throw new Exception('Invalid site handle: '.$value);
             }
 
             $this->siteId = $site->id;
