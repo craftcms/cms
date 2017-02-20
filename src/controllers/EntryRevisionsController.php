@@ -79,8 +79,6 @@ class EntryRevisionsController extends BaseEntriesController
                 $draft->enabled = false;
                 Craft::$app->getElements()->saveElement($draft);
                 $draft->enabled = $draftEnabled;
-            } else {
-                $draft->addErrors($draft->getErrors());
             }
         }
 
