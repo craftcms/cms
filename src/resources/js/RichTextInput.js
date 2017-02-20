@@ -386,6 +386,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 	replaceRedactorButton: function(key, title)
 	{
+		return;
 		// Ignore if the button isn't in use
 		if (!this.redactor.button.get(key).length)
 		{
@@ -407,6 +408,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 
 		// Remove the placeholder
 		this.redactor.button.remove(placeholderKey);
+		this.redactor.button
 
 		return $btn;
 	}

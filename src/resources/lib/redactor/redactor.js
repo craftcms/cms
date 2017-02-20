@@ -1,11 +1,11 @@
 /*
 	Redactor II
-	Version 1.3.2
-	Updated: November 15, 2016
+	Version 2.2
+	Updated: February 20, 2017
 
 	http://imperavi.com/redactor/
 
-	Copyright (c) 2009-2016, Imperavi Oy.
+	Copyright (c) 2009-2017, Imperavi LLC.
 	License: http://imperavi.com/redactor/license/
 
 	Usage: $('#content').redactor();
@@ -101,7 +101,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '1.3.2';
+	$.Redactor.VERSION = '2.2';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'detect', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'marker', 'modal', 'observe', 'offset', 'paragraphize', 'paste', 'placeholder',
@@ -119,6 +119,7 @@
 		direction: 'ltr',
 		spellcheck: true,
 		overrideStyles: true,
+		scrollTarget: document,
 
 		focus: false,
 		focusEnd: false,
@@ -206,6 +207,7 @@
 		buttonsHideOnMobile: [],
 
 		script: true,
+		removeNewlines: false,
 		removeComments: true,
 		replaceTags: {
 			'b': 'strong',
@@ -504,11 +506,12 @@
 
 			this.opts = $.extend(
 				{},
-				$.extend(true, {}, $.Redactor.opts),
-				$.extend(true, {}, settings),
+				$.Redactor.opts,
 				this.$element.data(),
 				options
 			);
+
+			this.opts = $.extend(true, this.opts, settings);
 
 		},
 		getModuleMethods: function(object)
@@ -611,9 +614,9 @@
 				},
 				show: function (e)
 				{
-					this.marker.remove();
-					this.selection.save();
-					this.selection.restore(false);
+					//this.marker.remove();
+					this.selection.saveInstant();
+					//this.selection.restore(false);
 
 					$('.redactor-air').hide();
 
@@ -659,19 +662,19 @@
 						if (key === this.keyCode.ESC)
 						{
 							this.selection.get().collapseToStart();
-							this.marker.remove();
+							//this.marker.remove();
 						}
 						else if (key === this.keyCode.BACKSPACE || key === this.keyCode.DELETE)
 						{
 							var sel = this.selection.get();
 							var range = this.selection.range(sel);
 							range.deleteContents();
-							this.marker.remove();
+							//this.marker.remove();
 						}
 						else if (key === this.keyCode.ENTER)
 						{
 							this.selection.get().collapseToEnd();
-							this.marker.remove();
+							//this.marker.remove();
 						}
 
 						if (this.air.enabled)
@@ -681,7 +684,7 @@
 						else
 						{
 							this.selection.get().collapseToStart();
-							this.marker.remove();
+							//this.marker.remove();
 						}
 
 
@@ -699,6 +702,7 @@
 					this.$air.fadeOut(100);
 					this.air.enabled = false;
 					$(document).off('mousedown.redactor-air.' + this.uuid);
+					$(document).off('keydown.redactor-air.' + this.uuid);
 
 				}
 			};
@@ -780,7 +784,7 @@
 					var json;
 					try
 					{
-						json = $.parseJSON(data);
+						json = JSON.parse(data);
 					}
 					catch(e)
 					{
@@ -844,7 +848,27 @@
 						tag = 'p';
 					}
 
-					var replaced = this.utils.replaceToTag(block, tag);
+                    var replaced;
+                    if (currentTag === 'blockquote' && this.utils.isEndOfElement(block))
+                    {
+                        this.marker.remove();
+
+                        replaced = document.createElement('p');
+                        replaced.innerHTML = this.opts.invisibleSpace;
+
+                        $(block).after(replaced);
+                        this.caret.start(replaced);
+                        var $last = $(block).children().last();
+
+                        if ($last.length !== 0 && $last[0].tagName === 'BR')
+                        {
+                            $last.remove();
+                        }
+                    }
+                    else
+                    {
+					    replaced = this.utils.replaceToTag(block, tag);
+                    }
 
 					if (typeof attr === 'object')
 					{
@@ -865,7 +889,6 @@
 					{
 						$(replaced).html($.trim($(replaced).html()));
 					}
-
 
 					this.selection.restore();
 					this.block.removeInlineTags(replaced);
@@ -888,7 +911,6 @@
 					for (var i = 0; i < len; i++)
 					{
 						var currentTag = blocks[i].tagName.toLowerCase();
-
 						if ($.inArray(currentTag, this.block.tags) !== -1 && currentTag !== 'figure')
 						{
 							var block = this.utils.replaceToTag(blocks[i], tag);
@@ -1093,34 +1115,28 @@
 				},
 				setUndo: function()
 				{
-					this.selection.save();
+                    var saved = this.selection.saveInstant();
 
 					var last = this.opts.buffer[this.opts.buffer.length-1];
 					var current = this.core.editor().html();
-					if (last !== current)
-					{
-						this.opts.buffer.push(current);
+
+					var save = (typeof last !== 'undefined' && (last[0] === current)) ? false : true;
+    				if (save)
+    				{
+						this.opts.buffer.push([current, saved]);
 					}
 
-					this.selection.restore();
+					//this.selection.restoreInstant();
 				},
 				setRedo: function()
 				{
-					this.selection.save();
-					this.opts.rebuffer.push(this.core.editor().html());
-					this.selection.restore();
-				},
-				getUndo: function()
-				{
-					this.core.editor().html(this.opts.buffer.pop());
-				},
-				getRedo: function()
-				{
-					this.core.editor().html(this.opts.rebuffer.pop());
+					var saved = this.selection.saveInstant();
+					this.opts.rebuffer.push([this.core.editor().html(), saved]);
+					//this.selection.restoreInstant();
 				},
 				add: function()
 				{
-					this.opts.buffer.push(this.core.editor().html());
+					this.opts.buffer.push([this.core.editor().html(), 0]);
 				},
 				undo: function()
 				{
@@ -1129,10 +1145,13 @@
 						return;
 					}
 
-					this.buffer.set('redo');
-					this.buffer.getUndo();
+					var buffer = this.opts.buffer.pop();
 
-					this.selection.restore();
+					this.buffer.set('redo');
+					this.core.editor().html(buffer[0]);
+
+					this.selection.restoreInstant(buffer[1]);
+					this.observe.load();
 				},
 				redo: function()
 				{
@@ -1141,10 +1160,13 @@
 						return;
 					}
 
-					this.buffer.set('undo');
-					this.buffer.getRedo();
+					var buffer = this.opts.rebuffer.pop();
 
-					this.selection.restore();
+					this.buffer.set('undo');
+					this.core.editor().html(buffer[0]);
+
+					this.selection.restoreInstant(buffer[1]);
+					this.observe.load();
 				},
 				clear: function()
 				{
@@ -1192,6 +1214,7 @@
 					// call
 					this.build.callEditor();
 
+
 				},
 				createContainerBox: function()
 				{
@@ -1223,7 +1246,7 @@
 
 					// place
 					this.$box.insertAfter(this.$element).append(this.$editor).append(this.$element);
-                    this.$editor.addClass('redactor-editor');
+                    this.$editor.addClass('redactor-layer');
 
 					if (this.opts.overrideStyles)
 					{
@@ -1500,6 +1523,7 @@
 						format:
 						{
 							title: this.lang.get('format'),
+							icon: true,
 							dropdown:
 							{
 								p:
@@ -1552,30 +1576,35 @@
 						bold:
 						{
 							title: this.lang.get('bold-abbr'),
+							icon: true,
 							label: this.lang.get('bold'),
 							func: 'inline.format'
 						},
 						italic:
 						{
 							title: this.lang.get('italic-abbr'),
+							icon: true,
 							label: this.lang.get('italic'),
 							func: 'inline.format'
 						},
 						deleted:
 						{
 							title: this.lang.get('deleted-abbr'),
+							icon: true,
 							label: this.lang.get('deleted'),
 							func: 'inline.format'
 						},
 						underline:
 						{
 							title: this.lang.get('underline-abbr'),
+							icon: true,
 							label: this.lang.get('underline'),
 							func: 'inline.format'
 						},
 						lists:
 						{
 							title: this.lang.get('lists'),
+							icon: true,
 							dropdown:
 							{
 								unorderedlist:
@@ -1621,36 +1650,43 @@
 						ul:
 						{
 							title: '&bull; ' + this.lang.get('bulletslist'),
+							icon: true,
 							func: 'list.toggle'
 						},
 						ol:
 						{
 							title: '1. ' + this.lang.get('numberslist'),
+							icon: true,
 							func: 'list.toggle'
 						},
 						outdent:
 						{
 							title: this.lang.get('outdent'),
+							icon: true,
 							func: 'indent.decrease'
 						},
 						indent:
 						{
 							title: this.lang.get('indent'),
+							icon: true,
 							func: 'indent.increase'
 						},
 						image:
 						{
 							title: this.lang.get('image'),
+							icon: true,
 							func: 'image.show'
 						},
 						file:
 						{
 							title: this.lang.get('file'),
+							icon: true,
 							func: 'file.show'
 						},
 						link:
 						{
 							title: this.lang.get('link'),
+							icon: true,
 							dropdown:
 							{
 								link:
@@ -1686,6 +1722,7 @@
 						horizontalrule:
 						{
 							title: this.lang.get('horizontalrule'),
+							icon: true,
 							func: 'line.insert'
 						}
 					};
@@ -1745,6 +1782,33 @@
 
 					}, this));
 				},
+				buildButtonTooltip: function($btn, title)
+				{
+    				if (this.opts.air || this.detect.isMobile())
+    				{
+        				return;
+    				}
+
+                    var $tooltip = $('<span>');
+				    $tooltip.addClass('re-button-tooltip');
+				    $tooltip.html(title);
+
+                    $btn.append($tooltip);
+                    $btn.on('mouseover', function()
+                    {
+                        if ($(this).hasClass('redactor-button-disabled'))
+                        {
+                            return;
+                        }
+
+                        $tooltip.show();
+                        $tooltip.css('margin-left', -($tooltip.innerWidth()/2));
+
+                    }).on('mouseout', function()
+                    {
+                        $tooltip.hide();
+                    });
+				},
 				build: function(btnName, btnObject)
 				{
 					if (this.opts.toolbar === false)
@@ -1752,13 +1816,25 @@
 						return;
 					}
 
-					var $button = $('<a href="javascript:void(null);" class="re-button re-' + btnName + '" title="' + btnObject.title + '" rel="' + btnName + '" />').html(btnObject.title);
-					$button.attr({ 'role': 'button', 'aria-label': btnObject.title, 'tabindex': '-1' });
+                    var title = (typeof btnObject.label !== 'undefined') ? btnObject.label : btnObject.title;
+					var $button = $('<a href="javascript:void(null);" alt="' + title + '" rel="' + btnName + '" />')
 
-					if (typeof btnObject.label !== 'undefined')
+                    $button.addClass('re-button re-' + btnName);
+					$button.attr({ 'role': 'button', 'aria-label': title, 'tabindex': '-1' });
+
+                    if (typeof btnObject.icon !== 'undefined')
+                    {
+    					var $icon = $('<i>');
+					    $icon.addClass('re-icon-' + btnName);
+
+					    $button.append($icon);
+					    $button.addClass('re-button-icon');
+
+                        this.button.buildButtonTooltip($button, title);
+					}
+					else
 					{
-						$button.attr('aria-label', btnObject.label);
-						$button.attr('title', btnObject.label);
+    					$button.html(btnObject.title);
 					}
 
 					// click
@@ -2006,7 +2082,16 @@
 				},
 				setIcon: function($btn, icon)
 				{
-					$btn.html(icon);
+					$btn.html(icon).addClass('re-button-icon');
+					this.button.buildButtonTooltip($btn, $btn.attr('alt'));
+				},
+				changeIcon: function(key, newIconClass)
+				{
+                    var $btn = this.button.get(key);
+                    if ($btn.length !== 0)
+					{
+    					$btn.find('i').removeAttr('class').addClass('re-icon-' + newIconClass);
+    				}
 				},
 				addCallback: function($btn, callback)
 				{
@@ -2136,7 +2221,6 @@
 				},
 				start: function(node)
 				{
-
 					var sel, range;
 					node = this.caret.prepare(node);
 
@@ -2150,45 +2234,56 @@
 						return this.caret.before(node);
 					}
 
+					var $first = $(node).children().first();
+
 					// empty or inline tag
 					var inline = this.utils.isInlineTag(node.tagName);
 					if (node.innerHTML === '' || inline)
 					{
-                        sel = window.getSelection();
-					    range = document.createRange();
-						var textNode = document.createTextNode('\u200B');
-
-						range.setStart(node, 0);
-						range.insertNode(textNode);
-						range.setStartAfter(textNode);
-						range.collapse(true);
-
-						sel.removeAllRanges();
-						sel.addRange(range);
-
-						// remove invisible text node
-						if (!inline)
-						{
-							this.core.editor().on('keydown.redactor-remove-textnode', function()
-							{
-								$(textNode).remove();
-								$(this).off('keydown.redactor-remove-textnode');
-							});
-						}
+                        this.caret.setStartEmptyOrInline(node, inline);
 					}
-					// block tag
+					// empty inline inside
+                    else if ($first && $first.length !== 0 && this.utils.isInlineTag($first[0].tagName) && $first.text() === '')
+                    {
+                       this.caret.setStartEmptyOrInline($first[0], true);
+                    }
+                    // block tag
 					else
 					{
-						sel = window.getSelection();
-						sel.removeAllRanges();
+                        sel = window.getSelection();
+                        sel.removeAllRanges();
 
-						range = document.createRange();
-						range.selectNodeContents(node);
-						range.collapse(true);
-						sel.addRange(range);
+                        range = document.createRange();
+                        range.selectNodeContents(node);
+                        range.collapse(true);
+                        sel.addRange(range);
 					}
 
 
+				},
+				setStartEmptyOrInline: function(node, inline)
+				{
+                    var sel = window.getSelection();
+				    var range = document.createRange();
+					var textNode = document.createTextNode('\u200B');
+
+					range.setStart(node, 0);
+					range.insertNode(textNode);
+					range.setStartAfter(textNode);
+					range.collapse(true);
+
+					sel.removeAllRanges();
+					sel.addRange(range);
+
+					// remove invisible text node
+					if (!inline)
+					{
+						this.core.editor().on('keydown.redactor-remove-textnode', function()
+						{
+							$(textNode).remove();
+							$(this).off('keydown.redactor-remove-textnode');
+						});
+					}
 				},
 				end: function(node)
 				{
@@ -2411,8 +2506,8 @@
 					html = html.replace(/<a href="(.*?[^>]?)®(.*?[^>]?)">/gi, '<a href="$1&reg$2">');
 
 					// save markers
-					html = html.replace(/<span(.*?[^>]?)id="selection-marker-1"(.*?[^>]?)>​<\/span>/gi, '[[[marker1]]]');
-					html = html.replace(/<span(.*?[^>]?)id="selection-marker-2"(.*?[^>]?)>​<\/span>/gi, '[[[marker2]]]');
+					html = html.replace(/<span id="selection-marker-1"(.*?[^>]?)>​<\/span>/gi, '###marker1###');
+					html = html.replace(/<span id="selection-marker-2"(.*?[^>]?)>​<\/span>/gi, '###marker2###');
 
 					// replace tags
 					var self = this;
@@ -2427,6 +2522,18 @@
     						self.utils.replaceToTag(s, replacement[s.tagName.toLowerCase()]);
     					});
 					}
+
+					// add span marker
+					$div.find('span, a').attr('data-redactor-span', true).each(function()
+					{
+    					// add style cache
+    					var $el = $(this);
+
+    					if ($el.attr('style'))
+    					{
+        					$el.attr('data-redactor-style-cache', $el.attr('style'));
+    					}
+					});
 
 					html = $div.html();
 
@@ -2449,8 +2556,8 @@
 					html = this.paragraphize.load(html);
 
 					// restore markers
-					html = html.replace('[[[marker1]]]', '<span id="selection-marker-1" class="redactor-selection-marker">​</span>');
-					html = html.replace('[[[marker2]]]', '<span id="selection-marker-2" class="redactor-selection-marker">​</span>');
+					html = html.replace('###marker1###', '<span id="selection-marker-1" class="redactor-selection-marker">​</span>');
+					html = html.replace('###marker2###', '<span id="selection-marker-2" class="redactor-selection-marker">​</span>');
 
 					// empty
 					if (html.search(/^(||\s||<br\s?\/?>||&nbsp;)$/i) !== -1)
@@ -2476,7 +2583,6 @@
 						return '';
 					}
 
-
 					// remove image resize
 					html = html.replace(/<span(.*?)id="redactor-image-box"(.*?[^>])>([\w\W]*?)<img(.*?)><\/span>/gi, '$3<img$4>');
 					html = html.replace(/<span(.*?)id="redactor-image-resizer"(.*?[^>])>(.*?)<\/span>/gi, '');
@@ -2491,13 +2597,13 @@
 					$div.find('*[rel=""]').removeAttr('rel');
 
 					// remove markers
-					$div.find('.redactor-invisible-space').each(function()
+					$div.find('.redactor-invisible-space, .redactor-unlink').each(function()
 					{
 						$(this).contents().unwrap();
 					});
 
-					// remove span without attributes
-				    $div.find('span').each(function()
+					// remove span without attributes & span marker
+				    $div.find('span, a').removeAttr('data-redactor-span data-redactor-style-cache').each(function()
 					{
     					if (this.attributes.length === 0)
     					{
@@ -2525,7 +2631,6 @@
 					html = html.replace(new RegExp('<br\\s?/?></h', 'gi'), '</h');
 					html = html.replace(new RegExp('<br\\s?/?></li>', 'gi'), '</li>');
 					html = html.replace(new RegExp('</li><br\\s?/?>', 'gi'), '</li>');
-
 
 					// pre class
 					html = html.replace(/<pre>/gi, "<pre>\n");
@@ -2562,6 +2667,12 @@
 
 					// remove new lines
                     html = html.replace(/\n{2,}/g, "\n");
+
+                    // remove all newlines
+                    if (this.opts.removeNewlines)
+                    {
+                        html = html.replace(/\r?\n/g, "");
+                    }
 
 					return html;
 				},
@@ -2606,9 +2717,7 @@
 					// if paste event
 					if (insert !== true)
 					{
-						html = this.clean.removeSpans(html);
 						html = this.clean.removeEmptyInlineTags(html);
-
 
 						if (data.encode === false)
 						{
@@ -2635,7 +2744,6 @@
 					{
 						html = this.clean.encodeHtml(html);
 					}
-
 
 					if (data.paragraphize)
 					{
@@ -2742,18 +2850,41 @@
 				removeEmptyInlineTags: function(html)
 				{
 					var tags = this.opts.inlineTags;
-					var len = tags.length;
-					for (var i = 0; i < len; i++)
-					{
-						html = html.replace(new RegExp('<' + tags[i] + '[^>]*>(\s\n|\t)?</' + tags[i] + '>', 'gi'), '');
-					}
+    				var $div = $("<div/>").html($.parseHTML(html, document, true));
+                    var self = this;
 
-					return html;
-				},
-				removeSpans: function(html)
-				{
-					html = html.replace(/<\/span>/gi, '');
-					html = html.replace(/<span[^>]*>/gi, '');
+					var $spans = $div.find('span');
+					var $tags = $div.find(tags.join(','));
+
+					$tags.removeAttr('style');
+
+					$tags.each(function()
+					{
+    					var tagHtml = $(this).html();
+    					if (this.attributes.length === 0 && self.utils.isEmpty(tagHtml))
+    					{
+        					$(this).replaceWith(function()
+        					{
+        						return $(this).contents();
+        					});
+    					}
+					});
+
+                    $spans.each(function()
+					{
+    					var tagHtml = $(this).html();
+    					if (this.attributes.length === 0)
+    					{
+        					$(this).replaceWith(function()
+        					{
+        						return $(this).contents();
+        					});
+    					}
+					});
+
+					html = $div.html();
+
+					$div.remove();
 
 					return html;
 				},
@@ -2859,7 +2990,7 @@
     					$links.attr('target', this.opts.pasteLinkTarget);
 					}
 
-                    // links & images
+                    // links
                     if (data.links && this.opts.pasteLinks)
                     {
                     	$div.find('a').each(function(i, link)
@@ -2884,6 +3015,7 @@
 
                     html = $div.html();
 
+                    // images
 					if (data.images && this.opts.pasteImages)
 					{
 						html = html.replace(/<img(.*?)src="(.*?)"(.*?[^>])>/gi, '##%img$1src="$2"$3%##');
@@ -2916,6 +3048,11 @@
 						if (tags[i] === 'td' || tags[i] === 'th')
 						{
 							html = html.replace(new RegExp('<' + tags[i] + '(.*?[^>])((colspan|rowspan)="(.*?[^>])")?(.*?[^>])>', 'gi'), '###' + tags[i] + ' $2###');
+						}
+						else if (tags[i] === 'span')
+						{
+    						html = html.replace(new RegExp('<' + tags[i] + '([^>]*)class="([^>]*)"[^>]*>', 'gi'), '###' + tags[i] + ' class="$2"###');
+                            html = html.replace(new RegExp('<' + tags[i] + '([^>]*)data-redactor-style-cache="([^>]*)"[^>]*>', 'gi'), '###' + tags[i] + ' cache="$2"###');
 						}
 						else
 						{
@@ -2969,6 +3106,11 @@
                         if (tags[i] === 'td' || tags[i] === 'th')
                         {
 						    html = html.replace(new RegExp('###' + tags[i] + '\s?(.*?[^#])###', 'gi'), '<' + tags[i] + '$1>');
+                        }
+                        else if (tags[i] === 'span')
+                        {
+                            html = html.replace(new RegExp('###' + tags[i] + ' cache="(.*?[^#])"###', 'gi'), '<' + tags[i] + ' style="$1" data-redactor-span="true" data-redactor-style-cache="$1">');
+                            html = html.replace(new RegExp('###' + tags[i] + '\s?(.*?[^#])###', 'gi'), '<' + tags[i] + '$1>');
                         }
                     }
 
@@ -3043,14 +3185,15 @@
     					var codeTag = false;
     					var contents, attr1, attr2;
 
-    					if (s.match(/<pre(.*?)><code(.*?)>/i))
+    					if (s.match(/<pre(.*?)>(([\n\r\s]+)?)<code(.*?)>/i))
     					{
-        					arr = s.match(/<pre(.*?)><code(.*?)>([\w\W]*?)<\/code><\/pre>/i);
+
+        					arr = s.match(/<pre(.*?)>(([\n\r\s]+)?)<code(.*?)>([\w\W]*?)<\/code><\/pre>/i);
         					codeTag = true;
 
-                            contents = arr[3];
+                            contents = arr[5];
                             attr1 = arr[1];
-                            attr2 = arr[2];
+                            attr2 = arr[4];
     					}
                         else
 						{
@@ -3217,6 +3360,8 @@
 					{
 						html = this.opts.emptyHtml;
 					}
+
+					html = html.replace(/<p><span id="selection-marker-1" class="redactor-selection-marker">​<\/span><\/p>/, '');
 
 					this.events.stopDetectChanges();
 					this.core.editor().html(html);
@@ -3451,7 +3596,7 @@
 					// help label
 					$('#redactor-voice-' + this.uuid).remove();
 
-					this.core.editor().removeClass('redactor-in redactor-styles redactor-structure redactor-editor-img-edit');
+					this.core.editor().removeClass('redactor-in redactor-styles redactor-structure redactor-layer-img-edit');
 
 					// caret service
 					this.core.editor().off('keydown.redactor-remove-textnode');
@@ -3492,7 +3637,7 @@
 					this.$element.removeClass('redactor-click-to-edit');
 
 					// common
-					this.core.editor().removeClass('redactor-editor');
+					this.core.editor().removeClass('redactor-layer');
 					this.core.editor().removeAttr('contenteditable');
 
 					var html = this.code.get();
@@ -3756,7 +3901,7 @@
 					if (this.detect.isDesktop() && !this.detect.isFirefox())
 					{
 						this.dropdown.active.on('mouseover.redactor-dropdown', $.proxy(this.utils.disableBodyScroll, this));
-						this.dropdown.active.on('mousedown.redactor-dropdown', $.proxy(this.utils.enableBodyScroll, this));
+						this.dropdown.active.on('mouseout.redactor-dropdown mousedown.redactor-dropdown', $.proxy(this.utils.enableBodyScroll, this));
 					}
 
 					e.stopPropagation();
@@ -3980,7 +4125,7 @@
 					var event = this.core.getEvent();
 					var type = (event === 'click' || event === 'arrow') ? false : 'click';
 
-					this.core.addEvent(type);
+                    this.core.addEvent(type);
 					this.utils.disableSelectAll();
 					this.core.callback('click', e);
 				},
@@ -4142,7 +4287,11 @@
 					}
 
 					var files = e.dataTransfer.files;
-					this.upload.directUpload(files[0], e);
+                    var len = files.length;
+					for (var i = 0; i < len; i++)
+					{
+    					this.upload.directUpload(files[i], e);
+    				}
 				},
 				onDrop: function(e)
 				{
@@ -4467,6 +4616,10 @@
 					{
 						this.core.callback('imageUpload', $img, json);
 					}
+					else
+					{
+    					this.core.callback('imageInserted', $img, json);
+					}
 				},
 				setEditable: function($image)
 				{
@@ -4483,10 +4636,14 @@
     						this.image.resizer = this.image.loadEditableControls($image);
 
     						$(document).on('mousedown.redactor-image-resize-hide.' + this.uuid, $.proxy(this.image.hideResize, this));
-                            this.image.resizer.on('mousedown.redactor touchstart.redactor', $.proxy(function(e)
+
+    						if (this.image.resizer)
     						{
-    							this.image.setResizable(e, $image);
-    						}, this));
+                                this.image.resizer.on('mousedown.redactor touchstart.redactor', $.proxy(function(e)
+        						{
+        							this.image.setResizable(e, $image);
+        						}, this));
+    						}
 
     					}, this);
 
@@ -4679,6 +4836,8 @@
 					this.observe.image = $image;
 
 					var $link = $image.closest('a', this.$editor[0]);
+    				var $figure = $image.closest('figure', this.$editor[0]);
+    				var $container = ($figure.length !== 0) ? $figure : $image;
 
 					this.modal.load('image-edit', this.lang.get('edit'), 705);
 
@@ -4709,7 +4868,8 @@
     				}
 					else
 					{
-						var floatValue = ($image.css('display') == 'block' && $image.css('float') == 'none') ? 'center' : $image.css('float');
+    					var isCentered = ($figure.length !== 0) ? ($container.css('text-align') === 'center') : ($container.css('display') == 'block' && $container.css('float') == 'none');
+						var floatValue = (isCentered) ? 'center' : $container.css('float');
 						$('#redactor-image-align').val(floatValue);
 					}
 
@@ -4804,11 +4964,14 @@
 				},
 				setFloating: function($image)
 				{
+    				var $figure = $image.closest('figure', this.$editor[0]);
+    				var $container = ($figure.length !== 0) ? $figure : $image;
 					var floating = $('#redactor-image-align').val();
 
 					var imageFloat = '';
 					var imageDisplay = '';
 					var imageMargin = '';
+					var textAlign = '';
 
 					switch (floating)
 					{
@@ -4821,13 +4984,22 @@
 							imageMargin = '0 0 ' + this.opts.imageFloatMargin + ' ' + this.opts.imageFloatMargin;
 						break;
 						case 'center':
-							imageDisplay = 'block';
-							imageMargin = 'auto';
+
+                            if ($figure.length !== 0)
+                            {
+                                textAlign = 'center';
+                            }
+                            else
+                            {
+	    						imageDisplay = 'block';
+    							imageMargin = 'auto';
+							}
+
 						break;
 					}
 
-					$image.css({ 'float': imageFloat, display: imageDisplay, margin: imageMargin });
-					$image.attr('rel', $image.attr('style'));
+					$container.css({ 'float': imageFloat, 'display': imageDisplay, 'margin': imageMargin, 'text-align': textAlign });
+					$container.attr('rel', $image.attr('style'));
 				},
 				addCaption: function($image, $link)
 				{
@@ -4874,14 +5046,23 @@
 					var $figure = $image.closest(this.opts.imageTag, this.core.editor()[0]);
 					var $parent = $image.parent();
 
+					// callback
+                    var imageDeleteStop = this.core.callback('imageDelete', e, $image[0]);
+					if (imageDeleteStop === false)
+					{
+						e.preventDefault();
+						return false;
+					}
+
 					if ($('#redactor-image-box').length !== 0)
 					{
 						$parent = $('#redactor-image-box').parent();
 					}
 
-					var $next;
+					var $next, $prev;
 					if ($figure.length !== 0)
 					{
+						$prev = $figure.prev();
 						$next = $figure.next();
 						$figure.remove();
 					}
@@ -4899,19 +5080,18 @@
 
 					if (e !== false)
 					{
-						if ($figure.length !== 0 && $next.length !== 0)
+						if ($next && $next.length !== 0)
 						{
 							this.caret.start($next);
 						}
-						else if ($parent.length !== 0)
+						else if ($prev && $prev.length !== 0)
 						{
-							this.caret.start($parent);
+                            this.caret.end($prev);
 						}
 					}
 
 					if (typeof e !== 'boolean')
 					{
-
 						this.modal.close();
 					}
 
@@ -4956,8 +5136,18 @@
 
 						this.selection.save();
 
-						$newList.append($current);
-						$prev.append($newList);
+                        var $ol = $prev.find('ol').first();
+                        if ($ol.length === 1)
+                        {
+                            $ol.append($current);
+                        }
+                        else
+                        {
+                            var listTag = $list[0].tagName;
+                            var $newList = $('<' + listTag + ' />');
+                            $newList.append($current);
+                            $prev.append($newList);
+                        }
 
 						this.selection.restore();
 					}
@@ -5096,12 +5286,148 @@
 		inline: function()
 		{
 			return {
+    			getClearedNodes: function()
+    			{
+                    var nodes = this.selection.nodes();
+        			var newNodes = [];
+        			var len = nodes.length;
+                    var started = 0;
+
+                    // find array slice
+                    for (var i = 0; i < len; i++)
+					{
+						if ($(nodes[i]).hasClass('redactor-selection-marker'))
+						{
+    						started = i + 2;
+    						break;
+						}
+					}
+
+                    // find selected inline & text nodes
+                    for (var i = 0; i < len; i++)
+					{
+						if (i >= started && !this.utils.isBlockTag(nodes[i].tagName))
+						{
+                            newNodes.push(nodes[i]);
+						}
+					}
+
+					return newNodes;
+    			},
+                isConvertableAttr: function(node, attr, value)
+                {
+                    var nodeAttrValue = $(node).attr(attr);
+                    if (nodeAttrValue)
+                    {
+                        if (attr === 'style')
+                        {
+
+                            value = $.trim(value).replace(/;$/, '')
+
+                            var rules = value.split(';');
+                            var count = 0;
+                            for (var i = 0; i < rules.length; i++)
+                            {
+                                var arr = rules[i].split(':');
+                                var ruleName = $.trim(arr[0]);
+                                var ruleValue = $.trim(arr[1]);
+
+                                if (ruleName.search(/color/) !== -1)
+                                {
+                                    var val = $(node).css(ruleName);
+                                    if (val && (val === ruleValue || this.utils.rgb2hex(val) === ruleValue))
+                                    {
+                                        count++;
+                                    }
+                                }
+                                else if ($(node).css(ruleName) === ruleValue)
+                                {
+                                    count++;
+                                }
+                            }
+
+                            if (count === rules.length)
+                            {
+                                return 1;
+                            }
+                        }
+                        else if (nodeAttrValue === value)
+                        {
+                            return 1;
+                        }
+                    }
+
+                    return 0;
+
+                },
+    			isConvertable: function(node, nodeTag, tag, attr)
+    			{
+                    if (nodeTag === tag)
+                    {
+                        if (attr)
+                        {
+                            var count = 0;
+                            for (var key in attr)
+                            {
+                                count += this.inline.isConvertableAttr(node, key, attr[key]);
+                            }
+
+                            if (count === Object.keys(attr).length)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+    			},
+    			setNodesStriked: function(nodes, tag, attr)
+    			{
+                    for (var i = 0; i < nodes.length; i++)
+					{
+                        var nodeTag = (nodes[i].tagName) ? nodes[i].tagName.toLowerCase() : undefined;
+
+                        var parent = nodes[i].parentNode;
+                        var parentTag = (parent && parent.tagName) ? parent.tagName.toLowerCase() : undefined;
+
+                        var convertable = this.inline.isConvertable(parent, parentTag, tag, attr);
+                        if (convertable)
+                        {
+                            var $el = $(parent).replaceWith(function()
+                            {
+                                return $('<strike>').append($(this).contents());
+                            });
+
+                            $el.attr('data-redactor-inline-converted');
+                        }
+
+                        var convertable = this.inline.isConvertable(nodes[i], nodeTag, tag, attr);
+                        if (convertable)
+                        {
+                            var $el = $(nodes[i]).replaceWith(function()
+                            {
+                                return $('<strike>').append($(this).contents());
+                            });
+                        }
+    				}
+    			},
 				format: function(tag, attr, value, type)
 				{
-					tag = tag.toLowerCase();
+    				if (typeof attr !== 'undefined' && typeof attr !== 'object')
+    				{
+        				var obj = {};
+        				obj[attr] = value;
+        				attr = obj;
+    				}
 
-					// Stop formatting pre
-					if (this.utils.isCurrentOrParent(['PRE']))
+                    tag = tag.toLowerCase();
+
+					// Stop formatting pre/code
+					if (this.utils.isCurrentOrParent(['PRE', 'CODE']))
 					{
 						return;
 					}
@@ -5117,7 +5443,7 @@
 						}
 					}
 
-					this.placeholder.hide();
+                    this.placeholder.hide();
 					this.buffer.set();
 
 					if (this.utils.isCollapsed())
@@ -5126,167 +5452,58 @@
     				}
     				else
     				{
-    					this.inline.formatUncollapsed(tag, attr, value, type);
+        				this.inline.formatUncollapsed(tag, attr, value, type);
     				}
 				},
 				formatUncollapsed: function(tag, attr, value, type)
 				{
-    				var self = this;
-    				var inlines = this.inline.inlines();
-    				var current = this.selection.current();
-    				if (current)
-    				{
-    				    inlines.push(current);
-    				}
-
     				this.selection.save();
 
-					// save del tag
-					if (tag !== 'del')
-					{
-						this.core.editor().find('del').each(function(i,s)
-						{
-							self.utils.replaceToTag(s, 'deline');
-						});
-					}
+                    var nodes = this.inline.getClearedNodes();
+                    this.inline.setNodesStriked(nodes, tag, attr);
 
-					// save u tag
-					if (tag !== 'u')
-					{
-						this.core.editor().find('u').each(function(i,s)
-						{
-							self.utils.replaceToTag(s, 'inline');
-						});
-					}
+                    this.selection.restore();
 
-    				$.each(inlines, function()
+                    document.execCommand('strikethrough');
+
+                    this.selection.saveInstant();
+
+                    var self = this;
+                    this.core.editor().find('strike').each(function()
     				{
-        				if (this.nodeType === 1)
-        				{
-            				var currentTag = this.tagName.toLowerCase();
-            				if (currentTag === tag)
-            				{
-                                var $el = self.utils.replaceToTag(this, 'strike');
-                                $el.addClass('redactor-converted');
-              				}
-          				}
-    				});
-
-    				this.selection.restore();
-
-    				document.execCommand('strikethrough');
-
-    				var formatting = true;
-    				var parent = this.selection.parent();
-    				if (parent === false || parent.tagName !== 'STRIKE')
-    				{
-                        formatting = false;
-    				}
-
-                    this.selection.save();
-                    if (tag !== 'u')
-    				{
-        				this.core.editor().find('u').replaceWith(function()
-    					{
-    						return $(this).contents();
-    					});
-    				}
-    				this.core.editor().find('strike').each(function()
-    				{
-        				var $el = self.utils.replaceToTag(this, tag);
-        				if (formatting)
-        				{
-                            self.inline.setAttr($el, attr, value, type);
-                        }
-    				});
-                    this.core.editor().find('.redactor-converted').each(function()
-    				{
-        				var currentTag = this.tagName.toLowerCase();
-                        if (currentTag !== tag || formatting === false)
+                        var $el = self.utils.replaceToTag(this, tag);
+        				for (var key in attr)
                         {
-                            $(this).replaceWith(function()
-        					{
-        						return $(this).contents();
-        					});
-                        }
-                        $(this).removeClass('redactor-converted');
-    				});
-                    // restore del tag
-					if (tag !== 'del')
-					{
-						this.core.editor().find('deline').each(function(i,s)
-						{
-							self.utils.replaceToTag(s, 'del');
-						});
-					}
-                    // restore u tag
-					if (tag !== 'u')
-					{
-						this.core.editor().find('inline').each(function(i,s)
-						{
-							self.utils.replaceToTag(s, 'u');
-						});
-					}
-    				this.selection.restore();
-
-                },
-                inlines: function()
-                {
-        			var inlines = [];
-        			var nodes = this.inline.nodes();
-
-        			$.each(nodes, $.proxy(function(i,node)
-        			{
-        				if (this.utils.isInline(node))
-        				{
-        					inlines.push(node);
+        				    self.inline.setAttr($el, key, attr[key], type);
         				}
 
-        			}, this));
+        				// remove inside
+        				var $inside = $el.find(tag);
+        				if ($inside.length !== 0)
+        				{
+            				for (var key in attr)
+                            {
+            				    self.inline.removeSpecificAttr($inside, key, attr[key]);
+            				}
+        				}
 
-        			var inline = this.selection.inline();
-        			if (inline === false && inlines.length === 0)
-        			{
-        				return [];
-        			}
-        			else if (inline !== false && inlines.length === 0)
-        			{
-        				return [inline];
-        			}
-        			else
-        			{
-        				return inlines;
-        			}
-                },
-                nodes: function()
-                {
-                    var sel = document.getSelection();
-
-                    if (!sel.rangeCount || sel.isCollapsed || !sel.getRangeAt(0).commonAncestorContainer)
-                    {
-                        return [];
-                    }
-
-                    var range = sel.getRangeAt(0);
-
-                    if (range.commonAncestorContainer.nodeType === 3)
-                    {
-                        var toRet = [];
-                        var currNode = range.commonAncestorContainer;
-                        while (currNode.parentNode && currNode.parentNode.childNodes.length === 1)
+                        // same parent
+                        var $parent = $el.parent();
+                        if ($parent.html() == $el[0].outerHTML)
                         {
-                            toRet.push(currNode.parentNode);
-                            currNode = currNode.parentNode;
+                            for (var key in attr)
+                            {
+            				    self.inline.removeSpecificAttr($parent, key, attr[key]);
+            				}
                         }
 
-                        return toRet;
-                    }
+                        // cache style
+                        $el.attr('data-redactor-style-cache', $el.attr('style'));
 
-                    return [].filter.call(range.commonAncestorContainer.getElementsByTagName('*'), function (el)
-                    {
-                        return (typeof sel.containsNode === 'function') ? sel.containsNode(el, true) : true;
-                    });
-                },
+    				});
+
+    				this.selection.restoreInstant();
+				},
 				formatCollapsed: function(tag, attr, value, type)
 				{
     				var inline = this.selection.inline();
@@ -5321,7 +5538,6 @@
     				{
                         this.inline.insertInline(tag, attr, value, type);
     				}
-
 				},
                 insertBreakpoint: function(inline, currentTag)
 				{
@@ -5378,6 +5594,11 @@
 						else
 						{
 							inline = this.inline[func + 'Attr'](attr, value, inline);
+
+							if (attr === 'style' && inline[0].tagName === 'SPAN')
+							{
+							    $(inline).attr('data-redactor-span', true);
+							}
 						}
 					}
 
@@ -5469,6 +5690,20 @@
 				{
 					return $(this.inline.getInlines(inline)).attr(attr, value)[0];
 				},
+				removeSpecificAttr: function(inline, key, value)
+				{
+    				if (key === 'style')
+    				{
+        				var arr = value.split(':');
+        				var name = arr[0].trim();
+                        $(inline).css(name, '');
+                        this.utils.removeEmptyAttr(inline, 'style');
+    				}
+    				else
+    				{
+        				$(inline).removeAttr(key)[0];
+    				}
+				},
 				removeAttr: function(attr, inline)
 				{
 					return $(this.inline.getInlines(inline)).removeAttr(attr)[0];
@@ -5500,7 +5735,45 @@
 				removeFormat: function()
 				{
 					document.execCommand('removeFormat');
+				},
+				removeStyleRule: function(name)
+				{
+					this.buffer.set();
+					var parent = this.selection.parent();
+					var nodes = this.selection.inlines();
+
+					this.selection.save();
+
+					if (parent && parent.tagName === 'SPAN')
+					{
+						var $s = $(parent);
+
+						$s.css(name, '');
+						$s.removeAttr('data-redactor-span');
+						this.utils.removeEmptyAttr($s, 'style');
+						if ($s[0].attributes.length === 0)
+						{
+							$s.replaceWith($s.contents());
+						}
+					}
+
+					$.each(nodes, $.proxy(function(i,s)
+					{
+						var $s = $(s);
+						if ($.inArray(s.tagName.toLowerCase(), this.opts.inlineTags) != -1 && !$s.hasClass('redactor-selection-marker'))
+						{
+							$s.css(name, '');
+							this.utils.removeEmptyAttr($s, 'style');
+							if ($s[0].attributes.length === 0)
+							{
+								$s.replaceWith($s.contents());
+							}
+						}
+					}, this));
+
+					this.selection.restore();
 				}
+
 			};
 		},
 
@@ -5734,6 +6007,7 @@
 
 					var block = this.selection.block();
 					var gap = this.utils.isBlockTag(node.tagName);
+					var result = true;
 
 					if (this.utils.isSelectAll())
 					{
@@ -5771,11 +6045,15 @@
 					}
 					else
 					{
-						this.insert.placeNode(node, deleteContent);
+						result = this.insert.placeNode(node, deleteContent);
 					}
 
 					this.utils.disableSelectAll();
-					this.caret.end(node);
+
+					if (result)
+					{
+					    this.caret.end(node);
+					}
 
 					return node;
 
@@ -5841,6 +6119,10 @@
 				{
 					var sel = this.selection.get();
 					var range = this.selection.range(sel);
+					if (range == null)
+					{
+    					return false;
+					}
 
 					if (deleteContent !== false)
 					{
@@ -6028,6 +6310,26 @@
 					// backspace & delete
 					if (key === this.keyCode.BACKSPACE || key === this.keyCode.DELETE)
 					{
+    					if (this.observe.image && typeof this.observe.image !== 'undefined')
+    					{
+        					e.preventDefault();
+
+        					var $prev = this.observe.image.closest('figure, p').prev()
+        					this.image.remove(false);
+                            this.observe.image = false;
+
+        					if ($prev && $prev.length !== 0)
+        					{
+            					this.caret.end($prev);
+        					}
+        					else
+        					{
+            					this.core.editor().focus();
+        					}
+
+        					return;
+    					}
+
 						this.keydown.onBackspaceAndDeleteBefore();
 					}
 
@@ -6081,7 +6383,6 @@
 					// backspace
 					if (key === this.keyCode.BACKSPACE)
 					{
-
 						if (this.detect.isFirefox())
 						{
 							this.line.removeOnBackspace(e);
@@ -6139,7 +6440,7 @@
 						this.code.syncFire = false;
 						this.keydown.removeEmptyLists();
 
-						this.core.editor().find('*[style]').not('img, #redactor-image-box, #redactor-image-editter').removeAttr('style');
+						this.core.editor().find('*[style]').not('img, #redactor-image-box, #redactor-image-editter, [data-redactor-span]').removeAttr('style');
 
 						this.keydown.formatEmpty(e);
 						this.code.syncFire = true;
@@ -6222,6 +6523,7 @@
                         return;
                     }
 
+
 					// remove inline tags in new-empty paragraph
 					setTimeout($.proxy(function()
 					{
@@ -6246,8 +6548,8 @@
             				sel.addRange(range);
 						}
 
-					}, this), 1);
 
+					}, this), 1);
 				},
 				checkEvents: function(arrow, key)
 				{
@@ -6695,7 +6997,6 @@
 			return {
 				init: function(e)
 				{
-
 					if (this.rtePaste)
 					{
 						return;
@@ -6849,7 +7150,7 @@
 
 					// if hr is previous element
 					var $prev = $block.prev();
-					if ($prev && $prev[0].tagName === 'HR')
+					if ($prev && $prev.length !== 0 && $prev[0].tagName === 'HR')
 					{
 						e.preventDefault();
 						$prev.remove();
@@ -8164,7 +8465,7 @@
 				{
                     if (this.opts.imageEditable)
                     {
-                        this.core.editor().addClass('redactor-editor-img-edit');
+                        this.core.editor().addClass('redactor-layer-img-edit');
     					this.core.editor().find('img').each($.proxy(function(i, img)
     					{
     						var $img = $(img);
@@ -9114,6 +9415,7 @@
 
 					var sel = this.selection.get();
 					var range = this.selection.range(sel);
+
 					if (this.utils.isCollapsed())
 					{
 						return [this.selection.current()];
@@ -9126,7 +9428,7 @@
 						// single node
 						if (node === endNode)
 						{
-							return [node];
+							return [this.selection.parent()];
 						}
 
 						// iterate
@@ -9148,18 +9450,22 @@
 						var resultNodes = [];
 						$.each(nodes, function(i,s)
 						{
-							var tagName = (s.nodeType !== 1) ? false : s.tagName.toLowerCase();
-							if ($(s).hasClass('redactor-script-tag, redactor-selection-marker'))
-							{
-								return;
-							}
-							else if (tagName && filter.length !== 0 && $.inArray(tagName, filter) === -1)
-							{
-								return;
-							}
-							else
-							{
-								resultNodes.push(s);
+    						if (s)
+    						{
+    							var tagName = (s.nodeType !== 1) ? false : s.tagName.toLowerCase();
+
+    							if ($(s).hasClass('redactor-script-tag, redactor-selection-marker'))
+    							{
+    								return;
+    							}
+    							else if (tagName && filter.length !== 0 && $.inArray(tagName, filter) === -1)
+    							{
+    								return;
+    							}
+    							else
+    							{
+    								resultNodes.push(s);
+    							}
 							}
 						});
 
@@ -9190,7 +9496,7 @@
 				},
 				save: function()
 				{
-					this.marker.insert();
+ 					this.marker.insert();
 					this.savedSel = this.core.editor().html();
 				},
 				restore: function(removeMarkers)
@@ -9221,8 +9527,99 @@
 						this.marker.remove();
 						this.savedSel = false;
 					}
-
 				},
+                saveInstant: function()
+                {
+                    var el = this.core.editor()[0];
+                    var doc = el.ownerDocument, win = doc.defaultView;
+                    var sel = win.getSelection();
+
+                    if (!sel.getRangeAt || !sel.rangeCount)
+                    {
+                        return;
+                    }
+
+                    var range = sel.getRangeAt(0);
+                    var selectionRange = range.cloneRange();
+
+                    selectionRange.selectNodeContents(el);
+                    selectionRange.setEnd(range.startContainer, range.startOffset);
+
+                    var start = selectionRange.toString().length;
+
+                    this.saved = {
+                        start: start,
+                        end: start + range.toString().length,
+                        node: range.startContainer
+                    };
+
+                    return this.saved;
+                },
+                restoreInstant: function(saved)
+                {
+                    if (typeof saved === 'undefined' && !this.saved)
+                    {
+                        return;
+                    }
+
+                    this.saved = (typeof saved !== 'undefined') ? saved : this.saved;
+
+                    var $node = this.core.editor().find(this.saved.node);
+                    if ($node.length !== 0 && $node.text().trim().replace(/\u200B/g, '').length === 0)
+                    {
+                       try {
+                            var range = document.createRange();
+                            range.setStart($node[0], 0);
+
+                            var sel = window.getSelection();
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                        catch(e) {}
+
+                        return;
+                    }
+
+                    var el = this.core.editor()[0];
+                    var doc = el.ownerDocument, win = doc.defaultView;
+                    var charIndex = 0, range = doc.createRange();
+
+                    range.setStart(el, 0);
+                    range.collapse(true);
+
+                    var nodeStack = [el], node, foundStart = false, stop = false;
+                    while (!stop && (node = nodeStack.pop()))
+                    {
+                        if (node.nodeType == 3)
+                        {
+                            var nextCharIndex = charIndex + node.length;
+                            if (!foundStart && this.saved.start >= charIndex && this.saved.start <= nextCharIndex)
+                            {
+                                range.setStart(node, this.saved.start - charIndex);
+                                foundStart = true;
+                            }
+
+                            if (foundStart && this.saved.end >= charIndex && this.saved.end <= nextCharIndex)
+                            {
+                                range.setEnd(node, this.saved.end - charIndex);
+                                stop = true;
+                            }
+                            charIndex = nextCharIndex;
+                        }
+                        else
+                        {
+                            var i = node.childNodes.length;
+                            while (i--)
+                            {
+                                nodeStack.push(node.childNodes[i]);
+                            }
+                        }
+                    }
+
+                    var sel = win.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                },
 				node: function(node)
 				{
 					$(node).prepend(this.marker.get(1));
@@ -9562,8 +9959,8 @@
 							$(this.opts.toolbarFixedTarget).on('scroll.redactor.' + this.uuid, function()
 							{
 								self.core.toolbar().hide();
-								clearTimeout($.data(this, "scrollCheck" ) );
-								$.data( this, "scrollCheck", setTimeout(function()
+								clearTimeout($.data(this, "scrollCheck"));
+								$.data(this, "scrollCheck", setTimeout(function()
 								{
 									self.core.toolbar().show();
 									self.toolbar.observeScroll();
@@ -9627,7 +10024,7 @@
 					var width = this.core.box().innerWidth();
 
 					var position = (this.detect.isDesktop()) ? 'fixed' : 'absolute';
-					var top = (this.detect.isDesktop()) ? this.opts.toolbarFixedTopOffset : ($(this.opts.toolbarFixedTarget).scrollTop() - boxTop);
+					var top = (this.detect.isDesktop()) ? this.opts.toolbarFixedTopOffset : ($(this.opts.toolbarFixedTarget).scrollTop() - boxTop + this.opts.toolbarFixedTopOffset);
 					var left = (this.detect.isDesktop()) ? this.core.box().offset().left : 0;
 
 					if (this.opts.toolbarFixedTarget !== document)
@@ -9855,7 +10252,7 @@
 							var json;
 							try
 							{
-								json = (typeof data === 'string' ? $.parseJSON(data) : data);
+								json = (typeof data === 'string' ? JSON.parse(data) : data);
 							}
 							catch(err)
 							{
@@ -10285,10 +10682,16 @@
 					this.core.editor().addClass('redactor-relative');
 				},
 				// scroll
+				getScrollTarget: function()
+				{
+    				var $scrollTarget = $(this.opts.scrollTarget);
+
+    				return ($scrollTarget.length !== 0) ? $scrollTarget : $(document);
+				},
 				freezeScroll: function()
 				{
-					this.freezeScrollTop = $(document).scrollTop();
-					$(document).scrollTop(this.freezeScrollTop);
+					this.freezeScrollTop = this.utils.getScrollTarget().scrollTop();
+					this.utils.getScrollTarget().scrollTop(this.freezeScrollTop);
 				},
 				unfreezeScroll: function()
 				{
@@ -10297,11 +10700,11 @@
 						return;
 					}
 
-					$(document).scrollTop(this.freezeScrollTop);
+					this.utils.getScrollTarget().scrollTop(this.freezeScrollTop);
 				},
 				saveScroll: function()
 				{
-					this.tmpScrollTop = $(document).scrollTop();
+					this.tmpScrollTop = this.utils.getScrollTarget().scrollTop();
 				},
 				restoreScroll: function()
 				{
@@ -10310,7 +10713,7 @@
 						return;
 					}
 
-					$(document).scrollTop(this.tmpScrollTop);
+					this.utils.getScrollTarget().scrollTop(this.tmpScrollTop);
 				},
 				isStartOfElement: function(element)
 				{
@@ -10484,6 +10887,19 @@
 						return data;
 					}
 				},
+				isRgb: function(str)
+				{
+                    return (str.search(/^rgb/i) === 0);
+				},
+				rgb2hex: function(rgb)
+				{
+                    rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+
+                    return (rgb && rgb.length === 4) ? "#" +
+                    ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+                    ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+                    ("0" + parseInt(rgb[3],10).toString(16)).slice(-2) : '';
+                },
 
 				// #backward
 				isCollapsed: function()
@@ -10621,7 +11037,7 @@
 		},
 		animate: function(callback)
 		{
-			this.$element.addClass('animated').css('display', '').removeClass('hide');
+			this.$element.addClass('redactor-animated').css('display', '').removeClass('hide');
 			this.$element.addClass(this.opts.prefix + this.queue[0]);
 
 			this.set(this.opts.duration + 's', this.opts.delay + 's', this.opts.iterate, this.opts.timing);
@@ -10657,7 +11073,7 @@
 		},
 		clean: function()
 		{
-			this.$element.removeClass('animated');
+			this.$element.removeClass('redactor-animated');
 			this.$element.removeClass(this.opts.prefix + this.queue[0]);
 
 			this.set('', '', '', '');
