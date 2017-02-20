@@ -198,7 +198,7 @@
                     newFormTopMargin = formTopMargin + Math.round(loginFieldsHeight / 2);
 
                 this.$form.velocity({marginTop: newFormTopMargin}, 'fast');
-                this.$loginFields.velocity({height: 0}, 'fast', $.proxy(function() {
+                this.$loginFields.velocity({height: 24}, 'fast', $.proxy(function() {
                     this.$loginFields.hide();
                 }, this));
 
