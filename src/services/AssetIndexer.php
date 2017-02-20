@@ -57,6 +57,9 @@ class AssetIndexer extends Component
     {
         try {
 
+            /**
+             * @var Volume $volume
+             */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
             // Get the file list.
@@ -353,6 +356,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      * @param string $path
+     * @param string $sessionId optional indexing session id.
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return bool|Asset
@@ -496,7 +500,6 @@ class AssetIndexer extends Component
         }
 
         $asset->dateModified = $timeModified;
-
         Craft::$app->getAssets()->saveAsset($asset);
 
         return $asset;
