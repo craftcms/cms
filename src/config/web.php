@@ -33,6 +33,7 @@ return [
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
+                'user' => craft\debug\UserPanel::class,
                 'router' => [
                     'class' => RouterPanel::class,
                     'categories' => [
