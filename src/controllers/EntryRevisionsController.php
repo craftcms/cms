@@ -312,6 +312,11 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 
+        if (!$draft->typeId) {
+            // Default to the section's first entry type
+            $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
+        }
+
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 

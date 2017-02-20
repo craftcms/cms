@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
 - #1392: Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`.
 - Fixed a bug where the `cacheDuration` config setting wasn’t getting applied to data caches, so everything was getting cached indefinitely by default.
+- #1390: Fixed a PHP error that occurred when saving a new entry draft, if the entry’s section only had one entry type.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
