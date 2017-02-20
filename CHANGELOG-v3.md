@@ -8,7 +8,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
-- Updated the Yii Debug Toolbar to 2.0.8.
+- Updated the Yii Debug extension to 2.0.8.
 - Updated d3.js to 4.6.0.0.
 - Updated timepicker to 1.11.10.
 - Updated Velocity to 1.4.3.

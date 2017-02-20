@@ -338,7 +338,7 @@ class UrlManager extends \yii\web\UrlManager
 
             if (YII_DEBUG) {
                 Craft::trace([
-                    'rule' => 'URL rule: '.(method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
+                    'rule' => 'URL Rule: '.(method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
                     'parent' => null
                 ], __METHOD__);
@@ -392,7 +392,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (YII_DEBUG) {
             Craft::trace([
-                'rule' => 'Public template path: '.$path,
+                'rule' => 'Template: '.$path,
                 'match' => $matches,
                 'parent' => null
             ], __METHOD__);
