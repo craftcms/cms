@@ -13,6 +13,11 @@ Craft CMS 3.0 Working Changelog
 - Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 
+### Unreleased
+
+### Fixed
+- #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
+
 ## 3.0.0-beta.4 - 2017-02-17
 
 ### Added
