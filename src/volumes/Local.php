@@ -52,9 +52,9 @@ class Local extends FolderVolume implements LocalVolumeInterface
     /**
      * Path to the root of this sources local folder.
      *
-     * @var string
+     * @var string|null
      */
-    public $path = '';
+    public $path;
 
     // Public Methods
     // =========================================================================
