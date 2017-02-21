@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\AssetIndexer::processIndexForVolume()`
 - Added `craft\services\AssetIndexer::getNextIndexEntry()`
 - Added `craft\services\AssetIndexer::updateIndexEntry()`
+- Added a checkbox to Asset Indexing Utility to indicate whether to cache remote files or not.
 
 ### Changed
 - Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
@@ -24,7 +25,9 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::indexFile()` now requires an instance of `craft\base\Volume` (instead of `craft\base\VolumeInterface`) and a URI path as parameters.
+- `craft\base\Volume::indexFile()` now accepts a parameter to indicate whether to cache remote files or not.
 - `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
+- `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
 
 ### Removed
  - Removed `craft\services\AssetIndexer::processIndexForVolume()`
