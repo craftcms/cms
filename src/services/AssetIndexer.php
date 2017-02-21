@@ -333,6 +333,13 @@ class AssetIndexer extends Component
             ])
             ->column();
 
+        // Load the processed volume IDs for that sessions.
+        $volumeIds = (new Query())
+            ->select(['DISTINCT(volumeId)'])
+            ->from(['{{%assetindexdata}}'])
+            ->where(['sessionId' => $sessionId])
+            ->column();
+
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
         $assets = (new Query())
@@ -340,6 +347,7 @@ class AssetIndexer extends Component
             ->from(['{{%assets}} fi'])
             ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
+            ->where(['fi.volumeId' => $volumeIds])
             ->all();
 
         foreach ($assets as $asset) {
