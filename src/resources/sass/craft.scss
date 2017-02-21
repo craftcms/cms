@@ -1480,6 +1480,8 @@ body #redactor-modal footer button:first-child { border-bottom-left-radius: $btn
 body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
 body .redactor-link-tooltip { z-index: 101; }
 body .redactor-toolbar { z-index: 102; }
+body .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+
 /**
  * Selects
  *
