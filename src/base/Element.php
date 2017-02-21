@@ -799,8 +799,8 @@ abstract class Element extends Component implements ElementInterface
     public function attributeLabels()
     {
         return [
-            'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
+            'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
         ];
     }
