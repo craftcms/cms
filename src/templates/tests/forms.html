@@ -1,0 +1,24 @@
+{% extends "_layouts/cp" %}
+{% set title = "Form Tests" %}
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    {{ forms.checkboxSelectField({
+        label: "Checkbox select with “All” option",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ]
+    }) }}
+
+    {{ forms.checkboxSelectField({
+        label: "Checkbox select without “All” option",
+        showAllOption: false,
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ]
+    }) }}
+{% endblock %}

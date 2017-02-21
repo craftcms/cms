@@ -79,8 +79,6 @@ class EntryRevisionsController extends BaseEntriesController
                 $draft->enabled = false;
                 Craft::$app->getElements()->saveElement($draft);
                 $draft->enabled = $draftEnabled;
-            } else {
-                $draft->addErrors($draft->getErrors());
             }
         }
 
@@ -311,6 +309,11 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->expiryDate = (($expiryDate = Craft::$app->getRequest()->getBodyParam('expiryDate')) !== false ? (DateTimeHelper::toDateTime($expiryDate) ?: null) : $draft->expiryDate);
         $draft->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled');
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
+
+        if (!$draft->typeId) {
+            // Default to the section's first entry type
+            $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
+        }
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));

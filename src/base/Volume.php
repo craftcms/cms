@@ -1,13 +1,9 @@
 <?php
 /**
- * The base class for all asset Volumes.  Any Volume type must extend this class.
+ * The base class for all asset Volumes.  Any Volume type that does not support discrete folders must extend this class.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://craftcms.com/license Craft License Agreement
- * @see        http://craftcms.com
- * @package    craft.app.base
- * @since      1.0
+ * @since      3.0
  */
 
 namespace craft\base;
@@ -164,18 +160,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * Checks whether a folder exists at the given path.
-     *
-     * @param string $path The path to the folder to check.
-     *
-     * @return array|bool|null
-     */
-    public function folderExists(string $path)
-    {
-        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
-    }
-
-    /**
      * @inheritdoc
      */
     public function deleteFile(string $path): bool
@@ -217,75 +201,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function copyFile(string $path, string $newPath): bool
     {
         return $this->filesystem()->copy($path, $newPath);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function createDir(string $path): bool
-    {
-        if ($this->folderExists($path)) {
-            throw new VolumeObjectExistsException(Craft::t('app',
-                'Folder “{folder}” already exists on the volume!',
-                ['folder' => $path]));
-        }
-
-        return $this->filesystem()->createDir($path);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function deleteDir(string $path): bool
-    {
-        try {
-            return $this->filesystem()->deleteDir($path);
-        } catch (\Exception $exception) {
-            // We catch all Exceptions because most of the times these will be 3rd party exceptions.
-            return false;
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function renameDir(string $path, string $newName): bool
-    {
-        if (!$this->folderExists($path)) {
-            throw new VolumeObjectNotFoundException(Craft::t('app',
-                'Folder “{folder}” cannot be found on the volume.',
-                ['folder' => $path]));
-        }
-
-        // Get the list of dir contents
-        $fileList = $this->getFileList($path, true);
-        $directoryList = [];
-
-        $parts = explode('/', $path);
-
-        array_pop($parts);
-        $parts[] = $newName;
-
-        $newPath = implode('/', $parts);
-
-        $pattern = '/^'.preg_quote($path, '/').'/';
-
-        // Rename every file and build a list of directories
-        foreach ($fileList as $object) {
-            if ($object['type'] !== 'dir') {
-                $objectPath = preg_replace($pattern, $newPath, $object['path']);
-                $this->renameFile($object['path'], $objectPath);
-            } else {
-                $directoryList[] = $object['path'];
-            }
-        }
-
-        // The files are moved, but the directories remain. Delete them.
-        foreach ($directoryList as $dir) {
-            $this->deleteDir($dir);
-        }
-
-        return true;
     }
 
     /**

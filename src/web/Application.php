@@ -223,7 +223,7 @@ class Application extends \yii\web\Application
             'error' => $data['message']
         ];
 
-        if ($this->getConfig()->get('devMode')) {
+        if (YII_DEBUG) {
             $exceptionArr['trace'] = $data['trace'];
             $exceptionArr['traces'] = ($data['traces'] ?? null);
             $exceptionArr['file'] = $data['file'];
@@ -248,7 +248,7 @@ class Application extends \yii\web\Application
      */
     public function returnAjaxError(int $code, string $message, string $file, string $line)
     {
-        if ($this->getConfig()->get('devMode')) {
+        if (YII_DEBUG) {
             $outputTrace = '';
             $trace = debug_backtrace();
 

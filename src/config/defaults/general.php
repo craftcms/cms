@@ -104,13 +104,13 @@ return [
      */
     'cacheElementQueries' => true,
     /**
-     * The length of time Craft will keep things cached in `storage/runtime/`.
+     * The default length of time Craft will store data, RSS feed, and template caches.
      *
-     * Set to '0' to cache things indefinitely.
+     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      */
-    'cacheDuration' => 'P1D',
+    'cacheDuration' => 86400,
     /**
      * The caching method that Craft should use.  Valid values are 'apc', 'db', 'file', 'memcache' (Memcached),
      * 'wincache', 'xcache', and 'zenddata'.
@@ -505,11 +505,6 @@ return [
      * If disabled, an alternate task running trigger *must* be set up separately.
      */
     'runTasksAutomatically' => true,
-    /**
-     * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
-     * keyword index.
-     */
-    'searchIgnoreWords' => ['the', 'and'],
     /**
      * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */

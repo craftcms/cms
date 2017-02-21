@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
@@ -259,8 +260,8 @@ class UrlManager extends \yii\web\UrlManager
     private function _getRequestRoute(Request $request)
     {
         // Is there a token in the URL?
-        if (($token = $request->getToken()) !== null) {
-            return Craft::$app->getTokens()->getTokenRoute($token);
+        if (($route = $this->_getTokenRoute($request)) !== false) {
+            return $route;
         }
 
         $path = $request->getPathInfo();
@@ -276,11 +277,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         // Does it look like they're trying to access a public template path?
-        if ($this->_isPublicTemplatePath()) {
-            return ['templates/render', ['template' => $path]];
-        }
-
-        return false;
+        return $this->_getTemplateRoute($path);
     }
 
     /**
@@ -300,6 +297,7 @@ class UrlManager extends \yii\web\UrlManager
         $this->_matchedElementRoute = false;
 
         if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
+            /** @var Element $element */
             $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
             if ($element) {
@@ -310,6 +308,14 @@ class UrlManager extends \yii\web\UrlManager
                     $this->_matchedElementRoute = $route;
                 }
             }
+        }
+
+        if (YII_DEBUG) {
+            Craft::trace([
+                'rule' => 'Element URI: '.$path,
+                'match' => isset($element, $route),
+                'parent' => null
+            ], __METHOD__);
         }
 
         return $this->_matchedElementRoute;
@@ -327,7 +333,18 @@ class UrlManager extends \yii\web\UrlManager
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var $rule UrlRule */
         foreach ($this->rules as $rule) {
-            if (($route = $rule->parseRequest($this, $request)) !== false) {
+
+            $route = $rule->parseRequest($this, $request);
+
+            if (YII_DEBUG) {
+                Craft::trace([
+                    'rule' => 'URL Rule: '.(method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
+                    'match' => $route !== false,
+                    'parent' => null
+                ], __METHOD__);
+            }
+
+            if ($route !== false) {
                 if ($rule->params) {
                     $this->setRouteParams($rule->params);
                 }
@@ -360,5 +377,57 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         return true;
+    }
+
+    /**
+     * Checks if the path could be a public template path and if so, returns a route to that template.
+     *
+     * @param string $path
+     *
+     * @return array|bool
+     */
+    private function _getTemplateRoute(string $path)
+    {
+        $matches = $this->_isPublicTemplatePath();
+
+        if (YII_DEBUG) {
+            Craft::trace([
+                'rule' => 'Template: '.$path,
+                'match' => $matches,
+                'parent' => null
+            ], __METHOD__);
+        }
+
+        if (!$matches) {
+            return false;
+        }
+
+        return ['templates/render', ['template' => $path]];
+    }
+
+    /**
+     * Checks if the request has a token in it.
+     *
+     * @param Request $request
+     *
+     * @return array|false
+     */
+    private function _getTokenRoute(Request $request)
+    {
+        $token = $request->getToken();
+
+        if (YII_DEBUG) {
+            Craft::trace([
+                'rule' => 'Token'.($token !== null ? ': '.$token : ''),
+                'match' => $token !== null,
+                'parent' => null
+            ], __METHOD__);
+        }
+
+        if ($token === null) {
+            return false;
+        }
+
+        return Craft::$app->getTokens()->getTokenRoute($token);
     }
 }

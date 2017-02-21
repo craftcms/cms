@@ -164,25 +164,24 @@ class ElementsController extends BaseElementsController
         $request = Craft::$app->getRequest();
         $categoryIds = $request->getParam('categoryIds', []);
 
+        /** @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
-            // Get the structure ID
-            $firstCategory = Category::findOne($categoryIds[0]);
-            $structureId = $firstCategory->getGroup()->structureId;
+            $categories = Category::find()
+                ->id($categoryIds)
+                ->siteId($request->getParam('siteId'))
+                ->status(null)
+                ->enabledForSite(false)
+                ->all();
 
             // Fill in the gaps
-            $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds, $structureId);
+            $categoriesService = Craft::$app->getCategories();
+            $categoriesService->fillGapsInCategories($categories);
 
-            if (!empty($categoryIds)) {
-                $categories = Category::find()
-                    ->id($categoryIds)
-                    ->siteId($request->getParam('siteId'))
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->limit($request->getParam('limit'))
-                    ->structureId($structureId)
-                    ->all();
+            // Enforce the branch limit
+            if ($branchLimit = $request->getParam('branchLimit')) {
+                $categoriesService->applyBranchLimitToCategories($categories, $branchLimit);
             }
         }
 

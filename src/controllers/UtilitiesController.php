@@ -274,13 +274,15 @@ class UtilitiesController extends Controller
                     ->execute();
             }
 
-            return $this->asJson([
-                'batches' => [
-                    [
-                        $responseArray
+            if (!empty($responseArray)) {
+                return $this->asJson([
+                    'batches' => [
+                        [
+                            $responseArray
+                        ]
                     ]
-                ]
-            ]);
+                ]);
+            }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()

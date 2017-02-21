@@ -1,5 +1,7 @@
 <?php
 
+use yii\debug\panels\RouterPanel;
+
 return [
     'components' => [
         'request' => [
@@ -31,6 +33,16 @@ return [
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
+                'user' => craft\debug\UserPanel::class,
+                'router' => [
+                    'class' => RouterPanel::class,
+                    'categories' => [
+                        'craft\web\UrlManager::_getMatchedElementRoute',
+                        'craft\web\UrlManager::_getMatchedUrlRoute',
+                        'craft\web\UrlManager::_getTemplateRoute',
+                        'craft\web\UrlManager::_getTokenRoute',
+                    ]
+                ],
                 'request' => yii\debug\panels\RequestPanel::class,
                 'log' => yii\debug\panels\LogPanel::class,
                 'deprecated' => craft\debug\DeprecatedPanel::class,

@@ -34,7 +34,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         customizeSourcesModal: null,
 
         $toolbar: null,
-        $toolbarTableRow: null,
+        $toolbarFlexContainer: null,
         toolbarOffset: null,
 
         $search: null,
@@ -58,7 +58,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $structureSortAttribute: null,
 
         $elements: null,
-        $viewModeBtnTd: null,
         $viewModeBtnContainer: null,
         viewModeBtns: null,
         viewMode: null,
@@ -71,6 +70,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $selectAllContainer: null,
         $selectAllCheckbox: null,
         showingActionTriggers: false,
+        _$detachedToolbarItems: null,
         _$triggers: null,
 
         // Public methods
@@ -105,18 +105,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.$main = this.$container.find('.main');
             this.$toolbar = this.$container.find('.toolbar:first');
-            this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
-            this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
-            this.$siteMenuBtn = this.$toolbarTableRow.find('.sitemenubtn:first');
-            this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
-            this.$search = this.$toolbarTableRow.find('.search:first input:first');
-            this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
-            this.$mainSpinner = this.$toolbar.find('.spinner:first');
+            this.$toolbarFlexContainer = this.$toolbar.children('.flex');
+            this.$statusMenuBtn = this.$toolbarFlexContainer.find('.statusmenubtn:first');
+            this.$siteMenuBtn = this.$toolbarFlexContainer.find('.sitemenubtn:first');
+            this.$sortMenuBtn = this.$toolbarFlexContainer.find('.sortmenubtn:first');
+            this.$search = this.$toolbarFlexContainer.find('.search:first input:first');
+            this.$clearSearchBtn = this.$toolbarFlexContainer.find('.search:first > .clear');
+            this.$mainSpinner = this.$toolbarFlexContainer.find('.spinner:first');
             this.$sidebar = this.$container.find('.sidebar:first');
             this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
-            this.$viewModeBtnTd = this.$toolbarTableRow.find('.viewbtns:first');
-            this.$viewModeBtnContainer = $('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd);
 
             // Keep the toolbar at the top of the window
             if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
@@ -600,7 +598,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$toolbar.css('min-height', this.$toolbar.height());
 
             // Hide any toolbar inputs
-            this.$toolbarTableRow.children().not(this.$selectAllContainer).addClass('hidden');
+            this._$detachedToolbarItems = this.$toolbarFlexContainer.children().not(this.$selectAllContainer).not(this.$mainSpinner);
+            this._$detachedToolbarItems.detach();
 
             if (!this._$triggers) {
                 this._createTriggers();
@@ -675,9 +674,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            this._$detachedToolbarItems.insertBefore(this.$mainSpinner);
             this._$triggers.detach();
 
-            this.$toolbarTableRow.children().not(this.$selectAllContainer).removeClass('hidden');
+            this.$toolbarFlexContainer.children().not(this.$selectAllContainer).removeClass('hidden');
 
             // Unset the min toolbar height
             this.$toolbar.css('min-height', '');
@@ -826,7 +826,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // ----------------------------------------------------------------------
 
             // Clear out any previous view mode data
-            this.$viewModeBtnContainer.empty();
+            if (this.$viewModeBtnContainer) {
+                this.$viewModeBtnContainer.remove();
+            }
+
             this.viewModeBtns = {};
             this.viewMode = null;
 
@@ -835,7 +838,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             // Create the buttons if there's more than one mode available to this source
             if (this.sourceViewModes.length > 1) {
-                this.$viewModeBtnTd.removeClass('hidden');
+                this.$viewModeBtnContainer = $('<div class="btngroup"/>').insertBefore(this.$mainSpinner);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
                     var viewMode = this.sourceViewModes[i];
@@ -854,9 +857,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         this.updateElements();
                     });
                 }
-            }
-            else {
-                this.$viewModeBtnTd.addClass('hidden');
             }
 
             // Figure out which mode we should start with
@@ -1108,12 +1108,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         setIndexBusy: function() {
-            this.$mainSpinner.removeClass('hidden');
+            this.$mainSpinner.removeClass('invisible');
             this.isIndexBusy = true;
         },
 
         setIndexAvailable: function() {
-            this.$mainSpinner.addClass('hidden');
+            this.$mainSpinner.addClass('invisible');
             this.isIndexBusy = false;
         },
 
@@ -1384,7 +1384,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 // First time?
                 if (!this.$selectAllContainer) {
                     // Create the select all button
-                    this.$selectAllContainer = $('<td class="selectallcontainer thin"/>');
+                    this.$selectAllContainer = $('<div class="selectallcontainer"/>');
                     this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
                     this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
 
@@ -1419,7 +1419,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
 
                 // Place the select all button at the beginning of the toolbar
-                this.$selectAllContainer.prependTo(this.$toolbarTableRow);
+                this.$selectAllContainer.prependTo(this.$toolbarFlexContainer);
             }
 
             // Update the view with the new container + elements HTML
@@ -1517,14 +1517,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 triggers.push($menuTrigger);
             }
 
-            // Add a filler TD
-            triggers.push('');
-
             this._$triggers = $();
 
             for (var i = 0; i < triggers.length; i++) {
-                var $td = $('<td class="' + (i < triggers.length - 1 ? 'thin' : '') + '"/>').append(triggers[i]);
-                this._$triggers = this._$triggers.add($td);
+                var $div = $('<div/>').append(triggers[i]);
+                this._$triggers = this._$triggers.add($div);
             }
 
             this._$triggers.insertAfter(this.$selectAllContainer);

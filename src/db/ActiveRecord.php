@@ -37,21 +37,21 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             $this->$attribute = Db::prepareValueForDb($this->$attribute);
         }
 
-        if ($this->getIsNewRecord()) {
-            // Prepare the values
-            $now = Db::prepareDateForDb(new \DateTime());
+        // Prepare the values
+        $now = Db::prepareDateForDb(new \DateTime());
 
+        if ($this->getIsNewRecord()) {
             if ($this->hasAttribute('dateCreated')) {
                 $this->dateCreated = $now;
-            }
-
-            if ($this->hasAttribute('dateUpdated')) {
-                $this->dateUpdated = $now;
             }
 
             if ($this->hasAttribute('uid')) {
                 $this->uid = StringHelper::UUID();
             }
+        }
+
+        if ($this->hasAttribute('dateUpdated')) {
+            $this->dateUpdated = $now;
         }
 
         return parent::beforeSave($insert);
