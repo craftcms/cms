@@ -637,7 +637,10 @@ class WebRootExposedFolderRequirement extends Requirement
 		// Get the base path without the script name.
 		$subBasePath = IOHelper::normalizePathSeparators(mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptUrl())));
 
-		if (mb_strpos($pathToTest, $subBasePath) !== false)
+		// If $subBasePath === '', then both the craft folder and index.php are living at the root of the filesystem.
+		// Note that some web servers (Idea Web Server) can be configured with virtual roots so that PHP's realpath
+		// returns that instead of the actual root.
+		if ($subBasePath === '' || mb_strpos($pathToTest, $subBasePath) !== false)
 		{
 			return true;
 		}
