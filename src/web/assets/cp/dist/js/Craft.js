@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-17 */
+/*! Craft 3.0.0 - 2017-02-22 */
 (function($){
 
 /** global: Craft */
@@ -1603,6 +1603,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$customizeSourcesBtn = this.$sidebar.children('.customize-sources');
             this.$elements = this.$container.find('.elements:first');
 
+            // Hide sidebar if needed
+            if (this.settings.hideSidebar) {
+                this.$sidebar.hide();
+                $('.body, .content', this.$container).removeClass('has-sidebar');
+            }
+
             // Keep the toolbar at the top of the window
             if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
                 this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
@@ -3053,6 +3059,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             selectable: false,
             multiSelect: false,
             buttonContainer: null,
+            hideSidebar: false,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
@@ -4058,7 +4065,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                         selectable: true,
                         multiSelect: this.settings.multiSelect,
                         buttonContainer: this.$secondaryButtons,
-                        onSelectionChange: $.proxy(this, 'onSelectionChange')
+                        onSelectionChange: $.proxy(this, 'onSelectionChange'),
+                        hideSidebar: this.settings.hideSidebar
                     });
 
                     // Double-clicking or double-tapping should select the elements
@@ -4080,7 +4088,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             disableElementsOnSelect: false,
             hideOnSelect: true,
             onCancel: $.noop,
-            onSelect: $.noop
+            onSelect: $.noop,
+            hideIndexSidebar: false
         }
     });
 
