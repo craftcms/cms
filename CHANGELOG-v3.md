@@ -8,7 +8,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
-- Updated the Yii Debug extension to 2.0.8.
+- Updated the Yii Debug extensionU to 2.0.8.
 - Updated d3.js to 4.6.0.0.
 - Updated timepicker to 1.11.10.
 - Updated Velocity to 1.4.3.
@@ -31,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - #1403: Fixed a bug where it was not possible to edit categories on anything but the primary site.
 - Fixed a PHP type error that could occur when editing an entry or category, if its corresponding template was `NULL` in the database, for some reason.
 - #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
+- #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
