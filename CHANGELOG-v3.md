@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP type error that could occur when editing an entry or category, if its corresponding template was `NULL` in the database, for some reason.
 - #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
 - #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
+- #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
