@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed:
 - Updated Redactor II to 2.2.
+- Updated Garnish to 0.1.15.
 
 ### Fixed
 - #1378: Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`.
