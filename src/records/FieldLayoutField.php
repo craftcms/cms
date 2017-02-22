@@ -18,7 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int            $tabId     Tab ID
  * @property int            $fieldId   Field ID
  * @property bool           $required  Required
- * @property string         $sortOrder Sort order
+ * @property int            $sortOrder Sort order
  * @property FieldLayout    $layout    Layout
  * @property FieldLayoutTab $tab       Tab
  * @property Field          $field     Field

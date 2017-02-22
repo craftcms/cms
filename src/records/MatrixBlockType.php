@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property int         $fieldLayoutId Field layout ID
  * @property string      $name          Name
  * @property string      $handle        Handle
- * @property string      $sortOrder     Sort order
+ * @property int         $sortOrder     Sort order
  * @property Field       $field         Field
  * @property FieldLayout $fieldLayout   Field layout
  *

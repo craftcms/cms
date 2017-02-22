@@ -19,7 +19,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $uriParts   URI parts
  * @property string $uriPattern URI pattern
  * @property string $template   Template
- * @property string $sortOrder  Sort order
+ * @property int    $sortOrder  Sort order
  * @property Site   $site       Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
