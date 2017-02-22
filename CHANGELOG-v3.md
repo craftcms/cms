@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
+- `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
 - Updated the Yii Debug extensionU to 2.0.8.

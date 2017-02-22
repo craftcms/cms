@@ -321,6 +321,11 @@ class ElementHelper
 
             // Is that the end of the path?
             if (empty($path)) {
+                // If this is a nested source, set the full path on it so we don't forget it
+                if ($source['key'] !== $sourceKey) {
+                    $source['keyPath'] = $sourceKey;
+                }
+
                 return $source;
             }
 
