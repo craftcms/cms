@@ -393,20 +393,22 @@ Craft.RichTextInput = Garnish.Base.extend(
 		}
 
 		// Create a placeholder button
-		var placeholderKey = key+'_placeholder';
-		this.redactor.button.addAfter(key, placeholderKey);
+		var $placeholder = this.redactor.button.addAfter(key, key+'_placeholder');
 
 		// Remove the original
 		this.redactor.button.remove(key);
 
 		// Add the new one
-		var $btn = this.redactor.button.addAfter(placeholderKey, key, title);
-
-		// Set the dropdown
-		//this.redactor.button.addDropdown($btn, dropdown);
+		// (Can't just use button.addAfter() here because it doesn't let us specify
+		// full button properties (e.g. icon); just title)
+        var $btn = this.redactor.button.build(key, {
+        	title: title,
+			icon: true
+        });
+        $placeholder.parent().after($('<li>').append($btn));
 
 		// Remove the placeholder
-		this.redactor.button.remove(placeholderKey);
+		$placeholder.remove();
 
 		return $btn;
 	}
