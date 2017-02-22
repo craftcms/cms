@@ -710,6 +710,7 @@ class Plugins extends Component
         // Create the plugin
         /** @var Plugin $plugin */
         $moduleId = Inflector::camel2id($config['handle']);
+
         $plugin = Craft::createObject($config, [$moduleId, Craft::$app]);
 
         if (isset($row['id'])) {
@@ -818,7 +819,7 @@ class Plugins extends Component
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
             $config['isEnabled'] = ($plugin !== null);
             $config['moduleId'] = $plugin !== null ? $plugin->id : Inflector::camel2id($config['handle']);
-            $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings);
+            $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings() == true);
 
             $info[$lcHandle] = $config;
             $names[] = $config['name'];

@@ -128,6 +128,14 @@ class Plugin extends Module implements PluginInterface
         return null;
     }
 
+		/**
+		 * Return composer extra['hasSettings'] config
+		 */
+    public function hasSettings()
+    {
+    	return $this->hasSettings;
+    }
+
     /**
      * @inheritdoc
      */
