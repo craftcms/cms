@@ -58,8 +58,8 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		$columns = array(
-			'text'       => 'text (64K)',
-			'mediumtext' => 'mediumtext (16MB)'
+			'text'       => 'text (~64K)',
+			'mediumtext' => 'mediumtext (~16MB)'
 		);
 
 		$sourceOptions = array();
