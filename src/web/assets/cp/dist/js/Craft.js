@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-22 */
+/*! Craft 3.0.0 - 2017-02-23 */
 (function($){
 
 /** global: Craft */
@@ -3052,6 +3052,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     {
         defaults: {
             context: 'index',
+            modal: null,
             storageKey: null,
             criteria: null,
             batchSize: 50,
@@ -4059,6 +4060,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                     // Initialize the element index
                     this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
                         context: 'modal',
+                        modal: this,
                         storageKey: this.settings.storageKey,
                         criteria: this.settings.criteria,
                         disabledElementIds: this.settings.disabledElementIds,
@@ -4463,14 +4465,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base(elementType, $container, settings);
 
             if (this.settings.context == 'index') {
-                if(!this._folderDrag)
-                {
+                if (!this._folderDrag) {
                     this._initIndexPageMode();
                 }
 
                 this.addListener(Garnish.$win, 'resize,scroll', '_positionProgressBar');
             } else {
-                this.addListener(this.$main, 'resize,scroll', '_positionProgressBar');
+                this.addListener(this.$main, 'scroll', '_positionProgressBar');
+
+                if (this.settings.modal) {
+                    this.settings.modal.on('updateSizeAndPosition', $.proxy(this, '_positionProgressBar'));
+                }
             }
         },
 
@@ -5720,8 +5725,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 offset = ($container.height() / 2) - 6;
             }
 
-            if(this.settings.context != 'index')
-            {
+            if (this.settings.context != 'index') {
                 offset = scrollTop + (($container.height() / 2) - 6);
             }
 

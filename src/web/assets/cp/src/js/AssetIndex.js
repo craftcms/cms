@@ -48,14 +48,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base(elementType, $container, settings);
 
             if (this.settings.context == 'index') {
-                if(!this._folderDrag)
-                {
+                if (!this._folderDrag) {
                     this._initIndexPageMode();
                 }
 
                 this.addListener(Garnish.$win, 'resize,scroll', '_positionProgressBar');
             } else {
-                this.addListener(this.$main, 'resize,scroll', '_positionProgressBar');
+                this.addListener(this.$main, 'scroll', '_positionProgressBar');
+
+                if (this.settings.modal) {
+                    this.settings.modal.on('updateSizeAndPosition', $.proxy(this, '_positionProgressBar'));
+                }
             }
         },
 
@@ -1305,8 +1308,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 offset = ($container.height() / 2) - 6;
             }
 
-            if(this.settings.context != 'index')
-            {
+            if (this.settings.context != 'index') {
                 offset = scrollTop + (($container.height() / 2) - 6);
             }
 
