@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2963 - 2017-02-23
 
 ### Changed:
 - Updated Redactor II to 2.2.
