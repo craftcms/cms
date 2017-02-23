@@ -13,6 +13,7 @@ Craft CMS Changelog
 - #1387: Fixed a bug where hidden login page inputs were still focusable by pressing Tab after clicking the “Forget your password?” link.
 - Fixed a bug where the requirements checker would error if the `craft` folder and the public `index.php` file lived at the root of the file system.
 - Fixed a bug where modals were super laggy, especially in Safari.
+- Fixed a bug where Rich Text field settings were stating that MEDIUMTEXT columns could store 4GB, when in reality they store 16MB.
 
 ## 2.6.2962 - 2017-02-15
 

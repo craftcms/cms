@@ -58,8 +58,8 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		$columns = array(
-			'text'       => Craft::t('Text (stores about 64K)'),
-			'mediumtext' => Craft::t('MediumText (stores about 4GB)')
+			'text'       => 'text (64K)',
+			'mediumtext' => 'mediumtext (16MB)'
 		);
 
 		$sourceOptions = array();
