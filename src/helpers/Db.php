@@ -48,10 +48,6 @@ class Db
      * @var array Column type => simplified type mapping
      */
     private static $_simplifiedColumnTypes = [
-        Schema::TYPE_PK => self::TYPE_NUMERIC,
-        Schema::TYPE_UPK => self::TYPE_NUMERIC,
-        Schema::TYPE_BIGPK => self::TYPE_NUMERIC,
-        Schema::TYPE_UBIGPK => self::TYPE_NUMERIC,
         Schema::TYPE_CHAR => Schema::TYPE_STRING,
         Schema::TYPE_STRING => Schema::TYPE_STRING,
         Schema::TYPE_TEXT => Schema::TYPE_STRING,
