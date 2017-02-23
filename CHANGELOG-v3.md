@@ -43,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 - #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
 - Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
 - Removed the “Column Type” setting from Rich Text fields for PostgreSQL installs, since PostgreSQL doesn’t have/need a `mediumtext` column type.
+- Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. (my2ter)
 
 ## 3.0.0-beta.4 - 2017-02-17
 
