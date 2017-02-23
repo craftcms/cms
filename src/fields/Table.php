@@ -46,6 +46,11 @@ class Table extends Field
      */
     public $defaults = [];
 
+    /**
+     * @var string The type of database column the field should have in the content table
+     */
+    public $columnType = Schema::TYPE_TEXT;
+
     // Public Methods
     // =========================================================================
 
@@ -54,7 +59,7 @@ class Table extends Field
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_TEXT;
+        return $this->columnType;
     }
 
     /**
@@ -151,7 +156,11 @@ class Table extends Field
                 ]
             ]);
 
-        return $columnsField.$defaultsField;
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Table/settings', [
+            'field' => $this,
+            'columnsField' => $columnsField,
+            'defaultsField' => $defaultsField,
+        ]);
     }
 
     /**
