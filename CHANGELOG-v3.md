@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Unreleased
 
+### Added
+- Added `craft\events\GenerateTransformEvent`.
+
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
