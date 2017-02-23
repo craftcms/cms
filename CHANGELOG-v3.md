@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
+- Moved Rich Text fields’ “Clean up HTML?”, “Purify HTML?”, and “Column Type” settings into an “Advanced” section.
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
@@ -38,6 +39,7 @@ Craft CMS 3.0 Working Changelog
 - #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
 - #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
 - Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
+- Removed the “Column Type” setting from Rich Text fields for PostgreSQL installs, since PostgreSQL doesn’t have/need a `mediumtext` column type.
 
 ## 3.0.0-beta.4 - 2017-02-17
 

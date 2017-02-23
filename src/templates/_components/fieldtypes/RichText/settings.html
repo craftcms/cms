@@ -15,15 +15,6 @@
     {% endset %}
 {% endif %}
 
-{% set columnType %}
-    {{ forms.select({
-        id: 'columnType',
-        name: 'columnType',
-        options: columns,
-        value: field.columnType
-    }) }}
-{% endset %}
-
 {{ forms.field({
     label: "Config"|t('app'),
     instructions: "You can save custom Redactor configs as .json files in config/redactor/."|t('app')~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t('app')~'</a>.',
@@ -50,26 +41,39 @@
     values: field.availableTransforms,
 }) }}
 
-{{ forms.checkboxField({
-    label: "Clean up HTML?"|t('app'),
-    instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t('app'),
-    id: 'cleanupHtml',
-    name: 'cleanupHtml',
-    checked: field.cleanupHtml
-}) }}
 
-{{ forms.checkboxField({
-    label: "Purify HTML?"|t('app'),
-    instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('app'),
-    warning: 'Disable this at your own risk!'|t('app'),
-    id: 'purifyHtml',
-    name: 'purifyHtml',
-    checked: field.purifyHtml
-}) }}
+<hr>
+<a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+<div id="advanced" class="hidden">
+    {{ forms.checkboxField({
+        label: "Clean up HTML?"|t('app'),
+        instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t('app'),
+        id: 'cleanupHtml',
+        name: 'cleanupHtml',
+        checked: field.cleanupHtml
+    }) }}
 
-{{ forms.field({
-    label: "Column Type"|t('app'),
-    instructions: "The underlying database column type to use when saving content."|t('app'),
-    id: 'columnType',
-    warning: (existing ? "Changing this may result in data loss."|t('app')),
-}, columnType) }}
+    {{ forms.checkboxField({
+        label: "Purify HTML?"|t('app'),
+        instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('app'),
+        warning: 'Disable this at your own risk!'|t('app'),
+        id: 'purifyHtml',
+        name: 'purifyHtml',
+        checked: field.purifyHtml
+    }) }}
+
+    {% if craft.app.db.isMysql %}
+        {{ forms.selectField({
+            label: "Column Type"|t('app'),
+            id: 'column-type',
+            name: 'columnType',
+            instructions: "The type of column this field should get in the database."|t('app'),
+            options: [
+                { value: 'text', label: 'text (~64KB)' },
+                { value: 'mediumtext', label: 'mediumtext (~16MB)' },
+            ],
+            value: field.columnType,
+            warning: (field.id ? "Changing this may result in data loss."|t('app')),
+        }) }}
+    {% endif %}
+</div>

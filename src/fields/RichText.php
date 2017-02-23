@@ -135,19 +135,12 @@ class RichText extends Field
             ];
         }
 
-        $columns = [
-            'text' => 'text (~64K)',
-            'mediumtext' => 'mediumtext (~16MB)'
-        ];
-
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',
             [
                 'field' => $this,
                 'configOptions' => $configOptions,
                 'volumeOptions' => $volumeOptions,
                 'transformOptions' => $transformOptions,
-                'columns' => $columns,
-                'existing' => !empty($this->id),
             ]);
     }
 
