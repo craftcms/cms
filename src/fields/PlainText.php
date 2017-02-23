@@ -56,6 +56,11 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public $maxLength;
 
+    /**
+     * @var string The type of database column the field should have in the content table
+     */
+    public $columnType = Schema::TYPE_TEXT;
+
     // Public Methods
     // =========================================================================
 
@@ -66,8 +71,27 @@ class PlainText extends Field implements PreviewableFieldInterface
     {
         $rules = parent::rules();
         $rules[] = [['initialRows', 'maxLength'], 'integer', 'min' => 1];
+        $rules[] = [['maxLength'], 'validateCharLimit'];
 
         return $rules;
+    }
+
+    /**
+     * Validates that the Character Limit isn't set to something higher than the Column Type will hold.
+     *
+     * @param string $attribute
+     *
+     * @return void
+     */
+    public function validateCharLimit(string $attribute)
+    {
+        if ($this->maxLength) {
+            $columnTypeMax = Db::getTextualColumnStorageCapacity($this->columnType);
+
+            if ($columnTypeMax && $columnTypeMax < $this->maxLength) {
+                $this->addError($attribute, Craft::t('app', 'Character Limit is too big for your chosen Column Type.'));
+            }
+        }
     }
 
     /**
@@ -86,11 +110,7 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        if (!$this->maxLength) {
-            return Schema::TYPE_TEXT;
-        }
-
-        return Db::getTextualColumnTypeByContentLength($this->maxLength);
+        return $this->columnType;
     }
 
     /**

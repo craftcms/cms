@@ -4,6 +4,7 @@ Craft CMS 3.0 Working Changelog
 ### Unreleased
 
 ### Added
+- Added a “Column Type” advanced setting to Plain Text fields.
 - Added `craft\db\Connection::getIsMysql()`.
 - Added `craft\db\Connection::getIsPgsql()`.
 - Added `craft\events\GenerateTransformEvent`.
