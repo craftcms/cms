@@ -5,14 +5,15 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\PlainText;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use yii\db\Schema;
 
 /**
- * m170223_224012_plain_text_column_types migration.
+ * m170223_224012_plain_text_settings migration.
  */
-class m170223_224012_plain_text_column_types extends Migration
+class m170223_224012_plain_text_settings extends Migration
 {
     /**
      * @inheritdoc
@@ -28,11 +29,16 @@ class m170223_224012_plain_text_column_types extends Migration
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
 
-            if (empty($settings['maxLength'])) {
-                $settings['columnType'] = Schema::TYPE_TEXT;
-            } else {
+            // maxLength => charLimit
+            ArrayHelper::rename($settings, 'maxLength', 'charLimit');
+
+            // columnType
+            if ($settings['charLimit']) {
                 // This is how Plain Text fields used to automagically determine their column type
-                $settings['columnType'] = Db::getTextualColumnTypeByContentLength($settings['maxLength'], $this->db);
+                $settings['columnType'] = Db::getTextualColumnTypeByContentLength($settings['charLimit'], $this->db);
+            } else {
+                // Default to text
+                $settings['columnType'] = Schema::TYPE_TEXT;
             }
 
             $this->update('{{%fields}}', [

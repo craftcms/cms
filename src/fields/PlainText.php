@@ -54,7 +54,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @var int|null The maximum number of characters allowed in the field
      */
-    public $maxLength;
+    public $charLimit;
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -70,8 +70,8 @@ class PlainText extends Field implements PreviewableFieldInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['initialRows', 'maxLength'], 'integer', 'min' => 1];
-        $rules[] = [['maxLength'], 'validateCharLimit'];
+        $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
+        $rules[] = [['charLimit'], 'validateCharLimit'];
 
         return $rules;
     }
@@ -85,10 +85,10 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function validateCharLimit(string $attribute)
     {
-        if ($this->maxLength) {
+        if ($this->charLimit) {
             $columnTypeMax = Db::getTextualColumnStorageCapacity($this->columnType);
 
-            if ($columnTypeMax && $columnTypeMax < $this->maxLength) {
+            if ($columnTypeMax && $columnTypeMax < $this->charLimit) {
                 $this->addError($attribute, Craft::t('app', 'Character Limit is too big for your chosen Column Type.'));
             }
         }
@@ -132,7 +132,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         $rules = parent::getElementValidationRules();
-        $rules[] = ['string', 'max' => $this->maxLength ?: null];
+        $rules[] = ['string', 'max' => $this->charLimit ?: null];
 
         return $rules;
     }

@@ -14,11 +14,11 @@
 {{ forms.textField({
     label: "Character Limit"|t('app'),
     instructions: "The maximum number of characters the field is allowed to have."|t('app'),
-    id: 'maxLength',
-    name: 'maxLength',
-    value: field.maxLength,
+    id: 'char-limit',
+    name: 'charLimit',
+    value: field.charLimit,
     size: 3,
-    errors: field.getErrors('maxLength')
+    errors: field.getErrors('charLimit')
 }) }}
 
 {{ forms.checkboxField({
