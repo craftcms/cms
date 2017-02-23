@@ -537,12 +537,6 @@ return array(
 	'runTasksAutomatically' => true,
 
 	/**
-	 * Words that should be ignored when indexing search keywords and preparing search terms to be matched against the
-	 * keyword index.
-	 */
-	'searchIgnoreWords' => array('the', 'and'),
-
-	/**
 	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
 	 */
 	'sendPoweredByHeader' => true,

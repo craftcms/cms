@@ -1,4 +1,4 @@
-/*! Craft  - 2017-02-09 */
+/*! Craft  - 2017-02-23 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -3239,6 +3239,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 {
 	defaults: {
 		context: 'index',
+		modal: null,
 		storageKey: null,
 		criteria: null,
 		batchSize: 50,
@@ -4412,6 +4413,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				// Initialize the element index
 				this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
 					context:            'modal',
+					modal:              this,
 					storageKey:         this.settings.storageKey,
 					criteria:           this.settings.criteria,
 					disabledElementIds: this.settings.disabledElementIds,
@@ -4851,7 +4853,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 		else
 		{
-			this.addListener(this.$main, 'resize,scroll', '_positionProgressBar');
+			this.addListener(this.$main, 'scroll', '_positionProgressBar');
+
+			if (this.settings.modal) {
+				this.settings.modal.on('updateSizeAndPosition', $.proxy(this, '_positionProgressBar'));
+			}
 		}
 	},
 

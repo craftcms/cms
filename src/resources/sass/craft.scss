@@ -1288,8 +1288,7 @@ body .redactor-dropdown a:hover span { color: $textcolor !important; }
 }
 
 .text:not(.selectize-text),
-body .redactor-box,
-body .redactor-box textarea,
+body .redactor-box:not(.redactor-box-fullscreen),
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input { @include text-input-styles; }
@@ -1307,8 +1306,7 @@ textarea.text,
 .text > textarea,
 .textline,
 table.editable textarea,
-body .redactor-editor,
-.selectize-text > .selectize-control > .selectize-input { font-size: 13px; line-height: 16px; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
+.selectize-text > .selectize-control > .selectize-input { font-size: 13px; line-height: 1.5; color: $textcolor; min-height: 30px; @include box-sizing(border-box);
 	-webkit-appearance: none;
 }
 
@@ -1393,7 +1391,6 @@ input.checkbox:indeterminate:focus + label:before,
 
 .text:not(.selectize-text),
 .textline,
-body .redactor-box textarea,
 .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 
 .text { background: #fff; }
@@ -1462,7 +1459,7 @@ body .redactor-box { margin-bottom: 0; }
 body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
 body .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
 body .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
-body .redactor-toolbar.toolbar-fixed-box + .redactor-editor { padding-top: 32px; }
+body .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
 body .redactor-toolbar li a { color: $textcolor; }
 body .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
 body .redactor-toolbar li a:active,
@@ -1470,16 +1467,14 @@ body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; colo
 body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
 body .redactor-dropdown { z-index: 100; }
 body .redactor-dropdown li { border-bottom: none; background: none; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid $hairlineColor; padding: 12px; font-size: 15px; line-height: 1.4; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor.redactor-structure { padding-left: 32px; }
-.redactor-editor ul,
-.redactor-editor ol { @include padding-left(2em !important); @include padding-right(0 !important); }
-body .redactor-editor ul { list-style-type: disc; }
-body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
+body .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
 body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
 body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
 body .redactor-link-tooltip { z-index: 101; }
 body .redactor-toolbar { z-index: 102; }
+body .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+
 /**
  * Selects
  *

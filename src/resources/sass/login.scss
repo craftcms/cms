@@ -29,7 +29,6 @@ html, body { height: 100%; }
 #login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
 #login-form #ssl-icon + #submit { @include padding-left(2em); }
 #login-form .submit { display:block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
-#login-form #submit.reset-password { margin-top: 24px; }
 
 #spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
 

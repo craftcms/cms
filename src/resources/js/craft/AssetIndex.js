@@ -37,7 +37,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		}
 		else
 		{
-			this.addListener(this.$main, 'resize,scroll', '_positionProgressBar');
+			this.addListener(this.$main, 'scroll', '_positionProgressBar');
+
+			if (this.settings.modal) {
+				this.settings.modal.on('updateSizeAndPosition', $.proxy(this, '_positionProgressBar'));
+			}
 		}
 	},
 

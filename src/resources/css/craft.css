@@ -1370,11 +1370,11 @@ body.rtl .tagmenu ul li a:before { margin: 3px -18px 0 0 ; }
 /* ----------------------------------------*/
 .shadow-box { border-radius: 4px; border: 1px solid #ccc; overflow: hidden; width: 100%; -webkit-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); -moz-box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); box-shadow: 0 1px 5px -1px rgba(0, 0, 0, 0.1); }
 
-.text:not(.selectize-text), body .redactor-box, body .redactor-box textarea, .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input { border: 1px solid #e3e5e8; border-radius: 3px; -webkit-box-shadow: 0 0 5px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 5px rgba(51, 170, 255, 0); box-shadow: 0 0 5px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; -moz-transition: box-shadow linear 100ms; }
+.text:not(.selectize-text), body .redactor-box:not(.redactor-box-fullscreen), .border-box, .matrix-configurator > .field > .input, .selectize-text > .selectize-control > .selectize-input { border: 1px solid #e3e5e8; border-radius: 3px; -webkit-box-shadow: 0 0 5px rgba(51, 170, 255, 0); -moz-box-shadow: 0 0 5px rgba(51, 170, 255, 0); box-shadow: 0 0 5px rgba(51, 170, 255, 0); -webkit-transition: -webkit-box-shadow linear 100ms; -moz-transition: box-shadow linear 100ms; }
 
 .text.focus, .text:focus, .border-box:focus, .border-box.focus, body .redactor-box.focus:not(.redactor-box-fullscreen), .selectize-text > .selectize-control > .selectize-input.focus { border-color: #7dafe8; outline: none; -webkit-box-shadow: 0 0 5px #80caff; -moz-box-shadow: 0 0 5px #80caff; box-shadow: 0 0 5px #80caff; }
 
-input.text, textarea.text, .text > input, .text > textarea, .textline, table.editable textarea, body .redactor-editor, .selectize-text > .selectize-control > .selectize-input { font-size: 13px; line-height: 16px; color: #29323d; min-height: 30px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; }
+input.text, textarea.text, .text > input, .text > textarea, .textline, table.editable textarea, .selectize-text > .selectize-control > .selectize-input { font-size: 13px; line-height: 1.5; color: #29323d; min-height: 30px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; }
 
 .selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
 
@@ -1481,7 +1481,7 @@ input.checkbox:checked:focus + label:before, input.checkbox:indeterminate:focus 
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
 
-.text:not(.selectize-text), .textline, body .redactor-box textarea, .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
+.text:not(.selectize-text), .textline, .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 
 .text { background: #fff; }
 
@@ -1583,7 +1583,7 @@ body .redactor-toolbar { top: 0; background: none; -webkit-box-shadow: none; -mo
 
 body .redactor-toolbar.toolbar-fixed-box { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; -moz-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; z-index: 1 !important; }
 
-body .redactor-toolbar.toolbar-fixed-box + .redactor-editor { padding-top: 32px; }
+body .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
 
 body .redactor-toolbar li a { color: #29323d; }
 
@@ -1597,18 +1597,9 @@ body .redactor-dropdown { z-index: 100; }
 
 body .redactor-dropdown li { border-bottom: none; background: none; }
 
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor { background: none; border: none; border-top: 1px solid #e3e5e8; padding: 12px; font-size: 15px; line-height: 1.4; }
+body .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid #e3e5e8; }
 
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-editor.redactor-structure { padding-left: 32px; }
-
-body.ltr .redactor-editor ul, body.ltr .redactor-editor ol { padding-left: 2em !important; }
-body.rtl .redactor-editor ul, body.rtl .redactor-editor ol { padding-right: 2em !important; }
-body.ltr .redactor-editor ul, body.ltr .redactor-editor ol { padding-right: 0 !important; }
-body.rtl .redactor-editor ul, body.rtl .redactor-editor ol { padding-left: 0 !important; }
-
-body .redactor-editor ul { list-style-type: disc; }
-
-body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+body .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
 
 body #redactor-modal footer button:first-child { border-bottom-left-radius: 3px; }
 
@@ -1617,6 +1608,8 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px;
 body .redactor-link-tooltip { z-index: 101; }
 
 body .redactor-toolbar { z-index: 102; }
+
+body .redactor-layer { border: none; border-top: 1px solid #e3e5e8; }
 
 /** Selects  Waiting on this bug to get fixed before Firefox gets our fancy selects: https://bugzilla.mozilla.org/show_bug.cgi?id=649849 */
 @media screen and (-webkit-min-device-pixel-ratio: 0) { .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 3px; white-space: nowrap; }

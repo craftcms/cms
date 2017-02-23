@@ -14,6 +14,14 @@ module.exports = function(grunt) {
             otherjs: {
                 files: ['src/resources/js/*.js', '!src/resources/js/craft.js'],
                 tasks: ['uglify:other']
+            },
+            colorpickerjs: {
+                files: ['src/resources/lib/colorpicker/js/colorpicker.js'],
+                tasks: ['uglify:colorpickerjs']
+            },
+            redactorjs: {
+                files: ['src/resources/lib/redactor/redactor.js'],
+                tasks: ['uglify:redactorjs']
             }
         },
         sass: {
@@ -60,6 +68,14 @@ module.exports = function(grunt) {
                 cwd: 'src/resources/js',
                 src: ['*.js', '!craft.js'],
                 dest: 'src/resources/js/compressed'
+            },
+            colorpickerjs: {
+                src: 'src/resources/lib/colorpicker/js/colorpicker.js',
+                dest: 'src/resources/lib/colorpicker/js/colorpicker.min.js'
+            },
+            redactorjs: {
+                src: 'src/resources/lib/redactor/redactor.js',
+                dest: 'src/resources/lib/redactor/redactor.min.js'
             }
         },
         jshint: {
