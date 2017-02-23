@@ -136,8 +136,8 @@ class RichText extends Field
         }
 
         $columns = [
-            'text' => 'text (64K)',
-            'mediumtext' => 'mediumtext (16MB)'
+            'text' => 'text (~64K)',
+            'mediumtext' => 'mediumtext (~16MB)'
         ];
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',

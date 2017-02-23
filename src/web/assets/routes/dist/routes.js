@@ -114,14 +114,14 @@
                     var $elem = this.modal.uriInput.elements[i];
 
                     if (this.modal.uriInput.isText($elem)) {
-                        uriHtml += $elem.val();
+                        uriHtml += Craft.escapeHtml($elem.val());
                     }
                     else {
                         uriHtml += $elem.prop('outerHTML');
                     }
                 }
 
-                this.$uri.text(uriHtml);
+                this.$uri.html(uriHtml);
                 this.$template.text(this.modal.$templateInput.val());
             }
 
