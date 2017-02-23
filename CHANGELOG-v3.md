@@ -34,6 +34,7 @@ Craft CMS 3.0 Working Changelog
 - #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
 - #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
 - #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
+- Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
