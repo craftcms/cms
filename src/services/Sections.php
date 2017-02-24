@@ -398,7 +398,7 @@ class Sections extends Component
 
         try {
             // Do we need to create a structure?
-            if ($section->type == Section::TYPE_STRUCTURE) {
+            if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @noinspection PhpUndefinedVariableInspection */
                 if (!$isNewSection && $oldSection->type === Section::TYPE_STRUCTURE) {
                     $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
@@ -409,7 +409,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels === 0) {
+                if ($section->maxLevels === 0 || $section->maxLevels === '0') {
                     $section->maxLevels = null;
                 }
 
@@ -508,7 +508,7 @@ class Sections extends Component
                 $entryType->name = $section->name;
                 $entryType->handle = $section->handle;
 
-                if ($section->type == Section::TYPE_SINGLE) {
+                if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
                     $entryType->titleLabel = null;
                     $entryType->titleFormat = '{section.name|raw}';

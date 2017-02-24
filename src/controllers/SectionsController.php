@@ -152,7 +152,7 @@ class SectionsController extends Controller
         $section->type = $request->getBodyParam('type');
         $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
 
-        if ($section->type == Section::TYPE_STRUCTURE) {
+        if ($section->type === Section::TYPE_STRUCTURE) {
             $section->maxLevels = $request->getBodyParam('maxLevels');
         }
 
@@ -170,7 +170,7 @@ class SectionsController extends Controller
             $siteSettings = new Section_SiteSettings();
             $siteSettings->siteId = $site->id;
 
-            if ($section->type == Section::TYPE_SINGLE) {
+            if ($section->type === Section::TYPE_SINGLE) {
                 $siteSettings->hasUrls = true;
                 $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
                 $siteSettings->template = $postedSettings['template'];
