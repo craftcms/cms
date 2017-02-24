@@ -25,7 +25,8 @@ class Db
     // Constants
     // =========================================================================
 
-    const TYPE_NUMERIC = 'numeric';
+    const SIMPLE_TYPE_NUMERIC = 'numeric';
+    const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     // Properties
     // =========================================================================
@@ -34,6 +35,34 @@ class Db
      * @var array
      */
     private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+
+    /**
+     * @var string[] Numeric column types
+     */
+    private static $_numericColumnTypes = [
+        Schema::TYPE_SMALLINT,
+        Schema::TYPE_INTEGER,
+        Schema::TYPE_BIGINT,
+        Schema::TYPE_FLOAT,
+        Schema::TYPE_DOUBLE,
+        Schema::TYPE_DECIMAL,
+        Schema::TYPE_BOOLEAN,
+    ];
+
+    /**
+     * @var string[] Textual column types
+     */
+    private static $_textualColumnTypes = [
+        Schema::TYPE_CHAR,
+        Schema::TYPE_STRING,
+        Schema::TYPE_TEXT,
+
+        // MySQL-specific ones:
+        MysqlSchema::TYPE_TINYTEXT,
+        MysqlSchema::TYPE_MEDIUMTEXT,
+        MysqlSchema::TYPE_LONGTEXT,
+        MysqlSchema::TYPE_ENUM,
+    ];
 
     /**
      * @var array Types of integer columns and how many bytes they can store
@@ -45,27 +74,13 @@ class Db
     ];
 
     /**
-     * @var array Column type => simplified type mapping
+     * @var array Types of MySQL textual columns and how many bytes they can store
      */
-    private static $_simplifiedColumnTypes = [
-        Schema::TYPE_PK => self::TYPE_NUMERIC,
-        Schema::TYPE_UPK => self::TYPE_NUMERIC,
-        Schema::TYPE_BIGPK => self::TYPE_NUMERIC,
-        Schema::TYPE_UBIGPK => self::TYPE_NUMERIC,
-        Schema::TYPE_CHAR => Schema::TYPE_STRING,
-        Schema::TYPE_STRING => Schema::TYPE_STRING,
-        Schema::TYPE_TEXT => Schema::TYPE_STRING,
-        Schema::TYPE_SMALLINT => self::TYPE_NUMERIC,
-        Schema::TYPE_INTEGER => self::TYPE_NUMERIC,
-        Schema::TYPE_BIGINT => self::TYPE_NUMERIC,
-        Schema::TYPE_FLOAT => self::TYPE_NUMERIC,
-        Schema::TYPE_DOUBLE => self::TYPE_NUMERIC,
-        Schema::TYPE_DECIMAL => self::TYPE_NUMERIC,
-        Schema::TYPE_BOOLEAN => self::TYPE_NUMERIC,
-        MysqlSchema::TYPE_TINYTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_MEDIUMTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_LONGTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_ENUM => Schema::TYPE_STRING,
+    private static $_mysqlTextSizes = [
+        MysqlSchema::TYPE_TINYTEXT => 255,
+        Schema::TYPE_TEXT => 65535,
+        MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
+        MysqlSchema::TYPE_LONGTEXT => 4294967295,
     ];
 
     // Public Methods
@@ -141,6 +156,44 @@ class Db
     }
 
     /**
+     * Returns the minimum number allowed for a given column type.
+     *
+     * @param string $columnType
+     *
+     * @return int|false The min allowed number, or false if it can't be determined
+     */
+    public static function getMinAllowedValueForNumericColumn($columnType)
+    {
+        $shortColumnType = self::parseColumnType($columnType);
+
+        if (isset(self::$_integerSizeRanges[$shortColumnType])) {
+            return self::$_integerSizeRanges[$shortColumnType][0];
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
+    }
+
+    /**
+     * Returns the maximum number allowed for a given column type.
+     *
+     * @param string $columnType
+     *
+     * @return int|false The max allowed number, or false if it can't be determined
+     */
+    public static function getMaxAllowedValueForNumericColumn($columnType)
+    {
+        $shortColumnType = self::parseColumnType($columnType);
+
+        if (isset(self::$_integerSizeRanges[$shortColumnType])) {
+            return self::$_integerSizeRanges[$shortColumnType][1];
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
+    }
+
+    /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
      * @param int|null $min
@@ -188,8 +241,7 @@ class Db
      * @param string          $columnType The textual column type to check
      * @param Connection|null $db         The database connection
      *
-     * @return int|null The storage capacity of the column type in bytes. If unlimited, null is returned.
-     * @throws Exception if given an unknown column type/database combination
+     * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
      */
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
@@ -197,29 +249,42 @@ class Db
             $db = Craft::$app->getDb();
         }
 
-        switch ($db->getDriverName()) {
-            case Connection::DRIVER_MYSQL:
-                switch ($columnType) {
-                    case MysqlSchema::TYPE_TINYTEXT:
-                        // 255 bytes
-                        return 255;
-                    case Schema::TYPE_TEXT:
-                        // 65k
-                        return 65535;
-                    case MysqlSchema::TYPE_MEDIUMTEXT:
-                        // 16MB
-                        return 16777215;
-                    case MysqlSchema::TYPE_LONGTEXT:
-                        // 4GB
-                        return 4294967295;
-                    default:
-                        throw new Exception('Unknown textual column type: '.$columnType);
-                }
-            case Connection::DRIVER_PGSQL:
-                return null;
-            default:
-                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+        $shortColumnType = self::parseColumnType($columnType);
+
+        // CHAR and STRING depend on the defined length
+        if ($shortColumnType === Schema::TYPE_CHAR || $shortColumnType === Schema::TYPE_STRING) {
+            // Convert to the physical column type for the DB driver, to get the default length mixed in
+            $physicalColumnType = $db->getQueryBuilder()->getColumnType($columnType);
+            if (($length = self::parseColumnLength($physicalColumnType)) !== null) {
+                return $length;
+            }
+
+            // ¯\_(ツ)_/¯
+            return false;
         }
+
+        if ($db->getIsMysql()) {
+            if (isset(self::$_mysqlTextSizes[$shortColumnType])) {
+                return self::$_mysqlTextSizes[$shortColumnType];
+            }
+
+            // ENUM depends on the options
+            if ($shortColumnType === MysqlSchema::TYPE_ENUM) {
+                return null;
+            }
+
+            // ¯\_(ツ)_/¯
+            return false;
+        }
+
+        // PostgreSQL doesn't impose a limit for text fields
+        if ($shortColumnType === Schema::TYPE_TEXT) {
+            // TEXT columns are variable-length in 'grez
+            return null;
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
     }
 
     /**
@@ -237,44 +302,82 @@ class Db
             $db = Craft::$app->getDb();
         }
 
-        switch ($db->getDriverName()) {
-            case Connection::DRIVER_MYSQL:
-                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_TINYTEXT)) {
-                    return Schema::TYPE_STRING;
-                }
+        if ($db->getIsMysql()) {
+            // MySQL supports a bunch of non-standard text types
+            if ($contentLength <= self::$_mysqlTextSizes[MysqlSchema::TYPE_TINYTEXT]) {
+                return Schema::TYPE_STRING;
+            }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(Schema::TYPE_TEXT)) {
-                    return Schema::TYPE_TEXT;
-                }
-
-                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_MEDIUMTEXT)) {
-                    // Yii doesn't support 'mediumtext' so we use our own.
-                    return MysqlSchema::TYPE_MEDIUMTEXT;
-                }
-
-                // Yii doesn't support 'longtext' so we use our own.
-                return MysqlSchema::TYPE_LONGTEXT;
-            case Connection::DRIVER_PGSQL:
+            if ($contentLength <= self::$_mysqlTextSizes[Schema::TYPE_TEXT]) {
                 return Schema::TYPE_TEXT;
-            default:
-                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+            }
+
+            if ($contentLength <= self::$_mysqlTextSizes[MysqlSchema::TYPE_MEDIUMTEXT]) {
+                return MysqlSchema::TYPE_MEDIUMTEXT;
+            }
+
+            return MysqlSchema::TYPE_LONGTEXT;
         }
+
+        return Schema::TYPE_TEXT;
+    }
+
+    /**
+     * Parses a column type definition and returns just the column type, if it can be determined.
+     *
+     * @param string $columnType
+     *
+     * @return string|null
+     */
+    public static function parseColumnType($columnType)
+    {
+        if (!preg_match('/^\w+/', $columnType, $matches)) {
+            return null;
+        }
+
+        return strtolower($matches[0]);
+    }
+
+    /**
+     * Parses a column type definition and returns just the column length/size.
+     *
+     * @param string $columnType
+     *
+     * @return int|null
+     */
+    public static function parseColumnLength($columnType)
+    {
+        if (!preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return (int)$matches[1];
     }
 
     /**
      * Returns a simplified version of a given column type.
      *
-     * @param string $type
+     * @param string $columnType
      *
      * @return string
      */
-    public static function getSimplifiedColumnType($type)
+    public static function getSimplifiedColumnType($columnType)
     {
-        if (!preg_match('/^\w+/', $type, $matches)) {
-            return $type;
+        if (($shortColumnType = self::parseColumnType($columnType)) === null) {
+            return $columnType;
         }
 
-        return self::$_simplifiedColumnTypes[$matches[0]] ?? $matches[0];
+        // Numeric?
+        if (in_array($shortColumnType, self::$_numericColumnTypes, true)) {
+            return self::SIMPLE_TYPE_NUMERIC;
+        }
+
+        // Textual?
+        if (in_array($shortColumnType, self::$_textualColumnTypes, true)) {
+            return self::SIMPLE_TYPE_TEXTUAL;
+        }
+
+        return $shortColumnType;
     }
 
     /**
@@ -288,7 +391,30 @@ class Db
     public static function areColumnTypesCompatible($typeA, $typeB)
     {
         return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
+    }
 
+    /**
+     * Returns whether the given column type is numeric.
+     *
+     * @param string $columnType
+     *
+     * @return bool
+     */
+    public static function isNumericColumnType(string $columnType): bool
+    {
+        return in_array(self::parseColumnLength($columnType), self::$_numericColumnTypes, true);
+    }
+
+    /**
+     * Returns whether the given column type is textual.
+     *
+     * @param string $columnType
+     *
+     * @return bool
+     */
+    public static function isTextualColumnType(string $columnType): bool
+    {
+        return in_array(self::parseColumnLength($columnType), self::$_textualColumnTypes, true);
     }
 
     /**

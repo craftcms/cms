@@ -184,13 +184,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                     // Initialize the element index
                     this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
                         context: 'modal',
+                        modal: this,
                         storageKey: this.settings.storageKey,
                         criteria: this.settings.criteria,
                         disabledElementIds: this.settings.disabledElementIds,
                         selectable: true,
                         multiSelect: this.settings.multiSelect,
                         buttonContainer: this.$secondaryButtons,
-                        onSelectionChange: $.proxy(this, 'onSelectionChange')
+                        onSelectionChange: $.proxy(this, 'onSelectionChange'),
+                        hideSidebar: this.settings.hideSidebar
                     });
 
                     // Double-clicking or double-tapping should select the elements
@@ -212,6 +214,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             disableElementsOnSelect: false,
             hideOnSelect: true,
             onCancel: $.noop,
-            onSelect: $.noop
+            onSelect: $.noop,
+            hideIndexSidebar: false
         }
     });

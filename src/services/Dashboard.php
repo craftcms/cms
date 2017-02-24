@@ -223,9 +223,17 @@ class Dashboard extends Component
             $widgetRecord->type = get_class($widget);
             $widgetRecord->settings = $widget->getSettings();
 
-            // Enabled by default.
             if ($isNewWidget) {
+                // Enabled by default.
                 $widgetRecord->enabled = true;
+
+                // Set the sortOrder
+                $maxSortOrder = (new Query())
+                    ->from(['{{%widgets}}'])
+                    ->where(['userId' => Craft::$app->getUser()->getIdentity()->id])
+                    ->max('[[sortOrder]]');
+
+                $widgetRecord->sortOrder = $maxSortOrder + 1;
             }
 
             $widgetRecord->save(false);

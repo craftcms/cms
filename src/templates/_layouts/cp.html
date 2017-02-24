@@ -270,7 +270,7 @@
 
                 <div id="page-title">
                     {% block pageTitle %}
-                        {% if title is defined and title %}
+                        {% if title is defined and title|length %}
                             <h1>{{ title }}</h1>
                         {% endif %}
                     {% endblock %}

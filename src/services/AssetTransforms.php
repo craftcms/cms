@@ -18,6 +18,7 @@ use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
+use craft\events\GenerateTransformEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -65,6 +66,11 @@ class AssetTransforms extends Component
      * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
      */
     const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+
+    /**
+     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     */
+    const EVENT_GENERATE_TRANSFORM = 'generateTransform';
 
     // Properties
     // =========================================================================
@@ -212,9 +218,9 @@ class AssetTransforms extends Component
         $transformRecord->name = $transform->name;
         $transformRecord->handle = $transform->handle;
 
-        $heightChanged = $transformRecord->width != $transform->width || $transformRecord->height != $transform->height;
-        $modeChanged = $transformRecord->mode != $transform->mode || $transformRecord->position != $transform->position;
-        $qualityChanged = $transformRecord->quality != $transform->quality;
+        $heightChanged = $transformRecord->width !== $transform->width || $transformRecord->height !== $transform->height;
+        $modeChanged = $transformRecord->mode !== $transform->mode || $transformRecord->position !== $transform->position;
+        $qualityChanged = $transformRecord->quality !== $transform->quality;
 
         if ($heightChanged || $modeChanged || $qualityChanged) {
             $transformRecord->dimensionChangeTime = new DateTime('@'.time());
@@ -688,7 +694,7 @@ class AssetTransforms extends Component
         );
 
         $dbConnection = Craft::$app->getDb();
-        if (!empty($index->id)) {
+        if (null === $index->id) {
             $dbConnection->createCommand()
                 ->update('{{%assettransformindex}}', $values, ['id' => $index->id])
                 ->execute();
@@ -864,7 +870,7 @@ class AssetTransforms extends Component
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         if (!$volume instanceof LocalVolumeInterface) {
-            if (!is_file($imageSourcePath) || filesize($imageSourcePath) == 0) {
+            if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
 
                 // Delete it just in case it's a 0-byter
                 try {
@@ -878,7 +884,7 @@ class AssetTransforms extends Component
 
                 $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-                if (!is_file($tempPath) || filesize($tempPath) == 0) {
+                if (!is_file($tempPath) || filesize($tempPath) === 0) {
                     try {
                         FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
@@ -1362,9 +1368,21 @@ class AssetTransforms extends Component
                 $image->scaleAndCrop($transform->width, $transform->height, true, $position);
         }
 
-        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.$index->detectedFormat;
-        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-        $image->saveAs($tempPath);
+        $event = new GenerateTransformEvent([
+            'transformIndex' => $index,
+            'asset' => $asset,
+            'image' => $image,
+        ]);
+
+        $this->trigger(self::EVENT_GENERATE_TRANSFORM, $event);
+
+        if ($event->tempPath !== null) {
+            $tempPath = $event->tempPath;
+        } else {
+            $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.$index->detectedFormat;
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $image->saveAs($tempPath);
+        }
 
         clearstatcache(true, $tempPath);
 

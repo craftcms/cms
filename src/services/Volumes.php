@@ -474,6 +474,13 @@ class Volumes extends Component
             $config = ['type' => $config];
         }
 
+        // Are they overriding any settings?
+        if (!empty($config['handle']) && ($override = Craft::$app->getConfig()->get($config['handle'], Config::CATEGORY_VOLUMES)) !== null) {
+            // Apply the settings early so the overrides don't get overridden
+            ComponentHelper::applySettings($config);
+            $config = array_merge($config, $override);
+        }
+
         try {
             /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
@@ -483,11 +490,6 @@ class Volumes extends Component
             unset($config['type']);
 
             $volume = new MissingVolume($config);
-        }
-
-        // Are they overriding any settings?
-        if ($volume->handle !== null && ($override = Craft::$app->getConfig()->get($volume->handle, Config::CATEGORY_VOLUMES)) !== null) {
-            Craft::configure($volume, $override);
         }
 
         return $volume;

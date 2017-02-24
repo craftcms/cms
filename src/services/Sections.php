@@ -398,7 +398,7 @@ class Sections extends Component
 
         try {
             // Do we need to create a structure?
-            if ($section->type == Section::TYPE_STRUCTURE) {
+            if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @noinspection PhpUndefinedVariableInspection */
                 if (!$isNewSection && $oldSection->type === Section::TYPE_STRUCTURE) {
                     $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
@@ -409,7 +409,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels === 0) {
+                if ($section->maxLevels === 0 || $section->maxLevels === '0') {
                     $section->maxLevels = null;
                 }
 
@@ -508,7 +508,7 @@ class Sections extends Component
                 $entryType->name = $section->name;
                 $entryType->handle = $section->handle;
 
-                if ($section->type == Section::TYPE_SINGLE) {
+                if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
                     $entryType->titleLabel = null;
                     $entryType->titleFormat = '{section.name|raw}';
@@ -603,6 +603,10 @@ class Sections extends Component
                         $singleEntry->sectionId = $section->id;
                         $singleEntry->typeId = $entryTypeId;
                         $singleEntry->title = $section->name;
+                        // Only validate its slug and URI, to get them generated
+                        if (!$singleEntry->validate(['slug', 'uri'])) {
+                            throw new Exception('Couldn\'t save single entry due to validation errors on the slug and/or URI');
+                        }
                         Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
                     break;
@@ -617,6 +621,7 @@ class Sections extends Component
                         $query->status(null);
                         $query->enabledForSite(false);
                         $query->orderBy('elements.id');
+                        $query->withStructure(false);
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
@@ -781,7 +786,7 @@ class Sections extends Component
             $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
 
             // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist($sectionSiteSettings[$siteId]->template);
+            $templateExists = Craft::$app->getView()->doesTemplateExist((string)$sectionSiteSettings[$siteId]->template);
 
             // Restore the original template mode
             $view->setTemplateMode($oldTemplateMode);

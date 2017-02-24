@@ -26,33 +26,6 @@ class ElementHelper
     // =========================================================================
 
     /**
-     * Sets a valid slug on a given element.
-     *
-     * @param ElementInterface $element
-     *
-     * @return void
-     */
-    public static function setValidSlug(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $slug = $element->slug;
-
-        if (!$slug) {
-            // Create a slug for them, based on the element's title.
-            // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
-            // to mimic the default JavaScript-based slug generation.
-            $slug = str_replace(['.', '_', '-'], ' ', $element->title);
-
-            // Enforce the limitAutoSlugsToAscii config setting
-            if (Craft::$app->getConfig()->get('limitAutoSlugsToAscii')) {
-                $slug = StringHelper::toAscii($slug);
-            }
-        }
-
-        $element->slug = static::createSlug($slug);
-    }
-
-    /**
      * Creates a slug based on a given string.
      *
      * @param string $str
@@ -77,7 +50,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @throws OperationAbortedException
+     * @throws OperationAbortedException if a unique URI could not be found
      */
     public static function setUniqueUri(ElementInterface $element)
     {
@@ -91,21 +64,18 @@ class ElementHelper
             return;
         }
 
-        // No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
-        if (!$element->slug || !static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $element->uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+        // Does the URL format even have a {slug} tag?
+        if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
+            $testUri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+
+            // Make sure it's unique
+            if (!self::_isUniqueUri($testUri, $element)) {
+                throw new OperationAbortedException('Could not find a unique URI for this element');
+            }
+
+            $element->uri = $testUri;
 
             return;
-        }
-
-        $uniqueUriConditions = [
-            'and',
-            ['siteId' => $element->siteId],
-            '[[uri]]=:uri'
-        ];
-
-        if ($element->id) {
-            $uniqueUriConditions[] = ['not', ['elementId' => $element->id]];
         }
 
         $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
@@ -146,12 +116,7 @@ class ElementHelper
                 }
             }
 
-            $totalElements = (new Query())
-                ->from(['{{%elements_i18n}}'])
-                ->where($uniqueUriConditions, [':uri' => $testUri])
-                ->count('[[id]]');
-
-            if ($totalElements == 0) {
+            if (self::_isUniqueUri($testUri, $element)) {
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
@@ -163,6 +128,31 @@ class ElementHelper
         }
 
         throw new OperationAbortedException('Could not find a unique URI for this element');
+    }
+
+    /**
+     * Tests a given element URI for uniqueness.
+     *
+     * @param string           $testUri
+     * @param ElementInterface $element
+     *
+     * @return bool
+     */
+    private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        $query = (new Query())
+            ->from(['{{%elements_i18n}}'])
+            ->where([
+                'siteId' => $element->siteId,
+                'uri' => $testUri
+            ]);
+
+        if ($element->id) {
+            $query->andWhere(['not', ['elementId' => $element->id]]);
+        }
+
+        return (int)$query->count('[[id]]') === 0;
     }
 
     /**
@@ -321,6 +311,11 @@ class ElementHelper
 
             // Is that the end of the path?
             if (empty($path)) {
+                // If this is a nested source, set the full path on it so we don't forget it
+                if ($source['key'] !== $sourceKey) {
+                    $source['keyPath'] = $sourceKey;
+                }
+
                 return $source;
             }
 

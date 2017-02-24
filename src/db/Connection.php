@@ -68,6 +68,26 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
+     * Returns whether this is a MySQL connection.
+     *
+     * @return bool
+     */
+    public function getIsMysql(): bool
+    {
+        return $this->getDriverName() === self::DRIVER_MYSQL;
+    }
+
+    /**
+     * Returns whether this is a PostgreSQL connection.
+     *
+     * @return bool
+     */
+    public function getIsPgsql(): bool
+    {
+        return $this->getDriverName() === self::DRIVER_PGSQL;
+    }
+
+    /**
      * @inheritdoc
      *
      * @throws DbConnectException if there are any issues

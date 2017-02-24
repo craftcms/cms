@@ -160,17 +160,25 @@ return [
                 ];
                 break;
             case 'wincache':
-                $config = yii\caching\WinCache::class;
+                $config = [
+                    'class' => yii\caching\WinCache::class,
+                ];
                 break;
             case 'xcache':
-                $config = yii\caching\XCache::class;
+                $config = [
+                    'class' => yii\caching\XCache::class,
+                ];
                 break;
             case 'zenddata':
-                $config = yii\caching\ZendDataCache::class;
+                $config = [
+                    'class' => yii\caching\ZendDataCache::class,
+                ];
                 break;
             default:
                 throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
         }
+
+        $config['defaultDuration'] = $configService->getCacheDuration();
 
         return Craft::createObject($config);
     },
@@ -276,7 +284,7 @@ return [
             $target['logFile'] = '@storage/logs/web.log';
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-            if (!$configService->get('devMode') && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+            if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
                 $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
         }

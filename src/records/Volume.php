@@ -21,7 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property bool        $hasUrls       Whether Volume has URLs
  * @property string      $url           URL
  * @property array       $settings      Settings
- * @property string      $sortOrder     Sort order
+ * @property int         $sortOrder     Sort order
  * @property FieldLayout $fieldLayout   Field layout
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

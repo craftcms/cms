@@ -16,7 +16,7 @@ use yii\db\ActiveQueryInterface;
  * @property int    $id        ID
  * @property int    $userId    User ID
  * @property string $type      Type
- * @property string $sortOrder Sort order
+ * @property int    $sortOrder Sort order
  * @property int    $colspan   Colspan
  * @property array  $settings  Settings
  * @property bool   $enabled   Enabled

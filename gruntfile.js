@@ -14,7 +14,15 @@ module.exports = function(grunt) {
 			otherjs: {
 				files: ['src/web/assets/*/dist/*.js', '!src/web/assets/*/dist/*.min.js'],
 				tasks: ['uglify:otherjs']
-			}
+			},
+            colorpickerjs: {
+                files: ['lib/colorpicker/js/colorpicker.js'],
+                tasks: ['uglify:colorpickerjs']
+            },
+            redactorjs: {
+                files: ['lib/redactor/redactor.js'],
+                tasks: ['uglify:redactorjs']
+            }
 		},
 		sass: {
 			options: {
@@ -69,7 +77,15 @@ module.exports = function(grunt) {
                     return dest + '/' + src;
                 },
 				ext: '.min.js'
-			}
+			},
+			colorpickerjs: {
+				src: 'lib/colorpicker/js/colorpicker.js',
+                dest: 'lib/colorpicker/js/colorpicker.min.js'
+			},
+            redactorjs: {
+                src: 'lib/redactor/redactor.js',
+                dest: 'lib/redactor/redactor.min.js'
+            }
 		},
 		jshint: {
 			options: {

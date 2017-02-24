@@ -63,21 +63,25 @@ class Component
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
-        // Expand the settings and merge with the rest of the config
-        if (is_subclass_of($class, SavableComponentInterface::class) && !empty($config['settings'])) {
-            $settings = $config['settings'];
+        self::applySettings($config);
 
+        // Instantiate and return
+        return new $class($config);
+    }
+
+    /**
+     * Extracts settings from a given component config, and merges them in.
+     *
+     * @param array $config
+     */
+    public static function applySettings(array &$config)
+    {
+        if (($settings = ArrayHelper::remove($config, 'settings')) !== null) {
             if (is_string($settings)) {
                 $settings = Json::decode($settings);
             }
 
             $config = array_merge($config, $settings);
         }
-
-        // Unset $config['settings'] even if it was empty
-        unset($config['settings']);
-
-        // Instantiate and return
-        return new $class($config);
     }
 }

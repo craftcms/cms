@@ -258,13 +258,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getElementValidationRules(): array
     {
-        $rules = [];
-
-        if ($this->required) {
-            $rules[] = 'required';
-        }
-
-        return $rules;
+        return [];
     }
 
     /**

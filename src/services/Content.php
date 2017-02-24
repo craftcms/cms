@@ -171,8 +171,8 @@ class Content extends Component
             'elementId' => $element->id,
             'siteId' => $element->siteId
         ];
-        if ($element->hasTitles() && $element->title) {
-            $values['title'] = $element->title;
+        if ($element->hasTitles() && ($title = (string)$element->title) !== '') {
+            $values['title'] = $title;
         }
         $fieldLayout = $element->getFieldLayout();
         if ($fieldLayout) {

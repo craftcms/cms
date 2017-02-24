@@ -553,29 +553,15 @@ class Elements extends Component
                     $contentService->saveContent($localizedElement);
                 }
 
-                // Capture the original slug, in case it's entirely composed of invalid characters
-                $originalSlug = $localizedElement->slug;
-
-                // Clean up the slug
-                ElementHelper::setValidSlug($localizedElement);
-
-                // If the slug was entirely composed of invalid characters, it will be blank now.
-                if ($originalSlug && !$localizedElement->slug) {
-                    $localizedElement->slug = $originalSlug;
-                    $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
-
-                    // Don't bother with any of the other sites
-                    // TODO: this should be caught in validation
-                    throw new Exception('Invalid slug: '.$originalSlug);
-                }
-
                 // Go ahead and re-do search index keywords to grab things like "title" in
                 // a multi-site installs.
                 if ($isNewElement) {
                     Craft::$app->getSearch()->indexElementAttributes($localizedElement);
                 }
 
-                ElementHelper::setUniqueUri($localizedElement);
+                if (!$isMasterSite && $localizedElement::hasUris()) {
+                    ElementHelper::setUniqueUri($localizedElement);
+                }
 
                 $siteSettingsRecord->slug = $localizedElement->slug;
                 $siteSettingsRecord->uri = $localizedElement->uri;
@@ -584,14 +570,8 @@ class Elements extends Component
                     $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
                 }
 
-                $success = $siteSettingsRecord->save();
-
-                if (!$success) {
-                    // Pass any validation errors on to the element
-                    $element->addErrors($siteSettingsRecord->getErrors());
-
-                    // Don't bother with any of the other sites
-                    break;
+                if (!$siteSettingsRecord->save(false)) {
+                    throw new Exception('Couldn\'t save elements\' site settings record.');
                 }
             }
 
@@ -672,7 +652,9 @@ class Elements extends Component
             return;
         }
 
-        ElementHelper::setUniqueUri($element);
+        if ($element::hasUris()) {
+            ElementHelper::setUniqueUri($element);
+        }
 
         Craft::$app->getDb()->createCommand()
             ->update(

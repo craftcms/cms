@@ -97,7 +97,7 @@ class NewUsers extends Widget
         $view->registerAssetBundle(NewUsersAsset::class);
         $view->registerJs('new Craft.NewUsersWidget('.$this->id.', '.Json::encode($options).');');
 
-        return '<div></div>';
+        return '';
     }
 
     /**

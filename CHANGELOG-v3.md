@@ -1,6 +1,85 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+### 3.0.0-beta.5 - 2017-02-24
+
+### Added
+- Added a “Column Type” advanced setting to Plain Text fields.
+- #1381: Added a “Column Type” advanced setting to Table fields.
+- Added `craft\base\ElementInterface::hasUris()`. Elements that can have URIs must add this static method and return `true` now.
+- Added `craft\db\Connection::getIsMysql()`.
+- Added `craft\db\Connection::getIsPgsql()`.
+- Added `craft\events\GenerateTransformEvent`.
+- Added `craft\helpers\Component::applySettings()`.
+- Added `craft\helpers\Db::getMinAllowedValueForNumericColumn()`.
+- Added `craft\helpers\Db::getMaxAllowedValueForNumericColumn()`.
+- Added `craft\helpers\Db::isNumericColumnType()`.
+- Added `craft\helpers\Db::isTextualColumnType()`.
+- Added `craft\helpers\Db::parseColumnLength()`.
+- Added `craft\helpers\Db::parseColumnType()`.
+- Added `craft\validators\ElementUriValidator`.
+- Added `craft\validators\SlugValidator`.
+
+### Changed
+- The `cacheDuration` config setting can now be set to an integer (number of seconds).
+- Volumes’ “Base URL” settings can now begin with `@web`, which is an alias for the root URL that Craft is running from.
+- Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
+- Volume settings defined in `config/volumes.php` are now passed directly into volume class constructors.
+- Moved Rich Text fields’ “Clean up HTML?”, “Purify HTML?”, and “Column Type” settings into an “Advanced” section.
+- Renamed Plain Text fields’ “Max Length” setting to “Character Limit”.
+- Element queries can now be explicitly configured to ignore the element structure tables by setting the `withStructure` param to `false`.
+- Required custom field validation rules are now created by the element, so `craft\base\Field::getElementValidationRules()` just returns an empty array now.
+- Elements now validate that custom field values will fit within their database columns, for fields with textual or numeric column types.
+- `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` now returns `false` if the max capacity can’t be determined, rather than throwing an exception.
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` now supports passing in full column type definitions, including attributes like `NOT NULL`, etc.
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` will now return the max length for`string` and `char` column type definitions.
+- `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
+- `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
+- `craft\i18n\Formatter::asText` will now format DateTime objects to text.
+- `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
+- Updated the Yii Debug extensionU to 2.0.8.
+- Updated d3.js to 4.6.0.0.
+- Updated timepicker to 1.11.10.
+- Updated Velocity to 1.4.3.
+- Updated Fabric to 1.7.6.
+- Updated Codeception to 2.2.9.
+- Updated Codeception Verify to 0.3.3.
+- Updated Codeception Specify to 0.4.6.
+- Updated Flysystem to 1.0.35.
+- Updated Yii to 2.0.11.2.
+
+### Removed
+- Removed `craft\errors\SendEmailException`.
+- Removed `craft\helpers\ElementHelper::setValidSlug()`.
+
+### Fixed
+- #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
+- #1392: Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`.
+- Fixed a bug where the `cacheDuration` config setting wasn’t getting applied to data caches, so everything was getting cached indefinitely by default.
+- #1390: Fixed a PHP error that occurred when saving a new entry draft, if the entry’s section only had one entry type.
+- Fixed a bug where entries’ “Title” field would receive two identical validation errors if a brand new entry was immediately saved as a draft, and didn’t have a title yet.
+- #1403: Fixed a bug where it was not possible to edit categories on anything but the primary site.
+- Fixed a PHP type error that could occur when editing an entry or category, if its corresponding template was `NULL` in the database, for some reason.
+- #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
+- #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
+- #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
+- Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
+- Removed the “Column Type” setting from Rich Text fields for PostgreSQL installs, since PostgreSQL doesn’t have/need a `mediumtext` column type.
+- Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. (my2ter)
+- Fixed a bug where the admin “Copy Password Reset URL” option for a user account would give an error when used.
+- #1411: Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user.
+- Fixed a bug where custom field validation errors didn’t always include the correct field name.
+- Fixed a bug where Craft was throwing an exception when it couldn’t set a valid slug on an element during save, rather than adding a validation error.
+- #1383: Fixed a bug where saving an element with the title “0” would result in the element’s title getting saved as “-”.
+- Fixed a bug where the Control Panel layout templates didn’t to a good job handling pages with a title of “0”.
+- Fixed a bug where the migration responsible for converting user photos to Assets would fail intermittently.
+- #1407: Fixed a bug where existing entries were not getting their structure data if their section was converted from a Single/Channel to a Structure.
+- Fixed a bug where `craft\services\Globals::saveSet()` could return `true` even if the global set hadn’t been saved successfully.
+- #22: Fixed a bug where it was possible to save an element without a slug if the Title didn’t contain any alphanumeric characters.
+- #1416: Fixed a bug where it was possible to save a Single section with an invalid URI.
+- #1416: Fixed a bug where saving an element with an invalid URI would halfway work.
+
 ## 3.0.0-beta.4 - 2017-02-17
 
 ### Added

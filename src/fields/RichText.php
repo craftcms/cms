@@ -135,19 +135,12 @@ class RichText extends Field
             ];
         }
 
-        $columns = [
-            'text' => Craft::t('app', 'Text (stores about 64K)'),
-            'mediumtext' => Craft::t('app', 'MediumText (stores about 4GB)')
-        ];
-
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',
             [
                 'field' => $this,
                 'configOptions' => $configOptions,
                 'volumeOptions' => $volumeOptions,
                 'transformOptions' => $transformOptions,
-                'columns' => $columns,
-                'existing' => !empty($this->id),
             ]);
     }
 
@@ -224,48 +217,6 @@ class RichText extends Field
         $value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
         return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getElementValidationRules(): array
-    {
-        $rules = parent::getElementValidationRules();
-        $rules[] = 'validateLength';
-
-        return $rules;
-    }
-
-    /**
-     * Validates the field value.
-     *
-     * @param ElementInterface $element
-     * @param array|null       $params
-     *
-     * @return void
-     */
-    public function validateLength(ElementInterface $element, array $params = null)
-    {
-        /** @var Element $element */
-        /** @var RichTextData $value */
-        $value = $element->getFieldValue($this->handle);
-
-        // Set the max size based on the column's storage capacity (with a little wiggle room)
-        $max = Db::getTextualColumnStorageCapacity($this->columnType);
-
-        if ($max === null) {
-            // null means unlimited, so no need to validate this
-            return;
-        }
-
-        $validator = new StringValidator([
-            'max' => ceil($max * 0.9),
-        ]);
-
-        if (!$validator->validate($value->getRawContent(), $error)) {
-            $element->addError($this->handle, $error);
-        }
     }
 
     /**

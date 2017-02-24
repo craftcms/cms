@@ -175,7 +175,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getElementValidationRules(): array
     {
-        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
         return [
             [
                 ArrayValidator::class,

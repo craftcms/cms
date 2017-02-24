@@ -54,7 +54,12 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @var int|null The maximum number of characters allowed in the field
      */
-    public $maxLength;
+    public $charLimit;
+
+    /**
+     * @var string The type of database column the field should have in the content table
+     */
+    public $columnType = Schema::TYPE_TEXT;
 
     // Public Methods
     // =========================================================================
@@ -65,9 +70,28 @@ class PlainText extends Field implements PreviewableFieldInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['initialRows', 'maxLength'], 'integer', 'min' => 1];
+        $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
+        $rules[] = [['charLimit'], 'validateCharLimit'];
 
         return $rules;
+    }
+
+    /**
+     * Validates that the Character Limit isn't set to something higher than the Column Type will hold.
+     *
+     * @param string $attribute
+     *
+     * @return void
+     */
+    public function validateCharLimit(string $attribute)
+    {
+        if ($this->charLimit) {
+            $columnTypeMax = Db::getTextualColumnStorageCapacity($this->columnType);
+
+            if ($columnTypeMax && $columnTypeMax < $this->charLimit) {
+                $this->addError($attribute, Craft::t('app', 'Character Limit is too big for your chosen Column Type.'));
+            }
+        }
     }
 
     /**
@@ -86,11 +110,7 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        if (!$this->maxLength) {
-            return Schema::TYPE_TEXT;
-        }
-
-        return Db::getTextualColumnTypeByContentLength($this->maxLength);
+        return $this->columnType;
     }
 
     /**
@@ -111,9 +131,8 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getElementValidationRules(): array
     {
-        $rules = parent::getElementValidationRules();
-        $rules[] = ['string', 'max' => $this->maxLength ?: null];
-
-        return $rules;
+        return [
+            ['string', 'max' => $this->charLimit ?: null],
+        ];
     }
 }

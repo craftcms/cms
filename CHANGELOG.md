@@ -1,10 +1,20 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2963 - 2017-02-23
+
+### Changed:
+- Updated Redactor II to 2.2.
+- Updated Garnish to 0.1.15.
+- Element indexes now get a reference to their containing element selector modal via `this.settings.modal`.
 
 ### Fixed
 - #1378: Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`.
+- #1387: Fixed a bug where hidden login page inputs were still focusable by pressing Tab after clicking the “Forget your password?” link.
+- Fixed a bug where the requirements checker would error if the `craft` folder and the public `index.php` file lived at the root of the file system.
+- Fixed a bug where modals were super laggy, especially in Safari.
+- Fixed a bug where Rich Text field settings were stating that MEDIUMTEXT columns could store 4GB, when in reality they store 16MB.
+- Fixed a bug where the URL portion of newly saved routes would show HTML for any tokens that were in the route.
 
 ## 2.6.2962 - 2017-02-15
 

@@ -25,6 +25,7 @@ use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -34,7 +35,9 @@ use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
+use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
+use craft\validators\SlugValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use yii\base\Event;
@@ -42,6 +45,8 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\validators\NumberValidator;
+use yii\validators\StringValidator;
 use yii\validators\Validator;
 
 /**
@@ -202,6 +207,14 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function hasTitles(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function hasUris(): bool
     {
         return false;
     }
@@ -798,11 +811,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function attributeLabels()
     {
-        return [
-            'title' => Craft::t('app', 'Title'),
+        $labels = [
+            'id' => Craft::t('app', 'ID'),
             'slug' => Craft::t('app', 'Slug'),
+            'title' => Craft::t('app', 'Title'),
+            'uid' => Craft::t('app', 'UID'),
             'uri' => Craft::t('app', 'URI'),
         ];
+
+        foreach ($this->getFieldLayout()->getFields() as $field) {
+            /** @var Field $field */
+            $labels[$field->handle] = Craft::t('site', $field->name);
+        }
+
+        return $labels;
     }
 
     /**
@@ -819,21 +841,36 @@ abstract class Element extends Component implements ElementInterface
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
-            [['title', 'slug'], 'string', 'max' => 255],
         ];
 
-        // Require the title?
+        $requiredAttributes = [];
+
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'required'];
+            $rules[] = [['title'], 'string', 'max' => 255];
+            $requiredAttributes[] = 'title';
+        }
+
+        if (static::hasUris()) {
+            $rules[] = [['slug'], SlugValidator::class];
+            $rules[] = [['slug'], 'string', 'max' => 255];
+            $rules[] = [['uri'], ElementUriValidator::class];
         }
 
         // Are we validating custom fields?
         if ($this->validateCustomFields() && ($fieldLayout = $this->getFieldLayout())) {
+            $fieldsWithColumns = [];
+
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                $fieldRules = $field->getElementValidationRules();
+                if ($field->required) {
+                    $requiredAttributes[] = $field->handle;
+                }
 
-                foreach ($fieldRules as $rule) {
+                if ($field::hasContentColumn()) {
+                    $fieldsWithColumns[] = $field->handle;
+                }
+
+                foreach ($field->getElementValidationRules() as $rule) {
                     if ($rule instanceof Validator) {
                         $rules[] = $rule;
                     } else {
@@ -869,6 +906,14 @@ abstract class Element extends Component implements ElementInterface
                     }
                 }
             }
+
+            if (!empty($fieldsWithColumns)) {
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize'];
+            }
+        }
+
+        if (!empty($requiredAttributes)) {
+            $rules[] = [$requiredAttributes, 'required'];
         }
 
         return $rules;
@@ -896,6 +941,44 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $method($this, $fieldParams);
+    }
+
+    /**
+     * Validates that the content size is going to fit within the field’s database column.
+     *
+     * @param string $attribute
+     *
+     * @return void
+     */
+    public function validateCustomFieldContentSize(string $attribute)
+    {
+        $field = $this->fieldByHandle($attribute);
+        $columnType = $field->getContentColumnType();
+        $simpleColumnType = Db::getSimplifiedColumnType($columnType);
+
+        if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
+            return;
+        }
+
+        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        if ($simpleColumnType === Db::SIMPLE_TYPE_NUMERIC) {
+            $validator = new NumberValidator([
+                'min' => Db::getMinAllowedValueForNumericColumn($columnType) ?: null,
+                'max' => Db::getMaxAllowedValueForNumericColumn($columnType) ?: null,
+            ]);
+        } else {
+            $validator = new StringValidator([
+                // Don't count multibyte characters as a single char
+                'encoding' => '8bit',
+                'max' => Db::getTextualColumnStorageCapacity($columnType) ?: null,
+            ]);
+        }
+
+        if (!$validator->validate($value, $error)) {
+            $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('site', $field->name), $error);
+            $this->addError($attribute, $error);
+        }
     }
 
     /**

@@ -16,6 +16,7 @@ use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetConflictException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
@@ -206,10 +207,9 @@ class Assets extends BaseRelationField
      */
     public function getElementValidationRules(): array
     {
-        $rules = parent::getElementValidationRules();
-        $rules[] = 'validateFileType';
-
-        return $rules;
+        return [
+            'validateFileType',
+        ];
     }
 
     /**
@@ -510,7 +510,15 @@ class Assets extends BaseRelationField
         Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
 
         if ($this->useSingleFolder) {
-            $folderPath = 'folder:'.$folderId.':single';
+            $folderPath = 'folder:'.$folderId;
+            $folder = Craft::$app->getAssets()->getFolderById($folderId);
+
+            // Construct the path
+            while ($folder->parentId) {
+                $parent = $folder->getParent();
+                $folderPath = 'folder:'.$parent->id.'/'.$folderPath;
+                $folder = $parent;
+            }
 
             return [$folderPath];
         }
@@ -532,6 +540,17 @@ class Assets extends BaseRelationField
 
         return $sources;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    {
+        $variables = parent::inputTemplateVariables($selectedElementsQuery, $element);
+        $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        return $variables;
+    }
+
 
     /**
      * @inheritdoc

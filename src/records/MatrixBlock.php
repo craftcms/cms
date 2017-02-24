@@ -18,7 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int             $ownerSiteId Owner site ID
  * @property int             $fieldId     Field ID
  * @property int             $typeId      Type ID
- * @property string          $sortOrder   Sort order
+ * @property int             $sortOrder   Sort order
  * @property Element         $element     Element
  * @property Element         $owner       Owner
  * @property Site            $ownerSite   Owner's site
