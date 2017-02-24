@@ -553,29 +553,6 @@ class Elements extends Component
                     $contentService->saveContent($localizedElement);
                 }
 
-                // Capture the original slug, in case it's entirely composed of invalid characters
-                $originalSlug = $localizedElement->slug;
-
-                // Clean up the slug
-                ElementHelper::setValidSlug($localizedElement);
-
-                // No slug?
-                // TODO: this should be caught in validation
-                if ($localizedElement->slug === '') {
-                    // If the slug was entirely composed of invalid characters, it will be blank now.
-                    if ($originalSlug) {
-                        $localizedElement->slug = $originalSlug;
-                        $error = '{attribute} is invalid.';
-                    } else {
-                        $error = '{attribute} cannot be blank.';
-                    }
-
-                    $element->addError('slug', Craft::t('yii', $error, ['attribute' => Craft::t('app', 'Slug')]));
-
-                    // Don't bother with any of the other sites
-                    throw new Exception('Invalid slug: '.$originalSlug);
-                }
-
                 // Go ahead and re-do search index keywords to grab things like "title" in
                 // a multi-site installs.
                 if ($isNewElement) {

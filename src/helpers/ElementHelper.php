@@ -26,33 +26,6 @@ class ElementHelper
     // =========================================================================
 
     /**
-     * Sets a valid slug on a given element.
-     *
-     * @param ElementInterface $element
-     *
-     * @return void
-     */
-    public static function setValidSlug(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $slug = $element->slug;
-
-        if (!$slug) {
-            // Create a slug for them, based on the element's title.
-            // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
-            // to mimic the default JavaScript-based slug generation.
-            $slug = str_replace(['.', '_', '-'], ' ', $element->title);
-
-            // Enforce the limitAutoSlugsToAscii config setting
-            if (Craft::$app->getConfig()->get('limitAutoSlugsToAscii')) {
-                $slug = StringHelper::toAscii($slug);
-            }
-        }
-
-        $element->slug = static::createSlug($slug);
-    }
-
-    /**
      * Creates a slug based on a given string.
      *
      * @param string $str

@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\Db::isTextualColumnType()`.
 - Added `craft\helpers\Db::parseColumnLength()`.
 - Added `craft\helpers\Db::parseColumnType()`.
+- Added `craft\validators\SlugValidator`.
 
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
@@ -42,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed `craft\errors\SendEmailException`.
+- Removed `craft\helpers\ElementHelper::setValidSlug()`.
 
 ### Fixed
 - #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
@@ -60,6 +62,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the admin “Copy Password Reset URL” option for a user account would give an error when used.
 - #1411: Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user.
 - Fixed a bug where custom field validation errors didn’t always include the correct field name.
+- Fixed a bug where Craft was throwing an exception when it couldn’t set a valid slug on an element during save, rather than adding a validation error.
 
 ## 3.0.0-beta.4 - 2017-02-17
 

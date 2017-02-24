@@ -36,6 +36,7 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
+use craft\validators\SlugValidator;
 use craft\web\UploadedFile;
 use DateTime;
 use yii\base\Event;
@@ -831,6 +832,7 @@ abstract class Element extends Component implements ElementInterface
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
+            [['slug'], SlugValidator::class],
             [['title', 'slug'], 'string', 'max' => 255],
         ];
 
