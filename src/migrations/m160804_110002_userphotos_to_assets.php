@@ -321,7 +321,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     ->insert('{{%assets}}', $assetData)
                     ->execute();
 
-                $changes[$user['id']] = $db->getLastInsertID();
+                $changes[$user['id']] = $elementId;
             }
         }
 

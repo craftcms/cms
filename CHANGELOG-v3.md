@@ -66,6 +66,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft was throwing an exception when it couldn’t set a valid slug on an element during save, rather than adding a validation error.
 - #1383: Fixed a bug where saving an element with the title “0” would result in the element’s title getting saved as “-”.
 - Fixed a bug where the Control Panel layout templates didn’t to a good job handling pages with a title of “0”.
+- Fixed a bug where the migration responsible for converting user photos to Assets would fail intermittently.
 - #1407: Fixed a bug where existing entries were not getting their structure data if their section was converted from a Single/Channel to a Structure.
 
 ## 3.0.0-beta.4 - 2017-02-17
