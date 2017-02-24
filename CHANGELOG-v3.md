@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
+- Volume settings defined in `config/volumes.php` are now passed directly into volume class constructors.
 - Moved Rich Text fields’ “Clean up HTML?”, “Purify HTML?”, and “Column Type” settings into an “Advanced” section.
 - Renamed Plain Text fields’ “Max Length” setting to “Character Limit”.
 - Element queries can now be explicitly configured to ignore the element structure tables by setting the `withStructure` param to `false`.
