@@ -559,7 +559,7 @@ class Elements extends Component
                     Craft::$app->getSearch()->indexElementAttributes($localizedElement);
                 }
 
-                if ($localizedElement::hasUris()) {
+                if (!$isMasterSite && $localizedElement::hasUris()) {
                     ElementHelper::setUniqueUri($localizedElement);
                 }
 
@@ -570,14 +570,8 @@ class Elements extends Component
                     $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
                 }
 
-                $success = $siteSettingsRecord->save();
-
-                if (!$success) {
-                    // Pass any validation errors on to the element
-                    $element->addErrors($siteSettingsRecord->getErrors());
-
-                    // Don't bother with any of the other sites
-                    break;
+                if (!$siteSettingsRecord->save(false)) {
+                    throw new Exception('Couldn\'t save elements\' site settings record.');
                 }
             }
 

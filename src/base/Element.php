@@ -35,6 +35,7 @@ use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
+use craft\validators\ElementUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\web\UploadedFile;
@@ -852,6 +853,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris()) {
             $rules[] = [['slug'], SlugValidator::class];
             $rules[] = [['slug'], 'string', 'max' => 255];
+            $rules[] = [['uri'], ElementUriValidator::class];
         }
 
         // Are we validating custom fields?

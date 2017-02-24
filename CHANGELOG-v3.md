@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\Db::isTextualColumnType()`.
 - Added `craft\helpers\Db::parseColumnLength()`.
 - Added `craft\helpers\Db::parseColumnType()`.
+- Added `craft\validators\ElementUriValidator`.
 - Added `craft\validators\SlugValidator`.
 
 ### Changed

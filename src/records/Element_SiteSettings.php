@@ -34,20 +34,6 @@ class Element_SiteSettings extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['siteId'], SiteIdValidator::class],
-            [['elementId'], 'unique', 'targetAttribute' => ['elementId', 'siteId']],
-            [['uri'], 'unique', 'targetAttribute' => ['uri', 'siteId']],
-            [['elementId', 'siteId'], 'required'],
-            [['uri'], UriValidator::class],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
