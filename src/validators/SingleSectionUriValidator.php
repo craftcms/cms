@@ -35,6 +35,11 @@ class SingleSectionUriValidator extends Validator
         }
 
         /** @var Section_SiteSettings $model */
+        // Make sure it's a valid URI
+        if (!(new UriValidator())->validate($model->uriFormat)) {
+            $this->addError($model, $attribute, Craft::t('app', '{attribute} is not a valid URI'));
+        }
+
         $section = $model->getSection();
 
         // Make sure no other elements are using this URI already

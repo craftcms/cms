@@ -603,6 +603,10 @@ class Sections extends Component
                         $singleEntry->sectionId = $section->id;
                         $singleEntry->typeId = $entryTypeId;
                         $singleEntry->title = $section->name;
+                        // Only validate its slug and URI, to get them generated
+                        if (!$singleEntry->validate(['slug', 'uri'])) {
+                            throw new Exception('Couldn\'t save single entry due to validation errors on the slug and/or URI');
+                        }
                         Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
                     break;
