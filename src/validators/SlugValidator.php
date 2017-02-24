@@ -33,7 +33,7 @@ class SlugValidator extends Validator
     /**
      * @var bool|null Whether auto-generated slugs should be limited to ASCII characters. Defaults to the `limitAutoSlugsToAscii` config setting if left null.
      */
-    public $limitAutoSlugsToAscii = null;
+    public $limitAutoSlugsToAscii;
 
     // Public Methods
     // =========================================================================
