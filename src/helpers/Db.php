@@ -301,28 +301,24 @@ class Db
             $db = Craft::$app->getDb();
         }
 
-        switch ($db->getDriverName()) {
-            case Connection::DRIVER_MYSQL:
-                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_TINYTEXT)) {
-                    return Schema::TYPE_STRING;
-                }
+        if ($db->getIsMysql()) {
+            // MySQL supports a bunch of non-standard text types
+            if ($contentLength <= self::$_mysqlTextSizes[MysqlSchema::TYPE_TINYTEXT]) {
+                return Schema::TYPE_STRING;
+            }
 
-                if ($contentLength <= static::getTextualColumnStorageCapacity(Schema::TYPE_TEXT)) {
-                    return Schema::TYPE_TEXT;
-                }
-
-                if ($contentLength <= static::getTextualColumnStorageCapacity(MysqlSchema::TYPE_MEDIUMTEXT)) {
-                    // Yii doesn't support 'mediumtext' so we use our own.
-                    return MysqlSchema::TYPE_MEDIUMTEXT;
-                }
-
-                // Yii doesn't support 'longtext' so we use our own.
-                return MysqlSchema::TYPE_LONGTEXT;
-            case Connection::DRIVER_PGSQL:
+            if ($contentLength <= self::$_mysqlTextSizes[Schema::TYPE_TEXT]) {
                 return Schema::TYPE_TEXT;
-            default:
-                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+            }
+
+            if ($contentLength <= self::$_mysqlTextSizes[MysqlSchema::TYPE_MEDIUMTEXT]) {
+                return MysqlSchema::TYPE_MEDIUMTEXT;
+            }
+
+            return MysqlSchema::TYPE_LONGTEXT;
         }
+
+        return Schema::TYPE_TEXT;
     }
 
     /**
