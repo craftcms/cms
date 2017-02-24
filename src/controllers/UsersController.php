@@ -300,7 +300,7 @@ class UsersController extends Controller
     /**
      * Generates a new verification code for a given user, and returns its URL.
      *
-     * @return void
+     * @return Response
      * @throws BadRequestHttpException if the existing password submitted with the request is invalid
      */
     public function actionGetPasswordResetUrl()
@@ -318,8 +318,9 @@ class UsersController extends Controller
             $this->_noUserExists();
         }
 
-        echo Craft::$app->getUsers()->getPasswordResetUrl($user);
-        Craft::$app->end();
+        return $this->asJson([
+            'url' => Craft::$app->getUsers()->getPasswordResetUrl($user)
+        ]);
     }
 
     /**
