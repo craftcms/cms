@@ -21,6 +21,9 @@ Craft CMS 3.0 Working Changelog
 - Moved Rich Text fields’ “Clean up HTML?”, “Purify HTML?”, and “Column Type” settings into an “Advanced” section.
 - Renamed Plain Text fields’ “Max Length” setting to “Character Limit”.
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` now returns `false` if the max capacity can’t be determined, rather than throwing an exception.
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` now supports passing in full column type definitions, including attributes like `NOT NULL`, etc.
+- `craft\helpers\Db::getTextualColumnStorageCapacity()` will now return the max length for`string` and `char` column type definitions.
 - `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.

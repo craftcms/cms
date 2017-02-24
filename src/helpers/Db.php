@@ -73,6 +73,16 @@ class Db
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
     ];
 
+    /**
+     * @var array Types of MySQL textual columns and how many bytes they can store
+     */
+    private static $_mysqlTextSizes = [
+        MysqlSchema::TYPE_TINYTEXT => 255,
+        Schema::TYPE_TEXT => 65535,
+        MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
+        MysqlSchema::TYPE_LONGTEXT => 4294967295,
+    ];
+
     // Public Methods
     // =========================================================================
 
@@ -231,38 +241,49 @@ class Db
      * @param string          $columnType The textual column type to check
      * @param Connection|null $db         The database connection
      *
-     * @return int|null The storage capacity of the column type in bytes. If unlimited, null is returned.
-     * @throws Exception if given an unknown column type/database combination
+     * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
      */
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
+        $shortColumnType = self::parseColumnType($columnType);
+
+        // CHAR and STRING depend on the defined length
+        if ($shortColumnType === Schema::TYPE_CHAR || $shortColumnType === Schema::TYPE_STRING) {
+            if (($length = self::parseColumnLength($columnType)) !== null) {
+                return $length;
+            }
+
+            // ¯\_(ツ)_/¯
+            return false;
+        }
+
+        // Other types depend on the DB driver
         if ($db === null) {
             $db = Craft::$app->getDb();
         }
 
-        switch ($db->getDriverName()) {
-            case Connection::DRIVER_MYSQL:
-                switch ($columnType) {
-                    case MysqlSchema::TYPE_TINYTEXT:
-                        // 255 bytes
-                        return 255;
-                    case Schema::TYPE_TEXT:
-                        // 65k
-                        return 65535;
-                    case MysqlSchema::TYPE_MEDIUMTEXT:
-                        // 16MB
-                        return 16777215;
-                    case MysqlSchema::TYPE_LONGTEXT:
-                        // 4GB
-                        return 4294967295;
-                    default:
-                        throw new Exception('Unknown textual column type: '.$columnType);
-                }
-            case Connection::DRIVER_PGSQL:
+        if ($db->getIsMysql()) {
+            if (isset(self::$_mysqlTextSizes[$shortColumnType])) {
+                return self::$_mysqlTextSizes[$shortColumnType];
+            }
+
+            // ENUM depends on the options
+            if ($shortColumnType === MysqlSchema::TYPE_ENUM) {
                 return null;
-            default:
-                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+            }
+
+            // ¯\_(ツ)_/¯
+            return false;
         }
+
+        // PostgreSQL doesn't impose a limit for text fields
+        if ($shortColumnType === Schema::TYPE_TEXT) {
+            // TEXT columns are variable-length in 'grez
+            return null;
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
     }
 
     /**
