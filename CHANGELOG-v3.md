@@ -38,7 +38,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
-- Updated the Yii Debug extensionU to 2.0.8.
+- Updated the Yii Debug extension to 2.0.8.
 - Updated d3.js to 4.6.0.0.
 - Updated timepicker to 1.11.10.
 - Updated Velocity to 1.4.3.
