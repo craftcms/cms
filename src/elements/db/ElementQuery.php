@@ -1448,7 +1448,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyStructureParams(string $class)
     {
-        if ($this->withStructure || $this->structureId) {
+        if ($this->withStructure || ($this->withStructure !== false && $this->structureId)) {
             $this->query
                 ->addSelect([
                     'structureelements.root',
