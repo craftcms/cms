@@ -46,7 +46,7 @@
                             ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
                         });
 
-                        prompt(message, response);
+                        prompt(message, response.url);
                     }
                 }, this));
             },

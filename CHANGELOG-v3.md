@@ -55,6 +55,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
 - Removed the “Column Type” setting from Rich Text fields for PostgreSQL installs, since PostgreSQL doesn’t have/need a `mediumtext` column type.
 - Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. (my2ter)
+- Fixed a bug where the admin “Copy Password Reset URL” option for a user account would give an error when used.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
