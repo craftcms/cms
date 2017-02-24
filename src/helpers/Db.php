@@ -347,7 +347,7 @@ class Db
      */
     public static function parseColumnLength($columnType)
     {
-        if (!preg_match('/^\w+ *\((\d+)\)/', $columnType, $matches)) {
+        if (!preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
             return null;
         }
 
