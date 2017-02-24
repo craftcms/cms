@@ -245,21 +245,22 @@ class Db
      */
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
         $shortColumnType = self::parseColumnType($columnType);
 
         // CHAR and STRING depend on the defined length
         if ($shortColumnType === Schema::TYPE_CHAR || $shortColumnType === Schema::TYPE_STRING) {
-            if (($length = self::parseColumnLength($columnType)) !== null) {
+            // Convert to the physical column type for the DB driver, to get the default length mixed in
+            $physicalColumnType = $db->getQueryBuilder()->getColumnType($columnType);
+            if (($length = self::parseColumnLength($physicalColumnType)) !== null) {
                 return $length;
             }
 
             // ¯\_(ツ)_/¯
             return false;
-        }
-
-        // Other types depend on the DB driver
-        if ($db === null) {
-            $db = Craft::$app->getDb();
         }
 
         if ($db->getIsMysql()) {
