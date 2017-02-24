@@ -11,6 +11,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\events\GenerateTransformEvent`.
 - Added `craft\helpers\Db::isNumericColumnType()`.
 - Added `craft\helpers\Db::isTextualColumnType()`.
+- Added `craft\helpers\Db::parseColumnLength()`.
+- Added `craft\helpers\Db::parseColumnType()`.
 
 ### Changed
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).

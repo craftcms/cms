@@ -258,6 +258,38 @@ class Db
     }
 
     /**
+     * Parses a column type definition and returns just the column type, if it can be determined.
+     *
+     * @param string $columnType
+     *
+     * @return string|null
+     */
+    public static function parseColumnType($columnType)
+    {
+        if (!preg_match('/^\w+/', $columnType, $matches)) {
+            return null;
+        }
+
+        return strtolower($matches[0]);
+    }
+
+    /**
+     * Parses a column type definition and returns just the column length/size.
+     *
+     * @param string $columnType
+     *
+     * @return int|null
+     */
+    public static function parseColumnLength($columnType)
+    {
+        if (!preg_match('/^\w+ *\((\d+)\)/', $columnType, $matches)) {
+            return null;
+        }
+
+        return (int)$matches[1];
+    }
+
+    /**
      * Returns a simplified version of a given column type.
      *
      * @param string $type
