@@ -56,7 +56,7 @@ class Local extends FolderVolume implements LocalVolumeInterface
         parent::init();
 
         if ($this->path !== null) {
-            $this->path = FileHelper::normalizePath($this->path);
+            $this->path = FileHelper::normalizePath(Craft::getAlias($this->path));
         }
     }
 
