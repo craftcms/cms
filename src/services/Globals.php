@@ -270,7 +270,7 @@ class Globals extends Component
         $globalSetRecord->validate();
         $globalSet->addErrors($globalSetRecord->getErrors());
 
-        $success = true;
+        $success = false;
 
         if (!$globalSet->hasErrors()) {
 
@@ -288,7 +288,7 @@ class Globals extends Component
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
                     $globalSet->validateCustomFields = false;
-                    if (Craft::$app->getElements()->saveElement($globalSet)) {
+                    if ($success = Craft::$app->getElements()->saveElement($globalSet)) {
                         // Now that we have an element ID, save it on the other stuff
                         if ($isNewSet) {
                             $globalSetRecord->id = $globalSet->id;
@@ -316,8 +316,6 @@ class Globals extends Component
 
                         $transaction->commit();
                     }
-                } else {
-                    $success = false;
                 }
             } catch (\Exception $e) {
                 $transaction->rollBack();

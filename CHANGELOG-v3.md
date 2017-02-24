@@ -72,6 +72,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Control Panel layout templates didn’t to a good job handling pages with a title of “0”.
 - Fixed a bug where the migration responsible for converting user photos to Assets would fail intermittently.
 - #1407: Fixed a bug where existing entries were not getting their structure data if their section was converted from a Single/Channel to a Structure.
+- Fixed a bug where `craft\services\Globals::saveSet()` could return `true` even if the global set hadn’t been saved successfully.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
