@@ -1,11 +1,6 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
-
-### Fixed
-- #22: Fixed a bug where it was possible to save an element without a slug if the Title didn’t contain any alphanumeric characters.
-
 ## 2.6.2963 - 2017-02-23
 
 ### Changed:

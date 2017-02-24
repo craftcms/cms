@@ -1536,26 +1536,16 @@ class ElementsService extends BaseApplicationComponent
 						// Clean up the slug
 						ElementHelper::setValidSlug($localizedElement);
 
-						// No slug?
-                        if ($localizedElement->slug === '')
-                        {
-                            // If the slug was entirely composed of invalid characters, it will be blank now.
-                            if ($originalSlug)
-                            {
-                                $localizedElement->slug = $originalSlug;
-                                $error = '{attribute} is invalid.';
-                            }
-                            else
-                            {
-                                $error = '{attribute} cannot be blank.';
-                            }
+						// If the slug was entirely composed of invalid characters, it will be blank now.
+						if ($originalSlug && !$localizedElement->slug)
+						{
+							$localizedElement->slug = $originalSlug;
+							$element->addError('slug', Craft::t('{attribute} is invalid.', array('attribute' => Craft::t('Slug'))));
 
-                            $element->addError('slug', Craft::t($error, array('attribute' => Craft::t('Slug'))));
-
-                            // Don't bother with any of the other locales
-                            $success = false;
-                            break;
-                        }
+							// Don't bother with any of the other locales
+							$success = false;
+							break;
+						}
 
 						// Go ahead and re-do search index keywords to grab things like "title" in multi-locale installs.
 						if ($isNewElement)
