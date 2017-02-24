@@ -64,8 +64,8 @@ class ElementHelper
             return;
         }
 
-        // No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
-        if (!$element->slug || !static::doesUriFormatHaveSlugTag($uriFormat)) {
+        // If the URL format doesn't have a {slug} tag, just parse it and get on with our lives
+        if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
             $element->uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
 
             return;
