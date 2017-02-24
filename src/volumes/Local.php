@@ -30,17 +30,6 @@ class Local extends FolderVolume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
-        $rules = parent::rules();
-        $rules[] = [['path'], 'required'];
-
-        return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function displayName(): string
     {
         return Craft::t('app', 'Local Folder');
@@ -69,6 +58,17 @@ class Local extends FolderVolume implements LocalVolumeInterface
         if ($this->path !== null) {
             $this->path = FileHelper::normalizePath($this->path);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['path'], 'required'];
+
+        return $rules;
     }
 
     /**
