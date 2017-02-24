@@ -50,7 +50,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      *
-     * @throws OperationAbortedException
+     * @throws OperationAbortedException if a unique URI could not be found
      */
     public static function setUniqueUri(ElementInterface $element)
     {
@@ -64,9 +64,16 @@ class ElementHelper
             return;
         }
 
-        // If the URL format doesn't have a {slug} tag, just parse it and get on with our lives
+        // Does the URL format even have a {slug} tag?
         if (!static::doesUriFormatHaveSlugTag($uriFormat)) {
-            $element->uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+            $testUri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
+
+            // Make sure it's unique
+            if (!self::_isUniqueUri($testUri, $element)) {
+                throw new OperationAbortedException('Could not find a unique URI for this element');
+            }
+
+            $element->uri = $testUri;
 
             return;
         }
@@ -119,12 +126,7 @@ class ElementHelper
                 }
             }
 
-            $totalElements = (new Query())
-                ->from(['{{%elements_i18n}}'])
-                ->where($uniqueUriConditions, [':uri' => $testUri])
-                ->count('[[id]]');
-
-            if ($totalElements == 0) {
+            if (self::_isUniqueUri($testUri, $element)) {
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
@@ -136,6 +138,31 @@ class ElementHelper
         }
 
         throw new OperationAbortedException('Could not find a unique URI for this element');
+    }
+
+    /**
+     * Tests a given element URI for uniqueness.
+     *
+     * @param string           $testUri
+     * @param ElementInterface $element
+     *
+     * @return bool
+     */
+    private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
+    {
+        /** @var Element $element */
+        $query = (new Query())
+            ->from(['{{%elements_i18n}}'])
+            ->where([
+                'siteId' => $element->siteId,
+                'uri' => $testUri
+            ]);
+
+        if ($element->id) {
+            $query->andWhere(['not', ['elementId' => $element->id]]);
+        }
+
+        return $query->count('[[id]]') === 0;
     }
 
     /**

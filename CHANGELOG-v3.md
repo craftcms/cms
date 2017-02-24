@@ -34,6 +34,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` now supports passing in full column type definitions, including attributes like `NOT NULL`, etc.
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` will now return the max length for`string` and `char` column type definitions.
 - `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
+- `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
 - Updated the Yii Debug extensionU to 2.0.8.
