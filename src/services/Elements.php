@@ -559,13 +559,20 @@ class Elements extends Component
                 // Clean up the slug
                 ElementHelper::setValidSlug($localizedElement);
 
-                // If the slug was entirely composed of invalid characters, it will be blank now.
-                if ($originalSlug && !$localizedElement->slug) {
-                    $localizedElement->slug = $originalSlug;
-                    $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
+                // No slug?
+                // TODO: this should be caught in validation
+                if ($localizedElement->slug === '') {
+                    // If the slug was entirely composed of invalid characters, it will be blank now.
+                    if ($originalSlug) {
+                        $localizedElement->slug = $originalSlug;
+                        $error = '{attribute} is invalid.';
+                    } else {
+                        $error = '{attribute} cannot be blank.';
+                    }
+
+                    $element->addError('slug', Craft::t('yii', $error, ['attribute' => Craft::t('app', 'Slug')]));
 
                     // Don't bother with any of the other sites
-                    // TODO: this should be caught in validation
                     throw new Exception('Invalid slug: '.$originalSlug);
                 }
 
