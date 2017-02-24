@@ -401,7 +401,7 @@ class Db
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return self::getSimplifiedColumnType($columnType) === self::SIMPLE_TYPE_NUMERIC;
+        return in_array(self::parseColumnLength($columnType), self::$_numericColumnTypes, true);
     }
 
     /**
@@ -413,7 +413,7 @@ class Db
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return self::getSimplifiedColumnType($columnType) === self::SIMPLE_TYPE_TEXTUAL;
+        return in_array(self::parseColumnLength($columnType), self::$_textualColumnTypes, true);
     }
 
     /**
