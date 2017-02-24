@@ -63,6 +63,8 @@ Craft CMS 3.0 Working Changelog
 - #1411: Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user.
 - Fixed a bug where custom field validation errors didn’t always include the correct field name.
 - Fixed a bug where Craft was throwing an exception when it couldn’t set a valid slug on an element during save, rather than adding a validation error.
+- #1383: Fixed a bug where saving an element with the title “0” would result in the element’s title getting saved as “-”.
+- Fixed a bug where the Control Panel layout templates didn’t to a good job handling pages with a title of “0”.
 
 ## 3.0.0-beta.4 - 2017-02-17
 
