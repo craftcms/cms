@@ -9,6 +9,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\db\Connection::getIsMysql()`.
 - Added `craft\db\Connection::getIsPgsql()`.
 - Added `craft\events\GenerateTransformEvent`.
+- Added `craft\helpers\Db::getMinAllowedValueForNumericColumn()`.
+- Added `craft\helpers\Db::getMaxAllowedValueForNumericColumn()`.
 - Added `craft\helpers\Db::isNumericColumnType()`.
 - Added `craft\helpers\Db::isTextualColumnType()`.
 - Added `craft\helpers\Db::parseColumnLength()`.

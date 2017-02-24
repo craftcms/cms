@@ -146,6 +146,44 @@ class Db
     }
 
     /**
+     * Returns the minimum number allowed for a given column type.
+     *
+     * @param string $columnType
+     *
+     * @return int|false The min allowed number, or false if it can't be determined
+     */
+    public static function getMinAllowedValueForNumericColumn($columnType)
+    {
+        $shortColumnType = self::parseColumnType($columnType);
+
+        if (isset(self::$_integerSizeRanges[$shortColumnType])) {
+            return self::$_integerSizeRanges[$shortColumnType][0];
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
+    }
+
+    /**
+     * Returns the maximum number allowed for a given column type.
+     *
+     * @param string $columnType
+     *
+     * @return int|false The max allowed number, or false if it can't be determined
+     */
+    public static function getMaxAllowedValueForNumericColumn($columnType)
+    {
+        $shortColumnType = self::parseColumnType($columnType);
+
+        if (isset(self::$_integerSizeRanges[$shortColumnType])) {
+            return self::$_integerSizeRanges[$shortColumnType][1];
+        }
+
+        // ¯\_(ツ)_/¯
+        return false;
+    }
+
+    /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
      * @param int|null $min
