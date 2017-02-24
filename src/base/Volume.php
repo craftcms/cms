@@ -54,9 +54,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // Public Methods
     // =========================================================================
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
