@@ -78,16 +78,6 @@ class ElementHelper
             return;
         }
 
-        $uniqueUriConditions = [
-            'and',
-            ['siteId' => $element->siteId],
-            '[[uri]]=:uri'
-        ];
-
-        if ($element->id) {
-            $uniqueUriConditions[] = ['not', ['elementId' => $element->id]];
-        }
-
         $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
         $maxSlugIncrement = Craft::$app->getConfig()->get('maxSlugIncrement');
 
@@ -162,7 +152,7 @@ class ElementHelper
             $query->andWhere(['not', ['elementId' => $element->id]]);
         }
 
-        return $query->count('[[id]]') === 0;
+        return (int)$query->count('[[id]]') === 0;
     }
 
     /**
