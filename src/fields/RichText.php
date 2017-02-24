@@ -234,11 +234,10 @@ class RichText extends Field
      * Validates the field value.
      *
      * @param ElementInterface $element
-     * @param array|null       $params
      *
      * @return void
      */
-    public function validateLength(ElementInterface $element, array $params = null)
+    public function validateLength(ElementInterface $element)
     {
         /** @var Element $element */
         /** @var RichTextData $value */
