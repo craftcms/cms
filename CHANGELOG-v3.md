@@ -57,6 +57,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. (my2ter)
 - Fixed a bug where the admin “Copy Password Reset URL” option for a user account would give an error when used.
 - #1411: Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user.
+- Fixed a bug where custom field validation errors didn’t always include the correct field name.
 
 ## 3.0.0-beta.4 - 2017-02-17
 

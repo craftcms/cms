@@ -798,13 +798,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function attributeLabels()
     {
-        return [
+        $labels = [
             'id' => Craft::t('app', 'ID'),
             'slug' => Craft::t('app', 'Slug'),
             'title' => Craft::t('app', 'Title'),
             'uid' => Craft::t('app', 'UID'),
             'uri' => Craft::t('app', 'URI'),
         ];
+
+        foreach ($this->getFieldLayout()->getFields() as $field) {
+            /** @var Field $field */
+            $labels[$field->handle] = Craft::t('site', $field->name);
+        }
+
+        return $labels;
     }
 
     /**
