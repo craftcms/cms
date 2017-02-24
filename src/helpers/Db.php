@@ -25,7 +25,8 @@ class Db
     // Constants
     // =========================================================================
 
-    const TYPE_NUMERIC = 'numeric';
+    const SIMPLE_TYPE_NUMERIC = 'numeric';
+    const SIMPLE_TYPE_TEXTUAL = 'textual';
 
     // Properties
     // =========================================================================
@@ -36,32 +37,40 @@ class Db
     private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
+     * @var string[] Numeric column types
+     */
+    private static $_numericColumnTypes = [
+        Schema::TYPE_SMALLINT,
+        Schema::TYPE_INTEGER,
+        Schema::TYPE_BIGINT,
+        Schema::TYPE_FLOAT,
+        Schema::TYPE_DOUBLE,
+        Schema::TYPE_DECIMAL,
+        Schema::TYPE_BOOLEAN,
+    ];
+
+    /**
+     * @var string[] Textual column types
+     */
+    private static $_textualColumnTypes = [
+        Schema::TYPE_CHAR,
+        Schema::TYPE_STRING,
+        Schema::TYPE_TEXT,
+
+        // MySQL-specific ones:
+        MysqlSchema::TYPE_TINYTEXT,
+        MysqlSchema::TYPE_MEDIUMTEXT,
+        MysqlSchema::TYPE_LONGTEXT,
+        MysqlSchema::TYPE_ENUM,
+    ];
+
+    /**
      * @var array Types of integer columns and how many bytes they can store
      */
     private static $_integerSizeRanges = [
         Schema::TYPE_SMALLINT => [-32768, 32767],
         Schema::TYPE_INTEGER => [-2147483648, 2147483647],
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
-    ];
-
-    /**
-     * @var array Column type => simplified type mapping
-     */
-    private static $_simplifiedColumnTypes = [
-        Schema::TYPE_CHAR => Schema::TYPE_STRING,
-        Schema::TYPE_STRING => Schema::TYPE_STRING,
-        Schema::TYPE_TEXT => Schema::TYPE_STRING,
-        Schema::TYPE_SMALLINT => self::TYPE_NUMERIC,
-        Schema::TYPE_INTEGER => self::TYPE_NUMERIC,
-        Schema::TYPE_BIGINT => self::TYPE_NUMERIC,
-        Schema::TYPE_FLOAT => self::TYPE_NUMERIC,
-        Schema::TYPE_DOUBLE => self::TYPE_NUMERIC,
-        Schema::TYPE_DECIMAL => self::TYPE_NUMERIC,
-        Schema::TYPE_BOOLEAN => self::TYPE_NUMERIC,
-        MysqlSchema::TYPE_TINYTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_MEDIUMTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_LONGTEXT => Schema::TYPE_STRING,
-        MysqlSchema::TYPE_ENUM => Schema::TYPE_STRING,
     ];
 
     // Public Methods
@@ -292,17 +301,27 @@ class Db
     /**
      * Returns a simplified version of a given column type.
      *
-     * @param string $type
+     * @param string $columnType
      *
      * @return string
      */
-    public static function getSimplifiedColumnType($type)
+    public static function getSimplifiedColumnType($columnType)
     {
-        if (!preg_match('/^\w+/', $type, $matches)) {
-            return $type;
+        if (($shortColumnType = self::parseColumnType($columnType)) === null) {
+            return $columnType;
         }
 
-        return self::$_simplifiedColumnTypes[$matches[0]] ?? $matches[0];
+        // Numeric?
+        if (in_array($shortColumnType, self::$_numericColumnTypes, true)) {
+            return self::SIMPLE_TYPE_NUMERIC;
+        }
+
+        // Textual?
+        if (in_array($shortColumnType, self::$_textualColumnTypes, true)) {
+            return self::SIMPLE_TYPE_TEXTUAL;
+        }
+
+        return $shortColumnType;
     }
 
     /**
@@ -327,7 +346,7 @@ class Db
      */
     public static function isNumericColumnType(string $columnType): bool
     {
-        return self::getSimplifiedColumnType($columnType) === self::TYPE_NUMERIC;
+        return self::getSimplifiedColumnType($columnType) === self::SIMPLE_TYPE_NUMERIC;
     }
 
     /**
@@ -339,7 +358,7 @@ class Db
      */
     public static function isTextualColumnType(string $columnType): bool
     {
-        return self::getSimplifiedColumnType($columnType) === Schema::TYPE_STRING;
+        return self::getSimplifiedColumnType($columnType) === self::SIMPLE_TYPE_TEXTUAL;
     }
 
     /**
