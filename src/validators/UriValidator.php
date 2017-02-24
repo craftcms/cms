@@ -32,13 +32,12 @@ class UriValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    protected function validateValue($value)
     {
-        $uri = $model->$attribute;
-
-        if ($uri && !preg_match($this->pattern, $uri)) {
-            $message = Craft::t('app', '{attribute} is not a valid URI', ['attribute' => $model->$attribute]);
-            $this->addError($model, $attribute, $message);
+        if (!preg_match($this->pattern, $value)) {
+            return [Craft::t('app', '{attribute} is not a valid URI'), []];
         }
+
+        return null;
     }
 }
