@@ -222,47 +222,6 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function getElementValidationRules(): array
-    {
-        $rules = parent::getElementValidationRules();
-        $rules[] = 'validateLength';
-
-        return $rules;
-    }
-
-    /**
-     * Validates the field value.
-     *
-     * @param ElementInterface $element
-     *
-     * @return void
-     */
-    public function validateLength(ElementInterface $element)
-    {
-        /** @var Element $element */
-        /** @var RichTextData $value */
-        $value = $element->getFieldValue($this->handle);
-
-        // Set the max size based on the column's storage capacity (with a little wiggle room)
-        $max = Db::getTextualColumnStorageCapacity($this->columnType);
-
-        if ($max === null) {
-            // null means unlimited, so no need to validate this
-            return;
-        }
-
-        $validator = new StringValidator([
-            'max' => ceil($max * 0.9),
-        ]);
-
-        if (!$validator->validate($value->getRawContent(), $error)) {
-            $element->addError($this->handle, $error);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml($value, ElementInterface $element): string
     {
         /** @var RichTextData|null $value */

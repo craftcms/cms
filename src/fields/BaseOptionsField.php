@@ -188,8 +188,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getElementValidationRules(): array
     {
-        $rules = parent::getElementValidationRules();
-
         // Get all of the acceptable values
         $range = [];
 
@@ -197,9 +195,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $range[] = $option['value'];
         }
 
-        $rules[] = ['in', 'range' => $range, 'allowArray' => $this->multi];
-
-        return $rules;
+        return [
+            ['in', 'range' => $range, 'allowArray' => $this->multi],
+        ];
     }
 
     /**

@@ -20,6 +20,8 @@ Craft CMS 3.0 Working Changelog
 - The `cacheDuration` config setting can now be set to an integer (number of seconds).
 - Moved Rich Text fields’ “Clean up HTML?”, “Purify HTML?”, and “Column Type” settings into an “Advanced” section.
 - Renamed Plain Text fields’ “Max Length” setting to “Character Limit”.
+- Required custom field validation rules are now created by the element, so `craft\base\Field::getElementValidationRules()` just returns an empty array now.
+- Elements now validate that custom field values will fit within their database columns, for fields with textual or numeric column types.
 - `craft\feeds\Feeds::getFeedItems()` no longer explicitly sets the cache duration to the `cacheDuration` config setting; it lets the data caching driver decide what the default should be (which is set based on the `cacheDuration` config setting… by default).
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` now returns `false` if the max capacity can’t be determined, rather than throwing an exception.
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` now supports passing in full column type definitions, including attributes like `NOT NULL`, etc.

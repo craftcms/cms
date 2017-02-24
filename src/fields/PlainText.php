@@ -131,9 +131,8 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getElementValidationRules(): array
     {
-        $rules = parent::getElementValidationRules();
-        $rules[] = ['string', 'max' => $this->charLimit ?: null];
-
-        return $rules;
+        return [
+            ['string', 'max' => $this->charLimit ?: null],
+        ];
     }
 }

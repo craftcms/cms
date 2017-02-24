@@ -25,6 +25,7 @@ use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -42,6 +43,8 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\validators\NumberValidator;
+use yii\validators\StringValidator;
 use yii\validators\Validator;
 
 /**
@@ -831,18 +834,28 @@ abstract class Element extends Component implements ElementInterface
             [['title', 'slug'], 'string', 'max' => 255],
         ];
 
+        $requiredAttributes = [];
+
         // Require the title?
         if (static::hasTitles()) {
-            $rules[] = [['title'], 'required'];
+            $requiredAttributes[] = 'title';
         }
 
         // Are we validating custom fields?
         if ($this->validateCustomFields() && ($fieldLayout = $this->getFieldLayout())) {
+            $fieldsWithColumns = [];
+
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                $fieldRules = $field->getElementValidationRules();
+                if ($field->required) {
+                    $requiredAttributes[] = $field->handle;
+                }
 
-                foreach ($fieldRules as $rule) {
+                if ($field::hasContentColumn()) {
+                    $fieldsWithColumns[] = $field->handle;
+                }
+
+                foreach ($field->getElementValidationRules() as $rule) {
                     if ($rule instanceof Validator) {
                         $rules[] = $rule;
                     } else {
@@ -878,6 +891,14 @@ abstract class Element extends Component implements ElementInterface
                     }
                 }
             }
+
+            if (!empty($fieldsWithColumns)) {
+                $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize'];
+            }
+        }
+
+        if (!empty($requiredAttributes)) {
+            $rules[] = [$requiredAttributes, 'required'];
         }
 
         return $rules;
@@ -905,6 +926,44 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $method($this, $fieldParams);
+    }
+
+    /**
+     * Validates that the content size is going to fit within the field’s database column.
+     *
+     * @param string $attribute
+     *
+     * @return void
+     */
+    public function validateCustomFieldContentSize(string $attribute)
+    {
+        $field = $this->fieldByHandle($attribute);
+        $columnType = $field->getContentColumnType();
+        $simpleColumnType = Db::getSimplifiedColumnType($columnType);
+
+        if (!in_array($simpleColumnType, [Db::SIMPLE_TYPE_NUMERIC, Db::SIMPLE_TYPE_TEXTUAL], true)) {
+            return;
+        }
+
+        $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        if ($simpleColumnType === Db::SIMPLE_TYPE_NUMERIC) {
+            $validator = new NumberValidator([
+                'min' => Db::getMinAllowedValueForNumericColumn($columnType) ?: null,
+                'max' => Db::getMaxAllowedValueForNumericColumn($columnType) ?: null,
+            ]);
+        } else {
+            $validator = new StringValidator([
+                // Don't count multibyte characters as a single char
+                'encoding' => '8bit',
+                'max' => Db::getTextualColumnStorageCapacity($columnType) ?: null,
+            ]);
+        }
+
+        if (!$validator->validate($value, $error)) {
+            $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('site', $field->name), $error);
+            $this->addError($attribute, $error);
+        }
     }
 
     /**

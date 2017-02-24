@@ -357,7 +357,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getElementValidationRules(): array
     {
-        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
         return [
             'validateBlocks',
             [
