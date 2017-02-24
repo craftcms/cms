@@ -617,6 +617,7 @@ class Sections extends Component
                         $query->status(null);
                         $query->enabledForSite(false);
                         $query->orderBy('elements.id');
+                        $query->withStructure(false);
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
