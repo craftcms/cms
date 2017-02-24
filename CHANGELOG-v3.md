@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added a “Column Type” advanced setting to Plain Text fields.
 - #1381: Added a “Column Type” advanced setting to Table fields.
+- Added `craft\base\ElementInterface::hasUris()`. Elements that can have URIs must add this static method and return `true` now.
 - Added `craft\db\Connection::getIsMysql()`.
 - Added `craft\db\Connection::getIsPgsql()`.
 - Added `craft\events\GenerateTransformEvent`.

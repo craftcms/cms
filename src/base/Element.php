@@ -213,6 +213,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function hasUris(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function isLocalized(): bool
     {
         return false;
@@ -832,15 +840,18 @@ abstract class Element extends Component implements ElementInterface
             ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
-            [['slug'], SlugValidator::class],
-            [['title', 'slug'], 'string', 'max' => 255],
         ];
 
         $requiredAttributes = [];
 
-        // Require the title?
         if (static::hasTitles()) {
+            $rules[] = [['title'], 'string', 'max' => 255];
             $requiredAttributes[] = 'title';
+        }
+
+        if (static::hasUris()) {
+            $rules[] = [['slug'], SlugValidator::class];
+            $rules[] = [['slug'], 'string', 'max' => 255];
         }
 
         // Are we validating custom fields?

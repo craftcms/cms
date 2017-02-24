@@ -559,7 +559,9 @@ class Elements extends Component
                     Craft::$app->getSearch()->indexElementAttributes($localizedElement);
                 }
 
-                ElementHelper::setUniqueUri($localizedElement);
+                if ($localizedElement::hasUris()) {
+                    ElementHelper::setUniqueUri($localizedElement);
+                }
 
                 $siteSettingsRecord->slug = $localizedElement->slug;
                 $siteSettingsRecord->uri = $localizedElement->uri;
@@ -656,7 +658,9 @@ class Elements extends Component
             return;
         }
 
-        ElementHelper::setUniqueUri($element);
+        if ($element::hasUris()) {
+            ElementHelper::setUniqueUri($element);
+        }
 
         Craft::$app->getDb()->createCommand()
             ->update(

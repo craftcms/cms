@@ -46,6 +46,16 @@ interface ElementInterface extends ComponentInterface
     public static function hasTitles(): bool;
 
     /**
+     * Returns whether elements of this type can have their own slugs and URIs.
+     *
+     * Note that individual elements must also return a URI format from [[getUriFormat()]] if they are to actually get a URI.
+     *
+     * @return bool Whether elements of this type can have their own slugs and URIs.
+     * @see getUriFormat()
+     */
+    public static function hasUris(): bool;
+
+    /**
      * Returns whether elements of this type store content on a per-site basis.
      *
      * If this returns `true`, the element’s [[getSupportedSites()]] method will
@@ -403,7 +413,10 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URI format used to generate this element’s URI.
      *
+     * Note that element types that can have URIs must return `true` from [[hasUris()]].
+     *
      * @return string|null
+     * @see hasUris()
      * @see getElementRoute()
      */
     public function getUriFormat();
