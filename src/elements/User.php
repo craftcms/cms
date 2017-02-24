@@ -597,7 +597,7 @@ class User extends Element implements IdentityInterface
             // Get the current password hash
             $currentPassword = (new Query())
                 ->select(['password'])
-                ->from(['{{%users}})'])
+                ->from(['{{%users}}'])
                 ->where(['id' => $this->id])
                 ->scalar();
         } else {
