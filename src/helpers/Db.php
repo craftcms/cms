@@ -284,7 +284,30 @@ class Db
     public static function areColumnTypesCompatible($typeA, $typeB)
     {
         return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
+    }
 
+    /**
+     * Returns whether the given column type is numeric.
+     *
+     * @param string $columnType
+     *
+     * @return bool
+     */
+    public static function isNumericColumnType(string $columnType): bool
+    {
+        return self::getSimplifiedColumnType($columnType) === self::TYPE_NUMERIC;
+    }
+
+    /**
+     * Returns whether the given column type is textual.
+     *
+     * @param string $columnType
+     *
+     * @return bool
+     */
+    public static function isTextualColumnType(string $columnType): bool
+    {
+        return self::getSimplifiedColumnType($columnType) === Schema::TYPE_STRING;
     }
 
     /**
