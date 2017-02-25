@@ -24,7 +24,7 @@
 			{% endif %}
 		</thead>
 		<tbody>
-			{% for entryType in section.getEntryTypes() %}
+			{% for entryType in entryTypes %}
 				<tr data-id="{{ entryType.id }}" data-name="{{ entryType.name|t }}">
 					<th scope="row" data-title="{{ 'Name'|t }}"><a href="{{ url('settings/sections/' ~ section.id ~ '/entrytypes/' ~ entryType.id) }}">{{ entryType.name|t }}</a></th>
 					<td data-title="{{ 'Handle'|t }}"><code>{{ entryType.handle }}</code></td>
