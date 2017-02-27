@@ -129,11 +129,12 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sessionId' => $this->string(36)->notNull()->defaultValue(''),
             'volumeId' => $this->integer()->notNull(),
-            'offset' => $this->integer()->notNull(),
             'uri' => $this->text(),
             'size' => $this->bigInteger()->unsigned(),
             'timestamp' => $this->dateTime(),
             'recordId' => $this->integer(),
+            'inProgress' => $this->boolean()->defaultValue(0),
+            'completed' => $this->boolean()->defaultValue(0),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -728,7 +729,7 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
-        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId,offset', true), '{{%assetindexdata}}', 'sessionId,volumeId,offset', true);
+        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId'), '{{%assetindexdata}}', 'sessionId,volumeId');
         $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'volumeId', false, true), '{{%assetindexdata}}', 'volumeId', false);
         $this->createIndex($this->db->getIndexName('{{%assets}}', 'filename,folderId', true), '{{%assets}}', 'filename,folderId', true);
         $this->createIndex($this->db->getIndexName('{{%assets}}', 'folderId', false, true), '{{%assets}}', 'folderId', false);
