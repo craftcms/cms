@@ -1474,6 +1474,8 @@ body #redactor-modal footer button:last-child { border-bottom-right-radius: $btn
 #main .redactor-link-tooltip { z-index: 101; }
 #main .redactor-toolbar { z-index: 102; }
 #main .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+#main .redactor-layer ul { list-style: disc; }
+#main .redactor-layer ol { @include padding-left(0 !important); }
 
 /**
  * Selects
