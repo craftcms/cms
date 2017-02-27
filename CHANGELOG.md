@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where it was not possible to access the edit page for entries and categories in the non-primary site, or entry drafts/versions.
+
 ## 2.6.2963 - 2017-02-23
 
 ### Changed:
