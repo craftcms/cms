@@ -21,7 +21,7 @@ use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use yii\base\Exception;
 use yii\helpers\Html;
-use yii\web\AssetBundle;
+use yii\web\AssetBundle as YiiAssetBundle;
 
 /**
  * @inheritdoc
@@ -732,7 +732,7 @@ class View extends \yii\web\View
         $session = Craft::$app->getSession();
 
         foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-            if (!is_subclass_of($name, AssetBundle::class)) {
+            if (!is_subclass_of($name, YiiAssetBundle::class)) {
                 throw new Exception("$name is not an asset bundle");
             }
 
