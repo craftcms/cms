@@ -4,8 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Fixed
-
- - Fixed #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
+ - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
