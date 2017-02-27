@@ -694,7 +694,7 @@ class AssetTransforms extends Component
         );
 
         $dbConnection = Craft::$app->getDb();
-        if (null === $index->id) {
+        if (null !== $index->id) {
             $dbConnection->createCommand()
                 ->update('{{%assettransformindex}}', $values, ['id' => $index->id])
                 ->execute();
