@@ -3,8 +3,16 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Tasks::rerunTask()`.
+
+### Changed
+- `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
+- `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
+ - Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
