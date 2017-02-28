@@ -13,11 +13,11 @@
     "Message saved.",
 ]) %}
 
-{% do view.registerAssetBundle("craft\\web\\assets\\emailmessages\\EmailMessagesAsset") %}
+{% do view.registerAssetBundle("craft\\web\\assets\\systemmessages\\SystemMessagesAsset") %}
 
 {% block content %}
     <div id="messages">
-        {% for message in craft.app.emailMessages.getAllMessages() %}
+        {% for message in craft.app.systemMessages.getAllMessages() %}
             <h2>{{ message.heading }}</h2>
             <div class="pane message" data-key="{{ message.key }}">
                 <div class="subject">{{ message.subject }}</div>

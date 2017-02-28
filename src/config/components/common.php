@@ -38,6 +38,7 @@ return [
     'sections' => craft\services\Sections::class,
     'security' => craft\services\Security::class,
     'structures' => craft\services\Structures::class,
+    'systemMessages' => craft\services\SystemMessages::class,
     'tags' => craft\services\Tags::class,
     'tasks' => craft\services\Tasks::class,
     'templateCaches' => craft\services\TemplateCaches::class,

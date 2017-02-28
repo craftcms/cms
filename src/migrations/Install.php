@@ -267,7 +267,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%emailmessages}}', [
+        $this->createTable('{{%systemmessages}}', [
             'id' => $this->primaryKey(),
             'language' => $this->string()->notNull(),
             'key' => $this->string()->notNull(),
@@ -757,8 +757,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false, true), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
+        $this->createIndex($this->db->getIndexName('{{%systemmessages}}', 'key,language', true), '{{%systemmessages}}', 'key,language', true);
+        $this->createIndex($this->db->getIndexName('{{%systemmessages}}', 'language', false), '{{%systemmessages}}', 'language', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false, true), '{{%entries}}', 'authorId', false);

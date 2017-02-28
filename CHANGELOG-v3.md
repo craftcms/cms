@@ -33,6 +33,15 @@ Craft CMS 3.0 Working Changelog
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
 - `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+- Renamed `craft\services\EmailMessages` to `SystemMessages`, which is now available to Craft Personal installations.
+- Renamed `craft\base\ApplicationTrait::$emailMessages` to `$systemMessages`.
+- Renamed `craft\base\ApplicationTrait::getEmailMessages()` to `getSystemMessages()`.
+- Renamed `craft\controllers\EmailMessagesController` to `SystemMessagesController`.
+- Renamed the `emailmessages` DB table to `systemmessages`.
+- Renamed `craft\models\RebrandEmail` to `SystemMessage`, and removed its `$language` and `$htmlBody` properties.
+- Renamed `craft\records\EmailMessage` to `SystemMessage`.
+- Renamed `craft\web\assets\emailmessages\EmailMessagesAsset` to `craft\web\assets\systemmessages\SystemMessagesAsset`.
+- System messages registered with the `craft\services\SystemMessages::EVENT_REGISTER_MESSAGES` event must now either be `craft\models\SystemMessage` objects or arrays with `key`, `heading`, `subject`, and `body` keys.
 
 ### Removed 
 

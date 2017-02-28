@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\models\RebrandEmail;
+use craft\models\SystemMessage;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -31,9 +31,9 @@ class EmailMessages
      */
     public function getAllMessages(): array
     {
-        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.allMessages has been deprecated. Use craft.app.emailMessages.allMessages instead.');
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.allMessages has been deprecated. Use craft.app.systemMessages.allMessages instead.');
 
-        return Craft::$app->getEmailMessages()->getAllMessages();
+        return Craft::$app->getSystemMessages()->getAllMessages();
     }
 
     /**
@@ -42,12 +42,12 @@ class EmailMessages
      * @param string      $key
      * @param string|null $language
      *
-     * @return RebrandEmail|null
+     * @return SystemMessage|null
      */
     public function getMessage(string $key, string $language = null)
     {
-        Craft::$app->getDeprecator()->log('craft.emailMessages.getMessage()', 'craft.emailMessages.getMessage() has been deprecated. Use craft.app.emailMessages.getMessage() instead.');
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getMessage()', 'craft.emailMessages.getMessage() has been deprecated. Use craft.app.systemMessages.getMessage() instead.');
 
-        return Craft::$app->getEmailMessages()->getMessage($key, $language);
+        return Craft::$app->getSystemMessages()->getMessage($key, $language);
     }
 }

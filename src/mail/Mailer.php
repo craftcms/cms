@@ -88,15 +88,9 @@ class Mailer extends \yii\swiftmailer\Mailer
     public function send($message)
     {
         if ($message instanceof Message && $message->key !== null) {
-            if (Craft::$app->getEdition() >= Craft::Client) {
-                $storedMessage = Craft::$app->getEmailMessages()->getMessage($message->key, $message->language);
-
-                $subjectTemplate = $storedMessage->subject;
-                $textBodyTemplate = $storedMessage->body;
-            } else {
-                $subjectTemplate = Craft::t('app', $message->key.'_subject', [], 'en_us');
-                $textBodyTemplate = Craft::t('app', $message->key.'_body', [], 'en_us');
-            }
+            $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
+            $subjectTemplate = $systemMessage->subject;
+            $textBodyTemplate = $systemMessage->body;
 
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();

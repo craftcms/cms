@@ -1,7 +1,7 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    var EmailMessages = Garnish.Base.extend(
+    var SystemMessages = Garnish.Base.extend(
         {
             messages: null,
 
@@ -92,7 +92,7 @@
                     data[Craft.csrfTokenName] = Craft.csrfTokenValue;
                 }
 
-                Craft.postActionRequest('email-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('system-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
                     if (textStatus == 'success') {
                         if (!this.$container) {
                             var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
@@ -160,7 +160,7 @@
                 this.$saveBtn.addClass('active');
                 this.$spinner.show();
 
-                Craft.postActionRequest('email-messages/save-message', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('system-messages/save-message', data, $.proxy(function(response, textStatus) {
                     this.$saveBtn.removeClass('active');
                     this.$spinner.hide();
                     this.loading = false;
@@ -194,5 +194,5 @@
         });
 
 
-    new EmailMessages();
+    new SystemMessages();
 })(jQuery);

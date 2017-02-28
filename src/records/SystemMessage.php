@@ -11,7 +11,7 @@ use craft\db\ActiveRecord;
 use craft\validators\LanguageValidator;
 
 /**
- * Class EmailMessage record.
+ * Class SystemMessage record.
  *
  * @property int    $id       ID
  * @property string $language Language
@@ -22,7 +22,7 @@ use craft\validators\LanguageValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EmailMessage extends ActiveRecord
+class SystemMessage extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -48,6 +48,6 @@ class EmailMessage extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%emailmessages}}';
+        return '{{%systemmessages}}';
     }
 }

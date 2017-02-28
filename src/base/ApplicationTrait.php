@@ -48,7 +48,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Deprecator      $deprecator         The deprecator service
  * @property \craft\services\ElementIndexes  $elementIndexes     The element indexes service
  * @property \craft\services\Elements        $elements           The elements service
- * @property \craft\services\EmailMessages   $emailMessages      The email messages service
  * @property \craft\services\Entries         $entries            The entries service
  * @property \craft\services\EntryRevisions  $entryRevisions     The entry revisions service
  * @property \craft\services\Et              $et                 The E.T. service
@@ -78,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Sections        $sections           The sections service
  * @property \craft\services\Sites           $sites              The sites service
  * @property \craft\services\Structures      $structures         The structures service
+ * @property \craft\services\SystemMessages  $systemMessages     The system email messages service
  * @property \craft\services\SystemSettings  $systemSettings     The system settings service
  * @property \craft\services\Tags            $tags               The tags service
  * @property \craft\services\Tasks           $tasks              The tasks service
@@ -841,14 +841,14 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the email messages service.
+     * Returns the system email messages service.
      *
-     * @return \craft\services\EmailMessages The email messages service
+     * @return \craft\services\SystemMessages The system email messages service
      */
-    public function getEmailMessages()
+    public function getSystemMessages()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('emailMessages');
+        return $this->get('systemMessages');
     }
 
     /**
