@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where it was not possible to access the edit page for entries and categories in the non-primary site, or entry drafts/versions.
 - #1435: Fixed a bug where unordered lists in Rich Text fields weren’t getting bullets.
+- #1433: Fixed a JavaScript error that occurred when adding a page break to Rich Text fields.
 
 ## 2.6.2963 - 2017-02-23
 
