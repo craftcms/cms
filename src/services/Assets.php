@@ -173,7 +173,7 @@ class Assets extends Component
             ->filename(Db::escapeParam($asset->filename))
             ->one();
 
-        if ($existingAsset && $existingAsset->id !== $asset->id) {
+        if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
                 'A file with the name “{filename}” already exists in the folder.',
                 ['filename' => $asset->filename]));

@@ -408,6 +408,11 @@ class AssetIndexer extends Component
                 $assetModel->filename = $filename;
                 $assetModel->kind = AssetsHelper::getFileKindByExtension($uriPath);
                 $assetModel->indexInProgress = true;
+
+                // Make sure there are no double spaces, if the filename had a space followed by a
+                // capital letter because of Yii's "word" logic.
+                $assetModel->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
+
                 $assets->saveAsset($assetModel, false);
             }
 
