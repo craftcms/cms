@@ -1232,13 +1232,13 @@ body #redactor-modal-overlay {
 .menu,
 .ui-datepicker,
 .ui-timepicker-list,
-body .redactor-dropdown { @include menu-styles; }
+#main .redactor-dropdown { @include menu-styles; }
 
 .ui-datepicker,
 .ui-timepicker-list { padding: 0; }
 
 .menu ul li a,
-body .redactor-dropdown a { @include menu-option-styles; }
+#main .redactor-dropdown a { @include menu-option-styles; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
@@ -1246,8 +1246,8 @@ body .redactor-dropdown a { @include menu-option-styles; }
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
-body .redactor-dropdown a:hover { @include menu-option-active-styles; }
-body .redactor-dropdown a:hover span { color: $textcolor !important; }
+#main .redactor-dropdown a:hover { @include menu-option-active-styles; }
+#main .redactor-dropdown a:hover span { color: $textcolor !important; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
@@ -1288,7 +1288,7 @@ body .redactor-dropdown a:hover span { color: $textcolor !important; }
 }
 
 .text:not(.selectize-text),
-body .redactor-box:not(.redactor-box-fullscreen),
+#main .redactor-box:not(.redactor-box-fullscreen),
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input { @include text-input-styles; }
@@ -1297,7 +1297,7 @@ body .redactor-box:not(.redactor-box-fullscreen),
 .text:focus,
 .border-box:focus,
 .border-box.focus,
-body .redactor-box.focus:not(.redactor-box-fullscreen),
+#main .redactor-box.focus:not(.redactor-box-fullscreen),
 .selectize-text > .selectize-control > .selectize-input.focus { @include text-input-focussed-styles; }
 
 input.text,
@@ -1452,28 +1452,30 @@ input:-ms-input-placeholder { @include placeholder-styles; }
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* redactor */
-body .redactor-box,
-body .redactor-toolbar,
-body .redactor-box textarea { z-index: auto !important; }
-body .redactor-box { margin-bottom: 0; }
-body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
-body .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
-body .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
-body .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
-body .redactor-toolbar li a { color: $textcolor; }
-body .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
-body .redactor-toolbar li a:active,
-body .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
-body .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
-body .redactor-dropdown { z-index: 100; }
-body .redactor-dropdown li { border-bottom: none; background: none; }
-body .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
-body .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
+#main .redactor-box,
+#main .redactor-toolbar,
+#main .redactor-box textarea { z-index: auto !important; }
+#main .redactor-box { margin-bottom: 0; }
+#main .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
+#main .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
+#main .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
+#main .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
+#main .redactor-toolbar li a { color: $textcolor; }
+#main .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
+#main .redactor-toolbar li a:active,
+#main .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
+#main .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
+#main .redactor-dropdown { z-index: 100; }
+#main .redactor-dropdown li { border-bottom: none; background: none; }
+#main .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
+#main .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
 body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
 body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
-body .redactor-link-tooltip { z-index: 101; }
-body .redactor-toolbar { z-index: 102; }
-body .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+#main .redactor-link-tooltip { z-index: 101; }
+#main .redactor-toolbar { z-index: 102; }
+#main .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+#main .redactor-layer ul { list-style: disc; }
+#main .redactor-layer ol { @include padding-left(0 !important); }
 
 /**
  * Selects

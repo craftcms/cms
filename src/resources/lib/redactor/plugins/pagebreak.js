@@ -23,7 +23,7 @@ RedactorPlugins.pagebreak = function()
 			if ($currentNode.length && $.contains(this.$editor.get(0), $currentNode.get(0)))
 			{
 				// Find the closest element to div.redactor-editor
-				while ($currentNode.parent().length && !$currentNode.parent().is('div.redactor-editor'))
+				while ($currentNode.parent().length && !$currentNode.parent().is('div.redactor-layer'))
 				{
 					$currentNode = $currentNode.parent();
 				}
