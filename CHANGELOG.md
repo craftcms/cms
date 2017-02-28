@@ -2,6 +2,9 @@ Craft CMS Changelog
 ===================
 
 ## Unreleased
+- Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
+
+## 2.6.2964 - 2017-02-27
 
 ### Fixed
 - Fixed a bug where it was not possible to access the edit page for entries and categories in the non-primary site, or entry drafts/versions.
