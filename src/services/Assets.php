@@ -132,6 +132,7 @@ class Assets extends Component
      * For new assets, this property MUST bet set.
      *
      * @param Asset $asset
+     * @param bool  $runValidation Whether the Asset should be validated
      *
      * @throws AssetDisallowedExtensionException If the file extension is not allowed.
      * @throws FileException                     If there was a problem with the actual file.
@@ -141,7 +142,7 @@ class Assets extends Component
      * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
      * @return void
      */
-    public function saveAsset(Asset $asset)
+    public function saveAsset(Asset $asset, $runValidation = true)
     {
         $isNew = !$asset->id;
 
@@ -235,7 +236,7 @@ class Assets extends Component
             }
         }
 
-        Craft::$app->getElements()->saveElement($asset);
+        Craft::$app->getElements()->saveElement($asset, $runValidation);
 
         // Now that we have an ID, store the source
         if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->newFilePath)) {

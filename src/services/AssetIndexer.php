@@ -211,7 +211,7 @@ class AssetIndexer extends Component
 
             $asset->dateModified = $timeModified;
 
-            Craft::$app->getAssets()->saveAsset($asset);
+            Craft::$app->getAssets()->saveAsset($asset, false);
 
             return ['result' => $asset->id];
         }
@@ -408,7 +408,7 @@ class AssetIndexer extends Component
                 $assetModel->filename = $filename;
                 $assetModel->kind = AssetsHelper::getFileKindByExtension($uriPath);
                 $assetModel->indexInProgress = true;
-                $assets->saveAsset($assetModel);
+                $assets->saveAsset($assetModel, false);
             }
 
             return $assetModel;

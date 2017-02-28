@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
  - Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
  - Fixed a PHP error that could occur if `craft\web\AssetBundle` had been loaded before `craft\web\View`.
+ - #1437: Fixed a bug where new Assets could not be indexed.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
