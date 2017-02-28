@@ -827,6 +827,27 @@ class Asset extends Element
         return $volume && $volume->hasUrls;
     }
 
+    /**
+     * Return the Asset's focal point or null if not an image.
+     *
+     * @return null|array
+     */
+    public function getFocalPoint()
+    {
+        if ($this->kind !== 'image') {
+            return null;
+        }
+
+        if ($this->focalPoint) {
+            $focal = explode(';', $this->focalPoint);
+            if (count($focal) === 2) {
+                return ['x' => $focal[0], 'y' => $focal[1]];
+            }
+        }
+
+        return ['x' => 0.5, 'y' => 0.5];
+    }
+
     // Indexes, etc.
     // -------------------------------------------------------------------------
 

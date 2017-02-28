@@ -5,10 +5,12 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\services\Tasks::rerunTask()`.
+- Added `craft\elements\Asset::getFocalPoint()`.
 
 ### Changed
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+- Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
 
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.

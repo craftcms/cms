@@ -147,7 +147,7 @@ class Install extends Migration
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
-            'focalPoint' => $this->string(20)->null(),
+            'focalPoint' => $this->string(13)->null(),
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

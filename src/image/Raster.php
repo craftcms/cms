@@ -254,8 +254,8 @@ class Raster extends Image
             $this->resize($newWidth, $newHeight);
 
             if (is_array($cropPosition)) {
-                $centerX = $cropPosition['x'] / $factor;
-                $centerY = $cropPosition['y'] / $factor;
+                $centerX = $newWidth * $cropPosition['x'];
+                $centerY = $newHeight * $cropPosition['y'];
                 $x1 = $centerX - $targetWidth / 2;
                 $y1 = $centerY - $targetHeight / 2;
                 $x2 = $x1 + $targetWidth;
