@@ -838,7 +838,7 @@ class Asset extends Element
             return null;
         }
 
-        if ($this->focalPoint) {
+        if (!empty($this->focalPoint)) {
             $focal = explode(';', $this->focalPoint);
             if (count($focal) === 2) {
                 return ['x' => $focal[0], 'y' => $focal[1]];
