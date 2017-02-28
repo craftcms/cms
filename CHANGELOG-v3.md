@@ -22,6 +22,9 @@ Craft CMS 3.0 Working Changelog
 - Added a checkbox to Asset Indexing Utility to indicate whether to cache remote files or not.
 
 ### Changed
+- Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
+- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
+- Refactored Asset Indexing and got rid of offset-based indexing
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
@@ -30,24 +33,22 @@ Craft CMS 3.0 Working Changelog
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
 - `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
-- Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
-- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
-- Refactored Asset Indexing and got rid of offset-based indexing
 
 ### Removed 
 
-- Removed `craft\services\AssetIndexer::getIndexEntry()`
-- Removed `craft\services\AssetIndexer::processIndexForVolume()`
-- Removed `craft\services\AssetIndexer::storeIndexEntry()`
-- Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`
-- Removed the offset property field from `craft\models\AssetIndexData`
-- Removed the offset property field from `craft\records\AssetIndexData`
+- Removed `craft\services\AssetIndexer::getIndexEntry()`.
+- Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\AssetIndexer::storeIndexEntry()`.
+- Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`.
+- Removed `craft\models\AssetIndexData::$offset`.
+- Removed `craft\records\AssetIndexData::$offset`.
 
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
  - Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
  - Fixed a PHP error that could occur if `craft\web\AssetBundle` had been loaded before `craft\web\View`.
  - #1437: Fixed a bug where new Assets could not be indexed.
+ - Fixed a bug where system email subjects and bodies were just getting the translation keys, e.g. `activate_account_subject` and `activate_account_body`.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
