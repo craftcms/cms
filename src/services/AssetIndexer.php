@@ -447,12 +447,15 @@ class AssetIndexer extends Component
 
         $folderId = $folder->id;
 
-        // Determine the asset or create a new one if needed.
+        /**
+         * @var Asset $asset
+         */
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)
             ->one();
 
+        // Create an Asset if there is none.
         if ($asset === null) {
             $asset = new Asset();
             $asset->volumeId = $folder->volumeId;
