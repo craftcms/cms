@@ -365,8 +365,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             this.focalPoint = new fabric.Group([
-                new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
-                new fabric.Circle({radius: 8, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
+                new fabric.Circle({radius: 8, fill: 'rgba(0,0,0,0.2)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'}),
+                new fabric.Circle({radius: 1, fill: 'rgba(255,255,255,0)', strokeWidth: 2, stroke: 'rgba(255,255,255,0.8)', left: 0, top: 0, originX: 'center', originY: 'center'})
             ], {
                 originX: 'center',
                 originY: 'center',
