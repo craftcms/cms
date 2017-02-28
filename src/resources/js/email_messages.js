@@ -55,10 +55,10 @@ var Message = Garnish.Base.extend(
 	updateHtmlFromModal: function()
 	{
 		var subject = this.modal.$subjectInput.val(),
-			body = this.modal.$bodyInput.val().replace(/\n/g, '<br>');
+			body = Craft.escapeHtml(this.modal.$bodyInput.val()).replace(/\n/g, '<br>');
 
 		this.$subject.text(subject);
-		this.$body.text(body);
+		this.$body.html(body);
 	}
 
 });
