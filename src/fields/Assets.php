@@ -458,7 +458,7 @@ class Assets extends BaseRelationField
                 // Find the files with temp sources and just move those.
                 $query = Asset::find();
                 Craft::configure($query, [
-                    'id' => array_merge(['in'], $assetIds),
+                    'id' => $assetIds,
                     'volumeId' => ':empty:'
                 ]);
                 $assetsToMove = $query->all();
