@@ -12,12 +12,14 @@ use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Asset;
+use craft\errors\AssetException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\Config;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
@@ -129,7 +131,26 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFileList(string $directory, bool $recursive): array
     {
-        return $this->filesystem()->listContents($directory, $recursive);
+        $fileList =  $this->filesystem()->listContents($directory, $recursive);
+        $output = [];
+
+        foreach ($fileList as $entry) {
+            $output[$entry['path']] = $entry;
+        }
+
+        return $output;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileMetadata(string $uri): array
+    {
+        try {
+            return $this->filesystem()->getMetadata($uri);
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException($exception->getMessage());
+        }
     }
 
     /**
@@ -215,9 +236,92 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
+    public function createDir(string $path): bool
+    {
+        if ($this->folderExists($path)) {
+            throw new VolumeObjectExistsException(Craft::t('app',
+                'Folder “{folder}” already exists on the volume!',
+                ['folder' => $path]));
+        }
+
+        return $this->filesystem()->createDir($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDir(string $path): bool
+    {
+        try {
+            return $this->filesystem()->deleteDir($path);
+        } catch (\Exception $exception) {
+            // We catch all Exceptions because most of the times these will be 3rd party exceptions.
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDir(string $path, string $newName): bool
+    {
+        if (!$this->folderExists($path)) {
+            throw new VolumeObjectNotFoundException(Craft::t('app',
+                'Folder “{folder}” cannot be found on the volume.',
+                ['folder' => $path]));
+        }
+
+        // Get the list of dir contents
+        $fileList = $this->getFileList($path, true);
+        $directoryList = [];
+
+        $parts = explode('/', $path);
+
+        array_pop($parts);
+        $parts[] = $newName;
+
+        $newPath = implode('/', $parts);
+
+        $pattern = '/^'.preg_quote($path, '/').'/';
+
+        // Rename every file and build a list of directories
+        foreach ($fileList as $object) {
+            if ($object['type'] !== 'dir') {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            } else {
+                $directoryList[] = $object['path'];
+            }
+        }
+
+        // The files are moved, but the directories remain. Delete them.
+        foreach ($directoryList as $dir) {
+            $this->deleteDir($dir);
+        }
+
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileStream(string $uriPath)
+    {
+        $stream = $this->filesystem(['disable_asserts' => true])->readStream($uriPath);
+
+        if (!$stream) {
+            throw new AssetException('Could not open create the stream for “'.$uriPath.'”');
+        }
+
+        return $stream;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $stream = $this->filesystem()->readStream($uriPath);
+        $stream = $this->getFileStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);
@@ -255,15 +359,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Returns the Flysystem adapter instance.
      *
+     * @param array $config
+     *
      * @return \League\Flysystem\Filesystem The Flysystem filesystem.
      */
-    protected function filesystem()
+    protected function filesystem(array $config = [])
     {
-        if ($this->_filesystem !== null) {
-            return $this->_filesystem;
-        }
-
-        return $this->_filesystem = new Filesystem($this->adapter());
+        // Constructing a Filesystem is super cheap and we always get the config we want, so no caching.
+        return new Filesystem($this->adapter(), new Config($config));
     }
 
     /**

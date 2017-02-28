@@ -14,15 +14,16 @@ use yii\db\ActiveQueryInterface;
 /**
  * Class AssetIndexData record.
  *
- * @property int       $id        ID
- * @property int       $volumeId  Volume ID
- * @property string    $sessionId Session ID
- * @property int       $offset    Offset
- * @property string    $uri       URI
- * @property int       $size      Size
- * @property \DateTime $timestamp Timestamp
- * @property int       $recordId  Record ID
- * @property Volume    $volume    Volume
+ * @property int       $id         ID
+ * @property int       $volumeId   Volume ID
+ * @property string    $sessionId  Session ID
+ * @property string    $uri        URI
+ * @property int       $size       Size
+ * @property \DateTime $timestamp  Timestamp
+ * @property bool      $inProgress In progress
+ * @property bool      $completed  Is completed
+ * @property int       $recordId   Record ID
+ * @property Volume    $volume     Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -38,12 +39,12 @@ class AssetIndexData extends ActiveRecord
     public function rules()
     {
         return [
-            [['volumeId', 'recordId', 'offset', 'size'], 'number', 'integerOnly' => true],
+            [['volumeId', 'recordId', 'size'], 'number', 'integerOnly' => true],
             [['timestamp'], DateTimeValidator::class],
-            [['sessionId'], 'unique', 'targetAttribute' => ['sessionId', 'volumeId', 'offset']],
-            [['sessionId', 'volumeId', 'offset'], 'required'],
+            [['sessionId', 'volumeId'], 'required'],
             [['sessionId'], 'string', 'length' => 36],
             [['uri'], 'string'],
+            [['completed', 'inProgress'], 'boolean'],
         ];
     }
 

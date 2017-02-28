@@ -4,13 +4,44 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Added `craft\services\Tasks::rerunTask()`.
+- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\base\Volume::getFileStream()`
+- Added `craft\base\VolumeInterface::getFileMetadata()`
+- Added `craft\base\Volume::getFileMetadata()`
 - Added `craft\elements\Asset::getFocalPoint()`.
+- Added `craft\elements\Asset::getStream()`.
+- Added `craft\helpers\Image::imageSizeByStream()`.
+- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::getIndexListOnVolume()`
+- Added `craft\services\AssetIndexer::getNextIndexEntry()`
+- Added `craft\services\AssetIndexer::processIndexForVolume()`
+- Added `craft\services\AssetIndexer::storeIndexList()`
+- Added `craft\services\AssetIndexer::updateIndexEntry()`
+- Added `craft\services\Tasks::rerunTask()`.
+- Added a checkbox to Asset Indexing Utility to indicate whether to cache remote files or not.
 
 ### Changed
+- `craft\base\Volume::filesystem()` now accepts a config parameter.
+- `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
+- `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
+- `craft\base\Volume::indexFile()` now requires an instance of `craft\base\Volume` (instead of `craft\base\VolumeInterface`) and a URI path as parameters.
+- `craft\base\Volume::indexFile()` now accepts a parameter to indicate whether to cache remote files or not.
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
+- `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
 - Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
+- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
+- Refactored Asset Indexing and got rid of offset-based indexing
+
+### Removed 
+
+- Removed `craft\services\AssetIndexer::getIndexEntry()`
+- Removed `craft\services\AssetIndexer::processIndexForVolume()`
+- Removed `craft\services\AssetIndexer::storeIndexEntry()`
+- Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`
+- Removed the offset property field from `craft\models\AssetIndexData`
+- Removed the offset property field from `craft\records\AssetIndexData`
 
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
