@@ -3,6 +3,7 @@ Craft CMS Changelog
 
 ## Unreleased
 - Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
+- Fixed a bug where Matrix Block validation might fail when programatically adding blocks to a Matrix field.
 
 ## 2.6.2964 - 2017-02-27
 
