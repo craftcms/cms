@@ -231,7 +231,7 @@ class Image
         try {
             switch ($signature) {
                 // Must be JPG
-                case 'FFD8': {
+                case 'FFD8':
                     // List of JPEG frame types we know how to extract size from
                     $validFrames = [0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6,0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF];
 
@@ -261,12 +261,9 @@ class Image
                         // Dud.
                         stream_get_contents($stream, $frameInfo['length'] - 2);
                     }
-
                     break;
-                }
-
                 // Probably GIF
-                case '4749': {
+                case '4749':
                     $signature .= bin2hex(stream_get_contents($stream, 4));
 
                     // Make sure it's GIF
@@ -277,12 +274,9 @@ class Image
                     // Unpack next 4 bytes as two unsigned integers with little endian byte order and call it a day
                     $data = unpack('v2', stream_get_contents($stream, 4));
                     $dimensions = array_values($data);
-
                     break;
-                }
-
                 // Maybe PNG
-                case '8950': {
+                case '8950':
                     $signature .= StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 6)));
 
                     // Make sure it's PNG
@@ -304,11 +298,8 @@ class Image
                     $dimensions = array_values($data);
 
                     break;
-                }
-
-                default: {
+                default:
                     return false;
-                }
             }
         } catch (ImageException $exception) {
             Craft::info($exception->getMessage(), __METHOD__);
