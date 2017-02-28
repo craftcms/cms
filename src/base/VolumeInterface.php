@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\errors\AssetException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 
@@ -39,6 +40,16 @@ interface VolumeInterface extends SavableComponentInterface
      * @return array
      */
     public function getFileList(string $directory, bool $recursive): array;
+
+    /**
+     * Return the metadata about a file.
+     *
+     * @param string $uri URI to the file on the volume.
+     *
+     * @return array
+     * @throws VolumeObjectNotFoundException if the file cannot be found.
+     */
+    public function getFileMetadata(string $uri): array;
 
     /**
      * Creates a file.
@@ -112,4 +123,14 @@ interface VolumeInterface extends SavableComponentInterface
      * @return int amount of bytes copied
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int;
+
+    /**
+     * Gets a stream ready for reading by a file's URI.
+     *
+     * @param string $uriPath
+     *
+     * @throws AssetException if a stream cannot be created.
+     * @return resource
+     */
+    public function getFileStream(string $uriPath);
 }

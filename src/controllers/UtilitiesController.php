@@ -203,8 +203,8 @@ class UtilitiesController extends Controller
                             'sessionId' => $sessionId,
                             'sourceId' => $sourceId,
                             'total' => $indexList['total'],
-                            'offset' => $i,
-                            'process' => 1
+                            'process' => 1,
+                            'cacheImages' => $params['cacheImages']
                         ]
                     ];
                 }
@@ -231,14 +231,13 @@ class UtilitiesController extends Controller
             ]);
         } else if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['offset'], $params['sourceId']);
+            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['sourceId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true
             ]);
         } else if (!empty($params['overview'])) {
-            $sourceIds = Craft::$app->getSession()->get('assetsSourcesBeingIndexed', []);
-            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
+            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
             $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
             $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
 
