@@ -27,7 +27,6 @@ use craft\validators\HandleValidator;
 use craft\web\assets\redactor\RedactorAsset;
 use craft\web\assets\richtext\RichTextAsset;
 use yii\db\Schema;
-use yii\validators\StringValidator;
 
 /**
  * RichText represents a Rich Text field.
