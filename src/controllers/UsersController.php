@@ -813,7 +813,7 @@ class UsersController extends Controller
             $user = User::find()
                 ->id($userId)
                 ->status(null)
-                ->withPassword()
+                ->addSelect(['users.password'])
                 ->one();
 
             if (!$user) {
@@ -1192,7 +1192,7 @@ class UsersController extends Controller
         $user = User::find()
             ->id($userId)
             ->status(null)
-            ->withPassword()
+            ->addSelect(['users.password'])
             ->one();
 
         if (!$user) {
@@ -1726,7 +1726,7 @@ class UsersController extends Controller
         $userToProcess = User::find()
             ->uid($id)
             ->status(null)
-            ->withPassword()
+            ->addSelect(['users.password'])
             ->one();
 
         if ($userToProcess) {

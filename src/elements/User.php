@@ -329,7 +329,7 @@ class User extends Element implements IdentityInterface
         $user = User::find()
             ->id($id)
             ->status(null)
-            ->withPassword()
+            ->addSelect(['users.password'])
             ->one();
 
         if ($user !== null) {

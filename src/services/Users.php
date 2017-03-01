@@ -168,7 +168,7 @@ class Users extends Component
                 ['username' => $usernameOrEmail],
                 ['email' => $usernameOrEmail]
             ])
-            ->withPassword()
+            ->addSelect(['users.password'])
             ->status(null)
             ->one();
     }
