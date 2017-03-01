@@ -216,7 +216,7 @@ class Image
     public static function imageSizeByStream($stream)
     {
         if (!is_resource($stream)) {
-            throw new \TypeError("Argument passed should be a resource.");
+            throw new \TypeError('Argument passed should be a resource.');
         }
 
         $dimensions = [];
