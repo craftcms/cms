@@ -1785,10 +1785,16 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					$permissions = craft()->request->getPost('permissions', array());
+					$permissions = craft()->request->getPost('permissions');
+
+                    // it will be an empty string if no permissions were assigned during user saving.
+                    if ($permissions === '')
+                    {
+                        $permissions = [];
+                    }
 				}
 
-				if (!empty($permissions))
+				if (is_array($permissions))
 				{
 					// See if there are any new permissions in here
                     foreach ($permissions as $permission)
