@@ -265,11 +265,20 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
 
+		if ($this->element !== null && $this->element->hasEagerLoadedElements($name)) {
+			$value = $this->element->getEagerLoadedElements($name);
+		}
+
 		if ($value instanceof ElementCriteriaModel)
 		{
 			$value->limit = null;
 			$value->status = null;
 			$value->localeEnabled = null;
+		}
+		else if (!is_array($value))
+		{
+			$value = craft()->elements->getCriteria(ElementType::MatrixBlock);
+			$value->id = false;
 		}
 
 		$html = craft()->templates->render('_components/fieldtypes/Matrix/input', array(
