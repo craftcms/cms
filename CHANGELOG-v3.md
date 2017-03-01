@@ -46,12 +46,12 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed 
 
+- Removed `craft\models\AssetIndexData::$offset`.
+- Removed `craft\records\AssetIndexData::$offset`.
 - Removed `craft\services\AssetIndexer::getIndexEntry()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\services\AssetIndexer::storeIndexEntry()`.
 - Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`.
-- Removed `craft\models\AssetIndexData::$offset`.
-- Removed `craft\records\AssetIndexData::$offset`.
 
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
