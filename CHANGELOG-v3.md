@@ -67,7 +67,7 @@ Craft CMS 3.0 Working Changelog
  - #1444: Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset.
  - Fixed a couple bugs that broke new email verification.
  - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
- - Fixed a SQL error that could happen when an error occurs updating to Craft 3 and a rollback is triggered.
+ - Fixed a SQL error that could occur when restoring a database backup after a failed update.
  - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
 
 ## 3.0.0-beta.5 - 2017-02-24
