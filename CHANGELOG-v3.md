@@ -26,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - #1420: Craft now does fuzzy searching on the right side of a keyword by default.
 - It’s now possible to add columns to an element query’s `select` clause without completely replacing all of the default columns, by calling its `addSelect()` method.
 - #1421: Users are no longer logged out when verifying a new email address on their own account.
+- #1422: Users no longer get an exception or error message if they click on an invalid/expired email verification link and are already logged in. Instead they’ll be redirected to wherever they would normally be taken immediately after logging in.
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
@@ -34,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
 - `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+- `craft\web\User::getReturnUrl()` now returns a URL based on the `postCpLoginRedirect` or `postLoginRedirect` config setting depending on the user’s permissions, if they didn’t have a return URL stored in their session data, and a default URL was not supplied.
 - Renamed `craft\services\EmailMessages` to `SystemMessages`, which is now available to Craft Personal installations.
 - Renamed `craft\base\ApplicationTrait::$emailMessages` to `$systemMessages`.
 - Renamed `craft\base\ApplicationTrait::getEmailMessages()` to `getSystemMessages()`.
@@ -65,6 +67,7 @@ Craft CMS 3.0 Working Changelog
  - #1444: Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset.
  - Fixed a couple bugs that broke new email verification.
  - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
+ - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
 
 ## 3.0.0-beta.5 - 2017-02-24
 

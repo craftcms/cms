@@ -332,8 +332,8 @@ class UsersController extends Controller
     {
         // Have they just submitted a password, or are we just displaying the page?
         if (!Craft::$app->getRequest()->getIsPost()) {
-            if (!($info = $this->_processTokenRequest())) {
-                return null;
+            if (!is_array($info = $this->_processTokenRequest())) {
+                return $info;
             }
 
             $userToProcess = $info['userToProcess'];
@@ -359,7 +359,7 @@ class UsersController extends Controller
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
         if (!$userToProcess || !$isCodeValid) {
-            $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken($userToProcess);
         }
 
         $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
@@ -409,8 +409,8 @@ class UsersController extends Controller
      */
     public function actionVerifyEmail()
     {
-        if (!($info = $this->_processTokenRequest())) {
-            return null;
+        if (!is_array($info = $this->_processTokenRequest())) {
+            return $info;
         }
 
         $userToProcess = $info['userToProcess'];
@@ -1522,25 +1522,12 @@ class UsersController extends Controller
      */
     private function _handleSuccessfulLogin(bool $setNotice): Response
     {
-        // Get the current user
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        // If this is a CP request and they can access the control panel, set the default return URL to wherever
-        // postCpLoginRedirect tells us
-        if (Craft::$app->getRequest()->getIsCpRequest() && $currentUser->can('accessCp')) {
-            $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $defaultReturnUrl = UrlHelper::cpUrl($postCpLoginRedirect);
-        } else {
-            // Otherwise send them wherever postLoginRedirect tells us
-            $postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
-            $defaultReturnUrl = UrlHelper::siteUrl($postLoginRedirect);
-        }
-
-        // Were they trying to access a URL beforehand?
-        $returnUrl = Craft::$app->getUser()->getReturnUrl($defaultReturnUrl);
+        // Get the return URL
+        $userService = Craft::$app->getUser();
+        $returnUrl = $userService->getReturnUrl();
 
         // Clear it out
-        Craft::$app->getUser()->removeReturnUrl();
+        $userService->removeReturnUrl();
 
         // If this was an Ajax request, just return success:true
         if (Craft::$app->getRequest()->getAcceptsJson()) {
@@ -1550,11 +1537,10 @@ class UsersController extends Controller
             ]);
         } else {
             if ($setNotice) {
-                Craft::$app->getSession()->setNotice(Craft::t('app',
-                    'Logged in.'));
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
             }
 
-            return $this->redirectToPostedUrl($currentUser, $returnUrl);
+            return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
         }
     }
 
@@ -1722,9 +1708,9 @@ class UsersController extends Controller
     }
 
     /**
-     * @return array
+     * @return array|Response
      */
-    private function _processTokenRequest(): array
+    private function _processTokenRequest()
     {
         $id = Craft::$app->getRequest()->getRequiredParam('id');
         $code = Craft::$app->getRequest()->getRequiredParam('code');
@@ -1753,7 +1739,7 @@ class UsersController extends Controller
         }
 
         if (!$userToProcess || !$isCodeValid) {
-            $this->_processInvalidToken($userToProcess);
+            return $this->_processInvalidToken($userToProcess);
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1772,14 +1758,22 @@ class UsersController extends Controller
     /**
      * @param User $user
      *
-     * @return Response|null
+     * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user)
+    private function _processInvalidToken(User $user): Response
     {
-        $url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
+        // If they're already logged-in, just send them to the post-login URL
+        $userService = Craft::$app->getUser();
+        if (!$userService->getIsGuest()) {
+            $returnUrl = $userService->getReturnUrl();
+            $userService->removeReturnUrl();
 
-        if ($url) {
+            return $this->redirect($returnUrl);
+        }
+
+        // If the invalidUserTokenPath config setting is set, send them there
+        if ($url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath')) {
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
