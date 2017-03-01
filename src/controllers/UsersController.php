@@ -418,6 +418,11 @@ class UsersController extends Controller
 
         Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
 
+        // If they're logged in, give them a success notice
+        if (!Craft::$app->getUser()->getIsGuest()) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
+        }
+
         if ($userIsPending) {
             // They were just activated, so treat this as an activation request
             if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
@@ -1715,10 +1720,6 @@ class UsersController extends Controller
      */
     private function _processTokenRequest(): array
     {
-        if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getUser()->logout();
-        }
-
         $id = Craft::$app->getRequest()->getRequiredParam('id');
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
@@ -1729,6 +1730,12 @@ class UsersController extends Controller
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 
+        // If someone is logged in and it's not this person, log them out
+        $userService = Craft::$app->getUser();
+        if (($identity = $userService->getIdentity()) !== null && $identity->id != $userToProcess->id) {
+            $userService->logout();
+        }
+
         if ($userToProcess) {
             // Fire a 'beforeVerifyUser' event
             Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
@@ -1736,8 +1743,7 @@ class UsersController extends Controller
                     'user' => $userToProcess
                 ]));
 
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess,
-                $code);
+            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
         }
 
         if (!$userToProcess || !$isCodeValid) {

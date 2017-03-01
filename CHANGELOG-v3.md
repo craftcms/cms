@@ -25,6 +25,7 @@ Craft CMS 3.0 Working Changelog
 - Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
 - #1420: Craft now does fuzzy searching on the right side of a keyword by default.
 - It’s now possible to add columns to an element query’s `select` clause without completely replacing all of the default columns, by calling its `addSelect()` method.
+- #1421: Users are no longer logged out when verifying a new email address on their own account.
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
