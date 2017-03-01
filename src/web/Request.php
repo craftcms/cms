@@ -960,8 +960,6 @@ class Request extends \yii\web\Request
                     $setPasswordPath = trim($configService->getLocalized('setPasswordPath'), '/');
                 }
 
-                $verifyEmailPath = 'verifyemail';
-
                 if (
                     ($triggerMatch = ($firstSegment == $configService->get('actionTrigger') && count($this->_segments) > 1)) ||
                     ($actionParam = $this->getParam('action')) !== null ||
@@ -969,7 +967,6 @@ class Request extends \yii\web\Request
                         $loginPath,
                         $logoutPath,
                         $setPasswordPath,
-                        $verifyEmailPath
                     ], true))
                 ) {
                     $this->_isActionRequest = true;
@@ -984,8 +981,6 @@ class Request extends \yii\web\Request
                             $this->_actionSegments = ['users', 'login'];
                         } else if ($this->_path == $logoutPath) {
                             $this->_actionSegments = ['users', 'logout'];
-                        } else if ($this->_path == $verifyEmailPath) {
-                            $this->_actionSegments = ['users', 'verify-email'];
                         } else {
                             $this->_actionSegments = ['users', 'set-password'];
                         }
