@@ -275,11 +275,6 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 			$value->status = null;
 			$value->localeEnabled = null;
 		}
-		else if (!is_array($value))
-		{
-			$value = craft()->elements->getCriteria(ElementType::MatrixBlock);
-			$value->id = false;
-		}
 
 		$html = craft()->templates->render('_components/fieldtypes/Matrix/input', array(
 			'id' => $id,
