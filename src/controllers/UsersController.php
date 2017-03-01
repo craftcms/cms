@@ -1779,24 +1779,21 @@ class UsersController extends BaseController
 				}
 				else
 				{
-					$permissions = craft()->request->getPost('permissions');
+					$permissions = craft()->request->getPost('permissions', array());
 				}
 
-				if ($permissions !== null)
+				if (!empty($permissions))
 				{
 					// See if there are any new permissions in here
-					if (is_array($permissions))
-					{
-						foreach ($permissions as $permission)
-						{
-							if (!$user->can($permission))
-							{
-								// Yep. This will require an elevated session
-								$this->requireElevatedSession();
-								break;
-							}
-						}
-					}
+                    foreach ($permissions as $permission)
+                    {
+                        if (!$user->can($permission))
+                        {
+                            // Yep. This will require an elevated session
+                            $this->requireElevatedSession();
+                            break;
+                        }
+                    }
 
 					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
