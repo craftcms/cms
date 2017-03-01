@@ -1022,20 +1022,18 @@ class UsersController extends BaseController
 				$originalEmail = $user->email;
 				$user->email = $user->unverifiedEmail;
 
-				try
-				{
-					if ($isNewUser)
-					{
-						// Send the activation email
-						craft()->users->sendActivationEmail($user);
-					}
-					else
-					{
-						// Send the standard verification email
-						craft()->users->sendNewEmailVerifyEmail($user);
-					}
-				}
-				catch (\phpmailerException $e)
+                if ($isNewUser)
+                {
+                    // Send the activation email
+                    $emailSent = craft()->users->sendActivationEmail($user);
+                }
+                else
+                {
+                    // Send the standard verification email
+                    $emailSent = craft()->users->sendNewEmailVerifyEmail($user);
+                }
+
+                if (!$emailSent)
 				{
 					craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
 				}
@@ -1320,15 +1318,23 @@ class UsersController extends BaseController
 			throw new Exception(Craft::t('Invalid account status for user ID “{id}”.', array('id' => $userId)));
 		}
 
-		craft()->users->sendActivationEmail($user);
+		$emailSent = craft()->users->sendActivationEmail($user);
 
 		if (craft()->request->isAjaxRequest())
 		{
-			$this->returnJson(array('success' => true));
+			$this->returnJson(array('success' => $emailSent));
 		}
 		else
 		{
-			craft()->userSession->setNotice(Craft::t('Activation email sent.'));
+		    if ($emailSent)
+            {
+                craft()->userSession->setNotice(Craft::t('Activation email sent.'));
+            }
+            else
+            {
+                craft()->userSession->setError(Craft::t('Couldn’t send activation email. Check your email settings.'));
+            }
+
 			$this->redirectToPostedUrl();
 		}
 	}
