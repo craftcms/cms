@@ -174,7 +174,7 @@ class SystemMessages extends Component
         // Fetch the customization (if there is one)
         $override = $this->_createMessagesQuery()
             ->select(['subject', 'body'])
-            ->where(['language' => $language])
+            ->where(['key' => $key, 'language' => $language])
             ->indexBy(null)
             ->one();
 
