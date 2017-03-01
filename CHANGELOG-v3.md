@@ -53,6 +53,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
 - Removed `craft\services\AssetIndexer::storeIndexEntry()`.
 - Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`.
+- Removed `craft\services\Users::getUserByEmail()`.
 
 ### Fixed
  - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.

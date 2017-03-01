@@ -174,25 +174,6 @@ class Users extends Component
     }
 
     /**
-     * Returns a user by their email.
-     *
-     * ```php
-     * $user = Craft::$app->getUsers()->getUserByEmail($email);
-     * ```
-     *
-     * @param string $email The user’s email.
-     *
-     * @return User|null The user with the given email, or `null` if a user could not be found.
-     */
-    public function getUserByEmail(string $email)
-    {
-        return User::find()
-            ->email($email)
-            ->withPassword()
-            ->one();
-    }
-
-    /**
      * Returns a user by their UID.
      *
      * ```php
@@ -401,12 +382,12 @@ class Users extends Component
         $userRecord->save();
 
         if ($user->can('accessCp')) {
-            $url = UrlHelper::actionUrl('users/verifyemail',
+            $url = UrlHelper::actionUrl('users/verify-email',
                 ['code' => $unhashedVerificationCode, 'id' => $user->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
-            $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verifyemail';
+            $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verify-email';
             $params = [
                 'code' => $unhashedVerificationCode,
                 'id' => $user->uid
