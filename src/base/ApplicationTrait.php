@@ -612,9 +612,15 @@ trait ApplicationTrait
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
                 if (version_compare($this->_storedVersion, '3.0', '<')) {
-                    $siteName = $attributes['name'];
-                    $attributes['siteName'] = $siteName;
-                    unset($attributes['fieldVersion'], $attributes['name']);
+                    $infoTable = $this->getDb()->getTableSchema('{{%info}}');
+
+                    if ($infoTable->getColumn('siteName')) {
+                        $siteName = $attributes['name'];
+                        $attributes['siteName'] = $siteName;
+                        unset($attributes['name']);
+                    }
+
+                    unset($attributes['fieldVersion']);
                 }
 
                 $this->getDb()->createCommand()
