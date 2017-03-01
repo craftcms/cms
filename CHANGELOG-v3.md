@@ -4,10 +4,11 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Added `craft\base\VolumeInterface::getFileStream()`
+- Added a “Cache remote images?” setting to the Asset Indexes utility, which if unchecked will dramatically speed up remote image indexing.
+- Added `craft\base\Volume::getFileMetadata()`
 - Added `craft\base\Volume::getFileStream()`
 - Added `craft\base\VolumeInterface::getFileMetadata()`
-- Added `craft\base\Volume::getFileMetadata()`
+- Added `craft\base\VolumeInterface::getFileStream()`
 - Added `craft\elements\Asset::getFocalPoint()`.
 - Added `craft\elements\Asset::getStream()`.
 - Added `craft\helpers\Image::imageSizeByStream()`.
@@ -19,12 +20,10 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\AssetIndexer::storeIndexList()`
 - Added `craft\services\AssetIndexer::updateIndexEntry()`
 - Added `craft\services\Tasks::rerunTask()`.
-- Added a checkbox to Asset Indexing Utility to indicate whether to cache remote files or not.
 
 ### Changed
 - Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
-- Assets indexing now reads just enough data to determine image size instead of downloading the whole image when indexing.
-- Refactored Asset Indexing and got rid of offset-based indexing
+- #1420: Craft now does fuzzy searching on the right side of a keyword by default.
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
@@ -42,7 +41,6 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\records\EmailMessage` to `SystemMessage`.
 - Renamed `craft\web\assets\emailmessages\EmailMessagesAsset` to `craft\web\assets\systemmessages\SystemMessagesAsset`.
 - System messages registered with the `craft\services\SystemMessages::EVENT_REGISTER_MESSAGES` event must now either be `craft\models\SystemMessage` objects or arrays with `key`, `heading`, `subject`, and `body` keys.
-- #1420: Craft now does fuzzy searching on the right side of a keyword by default.
 
 ### Removed 
 
