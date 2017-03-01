@@ -210,7 +210,7 @@ class UserPermissions extends Component
      */
     public function getPermissionsByGroupId(int $groupId): array
     {
-        if (!isset($this->_permissionsByUserId[$groupId])) {
+        if (!isset($this->_permissionsByGroupId[$groupId])) {
             $groupPermissions = (new Query())
                 ->select(['p.name'])
                 ->from(['{{%userpermissions}} p'])
@@ -273,6 +273,10 @@ class UserPermissions extends Component
             ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
             ->execute();
 
+        // Lowercase the permissions
+        $permissions = array_map('strtolower', $permissions);
+
+        // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
         if (!empty($permissions)) {
@@ -291,6 +295,9 @@ class UserPermissions extends Component
                     $groupPermissionVals)
                 ->execute();
         }
+
+        // Cache the new permissions
+        $this->_permissionsByGroupId[$groupId] = $permissions;
 
         return true;
     }
@@ -351,6 +358,9 @@ class UserPermissions extends Component
             ->delete('{{%userpermissions_users}}', ['userId' => $userId])
             ->execute();
 
+        // Lowercase the permissions
+        $permissions = array_map('strtolower', $permissions);
+
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
         $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
@@ -371,6 +381,9 @@ class UserPermissions extends Component
                     $userPermissionVals)
                 ->execute();
         }
+
+        // Cache the new permissions
+        $this->_permissionsByUserId[$userId] = $permissions;
 
         return true;
     }
@@ -591,8 +604,9 @@ class UserPermissions extends Component
         $hasAssignedPermissions = false;
 
         foreach ($permissionsGroup as $name => $data) {
+            $name = strtolower($name);
             // Should the user have this permission (either directly or via their group)?
-            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array(strtolower($name), $groupPermissions, true)) {
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array($name, $groupPermissions, true)) {
                 // First assign any nested permissions
                 if (!empty($data['nested'])) {
                     $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);

@@ -1210,13 +1210,17 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
 
-        Craft::$app->getUsers()->sendActivationEmail($user);
+        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
+            return $this->asJson(['success' => $emailSent]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
+        if ($emailSent) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
+        } else {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+        }
 
         return $this->redirectToPostedUrl();
     }
@@ -1694,18 +1698,20 @@ class UsersController extends Controller
                     $permissions = [];
                 } else {
                     $permissions = $request->getBodyParam('permissions');
+
+                    // it will be an empty string if no permissions were assigned during user saving.
+                    if ($permissions === '') {
+                        $permissions = [];
+                    }
                 }
 
-                // $permissions will be an empty string if no permissions were assigned during user saving.
-                if ($permissions !== null && $permissions !== '') {
+                if (is_array($permissions)) {
                     // See if there are any new permissions in here
-                    if (is_array($permissions)) {
-                        foreach ($permissions as $permission) {
-                            if (!$user->can($permission)) {
-                                // Yep. This will require an elevated session
-                                $this->requireElevatedSession();
-                                break;
-                            }
+                    foreach ($permissions as $permission) {
+                        if (!$user->can($permission)) {
+                            // Yep. This will require an elevated session
+                            $this->requireElevatedSession();
+                            break;
                         }
                     }
 
