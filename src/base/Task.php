@@ -74,13 +74,13 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function attributes()
     {
-        $fields = parent::fields();
-        $fields['description'] = [$this, 'getDescription'];
-        $fields['progress'] = [$this, 'getProgress'];
+        $names = parent::attributes();
+        $names[] = 'description';
+        $names[] = 'progress';
 
-        return $fields;
+        return $names;
     }
 
     /**
