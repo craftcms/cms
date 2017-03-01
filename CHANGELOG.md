@@ -2,6 +2,8 @@ Craft CMS Changelog
 ===================
 
 ## Unreleased
+
+### Fixed
 - Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
 
 ## 2.6.2964 - 2017-02-27
