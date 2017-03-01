@@ -1726,7 +1726,7 @@ class UsersController extends Controller
         $userToProcess = User::find()
             ->uid($id)
             ->status(null)
-            ->addSelect(['users.password'])
+            ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 
         if ($userToProcess) {

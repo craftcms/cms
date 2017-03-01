@@ -62,6 +62,7 @@ Craft CMS 3.0 Working Changelog
  - #1437: Fixed a bug where new Assets could not be indexed.
  - Fixed a bug where system email subjects and bodies were just getting the translation keys, e.g. `activate_account_subject` and `activate_account_body`.
  - #1444: Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset.
+ - Fixed a couple bugs that broke new email verification.
 
 ## 3.0.0-beta.5 - 2017-02-24
 

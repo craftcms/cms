@@ -487,6 +487,7 @@ class Application extends \yii\web\Application
             $segments === ['users', 'login'] ||
             $segments === ['users', 'logout'] ||
             $segments === ['users', 'set-password'] ||
+            $segments === ['users', 'verify-email'] ||
             $segments === ['users', 'forgot-password'] ||
             $segments === ['users', 'send-password-reset-email'] ||
             $segments === ['users', 'save-user'] ||
