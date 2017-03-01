@@ -42,6 +42,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\records\EmailMessage` to `SystemMessage`.
 - Renamed `craft\web\assets\emailmessages\EmailMessagesAsset` to `craft\web\assets\systemmessages\SystemMessagesAsset`.
 - System messages registered with the `craft\services\SystemMessages::EVENT_REGISTER_MESSAGES` event must now either be `craft\models\SystemMessage` objects or arrays with `key`, `heading`, `subject`, and `body` keys.
+- #1420: Craft now does fuzzy searching on the right side of a keyword by default.
 
 ### Removed 
 
