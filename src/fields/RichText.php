@@ -435,14 +435,16 @@ class RichText extends Field
         $volumeIds = $this->availableVolumes;
 
         if (empty($volumeIds)) {
-            // TODO: change to getPublicVolumeIds() when it exists
             $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
 
-        $folders = Craft::$app->getAssets()->findFolders([
-            'volumeId' => $volumeIds,
-            'parentId' => ':empty:'
-        ]);
+        $criteria = ['parentId' => ':empty:'];
+
+        if ($volumeIds !== '*') {
+            $criteria['volumeId'] = $volumeIds;
+        }
+
+        $folders = Craft::$app->getAssets()->findFolders($criteria);
 
         foreach ($folders as $folder) {
             $volumes[] = 'folder:'.$folder->id;

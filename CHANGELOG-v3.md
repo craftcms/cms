@@ -69,6 +69,7 @@ Craft CMS 3.0 Working Changelog
  - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
  - Fixed a SQL error that could occur when restoring a database backup after a failed update.
  - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
+ - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settiings would create a SQL error on PostgreSQL.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
