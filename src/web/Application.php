@@ -12,7 +12,6 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\Header;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;

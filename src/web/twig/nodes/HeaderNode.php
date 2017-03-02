@@ -7,8 +7,6 @@
 
 namespace craft\web\twig\nodes;
 
-use craft\helpers\Header;
-
 /**
  * Class HeaderNode
  *
