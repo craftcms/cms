@@ -52,6 +52,7 @@ Craft CMS 3.0 Working Changelog
 
 - Removed `craft\elements\db\UserQuery::$withPassword`.
 - Removed `craft\elements\db\UserQuery::withPassword()`.
+- Removed `craft\helpers\Json::sendJsonHeaders()`.
 - Removed `craft\models\AssetIndexData::$offset`.
 - Removed `craft\records\AssetIndexData::$offset`.
 - Removed `craft\services\AssetIndexer::getIndexEntry()`.
