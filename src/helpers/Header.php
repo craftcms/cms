@@ -7,8 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
-
 /**
  * Class Header
  *
