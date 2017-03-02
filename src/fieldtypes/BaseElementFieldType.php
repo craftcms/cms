@@ -244,13 +244,17 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 * @inheritDoc IFieldType::getInputHtml()
 	 *
 	 * @param string $name
-	 * @param mixed  $criteria
+	 * @param mixed  $value
 	 *
 	 * @return string
 	 */
-	public function getInputHtml($name, $criteria)
+	public function getInputHtml($name, $value)
 	{
-		$variables = $this->getInputTemplateVariables($name, $criteria);
+		if ($this->element !== null && $this->element->hasEagerLoadedElements($name)) {
+			$value = $this->element->getEagerLoadedElements($name);
+		}
+
+		$variables = $this->getInputTemplateVariables($name, $value);
 		return craft()->templates->render($this->inputTemplate, $variables);
 	}
 
@@ -468,22 +472,24 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 * Returns an array of variables that should be passed to the input template.
 	 *
 	 * @param string $name
-	 * @param mixed  $criteria
+	 * @param mixed  $value
 	 *
 	 * @return array
 	 */
-	protected function getInputTemplateVariables($name, $criteria)
+	protected function getInputTemplateVariables($name, $value)
 	{
 		$settings = $this->getSettings();
 
-		if (!($criteria instanceof ElementCriteriaModel))
+		if ($value instanceof ElementCriteriaModel)
 		{
-			$criteria = craft()->elements->getCriteria($this->elementType);
-			$criteria->id = false;
+			$value->status = null;
+			$value->localeEnabled = null;
 		}
-
-		$criteria->status = null;
-		$criteria->localeEnabled = null;
+		else if (!is_array($value))
+		{
+			$value = craft()->elements->getCriteria($this->elementType);
+			$value->id = false;
+		}
 
 		$selectionCriteria = $this->getInputSelectionCriteria();
 		$selectionCriteria['localeEnabled'] = null;
@@ -496,7 +502,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			'fieldId'            => $this->model->id,
 			'storageKey'         => 'field.'.$this->model->id,
 			'name'               => $name,
-			'elements'           => $criteria,
+			'elements'           => $value,
 			'sources'            => $this->getInputSources(),
 			'criteria'           => $selectionCriteria,
 			'sourceElementId'    => (isset($this->element->id) ? $this->element->id : null),
