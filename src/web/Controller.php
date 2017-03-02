@@ -101,7 +101,7 @@ abstract class Controller extends \yii\web\Controller
         $response->format = YiiResponse::FORMAT_RAW;
 
         // Render and return the template
-        $response->content = $this->getView()->renderPageTemplate($template, $variables);
+        $response->data = $this->getView()->renderPageTemplate($template, $variables);
 
         return $response;
     }
