@@ -211,32 +211,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Formats an exception into JSON before returning it to the client.
-     *
-     * @param array $data
-     *
-     * @return void
-     */
-    public function returnAjaxException(array $data)
-    {
-        $exceptionArr = [
-            'error' => $data['message']
-        ];
-
-        if (YII_DEBUG) {
-            $exceptionArr['trace'] = $data['trace'];
-            $exceptionArr['traces'] = ($data['traces'] ?? null);
-            $exceptionArr['file'] = $data['file'];
-            $exceptionArr['line'] = $data['line'];
-            $exceptionArr['type'] = $data['type'];
-        }
-
-        Json::sendJsonHeaders();
-        echo Json::encode($exceptionArr);
-        $this->end();
-    }
-
-    /**
      * Formats a PHP error into JSON before returning it to the client.
      *
      * @param int    $code    The error code.

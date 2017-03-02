@@ -59,6 +59,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\AssetIndexer::storeIndexEntry()`.
 - Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`.
 - Removed `craft\services\Users::getUserByEmail()`.
+- Removed `craft\web\Application::returnAjaxException()`.
 - Removed `craft\web\Controller::asJson()` and `asXml()`, because the base `yii\web\Controller` class now defines the exact same methods.
 
 ### Fixed
