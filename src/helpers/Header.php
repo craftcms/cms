@@ -56,33 +56,6 @@ class Header
     }
 
     /**
-     * Sets the Content-Type header based on a file extension.
-     *
-     * @param string $extension
-     *
-     * @return bool Whether setting the header was successful.
-     */
-    public static function setContentTypeByExtension(string $extension): bool
-    {
-        $mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
-
-        if (!$mimeType) {
-            Craft::warning('Tried to set the header mime type for the extension '.$extension.', but could not find in the mimeTypes list.', __METHOD__);
-
-            return false;
-        }
-
-        if (static::setHeader(['Content-Type' => $mimeType.'; charset=utf-8'])) {
-            // Save the MIME type for getMimeType()
-            self::$_mimeType = $mimeType;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Tells the browser not to cache the following content
      *
      * @return void
