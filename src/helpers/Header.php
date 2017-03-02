@@ -56,24 +56,6 @@ class Header
     }
 
     /**
-     * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
-     *
-     * @param int $seconds Time in seconds to hold in browser cache
-     *
-     * @return void
-     */
-    public static function setExpires(int $seconds = 300)
-    {
-        static::setHeader(
-            [
-                'Expires' => gmdate('D, d M Y H:i:s', time() + $seconds).' GMT',
-                'Cache-Control' => "max-age={$seconds}, public, s-maxage={$seconds}",
-            ]
-        );
-    }
-
-
-    /**
      * Tells the browser that the following content is private
      *
      * @return void

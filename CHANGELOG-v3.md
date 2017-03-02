@@ -53,6 +53,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\elements\db\UserQuery::$withPassword`.
 - Removed `craft\elements\db\UserQuery::withPassword()`.
 - Removed `craft\helpers\Header::setContentTypeByExtension()`.
+- Removed `craft\helpers\Header::setExpires()`.
 - Removed `craft\helpers\Header::setNoCache()`.
 - Removed `craft\helpers\Json::sendJsonHeaders()`.
 - Removed `craft\helpers\Json::setJsonContentTypeHeader()`.
