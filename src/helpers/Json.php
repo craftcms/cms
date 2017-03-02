@@ -37,14 +37,4 @@ class Json extends \yii\helpers\Json
             return $str;
         }
     }
-
-    /**
-     * Sets the Content-Type header to 'application/json'.
-     *
-     * @return void
-     */
-    public static function setJsonContentTypeHeader()
-    {
-        Header::setContentTypeByExtension('json');
-    }
 }
