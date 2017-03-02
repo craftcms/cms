@@ -211,64 +211,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Formats a PHP error into JSON before returning it to the client.
-     *
-     * @param int    $code    The error code.
-     * @param string $message The error message.
-     * @param string $file    The error file.
-     * @param string $line    The error line.
-     *
-     * @return void
-     */
-    public function returnAjaxError(int $code, string $message, string $file, string $line)
-    {
-        if (YII_DEBUG) {
-            $outputTrace = '';
-            $trace = debug_backtrace();
-
-            // skip the first 3 stacks as they do not tell the error position
-            if (count($trace) > 3) {
-                $trace = array_slice($trace, 3);
-            }
-
-            foreach ($trace as $i => $t) {
-                if (!isset($t['file'])) {
-                    $t['file'] = 'unknown';
-                }
-
-                if (!isset($t['line'])) {
-                    $t['line'] = 0;
-                }
-
-                if (!isset($t['function'])) {
-                    $t['function'] = 'unknown';
-                }
-
-                $outputTrace .= "#$i {$t['file']}({$t['line']}): ";
-
-                if (isset($t['object']) && is_object($t['object'])) {
-                    $outputTrace .= get_class($t['object']).'->';
-                }
-
-                $outputTrace .= "{$t['function']}()\n";
-            }
-
-            $errorArr = [
-                'error' => $code.' : '.$message,
-                'trace' => $outputTrace,
-                'file' => $file,
-                'line' => $line,
-            ];
-        } else {
-            $errorArr = ['error' => $message];
-        }
-
-        Json::sendJsonHeaders();
-        echo Json::encode($errorArr);
-        $this->end();
-    }
-
-    /**
      * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
      * @return string|false
