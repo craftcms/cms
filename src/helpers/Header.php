@@ -56,22 +56,6 @@ class Header
     }
 
     /**
-     * Tells the browser not to cache the following content
-     *
-     * @return void
-     */
-    public static function setNoCache()
-    {
-        static::setExpires(-604800);
-        static::setHeader(
-            [
-                'Pragma' => 'no-cache',
-                'Cache-Control' => 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0',
-            ]
-        );
-    }
-
-    /**
      * Tells the browser not to request this content again the next $sec seconds but use the browser cached content.
      *
      * @param int $seconds Time in seconds to hold in browser cache
