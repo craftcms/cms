@@ -85,34 +85,6 @@ class Header
         );
     }
 
-
-    /**
-     * Forces a file download. Be sure to give the right extension.
-     *
-     * @param string   $filename The name of the file when it's downloaded
-     * @param int|null $fileSize The size in bytes.
-     *
-     * @return void
-     */
-    public static function setDownload(string $filename, int $fileSize = null)
-    {
-        static::setHeader(
-            [
-                'Content-Description' => 'File Transfer',
-                'Content-disposition' => 'attachment; filename="'.addslashes($filename).'"',
-            ]
-        );
-
-        // Add file size if provided
-        if ((int)$fileSize > 0) {
-            static::setLength($fileSize);
-        }
-
-        // For IE7
-        static::setPrivate();
-    }
-
-
     /**
      * Tells the browser the length of the following content. This mostly makes sense when using the download function
      * so the browser can calculate how many bytes are left during the process.
