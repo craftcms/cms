@@ -104,36 +104,4 @@ class Header
 
         return null;
     }
-
-    /**
-     * Called to output a header.
-     *
-     * @param array|string $header Use key => value
-     *
-     * @return bool
-     */
-    public static function setHeader($header): bool
-    {
-        // Don't try to set headers when it's already too late
-        if (headers_sent()) {
-            return false;
-        }
-
-        // Clear out our stored MIME type in case its about to be overridden
-        self::$_mimeType = null;
-
-        if (is_string($header)) {
-            $header = [$header];
-        }
-
-        foreach ($header as $key => $value) {
-            if (is_numeric($key)) {
-                header($value);
-            } else {
-                header("$key: $value");
-            }
-        }
-
-        return true;
-    }
 }
