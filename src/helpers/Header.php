@@ -56,20 +56,6 @@ class Header
     }
 
     /**
-     * Tells the browser that the following content is public
-     *
-     * @return void
-     */
-    public static function setPublic()
-    {
-        static::setHeader(
-            [
-                'Pragma' => 'public',
-            ]
-        );
-    }
-
-    /**
      * Tells the browser the length of the following content. This mostly makes sense when using the download function
      * so the browser can calculate how many bytes are left during the process.
      *
