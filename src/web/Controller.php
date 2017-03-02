@@ -251,23 +251,6 @@ abstract class Controller extends \yii\web\Controller
 
     /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
-     * Sets the response format of the given data as JSON.
-     *
-     * @param mixed $var The array that should be JSON-encoded.
-     *
-     * @return YiiResponse The response object.
-     */
-    public function asJson($var = []): YiiResponse
-    {
-        $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_JSON;
-
-        return $response;
-    }
-
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
-    /**
      * Sets the response format of the given data as JSONP.
      *
      * @param mixed $var The array that should be JSON-encoded.
@@ -296,23 +279,6 @@ abstract class Controller extends \yii\web\Controller
         $response = Craft::$app->getResponse();
         $response->data = $var;
         $response->format = Response::FORMAT_RAW;
-
-        return $response;
-    }
-
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
-    /**
-     * Sets the response format of the given data as XML.
-     *
-     * @param mixed $var The array that should be XML-encoded.
-     *
-     * @return YiiResponse The response object.
-     */
-    public function asXml($var = []): YiiResponse
-    {
-        $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_XML;
 
         return $response;
     }
