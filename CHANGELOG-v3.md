@@ -55,6 +55,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\helpers\Header::setContentTypeByExtension()`.
 - Removed `craft\helpers\Header::setDownload()`.
 - Removed `craft\helpers\Header::setExpires()`.
+- Removed `craft\helpers\Header::setHeader()`.
 - Removed `craft\helpers\Header::setLength()`.
 - Removed `craft\helpers\Header::setNoCache()`.
 - Removed `craft\helpers\Header::setPrivate()`.
