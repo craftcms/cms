@@ -56,19 +56,6 @@ class Header
     }
 
     /**
-     * Tells the browser the length of the following content. This mostly makes sense when using the download function
-     * so the browser can calculate how many bytes are left during the process.
-     *
-     * @param int $sizeInBytes The content size in bytes
-     *
-     * @return void
-     */
-    public static function setLength(int $sizeInBytes)
-    {
-        static::setHeader(['Content-Length' => (int)$sizeInBytes]);
-    }
-
-    /**
      * Removes a header by key.
      *
      * @param string $key
