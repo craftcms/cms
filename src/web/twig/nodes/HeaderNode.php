@@ -26,8 +26,10 @@ class HeaderNode extends \Twig_Node
     public function compile(\Twig_Compiler $compiler)
     {
         $compiler
-            ->write(Header::class.'::setHeader(')
+            ->write('$_headerParts = array_map(\'trim\', explode(\':\', ')
             ->subcompile($this->getNode('header'))
-            ->raw(");\n");
+            ->raw(", 2));\n")
+            ->write(\Craft::class."::\$app->getResponse()->getHeaders()->set(\$_headerParts[0], \$_headerParts[1] ?? '');\n")
+            ->write("unset(\$_headerParts);\n");
     }
 }
