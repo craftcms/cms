@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-02-28 */
+/*! Craft 3.0.0 - 2017-03-02 */
 (function($){
 
 /** global: Craft */
@@ -444,31 +444,17 @@ $.extend(Craft,
                 data = {};
             }
 
+            var headers = {};
+
             if (Craft.csrfTokenValue && Craft.csrfTokenName) {
-                if (typeof data == 'string') {
-                    if (data) {
-                        data += '&';
-                    }
-
-                    data += Craft.csrfTokenName + '=' + Craft.csrfTokenValue;
-                }
-                else {
-                    if (typeof data !== 'object') {
-                        data = {};
-                    }
-                    else {
-                        // Don't modify the passed-in object
-                        data = $.extend({}, data);
-                    }
-
-                    data[Craft.csrfTokenName] = Craft.csrfTokenValue;
-                }
+                headers['X-CSRF-Token'] = Craft.csrfTokenValue;
             }
 
             var jqXHR = $.ajax($.extend({
                 url: Craft.getActionUrl(action),
                 type: 'POST',
                 dataType: 'json',
+                headers: headers,
                 data: data,
                 success: callback,
                 error: function(jqXHR, textStatus, errorThrown) {
