@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\AssetIndexer::storeIndexList()`
 - Added `craft\services\AssetIndexer::updateIndexEntry()`
 - Added `craft\services\Tasks::rerunTask()`.
+- Added `craft\web\Response::getContentType()`.
 
 ### Changed
 - Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
@@ -52,6 +53,7 @@ Craft CMS 3.0 Working Changelog
 
 - Removed `craft\elements\db\UserQuery::$withPassword`.
 - Removed `craft\elements\db\UserQuery::withPassword()`.
+- Removed `craft\helpers\Header::getMimeType()`.
 - Removed `craft\helpers\Header::setContentTypeByExtension()`.
 - Removed `craft\helpers\Header::setDownload()`.
 - Removed `craft\helpers\Header::setExpires()`.

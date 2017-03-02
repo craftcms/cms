@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\errors\MissingComponentException;
 use craft\events\TaskEvent;
 use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Header;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\records\Task as TaskRecord;
@@ -752,7 +751,7 @@ class Tasks extends Component
         else if (
             $request->getIsSiteRequest() &&
             !$request->getIsAjax() &&
-            in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
+            in_array($response->getContentType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(UrlHelper::actionUrl('tasks/run-pending-tasks'));

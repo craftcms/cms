@@ -27,33 +27,6 @@ class Header
     // =========================================================================
 
     /**
-     * Returns the MIME type that is going to be included in the response via
-     * the Content-Type header, whether that has been set explicitly in the PHP
-     * code or if it's going to be based on the default_mimetype setting in php.ini.
-     *
-     * @return string
-     */
-    public static function getMimeType(): string
-    {
-        if (self::$_mimeType !== null) {
-            return self::$_mimeType;
-        }
-
-        // Has it been explicitly set?
-        if ((self::$_mimeType = static::getHeader('Content-Type')) !== null) {
-            // Drop the charset, if it's there
-            if (($pos = strpos(self::$_mimeType, ';')) !== false) {
-                self::$_mimeType = rtrim(substr(self::$_mimeType, 0, $pos));
-            }
-        } else {
-            // Then it's whatever's in php.ini
-            self::$_mimeType = ini_get('default_mimetype');
-        }
-
-        return self::$_mimeType;
-    }
-
-    /**
      * Removes a header by key.
      *
      * @param string $key
