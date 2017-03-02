@@ -326,9 +326,9 @@ class UsersController extends Controller
     /**
      * Sets a user's password once they've verified they have access to their email.
      *
-     * @return string|null The rendering result
+     * @return Response
      */
-    public function actionSetPassword()
+    public function actionSetPassword(): Response
     {
         // Have they just submitted a password, or are we just displaying the page?
         if (!Craft::$app->getRequest()->getIsPost()) {
@@ -405,9 +405,9 @@ class UsersController extends Controller
     /**
      * Verifies that a user has access to an email address.
      *
-     * @return Response|null
+     * @return Response
      */
-    public function actionVerifyEmail()
+    public function actionVerifyEmail(): Response
     {
         if (!is_array($info = $this->_processTokenRequest())) {
             return $info;
@@ -468,11 +468,11 @@ class UsersController extends Controller
      * @param int|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
      * @param User|null       $user   The user being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested user cannot be found
      * @throws BadRequestHttpException if there’s a mismatch between|null $userId and|null $user
      */
-    public function actionEditUser($userId = null, User $user = null): string
+    public function actionEditUser($userId = null, User $user = null): Response
     {
         // Determine which user account we're editing
         // ---------------------------------------------------------------------
@@ -1550,9 +1550,9 @@ class UsersController extends Controller
      * @param User  $user
      * @param array $variables
      *
-     * @return string
+     * @return Response
      */
-    private function _renderSetPasswordTemplate(User $user, array $variables): string
+    private function _renderSetPasswordTemplate(User $user, array $variables): Response
     {
         $configService = Craft::$app->getConfig();
         $view = $this->getView();

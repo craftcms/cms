@@ -76,10 +76,10 @@ abstract class Controller extends \yii\web\Controller
      * @param string $template  The name of the template to load
      * @param array  $variables The variables that should be available to the template
      *
-     * @return string The rendering result
+     * @return YiiResponse
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = []): string
+    public function renderTemplate(string $template, array $variables = []): YiiResponse
     {
         $response = Craft::$app->getResponse();
         $headers = $response->getHeaders();
@@ -101,7 +101,9 @@ abstract class Controller extends \yii\web\Controller
         $response->format = YiiResponse::FORMAT_RAW;
 
         // Render and return the template
-        return $this->getView()->renderPageTemplate($template, $variables);
+        $response->content = $this->getView()->renderPageTemplate($template, $variables);
+
+        return $response;
     }
 
     /**

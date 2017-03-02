@@ -43,9 +43,9 @@ class DashboardController extends Controller
     /**
      * Dashboard index.
      *
-     * @return string
+     * @return Response
      */
-    public function actionIndex(): string
+    public function actionIndex(): Response
     {
         $dashboardService = Craft::$app->getDashboard();
         $view = $this->getView();
@@ -291,12 +291,12 @@ class DashboardController extends Controller
     /**
      * Creates a new support ticket for the CraftSupport widget.
      *
-     * @return string
+     * @return Response
      * @throws \yii\base\ErrorException
      * @throws \yii\web\BadRequestHttpException
      * @throws \yii\base\InvalidParamException
      */
-    public function actionSendSupportRequest(): string
+    public function actionSendSupportRequest(): Response
     {
         $this->requirePostRequest();
 

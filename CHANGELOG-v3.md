@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
 - `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
 - `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+- `craft\web\Controller::renderTemplate()` now returns a `yii\web\Response` object rather than a string.
 - `craft\web\User::getReturnUrl()` now returns a URL based on the `postCpLoginRedirect` or `postLoginRedirect` config setting depending on the user’s permissions, if they didn’t have a return URL stored in their session data, and a default URL was not supplied.
 - Renamed `craft\services\EmailMessages` to `SystemMessages`, which is now available to Craft Personal installations.
 - Renamed `craft\base\ApplicationTrait::$emailMessages` to `$systemMessages`.

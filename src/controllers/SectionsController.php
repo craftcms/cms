@@ -47,9 +47,9 @@ class SectionsController extends Controller
      *
      * @param array $variables
      *
-     * @return string The rendering result
+     * @return Response The rendering result
      */
-    public function actionIndex(array $variables = []): string
+    public function actionIndex(array $variables = []): Response
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
@@ -62,11 +62,11 @@ class SectionsController extends Controller
      * @param int|null     $sectionId The section’s id, if any.
      * @param Section|null $section   The section being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection(int $sectionId = null, Section $section = null): string
+    public function actionEditSection(int $sectionId = null, Section $section = null): Response
     {
         $variables = [
             'sectionId' => $sectionId,
@@ -234,10 +234,10 @@ class SectionsController extends Controller
      *
      * @param int $sectionId The ID of the section whose entry types we’re listing
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested section cannot be found
      */
-    public function actionEntryTypesIndex(int $sectionId): string
+    public function actionEntryTypesIndex(int $sectionId): Response
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
@@ -278,11 +278,11 @@ class SectionsController extends Controller
      * @param int|null       $entryTypeId The entry type’s ID, if any.
      * @param EntryType|null $entryType   The entry type being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
-    public function actionEditEntryType(int $sectionId, int $entryTypeId = null, EntryType $entryType = null): string
+    public function actionEditEntryType(int $sectionId, int $entryTypeId = null, EntryType $entryType = null): Response
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 

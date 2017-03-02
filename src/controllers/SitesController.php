@@ -41,9 +41,9 @@ class SitesController extends Controller
     /**
      * Site settings index.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionSettingsIndex(): string
+    public function actionSettingsIndex(): Response
     {
         $allSites = Craft::$app->getSites()->getAllSites();
 
@@ -58,10 +58,10 @@ class SitesController extends Controller
      * @param int|null  $siteId The site’s ID, if editing an existing site
      * @param Site|null $site   The site being edited, if there were any validation errors
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested site cannot be found
      */
-    public function actionEditSite(int $siteId = null, Site $site = null): string
+    public function actionEditSite(int $siteId = null, Site $site = null): Response
     {
         $variables = [];
 

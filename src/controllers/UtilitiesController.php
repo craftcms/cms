@@ -62,12 +62,12 @@ class UtilitiesController extends Controller
      *
      * @param string $id
      *
-     * @return string
+     * @return Response
      * @throws NotFoundHttpException if $id is invalid
      * @throws ForbiddenHttpException if the user doesn't have access to the requested utility
      * @throws Exception in case of failure
      */
-    public function actionShowUtility(string $id): string
+    public function actionShowUtility(string $id): Response
     {
         $utilitiesService = Craft::$app->getUtilities();
 

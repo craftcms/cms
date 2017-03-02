@@ -41,9 +41,9 @@ class AssetTransformsController extends Controller
     /**
      * Shows the asset transform list.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionTransformIndex(): string
+    public function actionTransformIndex(): Response
     {
         $variables = [];
 
@@ -59,10 +59,10 @@ class AssetTransformsController extends Controller
      * @param string|null         $transformHandle The transform’s handle, if any.
      * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested transform cannot be found
      */
-    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): string
+    public function actionEditTransform(string $transformHandle = null, AssetTransform $transform = null): Response
     {
         if ($transform === null) {
             if ($transformHandle !== null) {

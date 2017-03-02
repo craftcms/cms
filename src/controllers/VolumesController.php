@@ -47,9 +47,9 @@ class VolumesController extends Controller
     /**
      * Shows the asset volume list.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionVolumeIndex(): string
+    public function actionVolumeIndex(): Response
     {
         $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
@@ -63,11 +63,11 @@ class VolumesController extends Controller
      * @param int|null             $volumeId The volume’s ID, if editing an existing volume.
      * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): string
+    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): Response
     {
         $this->requireAdmin();
 

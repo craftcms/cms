@@ -53,9 +53,9 @@ class SystemSettingsController extends Controller
      *
      * @param Info|null $info The info being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionGeneralSettings(Info $info = null): string
+    public function actionGeneralSettings(Info $info = null): Response
     {
         if ($info === null) {
             $info = Craft::$app->getInfo();
@@ -143,10 +143,10 @@ class SystemSettingsController extends Controller
      * @param MailSettings|null              $settings The posted email settings, if there were any validation errors
      * @param TransportAdapterInterface|null $adapter  The transport adapter, if there were any validation errors
      *
-     * @return string
+     * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): string
+    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
             $settings = Craft::$app->getSystemSettings()->getEmailSettings();
@@ -296,10 +296,10 @@ class SystemSettingsController extends Controller
      * @param int|null       $globalSetId The global set’s ID, if any.
      * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): string
+    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): Response
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

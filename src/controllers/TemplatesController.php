@@ -14,6 +14,7 @@ use craft\web\Controller;
 use ErrorException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -46,25 +47,25 @@ class TemplatesController extends Controller
      * @param string $template
      * @param array  $variables
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested template cannot be found
      */
-    public function actionRender(string $template, array $variables = []): string
+    public function actionRender(string $template, array $variables = []): Response
     {
         // Does that template exist?
-        if ($this->getView()->doesTemplateExist($template)) {
-            return $this->renderTemplate($template, $variables);
+        if (!$this->getView()->doesTemplateExist($template)) {
+            throw new NotFoundHttpException('Template not found');
         }
 
-        throw new NotFoundHttpException('Template not found');
+        return $this->renderTemplate($template, $variables);
     }
 
     /**
      * Shows the 'offline' template.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionOffline(): string
+    public function actionOffline(): Response
     {
         // If this is a site request, make sure the offline template exists
         $view = $this->getView();
@@ -79,15 +80,15 @@ class TemplatesController extends Controller
     /**
      * Renders the Manual Update notification template.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionManualUpdateNotification(): string
+    public function actionManualUpdateNotification(): Response
     {
         return $this->renderTemplate('_special/dbupdate');
     }
 
     /**
-     * @return string|null The rendering result
+     * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionRequirementsCheck()
@@ -124,9 +125,9 @@ class TemplatesController extends Controller
     /**
      * Renders an error template.
      *
-     * @return string
+     * @return Response
      */
-    public function actionRenderError(): string
+    public function actionRenderError(): Response
     {
         /** @var $errorHandler \yii\web\ErrorHandler */
         $errorHandler = Craft::$app->getErrorHandler();

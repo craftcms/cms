@@ -118,10 +118,10 @@ class PluginsController extends Controller
      * @param string               $pluginId The plugin’s module ID
      * @param PluginInterface|null $plugin   The plugin, if there were validation errors
      *
-     * @return string The plugin page HTML
+     * @return mixed
      * @throws NotFoundHttpException if the requested plugin cannot be found
      */
-    public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null): string
+    public function actionEditPluginSettings(string $pluginId, PluginInterface $plugin = null)
     {
         if (
             $plugin === null &&
