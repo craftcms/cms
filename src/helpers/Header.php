@@ -56,22 +56,6 @@ class Header
     }
 
     /**
-     * Tells the browser that the following content is private
-     *
-     * @return void
-     */
-    public static function setPrivate()
-    {
-        static::setHeader(
-            [
-                'Pragma' => 'private',
-                'Cache-control' => 'private, must-revalidate',
-            ]
-        );
-    }
-
-
-    /**
      * Tells the browser that the following content is public
      *
      * @return void
