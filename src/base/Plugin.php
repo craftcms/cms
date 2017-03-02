@@ -56,7 +56,7 @@ class Plugin extends Module implements PluginInterface
             $i18n->translations[$this->handle] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => "@plugins/{$this->handle}/translations",
+                'basePath' => $this->getBasePath().'/translations',
                 'allowOverrides' => true,
             ];
         }

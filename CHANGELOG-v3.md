@@ -82,6 +82,7 @@ Craft CMS 3.0 Working Changelog
  - #1424: Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type.
  - #1440: Fixed a bug where element pagination would only think there was one page.
  - #1425: Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated.
+ - #1446: Fixed a bug where Composer-installed plugins’ source translations weren’t getting loaded.
 
 ## 3.0.0-beta.5 - 2017-02-24
 
