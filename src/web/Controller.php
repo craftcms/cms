@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 
 /**
@@ -252,15 +253,18 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sets the response format of the given data as JSONP.
      *
-     * @param mixed $var The array that should be JSON-encoded.
+     * @param mixed $data The data that should be formatted.
      *
-     * @return YiiResponse The response object.
+     * @return YiiResponse A response that is configured to send `$data` formatted as JSON.
+     * @see YiiResponse::$format
+     * @see YiiResponse::FORMAT_JSONP
+     * @see JsonResponseFormatter
      */
-    public function asJsonP($var = []): YiiResponse
+    public function asJsonP($data): YiiResponse
     {
         $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_JSONP;
+        $response->data = $data;
+        $response->format = YiiResponse::FORMAT_JSONP;
 
         return $response;
     }
@@ -269,15 +273,17 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sets the response format of the given data as RAW.
      *
-     * @param mixed $var The RAW array data.
+     * @param mixed $data The data that should *not* be formatted.
      *
-     * @return YiiResponse The response object.
+     * @return YiiResponse A response that is configured to send `$data` without formatting.
+     * @see YiiResponse::$format
+     * @see YiiResponse::FORMAT_RAW
      */
-    public function asRaw($var = []): YiiResponse
+    public function asRaw($data): YiiResponse
     {
         $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_RAW;
+        $response->data = $data;
+        $response->format = YiiResponse::FORMAT_RAW;
 
         return $response;
     }
