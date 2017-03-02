@@ -29,6 +29,7 @@
     options: volumeOptions,
     value: 1,
     values: field.availableVolumes,
+    showAllOption: volumeOptions|length ? true : false
 }) }}
 
 {{ forms.checkboxSelectField({
@@ -39,6 +40,7 @@
     options: transformOptions,
     value: 1,
     values: field.availableTransforms,
+    showAllOption: transformOptions|length ? true : false
 }) }}
 
 

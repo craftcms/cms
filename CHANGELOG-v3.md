@@ -45,6 +45,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\records\EmailMessage` to `SystemMessage`.
 - Renamed `craft\web\assets\emailmessages\EmailMessagesAsset` to `craft\web\assets\systemmessages\SystemMessagesAsset`.
 - System messages registered with the `craft\services\SystemMessages::EVENT_REGISTER_MESSAGES` event must now either be `craft\models\SystemMessage` objects or arrays with `key`, `heading`, `subject`, and `body` keys.
+- Rich Text field settings will no longer show the “All” option for the “Available Volumes and “Available Transforms” settings if no volumes or transforms have been defined. 
 
 ### Removed 
 
