@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\Header;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
@@ -80,21 +81,24 @@ abstract class Controller extends \yii\web\Controller
      */
     public function renderTemplate(string $template, array $variables = []): string
     {
+        $response = Craft::$app->getResponse();
+        $headers = $response->getHeaders();
+
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!Header::isHeaderSet('Content-Type')) {
+        if (!$headers->has('content-type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if ($extension === 'twig') {
-                $extension = 'html';
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+                $mimeType = 'text/html';
             }
 
-            Header::setContentTypeByExtension($extension);
+            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
         }
 
-        // Set the charset header
-        Header::setHeader(['charset' => 'utf-8']);
+        // Prevent a response formatter from overriding the content-type header
+        $response->format = YiiResponse::FORMAT_RAW;
 
         // Render and return the template
         return $this->getView()->renderPageTemplate($template, $variables);
