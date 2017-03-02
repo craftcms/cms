@@ -13,7 +13,6 @@ use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Header;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
@@ -102,21 +101,24 @@ class Application extends \yii\web\Application
         // If this is a resource request, we should respond with the resource ASAP
         $this->_processResourceRequest();
 
+        $headers = $this->getResponse()->getHeaders();
+
         if ($request->getIsCpRequest()) {
             // Prevent robots from indexing/following the page
             // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-            Header::setHeader(['X-Robots-Tag' => 'none']);
+            $headers->set('X-Robots-Tag', 'none');
+
             // Prevent some possible XSS attack vectors
-            Header::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
-            Header::setHeader(['X-Content-Type-Options' => 'nosniff']);
+            $headers->set('X-Frame-Options', 'SAMEORIGIN');
+            $headers->set('X-Content-Type-Options', 'nosniff');
         }
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            Header::setHeader(['X-Powered-By' => $this->name]);
+            $headers->set('X-Powered-By', $this->name);
         } else {
             // In case PHP is already setting one
-            Header::removeHeader('X-Powered-By');
+            header_remove('X-Powered-By');
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
