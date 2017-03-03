@@ -78,7 +78,7 @@ Craft CMS 3.0 Working Changelog
  - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
  - Fixed a SQL error that could occur when restoring a database backup after a failed update.
  - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
- - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settiings would create a SQL error on PostgreSQL.
+ - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settings would create a SQL error on PostgreSQL.
  - #1424: Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type.
  - #1440: Fixed a bug where element pagination would only think there was one page.
  - #1425: Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated.
