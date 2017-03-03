@@ -265,6 +265,10 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 		$id = craft()->templates->formatInputId($name);
 		$settings = $this->getSettings();
 
+		if ($this->element !== null && $this->element->hasEagerLoadedElements($name)) {
+			$value = $this->element->getEagerLoadedElements($name);
+		}
+
 		if ($value instanceof ElementCriteriaModel)
 		{
 			$value->limit = null;
