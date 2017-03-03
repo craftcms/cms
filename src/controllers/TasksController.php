@@ -10,6 +10,8 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Json;
 use craft\web\Controller;
+use yii\base\Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -39,36 +41,42 @@ class TasksController extends Controller
     /**
      * Runs any pending tasks.
      *
-     * @return string
+     * @return Response
      */
-    public function actionRunPendingTasks(): string
+    public function actionRunPendingTasks(): Response
     {
         $tasksService = Craft::$app->getTasks();
 
+        // Prep the response
+        $response = Craft::$app->getResponse();
+        $response->content = '1';
+
         // Make sure tasks aren't already running
-        if (!$tasksService->getIsTaskRunning()) {
-            $task = $tasksService->getNextPendingTask();
-
-            if ($task) {
-                // Attempt to close the connection if this is an Ajax request
-                if (Craft::$app->getRequest()->getIsAjax()) {
-                    $response = Craft::$app->getResponse();
-                    $response->content = '1';
-                    $response->sendAndClose();
-                }
-
-                // Start running tasks
-                $tasksService->runPendingTasks();
-            }
+        if ($tasksService->getIsTaskRunning()) {
+            return $response;
         }
 
-        return '1';
+        // Make sure there are tasks queued up
+        if (!$tasksService->areTasksPending()) {
+            return $response;
+        }
+
+        // Attempt to close the connection if this is an Ajax request
+        if (Craft::$app->getRequest()->getIsAjax()) {
+            $response->sendAndClose();
+        }
+
+        // Start running tasks
+        $tasksService->runPendingTasks();
+
+        return $response;
     }
 
     /**
      * Re-runs a failed task.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionRerunTask(): Response
     {
@@ -77,26 +85,24 @@ class TasksController extends Controller
         $this->requirePermission('accessCp');
 
         $taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
-        $task = Craft::$app->getTasks()->rerunTaskById($taskId);
 
-        if (!Craft::$app->getTasks()->getIsTaskRunning()) {
-            Json::sendJsonHeaders();
-            $response = Craft::$app->getResponse();
-            $response->content = Json::encode([
-                'task' => $task
-            ]);
-            $response->sendAndClose();
-
-            Craft::$app->getTasks()->runPendingTasks();
-        } else {
-            return $this->asJson([
-                'task' => $task
-            ]);
+        try {
+            Craft::$app->getTasks()->rerunTaskById($taskId);
+        } catch (Exception $e) {
+            throw new BadRequestHttpException(null ,0, $e);
         }
 
-        return $this->asJson([
-            'task' => null
-        ]);
+        // Prep the response
+        $response = Craft::$app->getResponse();
+        $response->content = '1';
+
+        // Attempt to kickoff task running if they aren't already, and this is an Ajax request
+        if (!Craft::$app->getTasks()->getIsTaskRunning() && Craft::$app->getRequest()->getIsAjax()) {
+            $response->sendAndClose();
+            Craft::$app->getTasks()->runPendingTasks();
+        }
+
+        return $response;
     }
 
     /**

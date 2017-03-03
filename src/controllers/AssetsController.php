@@ -569,12 +569,7 @@ class AssetsController extends Controller
 
         $focal = null;
         if ($asset->focalPoint) {
-            $focalPoint = explode(',', $asset->focalPoint);
-
-            // Make it dimension-agnostic
-            $focalX = $focalPoint[0] / $asset->width;
-            $focalY = $focalPoint[1] / $asset->height;
-            $focal = ['x' => $focalX, 'y' => $focalY];
+            $focal = $asset->getFocalPoint();
         }
 
         $html = Craft::$app->getView()->renderTemplate('_special/image_editor');
@@ -697,7 +692,8 @@ class AssetsController extends Controller
             $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
             $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
             $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
-            $focal = round($fx).','.round($fy);
+
+            $focal = number_format($fx / $originalImageWidth, 4).';'.number_format($fy / $originalImageHeight, 4);
         }
 
         $image->crop($x, $x + $width, $y, $y + $height);

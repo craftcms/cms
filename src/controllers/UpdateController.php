@@ -75,9 +75,9 @@ class UpdateController extends Controller
      *
      * @param string $handle The update handle ("craft" or a plugin handle)
      *
-     * @return string
+     * @return Response
      */
-    public function actionGo(string $handle): string
+    public function actionGo(string $handle): Response
     {
         $view = $this->getView();
 

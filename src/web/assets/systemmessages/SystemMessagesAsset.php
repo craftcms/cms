@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\web\assets\emailmessages;
+namespace craft\web\assets\systemmessages;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -13,7 +13,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  * Asset bundle for the Email Messages page
  */
-class EmailMessagesAsset extends AssetBundle
+class SystemMessagesAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -27,11 +27,11 @@ class EmailMessagesAsset extends AssetBundle
         ];
 
         $this->css = [
-            'email_messages.css',
+            'system_messages.css',
         ];
 
         $this->js = [
-            'email_messages'.$this->dotJs(),
+            'system_messages'.$this->dotJs(),
         ];
 
         parent::init();

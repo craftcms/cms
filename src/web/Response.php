@@ -19,8 +19,49 @@ use yii\web\HttpException;
  */
 class Response extends \yii\web\Response
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool whether the response has been prepared.
+     */
+    private $_isPrepared = false;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
+     *
+     * @return string|null
+     */
+    public function getContentType(): string
+    {
+        // If the response hasn't been prepared yet, go with what the formatter is going to set
+        if (!$this->_isPrepared) {
+            switch ($this->format) {
+                case self::FORMAT_HTML:
+                    return 'text/html';
+                case self::FORMAT_XML:
+                    return 'application/xml';
+                case self::FORMAT_JSON:
+                    return 'application/json';
+                case self::FORMAT_JSONP:
+                    return 'application/javascript';
+            }
+        }
+
+        // Otherwise check the Content-Type header
+        if (($header = $this->getHeaders()->get('content-type')) === null) {
+            return null;
+        }
+
+        if (($pos = strpos($header, ';')) !== false) {
+            $header = substr($header, 0, $pos);
+        }
+
+        return strtolower(trim($header));
+    }
 
     /**
      * Sets headers that will instruct the client to cache this response.
@@ -139,6 +180,20 @@ class Response extends \yii\web\Response
         if (function_exists('fastcgi_finish_request')) {
             fastcgi_finish_request();
         }
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function prepare()
+    {
+        $return = parent::prepare();
+        $this->_isPrepared = true;
+
+        return $return;
     }
 
     // Private Methods

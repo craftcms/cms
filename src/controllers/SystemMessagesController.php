@@ -8,14 +8,14 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\models\RebrandEmail;
+use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
 
 /**
- * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
+ * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
@@ -23,7 +23,7 @@ Craft::$app->requireEdition(Craft::Client);
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EmailMessagesController extends Controller
+class SystemMessagesController extends Controller
 {
     // Public Methods
     // =========================================================================
@@ -38,7 +38,7 @@ class EmailMessagesController extends Controller
     }
 
     /**
-     * Returns the HTML for an email message modal.
+     * Returns the HTML for a system email message modal.
      *
      * @return Response
      */
@@ -49,17 +49,18 @@ class EmailMessagesController extends Controller
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
         $language = $request->getBodyParam('language');
-        $message = Craft::$app->getEmailMessages()->getMessage($key, $language);
+        $message = Craft::$app->getSystemMessages()->getMessage($key, $language);
 
         return $this->asJson([
             'body' => $this->getView()->renderTemplate('settings/email/_message_modal', [
                 'message' => $message,
+                'language' => $language,
             ])
         ]);
     }
 
     /**
-     * Saves an email message.
+     * Saves a system email message.
      *
      * @return Response
      */
@@ -68,18 +69,18 @@ class EmailMessagesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $message = new RebrandEmail();
+        $message = new SystemMessage();
         $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');
         $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
         if (Craft::$app->getIsMultiSite()) {
-            $message->language = Craft::$app->getRequest()->getBodyParam('language');
+            $language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $message->language = Craft::$app->language;
+            $language = Craft::$app->language;
         }
 
-        if (Craft::$app->getEmailMessages()->saveMessage($message)) {
+        if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
             return $this->asJson(['success' => true]);
         }
 

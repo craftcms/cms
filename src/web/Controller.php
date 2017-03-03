@@ -8,11 +8,12 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Header;
+use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 
 /**
@@ -75,29 +76,34 @@ abstract class Controller extends \yii\web\Controller
      * @param string $template  The name of the template to load
      * @param array  $variables The variables that should be available to the template
      *
-     * @return string The rendering result
+     * @return YiiResponse
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate(string $template, array $variables = []): string
+    public function renderTemplate(string $template, array $variables = []): YiiResponse
     {
+        $response = Craft::$app->getResponse();
+        $headers = $response->getHeaders();
+
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!Header::isHeaderSet('Content-Type')) {
+        if (!$headers->has('content-type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if ($extension === 'twig') {
-                $extension = 'html';
+            if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null) {
+                $mimeType = 'text/html';
             }
 
-            Header::setContentTypeByExtension($extension);
+            $headers->set('content-type', $mimeType.'; charset='.$response->charset);
         }
 
-        // Set the charset header
-        Header::setHeader(['charset' => 'utf-8']);
+        // Prevent a response formatter from overriding the content-type header
+        $response->format = YiiResponse::FORMAT_RAW;
 
         // Render and return the template
-        return $this->getView()->renderPageTemplate($template, $variables);
+        $response->data = $this->getView()->renderPageTemplate($template, $variables);
+
+        return $response;
     }
 
     /**
@@ -245,34 +251,20 @@ abstract class Controller extends \yii\web\Controller
 
     /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
-     * Sets the response format of the given data as JSON.
-     *
-     * @param mixed $var The array that should be JSON-encoded.
-     *
-     * @return YiiResponse The response object.
-     */
-    public function asJson($var = []): YiiResponse
-    {
-        $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_JSON;
-
-        return $response;
-    }
-
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
-    /**
      * Sets the response format of the given data as JSONP.
      *
-     * @param mixed $var The array that should be JSON-encoded.
+     * @param mixed $data The data that should be formatted.
      *
-     * @return YiiResponse The response object.
+     * @return YiiResponse A response that is configured to send `$data` formatted as JSON.
+     * @see YiiResponse::$format
+     * @see YiiResponse::FORMAT_JSONP
+     * @see JsonResponseFormatter
      */
-    public function asJsonP($var = []): YiiResponse
+    public function asJsonP($data): YiiResponse
     {
         $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_JSONP;
+        $response->data = $data;
+        $response->format = YiiResponse::FORMAT_JSONP;
 
         return $response;
     }
@@ -281,32 +273,17 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sets the response format of the given data as RAW.
      *
-     * @param mixed $var The RAW array data.
+     * @param mixed $data The data that should *not* be formatted.
      *
-     * @return YiiResponse The response object.
+     * @return YiiResponse A response that is configured to send `$data` without formatting.
+     * @see YiiResponse::$format
+     * @see YiiResponse::FORMAT_RAW
      */
-    public function asRaw($var = []): YiiResponse
+    public function asRaw($data): YiiResponse
     {
         $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_RAW;
-
-        return $response;
-    }
-
-    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
-    /**
-     * Sets the response format of the given data as XML.
-     *
-     * @param mixed $var The array that should be XML-encoded.
-     *
-     * @return YiiResponse The response object.
-     */
-    public function asXml($var = []): YiiResponse
-    {
-        $response = Craft::$app->getResponse();
-        $response->data = $var;
-        $response->format = Response::FORMAT_XML;
+        $response->data = $data;
+        $response->format = YiiResponse::FORMAT_RAW;
 
         return $response;
     }

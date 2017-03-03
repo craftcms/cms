@@ -1,7 +1,91 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-### 3.0.0-beta.5 - 2017-02-24
+## 3.0.0-beta.6 - 2017-03-03
+
+### Added
+- Added a “Cache remote images?” setting to the Asset Indexes utility, which if unchecked will dramatically speed up remote image indexing.
+- Added `craft\base\Volume::getFileMetadata()`
+- Added `craft\base\Volume::getFileStream()`
+- Added `craft\base\VolumeInterface::getFileMetadata()`
+- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\elements\Asset::getFocalPoint()`.
+- Added `craft\elements\Asset::getStream()`.
+- Added `craft\helpers\Image::imageSizeByStream()`.
+- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`
+- Added `craft\services\AssetIndexer::getIndexListOnVolume()`
+- Added `craft\services\AssetIndexer::getNextIndexEntry()`
+- Added `craft\services\AssetIndexer::processIndexForVolume()`
+- Added `craft\services\AssetIndexer::storeIndexList()`
+- Added `craft\services\AssetIndexer::updateIndexEntry()`
+- Added `craft\services\Tasks::rerunTask()`.
+- Added `craft\web\Response::getContentType()`.
+
+### Changed
+- Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
+- #1420: Craft now does fuzzy searching on the right side of a keyword by default.
+- It’s now possible to add columns to an element query’s `select` clause without completely replacing all of the default columns, by calling its `addSelect()` method.
+- #1421: Users are no longer logged out when verifying a new email address on their own account.
+- #1422: Users no longer get an exception or error message if they click on an invalid/expired email verification link and are already logged in. Instead they’ll be redirected to wherever they would normally be taken immediately after logging in.
+- `craft\base\Volume::filesystem()` now accepts a config parameter.
+- `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
+- `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
+- `craft\base\Volume::indexFile()` now requires an instance of `craft\base\Volume` (instead of `craft\base\VolumeInterface`) and a URI path as parameters.
+- `craft\base\Volume::indexFile()` now accepts a parameter to indicate whether to cache remote files or not.
+- `craft\controllers\TasksController::actionRerunTask()` now returns `1`, rather than the Json-encoded task info.
+- `craft\services\Assets::findFolders()` now returns the folder list array indexed by folder ids.
+- `craft\services\Tasks::rerunTaskById()` now returns `true` if the task was queued up to be rerun successfully, and will throw an exception if the task isn’t a top-level one.
+- `craft\web\Controller::renderTemplate()` now returns a `yii\web\Response` object rather than a string.
+- `craft\web\User::getReturnUrl()` now returns a URL based on the `postCpLoginRedirect` or `postLoginRedirect` config setting depending on the user’s permissions, if they didn’t have a return URL stored in their session data, and a default URL was not supplied.
+- Renamed `craft\services\EmailMessages` to `SystemMessages`, which is now available to Craft Personal installations.
+- Renamed `craft\base\ApplicationTrait::$emailMessages` to `$systemMessages`.
+- Renamed `craft\base\ApplicationTrait::getEmailMessages()` to `getSystemMessages()`.
+- Renamed `craft\controllers\EmailMessagesController` to `SystemMessagesController`.
+- Renamed the `emailmessages` DB table to `systemmessages`.
+- Renamed `craft\models\RebrandEmail` to `SystemMessage`, and removed its `$language` and `$htmlBody` properties.
+- Renamed `craft\records\EmailMessage` to `SystemMessage`.
+- Renamed `craft\web\assets\emailmessages\EmailMessagesAsset` to `craft\web\assets\systemmessages\SystemMessagesAsset`.
+- System messages registered with the `craft\services\SystemMessages::EVENT_REGISTER_MESSAGES` event must now either be `craft\models\SystemMessage` objects or arrays with `key`, `heading`, `subject`, and `body` keys.
+- Rich Text field settings will no longer show the “All” option for the “Available Volumes and “Available Transforms” settings if no volumes or transforms have been defined. 
+
+### Removed 
+
+- Removed `craft\elements\db\UserQuery::$withPassword`.
+- Removed `craft\elements\db\UserQuery::withPassword()`.
+- Removed `craft\helpers\Header`.
+- Removed `craft\helpers\Json::sendJsonHeaders()`.
+- Removed `craft\helpers\Json::setJsonContentTypeHeader()`.
+- Removed `craft\models\AssetIndexData::$offset`.
+- Removed `craft\records\AssetIndexData::$offset`.
+- Removed `craft\services\AssetIndexer::getIndexEntry()`.
+- Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\AssetIndexer::storeIndexEntry()`.
+- Removed `craft\services\AssetIndexer::updateIndexEntryRecordId()`.
+- Removed `craft\services\Users::getUserByEmail()`.
+- Removed `craft\web\Application::returnAjaxError()`.
+- Removed `craft\web\Application::returnAjaxException()`.
+- Removed `craft\web\Controller::asJson()` and `asXml()`, because the base `yii\web\Controller` class now defines the exact same methods.
+
+### Fixed
+ - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
+ - Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
+ - Fixed a PHP error that could occur if `craft\web\AssetBundle` had been loaded before `craft\web\View`.
+ - #1437: Fixed a bug where new Assets could not be indexed.
+ - Fixed a bug where system email subjects and bodies were just getting the translation keys, e.g. `activate_account_subject` and `activate_account_body`.
+ - #1444: Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset.
+ - Fixed a couple bugs that broke new email verification.
+ - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
+ - Fixed a SQL error that could occur when restoring a database backup after a failed update.
+ - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
+ - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settiings would create a SQL error on PostgreSQL.
+ - #1424: Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type.
+ - #1440: Fixed a bug where element pagination would only think there was one page.
+ - #1425: Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated.
+ - #1446: Fixed a bug where Composer-installed plugins’ source translations weren’t getting loaded.
+ - #1450: Fixed a SQL error that could occur when loading the elements on an element index page if there were any collapsed elements.
+
+## 3.0.0-beta.5 - 2017-02-24
 
 ### Added
 - Added a “Column Type” advanced setting to Plain Text fields.
@@ -38,7 +122,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
-- Updated the Yii Debug extensionU to 2.0.8.
+- Updated the Yii Debug extension to 2.0.8.
 - Updated d3.js to 4.6.0.0.
 - Updated timepicker to 1.11.10.
 - Updated Velocity to 1.4.3.

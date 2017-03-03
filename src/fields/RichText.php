@@ -16,7 +16,6 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
@@ -27,7 +26,6 @@ use craft\validators\HandleValidator;
 use craft\web\assets\redactor\RedactorAsset;
 use craft\web\assets\richtext\RichTextAsset;
 use yii\db\Schema;
-use yii\validators\StringValidator;
 
 /**
  * RichText represents a Rich Text field.
@@ -380,7 +378,7 @@ class RichText extends Field
         $showSingles = false;
 
         foreach ($sections as $section) {
-            if ($section->type == Section::TYPE_SINGLE) {
+            if ($section->type === Section::TYPE_SINGLE) {
                 $showSingles = true;
             } else if ($element) {
                 // Does the section have URLs in the same site as the element we're editing?
@@ -436,14 +434,16 @@ class RichText extends Field
         $volumeIds = $this->availableVolumes;
 
         if (empty($volumeIds)) {
-            // TODO: change to getPublicVolumeIds() when it exists
             $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
 
-        $folders = Craft::$app->getAssets()->findFolders([
-            'volumeId' => $volumeIds,
-            'parentId' => ':empty:'
-        ]);
+        $criteria = ['parentId' => ':empty:'];
+
+        if ($volumeIds !== '*') {
+            $criteria['volumeId'] = $volumeIds;
+        }
+
+        $folders = Craft::$app->getAssets()->findFolders($criteria);
 
         foreach ($folders as $folder) {
             $volumes[] = 'folder:'.$folder->id;

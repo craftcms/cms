@@ -62,10 +62,10 @@ class EntriesController extends BaseEntriesController
      * @param string|null $siteHandle    The site handle, if specified.
      * @param Entry|null  $entry         The entry being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): string
+    public function actionEditEntry(string $sectionHandle, int $entryId = null, int $draftId = null, int $versionId = null, string $siteHandle = null, Entry $entry = null): Response
     {
         $variables = [
             'sectionHandle' => $sectionHandle,
@@ -390,10 +390,10 @@ class EntriesController extends BaseEntriesController
     /**
      * Previews an entry.
      *
-     * @return string
+     * @return Response
      * @throws NotFoundHttpException if the requested entry version cannot be found
      */
-    public function actionPreviewEntry(): string
+    public function actionPreviewEntry(): Response
     {
         $this->requirePostRequest();
 
@@ -626,10 +626,10 @@ class EntriesController extends BaseEntriesController
      * @param int|null $draftId
      * @param int|null $versionId
      *
-     * @return string
+     * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): string
+    public function actionViewSharedEntry(int $entryId = null, int $siteId = null, int $draftId = null, int $versionId = null): Response
     {
         $this->requireToken();
 
@@ -884,10 +884,10 @@ class EntriesController extends BaseEntriesController
      *
      * @param Entry $entry
      *
-     * @return string The rendering result
+     * @return Response
      * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */
-    private function _showEntry(Entry $entry): string
+    private function _showEntry(Entry $entry): Response
     {
         $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 

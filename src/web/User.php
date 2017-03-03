@@ -139,6 +139,16 @@ class User extends \yii\web\User
      */
     public function getReturnUrl($defaultUrl = null)
     {
+        // Set the default based on the config, if it's not specified
+        if ($defaultUrl === null) {
+            // Is this a CP request and can they access the CP?
+            if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
+                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->get('postCpLoginRedirect'));
+            } else {
+                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->get('postLoginRedirect'));
+            }
+        }
+
         $url = parent::getReturnUrl($defaultUrl);
 
         // Strip out any tags that may have gotten in there by accident

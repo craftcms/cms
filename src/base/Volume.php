@@ -12,12 +12,14 @@ use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Asset;
+use craft\errors\AssetException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\Config;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
@@ -129,7 +131,26 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFileList(string $directory, bool $recursive): array
     {
-        return $this->filesystem()->listContents($directory, $recursive);
+        $fileList =  $this->filesystem()->listContents($directory, $recursive);
+        $output = [];
+
+        foreach ($fileList as $entry) {
+            $output[$entry['path']] = $entry;
+        }
+
+        return $output;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileMetadata(string $uri): array
+    {
+        try {
+            return $this->filesystem()->getMetadata($uri);
+        } catch (FileNotFoundException $exception) {
+            throw new VolumeObjectNotFoundException($exception->getMessage());
+        }
     }
 
     /**
@@ -215,9 +236,23 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
+    public function getFileStream(string $uriPath)
+    {
+        $stream = $this->filesystem(['disable_asserts' => true])->readStream($uriPath);
+
+        if (!$stream) {
+            throw new AssetException('Could not open create the stream for “'.$uriPath.'”');
+        }
+
+        return $stream;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function saveFileLocally(string $uriPath, string $targetPath): int
     {
-        $stream = $this->filesystem()->readStream($uriPath);
+        $stream = $this->getFileStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
 
         $bytes = stream_copy_to_stream($stream, $outputStream);
@@ -255,15 +290,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * Returns the Flysystem adapter instance.
      *
+     * @param array $config
+     *
      * @return \League\Flysystem\Filesystem The Flysystem filesystem.
      */
-    protected function filesystem()
+    protected function filesystem(array $config = [])
     {
-        if ($this->_filesystem !== null) {
-            return $this->_filesystem;
-        }
-
-        return $this->_filesystem = new Filesystem($this->adapter());
+        // Constructing a Filesystem is super cheap and we always get the config we want, so no caching.
+        return new Filesystem($this->adapter(), new Config($config));
     }
 
     /**

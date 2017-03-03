@@ -35,9 +35,9 @@ class TagsController extends Controller
     /**
      * Called before displaying the tag settings index page.
      *
-     * @return string The rendering result
+     * @return Response
      */
-    public function actionIndex(): string
+    public function actionIndex(): Response
     {
         $this->requireAdmin();
 
@@ -54,10 +54,10 @@ class TagsController extends Controller
      * @param int|null      $tagGroupId The tag group’s ID, if any.
      * @param TagGroup|null $tagGroup   The tag group being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws NotFoundHttpException if the requested tag group cannot be found
      */
-    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): string
+    public function actionEditTagGroup(int $tagGroupId = null, TagGroup $tagGroup = null): Response
     {
         $this->requireAdmin();
 

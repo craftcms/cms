@@ -16,7 +16,6 @@ use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetConflictException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
@@ -458,7 +457,7 @@ class Assets extends BaseRelationField
                 // Find the files with temp sources and just move those.
                 $query = Asset::find();
                 Craft::configure($query, [
-                    'id' => array_merge(['in'], $assetIds),
+                    'id' => $assetIds,
                     'volumeId' => ':empty:'
                 ]);
                 $assetsToMove = $query->all();
@@ -544,9 +543,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        $variables = parent::inputTemplateVariables($selectedElementsQuery, $element);
+        $variables = parent::inputTemplateVariables($value, $element);
         $variables['hideSidebar'] = (int)$this->useSingleFolder;
         return $variables;
     }

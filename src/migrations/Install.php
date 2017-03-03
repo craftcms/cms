@@ -129,11 +129,12 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sessionId' => $this->string(36)->notNull()->defaultValue(''),
             'volumeId' => $this->integer()->notNull(),
-            'offset' => $this->integer()->notNull(),
             'uri' => $this->text(),
             'size' => $this->bigInteger()->unsigned(),
             'timestamp' => $this->dateTime(),
             'recordId' => $this->integer(),
+            'inProgress' => $this->boolean()->defaultValue(false),
+            'completed' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -147,7 +148,7 @@ class Install extends Migration
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
-            'focalPoint' => $this->string(20)->null(),
+            'focalPoint' => $this->string(13)->null(),
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -266,7 +267,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%emailmessages}}', [
+        $this->createTable('{{%systemmessages}}', [
             'id' => $this->primaryKey(),
             'language' => $this->string()->notNull(),
             'key' => $this->string()->notNull(),
@@ -728,7 +729,7 @@ class Install extends Migration
      */
     protected function createIndexes()
     {
-        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId,offset', true), '{{%assetindexdata}}', 'sessionId,volumeId,offset', true);
+        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId'), '{{%assetindexdata}}', 'sessionId,volumeId');
         $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'volumeId', false, true), '{{%assetindexdata}}', 'volumeId', false);
         $this->createIndex($this->db->getIndexName('{{%assets}}', 'filename,folderId', true), '{{%assets}}', 'filename,folderId', true);
         $this->createIndex($this->db->getIndexName('{{%assets}}', 'folderId', false, true), '{{%assets}}', 'folderId', false);
@@ -756,8 +757,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false, true), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
+        $this->createIndex($this->db->getIndexName('{{%systemmessages}}', 'key,language', true), '{{%systemmessages}}', 'key,language', true);
+        $this->createIndex($this->db->getIndexName('{{%systemmessages}}', 'language', false), '{{%systemmessages}}', 'language', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false, true), '{{%entries}}', 'authorId', false);

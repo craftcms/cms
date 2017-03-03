@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\errors\MissingComponentException;
 use craft\events\TaskEvent;
 use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Header;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\records\Task as TaskRecord;
@@ -251,32 +250,51 @@ class Tasks extends Component
      *
      * @param int $taskId The task’s ID
      *
-     * @return TaskInterface|null The task
+     * @return bool
+     * @throws Exception if $taskId isn't a valid task ID or it's not a top-level task
      */
-    public function rerunTaskById(int $taskId)
+    public function rerunTaskById(int $taskId): bool
     {
         /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
 
-        if ($task && $task->level == 0) {
-            $task->currentStep = null;
-            $task->totalSteps = null;
-            $task->status = Task::STATUS_PENDING;
-            $this->saveTask($task);
-
-            // Delete any of its subtasks
-            $taskRecord = $this->_getTaskRecordById($taskId);
-            /** @var TaskRecord[] $subtaskRecords */
-            $subtaskRecords = $taskRecord->children()->all();
-
-            foreach ($subtaskRecords as $subtaskRecord) {
-                $subtaskRecord->deleteWithChildren();
-            }
-
-            return $task;
+        if ($task === null) {
+            throw new Exception('Invalid task ID: '.$taskId);
         }
 
-        return null;
+        return $this->rerunTask($task);
+    }
+
+    /**
+     * Re-runs a task.
+     *
+     * @param TaskInterface $task
+     *
+     * @return bool
+     * @throws Exception if $task isn't a top-level task
+     */
+    public function rerunTask(TaskInterface $task): bool
+    {
+        /** @var Task $task */
+        if ($task->level !== 0) {
+            throw new Exception('Only top-level tasks can be re-run.');
+        }
+
+        $task->currentStep = null;
+        $task->totalSteps = null;
+        $task->status = Task::STATUS_PENDING;
+        $this->saveTask($task);
+
+        // Delete any of its subtasks
+        $taskRecord = $this->_getTaskRecordById($task->id);
+        /** @var TaskRecord[] $subtaskRecords */
+        $subtaskRecords = $taskRecord->children()->all();
+
+        foreach ($subtaskRecords as $subtaskRecord) {
+            $subtaskRecord->deleteWithChildren();
+        }
+
+        return true;
     }
 
     /**
@@ -733,7 +751,7 @@ class Tasks extends Component
         else if (
             $request->getIsSiteRequest() &&
             !$request->getIsAjax() &&
-            in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
+            in_array($response->getContentType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(UrlHelper::actionUrl('tasks/run-pending-tasks'));

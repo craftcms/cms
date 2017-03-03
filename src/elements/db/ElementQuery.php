@@ -297,6 +297,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->select === null) {
+            // Use ** as a placeholder for "all the default columns"
+            $this->select = ['**'];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function __isset($name)
     {
         if ($name === 'order') {
@@ -864,20 +877,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        if (empty($this->select)) {
-            $this->query->addSelect([
-                'elements.id',
-                'elements.uid',
-                'elements.enabled',
-                'elements.archived',
-                'elements.dateCreated',
-                'elements.dateUpdated',
-                'elements_i18n.slug',
-                'elements_i18n.uri',
-                'enabledForSite' => 'elements_i18n.enabled',
-            ]);
-        }
-
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[subquery.elementsId]]')
@@ -946,11 +945,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applyStructureParams($class);
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
-
-        // If the select clause has been explicitly defined, go with that.
-        if (!empty($this->select)) {
-            $this->query->select($this->select);
-        }
+        $this->_applySelectParam();
 
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
@@ -1755,6 +1750,40 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->orderBy($orderBy);
             $this->subQuery->orderBy($orderBy);
         }
+    }
+
+    /**
+     * Applies the 'select' param to the query being prepared.
+     */
+    private function _applySelectParam()
+    {
+        // Select all columns defined by [[select]]
+        $select = array_merge((array)$this->select);
+
+        // Is there still a ** placeholder param?
+        if (($placeholderPos = array_search('**', $select, true)) !== false) {
+            array_splice($select, $placeholderPos, 1);
+
+            // Merge in the default columns
+            $select = array_merge($select, [
+                'elements.id',
+                'elements.uid',
+                'elements.enabled',
+                'elements.archived',
+                'elements.dateCreated',
+                'elements.dateUpdated',
+                'elements_i18n.slug',
+                'elements_i18n.uri',
+                'enabledForSite' => 'elements_i18n.enabled',
+            ]);
+
+            // If the query already specifies any columns, merge those in too
+            if (!empty($this->query->select)) {
+                $select = array_merge($select, $this->query->select);
+            }
+        }
+
+        $this->query->select = $select;
     }
 
     /**

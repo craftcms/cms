@@ -10,7 +10,6 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 
@@ -122,9 +121,9 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        $variables = parent::inputTemplateVariables($selectedElementsQuery, $element);
+        $variables = parent::inputTemplateVariables($value, $element);
         $variables['branchLimit'] = $this->branchLimit;
 
         return $variables;

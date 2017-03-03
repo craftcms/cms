@@ -120,11 +120,11 @@ class GlobalsController extends Controller
      * @param string|null    $siteHandle      The site handle, if specified.
      * @param GlobalSet|null $globalSet       The global set being edited, if there were any validation errors.
      *
-     * @return string The rendering result
+     * @return Response
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): string
+    public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): Response
     {
         // Get the sites the user is allowed to edit
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();

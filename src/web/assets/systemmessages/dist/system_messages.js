@@ -1,7 +1,7 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    var EmailMessages = Garnish.Base.extend(
+    var SystemMessages = Garnish.Base.extend(
         {
             messages: null,
 
@@ -48,10 +48,10 @@
 
             updateHtmlFromModal: function() {
                 var subject = this.modal.$subjectInput.val(),
-                    body = this.modal.$bodyInput.val().replace(/\n/g, '<br>');
+                    body = Craft.escapeHtml(this.modal.$bodyInput.val()).replace(/\n/g, '<br>');
 
                 this.$subject.text(subject);
-                this.$body.text(body);
+                this.$body.html(body);
             }
 
         });
@@ -92,7 +92,7 @@
                     data[Craft.csrfTokenName] = Craft.csrfTokenValue;
                 }
 
-                Craft.postActionRequest('email-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('system-messages/get-message-modal', data, $.proxy(function(response, textStatus) {
                     if (textStatus == 'success') {
                         if (!this.$container) {
                             var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
@@ -160,7 +160,7 @@
                 this.$saveBtn.addClass('active');
                 this.$spinner.show();
 
-                Craft.postActionRequest('email-messages/save-message', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('system-messages/save-message', data, $.proxy(function(response, textStatus) {
                     this.$saveBtn.removeClass('active');
                     this.$spinner.hide();
                     this.loading = false;
@@ -194,5 +194,5 @@
         });
 
 
-    new EmailMessages();
+    new SystemMessages();
 })(jQuery);

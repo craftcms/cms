@@ -195,7 +195,7 @@ return [
         'exact' => false,
         'exclude' => false,
         'subLeft' => false,
-        'subRight' => false,
+        'subRight' => true,
     ],
     /**
      * The template file extensions Craft will look for when matching a template path to a file on the front end.

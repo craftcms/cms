@@ -6,7 +6,7 @@
 
 {% set navItems = {
     settings: { label: "Settings"|t('app'), url: url('settings/email') },
-    messages: { label: "Messages"|t('app'), url: url('settings/email/messages') }
+    messages: { label: "System Messages"|t('app'), url: url('settings/email/messages') }
 } %}
 
 {% set docTitle = navItems[selectedNavItem].label~' - '~title %}

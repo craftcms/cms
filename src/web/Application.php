@@ -12,8 +12,6 @@ use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\Header;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
@@ -102,21 +100,24 @@ class Application extends \yii\web\Application
         // If this is a resource request, we should respond with the resource ASAP
         $this->_processResourceRequest();
 
+        $headers = $this->getResponse()->getHeaders();
+
         if ($request->getIsCpRequest()) {
             // Prevent robots from indexing/following the page
             // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-            Header::setHeader(['X-Robots-Tag' => 'none']);
+            $headers->set('X-Robots-Tag', 'none');
+
             // Prevent some possible XSS attack vectors
-            Header::setHeader(['X-Frame-Options' => 'SAMEORIGIN']);
-            Header::setHeader(['X-Content-Type-Options' => 'nosniff']);
+            $headers->set('X-Frame-Options', 'SAMEORIGIN');
+            $headers->set('X-Content-Type-Options', 'nosniff');
         }
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            Header::setHeader(['X-Powered-By' => $this->name]);
+            $headers->set('X-Powered-By', $this->name);
         } else {
             // In case PHP is already setting one
-            Header::removeHeader('X-Powered-By');
+            header_remove('X-Powered-By');
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
@@ -208,90 +209,6 @@ class Application extends \yii\web\Application
 
         // If we're still here, finally let Yii do it's thing.
         return parent::handleRequest($request);
-    }
-
-    /**
-     * Formats an exception into JSON before returning it to the client.
-     *
-     * @param array $data
-     *
-     * @return void
-     */
-    public function returnAjaxException(array $data)
-    {
-        $exceptionArr = [
-            'error' => $data['message']
-        ];
-
-        if (YII_DEBUG) {
-            $exceptionArr['trace'] = $data['trace'];
-            $exceptionArr['traces'] = ($data['traces'] ?? null);
-            $exceptionArr['file'] = $data['file'];
-            $exceptionArr['line'] = $data['line'];
-            $exceptionArr['type'] = $data['type'];
-        }
-
-        Json::sendJsonHeaders();
-        echo Json::encode($exceptionArr);
-        $this->end();
-    }
-
-    /**
-     * Formats a PHP error into JSON before returning it to the client.
-     *
-     * @param int    $code    The error code.
-     * @param string $message The error message.
-     * @param string $file    The error file.
-     * @param string $line    The error line.
-     *
-     * @return void
-     */
-    public function returnAjaxError(int $code, string $message, string $file, string $line)
-    {
-        if (YII_DEBUG) {
-            $outputTrace = '';
-            $trace = debug_backtrace();
-
-            // skip the first 3 stacks as they do not tell the error position
-            if (count($trace) > 3) {
-                $trace = array_slice($trace, 3);
-            }
-
-            foreach ($trace as $i => $t) {
-                if (!isset($t['file'])) {
-                    $t['file'] = 'unknown';
-                }
-
-                if (!isset($t['line'])) {
-                    $t['line'] = 0;
-                }
-
-                if (!isset($t['function'])) {
-                    $t['function'] = 'unknown';
-                }
-
-                $outputTrace .= "#$i {$t['file']}({$t['line']}): ";
-
-                if (isset($t['object']) && is_object($t['object'])) {
-                    $outputTrace .= get_class($t['object']).'->';
-                }
-
-                $outputTrace .= "{$t['function']}()\n";
-            }
-
-            $errorArr = [
-                'error' => $code.' : '.$message,
-                'trace' => $outputTrace,
-                'file' => $file,
-                'line' => $line,
-            ];
-        } else {
-            $errorArr = ['error' => $message];
-        }
-
-        Json::sendJsonHeaders();
-        echo Json::encode($errorArr);
-        $this->end();
     }
 
     /**
@@ -487,6 +404,7 @@ class Application extends \yii\web\Application
             $segments === ['users', 'login'] ||
             $segments === ['users', 'logout'] ||
             $segments === ['users', 'set-password'] ||
+            $segments === ['users', 'verify-email'] ||
             $segments === ['users', 'forgot-password'] ||
             $segments === ['users', 'send-password-reset-email'] ||
             $segments === ['users', 'save-user'] ||

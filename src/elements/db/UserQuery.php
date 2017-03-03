@@ -80,11 +80,6 @@ class UserQuery extends ElementQuery
      */
     public $lastLoginDate;
 
-    /**
-     * @var bool Whether the users' passwords should be fetched.
-     */
-    public $withPassword = false;
-
     // Public Methods
     // =========================================================================
 
@@ -268,20 +263,6 @@ class UserQuery extends ElementQuery
         return $this;
     }
 
-    /**
-     * Sets the [[withPassword]] property.
-     *
-     * @param bool $value The property value (defaults to true)
-     *
-     * @return static self reference
-     */
-    public function withPassword(bool $value = true)
-    {
-        $this->withPassword = $value;
-
-        return $this;
-    }
-
     // Protected Methods
     // =========================================================================
 
@@ -317,10 +298,6 @@ class UserQuery extends ElementQuery
         // TODO: remove after next breakpoint
         if (version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '>=')) {
             $this->query->addSelect(['users.photoId']);
-        }
-
-        if ($this->withPassword) {
-            $this->query->addSelect(['users.password']);
         }
 
         if ($this->admin) {

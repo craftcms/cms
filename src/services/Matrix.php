@@ -62,9 +62,9 @@ class Matrix extends Component
     private $_blockTypeRecordsById;
 
     /**
-     * @var
+     * @var string[]
      */
-    private $_uniqueBlockTypeAndFieldHandles;
+    private $_uniqueBlockTypeAndFieldHandles = [];
 
     /**
      * @var

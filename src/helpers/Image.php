@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\ImageException;
 use craft\image\Svg;
 
 /**
@@ -202,6 +203,109 @@ class Image
         $image = Craft::$app->getImages()->loadImage($filePath);
 
         return [$image->getWidth(), $image->getHeight()];
+    }
+
+    /**
+     * Determines image dimensions by a stream pointing to the start of the image.
+     *
+     * @param resource $stream
+     *
+     * @return array|false
+     * @throws \TypeError
+     */
+    public static function imageSizeByStream($stream)
+    {
+        if (!is_resource($stream)) {
+            throw new \TypeError('Argument passed should be a resource.');
+        }
+
+        $dimensions = [];
+
+        // PNG 8 byte signature 0x89 0x50 0x4E 0x47 0x0D 0x0A 0x1A 0x0A
+        // GIF 6 byte signature 0x47 0x49 0x46 0x38 0x39|0x37 0x61
+        // JPG 2 byte signature 0xFF 0xD8
+
+        // It's much easier to work with a HEX string here, because of variable signature lengths
+        $signature = StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 2)));
+
+        try {
+            switch ($signature) {
+                // Must be JPG
+                case 'FFD8':
+                    // List of JPEG frame types we know how to extract size from
+                    $validFrames = [0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF];
+
+                    while (true) {
+                        // Read JPEG frame info.
+                        $frameInfo = unpack('Cmarker/Ctype/nlength', stream_get_contents($stream, 4));
+
+                        if ($frameInfo['marker'] !== 0xFF) {
+                            throw new ImageException('Unrecognized JPG file structure.');
+                        }
+
+                        // Ran out of file so something must be wrong.
+                        if (!$frameInfo['length']) {
+                            break;
+                        }
+
+                        if (in_array($frameInfo['type'], $validFrames, true)) {
+                            // Dud.
+                            stream_get_contents($stream, 1);
+
+                            // Load dimensions
+                            $data = unpack('nheight/nwidth', stream_get_contents($stream, 4));
+                            $dimensions = [$data['width'], $data['height']];
+                            break;
+                        }
+
+                        // Dud.
+                        stream_get_contents($stream, $frameInfo['length'] - 2);
+                    }
+                    break;
+                // Probably GIF
+                case '4749':
+                    $signature .= bin2hex(stream_get_contents($stream, 4));
+
+                    // Make sure it's GIF
+                    if (!in_array($signature, ['474946383961', '474946383761'], true)) {
+                        throw new ImageException('Unrecognized image signature.');
+                    }
+
+                    // Unpack next 4 bytes as two unsigned integers with little endian byte order and call it a day
+                    $data = unpack('v2', stream_get_contents($stream, 4));
+                    $dimensions = array_values($data);
+                    break;
+                // Maybe PNG
+                case '8950':
+                    $signature .= StringHelper::toUpperCase(bin2hex(stream_get_contents($stream, 6)));
+
+                    // Make sure it's PNG
+                    if ($signature !== '89504E470D0A1A0A') {
+                        throw new ImageException('Unrecognized image signature.');
+                    }
+
+                    // Dud.
+                    stream_get_contents($stream, 4);
+
+                    // IHDR chunk MUST be first
+                    $ihdr = bin2hex(stream_get_contents($stream, 4));
+                    if ($ihdr !== '49484452') {
+                        throw new ImageException('Unrecognized PNG file structure.');
+                    }
+
+                    // Unpack next 8 bytes as two unsigned long integers with big endian byte order and call it a day
+                    $data = unpack('N2', stream_get_contents($stream, 8));
+                    $dimensions = array_values($data);
+
+                    break;
+                default:
+                    return false;
+            }
+        } catch (ImageException $exception) {
+            Craft::info($exception->getMessage(), __METHOD__);
+        }
+
+        return $dimensions;
     }
 
     /**
