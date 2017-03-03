@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2966 - 2017-03-03
 
 ### Fixed
 - Fixed a PHP error occurred when saving users on servers running PHP 5.3.
