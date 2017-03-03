@@ -4,7 +4,7 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-- Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
+- #1447: Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
 - #1451: Ajax requests to controller actions that require a user session now get a 403 response rather than the Login page HTML, if the user isn’t logged in.
 
 ### Fixed
