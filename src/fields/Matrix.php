@@ -334,6 +334,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'Expand',
         ]);
 
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+
         if ($value instanceof MatrixBlockQuery) {
             /** @var MatrixBlockQuery $value */
             $value
