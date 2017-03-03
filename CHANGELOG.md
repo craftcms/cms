@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2966 - 2017-03-03
+
+### Fixed
+- Fixed a PHP error occurred when saving users on servers running PHP 5.3.
+
 ## 2.6.2965 - 2017-03-03
 
 ### Changed
@@ -10,7 +15,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
-- Fixed a bug where Matrix Block validation might fail when programatically adding blocks to a Matrix field.
+- Fixed a bug where Matrix Block validation might fail when programmatically adding blocks to a Matrix field.
 - Fixed a bug where bug where account activation emails were linking to the front-end rather than the Control Panel for users with access to the Control Panel.
 - Fixed a bug where `EmailService::sendEmail()` and `sendEmailByKey()` were throwing exceptions if something went wrong, rather than returning `false`.
 - Fixed an exception that occurred when registering a user if the email settings weren’t configured correctly.

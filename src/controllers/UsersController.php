@@ -1022,18 +1022,18 @@ class UsersController extends BaseController
 				$originalEmail = $user->email;
 				$user->email = $user->unverifiedEmail;
 
-                if ($isNewUser)
-                {
-                    // Send the activation email
-                    $emailSent = craft()->users->sendActivationEmail($user);
-                }
-                else
-                {
-                    // Send the standard verification email
-                    $emailSent = craft()->users->sendNewEmailVerifyEmail($user);
-                }
+				if ($isNewUser)
+				{
+					// Send the activation email
+					$emailSent = craft()->users->sendActivationEmail($user);
+				}
+				else
+				{
+					// Send the standard verification email
+					$emailSent = craft()->users->sendNewEmailVerifyEmail($user);
+				}
 
-                if (!$emailSent)
+				if (!$emailSent)
 				{
 					craft()->userSession->setError(Craft::t('User saved, but couldn’t send verification email. Check your email settings.'));
 				}
@@ -1326,14 +1326,14 @@ class UsersController extends BaseController
 		}
 		else
 		{
-		    if ($emailSent)
-            {
-                craft()->userSession->setNotice(Craft::t('Activation email sent.'));
-            }
-            else
-            {
-                craft()->userSession->setError(Craft::t('Couldn’t send activation email. Check your email settings.'));
-            }
+			if ($emailSent)
+			{
+				craft()->userSession->setNotice(Craft::t('Activation email sent.'));
+			}
+			else
+			{
+				craft()->userSession->setError(Craft::t('Couldn’t send activation email. Check your email settings.'));
+			}
 
 			$this->redirectToPostedUrl();
 		}
@@ -1787,25 +1787,25 @@ class UsersController extends BaseController
 				{
 					$permissions = craft()->request->getPost('permissions');
 
-                    // it will be an empty string if no permissions were assigned during user saving.
-                    if ($permissions === '')
-                    {
-                        $permissions = [];
-                    }
+					// it will be an empty string if no permissions were assigned during user saving.
+					if ($permissions === '')
+					{
+						$permissions = array();
+					}
 				}
 
 				if (is_array($permissions))
 				{
 					// See if there are any new permissions in here
-                    foreach ($permissions as $permission)
-                    {
-                        if (!$user->can($permission))
-                        {
-                            // Yep. This will require an elevated session
-                            $this->requireElevatedSession();
-                            break;
-                        }
-                    }
+					foreach ($permissions as $permission)
+					{
+						if (!$user->can($permission))
+						{
+							// Yep. This will require an elevated session
+							$this->requireElevatedSession();
+							break;
+						}
+					}
 
 					craft()->userPermissions->saveUserPermissions($user->id, $permissions);
 				}
