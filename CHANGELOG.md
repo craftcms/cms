@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
+
 ### Fixed
 - Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
 - Fixed a bug where Matrix Block validation might fail when programatically adding blocks to a Matrix field.

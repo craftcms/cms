@@ -46,6 +46,7 @@ class DbBackup
 	private $_ignoreDataTables = array(
 		'assetindexdata',
 		'assettransformindex',
+		'cache',
 		'sessions',
 		'templatecaches',
 		'templatecachecriteria',
