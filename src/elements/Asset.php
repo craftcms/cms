@@ -361,9 +361,9 @@ class Asset extends Element
     public $newFilename;
 
     /**
-     * @var string|null The new file path
+     * @var string|null The temp file path
      */
-    public $newFilePath;
+    public $tempFilePath;
 
     /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.

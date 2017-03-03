@@ -475,7 +475,7 @@ class Users extends Component
 
             $photo = new Asset();
             $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
-            $photo->newFilePath = $fileLocation;
+            $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;
             $photo->volumeId = $volumeId;

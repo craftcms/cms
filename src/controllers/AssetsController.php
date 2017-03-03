@@ -158,7 +158,7 @@ class AssetsController extends Controller
                 // capital letter because of Yii's "word" logic.
                 $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
-                $asset->newFilePath = $tempPath;
+                $asset->tempFilePath = $tempPath;
                 $asset->filename = $filename;
                 $asset->folderId = $folder->id;
                 $asset->volumeId = $folder->volumeId;
@@ -711,7 +711,7 @@ class AssetsController extends Controller
             // capital letter because of Yii's "word" logic.
             $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($asset->filename, PATHINFO_BASENAME)));
 
-            $newAsset->newFilePath = $imageCopy;
+            $newAsset->tempFilePath = $imageCopy;
             $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
             $newAsset->folderId = $folder->id;
             $newAsset->volumeId = $folder->volumeId;

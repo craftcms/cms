@@ -150,7 +150,7 @@ class Assets extends Component
             $asset->folderPath = $asset->getFolder()->path;
         }
 
-        if ($isNew && empty($asset->newFilePath) && empty($asset->indexInProgress)) {
+        if ($isNew && empty($asset->tempFilePath) && empty($asset->indexInProgress)) {
             throw new AssetLogicException(Craft::t('app',
                 'A new Asset cannot be created without a file.'));
         }
@@ -187,17 +187,17 @@ class Assets extends Component
                 ['id' => $asset->volumeId]));
         }
 
-        if (!empty($asset->newFilePath)) {
-            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) === 'image') {
-                Image::cleanImageByPath($asset->newFilePath);
+        if (!empty($asset->tempFilePath)) {
+            if (AssetsHelper::getFileKindByExtension($asset->tempFilePath) === 'image') {
+                Image::cleanImageByPath($asset->tempFilePath);
             }
 
-            $stream = fopen($asset->newFilePath, 'rb');
+            $stream = fopen($asset->tempFilePath, 'rb');
 
             if (!$stream) {
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
-                    ['path' => $asset->newFilePath]));
+                    ['path' => $asset->tempFilePath]));
             }
 
             $uriPath = $asset->getUri();
@@ -227,22 +227,22 @@ class Assets extends Component
             }
 
             $asset->dateModified = new DateTime();
-            $asset->size = filesize($asset->newFilePath);
+            $asset->size = filesize($asset->tempFilePath);
             $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
 
-            if ($asset->kind === 'image' && !empty($asset->newFilePath)) {
+            if ($asset->kind === 'image' && !empty($asset->tempFilePath)) {
 
-                list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
+                list ($asset->width, $asset->height) = Image::imageSize($asset->tempFilePath);
             }
         }
 
         Craft::$app->getElements()->saveElement($asset, $runValidation);
 
         // Now that we have an ID, store the source
-        if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->newFilePath)) {
+        if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->tempFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
             $assetTransforms = Craft::$app->getAssetTransforms();
-            $assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
+            $assetTransforms->storeLocalSource($asset->tempFilePath, $asset->getImageTransformSourcePath());
             $assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
         }
     }
@@ -1212,7 +1212,7 @@ class Assets extends Component
                 FileHelper::removeFile($tempPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
-                    ['path' => $asset->newFilePath]));
+                    ['path' => $asset->tempFilePath]));
             }
 
             $targetVolume->createFileByStream($toPath, $stream, []);
