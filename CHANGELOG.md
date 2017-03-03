@@ -3,6 +3,11 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- #1447: Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
+- #1451: Ajax requests to controller actions that require a user session now get a 403 response rather than the Login page HTML, if the user isn’t logged in.
+- Relational and Matrix fields now check if their values have been eager-loaded when displaying their inputs.
+
 ### Fixed
 - Fixed a bug where newlines would be replaced with escaped `<br>` tags on the Settings → Email → Messages page after saving a custom email message.
 - Fixed a bug where Matrix Block validation might fail when programatically adding blocks to a Matrix field.

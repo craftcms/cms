@@ -264,7 +264,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        /** @var ElementQuery $value */
+        /** @var Element $element */
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+
+        /** @var ElementQuery|array $value */
         $variables = $this->inputTemplateVariables($value, $element);
 
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
@@ -531,22 +536,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * Returns an array of variables that should be passed to the input template.
      *
-     * @param ElementQueryInterface|null $selectedElementsQuery
-     * @param ElementInterface|null      $element
+     * @param ElementQueryInterface|array|null $value
+     * @param ElementInterface|null            $element
      *
      * @return array
      */
-    protected function inputTemplateVariables(ElementQueryInterface $selectedElementsQuery = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
-        if (!($selectedElementsQuery instanceof ElementQueryInterface)) {
-            /** @var Element $class */
-            $class = static::elementType();
-            $selectedElementsQuery = $class::find()
-                ->id(false);
-        } else {
-            $selectedElementsQuery
+        if ($value instanceof ElementQueryInterface) {
+            $value
                 ->status(null)
                 ->enabledForSite(false);
+        } else if (!is_array($value)) {
+            /** @var Element $class */
+            $class = static::elementType();
+            $value = $class::find()
+                ->id(false);
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
@@ -560,7 +565,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             'fieldId' => $this->id,
             'storageKey' => 'field.'.$this->id,
             'name' => $this->handle,
-            'elements' => $selectedElementsQuery,
+            'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
