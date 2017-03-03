@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error on `controllers/UsersController` if you had PHP 5.3 installed.
+
 ## 2.6.2965 - 2017-03-03
 
 ### Changed
