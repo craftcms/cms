@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2965 - 2017-03-03
 
 ### Changed
 - #1447: Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
