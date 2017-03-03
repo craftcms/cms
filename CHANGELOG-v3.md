@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.6 - 2017-03-03
 
 ### Added
 - Added a “Cache remote images?” setting to the Asset Indexes utility, which if unchecked will dramatically speed up remote image indexing.
