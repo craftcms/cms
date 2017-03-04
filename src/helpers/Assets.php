@@ -324,6 +324,25 @@ class Assets
         return 'unknown';
     }
 
+    /**
+     * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
+     *
+     * @param string $location
+     *
+     * @return array
+     * @throws Exception if the file location is invalid
+     */
+    public static function parseFileLocation($location)
+    {
+        if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
+            throw new Exception('Invalid file location format: '.$location);
+        }
+
+        list(, $folderId, $filename) = $matches;
+
+        return [$folderId, $filename];
+    }
+
     // Private Methods
     // =========================================================================
 

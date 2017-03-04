@@ -369,68 +369,47 @@ class AssetsController extends Controller
     public function actionMoveAsset(): Response
     {
         $this->requireLogin();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredBodyParam('assetId');
-        $folderId = $request->getBodyParam('folderId');
-        $filename = $request->getBodyParam('filename');
-        $conflictResolution = $request->getBodyParam('userResponse');
+        $assetsService = Craft::$app->getAssets();
 
-        $assets = Craft::$app->getAssets();
-        $asset = $assets->getAssetById($assetId);
+        // Get the asset
+        $assetId = $request->getRequiredBodyParam('assetId');
+        $asset = $assetsService->getAssetById($assetId);
 
         if (empty($asset)) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $folder = $assets->getFolderById($folderId);
+        // Get the target folder
+        $folderId = $request->getBodyParam('folderId', $asset->folderId);
+        $folder = $assetsService->getFolderById($folderId);
 
         if (empty($folder)) {
             throw new BadRequestHttpException('The folder cannot be found');
         }
 
+        // Get the target filename
+        $filename = $request->getBodyParam('filename', $asset->filename);
+
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
         $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
         $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-        try {
+        // Set the new combined target location, and save it
+        $asset->newLocation = "{folder:{$folderId}}{$filename}";
+        $asset->setScenario(Asset::SCENARIO_MOVE);
 
-            if (!empty($filename)) {
-                $asset->newFilename = $filename;
-                $success = $assets->renameFile($asset);
+        if (!Craft::$app->getElements()->saveElement($asset)) {
+            // Get the corrected filename
+            list(, $filename) = Assets::parseFileLocation($asset->newLocation);
 
-                return $this->asJson(['success' => $success]);
-            }
-
-            if ($asset->folderId != $folderId) {
-                if (!empty($conflictResolution)) {
-                    $conflictingAsset = Asset::find()
-                        ->folderId($folderId)
-                        ->filename(Db::escapeParam($asset->filename))
-                        ->one();
-
-                    if ($conflictResolution === 'replace') {
-                        $assets->replaceAsset($conflictingAsset, $asset, true);
-                    } else {
-                        if ($conflictResolution === 'keepBoth') {
-                            $newFilename = $assets->getNameReplacementInFolder($asset->filename, $folderId);
-                            $assets->moveAsset($asset, $folderId, $newFilename);
-                        }
-                    }
-                } else {
-                    try {
-                        $assets->moveAsset($asset, $folderId);
-                    } catch (AssetConflictException $exception) {
-                        return $this->asJson([
-                            'prompt' => true,
-                            'filename' => $asset->filename,
-                            'assetId' => $asset->id
-                        ]);
-                    }
-                }
-            }
-        } catch (\Exception $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            return $this->asJson([
+                'prompt' => true,
+                'filename' => $filename,
+                'assetId' => $asset->id
+            ]);
         }
 
         return $this->asJson(['success' => true]);

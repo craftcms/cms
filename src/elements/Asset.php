@@ -22,6 +22,7 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\FileException;
 use craft\fields\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
@@ -33,7 +34,7 @@ use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
-use craft\validators\AssetFilenameValidator;
+use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -54,10 +55,16 @@ class Asset extends Element
     // Constants
     // =========================================================================
 
+    // Location error codes
+    // -------------------------------------------------------------------------
+
+    const ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
+    const ERROR_FILENAME_CONFLICT = 'filename_conflict';
+
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_FILENAME = 'filename';
+    const SCENARIO_MOVE = 'move';
 
     // Static
     // =========================================================================
@@ -356,6 +363,17 @@ class Asset extends Element
     public $dateModified;
 
     /**
+     * @var string|null New file location
+     */
+    public $newLocation;
+
+    /**
+     * @var string|null Location error code
+     * @see AssetLocationValidator::validateAttribute()
+     */
+    public $locationError;
+
+    /**
      * @var string|null New filename
      */
     public $newFilename;
@@ -498,7 +516,7 @@ class Asset extends Element
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newFilename'], AssetFilenameValidator::class];
+        $rules[] = [['newLocation'], AssetLocationValidator::class];
 
         return $rules;
     }
@@ -509,7 +527,7 @@ class Asset extends Element
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_FILENAME] = ['newFilename'];
+        $scenarios[self::SCENARIO_MOVE] = ['newLocation'];
 
         return $scenarios;
     }
@@ -936,6 +954,81 @@ class Asset extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
+        if (!$this->folderId && !$this->tempFilePath) {
+            throw new InvalidConfigException('Either folderId or tempFilePath must be set.');
+        }
+
+        // See if we need to perform any file operations
+        if ($this->newLocation) {
+            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            $hasNewFolder = $folderId != $this->folderId;
+            $hasNewFilename = $filename === $this->filename;
+        } else {
+            $folderId = $this->folderId;
+            $filename = $this->filename;
+            $hasNewFolder = $hasNewFilename = false;
+        }
+
+        // Yes/no?
+        if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
+            $assetsService = Craft::$app->getAssets();
+
+            $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
+            $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+
+            $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
+            $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
+
+            $oldPath = $this->folderId ? $this->getUri() : null;
+            $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
+
+            // Is this just a simple move/rename within the same volume?
+            if (!$this->tempFilePath && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+                $oldVolume->renameFile($oldPath, $newPath);
+            } else {
+                // Get the temp path
+                if ($this->tempFilePath) {
+                    $tempPath = $this->tempFilePath;
+                } else {
+                    $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
+                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                    $oldVolume->saveFileLocally($oldPath, $tempPath);
+                }
+
+                // Try to open a file stream
+                if (($stream = fopen($tempPath, 'rb')) === false) {
+                    FileHelper::removeFile($tempPath);
+                    throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
+                }
+
+                // Upload the file to the new location
+                $newVolume->createFileByStream($newPath, $stream, []);
+                fclose($stream);
+
+                if ($this->folderId) {
+                    // Delete the old file
+                    $oldVolume->deleteFile($oldPath);
+                }
+
+                // Delete the temp file
+                FileHelper::removeFile($tempPath);
+            }
+
+            if ($this->folderId) {
+                // Nuke the transforms
+                Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+            }
+
+            // Update file properties
+            $this->volumeId = $newFolder->volumeId;
+            $this->folderId = $folderId;
+            $this->folderPath = $newFolder->path;
+            $this->filename = $filename;
+            $this->newLocation = null;
+            $this->tempFilePath = null;
+        }
+
+        // todo: find a better way to do this
         if ($isNew && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
             // Give it a default title based on the file name
             $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
