@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the `deferPublicRegistrationPassword` config setting was having the opposite effect it was intended for.
+
 ## 3.0.0-beta.6 - 2017-03-03
 
 ### Added
