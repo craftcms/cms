@@ -905,7 +905,7 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            if (Craft::$app->getConfig()->get('deferPublicRegistrationPassword')) {
+            if (!Craft::$app->getConfig()->get('deferPublicRegistrationPassword')) {
                 $user->newPassword = $request->getBodyParam('password', '');
             }
         } else {
