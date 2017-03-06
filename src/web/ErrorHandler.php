@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use yii\base\Exception;
+use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 
@@ -119,6 +120,20 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderException($exception)
+    {
+        // Treat UserExceptions like normal exceptions when Dev Mode is enabled
+        if (YII_DEBUG && $exception instanceof UserException) {
+            $this->errorAction = null;
+            $this->errorView = $this->exceptionView;
+        }
+
+        parent::renderException($exception);
+    }
 
     /**
      * @inheritdoc

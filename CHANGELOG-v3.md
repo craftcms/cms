@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- `UserException` reports are now styled like other exceptions when Dev Mode is enabled, with the full stack trace shown.
+
 ### Fixed
 - Fixed a bug where the `deferPublicRegistrationPassword` config setting was having the opposite effect it was intended for.
 - #1427: Fixed a PHP error that would occur if some, but not all, of the auto-generated classes in `storage/runtime/compiled_classes/` didn’t exist or was out of date.
