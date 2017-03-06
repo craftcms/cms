@@ -146,6 +146,6 @@ class ClearCaches extends Utility
 
         Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $event);
 
-        return $options;
+        return $event->options;
     }
 }
