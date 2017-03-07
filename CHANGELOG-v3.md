@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()`.
 - Temporary uploads are now separated per user only.
 - Assets manager and modals now also display a "Temporary uploads" volume for each user that shows their personal temporary upload folder.
+- Updated the craftcms/server-check library to 1.0.11.
 
 ### Removed
 - Removed `craft\fields\Assets::getFolderOptions()`.
