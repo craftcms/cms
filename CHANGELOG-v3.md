@@ -30,6 +30,7 @@ Craft CMS 3.0 Working Changelog
 - #1457: Fixed the styling of Element Editor HUD headers and footers.
 - #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
 - #1414: Fixed an exception that occurred when an Assets field’s dynamic upload path could not be resolved.
+- #1467: Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
