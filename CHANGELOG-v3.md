@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - `UserException` reports are now styled like other exceptions when Dev Mode is enabled, with the full stack trace shown.
 - It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()`.
+- `craft\services\Volumes::getVolumeById()` now requires an integer as parameter.
 - Temporary uploads are now separated per user only.
 - Assets manager and modals now also display a "Temporary uploads" volume for each user that shows their personal temporary upload folder.
 - Updated the craftcms/server-check library to 1.0.11.

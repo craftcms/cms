@@ -281,11 +281,11 @@ class Volumes extends Component
     /**
      * Returns a volume by its ID.
      *
-     * @param int|null $volumeId
+     * @param int $volumeId
      *
      * @return VolumeInterface|null
      */
-    public function getVolumeById(int $volumeId = null)
+    public function getVolumeById(int $volumeId)
     {
         if ($this->_volumesById !== null && array_key_exists($volumeId, $this->_volumesById)) {
             return $this->_volumesById[$volumeId];
