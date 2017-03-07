@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()` without passing an ID.
 - Assets indexes now show a “Temporary uploads” volume that contain any assets uploaded by the current user, which haven’t been moved to a more permanent location yet.
 - Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
+- #13: Disabled Matrix blocks are no longer shown in Live Preview.
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.

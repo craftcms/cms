@@ -704,12 +704,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $ownerId = null;
         }
 
+        $isLivePreview = Craft::$app->getRequest()->getIsLivePreview();
         $blocks = [];
         $sortOrder = 0;
         $prevBlock = null;
 
         foreach ($value as $blockId => $blockData) {
             if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {
+                continue;
+            }
+
+            // Skip disabled blocks on Live Preview requests
+            if ($isLivePreview && empty($blockData['enabled'])) {
                 continue;
             }
 
