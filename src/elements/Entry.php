@@ -538,15 +538,6 @@ class Entry extends Element
     public function rules()
     {
         $rules = parent::rules();
-
-        if (!$this->getType()->hasTitleField) {
-            // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules, true);
-            if ($key !== -1) {
-                array_splice($rules, $key, 1);
-            }
-        }
-
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
