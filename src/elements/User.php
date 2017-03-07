@@ -60,7 +60,7 @@ class User extends Element implements IdentityInterface
     const STATUS_PENDING = 'pending';
     const STATUS_ARCHIVED = 'archived';
 
-    // Authentication error keys
+    // Authentication error codes
     // -------------------------------------------------------------------------
 
     const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';

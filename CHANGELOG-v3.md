@@ -1,24 +1,50 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Added
+- Added `craft\servies\Assets::getCurrentUserTemporaryUploadFolder()`.
+- Added `craft\service\Assets::getUserTemporaryUploadFolder()`.
+
+### Changed
+- `UserException` reports are now styled like other exceptions when Dev Mode is enabled, with the full stack trace shown.
+- It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()`.
+- Temporary uploads are now separated per user only.
+- Assets manager and modals now also display a "Temporary uploads" volume for each user that shows their personal temporary upload folder.
+- Updated the craftcms/server-check library to 1.0.11.
+
+### Removed
+- Removed `craft\fields\Assets::getFolderOptions()`.
+- Removed `craft\services\Assets::getUserFolder()`.
+
+### Fixed
+- Fixed a bug where the `deferPublicRegistrationPassword` config setting was having the opposite effect it was intended for.
+- #1427: Fixed a PHP error that would occur if some, but not all, of the auto-generated classes in `storage/runtime/compiled_classes/` didn’t exist or was out of date.
+- #1454: Fixed a bug where exceptions that were thrown during template rendering were being displayed without any styling.
+- #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
+- #1457: Fixed the styling of Element Editor HUD headers and footers.
+- #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
+- #1414: Fixed Assets field crashing when a dynamic upload path could not be resolved.
+
 ## 3.0.0-beta.6 - 2017-03-03
 
 ### Added
 - Added a “Cache remote images?” setting to the Asset Indexes utility, which if unchecked will dramatically speed up remote image indexing.
-- Added `craft\base\Volume::getFileMetadata()`
-- Added `craft\base\Volume::getFileStream()`
-- Added `craft\base\VolumeInterface::getFileMetadata()`
-- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\base\Volume::getFileMetadata()`.
+- Added `craft\base\Volume::getFileStream()`.
+- Added `craft\base\VolumeInterface::getFileMetadata()`.
+- Added `craft\base\VolumeInterface::getFileStream()`.
 - Added `craft\elements\Asset::getFocalPoint()`.
 - Added `craft\elements\Asset::getStream()`.
 - Added `craft\helpers\Image::imageSizeByStream()`.
-- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`
-- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`
-- Added `craft\services\AssetIndexer::getIndexListOnVolume()`
-- Added `craft\services\AssetIndexer::getNextIndexEntry()`
-- Added `craft\services\AssetIndexer::processIndexForVolume()`
-- Added `craft\services\AssetIndexer::storeIndexList()`
-- Added `craft\services\AssetIndexer::updateIndexEntry()`
+- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
+- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.
+- Added `craft\services\AssetIndexer::getIndexListOnVolume()`.
+- Added `craft\services\AssetIndexer::getNextIndexEntry()`.
+- Added `craft\services\AssetIndexer::processIndexForVolume()`.
+- Added `craft\services\AssetIndexer::storeIndexList()`.
+- Added `craft\services\AssetIndexer::updateIndexEntry()`.
 - Added `craft\services\Tasks::rerunTask()`.
 - Added `craft\web\Response::getContentType()`.
 
@@ -78,7 +104,7 @@ Craft CMS 3.0 Working Changelog
  - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
  - Fixed a SQL error that could occur when restoring a database backup after a failed update.
  - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
- - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settiings would create a SQL error on PostgreSQL.
+ - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settings would create a SQL error on PostgreSQL.
  - #1424: Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type.
  - #1440: Fixed a bug where element pagination would only think there was one page.
  - #1425: Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated.

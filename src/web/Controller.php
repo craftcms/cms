@@ -97,11 +97,11 @@ abstract class Controller extends \yii\web\Controller
             $headers->set('content-type', $mimeType.'; charset='.$response->charset);
         }
 
-        // Prevent a response formatter from overriding the content-type header
-        $response->format = YiiResponse::FORMAT_RAW;
-
         // Render and return the template
         $response->data = $this->getView()->renderPageTemplate($template, $variables);
+
+        // Prevent a response formatter from overriding the content-type header
+        $response->format = YiiResponse::FORMAT_RAW;
 
         return $response;
     }

@@ -140,23 +140,21 @@ class App
      * @param string $var The PHP config setting to retrieve.
      *
      * @return int The size in bytes.
+     * @see http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes
      */
     public static function phpConfigValueInBytes(string $var): int
     {
         $value = ini_get($var);
 
         // See if we can recognize that.
-        if (!preg_match('/(\d+)(K|M|G|T)/i', $value, $matches)) {
+        if (!preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
             return (int)$value;
         }
 
         $value = (int)$matches[1];
 
-        // Multiply! Falling through here is intentional.
+        // Multiply!
         switch (strtolower($matches[2])) {
-            case 't':
-                $value *= 1024;
-            // no break
             case 'g':
                 $value *= 1024;
             // no break

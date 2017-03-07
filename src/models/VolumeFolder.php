@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\base\VolumeInterface;
+use craft\volumes\Temp;
 
 /**
  * The VolumeFolder model class.
@@ -81,6 +82,10 @@ class VolumeFolder extends Model
      */
     public function getVolume()
     {
+        if ($this->volumeId === null) {
+            return new Temp();
+        }
+
         return Craft::$app->getVolumes()->getVolumeById($this->volumeId);
     }
 
