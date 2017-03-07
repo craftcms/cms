@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- #5: Fixed a bug where translatable fields on new Matrix blocks would show the current application locale rather than the locale of the element being edited.
+
 ## 2.6.2966 - 2017-03-03
 
 ### Fixed
