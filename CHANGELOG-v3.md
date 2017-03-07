@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - #1427: Fixed a PHP error that would occur if some, but not all, of the auto-generated classes in `storage/runtime/compiled_classes/` didn’t exist or was out of date.
 - #1454: Fixed a bug where exceptions that were thrown during template rendering were being displayed without any styling.
 - #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
+- #1457: Fixed the styling of Element Editor HUD headers and footers.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
