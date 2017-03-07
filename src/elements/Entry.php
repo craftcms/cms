@@ -556,6 +556,22 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    public function beforeValidate()
+    {
+        // If validating the slug, make sure the title is in place first
+        $entryType = $this->getType();
+
+        if (!$entryType->hasTitleField) {
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        }
+
+
+        return parent::beforeValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         return $this->getType()->getFieldLayout();
@@ -867,7 +883,6 @@ EOD;
     public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
-        $entryType = $this->getType();
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
@@ -900,10 +915,6 @@ EOD;
         if ($this->enabled && !$this->postDate) {
             // Default the post date to the current date/time
             $this->postDate = DateTimeHelper::currentUTCDateTime();
-        }
-
-        if (!$entryType->hasTitleField) {
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
 
         return parent::beforeSave($isNew);

@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - #1454: Fixed a bug where exceptions that were thrown during template rendering were being displayed without any styling.
 - #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
 - #1457: Fixed the styling of Element Editor HUD headers and footers.
+- #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
