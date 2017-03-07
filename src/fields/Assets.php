@@ -7,12 +7,9 @@
 
 namespace craft\fields;
 
-// @TODO asset source -> volume in settings and everywhere.
-
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -123,39 +120,19 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * Returns the available folder options for the settings
-     *
-     * @return array
-     */
-    public function getFolderOptions(): array
-    {
-        $folderOptions = [];
-
-        foreach (Asset::sources('settings') as $key => $volume) {
-            if (!isset($volume['heading'])) {
-                $folderOptions[] = [
-                    'label' => $volume['label'],
-                    'value' => $volume['key']
-                ];
-            }
-        }
-
-        return $folderOptions;
-    }
-
-    /**
      * @inheritdoc
      */
     public function getSourceOptions(): array
     {
         $sourceOptions = [];
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
-            /** @var Volume $volume */
-            $sourceOptions[] = [
-                'label' => $volume->name,
-                'value' => $volume->id
-            ];
+        foreach (Asset::sources('settings') as $key => $volume) {
+            if (!isset($volume['heading'])) {
+                $sourceOptions[] = [
+                    'label' => $volume['label'],
+                    'value' => $volume['key']
+                ];
+            }
         }
 
         return $sourceOptions;
@@ -512,8 +489,9 @@ class Assets extends BaseRelationField
             $folderPath = 'folder:'.$folderId;
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
 
+
             // Construct the path
-            while ($folder->parentId) {
+            while ($folder->parentId && $folder->volumeId !== null) {
                 $parent = $folder->getParent();
                 $folderPath = 'folder:'.$parent->id.'/'.$folderPath;
                 $folder = $parent;
@@ -567,7 +545,7 @@ class Assets extends BaseRelationField
     /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
-     * @param int                   $volumeId
+     * @param string                $uploadSource
      * @param string                $subpath
      * @param ElementInterface|null $element
      * @param bool                  $createDynamicFolders whether missing folders should be created in the process
@@ -576,19 +554,21 @@ class Assets extends BaseRelationField
      * @throws InvalidSubpathException if the subpath cannot be parsed in full
      * @return int
      */
-    private function _resolveVolumePathToFolderId(int $volumeId, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
+    private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
-        // Get the root folder in the source
-        $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volumeId);
+        $assets = Craft::$app->getAssets();
 
-        // Are we looking for a subfolder?
-        $subpath = is_string($subpath) ? trim($subpath, '/') : '';
+        $parts = explode(':', $uploadSource);
+        $folder = $assets->getFolderById((int)end($parts));
+        $volumeId = $folder ? $folder->volumeId : 0;
 
-        // Make sure the root folder actually exists
-        if (!$rootFolder) {
+        // Make sure the volume and root folder actually exists
+        if ($volumeId === 0 || !($rootFolder = $assets->getRootFolderByVolumeId($volumeId))) {
             throw new InvalidVolumeException();
         }
 
+        // Are we looking for a subfolder?
+        $subpath = is_string($subpath) ? trim($subpath, '/') : '';
 
         if ($subpath === '') {
             // Get the root folder in the source
@@ -716,43 +696,26 @@ class Assets extends BaseRelationField
     private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         if ($this->useSingleFolder) {
-            $volumeId = $this->singleUploadLocationSource;
+            $uploadSource = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
         } else {
-            $volumeId = $this->defaultUploadLocationSource;
+            $uploadSource = $this->defaultUploadLocationSource;
             $subpath = $this->defaultUploadLocationSubpath;
         }
 
+        $assets = Craft::$app->getAssets();
+
         try {
-            $folderId = $this->_resolveVolumePathToFolderId($volumeId, $subpath, $element, $createDynamicFolders);
+            $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
         } catch (InvalidSubpathException $exception) {
             // If this is a new element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
             if (empty($element->id) || !$createDynamicFolders) {
                 $userModel = Craft::$app->getUser()->getIdentity();
 
-                $userFolder = Craft::$app->getAssets()->getUserFolder($userModel);
+                $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
 
-                $folderName = 'field_'.$this->id;
-                $elementFolder = Craft::$app->getAssets()->findFolder([
-                    'parentId' => $userFolder->id,
-                    'name' => $folderName
-                ]);
-
-                if (!$elementFolder) {
-                    $folder = new VolumeFolder([
-                        'parentId' => $userFolder->id,
-                        'name' => $folderName,
-                        'path' => $userFolder->path.$folderName.'/'
-                    ]);
-
-                    Craft::$app->getAssets()->createFolder($folder);
-                } else {
-                    $folder = $elementFolder;
-                }
-
-                FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
-                $folderId = $folder->id;
+                $folderId = $userFolder->id;
             } else {
                 // Existing element, so this is just a bad subpath
                 throw $exception;

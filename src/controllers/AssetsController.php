@@ -808,6 +808,15 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
+        if (!$asset->volumeId) {
+            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+
+            // Skip permission check only if it's the user's temporary folder
+            if ($userTemporaryFolder->id == $asset->folderId) {
+                return;
+            }
+        }
+
         $this->_requirePermissionByVolumeId($permissionName, $asset->volumeId);
     }
 
@@ -821,6 +830,15 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
+        if (!$folder->volumeId) {
+            $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+
+            // Skip permission check only if it's the user's temporary folder
+            if ($userTemporaryFolder->id == $folder->id) {
+                return;
+            }
+        }
+
         $this->_requirePermissionByVolumeId($permissionName, $folder->volumeId);
     }
 

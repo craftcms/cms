@@ -1096,25 +1096,34 @@ class Assets extends Component
     }
 
     /**
-     * Get the user's folder.
+     * Return the current user's temporary upload folder.
+     *
+     * @return VolumeFolder
+     */
+    public function getCurrentUserTemporaryUploadFolder() {
+        return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
+    }
+
+    /**
+     * Get the user's temporary upload folder.
      *
      * @param User|null $userModel
      *
-     * @return VolumeFolder|null
+     * @return VolumeFolder
      */
-    public function getUserFolder(User $userModel = null)
+    public function getUserTemporaryUploadFolder(User $userModel = null)
     {
-        $sourceTopFolder = $this->findFolder([
+        $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:'
         ]);
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.
-        if (!$sourceTopFolder) {
-            $sourceTopFolder = new VolumeFolder();
-            $tempSource = new Temp();
-            $sourceTopFolder->name = $tempSource->name;
-            $this->storeFolderRecord($sourceTopFolder);
+        if (!$volumeTopFolder) {
+            $volumeTopFolder = new VolumeFolder();
+            $tempVolume = new Temp();
+            $volumeTopFolder->name = $tempVolume->name;
+            $this->storeFolderRecord($volumeTopFolder);
         }
 
         if ($userModel) {
@@ -1127,17 +1136,22 @@ class Assets extends Component
 
         $folder = $this->findFolder([
             'name' => $folderName,
-            'parentId' => $sourceTopFolder->id
+            'parentId' => $volumeTopFolder->id
         ]);
 
         if (!$folder) {
             $folder = new VolumeFolder();
-            $folder->parentId = $sourceTopFolder->id;
+            $folder->parentId = $volumeTopFolder->id;
             $folder->name = $folderName;
             $folder->path = $folderName.'/';
             $this->storeFolderRecord($folder);
         }
 
+        FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
+
+        /**
+         * @var VolumeFolder $folder;
+         */
         return $folder;
     }
 

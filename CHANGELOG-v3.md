@@ -3,8 +3,19 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `craft\servies\Assets::getCurrentUserTemporaryUploadFolder()`.
+- Added `craft\service\Assets::getUserTemporaryUploadFolder()`.
+
 ### Changed
 - `UserException` reports are now styled like other exceptions when Dev Mode is enabled, with the full stack trace shown.
+- It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()`.
+- Temporary uploads are now separated per user only.
+- Assets manager and modals now also display a "Temporary uploads" volume for each user that shows their personal temporary upload folder.
+
+### Removed
+- Removed `craft\fields\Assets::getFolderOptions()`.
+- Removed `craft\services\Assets::getUserFolder()`.
 
 ### Fixed
 - Fixed a bug where the `deferPublicRegistrationPassword` config setting was having the opposite effect it was intended for.
@@ -13,25 +24,26 @@ Craft CMS 3.0 Working Changelog
 - #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
 - #1457: Fixed the styling of Element Editor HUD headers and footers.
 - #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
+- #1414: Fixed Assets field crashing when a dynamic upload path could not be resolved.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
 ### Added
 - Added a “Cache remote images?” setting to the Asset Indexes utility, which if unchecked will dramatically speed up remote image indexing.
-- Added `craft\base\Volume::getFileMetadata()`
-- Added `craft\base\Volume::getFileStream()`
-- Added `craft\base\VolumeInterface::getFileMetadata()`
-- Added `craft\base\VolumeInterface::getFileStream()`
+- Added `craft\base\Volume::getFileMetadata()`.
+- Added `craft\base\Volume::getFileStream()`.
+- Added `craft\base\VolumeInterface::getFileMetadata()`.
+- Added `craft\base\VolumeInterface::getFileStream()`.
 - Added `craft\elements\Asset::getFocalPoint()`.
 - Added `craft\elements\Asset::getStream()`.
 - Added `craft\helpers\Image::imageSizeByStream()`.
-- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`
-- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`
-- Added `craft\services\AssetIndexer::getIndexListOnVolume()`
-- Added `craft\services\AssetIndexer::getNextIndexEntry()`
-- Added `craft\services\AssetIndexer::processIndexForVolume()`
-- Added `craft\services\AssetIndexer::storeIndexList()`
-- Added `craft\services\AssetIndexer::updateIndexEntry()`
+- Added `craft\services\AssetIndexer::extractFolderItemsFromIndexList()`.
+- Added `craft\services\AssetIndexer::extractSkippedItemsFromIndexList()`.
+- Added `craft\services\AssetIndexer::getIndexListOnVolume()`.
+- Added `craft\services\AssetIndexer::getNextIndexEntry()`.
+- Added `craft\services\AssetIndexer::processIndexForVolume()`.
+- Added `craft\services\AssetIndexer::storeIndexList()`.
+- Added `craft\services\AssetIndexer::updateIndexEntry()`.
 - Added `craft\services\Tasks::rerunTask()`.
 - Added `craft\web\Response::getContentType()`.
 

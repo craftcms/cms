@@ -288,12 +288,6 @@ class Volumes extends Component
      */
     public function getVolumeById(int $volumeId = null)
     {
-        // TODO: Temp volumes should not be created here!
-        // Temporary volume?
-        if ($volumeId === null) {
-            return new Temp();
-        }
-
         if ($this->_volumesById !== null && array_key_exists($volumeId, $this->_volumesById)) {
             return $this->_volumesById[$volumeId];
         }
