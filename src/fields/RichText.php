@@ -181,7 +181,7 @@ class RichText extends Field
         $settings = [
             'id' => $view->namespaceInputId($id),
             'linkOptions' => $this->_getLinkOptions($element),
-            'volumes' => $this->_getVolumes(),
+            'volumes' => $this->_getVolumeKeys(),
             'transforms' => $this->_getTransforms(),
             'elementSiteId' => $site->id,
             'redactorConfig' => Json::decode($configJs),
@@ -425,9 +425,9 @@ class RichText extends Field
     /**
      * Returns the available volumes.
      *
-     * @return array
+     * @return string[]
      */
-    private function _getVolumes(): array
+    private function _getVolumeKeys(): array
     {
         $volumes = [];
 
@@ -455,7 +455,7 @@ class RichText extends Field
     /**
      * Get available transforms.
      *
-     * @return array
+     * @return \stdClass[]
      */
     private function _getTransforms(): array
     {
