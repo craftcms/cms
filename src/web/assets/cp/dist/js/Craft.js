@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-03-06 */
+/*! Craft 3.0.0 - 2017-03-07 */
 (function($){
 
 /** global: Craft */
@@ -15675,7 +15675,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label
             });
 
             // Should we include a hidden input first?
@@ -15720,26 +15720,33 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var allValue = (config.allValue || '*'),
-                allChecked = (!config.values || config.values == config.allValue);
-
             var $container = $('<div class="checkbox-select"/>');
+
             if (config.class) {
                 $container.addClass(config.class);
             }
 
-            // Create the "All" checkbox
-            $('<div/>').appendTo($container).append(
-                this.createCheckbox({
-                    id: config.id,
-                    'class': 'all',
-                    label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
-                    name: config.name,
-                    value: allValue,
-                    checked: allChecked,
-                    autofocus: config.autofocus
-                })
-            );
+            var allValue, allChecked;
+
+            if (config.showAllOption) {
+                allValue = (config.allValue || '*');
+                allChecked = (config.values == allValue);
+
+                // Create the "All" checkbox
+                $('<div/>').appendTo($container).append(
+                    this.createCheckbox({
+                        id: config.id,
+                        'class': 'all',
+                        label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+                        name: config.name,
+                        value: allValue,
+                        checked: allChecked,
+                        autofocus: config.autofocus
+                    })
+                );
+            } else {
+                allChecked = false;
+            }
 
             // Create the actual options
             for (var i = 0; i < config.options.length; i++) {
