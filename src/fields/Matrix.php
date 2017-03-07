@@ -682,12 +682,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $ids = [];
 
-            foreach ($value as $blockId => &$block) {
+            foreach (array_keys($value) as $blockId) {
                 if (is_numeric($blockId) && $blockId != 0) {
                     $ids[] = $blockId;
                 }
             }
-            unset($block);
 
             if (!empty($ids)) {
                 $oldBlocksQuery = MatrixBlock::find();
