@@ -6,7 +6,9 @@
 
     {{ forms.checkboxSelect({
         name: 'caches',
-        options: options
+        options: options,
+        showAllOption: true,
+        values: '*',
     }) }}
 
     <div class="buttons">
