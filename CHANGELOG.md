@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 - #5: Fixed a bug where translatable fields on new Matrix blocks would show the current application locale rather than the locale of the element being edited.
 - Fixed a PHP error that could occur if you called `craft()->updates->isCriticalUpdateAvailable()` and there wasn't any cached plugin update info.
+- Fixed a few bugs that prevented a console request from being able to call `craft()->entries->saveEntry()` successfully in some circumstances.
 
 ## 2.6.2966 - 2017-03-03
 
