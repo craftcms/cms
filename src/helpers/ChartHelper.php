@@ -46,9 +46,7 @@ class ChartHelper
 			'valueLabel' => Craft::t('Value'),
 			'valueType' => 'number',
 		), $options);
-
-		$craftTimezone = new \DateTimeZone(craft()->timezone);
-
+        
 		if ($options['intervalUnit'] && in_array($options['intervalUnit'], array('year', 'month', 'day', 'hour')))
 		{
 			$intervalUnit = $options['intervalUnit'];
@@ -65,7 +63,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-01-01';
 				$phpDateFormat = 'Y-01-01';
 				$sqlGroup = "YEAR({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
 				break;
 			}
 			case 'month':
@@ -73,7 +70,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-01';
 				$phpDateFormat = 'Y-m-01';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
 				break;
 			}
 			case 'day':
@@ -81,7 +77,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-%d';
 				$phpDateFormat = 'Y-m-d';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
 				break;
 			}
 			case 'hour':
@@ -89,32 +84,33 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-%d %H:00:00';
 				$phpDateFormat = 'Y-m-d H:00:00';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn}), HOUR({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
 				break;
 			}
 		}
 
-		// Execute the query
-		$results = $query
-			->addSelect("DATE_FORMAT({$dateColumn}, '{$sqlDateFormat}') as date")
-			->andWhere(
-				array('and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'),
-				array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()))
-			->group($sqlGroup)
-			->order($dateColumn.' asc')
-			->queryAll();
+        // Execute the query
+        $results = $query
+            ->addSelect("DATE_FORMAT({$dateColumn}, '{$sqlDateFormat}') as date")
+            ->andWhere(
+                array('and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'),
+                array(':startDate' => $startDate->format(DateTime::MYSQL_DATETIME, DateTime::UTC), ':endDate' => $endDate->format(DateTime::MYSQL_DATETIME, DateTime::UTC)))
+            ->group($sqlGroup)
+            ->order($dateColumn.' asc')
+            ->queryAll();
 
 		// Assembe the data
 		$rows = array();
 
+        $cursorDate = $startDate;
 		$endTimestamp = $endDate->getTimestamp();
 
 		while ($cursorDate->getTimestamp() < $endTimestamp)
 		{
-			// Do we have a record for this date?
-			$formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
+            // Do we have a record for this date?
+            $cursorDateUtc = $cursorDate->format($phpDateFormat, DateTime::UTC);
+            $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
-			if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate)
+			if (isset($results[0]) && $results[0]['date'] == $cursorDateUtc)
 			{
 				$value = (float) $results[0]['value'];
 				array_shift($results);
@@ -131,7 +127,7 @@ class ChartHelper
 		return array(
 			'columns' => array(
 				array(
-					'type' => ($intervalUnit == 'hour' ? 'datetime' : 'date'),
+					'type' => ($intervalUnit === 'hour' ? 'datetime' : 'date'),
 					'label' => $options['categoryLabel']
 				),
 				array(
