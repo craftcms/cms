@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
 - #1414: Fixed an exception that occurred when an Assets field’s dynamic upload path could not be resolved.
 - #1467: Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals.
+- #1469: Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
