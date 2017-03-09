@@ -95,7 +95,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function update(string $fromVersion)
     {
-        if ($this->beforeUpdate() === false) {
+        if ($this->beforeUpdate($fromVersion) === false) {
             return false;
         }
 
@@ -103,7 +103,7 @@ class Plugin extends Module implements PluginInterface
             return false;
         }
 
-        $this->afterUpdate();
+        $this->afterUpdate($fromVersion);
 
         return null;
     }
@@ -229,17 +229,21 @@ class Plugin extends Module implements PluginInterface
     /**
      * Performs actions before the plugin is updated.
      *
+     * @param string $fromVersion The previously installed version of the plugin.
+     *
      * @return bool Whether the plugin should be updated
      */
-    protected function beforeUpdate(): bool
+    protected function beforeUpdate(string $fromVersion): bool
     {
         return true;
     }
 
     /**
      * Performs actions after the plugin is updated.
+     *
+     * @param string $fromVersion The previously installed version of the plugin.
      */
-    protected function afterUpdate()
+    protected function afterUpdate(string $fromVersion)
     {
     }
 

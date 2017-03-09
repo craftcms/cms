@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
 - #13: Disabled Matrix blocks are no longer shown in Live Preview.
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
+- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.
 - Updated the craftcms/server-check library to 1.0.11.
