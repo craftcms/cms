@@ -768,7 +768,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = $variables['section']->getEntryTypes()[0]->id;
+            $typeId = $variables['entry']->typeId ?? $variables['section']->getEntryTypes()[0]->id;
         }
 
         $variables['entry']->typeId = $typeId;
