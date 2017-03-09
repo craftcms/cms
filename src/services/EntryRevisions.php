@@ -419,7 +419,7 @@ class EntryRevisions extends Component
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
         $versionRecord->sectionId = $entry->sectionId;
-        $versionRecord->creatorId = Craft::$app->getUser()->getIdentity() ? Craft::$app->getUser()->getIdentity()->id : $entry->authorId;
+        $versionRecord->creatorId = Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
         $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
         $versionRecord->data = $this->_getRevisionData($entry);
