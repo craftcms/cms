@@ -60,8 +60,6 @@ class ChartHelper
 
         $databaseType = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
 
-        $craftTimezone = new \DateTimeZone(Craft::$app->getTimeZone());
-
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
         } else {
@@ -99,7 +97,6 @@ class ChartHelper
                 }
                 $phpDateFormat = 'Y-01-01';
                 $sqlGroup = [$yearSql];
-                $cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
                 break;
             case 'month':
                 switch ($databaseType) {
@@ -114,7 +111,6 @@ class ChartHelper
                 }
                 $phpDateFormat = 'Y-m-01';
                 $sqlGroup = [$yearSql, $monthSql];
-                $cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
                 break;
             case 'day':
                 switch ($databaseType) {
@@ -129,7 +125,6 @@ class ChartHelper
                 }
                 $phpDateFormat = 'Y-m-d';
                 $sqlGroup = [$yearSql, $monthSql, $daySql];
-                $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             case 'hour':
                 switch ($databaseType) {
@@ -144,7 +139,6 @@ class ChartHelper
                 }
                 $phpDateFormat = 'Y-m-d H:00:00';
                 $sqlGroup = [$yearSql, $monthSql, $daySql, $hourSql];
-                $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             default:
                 throw new Exception('Invalid interval unit: '.$intervalUnit);
@@ -168,8 +162,8 @@ class ChartHelper
             ->addSelect([$select])
             ->andWhere([
                 'and',
-                ['>=', $dateColumn, $startDate->format('Y-m-d H:i:s')],
-                ['<', $dateColumn, $endDate->format('Y-m-d H:i:s')]
+                ['>=', $dateColumn, Db::prepareDateForDb($startDate)],
+                ['<', $dateColumn, Db::prepareDateForDb($endDate)]
             ])
             ->groupBy($sqlGroup)
             ->orderBy(['[[date]]' => SORT_ASC])
@@ -178,13 +172,17 @@ class ChartHelper
         // Assemble the data
         $rows = [];
 
+        $cursorDate = $startDate;
         $endTimestamp = $endDate->getTimestamp();
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             // Do we have a record for this date?
+            $cursorDateUtc = (clone $cursorDate)
+                ->setTimezone(new \DateTimeZone('UTC'))
+                ->format($phpDateFormat);
             $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
-            if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate) {
+            if (isset($results[0]) && $results[0]['date'] === $cursorDateUtc) {
                 $value = (float)$results[0]['value'];
                 array_shift($results);
             } else {

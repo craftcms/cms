@@ -633,7 +633,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $bodyHtml = Craft::$app->getView()->namespaceInputs(Craft::$app->getView()->renderTemplate('_includes/fields',
                 [
                     'namespace' => null,
-                    'fields' => $fieldLayoutFields
+                    'fields' => $fieldLayoutFields,
+                    'element' => $block,
                 ]));
 
             // Reset $_isFresh's
