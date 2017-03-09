@@ -519,7 +519,7 @@ class HttpRequestService extends \CHttpRequest
 	 * @param string $name The dot-delimited name of the POST param to be fetched.
 	 *
 	 * @return mixed The value of the corresponding POST param
-     * @thorws HttpException if the param did not validate
+	 * @thorws HttpException if the param did not validate
 	 */
 	public function getValidatedPost($name)
 	{
@@ -529,10 +529,10 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$value = craft()->security->validateData($value);
 
-            if ($value === false)
-            {
-                throw new HttpException(400, Craft::t('POST param “{name}” was invalid.', array('name' => $name)));
-            }
+			if ($value === false)
+			{
+				throw new HttpException(400, Craft::t('POST param “{name}” was invalid.', array('name' => $name)));
+			}
 		}
 
 		return $value;
@@ -933,7 +933,7 @@ class HttpRequestService extends \CHttpRequest
 
 	// Rename getIsX() => isX() functions for consistency
 	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter) but
-    //    we're trying to resist the temptation of magic methods for the sake of code obviousness.
+	//    we're trying to resist the temptation of magic methods for the sake of code obviousness.
 
 	/**
 	 * Alias of {@link getIsSecureConnection()}.

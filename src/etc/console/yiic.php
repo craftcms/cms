@@ -6,10 +6,10 @@ $appPath = realpath(dirname(dirname(dirname(__FILE__))));
 
 if (isset($appPath[0]) && isset($appPath[1]))
 {
-    if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
-    {
-        $appPath = str_replace('\\', '/', $appPath);
-    }
+	if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
+	{
+		$appPath = str_replace('\\', '/', $appPath);
+	}
 }
 
 $frontConfigPath = false;

@@ -16,21 +16,21 @@ class TasksVariable
 	// Public Methods
 	// =========================================================================
 
-    /**
-     * Returns info about the background tasks.
-     */
-    public function getTaskInfo()
-    {
-        $tasks = craft()->tasks->getAllTasks();
-        $taskInfo = array();
+	/**
+	 * Returns info about the background tasks.
+	 */
+	public function getTaskInfo()
+	{
+		$tasks = craft()->tasks->getAllTasks();
+		$taskInfo = array();
 
-        foreach ($tasks as $task)
-        {
-            $taskInfo[] = $task->getInfo();
-        }
+		foreach ($tasks as $task)
+		{
+			$taskInfo[] = $task->getInfo();
+		}
 
-        return $taskInfo;
-    }
+		return $taskInfo;
+	}
 
 	/**
 	 * Returns the currently running task.

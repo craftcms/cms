@@ -107,7 +107,7 @@ class TaskModel extends BaseComponentModel
 			'description' => $this->getDescription(),
 			'status'      => $this->status,
 			'progress'    => $this->getProgress(),
-            'age'         => time() - $this->dateUpdated->getTimestamp(),
+			'age'         => time() - $this->dateUpdated->getTimestamp(),
 		);
 	}
 
@@ -128,8 +128,8 @@ class TaskModel extends BaseComponentModel
 			'totalSteps'  => AttributeType::Number,
 			'currentStep' => AttributeType::Number,
 			'status'      => array(AttributeType::Enum, 'values' => array(TaskStatus::Pending, TaskStatus::Error, TaskStatus::Running), 'default' => TaskStatus::Pending),
-            'dateCreated' => AttributeType::DateTime,
-            'dateUpdated' => AttributeType::DateTime,
+			'dateCreated' => AttributeType::DateTime,
+			'dateUpdated' => AttributeType::DateTime,
 		));
 	}
 }

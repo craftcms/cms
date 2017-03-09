@@ -29,7 +29,7 @@ class FeedsService extends BaseApplicationComponent
 
 		// Import this here to ensure that libs like SimplePie are using our version of the class and not any server's
 		// random version.
-        require_once craft()->path->getVendorPath().'simplepie/simplepie/idn/idna_convert.class.php';
+		require_once craft()->path->getVendorPath().'simplepie/simplepie/idn/idna_convert.class.php';
 	}
 
 	/**

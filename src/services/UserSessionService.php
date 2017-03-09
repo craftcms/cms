@@ -447,8 +447,8 @@ class UserSessionService extends \CWebUser
 				}
 
 				$this->setReturnUrl($url);
-                $url = UrlHelper::getUrl(craft()->config->getLoginPath());
-                craft()->request->redirect($url);
+				$url = UrlHelper::getUrl(craft()->config->getLoginPath());
+				craft()->request->redirect($url);
 			}
 			elseif (isset($this->loginRequiredAjaxResponse))
 			{
@@ -456,7 +456,7 @@ class UserSessionService extends \CWebUser
 				craft()->end();
 			}
 
-            throw new HttpException(403, Craft::t('yii','Login Required'));
+			throw new HttpException(403, Craft::t('yii','Login Required'));
 		}
 	}
 

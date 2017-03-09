@@ -217,7 +217,7 @@ class WebApp extends \CWebApplication
 			if ($this->request->isCpRequest())
 			{
 				$version = $this->getVersion();
-                $url = AppHelper::getCraftDownloadUrl($version);
+				$url = AppHelper::getCraftDownloadUrl($version);
 
 				throw new HttpException(200, Craft::t('Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', array(
 					'url' => '['.$version.']('.$url.')',

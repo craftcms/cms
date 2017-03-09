@@ -248,17 +248,17 @@ class SvgImage extends BaseImage
 			$this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
 		}
 
-        // If viewbox does not exist, add it to retain the scale.
-        if (!preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent))
-        {
-            $viewBox = "0 0 {$this->_width} {$this->_height}";
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
-        }
+		// If viewbox does not exist, add it to retain the scale.
+		if (!preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent))
+		{
+			$viewBox = "0 0 {$this->_width} {$this->_height}";
+			$this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
+		}
 
 		$this->_width = $targetWidth;
 		$this->_height = $targetHeight;
 
-        return $this;
+		return $this;
 	}
 
 	/**

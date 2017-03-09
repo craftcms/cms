@@ -16,7 +16,7 @@ class m161109_000000_index_shuffle extends BaseMigration
 		// Order is important.
 		Craft::log('Dropping `expiryDate,cacheKey,locale,path` index on the templatecaches table.', LogLevel::Info, true);
 		MigrationHelper::dropIndexIfExists('templatecaches', array('expiryDate', 'cacheKey', 'locale', 'path'));
-        MigrationHelper::dropIndexIfExists('templatecaches', array('locale', 'cacheKey', 'path', 'expiryDate'));
+		MigrationHelper::dropIndexIfExists('templatecaches', array('locale', 'cacheKey', 'path', 'expiryDate'));
 
 		Craft::log('Creating `locale,cacheKey,path,expiryDate` index on the templatecaches table.', LogLevel::Info, true);
 		$this->createIndex('templatecaches', 'locale,cacheKey,path,expiryDate');
