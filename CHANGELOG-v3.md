@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - #13: Disabled Matrix blocks are no longer shown in Live Preview.
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
 - `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.
+- `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.
 - Updated the craftcms/server-check library to 1.0.11.
