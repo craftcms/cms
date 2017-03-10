@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - #1467: Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals.
 - #1469: Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method.
 - #1470: Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type.
+- Fixed a PHP error that occurred when attempting to rerun a failed task.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
