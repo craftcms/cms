@@ -42,6 +42,7 @@ Craft CMS 3.0 Working Changelog
 - #1470: Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type.
 - Fixed a PHP error that occurred when attempting to rerun a failed task.
 - #16: Fixed a bug where Matrix and relational field values weren’t getting propagated to new sites correctly.
+- #1472: Fixed a bug where the `CRAFT_SITE` constant wasn’t being respected.
 
 ## 3.0.0-beta.6 - 2017-03-03
 
