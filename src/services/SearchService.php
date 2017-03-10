@@ -79,12 +79,12 @@ class SearchService extends BaseApplicationComponent
 		    if ($elementTypeClass === ElementType::Tag && $attribute === 'name')
 		    {
 		        /** @var TagModel $element */
-                $value = $element->getName(false);
-            }
-            else
-            {
-                $value = $element->$attribute;
-            }
+				$value = $element->getName(false);
+			}
+			else
+			{
+				$value = $element->$attribute;
+			}
 
 			$value = StringHelper::arrayToString($value);
 			$this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);

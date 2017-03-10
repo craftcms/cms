@@ -6,17 +6,17 @@ namespace Craft;
  */
 class m150918_000001_add_colspan_to_widgets extends BaseMigration
 {
-    /**
-     * Any migration code in here is wrapped inside of a transaction.
-     *
-     * @return bool
-     */
-    public function safeUp()
-    {
+	/**
+	 * Any migration code in here is wrapped inside of a transaction.
+	 *
+	 * @return bool
+	 */
+	public function safeUp()
+	{
 
-        // Allow transforms to have a format
-        $this->addColumnAfter('widgets', 'colspan', array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true), 'sortOrder');
+		// Allow transforms to have a format
+		$this->addColumnAfter('widgets', 'colspan', array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true), 'sortOrder');
 
-        return true;
-    }
+		return true;
+	}
 }

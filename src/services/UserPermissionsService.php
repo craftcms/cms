@@ -252,9 +252,9 @@ class UserPermissionsService extends BaseApplicationComponent
 			->delete('userpermissions_usergroups', array('groupId' => $groupId));
 
 		// Lowercase the permissions
-        $permissions = array_map('strtolower', $permissions);
+		$permissions = array_map('strtolower', $permissions);
 
-        // Filter out any orphaned permissions
+		// Filter out any orphaned permissions
 		$permissions = $this->_filterOrphanedPermissions($permissions);
 
 		if ($permissions)
@@ -273,7 +273,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Cache the new permissions
-        $this->_permissionsByGroupId[$groupId] = $permissions;
+		$this->_permissionsByGroupId[$groupId] = $permissions;
 
 		return true;
 	}
@@ -334,8 +334,8 @@ class UserPermissionsService extends BaseApplicationComponent
 		craft()->db->createCommand()
 			->delete('userpermissions_users', array('userId' => $userId));
 
-        // Lowercase the permissions
-        $permissions = array_map('strtolower', $permissions);
+		// Lowercase the permissions
+		$permissions = array_map('strtolower', $permissions);
 
 		// Filter out any orphaned permissions
 		$groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -357,7 +357,7 @@ class UserPermissionsService extends BaseApplicationComponent
 		}
 
 		// Cache the new permissions
-        $this->_permissionsByUserId[$userId] = $permissions;
+		$this->_permissionsByUserId[$userId] = $permissions;
 
 		return true;
 	}

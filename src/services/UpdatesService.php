@@ -128,11 +128,14 @@ class UpdatesService extends BaseApplicationComponent
 			return true;
 		}
 
-		foreach ($this->_updateModel->plugins as $pluginUpdateModel)
+		if (!empty($this->_updateModel->plugins))
 		{
-			if ($pluginUpdateModel->criticalUpdateAvailable)
+			foreach ($this->_updateModel->plugins as $pluginUpdateModel)
 			{
-				return true;
+				if ($pluginUpdateModel->criticalUpdateAvailable)
+				{
+					return true;
+				}
 			}
 		}
 

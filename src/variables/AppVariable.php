@@ -102,7 +102,7 @@ class AppVariable
 	 *
 	 * @return string
 	 * @deprecated
-     * @todo remove in 3.0
+	 * @todo remove in 3.0
 	 */
 	public function getBuild()
 	{

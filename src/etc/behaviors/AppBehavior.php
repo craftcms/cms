@@ -141,15 +141,15 @@ class AppBehavior extends BaseBehavior
 	 * Returns the installed Craft build.
 	 *
 	 * @return string
-     * @deprecated
-     * @todo remove in 3.0
+	 * @deprecated
+	 * @todo remove in 3.0
 	 */
 	public function getBuild()
 	{
-        craft()->deprecator->log('getBuild()', 'craft()->getBuild() has been deprecated. As of Craft 2.6.2951, craft()->getVersion() returns the complete version number (X.Y.Z).');
-        preg_match('/^\d+\.\d+\.(\d+)/', $this->getVersion(), $matches);
+		craft()->deprecator->log('getBuild()', 'craft()->getBuild() has been deprecated. As of Craft 2.6.2951, craft()->getVersion() returns the complete version number (X.Y.Z).');
+		preg_match('/^\d+\.\d+\.(\d+)/', $this->getVersion(), $matches);
 
-        return $matches[1];
+		return $matches[1];
 	}
 
 	/**
@@ -171,7 +171,7 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getReleaseDate()
 	{
-        craft()->deprecator->log('getReleaseDate()', 'craft()->getReleaseDate() has been deprecated.');
+		craft()->deprecator->log('getReleaseDate()', 'craft()->getReleaseDate() has been deprecated.');
 
 		return new DateTime();
 	}
@@ -185,7 +185,7 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getTrack()
 	{
-        craft()->deprecator->log('getTrack()', 'craft()->getTrack() has been deprecated.');
+		craft()->deprecator->log('getTrack()', 'craft()->getTrack() has been deprecated.');
 
 		return 'stable';
 	}
@@ -510,26 +510,26 @@ class AppBehavior extends BaseBehavior
 				}
 
 				// todo: remove after next breakpiont
-                if (isset($row['build']))
-                {
-                    $version = $row['version'];
+				if (isset($row['build']))
+				{
+					$version = $row['version'];
 
-                    switch ($row['track'])
-                    {
-                        case 'dev':
-                            $version .= '.0-alpha.'.$row['build'];
-                            break;
-                        case 'beta':
-                            $version .= '.0-beta.'.$row['build'];
-                            break;
-                        default:
-                            $version .= '.'.$row['build'];
-                            break;
-                    }
+					switch ($row['track'])
+					{
+						case 'dev':
+							$version .= '.0-alpha.'.$row['build'];
+							break;
+						case 'beta':
+							$version .= '.0-beta.'.$row['build'];
+							break;
+						default:
+							$version .= '.'.$row['build'];
+							break;
+					}
 
-                    $row['version'] = $version;
-                    unset($row['build'], $row['releaseDate'], $row['track']);
-                }
+					$row['version'] = $version;
+					unset($row['build'], $row['releaseDate'], $row['track']);
+				}
 
 				$this->_info = new InfoModel($row);
 			}

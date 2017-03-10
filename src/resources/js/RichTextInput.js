@@ -89,25 +89,9 @@ Craft.RichTextInput = Garnish.Base.extend(
 			}
 		}
 
-		var callbacks = {
+        this.redactorConfig.callbacks = {
 			init: Craft.RichTextInput.handleRedactorInit
 		};
-
-		if (typeof this.redactorConfig.callbacks == typeof [])
-		{
-			// Merge them together
-			for (var i in callbacks)
-			{
-				if (typeof this.redactorConfig.callbacks[i] != typeof undefined)
-				{
-					this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
-				}
-			}
-		}
-		else
-		{
-			this.redactorConfig.callbacks = callbacks;
-		}
 
 		// Initialize Redactor
 		this.$textarea = $('#'+this.id);

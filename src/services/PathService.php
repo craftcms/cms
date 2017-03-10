@@ -253,7 +253,7 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-     * Returns the path to the framework/ folder.
+	 * Returns the path to the framework/ folder.
 	 *
 	 * @return string The path to the framework/ folder.
 	 */
@@ -262,15 +262,15 @@ class PathService extends BaseApplicationComponent
 		return CRAFT_FRAMEWORK_PATH;
 	}
 
-    /**
-     * Returns the path to the vendor/ folder.
-     *
-     * @return string The path to the vendor/ folder.
-     */
-    public function getVendorPath()
-    {
-        return CRAFT_VENDOR_PATH;
-    }
+	/**
+	 * Returns the path to the vendor/ folder.
+	 *
+	 * @return string The path to the vendor/ folder.
+	 */
+	public function getVendorPath()
+	{
+		return CRAFT_VENDOR_PATH;
+	}
 
 	/**
 	 * Returns the path to the craft/app/migrations/ folder, or the path to a plugin’s migrations/ folder.

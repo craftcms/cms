@@ -690,7 +690,8 @@ class MatrixFieldType extends BaseFieldType implements IEagerLoadingFieldType
 
 			$bodyHtml = craft()->templates->namespaceInputs(craft()->templates->render('_includes/fields', array(
 				'namespace' => null,
-				'fields'    => $fieldLayoutFields
+				'fields'    => $fieldLayoutFields,
+				'element'   => $block,
 			)));
 
 			// Reset $_isFresh's

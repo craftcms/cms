@@ -87,7 +87,7 @@ class RebrandController extends BaseController
 							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => $width,
 							'height' => $height,
-                            'fileName' => $fileName
+							'fileName' => $fileName
 						)
 					);
 
@@ -137,9 +137,9 @@ class RebrandController extends BaseController
 				$targetPath = craft()->path->getRebrandPath().$type.'/';
 
 				IOHelper::ensureFolderExists($targetPath);
-                IOHelper::clearFolder($targetPath);
+				IOHelper::clearFolder($targetPath);
 
-                craft()->images
+				craft()->images
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
 						->scaleToFit(300, 300, false)

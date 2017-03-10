@@ -760,38 +760,38 @@ class EntryElementType extends BaseElementType
 		return EntryModel::populateModel($row);
 	}
 
-    /**
-     * @inheritDoc IElementType::getEagerLoadingMap()
-     *
-     * @param BaseElementModel[]  $sourceElements
-     * @param string $handle
-     *
-     * @return array|false
-     */
-    public function getEagerLoadingMap($sourceElements, $handle)
-    {
-        if ($handle == 'author') {
-            // Get the source element IDs
-            $sourceElementIds = array();
+	/**
+	 * @inheritDoc IElementType::getEagerLoadingMap()
+	 *
+	 * @param BaseElementModel[]  $sourceElements
+	 * @param string $handle
+	 *
+	 * @return array|false
+	 */
+	public function getEagerLoadingMap($sourceElements, $handle)
+	{
+		if ($handle == 'author') {
+			// Get the source element IDs
+			$sourceElementIds = array();
 
-            foreach ($sourceElements as $sourceElement) {
-                $sourceElementIds[] = $sourceElement->id;
-            }
+			foreach ($sourceElements as $sourceElement) {
+				$sourceElementIds[] = $sourceElement->id;
+			}
 
-            $map = craft()->db->createCommand()
-                ->select('id as source, authorId as target')
-                ->from('entries')
-                ->where(array('in', 'id', $sourceElementIds))
-                ->queryAll();
+			$map = craft()->db->createCommand()
+				->select('id as source, authorId as target')
+				->from('entries')
+				->where(array('in', 'id', $sourceElementIds))
+				->queryAll();
 
-            return array(
-                'elementType' => 'User',
-                'map' => $map
-            );
-        }
+			return array(
+				'elementType' => 'User',
+				'map' => $map
+			);
+		}
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
-    }
+		return parent::getEagerLoadingMap($sourceElements, $handle);
+	}
 
 	/**
 	 * @inheritDoc IElementType::getEditorHtml()

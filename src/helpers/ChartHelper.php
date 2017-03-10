@@ -47,8 +47,6 @@ class ChartHelper
 			'valueType' => 'number',
 		), $options);
 
-		$craftTimezone = new \DateTimeZone(craft()->timezone);
-
 		if ($options['intervalUnit'] && in_array($options['intervalUnit'], array('year', 'month', 'day', 'hour')))
 		{
 			$intervalUnit = $options['intervalUnit'];
@@ -65,7 +63,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-01-01';
 				$phpDateFormat = 'Y-01-01';
 				$sqlGroup = "YEAR({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
 				break;
 			}
 			case 'month':
@@ -73,7 +70,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-01';
 				$phpDateFormat = 'Y-m-01';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
 				break;
 			}
 			case 'day':
@@ -81,7 +77,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-%d';
 				$phpDateFormat = 'Y-m-d';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
 				break;
 			}
 			case 'hour':
@@ -89,7 +84,6 @@ class ChartHelper
 				$sqlDateFormat = '%Y-%m-%d %H:00:00';
 				$phpDateFormat = 'Y-m-d H:00:00';
 				$sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn}), HOUR({$dateColumn})";
-				$cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
 				break;
 			}
 		}
@@ -99,7 +93,7 @@ class ChartHelper
 			->addSelect("DATE_FORMAT({$dateColumn}, '{$sqlDateFormat}') as date")
 			->andWhere(
 				array('and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'),
-				array(':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()))
+				array(':startDate' => $startDate->format(DateTime::MYSQL_DATETIME, DateTime::UTC), ':endDate' => $endDate->format(DateTime::MYSQL_DATETIME, DateTime::UTC)))
 			->group($sqlGroup)
 			->order($dateColumn.' asc')
 			->queryAll();
@@ -107,14 +101,16 @@ class ChartHelper
 		// Assembe the data
 		$rows = array();
 
+		$cursorDate = $startDate;
 		$endTimestamp = $endDate->getTimestamp();
 
 		while ($cursorDate->getTimestamp() < $endTimestamp)
 		{
 			// Do we have a record for this date?
-			$formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
+			$cursorDateUtc = $cursorDate->format($phpDateFormat, DateTime::UTC);
+			$formattedCursorDate = $cursorDate->format($phpDateFormat);
 
-			if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate)
+			if (isset($results[0]) && $results[0]['date'] == $cursorDateUtc)
 			{
 				$value = (float) $results[0]['value'];
 				array_shift($results);
@@ -131,7 +127,7 @@ class ChartHelper
 		return array(
 			'columns' => array(
 				array(
-					'type' => ($intervalUnit == 'hour' ? 'datetime' : 'date'),
+					'type' => ($intervalUnit === 'hour' ? 'datetime' : 'date'),
 					'label' => $options['categoryLabel']
 				),
 				array(
@@ -174,26 +170,26 @@ class ChartHelper
 		return 'hour';
 	}
 
-    /**
-     * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
-     *
-     * @return array
-     */
-    public static function getFormats()
-    {
-        return array(
-            'shortDateFormats' => self::getShortDateFormats(),
-            'decimalFormat' => self::getDecimalFormat(),
-            'percentFormat' => self::getPercentFormat(),
-            'currencyFormat' => self::getCurrencyFormat(),
-        );
-    }
+	/**
+	 * Returns the short date, decimal, percent and currency D3 formats based on Craft's locale settings
+	 *
+	 * @return array
+	 */
+	public static function getFormats()
+	{
+		return array(
+			'shortDateFormats' => self::getShortDateFormats(),
+			'decimalFormat' => self::getDecimalFormat(),
+			'percentFormat' => self::getPercentFormat(),
+			'currencyFormat' => self::getCurrencyFormat(),
+		);
+	}
 
-    /**
-     * Returns the D3 short date formats based on Yii's short date format
-     *
-     * @return array
-     */
+	/**
+	 * Returns the D3 short date formats based on Yii's short date format
+	 *
+	 * @return array
+	 */
 	public static function getShortDateFormats()
 	{
 		$format = craft()->locale->getDateFormat('short');
@@ -251,95 +247,95 @@ class ChartHelper
 	}
 
 	/**
-     * Returns the D3 decimal format based on Yii's decimal format
-     *
-     * @return array
-     */
-    public static function getDecimalFormat()
-    {
-        $format = craft()->locale->getDecimalFormat();
+	 * Returns the D3 decimal format based on Yii's decimal format
+	 *
+	 * @return array
+	 */
+	public static function getDecimalFormat()
+	{
+		$format = craft()->locale->getDecimalFormat();
 
-        $yiiToD3Formats = array(
-            '#,##,##0.###' => ',.3f',
-            '#,##0.###' => ',.3f',
-            '#0.######' => '.6f',
-            '#0.###;#0.###-' => '.3f',
-            '0 mil' => ',.3f',
-        );
+		$yiiToD3Formats = array(
+			'#,##,##0.###' => ',.3f',
+			'#,##0.###' => ',.3f',
+			'#0.######' => '.6f',
+			'#0.###;#0.###-' => '.3f',
+			'0 mil' => ',.3f',
+		);
 
-        if(isset($yiiToD3Formats[$format]))
-        {
-            return $yiiToD3Formats[$format];
-        }
-    }
+		if(isset($yiiToD3Formats[$format]))
+		{
+			return $yiiToD3Formats[$format];
+		}
+	}
 
-    /**
-     * Returns the D3 percent format based on Yii's percent format
-     *
-     * @return array
-     */
-    public static function getPercentFormat()
-    {
-        $format = craft()->locale->getPercentFormat();
+	/**
+	 * Returns the D3 percent format based on Yii's percent format
+	 *
+	 * @return array
+	 */
+	public static function getPercentFormat()
+	{
+		$format = craft()->locale->getPercentFormat();
 
-        $yiiToD3Formats = array(
-            '#,##,##0%' => ',.2%',
-            '#,##0%' => ',.2%',
-            '#,##0 %' => ',.2%',
-            '#0%' => ',.0%',
-            '%#,##0' => ',.2%',
-        );
+		$yiiToD3Formats = array(
+			'#,##,##0%' => ',.2%',
+			'#,##0%' => ',.2%',
+			'#,##0 %' => ',.2%',
+			'#0%' => ',.0%',
+			'%#,##0' => ',.2%',
+		);
 
-        if(isset($yiiToD3Formats[$format]))
-        {
-            return $yiiToD3Formats[$format];
-        }
-    }
+		if(isset($yiiToD3Formats[$format]))
+		{
+			return $yiiToD3Formats[$format];
+		}
+	}
 
-    /**
-     * Returns the D3 currency format based on Yii's currency format
-     *
-     * @return array
-     */
-    public static function getCurrencyFormat()
-    {
-        $format = craft()->locale->getCurrencyFormat();
+	/**
+	 * Returns the D3 currency format based on Yii's currency format
+	 *
+	 * @return array
+	 */
+	public static function getCurrencyFormat()
+	{
+		$format = craft()->locale->getCurrencyFormat();
 
-        $yiiToD3Formats = array(
+		$yiiToD3Formats = array(
 
-            '#,##0.00 ¤' => '$,.2f',
-            '#,##0.00 ¤;(#,##0.00 ¤)' => '$,.2f',
-            '¤#,##0.00' => '$,.2f',
-            '¤#,##0.00;(¤#,##0.00)' => '$,.2f',
-            '¤#,##0.00;¤-#,##0.00' => '$,.2f',
-            '¤#0.00' => '$.2f',
-            '¤ #,##,##0.00' => '$,.2f',
-            '¤ #,##0.00' => '$,.2f',
-            '¤ #,##0.00;¤-#,##0.00' => '$,.2f',
-            '¤ #0.00' => '$.2f',
-            '¤ #0.00;¤ #0.00-' => '$.2f',
-        );
+			'#,##0.00 ¤' => '$,.2f',
+			'#,##0.00 ¤;(#,##0.00 ¤)' => '$,.2f',
+			'¤#,##0.00' => '$,.2f',
+			'¤#,##0.00;(¤#,##0.00)' => '$,.2f',
+			'¤#,##0.00;¤-#,##0.00' => '$,.2f',
+			'¤#0.00' => '$.2f',
+			'¤ #,##,##0.00' => '$,.2f',
+			'¤ #,##0.00' => '$,.2f',
+			'¤ #,##0.00;¤-#,##0.00' => '$,.2f',
+			'¤ #0.00' => '$.2f',
+			'¤ #0.00;¤ #0.00-' => '$.2f',
+		);
 
-        if(isset($yiiToD3Formats[$format]))
-        {
-            return $yiiToD3Formats[$format];
-        }
-    }
+		if(isset($yiiToD3Formats[$format]))
+		{
+			return $yiiToD3Formats[$format];
+		}
+	}
 
-    /**
-     * Returns the predefined date ranges with their label, start date and end date.
-     *
-     * @return array
-     */
-    public static function getDateRanges()
-    {
-        $dateRanges = array(
-            'd7' => array('label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null),
-            'd30' => array('label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null),
-            'lastweek' => array('label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'),
-            'lastmonth' => array('label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'),
-        );
+	/**
+	 * Returns the predefined date ranges with their label, start date and end date.
+	 *
+	 * @return array
+	 */
+	public static function getDateRanges()
+	{
+		$dateRanges = array(
+			'd7' => array('label' => Craft::t('Last 7 days'), 'startDate' => '-7 days', 'endDate' => null),
+			'd30' => array('label' => Craft::t('Last 30 days'), 'startDate' => '-30 days', 'endDate' => null),
+			'lastweek' => array('label' => Craft::t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'),
+			'lastmonth' => array('label' => Craft::t('Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'),
+		);
 
-        return $dateRanges;
-    }
+		return $dateRanges;
+	}
 }

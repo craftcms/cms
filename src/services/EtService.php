@@ -452,27 +452,27 @@ class EtService extends BaseApplicationComponent
 		}
 	}
 
-    // Private Methods
-    // =========================================================================
+	// Private Methods
+	// =========================================================================
 
-    /**
-     * Creates a new ET Transport object for the given endpoint.
-     *
-     * @param string $endpoint
-     *
-     * @return Et
-     */
-    private function _createEtTransport($endpoint)
-    {
-        $baseUrl = craft()->config->get('elliottBaseUrl') ?: 'https://elliott.craftcms.com';
-        $query = craft()->config->get('elliottQuery');
-        $url = $baseUrl.'/actions/elliott/'.$endpoint;
+	/**
+	 * Creates a new ET Transport object for the given endpoint.
+	 *
+	 * @param string $endpoint
+	 *
+	 * @return Et
+	 */
+	private function _createEtTransport($endpoint)
+	{
+		$baseUrl = craft()->config->get('elliottBaseUrl') ?: 'https://elliott.craftcms.com';
+		$query = craft()->config->get('elliottQuery');
+		$url = $baseUrl.'/actions/elliott/'.$endpoint;
 
-        if ($query)
-        {
-            $url .= '?'.$query;
-        }
+		if ($query)
+		{
+			$url .= '?'.$query;
+		}
 
-        return new Et($url);
-    }
+		return new Et($url);
+	}
 }

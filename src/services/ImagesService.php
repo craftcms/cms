@@ -141,7 +141,7 @@ class ImagesService extends BaseApplicationComponent
 		// Probably enough for a non-file.
 		if (!filesize($filePath)) {
 		    return true;
-        }
+		}
 
 		// Find out how much memory this image is going to need.
 		$imageInfo = getimagesize($filePath);
@@ -215,29 +215,29 @@ class ImagesService extends BaseApplicationComponent
 			return false;
 		}
 
-        if (!($this->isImagick() && method_exists('Imagick', 'getImageOrientation'))) {
-            return false;
-        }
+		if (!($this->isImagick() && method_exists('Imagick', 'getImageOrientation'))) {
+			return false;
+		}
 
-        $image = new \Imagick($filePath);
-        $orientation = $image->getImageOrientation();
+		$image = new \Imagick($filePath);
+		$orientation = $image->getImageOrientation();
 
-        $degrees = false;
+		$degrees = false;
 
-        switch ($orientation) {
-            case ImageHelper::EXIF_IFD0_ROTATE_180: {
-                $degrees = 180;
-                break;
-            }
-            case ImageHelper::EXIF_IFD0_ROTATE_90: {
-                $degrees = 90;
-                break;
-            }
-            case ImageHelper::EXIF_IFD0_ROTATE_270: {
-                $degrees = 270;
-                break;
-            }
-        }
+		switch ($orientation) {
+			case ImageHelper::EXIF_IFD0_ROTATE_180: {
+				$degrees = 180;
+				break;
+			}
+			case ImageHelper::EXIF_IFD0_ROTATE_90: {
+				$degrees = 90;
+				break;
+			}
+			case ImageHelper::EXIF_IFD0_ROTATE_270: {
+				$degrees = 270;
+				break;
+			}
+		}
 
 		if ($degrees === false)
 		{
