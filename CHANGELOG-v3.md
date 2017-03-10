@@ -22,6 +22,7 @@ Craft CMS 3.0 Working Changelog
 - Updated the craftcms/server-check library to 1.0.11.
 
 ### Removed
+- Removed support for chain-setting model properties via magic property setters. Models that wish to support this behavior must supply their own setter methods.
 - Removed `craft\fields\Assets::getFolderOptions()`.
 - Removed `craft\services\Assets::getUserFolder()`.
 

@@ -46,37 +46,6 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
-     * Magic __call() method, used for chain-setting attribute values.
-     *
-     * @param string $name
-     * @param array  $arguments
-     *
-     * @return static
-     * @throws UnknownMethodException when calling an unknown method
-     */
-    public function __call($name, $arguments)
-    {
-        try {
-            return parent::__call($name, $arguments);
-        } catch (UnknownMethodException $e) {
-            // Is this one of our attributes?
-            if (in_array($name, $this->attributes(), true)) {
-                $copy = $this->copy();
-
-                if (count($arguments) === 1) {
-                    $copy->$name = $arguments[0];
-                } else {
-                    $copy->$name = $arguments;
-                }
-
-                return $copy;
-            }
-
-            throw $e;
-        }
-    }
-
-    /**
      * Returns the names of any attributes that should be converted to DateTime objects from [[populate()]].
      *
      * @return string[]
