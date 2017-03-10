@@ -226,8 +226,7 @@ class AssetsController extends Controller
 
         // Check if we have the relevant permissions.
         $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume',
-            $asset);
+        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
 
         try {
             if ($uploadedFile->getHasError()) {
@@ -397,11 +396,9 @@ class AssetsController extends Controller
         $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
         $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-        // Set the new combined target location, and save it
-        $asset->newLocation = "{folder:{$folderId}}{$filename}";
-        $asset->setScenario(Asset::SCENARIO_MOVE);
+        $result = Craft::$app->getAssets()->moveAsset($asset, $folder, $filename);
 
-        if (!Craft::$app->getElements()->saveElement($asset)) {
+        if (!$result) {
             // Get the corrected filename
             list(, $filename) = Assets::parseFileLocation($asset->newLocation);
 
@@ -726,6 +723,7 @@ class AssetsController extends Controller
         $assetService = Craft::$app->getAssets();
 
         $asset = $assetService->getAssetById($assetId);
+
         if (!$asset) {
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
         }

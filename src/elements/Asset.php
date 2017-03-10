@@ -37,6 +37,7 @@ use craft\records\Asset as AssetRecord;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\volumes\Temp;
+use DateTime;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -65,7 +66,10 @@ class Asset extends Element
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_MOVE = 'move';
+    const SCENARIO_FILEOPS = 'fileOperations';
+    const SCENARIO_INDEX = 'index';
+    const SCENARIO_UPLOAD = 'upload';
+    const SCENARIO_REPLACE = 'replace';
 
     // Static
     // =========================================================================
@@ -392,9 +396,19 @@ class Asset extends Element
     public $newFilename;
 
     /**
+     * @var string|null New folder id
+     */
+    public $newFolderId;
+
+    /**
      * @var string|null The temp file path
      */
     public $tempFilePath;
+
+    /**
+     * @var bool Whether Asset should avoid filename conflicts when saved.
+     */
+    public $avoidFilenameConflicts = false;
 
     /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
@@ -529,20 +543,11 @@ class Asset extends Element
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newLocation'], AssetLocationValidator::class];
+        $rules[] = [['newLocation'], AssetLocationValidator::class, 'on' => [self::SCENARIO_FILEOPS, self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE], 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
+        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_FILEOPS]];
+        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE]];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function scenarios()
-    {
-        $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_MOVE] = ['newLocation'];
-
-        return $scenarios;
     }
 
     /**
@@ -963,24 +968,37 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @return bool
+     */
+    public function beforeValidate()
+    {
+        if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
+            $folderId = $this->newFolderId ?: $this->folderId;
+            $filename = $this->newFilename ?: $this->filename;
+            $this->newLocation = "{folder:{$folderId}}{$filename}";
+        }
+
+        return parent::beforeValidate();
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function beforeSave(bool $isNew): bool
     {
-        if (!$this->folderId && !$this->tempFilePath) {
-            throw new InvalidConfigException('Either folderId or tempFilePath must be set.');
-        }
-
         // See if we need to perform any file operations
         if ($this->newLocation) {
             list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
             $hasNewFolder = $folderId != $this->folderId;
-            $hasNewFilename = $filename === $this->filename;
+            $hasNewFilename = $filename != $this->filename;
         } else {
             $folderId = $this->folderId;
             $filename = $this->filename;
             $hasNewFolder = $hasNewFilename = false;
         }
+
+        $tempPath = null;
 
         // Yes/no?
         if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
@@ -1022,9 +1040,6 @@ class Asset extends Element
                     // Delete the old file
                     $oldVolume->deleteFile($oldPath);
                 }
-
-                // Delete the temp file
-                FileHelper::removeFile($tempPath);
             }
 
             if ($this->folderId) {
@@ -1037,6 +1052,27 @@ class Asset extends Element
             $this->folderId = $folderId;
             $this->folderPath = $newFolder->path;
             $this->filename = $filename;
+
+            // If there was a new file involved, update file data.
+            if ($tempPath) {
+                $this->kind = AssetsHelper::getFileKindByExtension($filename);
+
+                if ($this->kind === 'image') {
+                    list ($this->width, $this->height) = Image::imageSize($tempPath);
+                } else {
+                    $this->width = null;
+                    $this->height = null;
+                }
+
+                $this->size = filesize($tempPath);
+                $this->dateModified = new DateTime('@'.filemtime($tempPath));
+
+                // Delete the temp file
+                FileHelper::removeFile($tempPath);
+            }
+
+            $this->newFolderId = null;
+            $this->newFilename = null;
             $this->newLocation = null;
             $this->tempFilePath = null;
         }
@@ -1063,16 +1099,12 @@ class Asset extends Element
             if (!$record) {
                 throw new Exception('Invalid asset ID: '.$this->id);
             }
-
-            if ($this->filename !== $record->filename) {
-                throw new Exception('Unable to change an asset’s filename like this.');
-            }
         } else {
             $record = new AssetRecord();
             $record->id = $this->id;
-            $record->filename = $this->filename;
         }
 
+        $record->filename = $this->filename;
         $record->volumeId = $this->volumeId;
         $record->folderId = $this->folderId;
         $record->kind = $this->kind;
@@ -1083,15 +1115,8 @@ class Asset extends Element
         $record->dateModified = $this->dateModified;
         $record->save(false);
 
-        if ($this->newFilename !== null) {
-            if ($this->newFilename === $this->filename) {
-                $this->newFilename = null;
-            } else {
-                Craft::$app->getAssets()->renameFile($this, false);
-            }
-        }
-
         parent::afterSave($isNew);
+
     }
 
     /**

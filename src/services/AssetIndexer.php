@@ -463,11 +463,13 @@ class AssetIndexer extends Component
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
-            $asset->indexInProgress = true;
         }
+
 
         $asset->size = $indexEntryModel->size;
         $timeModified = $indexEntryModel->timestamp;
+
+        $asset->setScenario(Asset::SCENARIO_INDEX);
 
         // All sorts of fun stuff for images.
         if ($asset->kind === 'image') {

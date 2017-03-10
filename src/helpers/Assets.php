@@ -303,7 +303,7 @@ class Assets
     }
 
     /**
-     * Return a file's kind by a given extension.
+     * Return a file's kind by a file's extension.
      *
      * @param string $file The file name/path
      *

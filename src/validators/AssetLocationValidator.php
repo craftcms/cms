@@ -57,6 +57,11 @@ class AssetLocationValidator extends Validator
      */
     public $filenameConflict;
 
+    /**
+     * @var bool Whether Asset should avoid filename conflicts when saved.
+     */
+    public $avoidFilenameConflicts;
+
     // Public Methods
     // =========================================================================
 
@@ -90,7 +95,7 @@ class AssetLocationValidator extends Validator
 
         // Figure out which of them has changed
         $hasNewFolderId = $folderId != $model->{$this->folderIdAttribute};
-        $hasNewFilename = $filename === $model->{$this->filenameAttribute};
+        $hasNewFilename = $filename != $model->{$this->filenameAttribute};
 
         // If nothing has changed, just null-out the newLocation attribute
         if (!$hasNewFolderId && !$hasNewFilename) {
@@ -106,6 +111,7 @@ class AssetLocationValidator extends Validator
 
         // Make sure the new filename has a valid extension
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
         if (!in_array($extension, $this->allowedExtensions, true)) {
             $this->addLocationError($model, $attribute, Asset::ERROR_DISALLOWED_EXTENSION, $this->disallowedExtension, ['extension' => $extension]);
 
@@ -115,25 +121,29 @@ class AssetLocationValidator extends Validator
         // Prepare the filename
         $filename = AssetsHelper::prepareAssetName($filename);
 
-        // Check the DB to see if we already have an asset at that location
-        $exists = Asset::find()
-            ->select(['elements.id'])
-            ->folderId($folderId)
-            ->filename(Db::escapeParam($filename))
-            ->exists();
+        if ($this->avoidFilenameConflicts) {
+            $filename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
+        } else {
+            // Check the DB to see if we already have an asset at that location
+            $exists = Asset::find()
+                ->select(['elements.id'])
+                ->folderId($folderId)
+                ->filename(Db::escapeParam($filename))
+                ->exists();
 
-        if ($exists) {
-            $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
+            if ($exists) {
+                $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
 
-            return;
-        }
+                return;
+            }
 
-        // Check the volume to see if a file already exists at that location
-        $path = ($folder->path ? rtrim($folder->path, '/').'/' : '').$filename;
-        if ($folder->getVolume()->fileExists($path)) {
-            $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
+            // Check the volume to see if a file already exists at that location
+            $path = ($folder->path ? rtrim($folder->path, '/').'/' : '').$filename;
+            if ($folder->getVolume()->fileExists($path)) {
+                $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
 
-            return;
+                return;
+            }
         }
 
         // Update the newLocation attribute in case the filename changed
