@@ -276,7 +276,8 @@ class Tasks extends Component
     public function rerunTask(TaskInterface $task): bool
     {
         /** @var Task $task */
-        if ($task->level !== 0) {
+        /** @noinspection TypeUnsafeComparisonInspection */
+        if ($task->level != 0) {
             throw new Exception('Only top-level tasks can be re-run.');
         }
 
