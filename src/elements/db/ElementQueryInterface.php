@@ -210,11 +210,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     /**
      * Sets the [[level]] property.
      *
-     * @param int|null $value The property value
+     * @param mixed $value The property value
      *
      * @return static self reference
      */
-    public function level(int $value = null);
+    public function level($value = null);
 
     /**
      * Sets the [[ancestorOf]] property.

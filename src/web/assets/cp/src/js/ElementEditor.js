@@ -89,7 +89,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="header"/>'),
+                    var $header = $('<div class="hud-header"/>'),
                         $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
                     this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
@@ -112,7 +112,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.onCreateForm(this.$form);
 
-                var $footer = $('<div class="footer"/>').appendTo(this.$form),
+                var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
                     $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
                 this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
                 this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);

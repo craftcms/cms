@@ -1225,6 +1225,11 @@ class Plugins extends Component
             $config['downloadUrl'] = $extra['downloadUrl'];
         }
 
+        // t9nCategory
+        if (isset($extra['t9nCategory'])) {
+            $config['t9nCategory'] = $extra['t9nCategory'];
+        }
+
         // sourceLanguage
         if (isset($extra['sourceLanguage'])) {
             $config['sourceLanguage'] = $extra['sourceLanguage'];

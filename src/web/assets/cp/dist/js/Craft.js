@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-03-02 */
+/*! Craft 3.0.0 - 2017-03-07 */
 (function($){
 
 /** global: Craft */
@@ -10163,7 +10163,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="header"/>'),
+                    var $header = $('<div class="hud-header"/>'),
                         $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
                     this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
@@ -10186,7 +10186,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
                 this.onCreateForm(this.$form);
 
-                var $footer = $('<div class="footer"/>').appendTo(this.$form),
+                var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
                     $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
                 this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
                 this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
@@ -12778,7 +12778,7 @@ Craft.LivePreview = Garnish.Base.extend(
             $(document.activeElement).blur();
 
             if (!this.$editor) {
-                this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod).css('z-index', 2);
+                this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod);
                 this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
                 this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
                 this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
@@ -15675,7 +15675,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label
             });
 
             // Should we include a hidden input first?
@@ -15720,26 +15720,33 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var allValue = (config.allValue || '*'),
-                allChecked = (!config.values || config.values == config.allValue);
-
             var $container = $('<div class="checkbox-select"/>');
+
             if (config.class) {
                 $container.addClass(config.class);
             }
 
-            // Create the "All" checkbox
-            $('<div/>').appendTo($container).append(
-                this.createCheckbox({
-                    id: config.id,
-                    'class': 'all',
-                    label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
-                    name: config.name,
-                    value: allValue,
-                    checked: allChecked,
-                    autofocus: config.autofocus
-                })
-            );
+            var allValue, allChecked;
+
+            if (config.showAllOption) {
+                allValue = (config.allValue || '*');
+                allChecked = (config.values == allValue);
+
+                // Create the "All" checkbox
+                $('<div/>').appendTo($container).append(
+                    this.createCheckbox({
+                        id: config.id,
+                        'class': 'all',
+                        label: '<b>' + (config.allLabel || Craft.t('app', 'All')) + '</b>',
+                        name: config.name,
+                        value: allValue,
+                        checked: allChecked,
+                        autofocus: config.autofocus
+                    })
+                );
+            } else {
+                allChecked = false;
+            }
 
             // Create the actual options
             for (var i = 0; i < config.options.length; i++) {

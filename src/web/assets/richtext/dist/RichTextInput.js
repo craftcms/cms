@@ -79,21 +79,9 @@
                     }
                 }
 
-                var callbacks = {
+                this.redactorConfig.callbacks = {
                     init: Craft.RichTextInput.handleRedactorInit
                 };
-
-                if (typeof this.redactorConfig.callbacks == typeof []) {
-                    // Merge them together
-                    for (var i in callbacks) {
-                        if (this.redactorConfig.callbacks[i] !== undefined) {
-                            this.redactorConfig.callbacks[i] = this.mergeCallbacks(callbacks[i], this.redactorConfig.callbacks[i]);
-                        }
-                    }
-                }
-                else {
-                    this.redactorConfig.callbacks = callbacks;
-                }
 
                 // Initialize Redactor
                 this.$textarea = $('#' + this.id);

@@ -66,7 +66,9 @@ class AssetIndexes extends Utility
         $view = Craft::$app->getView();
         $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect', [
             'name' => 'sources',
-            'options' => $sourceOptions
+            'options' => $sourceOptions,
+            'showAllOption' => true,
+            'values' => '*',
         ]);
 
         $view->registerAssetBundle(AssetIndexesAsset::class);

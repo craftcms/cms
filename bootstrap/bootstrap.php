@@ -193,12 +193,6 @@ $components = [
     'config' => $configService,
 ];
 
-if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-    $components['sites'] = [
-        'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE,
-    ];
-}
-
 $config = ArrayHelper::merge(
     [
         'vendorPath' => $vendorPath,
@@ -210,6 +204,10 @@ $config = ArrayHelper::merge(
     require $srcPath.'/config/'.$appType.'.php',
     $configService->getConfigSettings(Config::CATEGORY_APP)
 );
+
+if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
+    $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
+}
 
 // Initialize the application
 $class = 'craft\\'.$appType.'\\Application';

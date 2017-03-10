@@ -66,9 +66,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     // =========================================================================
 
     /**
-     * @var string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
+     * @var string|string[]|null The source keys that this field can relate elements from (used if [[allowMultipleSources]] is set to true)
      */
-    public $sources;
+    public $sources = '*';
 
     /**
      * @var string|null The source key that this field can relate elements from (used if [[allowMultipleSources]] is set to false)
@@ -146,6 +146,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Not possible to have no sources selected
+        if (!$this->sources) {
+            $this->sources = '*';
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
@@ -191,6 +204,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
         /** @var Element $element */
         /** @var Element $class */
         $class = static::elementType();

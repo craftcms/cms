@@ -2,18 +2,17 @@
 
 {% import "_includes/forms" as forms %}
 
-{% set folderOptions = field.getFolderOptions() %}
 {% set fileKindOptions = field.getFileKindOptions() %}
 {% set isMatrix = craft.app.view.getNamespace()[0:26] == 'types[Matrix][blockTypes][' %}
 
-{% macro uploadLocationInput(name, field, sourceOptions) %}
+{% macro uploadLocationInput(name, field, inputSourceOptions) %}
     {% from "_includes/forms" import select, text %}
     <div class="flex">
         <div>
             {{ select({
                 id: name~'Source',
                 name: name~'Source',
-                options: sourceOptions,
+                options: inputSourceOptions,
                 value: field[name~'Source'],
             }) }}
         </div>
@@ -54,21 +53,7 @@
         {% endif %}
 
         <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
-            {% if folderOptions %}
-                {{ forms.checkboxSelectField({
-                    label: "Sources"|t('app'),
-                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: field.displayName()|lower }),
-                    id: 'sources',
-                    name: 'sources',
-                    options: folderOptions,
-                    values: field.sources
-                })}}
-            {% else %}
-                {{ forms.field({
-                    label: "Sources"|t('app')
-                }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
-            {% endif %}
-
+            {{ block('sourcesField') }}
 
             {{ forms.field({
                 label: "Default Upload Location"|t('app'),

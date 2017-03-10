@@ -251,6 +251,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
         /** @var Element $element */
         $query = MatrixBlock::find();
 
@@ -633,7 +637,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $bodyHtml = Craft::$app->getView()->namespaceInputs(Craft::$app->getView()->renderTemplate('_includes/fields',
                 [
                     'namespace' => null,
-                    'fields' => $fieldLayoutFields
+                    'fields' => $fieldLayoutFields,
+                    'element' => $block,
                 ]));
 
             // Reset $_isFresh's
@@ -682,12 +687,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $ids = [];
 
-            foreach ($value as $blockId => &$block) {
-                if (is_numeric($blockId) && $blockId !== 0) {
+            foreach (array_keys($value) as $blockId) {
+                if (is_numeric($blockId) && $blockId != 0) {
                     $ids[] = $blockId;
                 }
             }
-            unset($block);
 
             if (!empty($ids)) {
                 $oldBlocksQuery = MatrixBlock::find();
@@ -705,12 +709,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $ownerId = null;
         }
 
+        $isLivePreview = Craft::$app->getRequest()->getIsLivePreview();
         $blocks = [];
         $sortOrder = 0;
         $prevBlock = null;
 
         foreach ($value as $blockId => $blockData) {
             if (!isset($blockData['type']) || !isset($blockTypes[$blockData['type']])) {
+                continue;
+            }
+
+            // Skip disabled blocks on Live Preview requests
+            if ($isLivePreview && empty($blockData['enabled'])) {
                 continue;
             }
 

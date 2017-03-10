@@ -174,9 +174,11 @@ class Updates extends Component
             return true;
         }
 
-        foreach ($this->_updateModel->plugins as $pluginUpdate) {
-            if ($pluginUpdate->criticalUpdateAvailable) {
-                return true;
+        if (!empty($this->_updateModel->plugins)) {
+            foreach ($this->_updateModel->plugins as $pluginUpdate) {
+                if ($pluginUpdate->criticalUpdateAvailable) {
+                    return true;
+                }
             }
         }
 

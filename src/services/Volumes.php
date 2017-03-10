@@ -15,7 +15,6 @@ use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
-use craft\volumes\Temp;
 use yii\base\Component;
 
 /**
@@ -282,18 +281,12 @@ class Volumes extends Component
     /**
      * Returns a volume by its ID.
      *
-     * @param int|null $volumeId
+     * @param int $volumeId
      *
      * @return VolumeInterface|null
      */
-    public function getVolumeById(int $volumeId = null)
+    public function getVolumeById(int $volumeId)
     {
-        // TODO: Temp volumes should not be created here!
-        // Temporary volume?
-        if ($volumeId === null) {
-            return new Temp();
-        }
-
         if ($this->_volumesById !== null && array_key_exists($volumeId, $this->_volumesById)) {
             return $this->_volumesById[$volumeId];
         }

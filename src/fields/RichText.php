@@ -78,14 +78,14 @@ class RichText extends Field
     public $columnType = Schema::TYPE_TEXT;
 
     /**
-     * @var array The volumes that should be available for Image selection
+     * @var string|array|null The volumes that should be available for Image selection.
      */
-    public $availableVolumes = [];
+    public $availableVolumes = '*';
 
     /**
-     * @var string|array The transforms available when selecting an image
+     * @var string|array|null The transforms available when selecting an image
      */
-    public $availableTransforms = [];
+    public $availableTransforms = '*';
 
     /**
      * @var string
@@ -181,7 +181,7 @@ class RichText extends Field
         $settings = [
             'id' => $view->namespaceInputId($id),
             'linkOptions' => $this->_getLinkOptions($element),
-            'volumes' => $this->_getVolumes(),
+            'volumes' => $this->_getVolumeKeys(),
             'transforms' => $this->_getTransforms(),
             'elementSiteId' => $site->id,
             'redactorConfig' => Json::decode($configJs),
@@ -425,51 +425,51 @@ class RichText extends Field
     /**
      * Returns the available volumes.
      *
-     * @return array
+     * @return string[]
      */
-    private function _getVolumes(): array
+    private function _getVolumeKeys(): array
     {
-        $volumes = [];
-
-        $volumeIds = $this->availableVolumes;
-
-        if (empty($volumeIds)) {
-            $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
+        if (!$this->availableVolumes) {
+            return [];
         }
 
         $criteria = ['parentId' => ':empty:'];
 
-        if ($volumeIds !== '*') {
-            $criteria['volumeId'] = $volumeIds;
+        if ($this->availableVolumes !== '*') {
+            $criteria['volumeId'] = $this->availableVolumes;
         }
 
         $folders = Craft::$app->getAssets()->findFolders($criteria);
+        $volumeKeys = [];
 
         foreach ($folders as $folder) {
-            $volumes[] = 'folder:'.$folder->id;
+            $volumeKeys[] = 'folder:'.$folder->id;
         }
 
-        return $volumes;
+        return $volumeKeys;
     }
 
     /**
      * Get available transforms.
      *
-     * @return array
+     * @return \stdClass[]
      */
     private function _getTransforms(): array
     {
+        if (!$this->availableTransforms) {
+            return [];
+        }
+
         $allTransforms = Craft::$app->getAssetTransforms()->getAllTransforms();
         $transformList = [];
 
         foreach ($allTransforms as $transform) {
-            if (is_array($this->availableTransforms) && !in_array($transform->id, $this->availableTransforms, false)) {
-                continue;
+            if (!is_array($this->availableTransforms) || in_array($transform->id, $this->availableTransforms, false)) {
+                $transformList[] = (object)[
+                    'handle' => Html::encode($transform->handle),
+                    'name' => Html::encode($transform->name)
+                ];
             }
-            $transformList[] = (object)[
-                'handle' => Html::encode($transform->handle),
-                'name' => Html::encode($transform->name)
-            ];
         }
 
         return $transformList;

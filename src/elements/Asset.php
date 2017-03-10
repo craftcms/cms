@@ -35,6 +35,7 @@ use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetFilenameValidator;
 use craft\validators\DateTimeValidator;
+use craft\volumes\Temp;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -117,16 +118,28 @@ class Asset extends Element
      */
     protected static function defineSources(string $context = null): array
     {
+        $volumes = Craft::$app->getVolumes();
+
         if ($context === 'index') {
-            $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
+            $sourceIds = $volumes->getViewableVolumeIds();
         } else {
-            $sourceIds = Craft::$app->getVolumes()->getAllVolumeIds();
+            $sourceIds = $volumes->getAllVolumeIds();
         }
 
         $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
+
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
 
-        return self::_assembleSourceList($tree, $context !== 'settings');
+        $sourceList = self::_assembleSourceList($tree, $context !== 'settings');
+
+        // Add the customized temporary upload source
+        if ($context !== 'settings') {
+            $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
+            $temporaryUploadFolder->name = Craft::t('app', 'Temporary uploads');
+            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
+        }
+
+        return $sourceList;
     }
 
     /**
@@ -609,7 +622,7 @@ class Asset extends Element
         }
 
         if ($this->volumeId === null) {
-            throw new InvalidConfigException('Asset is missing its volume ID');
+            return new Temp();
         }
 
         if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {

@@ -60,7 +60,7 @@ class User extends Element implements IdentityInterface
     const STATUS_PENDING = 'pending';
     const STATUS_ARCHIVED = 'archived';
 
-    // Authentication error keys
+    // Authentication error codes
     // -------------------------------------------------------------------------
 
     const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
@@ -781,7 +781,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets an array of User element objects on the user.
      *
-     * @param array $groups An array of User element objects.
+     * @param UserGroup[] $groups An array of UserGroup objects.
      *
      * @return void
      */

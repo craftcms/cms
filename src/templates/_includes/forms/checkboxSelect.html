@@ -1,11 +1,11 @@
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
 
-{%- set showAllOption  = (showAllOption is defined ? showAllOption : true) %}
+{%- set showAllOption = showAllOption ?? false %}
 {%- if showAllOption %}
-    {%- set allLabel = (allLabel is defined ? allLabel : "All"|t('app')) %}
-    {%- set allValue = (allValue is defined ? allValue : '*') %}
-    {%- set allChecked = (values is empty or values == allValue) %}
+    {%- set allLabel = allLabel ?? "All"|t('app') %}
+    {%- set allValue = allValue ?? '*' %}
+    {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
 <div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}">
