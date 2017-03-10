@@ -781,7 +781,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets an array of User element objects on the user.
      *
-     * @param array $groups An array of User element objects.
+     * @param UserGroup[] $groups An array of UserGroup objects.
      *
      * @return void
      */
