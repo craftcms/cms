@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
 - When an element is being saved across multiple sites, each site will now fire the before/after-save events.
 - Exceptions that are thrown when running a task are now logged.
+- Plugins’ translation categories are now all-lowercase by default, but they can be overridden by setting the `$t9nCategory` plugin property.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.
 - Updated the craftcms/server-check library to 1.0.11.

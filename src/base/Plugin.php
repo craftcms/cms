@@ -48,12 +48,16 @@ class Plugin extends Module implements PluginInterface
     {
         parent::init();
 
+        if ($this->t9nCategory === null) {
+            $this->t9nCategory = strtolower($this->handle);
+        }
+
         // Set up a translation message source for the plugin
         $i18n = Craft::$app->getI18n();
 
         /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (!isset($i18n->translations[$this->handle]) && !isset($i18n->translations[$this->handle.'*'])) {
-            $i18n->translations[$this->handle] = [
+        if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory.'*'])) {
+            $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => $this->getBasePath().'/translations',
