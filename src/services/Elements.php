@@ -343,7 +343,7 @@ class Elements extends Component
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, $propagate = true): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
