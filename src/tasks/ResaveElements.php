@@ -104,6 +104,7 @@ class ResaveElements extends Task
 
             return true;
         } catch (\Exception $e) {
+            Craft::$app->getErrorHandler()->logException($e);
             $class = $this->elementType;
 
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();

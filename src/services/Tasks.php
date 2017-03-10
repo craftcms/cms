@@ -363,6 +363,7 @@ class Tasks extends Component
                     }
                 }
             } catch (\Exception $e) {
+                Craft::$app->getErrorHandler()->logException($e);
                 $error = 'An exception was thrown: '.$e->getMessage();
             }
         }
