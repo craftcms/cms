@@ -204,6 +204,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
         /** @var Element $element */
         /** @var Element $class */
         $class = static::elementType();

@@ -161,6 +161,17 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'owner';
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();

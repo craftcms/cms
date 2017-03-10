@@ -86,18 +86,6 @@ abstract class Model extends \yii\base\Model
         return $fields;
     }
 
-    /**
-     * Returns a copy of this model.
-     *
-     * @return static
-     */
-    public function copy()
-    {
-        $class = get_class($this);
-
-        return new $class($this->getAttributes());
-    }
-
     // Deprecated Methods
     // -------------------------------------------------------------------------
 

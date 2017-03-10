@@ -16,6 +16,8 @@ Craft CMS 3.0 Working Changelog
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
 - `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.
 - `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
+- `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
+- When an element is being saved across multiple sites, each site will now fire the before/after-save events.
 - Exceptions that are thrown when running a task are now logged.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
 - The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.
@@ -23,6 +25,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed support for chain-setting model properties via magic property setters. Models that wish to support this behavior must supply their own setter methods.
+- Removed `craft\base\Model::copy()`.
 - Removed `craft\fields\Assets::getFolderOptions()`.
 - Removed `craft\services\Assets::getUserFolder()`.
 
@@ -38,6 +41,7 @@ Craft CMS 3.0 Working Changelog
 - #1469: Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method.
 - #1470: Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type.
 - Fixed a PHP error that occurred when attempting to rerun a failed task.
+- #16: Fixed a bug where Matrix and relational field values weren’t getting propagated to new sites correctly.
 
 ## 3.0.0-beta.6 - 2017-03-03
 

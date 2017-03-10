@@ -251,6 +251,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof ElementQueryInterface) {
+            return $value;
+        }
+
         /** @var Element $element */
         $query = MatrixBlock::find();
 

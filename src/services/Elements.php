@@ -336,16 +336,28 @@ class Elements extends Component
      *
      * @param ElementInterface $element       The element that is being saved
      * @param bool             $runValidation Whether the element should be validated
+     * @param bool             $propagate     Whether the element should be saved across all of its supported sites
      *
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true): bool
+    public function saveElement(ElementInterface $element, bool $runValidation = true, $propagate = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
+
+        // Get the sites supported by this element
+        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+            throw new Exception('All elements must have at least one site associated with them.');
+        }
+
+        // Make sure the element actually supports the site it's being saved in
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+            throw new Exception('Attempting to save an element in an unsupported site.');
+        }
 
         // Set a dummy title if there isn't one already and the element type has titles
         if (!$runValidation && $element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
@@ -357,6 +369,7 @@ class Elements extends Component
             }
         }
 
+        // Validate
         if ($runValidation && !$element->validate()) {
             Craft::info('Element not saved due to validation error.', __METHOD__);
 
@@ -418,169 +431,53 @@ class Elements extends Component
                 $element->uid = $elementRecord->uid;
             }
 
-            // Update the site settings records and content
-
-            // We're saving all of the element's site settings here to ensure that they all exist and to update the URI in
-            // the event that the URL format includes some value that just changed
-
+            // Save the element's site settings record
             if (!$isNewElement) {
-                $siteSettingsRecords = Element_SiteSettingsRecord::find()
-                    ->where([
-                        'elementId' => $element->id
-                    ])
-                    ->indexBy('siteId')
-                    ->all();
-            } else {
-                $siteSettingsRecords = [];
+                $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                ]);
             }
 
-            $masterSiteId = $element->siteId;
+            if (empty($siteSettingsRecord)) {
+                // First time we've saved the element for this site
+                $siteSettingsRecord = new Element_SiteSettingsRecord();
 
-            $supportedSites = ElementHelper::supportedSitesForElement($element);
-
-            if (empty($supportedSites)) {
-                throw new Exception('All elements must have at least one site associated with them.');
+                $siteSettingsRecord->elementId = $element->id;
+                $siteSettingsRecord->siteId = $element->siteId;
             }
 
-            $supportedSiteIds = [];
+            $siteSettingsRecord->slug = $element->slug;
+            $siteSettingsRecord->uri = $element->uri;
+            $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
 
-            foreach ($supportedSites as $siteInfo) {
-                $supportedSiteIds[] = $siteInfo['siteId'];
+            if (!$siteSettingsRecord->save(false)) {
+                throw new Exception('Couldn\'t save elements\' site settings record.');
             }
 
-            $translateContent = false;
-
-            // Make sure the element actually supports this site
-            if (!in_array($element->siteId, $supportedSiteIds, false)) {
-                throw new Exception('Attempting to save an element in an unsupported site.');
-            }
-
+            // Save the content
             if ($element::hasContent()) {
-                // Are we dealing with translations?
-                if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
-                    $translateContent = true;
-
-                    // Get all of the field translation keys
-                    $masterFieldTranslationKeys = [];
-
-                    foreach ($element->getFieldLayout()->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($field->getContentColumnType()) {
-                            $masterFieldTranslationKeys[$field->id] = $field->getTranslationKey($element);
-                        }
-                    }
-                }
-
-                $masterFieldValues = $element->getFieldValues();
+                Craft::$app->getContent()->saveContent($element);
             }
 
-            $contentService = Craft::$app->getContent();
+            // It is now officially saved
+            $element->afterSave($isNewElement);
 
-            foreach ($supportedSites as $siteInfo) {
-                if (isset($siteSettingsRecords[$siteInfo['siteId']])) {
-                    $siteSettingsRecord = $siteSettingsRecords[$siteInfo['siteId']];
-                } else {
-                    $siteSettingsRecord = new Element_SiteSettingsRecord();
-
-                    $siteSettingsRecord->elementId = $element->id;
-                    $siteSettingsRecord->siteId = $siteInfo['siteId'];
-                    $siteSettingsRecord->enabled = $siteInfo['enabledByDefault'];
-                }
-
-                // Is this the master site?
-                $isMasterSite = ($siteInfo['siteId'] == $masterSiteId);
-
-                if ($isMasterSite) {
-                    $localizedElement = $element;
-                } else {
-                    // Copy the element for this site
-                    $localizedElement = $element->copy();
-                    $localizedElement->siteId = $siteInfo['siteId'];
-                    $localizedElement->contentId = null;
-
-                    if ($siteSettingsRecord->id) {
-                        // Keep the original slug
-                        $localizedElement->slug = $siteSettingsRecord->slug;
-                    } else {
-                        // Default to the master site's slug
-                        $localizedElement->slug = $element->slug;
-                    }
-                }
-
-                if ($element->hasContent()) {
-                    if (!$isMasterSite) {
-                        $fieldValues = false;
-
-                        if (!$isNewElement) {
-                            // Do we already have a content row for this site?
-                            $fieldValues = $contentService->getContentRow($localizedElement);
-
-                            if ($fieldValues !== false) {
-                                $localizedElement->contentId = $fieldValues['id'];
-                                if (isset($fieldValues['title'])) {
-                                    $localizedElement->title = $fieldValues['title'];
-                                }
-                                unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['siteId'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
-
-                                // Are we worried about translations?
-                                if ($translateContent) {
-                                    foreach ($localizedElement->getFieldLayout()->getFields() as $field) {
-                                        /** @var Field $field */
-                                        if (isset($masterFieldTranslationKeys[$field->id])) {
-                                            // Does this field produce the same translation key as it did for the master element?
-                                            $fieldTranslationKey = $field->getTranslationKey($localizedElement);
-
-                                            if ($fieldTranslationKey === $masterFieldTranslationKeys[$field->id]) {
-                                                // Copy the master element's value over
-                                                /** @noinspection PhpUndefinedVariableInspection */
-                                                $fieldValues[$field->handle] = $masterFieldValues[$field->handle];
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if ($fieldValues === false) {
-                            // Just default to whatever's on the master element we're saving here
-                            /** @noinspection PhpUndefinedVariableInspection */
-                            $fieldValues = $masterFieldValues;
-                        }
-
-                        $localizedElement->setFieldValues($fieldValues);
-                    }
-
-                    $contentService->saveContent($localizedElement);
-                }
-
-                // Go ahead and re-do search index keywords to grab things like "title" in
-                // a multi-site installs.
-                if ($isNewElement) {
-                    Craft::$app->getSearch()->indexElementAttributes($localizedElement);
-                }
-
-                if (!$isMasterSite && $localizedElement::hasUris()) {
-                    ElementHelper::setUniqueUri($localizedElement);
-                }
-
-                $siteSettingsRecord->slug = $localizedElement->slug;
-                $siteSettingsRecord->uri = $localizedElement->uri;
-
-                if ($isMasterSite) {
-                    $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
-                }
-
-                if (!$siteSettingsRecord->save(false)) {
-                    throw new Exception('Couldn\'t save elements\' site settings record.');
-                }
-            }
-
-            // Update the search index
+            // Update search index
             Craft::$app->getSearch()->indexElementAttributes($element);
 
-            if (!$isNewElement) {
-                // Delete the rows that don't need to be there anymore
+            // Update the element across the other sites?
+            if ($propagate && $element::isLocalized() && Craft::$app->getIsMultiSite()) {
+                foreach ($supportedSites as $siteInfo) {
+                    // Skip the master site
+                    if ($siteInfo['siteId'] != $element->siteId) {
+                        $this->_propagateElement($element, $isNewElement, $siteInfo);
+                    }
+                }
+            }
 
+            // Delete the rows that don't need to be there anymore
+            if (!$isNewElement) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
                         '{{%elements_i18n}}',
@@ -603,8 +500,6 @@ class Elements extends Component
                         ->execute();
                 }
             }
-
-            $element->afterSave($isNewElement);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -1377,6 +1272,73 @@ class Elements extends Component
                 // Update the source path
                 $sourcePath = $targetPath;
             }
+        }
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * Propagates an element to a different site
+     *
+     * @param ElementInterface $element
+     * @param bool $isNewElement
+     * @param array            $siteInfo
+     *
+     * @return void
+     * @throws Exception if the element couldn't be propagated
+     */
+    private function _propagateElement(ElementInterface $element, bool $isNewElement, array $siteInfo)
+    {
+        /** @var Element $element */
+        // Try to fetch the element in this site
+        $siteElement = null;
+        if (!$isNewElement) {
+            $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
+        }
+
+        // If it doesn't exist yet, just clone the master site
+        if ($isNewSiteForElement = $siteElement === null) {
+            $class = get_class($element);
+            /** @var Element $siteElement */
+            $siteElement = new $class();
+            $siteElement->setAttributes($element->getAttributes(), false);
+            $siteElement->siteId = $siteInfo['siteId'];
+            $siteElement->contentId = null;
+            $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
+        }
+
+        $siteElement->enabled = $element->enabled;
+
+        // Copy any non-translatable field values
+        if ($element::hasContent()) {
+            if ($isNewSiteForElement) {
+                // Copy all the field values
+                $siteElement->setFieldValues($element->getFieldValues());
+            } else {
+                // Only copy the non-translatable field values
+                foreach ($element->getFieldLayout()->getFields() as $field) {
+                    /** @var Field $field */
+                    // Does this field produce the same translation key as it did for the master element?
+                    if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {
+                        // Copy the master element's value over
+                        $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
+                    }
+                }
+            }
+        }
+
+        // Save it
+        $siteElement->setScenario(Element::SCENARIO_SITE_PROPAGATION);
+
+        if ($this->saveElement($siteElement, true, false) === false) {
+            // Log the errors
+            $error = 'Couldn\'t propagate element to other site due to validation errors:';
+            foreach ($siteElement->getFirstErrors() as $attributeError) {
+                $error .= "\n- ".$attributeError;
+            }
+            Craft::error($error);
+            throw new Exception('Couldn\'t propagate element to other site.');
         }
     }
 }
