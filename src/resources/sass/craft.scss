@@ -166,7 +166,7 @@ a.fieldtoggle:before { display: block; position: absolute; top: -2px; @include l
 
 /* emphasis */
 em, i { font-style: italic; }
-strong, b, i em { font-weight: bold; font-family: sans-serif; }
+strong, b, i em { font-weight: bold; }
 
 /* text styles */
 .topalign { vertical-align: top; }
