@@ -1,6 +1,10 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+
 ## 3.0.0-beta.7 - 2017-03-10
 
 ### Added
@@ -14,7 +18,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
 - #13: Disabled Matrix blocks are no longer shown in Live Preview.
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
-- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.
+- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.)
 - `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
 - `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
 - When an element is being saved across multiple sites, each site will now fire the before/after-save events.
