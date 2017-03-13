@@ -72,7 +72,7 @@ class MatrixBlock extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new MatrixBlockQuery(get_called_class());
+        return new MatrixBlockQuery(static::class);
     }
 
     /**

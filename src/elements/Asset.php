@@ -110,7 +110,7 @@ class Asset extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new AssetQuery(get_called_class());
+        return new AssetQuery(static::class);
     }
 
     /**

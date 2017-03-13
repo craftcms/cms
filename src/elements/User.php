@@ -135,7 +135,7 @@ class User extends Element implements IdentityInterface
      */
     public static function find(): ElementQueryInterface
     {
-        return new UserQuery(get_called_class());
+        return new UserQuery(static::class);
     }
 
     /**

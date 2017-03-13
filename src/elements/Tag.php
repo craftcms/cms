@@ -74,7 +74,7 @@ class Tag extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new TagQuery(get_called_class());
+        return new TagQuery(static::class);
     }
 
     /**

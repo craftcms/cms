@@ -98,7 +98,7 @@ class Category extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new CategoryQuery(get_called_class());
+        return new CategoryQuery(static::class);
     }
 
     /**
