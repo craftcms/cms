@@ -76,11 +76,13 @@
 		{% includecssresource "css/rebrand.css" %}
 
 		{{ forms.field({
-			label: "Login Page Logo"|t
+			label: "Login Page Logo"|t,
+			instructions: "SVG file recommended. The logo will be displayed at {size} wide."|t({ size: '300px' })
 		}, include('settings/general/_images/logo')) }}
 
 		{{ forms.field({
-			label: "Site Icon"|t
+			label: "Site Icon"|t,
+			instructions: "Square SVG file recommended. The logo will be displayed at {size} by {size}."|t({ size: '32px' })
 		}, include('settings/general/_images/icon')) }}
 
 		<div class="clear"></div>
