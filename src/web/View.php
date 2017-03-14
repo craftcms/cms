@@ -1271,6 +1271,7 @@ class View extends \yii\web\View
             $element->getHtmlAttributes($context['context']),
             [
                 'class' => 'element '.$elementSize,
+                'data-type' => get_class($element),
                 'data-id' => $element->id,
                 'data-site-id' => $element->siteId,
                 'data-status' => $element->getStatus(),

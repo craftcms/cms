@@ -157,7 +157,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         createElementEditor: function($element) {
-            new Craft.ElementEditor($element, {
+            Craft.createElementEditor(this.elementIndex.elementType, $element, {
                 params: {
                     includeTableAttributesForSource: this.elementIndex.sourceKey
                 },

@@ -3,6 +3,12 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+
+### Removed
+- Removed `Craft.showElementEditor()`.
+
 ### Fixed
 - Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
 - Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
