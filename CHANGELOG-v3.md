@@ -3,7 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
-### Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+### Fixed
+- Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+- Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
