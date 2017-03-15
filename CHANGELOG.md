@@ -11,6 +11,7 @@ Craft CMS Changelog
 
 ### Fixed
 - #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
+- Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
 
 ## 2.6.2967 - 2017-03-10
 
