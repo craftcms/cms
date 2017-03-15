@@ -664,14 +664,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             Craft.cp.displayNotice(response.message);
                         }
 
-                        // There may be a new background task that needs to be run
-                        Craft.cp.runPendingTasks();
+                        this.afterAction(action, params);
                     }
                     else {
                         Craft.cp.displayError(response.message);
                     }
                 }
             }, this));
+        },
+
+        afterAction: function(action, params) {
+
+            // There may be a new background task that needs to be run
+            Craft.cp.runPendingTasks();
+
+            this.onAfterAction(action, params);
         },
 
         hideActionTriggers: function() {
@@ -1191,6 +1198,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.trigger('disableElements', {elements: $elements});
         },
 
+        onAfterAction: function(action, params) {
+            this.settings.onAfterAction(action, params);
+            this.trigger('afterAction', {action: action, params: params});
+        },
+
         // Private methods
         // =========================================================================
 
@@ -1580,7 +1592,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,
-            onDisableElements: $.noop
+            onDisableElements: $.noop,
+            onAfterAction: $.noop
         }
     });
 
