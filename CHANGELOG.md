@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added Control Panel translations for Polish.
+
 ### Changed
 - Updated Garnish to 0.1.16.
 
