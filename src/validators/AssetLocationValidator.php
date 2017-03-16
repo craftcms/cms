@@ -38,6 +38,11 @@ class AssetLocationValidator extends Validator
     public $filenameAttribute = 'filename';
 
     /**
+     * @var string The filename attribute on the model
+     */
+    public $suggestedFilenameAttribute = 'suggestedFilename';
+
+    /**
      * @var string The error code attribute on the model
      */
     public $errorCodeAttribute = 'locationError';
@@ -120,34 +125,20 @@ class AssetLocationValidator extends Validator
 
         // Prepare the filename
         $filename = AssetsHelper::prepareAssetName($filename);
+        $suggestedFilename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
 
-        if ($this->avoidFilenameConflicts) {
-            $filename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
-        } else {
-            // Check the DB to see if we already have an asset at that location
-            $exists = Asset::find()
-                ->select(['elements.id'])
-                ->folderId($folderId)
-                ->filename(Db::escapeParam($filename))
-                ->exists();
-
-            if ($exists) {
+        if ($suggestedFilename !== $filename) {
+            if (!$this->avoidFilenameConflicts) {
+                $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
                 $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
 
                 return;
             }
 
-            // Check the volume to see if a file already exists at that location
-            $path = ($folder->path ? rtrim($folder->path, '/').'/' : '').$filename;
-            if ($folder->getVolume()->fileExists($path)) {
-                $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
-
-                return;
-            }
         }
 
         // Update the newLocation attribute in case the filename changed
-        $model->$attribute = "{folder:{$folderId}}{$filename}";
+        $model->$attribute = "{folder:{$folderId}}{$suggestedFilename}";
     }
 
     /**

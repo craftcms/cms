@@ -411,6 +411,11 @@ class Asset extends Element
     public $avoidFilenameConflicts = false;
 
     /**
+     * @var string|null The suggested filename in case of a conflict.
+     */
+    public $suggestedFilename;
+
+    /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
      */
     public $keepFileOnDelete = false;

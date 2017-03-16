@@ -29,14 +29,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         _tempExpandedFolders: [],
 
         _fileConflictTemplate: {
-            message: "File “{file}” already exists at target location.",
             choices: [
                 {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
                 {value: 'replace', title: Craft.t('app', 'Replace it')}
             ]
         },
         _folderConflictTemplate: {
-            message: "Folder “{folder}” already exists at target location",
             choices: [
                 {value: 'replace', title: Craft.t('app', 'Replace the folder (all existing files will be deleted)')},
                 {value: 'merge', title: Craft.t('app', 'Merge the folder (any conflicting files will be replaced)')}
@@ -274,8 +272,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     var parameterArray = [];
                     for (i = 0; i < originalAssetIds.length; i++) {
                         parameterArray.push({
-                            assetId: originalAssetIds[i],
-                            folderId: targetFolderId
+                            action: 'assets/move-asset',
+                            data: {
+                                assetId: originalAssetIds[i],
+                                folderId: targetFolderId
+                            }
                         });
                     }
 
@@ -288,15 +289,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             var response = responseArray[i];
 
                             // Push prompt into prompt array
-                            if (response.prompt) {
-                                var promptData = {
-                                    message: this._fileConflictTemplate.message,
-                                    choices: this._fileConflictTemplate.choices
-                                };
-                                promptData.message = Craft.t('app', promptData.message, {file: response.filename});
-                                response.prompt = promptData;
-
-                                this.promptHandler.addPrompt(response);
+                            if (response.conflict) {
+                                this.promptHandler.addPrompt({
+                                    assetId: response.assetId,
+                                    suggestedFilename: response.suggestedFilename,
+                                    prompt: {message: response.conflict, choices: this._fileConflictTemplate.choices}
+                                });
                             }
 
                             if (response.error) {
@@ -340,12 +338,26 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                         continue;
                                     }
 
-                                    // Find the matching request parameters for this file and modify them slightly
-                                    for (var ii = 0; ii < parameterArray.length; ii++) {
-                                        if (parameterArray[ii].assetId == returnData[i].assetId) {
-                                            parameterArray[ii].userResponse = returnData[i].choice;
-                                            newParameterArray.push(parameterArray[ii]);
-                                        }
+                                    if (returnData[i].choice == 'keepBoth') {
+                                        newParameterArray.push({
+                                            action: 'assets/move-asset',
+                                            data: {
+                                                folderId: targetFolderId,
+                                                assetId: returnData[i].assetId,
+                                                filename: returnData[i].suggestedFilename
+                                            }
+                                        });
+                                    }
+
+                                    if (returnData[i].choice == 'replace') {
+                                        newParameterArray.push({
+                                            action: 'assets/move-asset',
+                                            data: {
+                                                folderId: targetFolderId,
+                                                assetId: returnData[i].assetId,
+                                                force: true
+                                            }
+                                        });
                                     }
                                 }
 
@@ -361,7 +373,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     this.progressBar.showProgressBar();
 
                                     // Move conflicting files again with resolutions now
-                                    this._moveFile(newParameterArray, 0, onMoveFinish);
+                                    this._performBatchRequests(newParameterArray, onMoveFinish);
                                 }
                             }, this);
 
@@ -375,7 +387,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     }, this);
 
                     // Initiate the file move with the built array, index of 0 and callback to use when done
-                    this._moveFile(parameterArray, 0, onMoveFinish);
+                    this._performBatchRequests(parameterArray, onMoveFinish);
 
                     // Skip returning dragees
                     return;
@@ -629,42 +641,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             if (this._getSourceLevel($source) > 1) {
                 return $source.parent().parent().siblings('a');
             }
-        },
-
-        /**
-         * Move a file using data from a parameter array.
-         *
-         * @param parameterArray
-         * @param parameterIndex
-         * @param callback
-         * @private
-         */
-        _moveFile: function(parameterArray, parameterIndex, callback) {
-            if (parameterIndex == 0) {
-                this.responseArray = [];
-            }
-
-            Craft.postActionRequest('assets/move-asset', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
-                this.progressBar.incrementProcessedItemCount(1);
-                this.progressBar.updateProgressBar();
-
-                if (textStatus == 'success') {
-                    this.responseArray.push(data);
-
-                    // If assets were just merged we should get the referece tags updated right away
-                    Craft.cp.runPendingTasks();
-                }
-
-                parameterIndex++;
-
-                if (parameterIndex >= parameterArray.length) {
-                    callback(this.responseArray);
-                }
-                else {
-                    this._moveFile(parameterArray, parameterIndex, callback);
-                }
-
-            }, this));
         },
 
         _selectSourceByFolderId: function(targetFolderId) {
@@ -1335,6 +1311,33 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.progressBar.$progressBar.css({
                 top: offset
             });
+        },
+
+        _performBatchRequests: function(parameterArray, finalCallback) {
+
+            var responseArray = [];
+
+            var doRequest = function (parameters) {
+                Craft.postActionRequest(parameters.action, parameters.data, function (data, textStatus) {
+                    this.progressBar.incrementProcessedItemCount(1);
+                    this.progressBar.updateProgressBar();
+
+                    if (textStatus == 'success') {
+                        responseArray.push(data);
+
+                        // If assets were just merged we should get the reference tags updated right away
+                        Craft.cp.runPendingTasks();
+                    }
+
+                    if (responseArray.length >= parameterArray.length) {
+                        finalCallback(responseArray);
+                    }
+                }.bind(this));
+            }.bind(this);
+
+            for (var i = 0; i < parameterArray.length; i++) {
+                doRequest(parameterArray[i]);
+            }
         }
 
     });

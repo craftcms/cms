@@ -114,7 +114,7 @@ class AssetsController extends Controller
             $asset->avoidFilenameConflicts = true;
             $asset->setScenario(Asset::SCENARIO_UPLOAD);
 
-            $result = Craft::$app->getElements()->saveElement($asset);
+            Craft::$app->getElements()->saveElement($asset);
 
             if ($filename !== $asset->filename) {
                 $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $filename]);
@@ -169,16 +169,12 @@ class AssetsController extends Controller
         $sourceAsset = null;
         $assetToReplace = null;
 
-        if ($assetId) {
-            if (!$assetToReplace = $assets->getAssetById($assetId)) {
-                throw new NotFoundHttpException("Asset not found.");
-            }
+        if ($assetId && !$assetToReplace = $assets->getAssetById($assetId)) {
+            throw new NotFoundHttpException("Asset not found.");
         }
 
-        if ($sourceAssetId) {
-            if (!$sourceAsset = $assets->getAssetById($sourceAssetId)) {
-                throw new NotFoundHttpException("Asset not found.");
-            }
+        if ($sourceAssetId && !$sourceAsset = $assets->getAssetById($sourceAssetId)) {
+            throw new NotFoundHttpException("Asset not found.");
         }
 
         $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
@@ -193,6 +189,15 @@ class AssetsController extends Controller
             } elseif (!empty($sourceAsset)) {
                 // Or replace using an existing Asset
                 $tempPath = $sourceAsset->getCopyOfFile();
+
+                // See if we can figure out a definite Asset to replace.
+                if (empty($assetToReplace) && $sourceAsset) {
+                    $assetToReplace = Asset::find()
+                        ->select(['elements.id'])
+                        ->folderId($sourceAsset->folderId)
+                        ->filename(Db::escapeParam($targetFilename))
+                        ->one();
+                }
 
                 // If we have an actual asset for which to replace the file, just do it.
                 if (!empty($assetToReplace)) {
@@ -395,7 +400,24 @@ class AssetsController extends Controller
         $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
         $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-        $result = Craft::$app->getAssets()->moveAsset($asset, $folder, $filename);
+        if ($request->getBodyParam('force')) {
+            // Check for a conflicting Asset
+            $conflictingAsset = Asset::find()
+                ->select(['elements.id'])
+                ->folderId($folderId)
+                ->filename(Db::escapeParam($asset->filename))
+                ->one();
+
+            // If there's an Asset conflicting, then merge and replace file.
+            if ($conflictingAsset) {
+                Craft::$app->getElements()->mergeElementsByIds($conflictingAsset->id, $asset->id);
+            } else {
+                $volume = $folder->getVolume();
+                $volume->deleteFile(rtrim($folder->path, '/').'/'.$asset->filename);
+            }
+        }
+
+        $result = $assetsService->moveAsset($asset, $folder, $filename);
 
         if (!$result) {
             // Get the corrected filename
@@ -403,6 +425,7 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'conflict' => $asset->getFirstError('newLocation'),
+                'suggestedFilename' => $asset->suggestedFilename,
                 'filename' => $filename,
                 'assetId' => $asset->id
             ]);
