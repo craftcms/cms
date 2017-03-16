@@ -1014,7 +1014,7 @@ Tebrikler! Craft eposta göndermeyi başardı.
 
 Gerkli ayarlar şu şekilde:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}⏎ 
+{% for key, setting in settings %}{{ key }}: {{ setting }}⏎
 
 {% endfor %}',
 	'test_email_heading' => 'Eposta ayarlarınızı test ederken:',
