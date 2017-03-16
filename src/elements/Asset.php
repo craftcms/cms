@@ -543,7 +543,7 @@ class Asset extends Element
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newLocation'], AssetLocationValidator::class, 'on' => [self::SCENARIO_FILEOPS, self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE], 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
+        $rules[] = [['newLocation'], AssetLocationValidator::class, 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE]];
 
@@ -939,7 +939,7 @@ class Asset extends Element
                 'id' => 'newFilename',
                 'name' => 'newFilename',
                 'value' => $this->filename,
-                'errors' => $this->getErrors('filename'),
+                'errors' => $this->getErrors('newLocation'),
                 'first' => true,
                 'required' => true,
                 'class' => 'renameHelper text'
@@ -976,6 +976,11 @@ class Asset extends Element
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?: $this->filename;
             $this->newLocation = "{folder:{$folderId}}{$filename}";
+        }
+
+        // Set the kind based on filename, if not set already
+        if (empty($this->kind) && !empty($this->filename)) {
+            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
         }
 
         return parent::beforeValidate();
@@ -1032,14 +1037,16 @@ class Asset extends Element
                     throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
                 }
 
-                // Upload the file to the new location
-                $newVolume->createFileByStream($newPath, $stream, []);
-                fclose($stream);
-
+                // Delete the old path first.
                 if ($this->folderId) {
                     // Delete the old file
                     $oldVolume->deleteFile($oldPath);
                 }
+
+                // Upload the file to the new location
+                $newVolume->createFileByStream($newPath, $stream, []);
+                fclose($stream);
+
             }
 
             if ($this->folderId) {

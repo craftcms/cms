@@ -25,6 +25,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -62,149 +63,74 @@ class AssetsController extends Controller
     {
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
-        $assetId = $request->getBodyParam('assetId');
         $folderId = $request->getBodyParam('folderId');
         $fieldId = $request->getBodyParam('fieldId');
         $elementId = $request->getBodyParam('elementId');
-        $conflictResolution = $request->getBodyParam('userResponse');
 
-        $newFile = (bool)$uploadedFile && empty($assetId);
-        $resolveConflict = !empty($conflictResolution) && !empty($assetId);
+        if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
+            throw new BadRequestHttpException('No target destination provided for uploading');
+        }
 
         try {
-            // Resolving a conflict?
             $assets = Craft::$app->getAssets();
-            if ($resolveConflict) {
-                // When resolving a conflict, $assetId is the id of the file that was created
-                // and is conflicting with an existing file.
-                if ($conflictResolution === 'replace') {
-                    $assetToReplaceWith = $assets->getAssetById($assetId);
-                    $filename = Assets::prepareAssetName($request->getRequiredBodyParam('filename'));
 
-                    $assetToReplace = Asset::find()
-                        ->folderId($assetToReplaceWith->folderId)
-                        ->filename(Db::escapeParam($filename))
-                        ->one();
+            $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
-                    if (!$assetToReplace) {
-                        throw new BadRequestHttpException('Asset to be replaced cannot be found');
-                    }
+            if (empty($folderId)) {
+                $field = Craft::$app->getFields()->getFieldById($fieldId);
 
-                    // Check if the user has the permissions to delete files
-                    $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace);
-
-                    if ($assetToReplace->volumeId != $assetToReplaceWith->volumeId) {
-                        throw new BadRequestHttpException('Asset to be replaced does not live in the same volume as its replacement');
-                    }
-
-                    $assets->replaceAsset($assetToReplace,
-                        $assetToReplaceWith);
-                } else {
-                    if ($conflictResolution === 'cancel') {
-                        $assetToDelete = $assets->getAssetById($assetId);
-
-                        if ($assetToDelete) {
-                            $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToDelete);
-                            Craft::$app->getElements()->deleteElement($assetToDelete);
-                        }
-                    }
+                if (!($field instanceof AssetsField)) {
+                    throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                return $this->asJson(['success' => true]);
+                $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
+                $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
-            if ($newFile) {
-                if ($uploadedFile->getHasError()) {
-                    throw new UploadFailedException($uploadedFile->error);
-                }
+            if (empty($folderId)) {
+                throw new BadRequestHttpException('The target destination provided for uploading is not valid');
+            }
 
-                if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
-                    throw new BadRequestHttpException('No target destination provided for uploading');
-                }
+            $folder = $assets->findFolder(['id' => $folderId]);
 
-                if (empty($folderId)) {
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$folder) {
+                throw new BadRequestHttpException('The target folder provided for uploading is not valid');
+            }
 
-                    if (!($field instanceof AssetsField)) {
-                        throw new BadRequestHttpException('The field provided is not an Assets field');
-                    }
+            // Check the permissions to upload in the resolved folder.
+            $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-                    $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
-                    $folderId = $field->resolveDynamicPathToFolderId($element);
-                }
+            $filename = Assets::prepareAssetName($uploadedFile->name);
+            $asset = new Asset();
 
-                if (empty($folderId)) {
-                    throw new BadRequestHttpException('The target destination provided for uploading is not valid');
-                }
+            // Make sure there are no double spaces, if the filename had a space followed by a
+            // capital letter because of Yii's "word" logic.
+            $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
-                $folder = $assets->findFolder(['id' => $folderId]);
+            $asset->tempFilePath = $tempPath;
+            $asset->filename = $filename;
+            $asset->newFolderId = $folder->id;
+            $asset->volumeId = $folder->volumeId;
+            $asset->avoidFilenameConflicts = true;
+            $asset->setScenario(Asset::SCENARIO_UPLOAD);
 
-                if (!$folder) {
-                    throw new BadRequestHttpException('The target folder provided for uploading is not valid');
-                }
+            $result = Craft::$app->getElements()->saveElement($asset);
 
-                // Check the permissions to upload in the resolved folder.
-                $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
-
-                // Move the uploaded file to the temp folder
-                if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
-                    throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
-                }
-
-                $filename = Assets::prepareAssetName($uploadedFile->name);
-                $asset = new Asset();
-
-                // Make sure there are no double spaces, if the filename had a space followed by a
-                // capital letter because of Yii's "word" logic.
-                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
-
-                $asset->tempFilePath = $tempPath;
-                $asset->filename = $filename;
-                $asset->folderId = $folder->id;
-                $asset->volumeId = $folder->volumeId;
-
-                try {
-                    $assets->saveAsset($asset);
-                    try {
-                        FileHelper::removeFile($tempPath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
-                    }
-                } catch (AssetConflictException $exception) {
-                    // Okay, get a replacement name and re-save Asset.
-                    $replacementName = $assets->getNameReplacementInFolder($asset->filename,
-                        $folder->id);
-                    $asset->filename = $replacementName;
-
-                    $assets->saveAsset($asset);
-                    try {
-                        FileHelper::removeFile($tempPath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
-                    }
-
-                    return $this->asJson([
-                        'prompt' => true,
-                        'assetId' => $asset->id,
-                        'filename' => $uploadedFile->name
-                    ]);
-                } // No matter what happened, delete the file on server.
-                catch (\Exception $exception) {
-                    try {
-                        FileHelper::removeFile($tempPath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
-                    }
-                    throw $exception;
-                }
+            if ($filename !== $asset->filename) {
+                $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $filename]);
 
                 return $this->asJson([
-                    'success' => true,
-                    'filename' => $asset->filename
+                    'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $filename]),
+                    'assetId' => $asset->id,
+                    'filename' => $filename,
+                    'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null
                 ]);
-            } else {
-                throw new BadRequestHttpException('Not a new asset');
             }
+
+            return $this->asJson([
+                'success' => true,
+                'filename' => $asset->filename
+            ]);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -214,32 +140,73 @@ class AssetsController extends Controller
      * Replace a file
      *
      * @return Response
+     * @throws BadRequestHttpException if incorrect combination of parameters passed.
+     * @throws NotFoundHttpException if Asset cannot be found by id.
      */
     public function actionReplaceFile(): Response
     {
         $this->requireAcceptsJson();
-        $assetId = Craft::$app->getRequest()->getBodyParam('assetId');
+        $request = Craft::$app->getRequest();
+
+        $assetId = $request->getBodyParam('assetId');
+
+        $sourceAssetId = $request->getBodyParam('sourceAssetId');
+        $targetFilename = $request->getBodyParam('targetFilename');
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();
-        $asset = $assets->getAssetById($assetId);
 
-        // Check if we have the relevant permissions.
-        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
-        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
+        // Must have at least one existing Asset (source or target).
+        // Must have either target Asset or target file name.
+        // Must have either uploaded file or source Asset.
+        if ((empty($assetId) && empty($sourceAssetId)) ||
+            (empty($assetId) && empty($targetFilename)) ||
+            ($uploadedFile === null && empty($sourceAssetId))) {
+
+            throw new BadRequestHttpException('Incorrect combination of parameters.');
+        }
+
+        $sourceAsset = null;
+        $assetToReplace = null;
+
+        if ($assetId) {
+            if (!$assetToReplace = $assets->getAssetById($assetId)) {
+                throw new NotFoundHttpException("Asset not found.");
+            }
+        }
+
+        if ($sourceAssetId) {
+            if (!$sourceAsset = $assets->getAssetById($sourceAssetId)) {
+                throw new NotFoundHttpException("Asset not found.");
+            }
+        }
+
+        $this->_requirePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
+        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace ?: $sourceAsset);
 
         try {
-            if ($uploadedFile->getHasError()) {
-                throw new UploadFailedException($uploadedFile->error);
-            }
+            // Handle the Element Action
+            if (!empty($assetToReplace) && $uploadedFile) {
+                $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
+                $filename = Assets::prepareAssetName($uploadedFile->name);
+                $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
+            } elseif (!empty($sourceAsset)) {
+                // Or replace using an existing Asset
+                $tempPath = $sourceAsset->getCopyOfFile();
 
-            // Move the uploaded file to the temp folder
-            if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
-                throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
+                // If we have an actual asset for which to replace the file, just do it.
+                if (!empty($assetToReplace)) {
+                    $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->filename);
+                    Craft::$app->getElements()->deleteElement($sourceAsset);
+                } else {
+                    // If all we have is the filename, then make sure that the destination is empty and go for it.
+                    $volume = $sourceAsset->getVolume();
+                    $volume->deleteFile(rtrim($sourceAsset->folderPath, '/').'/'.$targetFilename);
+                    $sourceAsset->newFilename = $targetFilename;
+                    Craft::$app->getElements()->saveElement($sourceAsset);
+                    $assetId = $sourceAsset->id;
+                }
             }
-
-            $fileName = Assets::prepareAssetName($uploadedFile->name);
-            $assets->replaceAssetFile($asset, $tempPath, $fileName);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -324,6 +291,38 @@ class AssetsController extends Controller
     }
 
     /**
+     * Delete an Asset.
+     *
+     * @return Response
+     * @throws BadRequestHttpException if the folder cannot be found
+     */
+    public function actionDeleteAsset(): Response
+    {
+        $this->requireLogin();
+        $this->requireAcceptsJson();
+        $assets = Craft::$app->getAssets();
+
+        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
+        $asset = $assets->getAssetById($assetId);
+
+        if (!$asset) {
+            throw new BadRequestHttpException('The asset cannot be found');
+        }
+
+        // Check if it's possible to delete objects in the target Volume.
+        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
+
+        try {
+            Craft::$app->getElements()->deleteElement($asset);
+        } catch (AssetException $exception) {
+            return $this->asErrorJson($exception->getMessage());
+        }
+
+        return $this->asJson(['success' => true]);
+
+    }
+
+    /**
      * Rename a folder
      *
      * @return Response
@@ -403,7 +402,7 @@ class AssetsController extends Controller
             list(, $filename) = Assets::parseFileLocation($asset->newLocation);
 
             return $this->asJson([
-                'prompt' => true,
+                'conflict' => $asset->getFirstError('newLocation'),
                 'filename' => $filename,
                 'assetId' => $asset->id
             ]);
@@ -830,6 +829,26 @@ class AssetsController extends Controller
     private function _requirePermissionByVolumeId(string $permissionName, int $volumeId)
     {
         $this->requirePermission($permissionName.':'.$volumeId);
+    }
+
+    /**
+     * @param UploadedFile $uploadedFile
+     *
+     * @return string
+     * @throws UploadFailedException
+     */
+    private function _getUploadedFileTempPath($uploadedFile)
+    {
+        if ($uploadedFile->getHasError()) {
+            throw new UploadFailedException($uploadedFile->error);
+        }
+
+        // Move the uploaded file to the temp folder
+        if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
+            throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
+        }
+
+        return $tempPath;
     }
 }
 

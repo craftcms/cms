@@ -846,14 +846,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             var doReload = true;
 
-            if (response.success || response.prompt) {
+            if (response.success || response.conflict) {
                 // Add the uploaded file to the selected ones, if appropriate
                 this._uploadedAssetIds.push(response.assetId);
 
                 // If there is a prompt, add it to the queue
-                if (response.prompt) {
+                if (response.conflict) {
                     var promptData = {
-                        message: this._fileConflictTemplate.message,
+                        message: response.conflict,
                         choices: this._fileConflictTemplate.choices
                     };
                     promptData.message = Craft.t('app', promptData.message, {file: response.filename});
@@ -909,16 +909,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             this.progressBar.setItemCount(returnData.length);
 
-            var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback) {
-                var postData = {
-                    assetId: parameterArray[parameterIndex].assetId,
-                    filename: parameterArray[parameterIndex].filename,
-                    userResponse: parameterArray[parameterIndex].choice
-                };
+            var doFollowup = function(parameterArray, parameterIndex, callback) {
+                var postData = {};
+                var action = null;
 
-                Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus) {
+                var followupCallback = function (data, textStatus) {
                     if (textStatus == 'success' && data.assetId) {
                         this._uploadedAssetIds.push(data.assetId);
+                    } else if (data.error) {
+                        alert(data.error);
                     }
                     parameterIndex++;
                     this.progressBar.incrementProcessedItemCount(1);
@@ -930,9 +929,30 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     else {
                         doFollowup(parameterArray, parameterIndex, callback);
                     }
-                }, this));
 
-            }, this);
+                }.bind(this);
+
+                if (parameterArray[parameterIndex].choice == 'replace') {
+                    action = 'assets/replace-file';
+                    postData.sourceAssetId = parameterArray[parameterIndex].assetId;
+
+                    if (parameterArray[parameterIndex].conflictingAssetId) {
+                        postData.assetId = parameterArray[parameterIndex].conflictingAssetId;
+                    } else {
+                        postData.targetFilename = parameterArray[parameterIndex].filename;
+                    }
+                } else if (parameterArray[parameterIndex].choice == 'cancel') {
+                    action = 'assets/delete-asset';
+                    postData.assetId = parameterArray[parameterIndex].assetId;
+                }
+
+                if (!action) {
+                    // We don't really need to do another request, so let's pretend that already happened
+                    followupCallback({assetId: parameterArray[parameterIndex].assetId}, 'success');
+                } else {
+                    Craft.postActionRequest(action, postData, followupCallback);
+                }
+            }.bind(this);
 
             this.progressBar.showProgressBar();
             doFollowup(returnData, 0, finalCallback);

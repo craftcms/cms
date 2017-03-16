@@ -75,23 +75,14 @@ class RenameFile extends ElementAction
             var handleRename = function(response, textStatus)
             {
                 Craft.elementIndex.setIndexAvailable();
-                Craft.elementIndex.promptHandler.resetPrompts();
 
                 if (textStatus === 'success')
                 {
-                    if (response.prompt)
+                    if (response.conflict)
                     {
-                        Craft.elementIndex.promptHandler.addPrompt(data);
-                        Craft.elementIndex.promptHandler.showBatchPrompts(function(choice)
-                        {
-                            choice = choice[0].choice;
-
-                            if (choice !== 'cancel')
-                            {
-                                data.action = choice;
-                                Craft.postActionRequest('assets/move-asset', data, handleRename);
-                            }
-                        });
+                        alert(response.conflict);
+                        this.activate(\$selectedItems);
+                        return;
                     }
 
                     if (response.success)
@@ -107,7 +98,7 @@ class RenameFile extends ElementAction
                         alert(response.error);
                     }
                 }
-            };
+            }.bind(this);
 
             Craft.postActionRequest('assets/move-asset', data, handleRename);
         }
