@@ -26,123 +26,115 @@ class Requirements
 		return array(
 			new PhpVersionRequirement(),
 			new Requirement(
-				Craft::t('$_SERVER Variable'),
+				'$_SERVER Variable',
 				($serverMessage = static::_checkServerVar()) === '',
 				true,
 				'<a href="http://craftcms.com">Craft CMS</a>',
 				$serverMessage
 			),
 			new Requirement(
-				Craft::t('Reflection extension'),
+				'Reflection extension',
 				class_exists('Reflection', false),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				'The <a href="http://php.net/manual/en/class.reflectionextension.php">ReflectionExtension</a> is required.'
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('PCRE extension'),
-				extension_loaded("pcre"),
+				'PCRE extension',
+				extension_loaded('pcre'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> is required.'
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
 				'SPL extension',
-				extension_loaded("SPL"),
+				extension_loaded('SPL'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				'<a href="http://php.net/manual/en/book.spl.php">SPL</a> is required.'
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('PDO extension'),
+				'PDO extension',
 				extension_loaded('pdo'),
 				true,
-				Craft::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				'<a href="http://php.net/manual/en/book.pdo.php">PDO</a> is required.'
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('PDO MySQL extension'),
+				'PDO MySQL extension',
 				extension_loaded('pdo_mysql'),
 				true,
-				Craft::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Craft::t('The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> driver is required if you are using a MySQL database.')
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('Mcrypt extension'),
+				'Mcrypt extension',
 				extension_loaded('mcrypt'),
 				true,
-				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
-				Craft::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('GD extension with FreeType support'),
+				'GD extension',
 				extension_loaded('gd'),
-				(!extension_loaded('imagick')), // Only required if ImageMagick isn't installed
+				!extension_loaded('imagick'), // Only required if ImageMagick isn't installed
 				'<a href="http://craftcms.com">Craft CMS</a>',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
-				Craft::t('ImageMagick extension'),
+				'ImageMagick extension',
 				extension_loaded('imagick'),
-				(!extension_loaded('gd')), // Only required if GD isn't installed
+				!extension_loaded('gd'), // Only required if GD isn't installed
 				'<a href="http://craftcms.com">Craft CMS</a>',
 				'<a href="http://php.net/manual/en/book.image.php">GD</a> or <a href="http://php.net/manual/en/book.imagick.php">ImageMagick</a> is required, however ImageMagick is recommended as it adds animated GIF support, and preserves 8-bit and 24-bit PNGs during image transforms.'
 			),
 			new Requirement(
-				Craft::t('MySQL version'),
-				version_compare(craft()->db->getServerVersion(), $requiredMysqlVersion, ">="),
+				'MySQL version',
+				version_compare(craft()->db->getServerVersion(), $requiredMysqlVersion, '>='),
 				true,
 				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('MySQL {version} or higher is required to run Craft CMS.', array('version' => $requiredMysqlVersion))
+				"MySQL {$requiredMysqlVersion} or higher is required to run Craft CMS."
 			),
 			new Requirement(
-				Craft::t('MySQL InnoDB support'),
+				'MySQL InnoDB support',
 				static::_isInnoDbEnabled(),
 				true,
 				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('Craft CMS requires the MySQL InnoDB storage engine to run.')
+				'Craft CMS requires the MySQL InnoDB storage engine to run.'
 			),
 			new Requirement(
-				Craft::t('SSL support'),
+				'OpenSSL extension',
 				extension_loaded('openssl'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('Craft CMS requires <a href="http://php.net/manual/en/book.openssl.php">OpenSSL</a> in order to run.')
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('cURL support'),
+				'cURL extension',
 				extension_loaded('curl'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('Craft CMS requires <a href="http://php.net/manual/en/book.curl.php">cURL</a> in order to run.')
+				'<a href="http://craftcms.com">Craft CMS</a>'
 			),
 			new Requirement(
-				Craft::t('crypt() with CRYPT_BLOWFISH enabled'),
+				'crypt() with CRYPT_BLOWFISH enabled',
 				($cryptMessage = static::_checkCryptBlowfish()) === '',
 				true,
-				'<a href="http://www.yiiframework.com/doc/api/1.1/CPasswordHelper">CPasswordHelper</a>',
+				'<a href="http://craftcms.com">Craft CMS</a>',
 				$cryptMessage
 			),
 			new Requirement(
-				Craft::t('PCRE UTF-8 support'),
+				'PCRE UTF-8 support',
 				preg_match('/./u', 'Ü') === 1,
 				true,
 				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.')
+				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> must be compiled to support UTF-8.'
 			),
 			new Requirement(
-				Craft::t('Multibyte String support'),
-				(extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1),
+				'Multibyte String support',
+				extension_loaded('mbstring') && ini_get('mbstring.func_overload') != 1,
 				true,
 				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('Craft CMS requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.')
+				'Craft CMS requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String extension</a> with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
 			),
 			new Requirement(
-				Craft::t('fileinfo extension'),
+				'fileinfo extension',
 				extension_loaded('fileinfo'),
 				false,
 				'<a href="http://craftcms.com">Craft CMS</a>',
-				Craft::t('Used to try and guess the content type and encoding of files by looking for certain magic bytes sequences at specific positions within the file.')
+				'Used to try and guess the content type and encoding of files by looking for certain magic bytes sequences at specific positions within the file.'
 			),
 			new IconvRequirement(),
 			new WebRootExposedFolderRequirement(),
@@ -170,17 +162,17 @@ class Requirements
 
 		if (!empty($missing))
 		{
-			return Craft::t('$_SERVER does not have {messages}.', array('messages' => implode(', ', $missing)));
+			return '$_SERVER does not have '.implode(', ', $missing).'.';
 		}
 
-		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
+		if (!isset($_SERVER['REQUEST_URI']) && isset($_SERVER['QUERY_STRING']))
 		{
-			return Craft::t('Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.');
+			return 'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.';
 		}
 
-		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
+		if (!isset($_SERVER['PATH_INFO']) && strpos($_SERVER['PHP_SELF'], $_SERVER['SCRIPT_NAME']) !== 0)
 		{
-			return Craft::t('Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
+			return 'Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.';
 		}
 
 		return '';
@@ -198,16 +190,17 @@ class Requirements
 		if (function_exists('crypt') && defined('CRYPT_BLOWFISH') && CRYPT_BLOWFISH)
 		{
 			$hash = '$2y$04$usesomesillystringfore7hnbRJHxXVLeakoG8K30oukPsA.ztMG';
+			/** @noinspection NonSecureCryptUsageInspection */
 			$test = crypt('password', $hash);
 
 			if ($test !== $hash)
 			{
-				return Craft::t('You have an insecure version of crypt installed. Please update PHP to 5.3.7 or later. (<a href="https://secure.php.net/security/crypt_blowfish.php">Find out more</a>)');
+				return 'You have an insecure version of crypt installed. Please update PHP to 5.3.7 or later. (<a href="https://secure.php.net/security/crypt_blowfish.php">Find out more</a>)';
 			}
 		}
 		else
 		{
-			return Craft::t('Craft CMS requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.');
+			return 'Craft CMS requires the <a href="http://php.net/manual/en/function.crypt.php">crypt()</a> function with CRYPT_BLOWFISH enabled for secure password storage.';
 		}
 
 		return '';
@@ -310,7 +303,7 @@ class Requirement extends \CComponent
 	 */
 	public function getResult()
 	{
-		if (!isset($this->_result))
+		if ($this->_result === null)
 		{
 			$this->_result = $this->calculateResult();
 		}
@@ -388,7 +381,7 @@ class PhpVersionRequirement extends Requirement
 	public function __construct()
 	{
 		parent::__construct(
-			Craft::t('PHP Version'),
+			'PHP Version',
 			null,
 			true,
 			'<a href="http://craftcms.com">Craft CMS</a>'
@@ -402,16 +395,11 @@ class PhpVersionRequirement extends Requirement
 	{
 		if ($this->_isBadPhpVersion())
 		{
-			return Craft::t('PHP {version} has a known <a href="{url}">security vulnerability</a>. You should probably upgrade.', array(
-				'version' => PHP_VERSION,
-				'url'     => 'http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on'
-			));
+			return 'PHP '.PHP_VERSION.' has a known <a href="http://arstechnica.com/security/2014/03/php-bug-allowing-site-hijacking-still-menaces-internet-22-months-on">security vulnerability</a>. You should probably upgrade.';
 		}
 		else
 		{
-			return Craft::t('PHP {version} or higher is required.', array(
-				'version' => static::REQUIRED_PHP_VERSION,
-			));
+			return 'PHP '.static::REQUIRED_PHP_VERSION.' or higher is required.';
 		}
 	}
 
@@ -487,7 +475,7 @@ class IconvRequirement extends Requirement
 	public function __construct()
 	{
 		parent::__construct(
-			Craft::t('iconv support'),
+			'iconv extension',
 			null,
 			false,
 			'<a href="http://craftcms.com">Craft CMS</a>'
@@ -501,16 +489,11 @@ class IconvRequirement extends Requirement
 	{
 		if ($this->getResult() == RequirementResult::Warning)
 		{
-			return Craft::t('You have a buggy version of iconv installed. (See {url1} and {url2}.)', array(
-				'url1' => '<a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a>',
-				'url2' => '<a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>',
-			));
+			return 'You have a buggy version of iconv installed. (See <a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a> and <a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>';
 		}
 		else
 		{
-			return Craft::t('{url} is recommended.', array(
-				'url' => '<a href="http://php.net/manual/en/book.iconv.php">iconv</a>',
-			));
+			return '<a href="http://php.net/manual/en/book.iconv.php">iconv</a> is recommended.';
 		}
 	}
 
@@ -550,18 +533,21 @@ class IconvRequirement extends Requirement
  */
 class WebRootExposedFolderRequirement extends Requirement
 {
+	// Properties
+	// =========================================================================
+
 	private $_webRootResults;
 
-	// Protected Methods
+	// Public Methods
 	// =========================================================================
 
 	/**
-	 * @return WebRootExposedFolderRequirement
+	 * Constructor
 	 */
 	public function __construct()
 	{
 		parent::__construct(
-			Craft::t('Sensitive Craft folders should not be publicly accessible'),
+			'Sensitive Craft folders should not be publicly accessible',
 			null,
 			false,
 			'<a href="http://craftcms.com">Craft CMS</a>'
@@ -569,17 +555,18 @@ class WebRootExposedFolderRequirement extends Requirement
 	}
 
 	/**
-	 * @return null
+	 * @return string|null
 	 */
 	public function getNotes()
 	{
 		if ($this->getResult() == RequirementResult::Warning)
 		{
 			$values = array_keys(array_intersect($this->_webRootResults, array(true)));
-			$folders = rtrim(implode(', ', $values), ', ');
 
-			return Craft::t('Your Craft folder(s) {folders} appear to be in your public web root folder instead of above web root, which is what we recommend. If you leave them in web root, you will want to make sure their contents are not publicly exposed, which is a security risk.', array('folders' => $folders));
+			return 'Your Craft folder(s) '.implode(', ', $values).' appear to be in your public web root folder instead of above web root, which is what we recommend. If you leave them in web root, you will want to make sure their contents are not publicly exposed, which is a security risk.';
 		}
+
+		return null;
 	}
 
 	// Protected Methods
@@ -640,11 +627,6 @@ class WebRootExposedFolderRequirement extends Requirement
 		// If $subBasePath === '', then both the craft folder and index.php are living at the root of the filesystem.
 		// Note that some web servers (Idea Web Server) can be configured with virtual roots so that PHP's realpath
 		// returns that instead of the actual root.
-		if ($subBasePath === '' || mb_strpos($pathToTest, $subBasePath) !== false)
-		{
-			return true;
-		}
-
-		return false;
+		return $subBasePath === '' || mb_strpos($pathToTest, $subBasePath) !== false;
 	}
 }
