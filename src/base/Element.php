@@ -830,9 +830,11 @@ abstract class Element extends Component implements ElementInterface
             'uri' => Craft::t('app', 'URI'),
         ];
 
-        foreach ($this->getFieldLayout()->getFields() as $field) {
-            /** @var Field $field */
-            $labels[$field->handle] = Craft::t('site', $field->name);
+        if (Craft::$app->getIsInstalled()) {
+            foreach ($this->getFieldLayout()->getFields() as $field) {
+                /** @var Field $field */
+                $labels[$field->handle] = Craft::t('site', $field->name);
+            }
         }
 
         return $labels;
