@@ -9,7 +9,7 @@ Craft CMS 3.0 Working Changelog
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
 
 ### Changed
-- The `cacheDuration`, `rememberedUserSessionDuration` and `userSessionDuration` config settings can now be set to an integer (number of seconds), string (PHP time interval format), or `DateInterval` object.
+- The `cacheDuration`, `rememberedUserSessionDuration` and `userSessionDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.

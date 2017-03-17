@@ -21,7 +21,7 @@ class ConfigHelper
      * Normalizes a time duration value into the number of seconds it represents.
      *
      * @param int|string|\DateInterval $value The time duration value. Can either be an integer (number of seconds),
-     *                                        a string with a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php),
+     *                                        a string with a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations),
      *                                        or a DateInterval object.
      *
      * @return int The time duration in seconds

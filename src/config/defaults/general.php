@@ -106,7 +106,7 @@ return [
     /**
      * The default length of time Craft will store data, RSS feed, and template caches.
      *
-     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * Can be set to either an integer (number of seconds) or a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations).
      *
      * If set to an empty value, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      */
@@ -131,7 +131,7 @@ return [
      *
      * Set to '0' to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'cooldownDuration' => 'PT5M',
     /**
@@ -204,7 +204,7 @@ return [
     /**
      * The default amount of time tokens can be used before expiring.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'defaultTokenDuration' => 'P1D',
     /**
@@ -244,7 +244,7 @@ return [
      * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      * Set to `false` to disable elevated session support.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'elevatedSessionDuration' => 'PT5M',
     /**
@@ -291,7 +291,7 @@ return [
     /**
      * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'invalidLoginWindowDuration' => 'PT1H',
     /**
@@ -426,7 +426,7 @@ return [
      * false to disable this feature.  Note that if you set this to a time interval, then any content assigned to
      * a pending user will be deleted as well when the given time interval passes.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'purgePendingUsersDuration' => false,
     /**
@@ -434,13 +434,13 @@ return [
      *
      * Set to '0' to disable this feature altogether.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'rememberUsernameDuration' => 'P1Y',
     /**
      * The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
-     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * Can be set to either an integer (number of seconds) or a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations).
      *
      * Set to an empty value to disable the “Remember Me” feature altogether.
      */
@@ -604,7 +604,7 @@ return [
     /**
      * The amount of time a user stays logged in.
      *
-     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * Can be set to either an integer (number of seconds) or a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations).
      *
      * Set to an empty value if you want users to stay logged in as long as their browser is open rather than a predetermined
      * amount of time.
@@ -639,7 +639,7 @@ return [
     /**
      * The amount of time a user verification code can be used before expiring.
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
     'verificationCodeDuration' => 'P1D',
 ];
