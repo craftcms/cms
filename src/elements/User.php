@@ -532,12 +532,12 @@ class User extends Element implements IdentityInterface
         parent::init();
 
         // Is this user in cooldown mode, and are they past their window?
-        if ($this->locked) {
-            $cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
-
-            if ($cooldownDuration && !$this->getRemainingCooldownTime()) {
-                Craft::$app->getUsers()->unlockUser($this);
-            }
+        if (
+            $this->locked &&
+            Craft::$app->getConfig()->get('cooldownDuration') &&
+            !$this->getRemainingCooldownTime()
+        ) {
+            Craft::$app->getUsers()->unlockUser($this);
         }
     }
 
