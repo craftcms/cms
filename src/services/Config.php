@@ -803,7 +803,7 @@ class Config extends Component
         $port = $this->get('port', Config::CATEGORY_DB);
         $driver = $this->get('driver', Config::CATEGORY_DB);
 
-        if (!$port) {
+        if ($port === null || $port === '') {
             switch ($driver) {
                 case Connection::DRIVER_MYSQL:
                     $port = 3306;
