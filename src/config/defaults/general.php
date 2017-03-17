@@ -242,7 +242,8 @@ return [
     'enableCsrfCookie' => true,
     /**
      * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
-     * Set to `false` to disable elevated session support.
+     *
+     * Set to an empty value to disable elevated session support.
      *
      * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
@@ -422,9 +423,12 @@ return [
      */
     'preventUserEnumeration' => false,
     /**
-     * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to
-     * false to disable this feature.  Note that if you set this to a time interval, then any content assigned to
-     * a pending user will be deleted as well when the given time interval passes.
+     * The amount of time to wait before Craft purges pending users from the system that have not activated.
+     *
+     * Note that if you set this to a time interval, then any content assigned to a pending user will be deleted as well
+     * when the given time interval passes.
+     *
+     * Set to an empty value to disable this feature.
      *
      * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */
@@ -432,7 +436,7 @@ return [
     /**
      * The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
-     * Set to '0' to disable this feature altogether.
+     * Set to an empty value to disable this feature altogether.
      *
      * @see https://en.wikipedia.org/wiki/ISO_8601#Durations
      */

@@ -500,23 +500,14 @@ class Config extends Component
      */
     public function getElevatedSessionDuration()
     {
-        $duration = $this->get('elevatedSessionDuration');
+        $seconds = ConfigHelper::durationInSeconds($this->get('elevatedSessionDuration'));
 
         // See if it has been disabled.
-        if ($duration === false) {
+        if ($seconds === 0) {
             return false;
         }
 
-        if ($duration) {
-            $seconds = ConfigHelper::durationInSeconds($duration);
-
-            if ($seconds !== 0) {
-                return $seconds;
-            }
-        }
-
-        // Default to 5 minutes
-        return 300;
+        return $seconds;
     }
 
     /**

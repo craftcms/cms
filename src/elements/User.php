@@ -17,6 +17,7 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\helpers\ArrayHelper;
+use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -1021,7 +1022,7 @@ class User extends Element implements IdentityInterface
         // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add(new \DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
+            $cooldownEnd->add(ConfigHelper::durationAsInterval(Craft::$app->getConfig()->get('cooldownDuration')));
 
             return $cooldownEnd;
         }
