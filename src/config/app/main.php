@@ -266,7 +266,7 @@ return [
             }
 
             if ($dsn === '') {
-                if ($driver === craft\db\Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+                if ($driver === craft\db\Connection::DRIVER_MYSQL && $unixSocket) {
                     $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
                 } else {
                     $server = $configService->get('server', craft\services\Config::CATEGORY_DB);

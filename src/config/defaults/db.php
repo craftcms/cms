@@ -56,7 +56,7 @@ return [
      * connect to the Unix socket, instead of the server and port. If this is
      * specified, then 'server' and 'port' settings are ignored.
      */
-    'unixSocket' => '',
+    'unixSocket' => null,
     /**
      * An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
