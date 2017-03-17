@@ -122,7 +122,7 @@ class User extends \yii\web\User
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $seconds = ConfigHelper::timeInSeconds($rememberUsernameDuration);
+            $seconds = ConfigHelper::durationInSeconds($rememberUsernameDuration);
             $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {

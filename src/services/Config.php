@@ -294,7 +294,7 @@ class Config extends Component
             return $this->_cacheDuration;
         }
 
-        return $this->_cacheDuration = ConfigHelper::timeInSeconds($this->get('cacheDuration'));
+        return $this->_cacheDuration = ConfigHelper::durationInSeconds($this->get('cacheDuration'));
     }
 
     /**
@@ -487,7 +487,7 @@ class Config extends Component
         }
 
         if ($duration) {
-            return ConfigHelper::timeInSeconds($duration);
+            return ConfigHelper::durationInSeconds($duration);
         }
 
         return null;
@@ -508,7 +508,7 @@ class Config extends Component
         }
 
         if ($duration) {
-            $seconds = ConfigHelper::timeInSeconds($duration);
+            $seconds = ConfigHelper::durationInSeconds($duration);
 
             if ($seconds !== 0) {
                 return $seconds;

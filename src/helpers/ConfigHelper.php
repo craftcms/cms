@@ -27,7 +27,7 @@ class ConfigHelper
      * @return int The time duration in seconds
      * @throws InvalidConfigException if $value is not one of the allowed types
      */
-    public static function timeInSeconds($value): int
+    public static function durationInSeconds($value): int
     {
         if (!$value) {
             return 0;

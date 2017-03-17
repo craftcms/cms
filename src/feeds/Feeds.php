@@ -78,7 +78,7 @@ class Feeds extends Component
 
         // Normalize the cache duration
         if ($cacheDuration !== null) {
-            $cacheDuration = ConfigHelper::timeInSeconds($cacheDuration);
+            $cacheDuration = ConfigHelper::durationInSeconds($cacheDuration);
         }
 
         // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
