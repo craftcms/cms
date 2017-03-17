@@ -80,5 +80,5 @@ return [
      * If you set this, then the 'server', 'port', 'user', 'password', 'database',
      * 'driver' and 'unixSocket' config settings will be ignored.
      */
-    'dsn' => '',
+    'dsn' => null,
 ];

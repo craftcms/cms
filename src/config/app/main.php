@@ -265,7 +265,7 @@ return [
                 throw new yii\db\Exception('Unsupported connection type: '.$driver);
             }
 
-            if ($dsn === '') {
+            if (!$dsn) {
                 if ($driver === craft\db\Connection::DRIVER_MYSQL && $unixSocket) {
                     $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
                 } else {
