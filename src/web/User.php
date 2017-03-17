@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\elements\User as UserElement;
+use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -121,12 +122,7 @@ class User extends \yii\web\User
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $seconds = DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
-
-            if ($seconds === null) {
-                $seconds = 0;
-            }
-
+            $seconds = ConfigHelper::timeInSeconds($rememberUsernameDuration);
             $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {

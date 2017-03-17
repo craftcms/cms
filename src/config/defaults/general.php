@@ -108,7 +108,7 @@ return [
      *
      * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
-     * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
+     * If set to an empty value, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      */
     'cacheDuration' => 86400,
     /**
@@ -440,9 +440,9 @@ return [
     /**
      * The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
-     * Set to '0' to disable the “Remember Me” feature altogether.
+     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * Set to an empty value to disable the “Remember Me” feature altogether.
      */
     'rememberedUserSessionDuration' => 'P2W',
     /**
@@ -604,10 +604,10 @@ return [
     /**
      * The amount of time a user stays logged in.
      *
-     * Set to false if you want users to stay logged in as long as their browser is open rather than a predetermined
-     * amount of time.
+     * Can be set to either an integer (number of seconds) or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
-     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     * Set to an empty value if you want users to stay logged in as long as their browser is open rather than a predetermined
+     * amount of time.
      */
     'userSessionDuration' => 'PT1H',
     /**

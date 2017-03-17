@@ -13,7 +13,7 @@ use craft\db\Connection;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
+use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Client;
@@ -294,23 +294,7 @@ class Config extends Component
             return $this->_cacheDuration;
         }
 
-        $duration = $this->get('cacheDuration');
-
-        if (!$duration) {
-            return $this->_cacheDuration = 0;
-        }
-
-        if (is_int($duration)) {
-            $seconds = $duration;
-        } else {
-            $seconds = DateTimeHelper::timeFormatToSeconds($duration);
-
-            if ($seconds === null) {
-                $seconds = 0;
-            }
-        }
-
-        return $this->_cacheDuration = $seconds;
+        return $this->_cacheDuration = ConfigHelper::timeInSeconds($this->get('cacheDuration'));
     }
 
     /**
@@ -503,7 +487,7 @@ class Config extends Component
         }
 
         if ($duration) {
-            return DateTimeHelper::timeFormatToSeconds($duration);
+            return ConfigHelper::timeInSeconds($duration);
         }
 
         return null;
@@ -524,9 +508,9 @@ class Config extends Component
         }
 
         if ($duration) {
-            $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+            $seconds = ConfigHelper::timeInSeconds($duration);
 
-            if ($seconds !== null) {
+            if ($seconds !== 0) {
                 return $seconds;
             }
         }

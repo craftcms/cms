@@ -4,10 +4,16 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\DateTimeHelper::dateIntervalToSeconds()`.
+- Added `craft\helpers\Config`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+
+### Changed
+- The `cacheDuration`, `rememberedUserSessionDuration` and `userSessionDuration` config settings can now be set to an integer (number of seconds), string (PHP time interval format), or `DateInterval` object.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
+- Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
 - Removed `Craft.showElementEditor()`.
 
 ### Fixed
