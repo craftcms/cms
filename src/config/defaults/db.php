@@ -46,7 +46,7 @@ return [
      * prefix here to avoid table naming conflicts per install. This can be no more than 5
      * characters, and must be all lowercase.
      */
-    'tablePrefix' => '',
+    'tablePrefix' => null,
     /**
      * The charset to use when creating tables.
      */
