@@ -953,11 +953,14 @@ class AppBehavior extends BaseBehavior
 	 */
 	private function _getFallbackLanguage()
 	{
-		// See if we have the CP translated in one of the user's browsers preferred language(s)
-		$language = craft()->getTranslatedBrowserLanguage();
+		if (!craft()->isConsole())
+		{
+			// See if we have the CP translated in one of the user's browsers preferred language(s)
+			$language = craft()->getTranslatedBrowserLanguage();
+		}
 
 		// Default to the source language.
-		if (!$language)
+		if (empty($language))
 		{
 			$language = craft()->sourceLanguage;
 		}
