@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
 
 ### Removed
+- Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
 - Removed `Craft.showElementEditor()`.
 
 ### Fixed

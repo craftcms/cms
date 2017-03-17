@@ -657,51 +657,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Make sure the basics are in place in the db connection file before we
-     * actually try to connect later on.
-     *
-     * @throws DbConnectException
-     * @return bool Whether the config file is valid
-     */
-    public function validateDbConfigFile(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isDbConfigValid === null) {
-            $messages = [];
-
-            $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
-            $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
-            $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
-            $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
-
-            if (!$databaseServerName) {
-                $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
-            }
-
-            if (!$databaseAuthName) {
-                $messages[] = Craft::t('app', 'The database user name isn’t set in your db config file.');
-            }
-
-            if (!$databaseName) {
-                $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
-            }
-
-            if (!$databaseCharset) {
-                $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
-            }
-
-            if (!empty($messages)) {
-                $this->_isDbConfigValid = false;
-                throw new DbConnectException(Craft::t('app', 'Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
-            }
-
-            $this->_isDbConfigValid = true;
-        }
-
-        return $this->_isDbConfigValid;
-    }
-
-    /**
      * Don't even think of moving this check into Connection->init().
      *
      * @return bool
@@ -1218,9 +1173,6 @@ trait ApplicationTrait
     private function _init()
     {
         $this->getLog();
-
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
 
         // Set the edition components
         $this->_setEditionComponents();
