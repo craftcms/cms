@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
@@ -1278,13 +1279,12 @@ trait ApplicationTrait
         $edition = $this->getEdition();
 
         if ($edition === Craft::Client || $edition === Craft::Pro) {
-            $basePath = $this->getBasePath();
-
-            $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
-
-            if ($edition === Craft::Pro) {
-                $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
-            }
+            $basePath = $this->getBasePath().'/config/app';
+            $config = ArrayHelper::merge(
+                require $basePath.'/client.php',
+                $edition === Craft::Pro ? require $basePath.'/pro.php' : []
+            );
+            Craft::configure($this, $config);
         }
     }
 }

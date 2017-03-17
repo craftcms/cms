@@ -199,9 +199,8 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require $srcPath.'/config/main.php',
-    require $srcPath.'/config/common.php',
-    require $srcPath.'/config/'.$appType.'.php',
+    require "{$srcPath}/config/app/main.php",
+    require "{$srcPath}/config/app/{$appType}.php",
     $configService->getConfigSettings(Config::CATEGORY_APP)
 );
 
@@ -210,7 +209,7 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-$class = 'craft\\'.$appType.'\\Application';
+$class = "craft\\{$appType}\\Application";
 /** @var $app craft\web\Application|craft\console\Application */
 $app = new $class($config);
 
