@@ -17,7 +17,7 @@ return [
     /**
      * The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    'port' => '',
+    'port' => null,
     /**
      * The database username to connect with.
      */
