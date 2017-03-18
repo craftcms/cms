@@ -116,52 +116,6 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * Returns a localized config setting value by its name.
-     *
-     * Internally, [[get()]] will be called to get the value of the config setting. If the value is an array,
-     * then only a single value in that array will be returned: the one that has a key matching the `$siteId` argument.
-     * If no matching key is found, the first element of the array will be returned instead.
-     *
-     * This function is used for Craft’s “localizable” config settings:
-     *
-     * - [siteUrl](http://craftcms.com/docs/config-settings#siteUrl)
-     * - [invalidUserTokenPath](http://craftcms.com/docs/config-settings#invalidUserTokenPath)
-     * - [loginPath](http://craftcms.com/docs/config-settings#loginPath)
-     * - [logoutPath](http://craftcms.com/docs/config-settings#logoutPath)
-     * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
-     * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
-     *
-     * @param string      $item       The name of the config setting.
-     * @param string|null $siteHandle The site handle to return. Defaults to the current site.
-     * @param string      $category   The name of the config file (sans .php). Defaults to 'general'.
-     *
-     * @return mixed The value of the config setting, or `null` if a value could not be found.
-     */
-    public function getLocalized(string $item, string $siteHandle = null, string $category = self::CATEGORY_GENERAL)
-    {
-        $value = $this->getConfigSettings($category)->$item;
-
-        if (!is_array($value)) {
-            return $value;
-        }
-
-        if (empty($value)) {
-            return null;
-        }
-
-        if ($siteHandle === null) {
-            $siteHandle = Craft::$app->getSites()->currentSite->handle;
-        }
-
-        if (isset($value[$siteHandle])) {
-            return $value[$siteHandle];
-        }
-
-        // Just return the first value
-        return reset($value);
-    }
-
-    /**
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
@@ -510,7 +464,7 @@ class Config extends Component
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            return $this->getLocalized('loginPath');
+            return $this->getGeneral()->getLoginPath();
         }
 
         return $this->getCpLoginPath();
@@ -529,7 +483,7 @@ class Config extends Component
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            return $this->getLocalized('logoutPath');
+            return $this->getGeneral()->getLogoutPath();
         }
 
         return $this->getCpLogoutPath();
@@ -573,7 +527,7 @@ class Config extends Component
                 }
             }
         } else {
-            $url = $this->getLocalized('setPasswordPath');
+            $url = $this->getGeneral()->getSetPasswordPath();
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {

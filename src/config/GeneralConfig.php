@@ -51,6 +51,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getActivateAccountSuccessPath()
      */
     public $activateAccountSuccessPath = '';
     /**
@@ -338,6 +340,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getInvalidUserTokenPath()
      */
     public $invalidUserTokenPath = '';
     /**
@@ -357,6 +361,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
@@ -364,6 +370,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getLogoutPath()
      */
     public $logoutPath = 'logout';
     /**
@@ -557,6 +565,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getSetPasswordPath()
      */
     public $setPasswordPath = 'setpassword';
     /**
@@ -565,6 +575,8 @@ class GeneralConfig extends Object
      *
      * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
+     *
+     * @see getSetPasswordSuccessPath()
      */
     public $setPasswordSuccessPath = '';
     /**
@@ -728,5 +740,83 @@ class GeneralConfig extends Object
         }
 
         return parent::__isset($name);
+    }
+
+    /**
+     * Returns the localized Activate Account Success Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see activateAccountSuccessPath
+     */
+    public function getActivateAccountSuccessPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Invalid User Token Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see invalidUserTokenPath
+     */
+    public function getInvalidUserTokenPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Login Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see loginPath
+     */
+    public function getLoginPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Logout Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see logoutPath
+     */
+    public function getLogoutPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Set Password Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see setPasswordPath
+     */
+    public function getSetPasswordPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Set Password Success Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see setPasswordSuccessPath
+     */
+    public function getSetPasswordSuccessPath(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
     }
 }

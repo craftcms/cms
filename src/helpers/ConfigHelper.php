@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Craft;
 use yii\base\InvalidConfigException;
 
 /**
@@ -87,5 +88,37 @@ class ConfigHelper
         }
 
         return DateTimeHelper::dateIntervalToSeconds($value);
+    }
+
+    /**
+     * Returns a localized config setting value.
+     *
+     * @param mixed $value The config setting value. If it's an array, the item
+     *                     with a key that matches the site handle will be returned,
+     *                     or the first value if that doesn't exist.
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return mixed
+     */
+    public static function localizedValue($value, string $siteHandle = null)
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (empty($value)) {
+            return null;
+        }
+
+        if ($siteHandle === null) {
+            $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        }
+
+        if (array_key_exists($siteHandle, $value)) {
+            return $value[$siteHandle];
+        }
+
+        // Just return the first value
+        return reset($value);
     }
 }

@@ -382,7 +382,7 @@ class UsersController extends Controller
                 $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getCpLoginPath());
             } else {
                 // Send them to the 'setPasswordSuccessPath'.
-                $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
+                $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
                 $url = UrlHelper::siteUrl($setPasswordSuccessPath);
             }
 
@@ -1560,7 +1560,7 @@ class UsersController extends Controller
         // If the user doesn't have CP access, see if a custom Set Password template exists
         if (!$user->can('accessCp')) {
             $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-            $templatePath = $configService->getLocalized('setPasswordPath');
+            $templatePath = $configService->getGeneral()->getSetPasswordPath();
 
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
@@ -1773,7 +1773,7 @@ class UsersController extends Controller
         }
 
         // If the invalidUserTokenPath config setting is set, send them there
-        if ($url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath')) {
+        if ($url = Craft::$app->getConfig()->getGeneral()->getInvalidUserTokenPath()) {
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
@@ -1837,7 +1837,7 @@ class UsersController extends Controller
             return $this->redirect($url);
         }
 
-        $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
+        $activateAccountSuccessPath = Craft::$app->getConfig()->getGeneral()->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);

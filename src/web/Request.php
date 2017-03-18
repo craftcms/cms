@@ -956,9 +956,9 @@ class Request extends \yii\web\Request
                     $logoutPath = $configService->getCpLogoutPath();
                     $setPasswordPath = $configService->getCpSetPasswordPath();
                 } else {
-                    $loginPath = trim($configService->getLocalized('loginPath'), '/');
-                    $logoutPath = trim($configService->getLocalized('logoutPath'), '/');
-                    $setPasswordPath = trim($configService->getLocalized('setPasswordPath'), '/');
+                    $loginPath = trim($generalConfig->getLoginPath(), '/');
+                    $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                    $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 }
 
                 if (
