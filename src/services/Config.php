@@ -9,6 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\config\ApcConfig;
+use craft\config\DbCacheConfig;
+use craft\config\DbConfig;
+use craft\config\FileCacheConfig;
+use craft\config\GeneralConfig;
+use craft\config\MemCacheConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\helpers\App;
@@ -20,7 +26,9 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
+use yii\base\Object;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -52,14 +60,11 @@ class Config extends Component
     // =========================================================================
 
     const CATEGORY_APC = 'apc';
-    const CATEGORY_APP = 'app';
     const CATEGORY_DB = 'db';
     const CATEGORY_DBCACHE = 'dbcache';
     const CATEGORY_FILECACHE = 'filecache';
     const CATEGORY_GENERAL = 'general';
-    const CATEGORY_GUZZLE = 'guzzle';
     const CATEGORY_MEMCACHE = 'memcache';
-    const CATEGORY_VOLUMES = 'volumes';
 
     // Properties
     // =========================================================================
@@ -268,13 +273,102 @@ class Config extends Component
      *
      * @param string $category The config category
      *
-     * @return array The config settings.
+     * @return Object The config settings
+     * @throws InvalidConfigException if $category is invalid
      */
-    public function getConfigSettings(string $category): array
+    public function getConfigSettings(string $category): Object
     {
-        $this->_loadConfigSettings($category);
+        if (isset($this->_configSettings[$category])) {
+            return $this->_configSettings[$category];
+        }
 
-        return $this->_configSettings[$category];
+        switch ($category) {
+            case self::CATEGORY_APC:
+                $class = ApcConfig::class;
+                break;
+            case self::CATEGORY_DB:
+                $class = DbConfig::class;
+                break;
+            case self::CATEGORY_DBCACHE:
+                $class = DbCacheConfig::class;
+                break;
+            case self::CATEGORY_FILECACHE:
+                $class = FileCacheConfig::class;
+                break;
+            case self::CATEGORY_GENERAL:
+                $class = GeneralConfig::class;
+                break;
+            case self::CATEGORY_MEMCACHE:
+                $class = MemCacheConfig::class;
+                break;
+            default:
+                throw new InvalidConfigException('Invalid config category: '.$category);
+        }
+
+        // Get any custom config settings
+        $config = $this->getConfigFromFile($category);
+
+        return $this->_configSettings[$category] = new $class($config);
+    }
+
+    /**
+     * Returns the APC config settings.
+     *
+     * @return ApcConfig
+     */
+    public function getApc(): ApcConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_APC);
+    }
+
+    /**
+     * Returns the DB config settings.
+     *
+     * @return DbConfig
+     */
+    public function getDb(): DbConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_DB);
+    }
+
+    /**
+     * Returns the DB cache config settings.
+     *
+     * @return DbCacheConfig
+     */
+    public function getDbCache(): DbCacheConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_DBCACHE);
+    }
+
+    /**
+     * Returns the file cache config settings.
+     *
+     * @return FileCacheConfig
+     */
+    public function getFileCache(): FileCacheConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_FILECACHE);
+    }
+
+    /**
+     * Returns the general config settings.
+     *
+     * @return GeneralConfig
+     */
+    public function getGeneral(): GeneralConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_GENERAL);
+    }
+
+    /**
+     * Returns the MemCache config settings.
+     *
+     * @return MemCacheConfig
+     */
+    public function getMemCache(): MemCacheConfig
+    {
+        return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
     }
 
     /**
@@ -817,6 +911,46 @@ class Config extends Component
         return $port;
     }
 
+    /**
+     * Loads a config file from the config/ folder, checks if it's a multi-environment
+     * config, and returns the values.
+     *
+     * @param $filename
+     *
+     * @return array
+     */
+    public function getConfigFromFile(string $filename)
+    {
+        $path = $this->configDir.DIRECTORY_SEPARATOR.$filename.'.php';
+
+        if (!file_exists($path)) {
+            return [];
+        }
+
+        if (!is_array($config = @include $path)) {
+            return [];
+        }
+
+        // If it's not a multi-environment config, return the whole thing
+        if (!array_key_exists('*', $config)) {
+            return $config;
+        }
+
+        // If no environment was specified, just look in the '*' array
+        if ($this->env === null) {
+            return $config['*'];
+        }
+
+        $mergedConfig = [];
+        foreach ($config as $env => $envConfig) {
+            if ($env === '*' || StringHelper::contains($this->env, $env)) {
+                $mergedConfig = ArrayHelper::merge($mergedConfig, $envConfig);
+            }
+        }
+
+        return $mergedConfig;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -836,15 +970,12 @@ class Config extends Component
 
         // Is this a valid Craft config category?
         if (in_array($category, [
-            self::CATEGORY_APP,
             self::CATEGORY_FILECACHE,
             self::CATEGORY_GENERAL,
             self::CATEGORY_DB,
             self::CATEGORY_DBCACHE,
             self::CATEGORY_MEMCACHE,
             self::CATEGORY_APC,
-            self::CATEGORY_GUZZLE,
-            self::CATEGORY_VOLUMES,
         ], true)) {
             $defaultsPath = $this->appDefaultsDir.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {

@@ -246,7 +246,7 @@ EOD;
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GUZZLE);
+        $guzzleConfig = Craft::$app->getConfig()->getConfigFromFile('guzzle');
 
         // Merge default into guzzle config.
         $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
