@@ -20,12 +20,17 @@ class ConfigHelper
     /**
      * Normalizes a time duration value as a DateInterval object.
      *
-     * @param int|string|\DateInterval $value The time duration value. Can either be an integer (number of seconds),
-     *                                        a string with a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations),
-     *                                        or a DateInterval object.
+     * Accepted formats:
+     *
+     * - integer (the duration in seconds)
+     * - string (a [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations))
+     * - DateInterval object
+     * - an empty value (represents 0 seconds)
+     *
+     * @param mixed $value
      *
      * @return \DateInterval
-     * @throws InvalidConfigException if $value is not one of the allowed types
+     * @throws InvalidConfigException if the duration can't be determined
      */
     public static function durationAsInterval($value): \DateInterval
     {
@@ -51,12 +56,17 @@ class ConfigHelper
     /**
      * Normalizes a time duration value into the number of seconds it represents.
      *
-     * @param int|string|\DateInterval $value The time duration value. Can either be an integer (number of seconds),
-     *                                        a string with a valid [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations),
-     *                                        or a DateInterval object.
+     * Accepted formats:
+     *
+     * - integer (the duration in seconds)
+     * - string (a [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations))
+     * - DateInterval object
+     * - an empty value (represents 0 seconds)
+     *
+     * @param mixed $value
      *
      * @return int The time duration in seconds
-     * @throws InvalidConfigException if $value is not one of the allowed types
+     * @throws InvalidConfigException if the duration can't be determined
      */
     public static function durationInSeconds($value): int
     {
