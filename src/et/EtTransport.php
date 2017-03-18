@@ -50,8 +50,6 @@ class EtTransport
      */
     public function __construct($endpoint)
     {
-        $endpoint .= Craft::$app->getConfig()->getGeneral()->endpointSuffix;
-
         $this->_endpoint = $endpoint;
 
         // There can be a race condition after an update from older Craft versions where they lose session
