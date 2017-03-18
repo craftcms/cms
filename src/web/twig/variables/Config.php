@@ -33,7 +33,7 @@ class Config
      */
     public function __isset(string $name): bool
     {
-        return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
+        return isset(Craft::$app->getConfig()->getGeneral()->$name);
     }
 
     /** @noinspection MagicMethodsValidityInspection */

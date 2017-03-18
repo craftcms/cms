@@ -164,43 +164,6 @@ class Config extends Component
     }
 
     /**
-     * Returns whether a config setting value exists, by a given name.
-     *
-     * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
-     * only values from config arrays that match the current request’s environment will be checked.
-     *
-     * By default, `exists()` will check `config/general.php`, and fall back on the default values specified in
-     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that Craft
-     * will check for.
-     *
-     * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
-     * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
-     *
-     * ```php
-     * if ($this->exists('myConfigSetting', 'myplugin'))
-     * {
-     *     Craft::info('This site has some pretty useless config settings.', __METHOD__);
-     * }
-     * ```
-     *
-     * @param string $item     The name of the config setting.
-     * @param string $category The name of the config file (sans .php). Defaults to 'general'.
-     *
-     * @return bool Whether the config setting value exists.
-     */
-    public function exists(string $item, string $category = self::CATEGORY_GENERAL): bool
-    {
-        $this->_loadConfigSettings($category);
-
-        if (array_key_exists($item, $this->_configSettings[$category])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
