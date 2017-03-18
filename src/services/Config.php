@@ -118,36 +118,6 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * Overrides the value of a config setting to a given value.
-     *
-     * By default, `set()` will update the config array that came from `config/general.php`.
-     * See `vendor/craftcms/cms/src/config/defaults/general.php` for a full list of config settings that Craft
-     * will check for.
-     *
-     * ```php
-     * $this->set('devMode', true);
-     * ```
-     *
-     * If you want to set a config setting from a different config file (e.g. config/myplugin.php), you can specify
-     * its filename as a third argument.
-     *
-     * ```php
-     * $this->set('myConfigSetting', 'foo', 'myplugin');
-     * ```
-     *
-     * @param string $item     The name of the config setting.
-     * @param mixed  $value    The new value of the config setting.
-     * @param string $category The name of the config file (sans .php). Defaults to 'general'.
-     *
-     * @return void
-     */
-    public function set(string $item, $value, string $category = self::CATEGORY_GENERAL)
-    {
-        $this->_loadConfigSettings($category);
-        $this->_configSettings[$category][$item] = $value;
-    }
-
-    /**
      * Returns a localized config setting value by its name.
      *
      * Internally, [[get()]] will be called to get the value of the config setting. If the value is an array,
