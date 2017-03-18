@@ -9,7 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\services\Config as ConfigService;
-use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 
 /**
  * Class Config variable.
@@ -65,7 +65,7 @@ class Config
 
         try {
             return Craft::$app->getConfig()->getConfigSettings($category)->$name ?? null;
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidParamException $e) {
             return null;
         }
     }

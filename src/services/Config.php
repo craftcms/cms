@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\config\ApcConfig;
 use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
@@ -26,7 +25,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
 
@@ -169,7 +167,7 @@ class Config extends Component
      * @param string $category The config category
      *
      * @return Object The config settings
-     * @throws InvalidConfigException if $category is invalid
+     * @throws InvalidParamException if $category is invalid
      */
     public function getConfigSettings(string $category): Object
     {
@@ -197,7 +195,7 @@ class Config extends Component
                 $class = MemCacheConfig::class;
                 break;
             default:
-                throw new InvalidConfigException('Invalid config category: '.$category);
+                throw new InvalidParamException('Invalid config category: '.$category);
         }
 
         // Get any custom config settings
