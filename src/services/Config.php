@@ -51,14 +51,14 @@ class Config extends Component
     // Constants
     // =========================================================================
 
+    const CATEGORY_APC = 'apc';
     const CATEGORY_APP = 'app';
-    const CATEGORY_FILECACHE = 'filecache';
-    const CATEGORY_GENERAL = 'general';
     const CATEGORY_DB = 'db';
     const CATEGORY_DBCACHE = 'dbcache';
-    const CATEGORY_MEMCACHE = 'memcache';
-    const CATEGORY_APC = 'apc';
+    const CATEGORY_FILECACHE = 'filecache';
+    const CATEGORY_GENERAL = 'general';
     const CATEGORY_GUZZLE = 'guzzle';
+    const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_VOLUMES = 'volumes';
 
     // Properties
