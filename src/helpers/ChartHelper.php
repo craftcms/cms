@@ -58,7 +58,7 @@ class ChartHelper
             'valueType' => 'number',
         ], $options);
 
-        $databaseType = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
+        $databaseType = Craft::$app->getConfig()->getDb()->driver;
 
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];

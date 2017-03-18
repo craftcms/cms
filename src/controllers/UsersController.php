@@ -177,7 +177,7 @@ class UsersController extends Controller
 
         $return = ['timeout' => Craft::$app->getUser()->getRemainingSessionTime()];
 
-        if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
+        if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             $return['csrfTokenValue'] = Craft::$app->getRequest()->getCsrfToken();
         }
 
@@ -283,7 +283,7 @@ class UsersController extends Controller
 
         // If there haven't been any errors, or there were, and it's not one logged in user editing another
         // // and we want to pretend like there wasn't any errors...
-        if (empty($errors) || (count($errors) > 0 && !$existingUser && Craft::$app->getConfig()->get('preventUserEnumeration'))) {
+        if (empty($errors) || (count($errors) > 0 && !$existingUser && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }
@@ -905,7 +905,7 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            if (!Craft::$app->getConfig()->get('deferPublicRegistrationPassword')) {
+            if (!Craft::$app->getConfig()->getGeneral()->deferPublicRegistrationPassword) {
                 $user->newPassword = $request->getBodyParam('password', '');
             }
         } else {
@@ -930,7 +930,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         // Is the site set to use email addresses as usernames?
-        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $user->username = $user->email;
         } else {
             $user->username = $request->getBodyParam('username', ($user->username ?: $user->email));
@@ -1486,7 +1486,7 @@ class UsersController extends Controller
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
             default:
-                if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+                if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');
                 } else {
                     $message = Craft::t('app', 'Invalid username or password.');
@@ -1813,7 +1813,7 @@ class UsersController extends Controller
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        if (Craft::$app->getConfig()->get('autoLoginAfterAccountActivation') === true) {
+        if (Craft::$app->getConfig()->getGeneral()->autoLoginAfterAccountActivation === true) {
             return Craft::$app->getUser()->login($user);
         }
 
@@ -1831,7 +1831,7 @@ class UsersController extends Controller
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
-            $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
+            $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);

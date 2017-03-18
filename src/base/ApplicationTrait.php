@@ -201,7 +201,7 @@ trait ApplicationTrait
                     }
 
                     // Is there a default CP language?
-                    if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
+                    if ($defaultCpLanguage = Craft::$app->getConfig()->getGeneral()->defaultCpLanguage) {
                         // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
@@ -497,7 +497,7 @@ trait ApplicationTrait
     public function getIsSystemOn(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->get('isSystemOn'))) {
+        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemOn)) {
             return $on;
         }
 
@@ -1219,7 +1219,7 @@ trait ApplicationTrait
     private function _setTimeZone()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $timezone = $this->getConfig()->get('timezone');
+        $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
             $timezone = $this->getInfo()->timezone;

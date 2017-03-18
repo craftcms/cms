@@ -140,7 +140,7 @@ class TemplatesController extends Controller
         }
 
         if (Craft::$app->getRequest()->getIsSiteRequest()) {
-            $prefix = Craft::$app->getConfig()->get('errorTemplatePrefix');
+            $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
             if ($this->getView()->doesTemplateExist($prefix.$statusCode)) {
                 $template = $prefix.$statusCode;

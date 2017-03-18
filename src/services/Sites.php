@@ -156,7 +156,7 @@ class Sites extends Component
 
         if (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
             // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->get('siteUrl');
+            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 
             if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
                 Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');

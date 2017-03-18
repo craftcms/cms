@@ -873,7 +873,7 @@ class Assets extends Component
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset,
                 $index);
         } else {
-            if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
+            if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
                 try {
                     return $assetTransforms->ensureTransformUrlByIndexModel($index);
                 } catch (ImageException $exception) {

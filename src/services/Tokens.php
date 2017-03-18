@@ -55,7 +55,7 @@ class Tokens extends Component
     {
         if (!$expiryDate) {
             $expiryDate = DateTimeHelper::currentUTCDateTime();
-            $expiryDate->add(ConfigHelper::durationAsInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
+            $expiryDate->add(ConfigHelper::durationAsInterval(Craft::$app->getConfig()->getGeneral()->defaultTokenDuration));
         }
 
         $tokenRecord = new TokenRecord();

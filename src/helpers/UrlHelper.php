@@ -117,7 +117,7 @@ class UrlHelper
         $url = static::urlWithProtocol($url, $protocol);
 
         return static::urlWithParams($url, [
-            Craft::$app->getConfig()->get('tokenParam') => $token
+            Craft::$app->getConfig()->getGeneral()->tokenParam => $token
         ]);
     }
 
@@ -177,7 +177,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
+            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -203,7 +203,7 @@ class UrlHelper
     public static function cpUrl(string $path = '', $params = null, string $protocol = null): string
     {
         $path = trim($path, '/');
-        $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
+        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
 
         return self::_createUrl($path, $params, $protocol, true, false);
     }
@@ -306,7 +306,7 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', $params = null, string $protocol = null): string
     {
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/'.trim($path, '/');
 
         return static::url($path, $params, $protocol, true);
     }
@@ -341,7 +341,7 @@ class UrlHelper
      */
     public static function getProtocolForTokenizedUrl(): string
     {
-        $useSslOnTokenizedUrls = Craft::$app->getConfig()->get('useSslOnTokenizedUrls');
+        $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
@@ -423,7 +423,7 @@ class UrlHelper
 
         if ($cpUrl) {
             // Did they set the base URL manually?
-            $baseUrl = Craft::$app->getConfig()->get('baseCpUrl');
+            $baseUrl = Craft::$app->getConfig()->getGeneral()->baseCpUrl;
 
             if ($baseUrl) {
                 // Make sure it ends in a slash
@@ -466,7 +466,7 @@ class UrlHelper
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->getConfig()->get('addTrailingSlashesToUrls')) {
+                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->getConfig()->getGeneral()->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {
@@ -476,7 +476,7 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
-                $pathParam = Craft::$app->getConfig()->get('pathParam');
+                $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
                 $params = $pathParam.'='.$path.($params ? '&'.$params : '');
             }
         }

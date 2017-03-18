@@ -150,7 +150,7 @@ $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRE
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = $configService->get('devMode');
+    $devMode = $configService->getGeneral()->devMode;
 }
 
 if ($devMode) {
@@ -215,7 +215,7 @@ $app = new $class($config);
 
 if ($appType === 'web') {
     // See if the resource base path exists and is writable
-    $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
+    $resourceBasePath = Craft::getAlias($app->config->getGeneral()->resourceBasePath);
     @FileHelper::createDirectory($resourceBasePath);
 
     if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {

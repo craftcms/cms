@@ -918,7 +918,7 @@ class AssetTransforms extends Component
      */
     public function getCachedCloudImageSize(): int
     {
-        return (int)Craft::$app->getConfig()->get('maxCachedCloudImageSize');
+        return (int)Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
     }
 
     /**
@@ -1332,7 +1332,7 @@ class AssetTransforms extends Component
         }
 
         $imageSource = $asset->getTransformSource();
-        $quality = $transform->quality ?: Craft::$app->getConfig()->get('defaultImageQuality');
+        $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
         $images = Craft::$app->getImages();
         if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {

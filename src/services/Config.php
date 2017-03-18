@@ -118,44 +118,6 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * Returns a config setting value by its name.
-     *
-     * If the config file is set up as a [multi-environment config](http://craftcms.com/docs/multi-environment-configs),
-     * only values from config arrays that match the current request’s environment will be checked and returned.
-     *
-     * By default, `get()` will check `config/general.php`, and fall back on the default values specified in
-     * `vendor/craftcms/cms/src/config/defaults/general.php`. See that file for a full list of config settings that
-     * Craft will check for.
-     *
-     * ```php
-     * $isDevMode = $this->get('devMode');
-     * ```
-     *
-     * If you want to get the config setting from a different config file (e.g. config/myplugin.php), you can specify
-     * its filename as a second argument. If the filename matches a plugin handle, `get()` will check for a
-     * `config.php` file in the plugin’s base directory and use the array it returns as the list of default values.
-     *
-     * ```php
-     * $myConfigSetting = $this->get('myConfigSetting', 'myplugin');
-     * ```
-     *
-     * @param string $item     The name of the config setting.
-     * @param string $category The name of the config file (sans .php). Defaults to 'general'.
-     *
-     * @return mixed The value of the config setting, or `null` if a value could not be found.
-     */
-    public function get(string $item, string $category = self::CATEGORY_GENERAL)
-    {
-        $this->_loadConfigSettings($category);
-
-        if ($this->exists($item, $category)) {
-            return $this->_configSettings[$category][$item];
-        }
-
-        return null;
-    }
-
-    /**
      * Overrides the value of a config setting to a given value.
      *
      * By default, `set()` will update the config array that came from `config/general.php`.
@@ -209,7 +171,7 @@ class Config extends Component
      */
     public function getLocalized(string $item, string $siteHandle = null, string $category = self::CATEGORY_GENERAL)
     {
-        $value = $this->get($item, $category);
+        $value = $this->getConfigSettings($category)->$item;
 
         if (!is_array($value)) {
             return $value;
@@ -388,7 +350,7 @@ class Config extends Component
             return $this->_cacheDuration;
         }
 
-        return $this->_cacheDuration = ConfigHelper::durationInSeconds($this->get('cacheDuration'));
+        return $this->_cacheDuration = ConfigHelper::durationInSeconds($this->getGeneral()->cacheDuration);
     }
 
     /**
@@ -417,7 +379,7 @@ class Config extends Component
         }
 
         // Check if the config value has actually been set to true/false
-        if (is_bool($configVal = $this->get('omitScriptNameInUrls'))) {
+        if (is_bool($configVal = $this->getGeneral()->omitScriptNameInUrls)) {
             return $this->_omitScriptNameInUrls = $configVal;
         }
 
@@ -489,7 +451,7 @@ class Config extends Component
         }
 
         // Check if the config value has actually been set to true/false
-        if (is_bool($configVal = $this->get('usePathInfo'))) {
+        if (is_bool($configVal = $this->getGeneral()->usePathInfo)) {
             return $this->_usePathInfo = $configVal;
         }
 
@@ -541,8 +503,8 @@ class Config extends Component
      */
     public function maxPowerCaptain()
     {
-        if ($this->get('phpMaxMemoryLimit') !== '') {
-            @ini_set('memory_limit', $this->get('phpMaxMemoryLimit'));
+        if ($this->getGeneral()->phpMaxMemoryLimit !== '') {
+            @ini_set('memory_limit', $this->getGeneral()->phpMaxMemoryLimit);
         } else {
             // Grab. It. All.
             @ini_set('memory_limit', -1);
@@ -571,13 +533,13 @@ class Config extends Component
     public function getUserSessionDuration(bool $remembered = false)
     {
         if ($remembered) {
-            $duration = $this->get('rememberedUserSessionDuration');
+            $duration = $this->getGeneral()->rememberedUserSessionDuration;
         }
 
         // Even if $remembered = true, it's possible that they've disabled long-term user sessions
         // by setting rememberedUserSessionDuration = 0
         if (empty($duration)) {
-            $duration = $this->get('userSessionDuration');
+            $duration = $this->getGeneral()->userSessionDuration;
         }
 
         if ($duration) {
@@ -594,7 +556,7 @@ class Config extends Component
      */
     public function getElevatedSessionDuration()
     {
-        $seconds = ConfigHelper::durationInSeconds($this->get('elevatedSessionDuration'));
+        $seconds = ConfigHelper::durationInSeconds($this->getGeneral()->elevatedSessionDuration);
 
         // See if it has been disabled.
         if ($seconds === 0) {
@@ -746,7 +708,7 @@ class Config extends Component
             return 'resources';
         }
 
-        return $this->get('resourceTrigger');
+        return $this->getGeneral()->resourceTrigger;
     }
 
     /**
@@ -762,7 +724,7 @@ class Config extends Component
             return false;
         }
 
-        $configVal = $this->get('allowAutoUpdates');
+        $configVal = $this->getGeneral()->allowAutoUpdates;
 
         if (is_bool($configVal)) {
             return $configVal;
@@ -792,7 +754,7 @@ class Config extends Component
             return $this->_useFileLocks;
         }
 
-        if (is_bool($configVal = $this->get('useFileLocks'))) {
+        if (is_bool($configVal = $this->getGeneral()->useFileLocks)) {
             return $this->_useFileLocks = $configVal;
         }
 
@@ -836,8 +798,8 @@ class Config extends Component
             return $this->_allowedFileExtensions;
         }
 
-        $this->_allowedFileExtensions = ArrayHelper::toArray($this->get('allowedFileExtensions'));
-        $extra = $this->get('extraAllowedFileExtensions');
+        $this->_allowedFileExtensions = ArrayHelper::toArray($this->getGeneral()->allowedFileExtensions);
+        $extra = $this->getGeneral()->extraAllowedFileExtensions;
 
         if (!empty($extra)) {
             $extra = ArrayHelper::toArray($extra);
@@ -870,7 +832,7 @@ class Config extends Component
     public function getDbTablePrefix(): string
     {
         // Table prefixes cannot be longer than 5 characters
-        $tablePrefix = rtrim($this->get('tablePrefix', self::CATEGORY_DB), '_');
+        $tablePrefix = rtrim($this->getDb()->tablePrefix, '_');
 
         if ($tablePrefix) {
             if (StringHelper::length($tablePrefix) > 5) {
@@ -894,8 +856,8 @@ class Config extends Component
      */
     public function getDbPort(): int
     {
-        $port = $this->get('port', Config::CATEGORY_DB);
-        $driver = $this->get('driver', Config::CATEGORY_DB);
+        $port = $this->getDb()->port;
+        $driver = $this->getDb()->driver;
 
         if ($port === null || $port === '') {
             switch ($driver) {

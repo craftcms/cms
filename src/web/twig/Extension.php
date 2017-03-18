@@ -643,8 +643,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         $config = Craft::$app->getConfig();
 
-        if ($config->get('enableCsrfProtection') === true) {
-            return Template::raw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+        if ($config->getGeneral()->enableCsrfProtection === true) {
+            return Template::raw('<input type="hidden" name="'.$config->getGeneral()->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
         }
 
         return null;

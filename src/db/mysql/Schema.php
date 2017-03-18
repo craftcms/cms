@@ -275,9 +275,9 @@ SQL;
 
         $config = Craft::$app->getConfig();
         $contents = '[client]'.PHP_EOL.
-            'user='.$config->get('user', Config::CATEGORY_DB).PHP_EOL.
-            'password='.$config->get('password', Config::CATEGORY_DB).PHP_EOL.
-            'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
+            'user='.$config->getDb()->user.PHP_EOL.
+            'password='.$config->getDb()->password.PHP_EOL.
+            'host='.$config->getDb()->server.PHP_EOL.
             'port='.$config->getDbPort();
 
         FileHelper::writeToFile($filePath, $contents);

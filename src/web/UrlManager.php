@@ -367,7 +367,7 @@ class UrlManager extends \yii\web\UrlManager
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $trigger = '_';
         } else {
-            $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
+            $trigger = Craft::$app->getConfig()->getGeneral()->privateTemplateTrigger;
         }
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {

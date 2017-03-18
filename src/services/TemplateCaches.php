@@ -179,7 +179,7 @@ class TemplateCaches extends Component
             ]);
         }
 
-        if (Craft::$app->getConfig()->get('cacheElementQueries')) {
+        if (Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
             $this->_cachedQueries[$key] = [];
         }
 
@@ -473,7 +473,7 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if ($deleteQueryCaches && Craft::$app->getConfig()->get('cacheElementQueries')) {
+        if ($deleteQueryCaches && Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
             // If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
             /** @var DeleteStaleTemplateCaches $task */
             $task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::class);
@@ -634,7 +634,7 @@ class TemplateCaches extends Component
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
+        if (Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
             return true;
         }
 
@@ -661,7 +661,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
+            $this->_path .= '/'.Craft::$app->getConfig()->getGeneral()->pageTrigger.$pageNum;
         }
 
         return $this->_path;

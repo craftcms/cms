@@ -88,7 +88,7 @@ class Raster extends Image
     {
         $configService = Craft::$app->getConfig();
 
-        $extension = strtolower($configService->get('imageDriver'));
+        $extension = strtolower($configService->getGeneral()->imageDriver);
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
@@ -106,7 +106,7 @@ class Raster extends Image
             }
         }
 
-        $this->_quality = $configService->get('defaultImageQuality');
+        $this->_quality = $configService->getGeneral()->defaultImageQuality;
 
         parent::__construct($config);
     }
@@ -359,7 +359,7 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->get('optimizeImageFilesize')) {
+            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
                 $this->_image->smartResize(new Box($targetWidth,
                     $targetHeight), false, $this->_quality);
             } else {

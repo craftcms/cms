@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\services\Config as ConfigService;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Config variable.
@@ -45,24 +46,28 @@ class Config
      */
     public function __get(string $name)
     {
-        Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
+        Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.general.setting instead.');
 
-        return Craft::$app->getConfig()->get($name, ConfigService::CATEGORY_GENERAL);
+        return Craft::$app->getConfig()->getGeneral()->$name ?? null;
     }
 
     /**
      * Returns a config item from the specified config file.
      *
      * @param string $name
-     * @param string $file
+     * @param string $category
      *
      * @return mixed
      */
-    public function get(string $name, string $file = 'general')
+    public function get(string $name, string $category = ConfigService::CATEGORY_GENERAL)
     {
-        Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.get() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.general.setting instead.');
 
-        return Craft::$app->getConfig()->get($name, $file);
+        try {
+            return Craft::$app->getConfig()->getConfigSettings($category)->$name ?? null;
+        } catch (InvalidConfigException $e) {
+            return null;
+        }
     }
 
     /**

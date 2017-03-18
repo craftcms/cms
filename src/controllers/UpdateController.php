@@ -548,7 +548,7 @@ EOD;
         if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
-            $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
+            $returnUrl = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
         }
 
         return $this->asJson([
@@ -747,7 +747,7 @@ EOD;
     {
         $config = Craft::$app->getConfig();
 
-        return ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false);
+        return ($config->getGeneral()->backupOnUpdate && $config->getGeneral()->backupCommand !== false);
     }
 
     /**

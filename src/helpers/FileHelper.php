@@ -51,11 +51,11 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = [])
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = Craft::$app->getConfig()->get('defaultFileMode');
+            $options['fileMode'] = Craft::$app->getConfig()->getGeneral()->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
-            $options['dirMode'] = Craft::$app->getConfig()->get('defaultDirMode');
+            $options['dirMode'] = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
         }
 
         parent::copyDirectory($src, $dst, $options);
@@ -67,7 +67,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function createDirectory($path, $mode = null, $recursive = true)
     {
         if ($mode === null) {
-            $mode = Craft::$app->getConfig()->get('defaultDirMode');
+            $mode = Craft::$app->getConfig()->getGeneral()->defaultDirMode;
         }
 
         return parent::createDirectory($path, $mode, $recursive);

@@ -50,7 +50,7 @@ abstract class Template extends \Twig_Template
         try {
             parent::displayWithErrorHandling($context, $blocks);
         } catch (\Twig_Error_Runtime $e) {
-            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+            if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
                 // Just log it and move on
                 Craft::$app->getErrorHandler()->logException($e);
             } else {

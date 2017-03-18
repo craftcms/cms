@@ -113,7 +113,7 @@ class Application extends \yii\web\Application
         }
 
         // Send the X-Powered-By header?
-        if ($this->getConfig()->get('sendPoweredByHeader')) {
+        if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
             $headers->set('X-Powered-By', $this->name);
         } else {
             // In case PHP is already setting one
@@ -552,7 +552,7 @@ class Application extends \yii\web\Application
         }
 
         $request = $this->getRequest();
-        $actionTrigger = $this->getConfig()->get('actionTrigger');
+        $actionTrigger = $this->getConfig()->getGeneral()->actionTrigger;
 
         if ($request->getIsCpRequest() ||
 

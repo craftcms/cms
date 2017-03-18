@@ -130,7 +130,7 @@ class Assets
         }
 
         $config = Craft::$app->getConfig();
-        $separator = $config->get('filenameWordSeparator');
+        $separator = $config->getGeneral()->filenameWordSeparator;
 
         if (!is_string($separator)) {
             $separator = null;
@@ -145,7 +145,7 @@ class Assets
         }
 
         $baseName = FileHelper::sanitizeFilename($baseName, [
-            'asciiOnly' => $config->get('convertFilenamesToAscii'),
+            'asciiOnly' => $config->getGeneral()->convertFilenamesToAscii,
             'separator' => $separator
         ]);
 

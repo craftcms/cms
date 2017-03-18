@@ -94,8 +94,8 @@ class Craft extends Yii
         if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
 
-            $defaultCookieDomain = $configService->get('defaultCookieDomain');
-            $useSecureCookies = $configService->get('useSecureCookies');
+            $defaultCookieDomain = $configService->getGeneral()->defaultCookieDomain;
+            $useSecureCookies = $configService->getGeneral()->useSecureCookies;
 
             if ($useSecureCookies === 'auto') {
                 if ($request === null) {

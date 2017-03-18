@@ -103,7 +103,7 @@ class Tasks extends Component
         if (
             $maybeAutoRun === true &&
             $this->_listeningForResponse === false &&
-            Craft::$app->getConfig()->get('runTasksAutomatically') &&
+            Craft::$app->getConfig()->getGeneral()->runTasksAutomatically &&
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);

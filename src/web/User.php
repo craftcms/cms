@@ -117,7 +117,7 @@ class User extends \yii\web\User
      */
     public function sendUsernameCookie(UserElement $user)
     {
-        $rememberUsernameDuration = Craft::$app->getConfig()->get('rememberUsernameDuration');
+        $rememberUsernameDuration = Craft::$app->getConfig()->getGeneral()->rememberUsernameDuration;
 
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
@@ -139,9 +139,9 @@ class User extends \yii\web\User
         if ($defaultUrl === null) {
             // Is this a CP request and can they access the CP?
             if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->get('postCpLoginRedirect'));
+                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
             } else {
-                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->get('postLoginRedirect'));
+                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->postLoginRedirect);
             }
         }
 
@@ -443,7 +443,7 @@ class User extends \yii\web\User
 
         $this->destroyDebugPreferencesInSession();
 
-        if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
+        if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
             Craft::$app->getRequest()->regenCsrfToken();
         }
@@ -496,7 +496,7 @@ class User extends \yii\web\User
      */
     private function _validateUserAgentAndIp(): bool
     {
-        if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession')) {
+        if (Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
             $request = Craft::$app->getRequest();
 
             if ($request->getUserAgent() === null || $request->getUserIP() === null) {
