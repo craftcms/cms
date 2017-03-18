@@ -273,12 +273,13 @@ SQL;
     {
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
-        $config = Craft::$app->getConfig();
+        $configService = Craft::$app->getConfig();
+        $dbConfig = $configService->getDb();
         $contents = '[client]'.PHP_EOL.
-            'user='.$config->getDb()->user.PHP_EOL.
-            'password='.$config->getDb()->password.PHP_EOL.
-            'host='.$config->getDb()->server.PHP_EOL.
-            'port='.$config->getDbPort();
+            'user='.$dbConfig->user.PHP_EOL.
+            'password='.$dbConfig->password.PHP_EOL.
+            'host='.$dbConfig->server.PHP_EOL.
+            'port='.$configService->getDbPort();
 
         FileHelper::writeToFile($filePath, $contents);
 

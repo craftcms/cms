@@ -302,8 +302,7 @@ class User extends \yii\web\User
 
                 // Set the elevated session expiration date
                 $session = Craft::$app->getSession();
-                $configService = Craft::$app->getConfig();
-                $timeout = time() + $configService->getElevatedSessionDuration();
+                $timeout = time() + Craft::$app->getConfig()->getElevatedSessionDuration();
                 $session->set($this->elevatedSessionTimeoutParam, $timeout);
             }
 

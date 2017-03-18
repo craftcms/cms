@@ -128,15 +128,15 @@ class Request extends \yii\web\Request
      */
     public function __construct($config = [])
     {
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // Is CSRF protection enabled?
-        if ($configService->getGeneral()->enableCsrfProtection === true) {
+        if ($generalConfig->enableCsrfProtection === true) {
             $config['enableCsrfValidation'] = true;
-            $config['csrfParam'] = $configService->getGeneral()->csrfTokenName;
+            $config['csrfParam'] = $generalConfig->csrfTokenName;
             $config['csrfCookie'] = Craft::cookieConfig([], $this);
 
-            if (!$configService->getGeneral()->enableCsrfCookie) {
+            if (!$generalConfig->enableCsrfCookie) {
                 $config['enableCsrfCookie'] = false;
             }
         } else {
@@ -155,7 +155,7 @@ class Request extends \yii\web\Request
     {
         parent::init();
 
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // Sanitize
         $path = $this->getFullPath();
@@ -167,7 +167,7 @@ class Request extends \yii\web\Request
         });
 
         // Is this a CP request?
-        $this->_isCpRequest = ($this->getSegment(1) == $configService->getGeneral()->cpTrigger);
+        $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
 
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
@@ -196,7 +196,7 @@ class Request extends \yii\web\Request
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($configService->getGeneral()->pageTrigger, '/');
+            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -940,9 +940,10 @@ class Request extends \yii\web\Request
         }
 
         $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
 
         // If there's a token in the query string, then that should take precedence over everything else
-        if (!$this->getQueryParam($configService->getGeneral()->tokenParam)) {
+        if (!$this->getQueryParam($generalConfig->tokenParam)) {
             $firstSegment = $this->getSegment(1);
 
             // Is this a resource request?
@@ -961,7 +962,7 @@ class Request extends \yii\web\Request
                 }
 
                 if (
-                    ($triggerMatch = ($firstSegment == $configService->getGeneral()->actionTrigger && count($this->_segments) > 1)) ||
+                    ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
                     ($actionParam = $this->getParam('action')) !== null ||
                     ($specialPath = in_array($this->_path, [
                         $loginPath,

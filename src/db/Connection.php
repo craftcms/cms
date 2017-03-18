@@ -435,14 +435,15 @@ class Connection extends \yii\db\Connection
     private function _createShellCommand(string $command, string $file): ShellCommand
     {
         // Swap out any tokens in the command
-        $config = Craft::$app->getConfig();
+        $configService = Craft::$app->getConfig();
+        $dbConfig = $configService->getDb();
         $tokens = [
             '{file}' => $file,
-            '{port}' => $config->getDbPort(),
-            '{server}' => $config->getDb()->server,
-            '{user}' => $config->getDb()->user,
-            '{database}' => $config->getDb()->database,
-            '{schema}' => $config->getDb()->schema,
+            '{port}' => $configService->getDbPort(),
+            '{server}' => $dbConfig->server,
+            '{user}' => $dbConfig->user,
+            '{database}' => $dbConfig->database,
+            '{schema}' => $dbConfig->schema,
         ];
         $command = str_replace(array_keys($tokens), array_values($tokens), $command);
 

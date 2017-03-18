@@ -745,9 +745,9 @@ EOD;
      */
     private function _shouldBackupDb(): bool
     {
-        $config = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        return ($config->getGeneral()->backupOnUpdate && $config->getGeneral()->backupCommand !== false);
+        return ($generalConfig->backupOnUpdate && $generalConfig->backupCommand !== false);
     }
 
     /**

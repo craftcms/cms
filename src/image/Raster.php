@@ -86,9 +86,9 @@ class Raster extends Image
      */
     public function __construct($config = [])
     {
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        $extension = strtolower($configService->getGeneral()->imageDriver);
+        $extension = strtolower($generalConfig->imageDriver);
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
@@ -106,7 +106,7 @@ class Raster extends Image
             }
         }
 
-        $this->_quality = $configService->getGeneral()->defaultImageQuality;
+        $this->_quality = $generalConfig->defaultImageQuality;
 
         parent::__construct($config);
     }

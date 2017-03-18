@@ -129,8 +129,8 @@ class Assets
             $extension = '';
         }
 
-        $config = Craft::$app->getConfig();
-        $separator = $config->getGeneral()->filenameWordSeparator;
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $separator = $generalConfig->filenameWordSeparator;
 
         if (!is_string($separator)) {
             $separator = null;
@@ -145,7 +145,7 @@ class Assets
         }
 
         $baseName = FileHelper::sanitizeFilename($baseName, [
-            'asciiOnly' => $config->getGeneral()->convertFilenamesToAscii,
+            'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             'separator' => $separator
         ]);
 
