@@ -150,7 +150,7 @@ $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRE
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = $configService->getGeneral()->devMode;
+    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
 }
 
 if ($devMode) {
