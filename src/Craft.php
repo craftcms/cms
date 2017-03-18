@@ -92,10 +92,10 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], Request $request = null): array
     {
         if (self::$_baseCookieConfig === null) {
-            $configService = static::$app->getConfig();
+            $generalConfig = static::$app->getConfig()->getGeneral();
 
-            $defaultCookieDomain = $configService->getGeneral()->defaultCookieDomain;
-            $useSecureCookies = $configService->getGeneral()->useSecureCookies;
+            $defaultCookieDomain = $generalConfig->defaultCookieDomain;
+            $useSecureCookies = $generalConfig->useSecureCookies;
 
             if ($useSecureCookies === 'auto') {
                 if ($request === null) {
