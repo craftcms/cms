@@ -13,6 +13,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\base\InvalidParamException;
 
 /**
@@ -23,6 +24,15 @@ use yii\base\InvalidParamException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var bool Whether file locks can be used when writing to files.
+     * @see useFileLocks()
+     */
+    private static $_useFileLocks;
+
     // Public Methods
     // =========================================================================
 
@@ -249,7 +259,7 @@ class FileHelper extends \yii\helpers\FileHelper
         if (isset($options['lock'])) {
             $lock = (bool)$options['lock'];
         } else {
-            $lock = Craft::$app->getConfig()->getUseFileLocks();
+            $lock = static::useFileLocks();
         }
 
         if ($lock) {
@@ -356,5 +366,51 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return max($times);
+    }
+
+    /**
+     * Returns whether file locks can be used when writing to files.
+     *
+     * @return bool
+     */
+    public static function useFileLocks(): bool
+    {
+        if (self::$_useFileLocks !== null) {
+            return self::$_useFileLocks;
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (is_bool($generalConfig->useFileLocks)) {
+            return self::$_useFileLocks = $generalConfig->useFileLocks;
+        }
+
+        // Do we have it cached?
+        $cacheService = Craft::$app->getCache();
+        if (($cachedVal = $cacheService->get('useFileLocks')) !== false) {
+            return self::$_useFileLocks = ($cachedVal === 'y');
+        }
+
+        // Try a test lock
+        self::$_useFileLocks = false;
+
+        try {
+            $mutex = Craft::$app->getMutex();
+            $name = uniqid('test_lock', true);
+            if (!$mutex->acquire($name)) {
+                throw new Exception('Unable to acquire test lock.');
+            }
+            if (!$mutex->release($name)) {
+                throw new Exception('Unable to release test lock.');
+            }
+            self::$_useFileLocks = true;
+        } catch (\Exception $e) {
+            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache for two months
+        $cachedValue = self::$_useFileLocks ? 'y' : 'n';
+        $cacheService->set('useFileLocks', $cachedValue, 5184000);
+
+        return self::$_useFileLocks;
     }
 }

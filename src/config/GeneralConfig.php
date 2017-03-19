@@ -661,18 +661,16 @@ class GeneralConfig extends Object
      */
     public $userSessionDuration = 3600;
     /**
-     * @var bool|string Whether to grab an exclusive lock on a file when writing to it by using the LOCK_EX flag.
+     * @var bool|null Whether to grab an exclusive lock on a file when writing to it by using the LOCK_EX flag.
      *
      * Some file systems, such as NFS, do not support exclusive file locking.
      *
-     * Possible values are 'auto', true and false.
-     *
-     * When set to 'auto', Craft will automatically try to detect if the underlying file system supports exclusive file
+     * If not set to `true` or `false`, Craft will automatically try to detect if the underlying file system supports exclusive file
      * locking and cache the results.
      *
      * @see http://php.net/manual/en/function.file-put-contents.php
      */
-    public $useFileLocks = 'auto';
+    public $useFileLocks;
     /**
      * @var bool Whether Craft should use XSendFile to serve files when possible.
      */

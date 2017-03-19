@@ -7,7 +7,6 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\config\ApcConfig;
 use craft\config\DbCacheConfig;
 use craft\config\DbConfig;
@@ -15,13 +14,9 @@ use craft\config\FileCacheConfig;
 use craft\config\GeneralConfig;
 use craft\config\MemCacheConfig;
 use craft\db\Connection;
-use craft\elements\User;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidParamException;
 use yii\base\Object;
 
@@ -31,7 +26,6 @@ use yii\base\Object;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $dbTablePrefix
  * @property array|string[] $allowedFileExtensions
@@ -68,11 +62,6 @@ class Config extends Component
      * @var string The path to the directory containing the default application config settings
      */
     public $appDefaultsDir = '';
-
-    /**
-     * @var bool|null
-     */
-    private $_useFileLocks;
 
     /**
      * @var string[]|null
@@ -188,50 +177,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns whether to use file locks when writing to files.
-     *
-     * @return bool
-     */
-    public function getUseFileLocks(): bool
-    {
-        if ($this->_useFileLocks !== null) {
-            return $this->_useFileLocks;
-        }
-
-        if (is_bool($configVal = $this->getGeneral()->useFileLocks)) {
-            return $this->_useFileLocks = $configVal;
-        }
-
-        // Do we have it cached?
-        if (($cachedVal = Craft::$app->getCache()->get('useFileLocks')) !== false) {
-            return $this->_useFileLocks = ($cachedVal === 'y');
-        }
-
-        // Try a test lock
-        $this->_useFileLocks = false;
-
-        try {
-            $mutex = Craft::$app->getMutex();
-            $name = uniqid('test_lock', true);
-            if (!$mutex->acquire($name)) {
-                throw new Exception('Unable to acquire test lock.');
-            }
-            if (!$mutex->release($name)) {
-                throw new Exception('Unable to release test lock.');
-            }
-            $this->_useFileLocks = true;
-        } catch (\Exception $e) {
-            Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
-        }
-
-        // Cache for two months
-        $cachedValue = $this->_useFileLocks ? 'y' : 'n';
-        Craft::$app->getCache()->set('useFileLocks', $cachedValue, 5184000);
-
-        return $this->_useFileLocks;
     }
 
     /**
