@@ -192,64 +192,6 @@ class Config extends Component
     }
 
     /**
-     * Returns a user’s Set Password path with a given activation code and user’s UID.
-     *
-     * @param string $code The activation code.
-     * @param string $uid  The user’s UID.
-     * @param User   $user The user.
-     * @param bool   $full Whether a full URL should be returned. Defaults to `false`.
-     *
-     * @return string The Set Password path.
-     *
-     * @internal This is a little awkward in that the method is called getActivateAccount**Path**, but it's also capable
-     * of returning a full **URL**. And it requires you pass in both a user’s UID *and* the User - presumably we
-     * could get away with just the User and get the UID from that.
-     *
-     * @todo     Create a new getSetPasswordUrl() method (probably elsewhere, such as Url) which handles
-     * everything that setting $full to `true` currently does here. The function should not accetp a UID since that's
-     * already covered by the User. Let this function continue working as a wrapper for getSetPasswordUrl() for the
-     * time being, with deprecation logs.
-     */
-    public function getSetPasswordPath(string $code, string $uid, User $user, bool $full = false): string
-    {
-        if ($user->can('accessCp')) {
-            $url = 'setpassword';
-
-            if ($full) {
-                if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = UrlHelper::cpUrl($url, [
-                        'code' => $code,
-                        'id' => $uid
-                    ], 'https');
-                } else {
-                    $url = UrlHelper::cpUrl($url, [
-                        'code' => $code,
-                        'id' => $uid
-                    ]);
-                }
-            }
-        } else {
-            $url = $this->getGeneral()->getSetPasswordPath();
-
-            if ($full) {
-                if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = UrlHelper::url($url, [
-                        'code' => $code,
-                        'id' => $uid
-                    ], 'https');
-                } else {
-                    $url = UrlHelper::url($url, [
-                        'code' => $code,
-                        'id' => $uid
-                    ]);
-                }
-            }
-        }
-
-        return $url;
-    }
-
-    /**
      * Returns the Resource Request trigger word based on the type of the current request.
      *
      * If it’s a front-end request, the [resourceTrigger](http://craftcms.com/docs/config-settings#resourceTrigger)
