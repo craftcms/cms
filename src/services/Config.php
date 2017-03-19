@@ -35,7 +35,6 @@ use yii\base\Object;
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
  * @property bool           $omitScriptNameInUrls Whether generated URLs should omit “index.php”
- * @property int            $cacheDuration
  * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $cpSetPasswordPath
@@ -81,11 +80,6 @@ class Config extends Component
      * @var string The path to the directory containing the default application config settings
      */
     public $appDefaultsDir = '';
-
-    /**
-     * @var int|null
-     */
-    private $_cacheDuration;
 
     /**
      * @var bool|null
@@ -216,26 +210,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the value of the [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting,
-     * normalized into seconds.
-     *
-     * ```php
-     * $this->get('cacheDuration'); // 'P1D'
-     * $this->getCacheDuration();   // 86400
-     * ```
-     *
-     * @return int The cacheDuration config setting value, in seconds.
-     */
-    public function getCacheDuration(): int
-    {
-        if ($this->_cacheDuration !== null) {
-            return $this->_cacheDuration;
-        }
-
-        return $this->_cacheDuration = ConfigHelper::durationInSeconds($this->getGeneral()->cacheDuration);
     }
 
     /**
@@ -417,21 +391,15 @@ class Config extends Component
      */
     public function getUserSessionDuration(bool $remembered = false)
     {
-        if ($remembered) {
-            $duration = $this->getGeneral()->rememberedUserSessionDuration;
-        }
+        $generalConfig = $this->getGeneral();
 
         // Even if $remembered = true, it's possible that they've disabled long-term user sessions
         // by setting rememberedUserSessionDuration = 0
-        if (empty($duration)) {
-            $duration = $this->getGeneral()->userSessionDuration;
+        if ($remembered && $generalConfig->rememberedUserSessionDuration !== 0) {
+            return $generalConfig->rememberedUserSessionDuration;
         }
 
-        if ($duration) {
-            return ConfigHelper::durationInSeconds($duration);
-        }
-
-        return null;
+        return $generalConfig->userSessionDuration ?: null;
     }
 
     /**
@@ -441,14 +409,7 @@ class Config extends Component
      */
     public function getElevatedSessionDuration()
     {
-        $seconds = ConfigHelper::durationInSeconds($this->getGeneral()->elevatedSessionDuration);
-
-        // See if it has been disabled.
-        if ($seconds === 0) {
-            return false;
-        }
-
-        return $seconds;
+        return $this->getGeneral()->elevatedSessionDuration ?: false;
     }
 
     /**

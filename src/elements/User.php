@@ -1021,8 +1021,10 @@ class User extends Element implements IdentityInterface
         // passed their cooldownDuration already, but there account status is still locked.
         // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add(ConfigHelper::durationAsInterval(Craft::$app->getConfig()->getGeneral()->cooldownDuration));
+            $cooldownEnd->add($interval);
 
             return $cooldownEnd;
         }

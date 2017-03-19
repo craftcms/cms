@@ -138,11 +138,11 @@ class GeneralConfig extends Object
      */
     public $cacheElementQueries = true;
     /**
-     * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
+     * @var int The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to an empty value, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
     public $cacheDuration = 86400;
     /**
@@ -156,14 +156,14 @@ class GeneralConfig extends Object
      */
     public $convertFilenamesToAscii = false;
     /**
-     * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
+     * @var int The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
      * failed login attempts.
      *
      * Set to an empty value to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $cooldownDuration = 'PT5M';
+    public $cooldownDuration = 300;
     /**
      * @var string The URI segment Craft should look for when determining if the current request should route to the CP rather than
      * the front-end website.
@@ -235,11 +235,11 @@ class GeneralConfig extends Object
      */
     public $defaultTemplateExtensions = ['html', 'twig'];
     /**
-     * @var mixed The default amount of time tokens can be used before expiring.
+     * @var int The default amount of time tokens can be used before expiring.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $defaultTokenDuration = 'P1D';
+    public $defaultTokenDuration = 86400;
     /**
      * @var int The default day that new users should have set as their “Week Start Day”.
      *
@@ -277,13 +277,13 @@ class GeneralConfig extends Object
      */
     public $enableCsrfCookie = true;
     /**
-     * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     * @var int The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * Set to an empty value to disable elevated session support.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $elevatedSessionDuration = 'PT5M';
+    public $elevatedSessionDuration = 300;
     /**
      * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
      *
@@ -329,11 +329,11 @@ class GeneralConfig extends Object
      */
     public $indexTemplateFilenames = ['index'];
     /**
-     * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
+     * @var int The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $invalidLoginWindowDuration = 'PT1H';
+    public $invalidLoginWindowDuration = 3600;
     /**
      * @var string|string[] The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
      * resetting user account passwords.  Note that this only affects front-end site requests.
@@ -471,31 +471,31 @@ class GeneralConfig extends Object
      */
     public $preventUserEnumeration = false;
     /**
-     * @var bool The amount of time to wait before Craft purges pending users from the system that have not activated.
+     * @var int The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
      *
      * Set to an empty value to disable this feature.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $purgePendingUsersDuration = false;
+    public $purgePendingUsersDuration = 0;
     /**
-     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var int The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
      * Set to an empty value to disable this feature altogether.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $rememberUsernameDuration = 'P1Y';
+    public $rememberUsernameDuration = 31536000;
     /**
-     * @var mixed The amount of time a user stays logged if “Remember Me” is checked on the login page.
+     * @var int The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
      * Set to an empty value to disable the “Remember Me” feature altogether.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $rememberedUserSessionDuration = 'P2W';
+    public $rememberedUserSessionDuration = 1209600;
     /**
      * @var bool Whether Craft should require a matching user agent string when restoring a user session from a cookie.
      */
@@ -657,14 +657,14 @@ class GeneralConfig extends Object
      */
     public $useSslOnTokenizedUrls = 'auto';
     /**
-     * @var mixed The amount of time a user stays logged in.
+     * @var int The amount of time a user stays logged in.
      *
      * Set to an empty value if you want users to stay logged in as long as their browser is open rather than a predetermined
      * amount of time.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $userSessionDuration = 'PT1H';
+    public $userSessionDuration = 3600;
     /**
      * @var bool|string Whether to grab an exclusive lock on a file when writing to it by using the LOCK_EX flag.
      *
@@ -692,11 +692,11 @@ class GeneralConfig extends Object
      */
     public $validationKey;
     /**
-     * @var mixed The amount of time a user verification code can be used before expiring.
+     * @var int The amount of time a user verification code can be used before expiring.
      *
-     * @see ConfigHelper::durationInSeconds()
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
-    public $verificationCodeDuration = 'P1D';
+    public $verificationCodeDuration = 86400;
 
     /**
      * @var array Stores any custom config settings
@@ -740,6 +740,24 @@ class GeneralConfig extends Object
         }
 
         return parent::__isset($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        // Normalize time duration settings
+        $this->cacheDuration = ConfigHelper::durationInSeconds($this->cacheDuration);
+        $this->cooldownDuration = ConfigHelper::durationInSeconds($this->cooldownDuration);
+        $this->defaultTokenDuration = ConfigHelper::durationInSeconds($this->defaultTokenDuration);
+        $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
+        $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
+        $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
+        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
+        $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
+        $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
+        $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
     }
 
     /**

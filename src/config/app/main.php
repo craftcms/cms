@@ -245,7 +245,7 @@ return [
                     throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$generalConfig->cacheMethod);
             }
 
-            $config['defaultDuration'] = $configService->getCacheDuration();
+            $config['defaultDuration'] = $generalConfig->cacheDuration;
 
             return Craft::createObject($config);
         },

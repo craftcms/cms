@@ -288,7 +288,7 @@ class TemplateCaches extends Component
         }
 
         if (!$expiration) {
-            $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
+            $cacheDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
             if ($cacheDuration <= 0) {
                 $cacheDuration = 31536000; // 1 year
