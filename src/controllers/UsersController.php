@@ -385,7 +385,7 @@ class UsersController extends Controller
             // Can they access the CP?
             if ($userToProcess->can('accessCp')) {
                 // Send them to the CP login page
-                $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getCpLoginPath());
+                $url = UrlHelper::cpUrl('login');
             } else {
                 // Send them to the 'setPasswordSuccessPath'.
                 $setPasswordSuccessPath = Craft::$app->getConfig()->getGeneral()->getSetPasswordSuccessPath();
@@ -1575,9 +1575,8 @@ class UsersController extends Controller
 
         // Otherwise go with the CP's template
         $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-        $templatePath = $configService->getCpSetPasswordPath();
 
-        return $this->renderTemplate($templatePath, $variables);
+        return $this->renderTemplate('setpassword', $variables);
     }
 
     /**

@@ -952,9 +952,9 @@ class Request extends \yii\web\Request
             } else {
                 // Is this an action request?
                 if ($this->_isCpRequest) {
-                    $loginPath = $configService->getCpLoginPath();
-                    $logoutPath = $configService->getCpLogoutPath();
-                    $setPasswordPath = $configService->getCpSetPasswordPath();
+                    $loginPath = 'login';
+                    $logoutPath = 'logout';
+                    $setPasswordPath = 'setpassword';
                 } else {
                     $loginPath = trim($generalConfig->getLoginPath(), '/');
                     $logoutPath = trim($generalConfig->getLogoutPath(), '/');

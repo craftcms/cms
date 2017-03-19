@@ -33,10 +33,7 @@ use yii\base\Object;
  *
  * @property bool           $useFileLocks
  * @property int            $dbPort
- * @property string         $cpSetPasswordPath
  * @property string         $dbTablePrefix
- * @property string         $cpLogoutPath
- * @property string         $cpLoginPath
  * @property string         $resourceTrigger
  * @property array|string[] $allowedFileExtensions
  *
@@ -216,7 +213,7 @@ class Config extends Component
     public function getSetPasswordPath(string $code, string $uid, User $user, bool $full = false): string
     {
         if ($user->can('accessCp')) {
-            $url = $this->getCpSetPasswordPath();
+            $url = 'setpassword';
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
@@ -250,36 +247,6 @@ class Config extends Component
         }
 
         return $url;
-    }
-
-    /**
-     * Returns the path to the CP’s Set Password page.
-     *
-     * @return string The Set Password path.
-     */
-    public function getCpSetPasswordPath(): string
-    {
-        return 'setpassword';
-    }
-
-    /**
-     * Returns the path to the CP’s Login page.
-     *
-     * @return string The Login path.
-     */
-    public function getCpLoginPath(): string
-    {
-        return 'login';
-    }
-
-    /**
-     * Returns the path to the CP’s Logout page.
-     *
-     * @return string The Logout path.
-     */
-    public function getCpLogoutPath(): string
-    {
-        return 'logout';
     }
 
     /**
