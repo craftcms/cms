@@ -193,7 +193,7 @@ class Images extends Component
 
         if ($toTheMax) {
             // Turn it up to 11.
-            Craft::$app->getConfig()->maxPowerCaptain();
+            App::maxPowerCaptain();
         }
 
         // If the file is 0bytes, we probably have enough memory

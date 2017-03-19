@@ -62,8 +62,6 @@ class PhpInfo extends Utility
      */
     private static function _phpInfo(): array
     {
-        Craft::$app->getConfig()->maxPowerCaptain();
-
         ob_start();
         phpinfo(-1);
         $phpInfoStr = ob_get_clean();

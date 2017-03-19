@@ -13,6 +13,7 @@ use craft\base\TaskInterface;
 use craft\db\Query;
 use craft\errors\MissingComponentException;
 use craft\events\TaskEvent;
+use craft\helpers\App;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -311,7 +312,7 @@ class Tasks extends Component
         }
 
         // It's go time.
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         while ($task = $this->getNextPendingTask()) {
             $this->_runningTask = $task;

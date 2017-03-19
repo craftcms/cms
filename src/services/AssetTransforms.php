@@ -19,6 +19,7 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
 use craft\events\GenerateTransformEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -484,7 +485,7 @@ class AssetTransforms extends Component
             for ($safety = 0; $safety < 100; $safety++) {
                 // Wait a second!
                 sleep(1);
-                Craft::$app->getConfig()->maxPowerCaptain();
+                App::maxPowerCaptain();
 
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $index = $this->getTransformIndexModelById($index->id);

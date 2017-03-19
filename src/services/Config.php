@@ -200,26 +200,6 @@ class Config extends Component
     }
 
     /**
-     * Sets PHP’s memory limit to the maximum specified by the
-     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
-     * the script an unlimited amount of time to execute.
-     *
-     * @return void
-     */
-    public function maxPowerCaptain()
-    {
-        if ($this->getGeneral()->phpMaxMemoryLimit !== '') {
-            @ini_set('memory_limit', $this->getGeneral()->phpMaxMemoryLimit);
-        } else {
-            // Grab. It. All.
-            @ini_set('memory_limit', -1);
-        }
-
-        // I need more time.
-        @set_time_limit(0);
-    }
-
-    /**
      * Returns the configured user session duration in seconds, or `null` if there is none because user sessions should
      * expire when the HTTP session expires.
      *

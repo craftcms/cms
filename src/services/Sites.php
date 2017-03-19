@@ -15,6 +15,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
+use craft\helpers\App;
 use craft\models\Site;
 use craft\records\Site as SiteRecord;
 use craft\tasks\ResaveAllElements;
@@ -852,7 +853,7 @@ class Sites extends Component
         // Set the new primary site
         $this->_primarySite = $this->getSiteById($newPrimarySiteId);
 
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         // Update all of the non-localized elements
         $nonLocalizedElementTypes = [];

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -300,7 +301,7 @@ class DashboardController extends Controller
     {
         $this->requirePostRequest();
 
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         $request = Craft::$app->getRequest();
         $widgetId = $request->getBodyParam('widgetId');
