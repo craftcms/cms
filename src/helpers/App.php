@@ -270,4 +270,26 @@ class App
 
         return StringHelper::toLowerCase(Inflector::camel2words(array_pop($classParts)));
     }
+
+    /**
+     * Sets PHP’s memory limit to the maximum specified by the
+     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, and gives
+     * the script an unlimited amount of time to execute.
+     *
+     * @return void
+     */
+    public static function maxPowerCaptain()
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->phpMaxMemoryLimit !== '') {
+            @ini_set('memory_limit', $generalConfig->phpMaxMemoryLimit);
+        } else {
+            // Grab. It. All.
+            @ini_set('memory_limit', -1);
+        }
+
+        // Try to disable the max execution time
+        @set_time_limit(0);
+    }
 }

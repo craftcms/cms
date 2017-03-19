@@ -50,7 +50,7 @@ class SlugValidator extends Validator
         }
 
         if ($this->limitAutoSlugsToAscii === null) {
-            $this->limitAutoSlugsToAscii = Craft::$app->getConfig()->get('limitAutoSlugsToAscii');
+            $this->limitAutoSlugsToAscii = Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii;
         }
     }
 

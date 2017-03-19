@@ -214,8 +214,9 @@ class Users extends Component
 
         if ($userRecord) {
             $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-            $duration = ConfigHelper::durationAsInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
-            $minCodeIssueDate->sub($duration);
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
+            $minCodeIssueDate->sub($interval);
             $verificationCodeIssuedDate = new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'));
 
             $valid = $verificationCodeIssuedDate > $minCodeIssueDate;
@@ -392,7 +393,7 @@ class Users extends Component
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
-            $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verify-email';
+            $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/verify-email';
             $params = [
                 'code' => $unhashedVerificationCode,
                 'id' => $user->uid
@@ -420,7 +421,7 @@ class Users extends Component
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/users/set-password';
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/set-password';
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -539,7 +540,7 @@ class Users extends Component
         $userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
         $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
 
-        $maxInvalidLogins = Craft::$app->getConfig()->get('maxInvalidLogins');
+        $maxInvalidLogins = Craft::$app->getConfig()->getGeneral()->maxInvalidLogins;
 
         if ($maxInvalidLogins) {
             if ($this->_isUserInsideInvalidLoginWindow($userRecord)) {
@@ -634,7 +635,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->email = $user->unverifiedEmail;
 
-            if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                 $userRecord->username = $user->unverifiedEmail;
             }
 
@@ -911,8 +912,10 @@ class Users extends Component
      */
     public function purgeExpiredPendingUsers()
     {
-        if ($duration = Craft::$app->getConfig()->get('purgePendingUsersDuration')) {
-            $interval = ConfigHelper::durationAsInterval($duration);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgePendingUsersDuration !== 0) {
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->purgePendingUsersDuration);
             $expire = DateTimeHelper::currentUTCDateTime();
             $pastTime = $expire->sub($interval);
 
@@ -930,7 +933,7 @@ class Users extends Component
                 foreach ($userIds as $userId) {
                     $user = $this->getUserById($userId);
                     Craft::$app->getElements()->deleteElement($user);
-                    Craft::info('Just deleted pending userId '.$userId.' ('.$user->username.'), because the were more than '.$duration.' old', __METHOD__);
+                    Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
                 }
             }
         }
@@ -1099,9 +1102,10 @@ class Users extends Component
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
     {
         if ($userRecord->invalidLoginWindowStart) {
-            $duration = ConfigHelper::durationAsInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->invalidLoginWindowDuration);
             $invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
-            $end = $invalidLoginWindowStart->add($duration);
+            $end = $invalidLoginWindowStart->add($interval);
 
             return ($end >= DateTimeHelper::currentUTCDateTime());
         }

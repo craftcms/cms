@@ -50,7 +50,7 @@ class AssetFilenameValidator extends Validator
         parent::init();
 
         if ($this->allowedExtensions === null) {
-            $this->allowedExtensions = Craft::$app->getConfig()->getAllowedFileExtensions();
+            $this->allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
         }
 
         if ($this->badExtension === null) {

@@ -7,6 +7,7 @@
 
 namespace craft\helpers;
 
+use Craft;
 use yii\base\InvalidConfigException;
 
 /**
@@ -17,42 +18,6 @@ use yii\base\InvalidConfigException;
  */
 class ConfigHelper
 {
-    /**
-     * Normalizes a time duration value as a DateInterval object.
-     *
-     * Accepted formats:
-     *
-     * - integer (the duration in seconds)
-     * - string (a [duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations))
-     * - DateInterval object
-     * - an empty value (represents 0 seconds)
-     *
-     * @param mixed $value
-     *
-     * @return \DateInterval
-     * @throws InvalidConfigException if the duration can't be determined
-     */
-    public static function durationAsInterval($value): \DateInterval
-    {
-        if ($value instanceof \DateInterval) {
-            return $value;
-        }
-
-        if (!$value) {
-            $value = 0;
-        }
-
-        if (is_int($value)) {
-            $value = 'PT'.$value.'S';
-        }
-
-        if (!is_string($value)) {
-            throw new InvalidConfigException("Unable to convert {$value} to seconds.");
-        }
-
-        return new \DateInterval($value);
-    }
-
     /**
      * Normalizes a time duration value into the number of seconds it represents.
      *
@@ -86,6 +51,38 @@ class ConfigHelper
             throw new InvalidConfigException("Unable to convert {$value} to seconds.");
         }
 
-        return DateTimeHelper::dateIntervalToSeconds($value);
+        return DateTimeHelper::intervalToSeconds($value);
+    }
+
+    /**
+     * Returns a localized config setting value.
+     *
+     * @param mixed $value The config setting value. If it's an array, the item
+     *                     with a key that matches the site handle will be returned,
+     *                     or the first value if that doesn't exist.
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return mixed
+     */
+    public static function localizedValue($value, string $siteHandle = null)
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (empty($value)) {
+            return null;
+        }
+
+        if ($siteHandle === null) {
+            $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        }
+
+        if (array_key_exists($siteHandle, $value)) {
+            return $value[$siteHandle];
+        }
+
+        // Just return the first value
+        return reset($value);
     }
 }

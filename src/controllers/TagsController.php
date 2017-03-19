@@ -182,7 +182,7 @@ class TagsController extends Controller
         $search = Craft::$app->getRequest()->getBodyParam('search');
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
         $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
-        $allowSimilarTags = Craft::$app->getConfig()->get('allowSimilarTags');
+        $allowSimilarTags = Craft::$app->getConfig()->getGeneral()->allowSimilarTags;
 
         $tags = Tag::find()
             ->groupId($tagGroupId)

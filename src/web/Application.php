@@ -113,7 +113,7 @@ class Application extends \yii\web\Application
         }
 
         // Send the X-Powered-By header?
-        if ($this->getConfig()->get('sendPoweredByHeader')) {
+        if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
             $headers->set('X-Powered-By', $this->name);
         } else {
             // In case PHP is already setting one
@@ -522,11 +522,13 @@ class Application extends \yii\web\Application
             if (!$this->getUser()->getIsGuest()) {
                 if ($request->getIsCpRequest()) {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
+                    $logoutUrl = UrlHelper::cpUrl('logout');
                 } else {
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
+                    $logoutUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLogoutPath());
                 }
 
-                $error .= ' ['.Craft::t('app', 'Log out?').']('.UrlHelper::url($this->getConfig()->getLogoutPath()).')';
+                $error .= ' ['.Craft::t('app', 'Log out?').']('.$logoutUrl.')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {
@@ -552,7 +554,7 @@ class Application extends \yii\web\Application
         }
 
         $request = $this->getRequest();
-        $actionTrigger = $this->getConfig()->get('actionTrigger');
+        $actionTrigger = $this->getConfig()->getGeneral()->actionTrigger;
 
         if ($request->getIsCpRequest() ||
 

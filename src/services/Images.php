@@ -64,7 +64,7 @@ class Images extends Component
      */
     public function init()
     {
-        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) === 'gd') {
+        if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
         } else if ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
@@ -193,7 +193,7 @@ class Images extends Component
 
         if ($toTheMax) {
             // Turn it up to 11.
-            Craft::$app->getConfig()->maxPowerCaptain();
+            App::maxPowerCaptain();
         }
 
         // If the file is 0bytes, we probably have enough memory
@@ -237,7 +237,7 @@ class Images extends Component
         $cleanedByStripping = false;
 
         try {
-            if (Craft::$app->getConfig()->get('rotateImagesOnUploadByExifData')) {
+            if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 

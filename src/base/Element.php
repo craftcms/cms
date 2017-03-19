@@ -1942,7 +1942,7 @@ abstract class Element extends Component implements ElementInterface
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;

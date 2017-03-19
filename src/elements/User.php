@@ -223,7 +223,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSortOptions(): array
     {
-        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $attributes = [
                 'email' => Craft::t('app', 'Email'),
                 'firstName' => Craft::t('app', 'First Name'),
@@ -252,7 +252,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             // Start with Email and don't even give Username as an option
             $attributes = [
                 'email' => ['label' => Craft::t('app', 'Email')],
@@ -286,7 +286,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
-        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
         } else {
             $attributes = ['fullName', 'email', 'dateCreated', 'lastLoginDate'];
@@ -534,7 +534,7 @@ class User extends Element implements IdentityInterface
         // Is this user in cooldown mode, and are they past their window?
         if (
             $this->locked &&
-            Craft::$app->getConfig()->get('cooldownDuration') &&
+            Craft::$app->getConfig()->getGeneral()->cooldownDuration &&
             !$this->getRemainingCooldownTime()
         ) {
             Craft::$app->getUsers()->unlockUser($this);
@@ -698,7 +698,7 @@ class User extends Element implements IdentityInterface
                 // If the account is locked, but they just entered a valid password
                 if (Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Craft::$app->getConfig()->get('cooldownDuration')) {
+                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
                         $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
                     } else {
                         $this->authError = self::AUTH_ACCOUNT_LOCKED;
@@ -1021,8 +1021,10 @@ class User extends Element implements IdentityInterface
         // passed their cooldownDuration already, but there account status is still locked.
         // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add(ConfigHelper::durationAsInterval(Craft::$app->getConfig()->get('cooldownDuration')));
+            $cooldownEnd->add($interval);
 
             return $cooldownEnd;
         }
@@ -1389,7 +1391,7 @@ class User extends Element implements IdentityInterface
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (Craft::$app->getConfig()->get('requireMatchingUserAgentForSession')) {
+        if (Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
             $requestUserAgent = Craft::$app->getRequest()->getUserAgent();
 
             if ($userAgent !== $requestUserAgent) {

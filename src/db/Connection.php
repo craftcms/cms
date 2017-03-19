@@ -170,7 +170,7 @@ class Connection extends \yii\db\Connection
     public function backupTo(string $file)
     {
         // Determine the command that should be executed
-        $backupCommand = Craft::$app->getConfig()->get('backupCommand');
+        $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         if ($backupCommand === null) {
             $schema = $this->getSchema();
@@ -216,7 +216,7 @@ class Connection extends \yii\db\Connection
     public function restore(string $filePath)
     {
         // Determine the command that should be executed
-        $restoreCommand = Craft::$app->getConfig()->get('restoreCommand');
+        $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
         if ($restoreCommand === null) {
             $schema = $this->getSchema();
@@ -435,14 +435,14 @@ class Connection extends \yii\db\Connection
     private function _createShellCommand(string $command, string $file): ShellCommand
     {
         // Swap out any tokens in the command
-        $config = Craft::$app->getConfig();
+        $dbConfig = Craft::$app->getConfig()->getDb();
         $tokens = [
             '{file}' => $file,
-            '{port}' => $config->getDbPort(),
-            '{server}' => $config->get('server', Config::CATEGORY_DB),
-            '{user}' => $config->get('user', Config::CATEGORY_DB),
-            '{database}' => $config->get('database', Config::CATEGORY_DB),
-            '{schema}' => $config->get('schema', Config::CATEGORY_DB),
+            '{port}' => $dbConfig->port,
+            '{server}' => $dbConfig->server,
+            '{user}' => $dbConfig->user,
+            '{database}' => $dbConfig->database,
+            '{schema}' => $dbConfig->schema,
         ];
         $command = str_replace(array_keys($tokens), array_values($tokens), $command);
 

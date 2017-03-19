@@ -283,7 +283,7 @@ class Resources extends Component
         $url = UrlHelper::url($path);
 
         // Is this going to be a resource URL?
-        $rootResourceUrl = UrlHelper::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
+        $rootResourceUrl = UrlHelper::url(UrlHelper::resourceTrigger()).'/';
 
         if (strpos($url, $rootResourceUrl) === 0) {
             // Isolate the relative resource path

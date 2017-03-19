@@ -20,6 +20,7 @@ use craft\errors\MinimumRequirementException;
 use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
 use craft\errors\ValidatePackageException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
@@ -45,7 +46,7 @@ class Updater
      */
     public function __construct()
     {
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
     }
 
     /**
@@ -351,8 +352,6 @@ class Updater
     private function _unpackPackage(string $downloadFilePath, string $unzipFolder): bool
     {
         Craft::info('Unzipping package to '.$unzipFolder, __METHOD__);
-
-        Craft::$app->getConfig()->maxPowerCaptain();
 
         // Create the source folder if it doesn't exist yet
         FileHelper::createDirectory($unzipFolder);

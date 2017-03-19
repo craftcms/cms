@@ -933,7 +933,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // Get the map from Stringy.
         self::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
 
-        foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
+        foreach (Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings as $asciiChar => $values) {
             self::$_asciiCharMap[$asciiChar] = $values;
         }
 

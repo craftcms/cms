@@ -117,7 +117,7 @@ class UrlHelper
         $url = static::urlWithProtocol($url, $protocol);
 
         return static::urlWithParams($url, [
-            Craft::$app->getConfig()->get('tokenParam') => $token
+            Craft::$app->getConfig()->getGeneral()->tokenParam => $token
         ]);
     }
 
@@ -177,7 +177,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
+            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -203,7 +203,7 @@ class UrlHelper
     public static function cpUrl(string $path = '', $params = null, string $protocol = null): string
     {
         $path = trim($path, '/');
-        $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
+        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger.($path ? '/'.$path : '');
 
         return self::_createUrl($path, $params, $protocol, true, false);
     }
@@ -293,7 +293,26 @@ class UrlHelper
             }
         }
 
-        return static::url(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
+        return static::url(static::resourceTrigger().'/'.$uri, $params, $protocol);
+    }
+
+    /**
+     * Returns the Resource Request trigger word based on the type of the current request.
+     *
+     * If it’s a front-end request, the [[\craft\config\GeneralConfig::resourceTrigger resourceTrigger]]
+     * config setting value will be returned. Otherwise `'resources'` will be returned.
+     *
+     * @return string The Resource Request trigger word.
+     */
+    public static function resourceTrigger(): string
+    {
+        $request = Craft::$app->getRequest();
+
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            return 'resources';
+        }
+
+        return Craft::$app->getConfig()->getGeneral()->resourceTrigger;
     }
 
     /**
@@ -306,7 +325,7 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', $params = null, string $protocol = null): string
     {
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/'.trim($path, '/');
 
         return static::url($path, $params, $protocol, true);
     }
@@ -341,7 +360,7 @@ class UrlHelper
      */
     public static function getProtocolForTokenizedUrl(): string
     {
-        $useSslOnTokenizedUrls = Craft::$app->getConfig()->get('useSslOnTokenizedUrls');
+        $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
@@ -418,12 +437,13 @@ class UrlHelper
             $path = substr($path, 0, $qpos);
         }
 
-        $showScriptName = ($mustShowScriptName || !Craft::$app->getConfig()->getOmitScriptNameInUrls());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $showScriptName = ($mustShowScriptName || !$generalConfig->omitScriptNameInUrls);
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {
             // Did they set the base URL manually?
-            $baseUrl = Craft::$app->getConfig()->get('baseCpUrl');
+            $baseUrl = $generalConfig->baseCpUrl;
 
             if ($baseUrl) {
                 // Make sure it ends in a slash
@@ -462,11 +482,11 @@ class UrlHelper
         }
 
         // Put it all together
-        if (!$showScriptName || Craft::$app->getConfig()->getUsePathInfo()) {
+        if (!$showScriptName || $generalConfig->usePathInfo) {
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->getConfig()->get('addTrailingSlashesToUrls')) {
+                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && $generalConfig->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {
@@ -476,7 +496,7 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
-                $pathParam = Craft::$app->getConfig()->get('pathParam');
+                $pathParam = $generalConfig->pathParam;
                 $params = $pathParam.'='.$path.($params ? '&'.$params : '');
             }
         }

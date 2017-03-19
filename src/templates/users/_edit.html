@@ -145,7 +145,7 @@
                             id: 'weekStartDay',
                             name: 'weekStartDay',
                             options: craft.app.locale.getWeekDayNames(),
-                            value: account.getPreference('weekStartDay', craft.app.config.get('defaultWeekStartDay'))
+                            value: account.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                         }) }}
                     {% endif %}
 
@@ -295,7 +295,7 @@
                         </div>
                     </div>
 
-                    {% if account.status == 'locked' and craft.app.config.get('cooldownDuration') %}
+                    {% if account.status == 'locked' and craft.app.config.general.cooldownDuration %}
                         <div class="data">
                             <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                             <p class="value">{{ account.remainingCooldownTime.humanDuration }}</p>

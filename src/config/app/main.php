@@ -177,14 +177,14 @@ return [
         // -------------------------------------------------------------------------
 
         'assetManager' => function() {
-            $configService = Craft::$app->getConfig();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
             $config = [
                 'class' => craft\web\AssetManager::class,
-                'basePath' => $configService->get('resourceBasePath'),
-                'baseUrl' => $configService->get('resourceBaseUrl'),
-                'fileMode' => $configService->get('defaultFileMode'),
-                'dirMode' => $configService->get('defaultDirMode'),
+                'basePath' => $generalConfig->resourceBasePath,
+                'baseUrl' => $generalConfig->resourceBaseUrl,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
             ];
 
             return Craft::createObject($config);
@@ -192,35 +192,37 @@ return [
 
         'cache' => function() {
             $configService = Craft::$app->getConfig();
-            $cacheMethod = $configService->get('cacheMethod');
+            $generalConfig = $configService->getGeneral();
 
-            switch ($cacheMethod) {
+            switch ($generalConfig->cacheMethod) {
                 case 'apc':
                     $config = [
                         'class' => yii\caching\ApcCache::class,
-                        'useApcu' => $configService->get('useApcu', craft\services\Config::CATEGORY_APC),
+                        'useApcu' => $configService->getApc()->useApcu,
                     ];
                     break;
                 case 'db':
+                    $dbCacheConfig = $configService->getDbCache();
                     $config = [
                         'class' => yii\caching\DbCache::class,
-                        'gcProbability' => $configService->get('gcProbability', craft\services\Config::CATEGORY_DBCACHE),
-                        'cacheTable' => '{{%'.$configService->get('cacheTableName', craft\services\Config::CATEGORY_DBCACHE).'}}',
+                        'gcProbability' => $dbCacheConfig->gcProbability,
+                        'cacheTable' => '{{%'.$dbCacheConfig->cacheTableName.'}}',
                     ];
                     break;
                 case 'file':
+                    $fileCacheConfig = $configService->getFileCache();
                     $config = [
                         'class' => \yii\caching\FileCache::class,
-                        'cachePath' => $configService->get('cachePath', craft\services\Config::CATEGORY_FILECACHE),
-                        'gcProbability' => $configService->get('gcProbability', craft\services\Config::CATEGORY_FILECACHE),
-                        'fileMode' => $configService->get('defaultFileMode'),
-                        'dirMode' => $configService->get('defaultDirMode'),
+                        'cachePath' => $fileCacheConfig->cachePath,
+                        'gcProbability' => $fileCacheConfig->gcProbability,
+                        'fileMode' => $generalConfig->defaultFileMode,
+                        'dirMode' => $generalConfig->defaultDirMode,
                     ];
                     break;
                 case 'memcache':
                     $config = [
                         'class' => yii\caching\MemCache::class,
-                        'servers' => $configService->get('servers', craft\services\Config::CATEGORY_MEMCACHE),
+                        'servers' => $configService->getMemCache()->servers,
                         'useMemcached' => true,
                     ];
                     break;
@@ -240,64 +242,35 @@ return [
                     ];
                     break;
                 default:
-                    throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
+                    throw new yii\base\InvalidConfigException('Unsupported cacheMethod config setting value: '.$generalConfig->cacheMethod);
             }
 
-            $config['defaultDuration'] = $configService->getCacheDuration();
+            $config['defaultDuration'] = $generalConfig->cacheDuration;
 
             return Craft::createObject($config);
         },
 
         'db' => function() {
-            // Build the DSN string
-            $configService = Craft::$app->getConfig();
-            $unixSocket = $configService->get('unixSocket', craft\services\Config::CATEGORY_DB);
-            $database = $configService->get('database', craft\services\Config::CATEGORY_DB);
-            $driver = $configService->get('driver', craft\services\Config::CATEGORY_DB);
-            $dsn = $configService->get('dsn', craft\services\Config::CATEGORY_DB);
+            $dbConfig = Craft::$app->getConfig()->getDb();
 
-            // Make sure it's a supported driver
-            if (!in_array($driver, [
-                craft\db\Connection::DRIVER_MYSQL,
-                craft\db\Connection::DRIVER_PGSQL
-            ], true)
-            ) {
-                throw new yii\db\Exception('Unsupported connection type: '.$driver);
-            }
-
-            if (!$dsn) {
-                if ($driver === craft\db\Connection::DRIVER_MYSQL && $unixSocket) {
-                    $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
-                } else {
-                    $server = $configService->get('server', craft\services\Config::CATEGORY_DB);
-                    $port = $configService->getDbPort();
-
-                    $dsn = $driver.':host='.strtolower($server).
-                        ';dbname='.$database.
-                        ';port='.strtolower($port).';';
-                }
-            }
-
-            $config = [
+            /** @var craft\db\Connection $db */
+            $db = Craft::createObject([
                 'class' => craft\db\Connection::class,
-                'dsn' => $dsn,
-                'username' => $configService->get('user', craft\services\Config::CATEGORY_DB),
-                'password' => $configService->get('password', craft\services\Config::CATEGORY_DB),
-                'charset' => $configService->get('charset', craft\services\Config::CATEGORY_DB),
-                'tablePrefix' => $configService->getDbTablePrefix(),
+                'dsn' => $dbConfig->dsn,
+                'username' => $dbConfig->user,
+                'password' => $dbConfig->password,
+                'charset' => $dbConfig->charset,
+                'tablePrefix' => $dbConfig->tablePrefix,
                 'schemaMap' => [
                     'mysql' => craft\db\mysql\Schema::class,
                     'pgsql' => craft\db\pgsql\Schema::class,
                 ],
                 'commandClass' => \craft\db\Command::class,
-                'attributes' => $configService->get('attributes', craft\services\Config::CATEGORY_DB),
-            ];
-
-            $db = Craft::createObject($config);
+                'attributes' => $dbConfig->attributes,
+            ]);
 
             // Set the Yii driver name from the config setting.
-            /** @var craft\db\Connection $db */
-            $db->setDriverName($driver);
+            $db->setDriverName($dbConfig->driver);
 
             return $db;
         },
@@ -313,12 +286,12 @@ return [
         },
 
         'mutex' => function() {
-            $configService = Craft::$app->getConfig();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
             $config = [
                 'class' => craft\mutex\FileMutex::class,
-                'fileMode' => $configService->get('defaultFileMode'),
-                'dirMode' => $configService->get('defaultDirMode'),
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
             ];
 
             return Craft::createObject($config);
@@ -335,12 +308,12 @@ return [
                 return null;
             }
 
-            $configService = Craft::$app->getConfig();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
             $target = [
                 'class' => craft\log\FileTarget::class,
-                'fileMode' => $configService->get('defaultFileMode'),
-                'dirMode' => $configService->get('defaultDirMode'),
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
             ];
 
             if ($isConsoleRequest) {
