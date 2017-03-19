@@ -28,7 +28,6 @@ use yii\base\Object;
  *
  * @property int            $dbPort
  * @property string         $dbTablePrefix
- * @property array|string[] $allowedFileExtensions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -62,11 +61,6 @@ class Config extends Component
      * @var string The path to the directory containing the default application config settings
      */
     public $appDefaultsDir = '';
-
-    /**
-     * @var string[]|null
-     */
-    private $_allowedFileExtensions;
 
     /**
      * @var array
@@ -180,30 +174,6 @@ class Config extends Component
     }
 
     /**
-     * Returns an array of allowed file extensions.
-     *
-     * @return string[] The allowed file extensions
-     */
-    public function getAllowedFileExtensions(): array
-    {
-        if ($this->_allowedFileExtensions !== null) {
-            return $this->_allowedFileExtensions;
-        }
-
-        $this->_allowedFileExtensions = ArrayHelper::toArray($this->getGeneral()->allowedFileExtensions);
-        $extra = $this->getGeneral()->extraAllowedFileExtensions;
-
-        if (!empty($extra)) {
-            $extra = ArrayHelper::toArray($extra);
-            $this->_allowedFileExtensions = array_merge($this->_allowedFileExtensions, $extra);
-        }
-
-        $this->_allowedFileExtensions = array_map('strtolower', $this->_allowedFileExtensions);
-
-        return $this->_allowedFileExtensions;
-    }
-
-    /**
      * Returns whether a given extension is allowed to be uploaded, per the
      * allowedFileExtensions and extraAllowedFileExtensions config settings.
      *
@@ -213,7 +183,7 @@ class Config extends Component
      */
     public function isExtensionAllowed(string $extension): bool
     {
-        return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
+        return in_array(strtolower($extension), $this->getGeneral()->allowedFileExtensions, true);
     }
 
     /**

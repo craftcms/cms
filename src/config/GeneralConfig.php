@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use craft\helpers\ArrayHelper;
 use craft\helpers\ConfigHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
@@ -72,11 +73,11 @@ class GeneralConfig extends Object
      */
     public $allowAutoUpdates = true;
     /**
-     * @var string A comma-separated list of file extensions that Craft will allow when a user is uploading files.
+     * @var string[] List of file extensions that Craft will allow when a user is uploading files.
      *
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vob,vsd,wav,webm,wma,wmv,xls,xlsx,zip';
+    public $allowedFileExtensions = ['7z','aiff','asf','avi','bmp','csv','doc','docx','fla','flv','gif','gz','gzip','htm','html','jpeg','jpg','js','mid','mov','mp3','mp4','m4a','m4v','mpc','mpeg','mpg','ods','odt','ogg','ogv','pdf','png','potx','pps','ppsm','ppsx','ppt','pptm','pptx','ppz','pxd','qt','ram','rar','rm','rmi','rmvb','rtf','sdc','sitd','svg','swf','sxc','sxw','tar','tgz','tif','tiff','txt','vob','vsd','wav','webm','wma','wmv','xls','xlsx','zip'];
     /**
      * @var bool If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
      * they are treated as the same tag. Note that this
@@ -306,11 +307,11 @@ class GeneralConfig extends Object
      */
     public $errorTemplatePrefix = '';
     /**
-     * @var mixed A comma-separated list of file extensions that will be merged into the [[allowedFileExtensions]] config setting.
+     * @var string[]|null List of file extensions that will be merged into the [[allowedFileExtensions]] config setting.
      *
      * @see allowedFileExtensions
      */
-    public $extraAllowedFileExtensions = '';
+    public $extraAllowedFileExtensions;
     /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      */
@@ -749,6 +750,19 @@ class GeneralConfig extends Object
         if (!in_array($this->cacheMethod, [self::CACHE_METHOD_APC, self::CACHE_METHOD_DB, self::CACHE_METHOD_FILE, self::CACHE_METHOD_MEMCACHE, self::CACHE_METHOD_WINCACHE, self::CACHE_METHOD_XCACHE, self::CACHE_METHOD_ZENDDATA], true)) {
             throw new InvalidConfigException('Unsupported cacheMethod value: '.$this->cacheMethod);
         }
+
+        // Merge extraAllowedFileExtensions into allowedFileExtensions
+        if (is_string($this->allowedFileExtensions)) {
+            $this->allowedFileExtensions = ArrayHelper::toArray($this->allowedFileExtensions);
+        }
+        if (is_string($this->extraAllowedFileExtensions)) {
+            $this->extraAllowedFileExtensions = ArrayHelper::toArray($this->extraAllowedFileExtensions);
+        }
+        if (is_array($this->extraAllowedFileExtensions)) {
+            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
+            $this->extraAllowedFileExtensions = null;
+        }
+        $this->allowedFileExtensions = array_map('strtolower', $this->allowedFileExtensions);
 
         // Normalize time duration settings
         $this->cacheDuration = ConfigHelper::durationInSeconds($this->cacheDuration);
