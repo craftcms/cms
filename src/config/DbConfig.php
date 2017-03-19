@@ -32,7 +32,7 @@ class DbConfig extends Object
      */
     public $server = 'localhost';
     /**
-     * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
     public $port;
     /**
@@ -92,7 +92,7 @@ class DbConfig extends Object
      */
     public $attributes = [];
     /**
-     * @var string|null If you want to manually specify your PDO DSN connection string you can do so here.
+     * @var string If you want to manually specify your PDO DSN connection string you can do so here.
      *
      * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
      * - PostgreSQL: https://secure.php.net/manual/en/ref.pdo-pgsql.connection.php
@@ -119,6 +119,35 @@ class DbConfig extends Object
         $this->tablePrefix = rtrim($this->tablePrefix, '_');
         if (strlen($this->tablePrefix) > 5) {
             throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
+        }
+
+        // Lowercase server & unixSocket
+        $this->server = strtolower($this->server);
+        if ($this->unixSocket !== null) {
+            $this->unixSocket = strtolower($this->unixSocket);
+        }
+
+        // Set the port
+        if ($this->port === null || $this->port === '') {
+            switch ($this->driver) {
+                case self::DRIVER_MYSQL:
+                    $this->port = 3306;
+                    break;
+                case self::DRIVER_PGSQL:
+                    $this->port = 5432;
+                    break;
+            }
+        } else {
+            $this->port = (int)$this->port;
+        }
+
+        // Set the DSN
+        if ($this->dsn === null || $this->dsn === '') {
+            if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
+                $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname='.{$this->database};";
+            } else {
+                $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
+            }
         }
     }
 }

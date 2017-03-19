@@ -13,7 +13,6 @@ use craft\config\DbConfig;
 use craft\config\FileCacheConfig;
 use craft\config\GeneralConfig;
 use craft\config\MemCacheConfig;
-use craft\db\Connection;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
@@ -170,32 +169,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * If a custom database port has been set in config/db.php, will return that value.
-     * Otherwise, will return the default port depending on the database type that is
-     * selected.
-     *
-     * @return int
-     */
-    public function getDbPort(): int
-    {
-        $port = $this->getDb()->port;
-        $driver = $this->getDb()->driver;
-
-        if ($port === null || $port === '') {
-            switch ($driver) {
-                case Connection::DRIVER_MYSQL:
-                    $port = 3306;
-                    break;
-                case Connection::DRIVER_PGSQL:
-                    $port = 5432;
-                    break;
-            }
-        }
-
-        return $port;
     }
 
     /**

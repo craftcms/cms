@@ -251,40 +251,12 @@ return [
         },
 
         'db' => function() {
-            $configService = Craft::$app->getConfig();
-            $dbConfig = $configService->getDb();
+            $dbConfig = Craft::$app->getConfig()->getDb();
 
-            // Build the DSN string
-            $unixSocket = $dbConfig->unixSocket;
-            $database = $dbConfig->database;
-            $driver = $dbConfig->driver;
-            $dsn = $dbConfig->dsn;
-
-            // Make sure it's a supported driver
-            if (!in_array($driver, [
-                craft\db\Connection::DRIVER_MYSQL,
-                craft\db\Connection::DRIVER_PGSQL
-            ], true)
-            ) {
-                throw new yii\db\Exception('Unsupported connection type: '.$driver);
-            }
-
-            if (!$dsn) {
-                if ($driver === craft\db\Connection::DRIVER_MYSQL && $unixSocket) {
-                    $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
-                } else {
-                    $server = $dbConfig->server;
-                    $port = $configService->getDbPort();
-
-                    $dsn = $driver.':host='.strtolower($server).
-                        ';dbname='.$database.
-                        ';port='.strtolower($port).';';
-                }
-            }
-
-            $config = [
+            /** @var craft\db\Connection $db */
+            $db = Craft::createObject([
                 'class' => craft\db\Connection::class,
-                'dsn' => $dsn,
+                'dsn' => $dbConfig->dsn,
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
                 'charset' => $dbConfig->charset,
@@ -295,13 +267,10 @@ return [
                 ],
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
-            ];
-
-            $db = Craft::createObject($config);
+            ]);
 
             // Set the Yii driver name from the config setting.
-            /** @var craft\db\Connection $db */
-            $db->setDriverName($driver);
+            $db->setDriverName($dbConfig->driver);
 
             return $db;
         },
