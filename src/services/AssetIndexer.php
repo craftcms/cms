@@ -441,7 +441,7 @@ class AssetIndexer extends Component
         $extension = pathinfo($indexEntryModel->uri, PATHINFO_EXTENSION);
         $filename = basename($indexEntryModel->uri);
 
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
+        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File “{$indexEntryModel->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
