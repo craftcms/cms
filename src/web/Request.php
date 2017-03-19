@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
@@ -947,7 +948,7 @@ class Request extends \yii\web\Request
             $firstSegment = $this->getSegment(1);
 
             // Is this a resource request?
-            if ($firstSegment == $configService->getResourceTrigger()) {
+            if ($firstSegment === UrlHelper::resourceTrigger()) {
                 $this->_isResourceRequest = true;
             } else {
                 // Is this an action request?

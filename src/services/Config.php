@@ -34,7 +34,6 @@ use yii\base\Object;
  * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $dbTablePrefix
- * @property string         $resourceTrigger
  * @property array|string[] $allowedFileExtensions
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -189,25 +188,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the Resource Request trigger word based on the type of the current request.
-     *
-     * If it’s a front-end request, the [resourceTrigger](http://craftcms.com/docs/config-settings#resourceTrigger)
-     * config setting value will be returned. Otherwise `'resources'` will be returned.
-     *
-     * @return string The Resource Request trigger word.
-     */
-    public function getResourceTrigger(): string
-    {
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            return 'resources';
-        }
-
-        return $this->getGeneral()->resourceTrigger;
     }
 
     /**

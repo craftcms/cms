@@ -293,7 +293,26 @@ class UrlHelper
             }
         }
 
-        return static::url(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
+        return static::url(static::resourceTrigger().'/'.$uri, $params, $protocol);
+    }
+
+    /**
+     * Returns the Resource Request trigger word based on the type of the current request.
+     *
+     * If it’s a front-end request, the [[\craft\config\GeneralConfig::resourceTrigger resourceTrigger]]
+     * config setting value will be returned. Otherwise `'resources'` will be returned.
+     *
+     * @return string The Resource Request trigger word.
+     */
+    public static function resourceTrigger(): string
+    {
+        $request = Craft::$app->getRequest();
+
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            return 'resources';
+        }
+
+        return Craft::$app->getConfig()->getGeneral()->resourceTrigger;
     }
 
     /**
