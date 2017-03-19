@@ -25,7 +25,12 @@ use yii\base\Object;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property int            $dbPort
+ * @property DbConfig        $db        the DB config settings
+ * @property MemCacheConfig  $memCache  the Memcached config settings
+ * @property ApcConfig       $apc       the APC config settings
+ * @property DbCacheConfig   $dbCache   the DB Cache config settings
+ * @property FileCacheConfig $fileCache the file cache config settings
+ * @property GeneralConfig   $general   the general config settings
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -162,7 +167,7 @@ class Config extends Component
     }
 
     /**
-     * Returns the MemCache config settings.
+     * Returns the Memcached config settings.
      *
      * @return MemCacheConfig
      */
