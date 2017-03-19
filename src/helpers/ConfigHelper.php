@@ -87,7 +87,7 @@ class ConfigHelper
             throw new InvalidConfigException("Unable to convert {$value} to seconds.");
         }
 
-        return DateTimeHelper::dateIntervalToSeconds($value);
+        return DateTimeHelper::intervalToSeconds($value);
     }
 
     /**

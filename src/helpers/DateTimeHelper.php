@@ -560,7 +560,7 @@ class DateTimeHelper
      *
      * @return int
      */
-    public static function dateIntervalToSeconds(\DateInterval $dateInterval): int
+    public static function intervalToSeconds(\DateInterval $dateInterval): int
     {
         $reference = new \DateTimeImmutable();
         $endTime = $reference->add($dateInterval);
