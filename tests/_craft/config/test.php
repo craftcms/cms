@@ -22,9 +22,8 @@ $config = ArrayHelper::merge(
             ],
         ],
     ],
-    require $srcPath.'/config/main.php',
-    require $srcPath.'/config/common.php',
-    require $srcPath.'/config/web.php'
+    require $srcPath.'/config/app/main.php',
+    require $srcPath.'/config/app/web.php'
 );
 
 $config['vendorPath'] = $vendorPath;
