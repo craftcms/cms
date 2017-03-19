@@ -254,7 +254,7 @@ class User extends \yii\web\User
         }
 
         // If it has been disabled, return false.
-        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+        if (Craft::$app->getConfig()->getGeneral()->elevatedSessionDuration === 0) {
             return false;
         }
 
@@ -269,11 +269,11 @@ class User extends \yii\web\User
     public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
-        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+        if (Craft::$app->getConfig()->getGeneral()->elevatedSessionDuration === 0) {
             return true;
         }
 
-        return ($this->getElevatedSessionTimeout() != 0);
+        return ($this->getElevatedSessionTimeout() !== 0);
     }
 
     /**
@@ -295,22 +295,22 @@ class User extends \yii\web\User
         // Validate the password
         $validator = new UserPasswordValidator();
 
-        if ($validator->validate($password) && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
-            $elevatedSessionDuration = Craft::$app->getConfig()->getElevatedSessionDuration();
+        if (!$validator->validate($password) || !Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
+            return false;
+        }
 
-            // Make sure it hasn't been disabled.
-            if ($elevatedSessionDuration !== false) {
-
-                // Set the elevated session expiration date
-                $session = Craft::$app->getSession();
-                $timeout = time() + Craft::$app->getConfig()->getElevatedSessionDuration();
-                $session->set($this->elevatedSessionTimeoutParam, $timeout);
-            }
-
+        // Make sure elevated sessions haven't been disabled
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->elevatedSessionDuration === 0) {
             return true;
         }
 
-        return false;
+        // Set the elevated session expiration date
+        $session = Craft::$app->getSession();
+        $timeout = time() + $generalConfig->elevatedSessionDuration;
+        $session->set($this->elevatedSessionTimeoutParam, $timeout);
+
+        return true;
     }
 
     // Misc

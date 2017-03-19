@@ -20,8 +20,6 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
@@ -36,7 +34,6 @@ use yii\base\Object;
  * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $cpSetPasswordPath
- * @property bool|int       $elevatedSessionDuration
  * @property string         $loginPath
  * @property string         $dbTablePrefix
  * @property string         $cpLogoutPath
@@ -197,16 +194,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the configured elevated session duration in seconds.
-     *
-     * @return int|bool The elevated session duration in seconds or false if it has been disabled.
-     */
-    public function getElevatedSessionDuration()
-    {
-        return $this->getGeneral()->elevatedSessionDuration ?: false;
     }
 
     /**
