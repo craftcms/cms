@@ -191,38 +191,6 @@ class Config extends Component
     }
 
     /**
-     * Returns whether the system is allowed to be auto-updated to the latest release.
-     *
-     * @return bool Whether the system is allowed to be auto-updated to the latest release.
-     */
-    public function allowAutoUpdates(): bool
-    {
-        $update = Craft::$app->getUpdates()->getUpdates();
-
-        if (!$update) {
-            return false;
-        }
-
-        $configVal = $this->getGeneral()->allowAutoUpdates;
-
-        if (is_bool($configVal)) {
-            return $configVal;
-        }
-
-        if ($configVal === 'patch-only') {
-            // Return true if the major and minor versions are still the same
-            return (App::majorMinorVersion($update->app->latestVersion) === App::majorMinorVersion(Craft::$app->version));
-        }
-
-        if ($configVal === 'minor-only') {
-            // Return true if the major version is still the same
-            return (App::majorVersion($update->app->latestVersion) === App::majorVersion(Craft::$app->version));
-        }
-
-        return false;
-    }
-
-    /**
      * Returns whether to use file locks when writing to files.
      *
      * @return bool
