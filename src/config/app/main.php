@@ -286,12 +286,12 @@ return [
         },
 
         'mutex' => function() {
-            $configService = Craft::$app->getConfig();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
 
             $config = [
                 'class' => craft\mutex\FileMutex::class,
-                'fileMode' => $configService->getGeneral()->defaultFileMode,
-                'dirMode' => $configService->getGeneral()->defaultDirMode,
+                'fileMode' => $generalConfig->defaultFileMode,
+                'dirMode' => $generalConfig->defaultDirMode,
             ];
 
             return Craft::createObject($config);

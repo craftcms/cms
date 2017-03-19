@@ -1560,13 +1560,12 @@ class UsersController extends Controller
      */
     private function _renderSetPasswordTemplate(User $user, array $variables): Response
     {
-        $configService = Craft::$app->getConfig();
         $view = $this->getView();
 
         // If the user doesn't have CP access, see if a custom Set Password template exists
         if (!$user->can('accessCp')) {
             $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-            $templatePath = $configService->getGeneral()->getSetPasswordPath();
+            $templatePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
 
             if ($view->doesTemplateExist($templatePath)) {
                 return $this->renderTemplate($templatePath, $variables);
