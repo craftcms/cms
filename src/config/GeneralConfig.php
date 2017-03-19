@@ -7,7 +7,6 @@
 
 namespace craft\config;
 
-use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
@@ -142,7 +141,7 @@ class GeneralConfig extends Object
     /**
      * @var int The default length of time Craft will store data, RSS feed, and template caches.
      *
-     * If set to an empty value, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
+     * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -161,7 +160,7 @@ class GeneralConfig extends Object
      * @var int The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
      * failed login attempts.
      *
-     * Set to an empty value to keep the account locked indefinitely, requiring an admin to manually unlock the account.
+     * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -281,7 +280,7 @@ class GeneralConfig extends Object
     /**
      * @var int The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
-     * Set to an empty value to disable elevated session support.
+     * Set to `0` to disable elevated session support.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -475,7 +474,7 @@ class GeneralConfig extends Object
      *
      * Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
      *
-     * Set to an empty value to disable this feature.
+     * Set to `0` to disable this feature.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -483,7 +482,7 @@ class GeneralConfig extends Object
     /**
      * @var int The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
-     * Set to an empty value to disable this feature altogether.
+     * Set to `0` to disable this feature altogether.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -491,7 +490,7 @@ class GeneralConfig extends Object
     /**
      * @var int The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
-     * Set to an empty value to disable the “Remember Me” feature altogether.
+     * Set to `0` to disable the “Remember Me” feature altogether.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -655,7 +654,7 @@ class GeneralConfig extends Object
     /**
      * @var int The amount of time a user stays logged in.
      *
-     * Set to an empty value if you want users to stay logged in as long as their browser is open rather than a predetermined
+     * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined
      * amount of time.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
