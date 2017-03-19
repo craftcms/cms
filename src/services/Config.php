@@ -200,35 +200,6 @@ class Config extends Component
     }
 
     /**
-     * Returns the configured user session duration in seconds, or `null` if there is none because user sessions should
-     * expire when the HTTP session expires.
-     *
-     * You can choose whether the
-     * [rememberedUserSessionDuration](http://craftcms.com/docs/config-settings#rememberedUserSessionDuration)
-     * or [userSessionDuration](http://craftcms.com/docs/config-settings#userSessionDuration) config setting
-     * should be used with the $remembered param. If rememberedUserSessionDuration’s value is empty (disabling the
-     * feature) then userSessionDuration will be used regardless of $remembered.
-     *
-     * @param bool $remembered    Whether the rememberedUserSessionDuration config setting should be used if it’s set.
-     *                            Default is `false`.
-     *
-     * @return int|null The user session duration in seconds, or `null` if user sessions should expire along with the
-     *                  HTTP session.
-     */
-    public function getUserSessionDuration(bool $remembered = false)
-    {
-        $generalConfig = $this->getGeneral();
-
-        // Even if $remembered = true, it's possible that they've disabled long-term user sessions
-        // by setting rememberedUserSessionDuration = 0
-        if ($remembered && $generalConfig->rememberedUserSessionDuration !== 0) {
-            return $generalConfig->rememberedUserSessionDuration;
-        }
-
-        return $generalConfig->userSessionDuration ?: null;
-    }
-
-    /**
      * Returns the configured elevated session duration in seconds.
      *
      * @return int|bool The elevated session duration in seconds or false if it has been disabled.

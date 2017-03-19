@@ -122,9 +122,15 @@ class UsersController extends Controller
             return $this->_handleLoginFailure($user->authError, $user);
         }
 
-        // Log them in
-        $duration = Craft::$app->getConfig()->getUserSessionDuration($rememberMe);
+        // Get the session duration
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
+            $duration = $generalConfig->rememberedUserSessionDuration;
+        } else {
+            $duration = $generalConfig->userSessionDuration;
+        }
 
+        // Log them in
         if (Craft::$app->getUser()->login($user, $duration)) {
             return $this->_handleSuccessfulLogin(true);
         }

@@ -56,8 +56,9 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
         $config['loginUrl'] = UrlHelper::url($configService->getLoginPath());
-        $config['authTimeout'] = $configService->getUserSessionDuration(false);
+        $config['authTimeout'] = $generalConfig->userSessionDuration ?: null;
 
         // Set the state-based property names
         $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
