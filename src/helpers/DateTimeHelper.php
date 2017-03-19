@@ -542,6 +542,18 @@ class DateTimeHelper
     }
 
     /**
+     * Creates a DateInterval object based on a given number of seconds.
+     *
+     * @param int $seconds
+     *
+     * @return \DateInterval
+     */
+    public static function secondsToInterval(int $seconds): \DateInterval
+    {
+        return new \DateInterval("PT{$seconds}S");
+    }
+
+    /**
      * Returns the number of seconds that a given DateInterval object spans.
      *
      * @param \DateInterval $dateInterval
