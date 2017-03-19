@@ -8,6 +8,7 @@
 namespace craft\config;
 
 use craft\helpers\ConfigHelper;
+use yii\base\InvalidConfigException;
 use yii\base\Object;
 use yii\base\UnknownPropertyException;
 
@@ -747,6 +748,16 @@ class GeneralConfig extends Object
      */
     public function init()
     {
+        // Validate allowAutoUpdates
+        if (!in_array($this->allowAutoUpdates, [true, false, self::AUTO_UPDATE_MINOR_ONLY, self::AUTO_UPDATE_PATCH_ONLY], true)) {
+            throw new InvalidConfigException('Unsupported allowAutoUpdates value: '.$this->allowAutoUpdates);
+        }
+
+        // Validate cacheMethod
+        if (!in_array($this->cacheMethod, [self::CACHE_METHOD_APC, self::CACHE_METHOD_DB, self::CACHE_METHOD_FILE, self::CACHE_METHOD_MEMCACHE, self::CACHE_METHOD_WINCACHE, self::CACHE_METHOD_XCACHE, self::CACHE_METHOD_ZENDDATA], true)) {
+            throw new InvalidConfigException('Unsupported cacheMethod value: '.$this->cacheMethod);
+        }
+
         // Normalize time duration settings
         $this->cacheDuration = ConfigHelper::durationInSeconds($this->cacheDuration);
         $this->cooldownDuration = ConfigHelper::durationInSeconds($this->cooldownDuration);

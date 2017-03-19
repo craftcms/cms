@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use yii\base\InvalidConfigException;
 use yii\base\Object;
 
 /**
@@ -100,4 +101,18 @@ class DbConfig extends Object
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */
     public $dsn;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        // Validate driver
+        if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
+            throw new InvalidConfigException('Unsupported DB driver value: '.$this->driver);
+        }
+    }
 }
