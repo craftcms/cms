@@ -288,7 +288,7 @@ return [
                 'username' => $dbConfig->user,
                 'password' => $dbConfig->password,
                 'charset' => $dbConfig->charset,
-                'tablePrefix' => $configService->getDbTablePrefix(),
+                'tablePrefix' => $dbConfig->tablePrefix,
                 'schemaMap' => [
                     'mysql' => craft\db\mysql\Schema::class,
                     'pgsql' => craft\db\pgsql\Schema::class,

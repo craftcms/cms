@@ -58,12 +58,12 @@ class DbConfig extends Object
      */
     public $schema = 'public';
     /**
-     * @var string|null If you're sharing Craft installs in a single database (MySQL) or a single
+     * @var string If you're sharing Craft installs in a single database (MySQL) or a single
      * database and using a shared schema (PostgreSQL), then you can set a table
      * prefix here to avoid table naming conflicts per install. This can be no more than 5
      * characters, and must be all lowercase.
      */
-    public $tablePrefix;
+    public $tablePrefix = '';
     /**
      * @var string The charset to use when creating tables.
      */
@@ -113,6 +113,12 @@ class DbConfig extends Object
         // Validate driver
         if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
             throw new InvalidConfigException('Unsupported DB driver value: '.$this->driver);
+        }
+
+        // Validate tablePrefix
+        $this->tablePrefix = rtrim($this->tablePrefix, '_');
+        if (strlen($this->tablePrefix) > 5) {
+            throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
         }
     }
 }

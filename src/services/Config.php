@@ -27,7 +27,6 @@ use yii\base\Object;
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
  * @property int            $dbPort
- * @property string         $dbTablePrefix
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -171,29 +170,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the application’s configured DB table prefix.
-     *
-     * @return string
-     */
-    public function getDbTablePrefix(): string
-    {
-        // Table prefixes cannot be longer than 5 characters
-        $tablePrefix = rtrim($this->getDb()->tablePrefix, '_');
-
-        if ($tablePrefix) {
-            if (StringHelper::length($tablePrefix) > 5) {
-                $tablePrefix = substr($tablePrefix, 0, 5);
-            }
-
-            $tablePrefix .= '_';
-        } else {
-            $tablePrefix = '';
-        }
-
-        return $tablePrefix;
     }
 
     /**
