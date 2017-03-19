@@ -36,7 +36,6 @@ use yii\base\Object;
  * @property string         $cpSetPasswordPath
  * @property string         $dbTablePrefix
  * @property string         $cpLogoutPath
- * @property string         $logoutPath
  * @property string         $cpLoginPath
  * @property string         $resourceTrigger
  * @property array|string[] $allowedFileExtensions
@@ -193,25 +192,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the user logout path based on the type of the current request.
-     *
-     * If it’s a front-end request, the [logoutPath](http://craftcms.com/docs/config-settings#logoutPath) config
-     * setting value will be returned. Otherwise the path specified in [[getCpLogoutPath()]] will be returned.
-     *
-     * @return string The logout path.
-     */
-    public function getLogoutPath(): string
-    {
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            return $this->getGeneral()->getLogoutPath();
-        }
-
-        return $this->getCpLogoutPath();
     }
 
     /**
