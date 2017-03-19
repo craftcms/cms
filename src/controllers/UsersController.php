@@ -1784,9 +1784,9 @@ class UsersController extends Controller
         }
 
         if ($user && $user->can('accessCp')) {
-            $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::cpUrl('login');
         } else {
-            $url = UrlHelper::siteUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getLoginPath());
         }
 
         throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));

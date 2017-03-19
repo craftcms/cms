@@ -34,7 +34,6 @@ use yii\base\Object;
  * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $cpSetPasswordPath
- * @property string         $loginPath
  * @property string         $dbTablePrefix
  * @property string         $cpLogoutPath
  * @property string         $logoutPath
@@ -194,25 +193,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns the user login path based on the type of the current request.
-     *
-     * If it’s a front-end request, the [loginPath](http://craftcms.com/docs/config-settings#loginPath) config
-     * setting value will be returned. Otherwise the path specified in [[getCpLoginPath()]] will be returned.
-     *
-     * @return string The login path.
-     */
-    public function getLoginPath(): string
-    {
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            return $this->getGeneral()->getLoginPath();
-        }
-
-        return $this->getCpLoginPath();
     }
 
     /**
