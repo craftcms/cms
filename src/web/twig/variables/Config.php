@@ -77,9 +77,9 @@ class Config
      */
     public function usePathInfo(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.general.usePathInfo instead.');
 
-        return Craft::$app->getConfig()->getUsePathInfo();
+        return Craft::$app->getConfig()->getGeneral()->usePathInfo;
     }
 
     /**
@@ -89,9 +89,9 @@ class Config
      */
     public function omitScriptNameInUrls(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls instead.');
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.general.omitScriptNameInUrls instead.');
 
-        return Craft::$app->getConfig()->getOmitScriptNameInUrls();
+        return Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
     }
 
     /**

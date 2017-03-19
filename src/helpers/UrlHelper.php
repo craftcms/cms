@@ -418,12 +418,13 @@ class UrlHelper
             $path = substr($path, 0, $qpos);
         }
 
-        $showScriptName = ($mustShowScriptName || !Craft::$app->getConfig()->getOmitScriptNameInUrls());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $showScriptName = ($mustShowScriptName || !$generalConfig->omitScriptNameInUrls);
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {
             // Did they set the base URL manually?
-            $baseUrl = Craft::$app->getConfig()->getGeneral()->baseCpUrl;
+            $baseUrl = $generalConfig->baseCpUrl;
 
             if ($baseUrl) {
                 // Make sure it ends in a slash
@@ -462,11 +463,11 @@ class UrlHelper
         }
 
         // Put it all together
-        if (!$showScriptName || Craft::$app->getConfig()->getUsePathInfo()) {
+        if (!$showScriptName || $generalConfig->usePathInfo) {
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 
-                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && Craft::$app->getConfig()->getGeneral()->addTrailingSlashesToUrls) {
+                if (($request->getIsConsoleRequest() || $request->getIsSiteRequest()) && $generalConfig->addTrailingSlashesToUrls) {
                     $url .= '/';
                 }
             } else {
@@ -476,7 +477,7 @@ class UrlHelper
             $url = $baseUrl;
 
             if ($path) {
-                $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
+                $pathParam = $generalConfig->pathParam;
                 $params = $pathParam.'='.$path.($params ? '&'.$params : '');
             }
         }

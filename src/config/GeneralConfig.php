@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
@@ -394,7 +395,7 @@ class GeneralConfig extends Object
      */
     public $maxUploadFileSize = 16777216;
     /**
-     * @var bool|string Whether generated URLs should omit 'index.php', e.g. http://domain.com/path as opposed to showing it,
+     * @var bool Whether generated URLs should omit 'index.php', e.g. http://domain.com/path as opposed to showing it,
      * e.g. http://domain.com/index.php/path
      *
      * This can only be possible if your server is configured to redirect would-be 404's to index.php, for example, with
@@ -405,10 +406,8 @@ class GeneralConfig extends Object
      *     RewriteCond %{REQUEST_FILENAME} !-f
      *     RewriteCond %{REQUEST_FILENAME} !-d
      *     RewriteRule (.+) /index.php?p=$1 [QSA,L]
-     *
-     * Possible values: true, false, 'auto'
      */
-    public $omitScriptNameInUrls = 'auto';
+    public $omitScriptNameInUrls = false;
     /**
      * @var bool If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
      * image size without losing quality significantly.
@@ -632,15 +631,11 @@ class GeneralConfig extends Object
      */
     public $useEmailAsUsername = false;
     /**
-     * @var bool|string Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs.
+     * @var bool Whether Craft should specify the path using PATH_INFO or as a query string parameter when generating URLs.
      *
-     * Note that this setting only takes effect if omitScriptNameInUrls is set to false or 'auto' with a failed
-     * “index.php redirect” test.
-     *
-     * When usePathInfo is set to 'auto', Craft will try to determine if your server is configured to support PATH_INFO,
-     * and cache the test results for 24 hours.
+     * Note that this setting only takes effect if [[omitScriptNameInUrls]] is set to false.
      */
-    public $usePathInfo = 'auto';
+    public $usePathInfo = false;
     /**
      * @var bool|string Determines whether Craft will set the "secure" flag when saving cookies when calling `craft()->userSession->saveCookie()`.
      *

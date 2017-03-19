@@ -241,13 +241,9 @@ class Request
      */
     public function getUrlFormat(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrlFormat()', 'craft.request.getUrlFormat() has been deprecated. Use craft.app.config.usePathInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrlFormat()', 'craft.request.getUrlFormat() has been deprecated. Use craft.app.config.general.usePathInfo instead.');
 
-        if (Craft::$app->getConfig()->getUsePathInfo()) {
-            return 'pathinfo';
-        }
-
-        return 'querystring';
+        return Craft::$app->getConfig()->getGeneral()->usePathInfo ? 'pathinfo' : 'querystring';
     }
 
     /**

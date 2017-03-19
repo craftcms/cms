@@ -18,7 +18,6 @@ use craft\db\Connection;
 use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use GuzzleHttp\Client;
@@ -34,7 +33,6 @@ use yii\base\Object;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property bool           $omitScriptNameInUrls Whether generated URLs should omit “index.php”
  * @property bool           $useFileLocks
  * @property int            $dbPort
  * @property string         $cpSetPasswordPath
@@ -46,7 +44,6 @@ use yii\base\Object;
  * @property string         $cpLoginPath
  * @property string         $resourceTrigger
  * @property array|string[] $allowedFileExtensions
- * @property bool           $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -80,16 +77,6 @@ class Config extends Component
      * @var string The path to the directory containing the default application config settings
      */
     public $appDefaultsDir = '';
-
-    /**
-     * @var bool|null
-     */
-    private $_omitScriptNameInUrls;
-
-    /**
-     * @var bool|null
-     */
-    private $_usePathInfo;
 
     /**
      * @var bool|null
@@ -210,147 +197,6 @@ class Config extends Component
     public function getMemCache(): MemCacheConfig
     {
         return $this->getConfigSettings(self::CATEGORY_MEMCACHE);
-    }
-
-    /**
-     * Returns whether generated URLs should omit “index.php”, taking the
-     * [omitScriptNameInUrls](http://craftcms.com/docs/config-settings#omitScriptNameInUrls) config setting value
-     * into account.
-     *
-     * If the omitScriptNameInUrls config setting is set to `true` or `false`, then its value will be returned directly.
-     * Otherwise, `omitScriptNameInUrls()` will try to determine whether the server is set up to support index.php
-     * redirection. (See [this help article](http://craftcms.com/help/remove-index.php) for instructions.)
-     *
-     * It does that by creating a dummy request to the site URL with the URI “/testScriptNameRedirect”. If the index.php
-     * redirect is in place, that request should be sent to Craft’s index.php file, which will detect that this is an
-     * index.php redirect-testing request, and simply return “success”. If anything besides “success” is returned
-     * (i.e. an Apache-styled 404 error), then Craft assumes the index.php redirect is not in fact in place.
-     *
-     * Results of the redirect test request will be cached for the amount of time specified by the
-     * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
-     *
-     * @return bool Whether generated URLs should omit “index.php”.
-     */
-    public function getOmitScriptNameInUrls(): bool
-    {
-        if ($this->_omitScriptNameInUrls !== null) {
-            return $this->_omitScriptNameInUrls;
-        }
-
-        // Check if the config value has actually been set to true/false
-        if (is_bool($configVal = $this->getGeneral()->omitScriptNameInUrls)) {
-            return $this->_omitScriptNameInUrls = $configVal;
-        }
-
-        // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-        // *unless* the URI looks like a file, in which case it'll just throw a 404.
-        if (App::isPhpDevServer()) {
-            return $this->_omitScriptNameInUrls = false;
-        }
-
-        // Check if it's cached
-        if (($cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls')) !== false) {
-            return $this->_omitScriptNameInUrls = ($cachedVal === 'y');
-        }
-
-        // Cache it early so the testScriptNameRedirect request isn't checking for it too
-        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
-
-        // Test the server for it
-        $this->_omitScriptNameInUrls = false;
-
-        try {
-            $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
-            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-
-            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
-
-            if ((string)$response->getBody() === 'success') {
-                $this->_omitScriptNameInUrls = true;
-            }
-        } catch (RequestException $e) {
-            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
-        }
-
-        // Cache it
-        Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls ? 'y' : 'n');
-
-        return $this->_omitScriptNameInUrls;
-    }
-
-    /**
-     * Returns whether generated URLs should be formatted using PATH_INFO, taking the
-     * [usePathInfo](http://craftcms.com/docs/config-settings#usePathInfo) config setting value into account.
-     *
-     * This method will usually only be called in the event that [[omitScriptNameInUrls()]] returns `false`
-     * (so “index.php” _should_ be included), and it determines what follows “index.php” in the URL.
-     *
-     * If it returns `true`, a forward slash will be used, making “index.php” look like just another segment of the URL
-     * (e.g. http://example.com/index.php/some/path). Otherwise the Craft path will be included in the URL as a query
-     * string param named ‘p’ (e.g. http://example.com/index.php?p=some/path).
-     *
-     * If the usePathInfo config setting is set to `true` or `false`, then its value will be returned directly.
-     * Otherwise, `usePathInfo()` will try to determine whether the server is set up to support PATH_INFO.
-     * (See http://craftcms.com/help/enable-path-info for instructions.)
-     *
-     * It does that by creating a dummy request to the site URL with the URI “/index.php/testPathInfo”. If the server
-     * supports it, that request should be sent to Craft’s index.php file, which will detect that this is an
-     * PATH_INFO-testing request, and simply return “success”. If anything besides “success” is returned
-     * (i.e. an Apache-styled 404 error), then Craft assumes the server is not set up to support PATH_INFO.
-     *
-     * Results of the PATH_INFO test request will be cached for the amount of time specified by the
-     * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
-     *
-     * @return bool Whether generated URLs should be formatted using PATH_INFO
-     */
-    public function getUsePathInfo(): bool
-    {
-        if ($this->_usePathInfo !== null) {
-            return $this->_usePathInfo;
-        }
-
-        // Check if the config value has actually been set to true/false
-        if (is_bool($configVal = $this->getGeneral()->usePathInfo)) {
-            return $this->_usePathInfo = $configVal;
-        }
-
-        // If there is already a PATH_INFO var available, we know it supports it.
-        if (!empty($_SERVER['PATH_INFO'])) {
-            return $this->_usePathInfo = true;
-        }
-
-        // PHP Dev Server supports path info, and doesn't support simultaneous
-        //requests, so we need to explicitly check for that.
-        if (App::isPhpDevServer()) {
-            return $this->_usePathInfo = true;
-        }
-
-        // Check if it's cached
-        if (($cachedVal = Craft::$app->getCache()->get('usePathInfo')) !== false) {
-            return $this->_usePathInfo = ($cachedVal === 'y');
-        }
-
-        // Cache it early so the testPathInfo request isn't checking for it too
-        Craft::$app->getCache()->set('usePathInfo', 'n');
-
-        // Test the server for it
-        $this->_usePathInfo = false;
-
-        try {
-            $url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
-            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
-
-            if ((string)$response->getBody() === 'success') {
-                $this->_usePathInfo = true;
-            }
-        } catch (RequestException $e) {
-            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
-        }
-
-        // Cache it
-        Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo ? 'y' : 'n');
-
-        return $this->_usePathInfo;
     }
 
     /**
