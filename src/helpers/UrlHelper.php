@@ -405,8 +405,7 @@ class UrlHelper
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
-
-            return $request->getHostInfo().$request->getBaseUrl();
+            $baseUrl = $request->getHostInfo().$request->getBaseUrl();
         }
 
         return rtrim($baseUrl, '/').'/';
