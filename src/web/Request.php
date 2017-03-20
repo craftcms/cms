@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
@@ -128,15 +129,15 @@ class Request extends \yii\web\Request
      */
     public function __construct($config = [])
     {
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // Is CSRF protection enabled?
-        if ($configService->get('enableCsrfProtection') === true) {
+        if ($generalConfig->enableCsrfProtection === true) {
             $config['enableCsrfValidation'] = true;
-            $config['csrfParam'] = $configService->get('csrfTokenName');
+            $config['csrfParam'] = $generalConfig->csrfTokenName;
             $config['csrfCookie'] = Craft::cookieConfig([], $this);
 
-            if (!$configService->get('enableCsrfCookie')) {
+            if (!$generalConfig->enableCsrfCookie) {
                 $config['enableCsrfCookie'] = false;
             }
         } else {
@@ -155,7 +156,7 @@ class Request extends \yii\web\Request
     {
         parent::init();
 
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // Sanitize
         $path = $this->getFullPath();
@@ -167,7 +168,7 @@ class Request extends \yii\web\Request
         });
 
         // Is this a CP request?
-        $this->_isCpRequest = ($this->getSegment(1) == $configService->get('cpTrigger'));
+        $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
 
         if ($this->_isCpRequest) {
             // Chop the CP trigger segment off of the path & segments array
@@ -175,7 +176,7 @@ class Request extends \yii\web\Request
         }
 
         // Is this a paginated request?
-        $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
+        $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
 
         if (!is_string($pageTrigger) || $pageTrigger === '') {
             $pageTrigger = 'p';
@@ -186,7 +187,7 @@ class Request extends \yii\web\Request
             $pageTrigger = trim($pageTrigger, '?=');
 
             // Avoid conflict with the path param
-            $pathParam = Craft::$app->getConfig()->get('pathParam');
+            $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
             if ($pageTrigger === $pathParam) {
                 $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
             }
@@ -196,7 +197,7 @@ class Request extends \yii\web\Request
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
-            $pageTrigger = preg_quote($configService->get('pageTrigger'), '/');
+            $pageTrigger = preg_quote($generalConfig->pageTrigger, '/');
 
             if (preg_match("/^(?:(.*)\/)?{$pageTrigger}(\d+)$/", $path, $match)) {
                 // Capture the page num
@@ -225,7 +226,7 @@ class Request extends \yii\web\Request
     {
         if ($this->_fullPath === null) {
             try {
-                if (Craft::$app->getConfig()->getUsePathInfo()) {
+                if (Craft::$app->getConfig()->getGeneral()->usePathInfo) {
                     $this->_fullPath = $this->getPathInfo(true);
 
                     if (!$this->_fullPath) {
@@ -324,7 +325,7 @@ class Request extends \yii\web\Request
      */
     public function getToken()
     {
-        return $this->getQueryParam(Craft::$app->getConfig()->get('tokenParam'));
+        return $this->getQueryParam(Craft::$app->getConfig()->getGeneral()->tokenParam);
     }
 
     /**
@@ -671,7 +672,7 @@ class Request extends \yii\web\Request
     public function getQueryStringWithoutPath(): string
     {
         $queryParams = $this->getQueryParams();
-        $pathParam = Craft::$app->getConfig()->get('pathParam');
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
 
         unset($queryParams[$pathParam]);
 
@@ -923,7 +924,7 @@ class Request extends \yii\web\Request
      */
     private function _getQueryStringPath(): string
     {
-        $pathParam = Craft::$app->getConfig()->get('pathParam');
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
 
         return $this->getQueryParam($pathParam, '');
     }
@@ -940,28 +941,29 @@ class Request extends \yii\web\Request
         }
 
         $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
 
         // If there's a token in the query string, then that should take precedence over everything else
-        if (!$this->getQueryParam($configService->get('tokenParam'))) {
+        if (!$this->getQueryParam($generalConfig->tokenParam)) {
             $firstSegment = $this->getSegment(1);
 
             // Is this a resource request?
-            if ($firstSegment == $configService->getResourceTrigger()) {
+            if ($firstSegment === UrlHelper::resourceTrigger()) {
                 $this->_isResourceRequest = true;
             } else {
                 // Is this an action request?
                 if ($this->_isCpRequest) {
-                    $loginPath = $configService->getCpLoginPath();
-                    $logoutPath = $configService->getCpLogoutPath();
-                    $setPasswordPath = $configService->getCpSetPasswordPath();
+                    $loginPath = 'login';
+                    $logoutPath = 'logout';
+                    $setPasswordPath = 'setpassword';
                 } else {
-                    $loginPath = trim($configService->getLocalized('loginPath'), '/');
-                    $logoutPath = trim($configService->getLocalized('logoutPath'), '/');
-                    $setPasswordPath = trim($configService->getLocalized('setPasswordPath'), '/');
+                    $loginPath = trim($generalConfig->getLoginPath(), '/');
+                    $logoutPath = trim($generalConfig->getLogoutPath(), '/');
+                    $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
                 }
 
                 if (
-                    ($triggerMatch = ($firstSegment == $configService->get('actionTrigger') && count($this->_segments) > 1)) ||
+                    ($triggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->_segments) > 1)) ||
                     ($actionParam = $this->getParam('action')) !== null ||
                     ($specialPath = in_array($this->_path, [
                         $loginPath,

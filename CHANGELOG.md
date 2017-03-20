@@ -3,11 +3,17 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added Control Panel translations for Polish.
+
 ### Changed
 - Updated Garnish to 0.1.16.
 
 ### Fixed
 - #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
+- Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
+- #1540: Fixed some Control Panel messages that weren’t getting translated.
+- Fixed a PHP error that occurred on console requests if there was a database connection issue.
 
 ## 2.6.2967 - 2017-03-10
 

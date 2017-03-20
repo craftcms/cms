@@ -13,6 +13,7 @@ use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
+use craft\helpers\App;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -459,7 +460,7 @@ class Categories extends Component
                             ->execute();
                     } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
-                            Craft::$app->getConfig()->maxPowerCaptain();
+                            App::maxPowerCaptain();
 
                             // Loop through each of the changed sites and update all of the categories’ slugs and
                             // URIs

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\elements\User as UserElement;
+use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -55,8 +56,16 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = UrlHelper::url($configService->getLoginPath());
-        $config['authTimeout'] = $configService->getUserSessionDuration(false);
+        $generalConfig = $configService->getGeneral();
+        $request = Craft::$app->getRequest();
+
+        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
+            $config['loginUrl'] = UrlHelper::siteUrl($generalConfig->getLoginPath());
+        } else {
+            $config['loginUrl'] = UrlHelper::cpUrl('login');
+        }
+
+        $config['authTimeout'] = $generalConfig->userSessionDuration ?: null;
 
         // Set the state-based property names
         $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
@@ -116,17 +125,12 @@ class User extends \yii\web\User
      */
     public function sendUsernameCookie(UserElement $user)
     {
-        $rememberUsernameDuration = Craft::$app->getConfig()->get('rememberUsernameDuration');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if ($rememberUsernameDuration) {
+        if ($generalConfig->rememberUsernameDuration !== 0) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $seconds = DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
-
-            if ($seconds === null) {
-                $seconds = 0;
-            }
-
+            $seconds = ConfigHelper::durationInSeconds($generalConfig->rememberUsernameDuration);
             $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
@@ -143,9 +147,9 @@ class User extends \yii\web\User
         if ($defaultUrl === null) {
             // Is this a CP request and can they access the CP?
             if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->get('postCpLoginRedirect'));
+                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
             } else {
-                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->get('postLoginRedirect'));
+                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->postLoginRedirect);
             }
         }
 
@@ -257,7 +261,7 @@ class User extends \yii\web\User
         }
 
         // If it has been disabled, return false.
-        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+        if (Craft::$app->getConfig()->getGeneral()->elevatedSessionDuration === 0) {
             return false;
         }
 
@@ -272,11 +276,11 @@ class User extends \yii\web\User
     public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
-        if (Craft::$app->getConfig()->getElevatedSessionDuration() === false) {
+        if (Craft::$app->getConfig()->getGeneral()->elevatedSessionDuration === 0) {
             return true;
         }
 
-        return ($this->getElevatedSessionTimeout() != 0);
+        return ($this->getElevatedSessionTimeout() !== 0);
     }
 
     /**
@@ -298,23 +302,22 @@ class User extends \yii\web\User
         // Validate the password
         $validator = new UserPasswordValidator();
 
-        if ($validator->validate($password) && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
-            $elevatedSessionDuration = Craft::$app->getConfig()->getElevatedSessionDuration();
+        if (!$validator->validate($password) || !Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
+            return false;
+        }
 
-            // Make sure it hasn't been disabled.
-            if ($elevatedSessionDuration !== false) {
-
-                // Set the elevated session expiration date
-                $session = Craft::$app->getSession();
-                $configService = Craft::$app->getConfig();
-                $timeout = time() + $configService->getElevatedSessionDuration();
-                $session->set($this->elevatedSessionTimeoutParam, $timeout);
-            }
-
+        // Make sure elevated sessions haven't been disabled
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->elevatedSessionDuration === 0) {
             return true;
         }
 
-        return false;
+        // Set the elevated session expiration date
+        $session = Craft::$app->getSession();
+        $timeout = time() + $generalConfig->elevatedSessionDuration;
+        $session->set($this->elevatedSessionTimeoutParam, $timeout);
+
+        return true;
     }
 
     // Misc
@@ -447,7 +450,7 @@ class User extends \yii\web\User
 
         $this->destroyDebugPreferencesInSession();
 
-        if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
+        if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
             Craft::$app->getRequest()->regenCsrfToken();
         }
@@ -500,7 +503,7 @@ class User extends \yii\web\User
      */
     private function _validateUserAgentAndIp(): bool
     {
-        if (Craft::$app->getConfig()->get('requireUserAgentAndIpForSession')) {
+        if (Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession) {
             $request = Craft::$app->getRequest();
 
             if ($request->getUserAgent() === null || $request->getUserIP() === null) {

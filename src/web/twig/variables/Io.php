@@ -39,7 +39,7 @@ class Io
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = (int)Craft::$app->getConfig()->get('maxUploadFileSize');
+        $configLimit = (int)Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);

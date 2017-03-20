@@ -47,6 +47,7 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use yii\base\Application;
 use yii\base\Component;
 
 /**
@@ -184,6 +185,12 @@ class Fields extends Component
      * @var
      */
     private $_layoutsByType;
+
+    /**
+     * @var bool Whether we’re listening for the request end, to update the field version
+     * @see updateFieldVersionAfterRequest()
+     */
+    private $_listeningForRequestEnd = false;
 
     // Public Methods
     // =========================================================================
@@ -784,10 +791,8 @@ class Fields extends Component
 
             $field->afterSave($isNewField);
 
-            // Update the field version
-            if ($field->context === 'global') {
-                $this->_updateFieldVersion();
-            }
+            // Update the field version at the end of the request
+            $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -864,9 +869,8 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            if ($field->context === 'global') {
-                $this->_updateFieldVersion();
-            }
+            // Update the field version at the end of the request
+            $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -1201,6 +1205,29 @@ class Fields extends Component
         return (bool)$affectedRows;
     }
 
+    /**
+     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     */
+    public function updateFieldVersionAfterRequest()
+    {
+        if ($this->_listeningForRequestEnd) {
+            return;
+        }
+
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
+        $this->_listeningForRequestEnd = true;
+    }
+
+    /**
+     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     */
+    public function updateFieldVersion()
+    {
+        $info = Craft::$app->getInfo();
+        $info->fieldVersion = StringHelper::randomString(12);
+        Craft::$app->saveInfo($info);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1326,15 +1353,5 @@ class Fields extends Component
         }
 
         return $this->_fieldRecordsById[$field->id];
-    }
-
-    /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
-     */
-    private function _updateFieldVersion()
-    {
-        $info = Craft::$app->getInfo();
-        $info->fieldVersion = StringHelper::randomString(12);
-        Craft::$app->saveInfo($info);
     }
 }

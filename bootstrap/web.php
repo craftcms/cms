@@ -12,20 +12,6 @@ if (!extension_loaded('mbstring') || (extension_loaded('mbstring') && ini_get('m
     exit('Craft CMS requires the <a href="http://php.net/manual/en/book.mbstring.php" target="_blank">PHP multibyte string</a> extension in order to run. Please talk to your host/IT department about enabling it on your server.');
 }
 
-// omitScriptNameInUrls and usePathInfo tests
-// -----------------------------------------------------------------------------
-
-if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] === '/testScriptNameRedirect')
-    || (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'],
-            'testScriptNameRedirect') !== false)
-) {
-    exit('success');
-}
-
-if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] === '/testPathInfo') {
-    exit('success');
-}
-
 // PHP environment normalization
 // -----------------------------------------------------------------------------
 

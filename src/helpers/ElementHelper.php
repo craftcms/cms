@@ -38,8 +38,8 @@ class ElementHelper
         $str = StringHelper::stripHtml($str);
 
         // Convert to kebab case
-        $glue = Craft::$app->getConfig()->get('slugWordSeparator');
-        $lower = !Craft::$app->getConfig()->get('allowUppercaseInSlug');
+        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
         $str = StringHelper::toKebabCase($str, $glue, $lower, false);
 
         return $str;
@@ -78,8 +78,8 @@ class ElementHelper
             return;
         }
 
-        $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-        $maxSlugIncrement = Craft::$app->getConfig()->get('maxSlugIncrement');
+        $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $maxSlugIncrement = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
 
         for ($i = 0; $i < $maxSlugIncrement; $i++) {
             $testSlug = $element->slug;

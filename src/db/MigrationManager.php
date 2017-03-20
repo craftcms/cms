@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\base\Component;
@@ -129,7 +130,7 @@ class MigrationManager extends Component
     public function up(int $limit = 0): bool
     {
         // This might take a while
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         $migrationNames = $this->getNewMigrations();
 
@@ -183,7 +184,7 @@ class MigrationManager extends Component
     public function down(int $limit = 1): bool
     {
         // This might take a while
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 

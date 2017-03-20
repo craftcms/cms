@@ -40,7 +40,7 @@ class Schema extends \yii\db\pgsql\Schema
     {
         parent::init();
 
-        $this->defaultSchema = Craft::$app->getConfig()->get('schema', Config::CATEGORY_DB);
+        $this->defaultSchema = Craft::$app->getConfig()->getDb()->schema;
     }
 
     /**

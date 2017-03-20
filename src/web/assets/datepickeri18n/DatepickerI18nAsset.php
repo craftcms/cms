@@ -29,7 +29,7 @@ class DatepickerI18nAsset extends AssetBundle
         } else {
             $languageId = Craft::$app->getLocale()->getLanguageID();
 
-            if (in_array($languageId, ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'], true)) {
+            if (in_array($languageId, ['ar', 'cs', 'da', 'de', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'no', 'pl', 'pt', 'ru', 'sk', 'sv', 'tr', 'zh'], true)) {
                 $datepickerLanguage = $languageId;
             }
         }

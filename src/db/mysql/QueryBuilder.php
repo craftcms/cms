@@ -40,7 +40,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
         // Use the default charset
         if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
+            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->getDb()->charset;
         }
 
         return parent::createTable($table, $columns, $options);

@@ -13,7 +13,7 @@ use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
 
 /**
- * Class Element
+ * Component helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

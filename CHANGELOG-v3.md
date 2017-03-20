@@ -4,14 +4,69 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\config\ApcConfig`.
+- Added `craft\config\DbCacheConfig`.
+- Added `craft\config\DbConfig`.
+- Added `craft\config\FileCacheConfig`.
+- Added `craft\config\GeneralConfig`.
+- Added `craft\config\MemCacheConfig`.
+- Added `craft\helpers\App::maxPowerCaptain()`.
+- Added `craft\helpers\ConfigHelper`.
+- Added `craft\helpers\DateTimeHelper::intervalToSeconds()`.
+- Added `craft\helpers\DateTimeHelper::secondsToInterval()`.
+- Added `craft\helpers\FileHelper::useFileLocks()`.
+- Added `craft\helpers\UrlHelper::resourceTrigger()`.
+- Added `craft\services\Config::getApc()`.
+- Added `craft\services\Config::getConfigFromFile()`.
+- Added `craft\services\Config::getDb()`.
+- Added `craft\services\Config::getDbCache()`.
+- Added `craft\services\Config::getFileCache()`.
+- Added `craft\services\Config::getGeneral()`.
+- Added `craft\services\Config::getMemCache()`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
+
+### Changed
+- The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
+- #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
+- `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
+- Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
+- #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 
 ### Removed
+- Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
+- Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
+- Removed `craft\services\Config::allowAutoUpdates()`.
+- Removed `craft\services\Config::exists()`. Use `isset(Craft::$app->config->general->configSetting)`.
+- Removed `craft\services\Config::get()`. Use `Craft::$app->config->general`, et al.
+- Removed `craft\services\Config::getAllowedFileExtensions()`. Use `Craft::$app->config->general->allowedFileExtensions`.
+- Removed `craft\services\Config::getCacheDuration()`. Use `Craft::$app->config->general->cacheDuration`.
+- Removed `craft\services\Config::getCpLoginPath()`. It’s `login`.
+- Removed `craft\services\Config::getCpLogoutPath()`. It’s `logout`.
+- Removed `craft\services\Config::getCpSetPasswordPath()`. It’s `setpassword`.
+- Removed `craft\services\Config::getDbPort()`. Use `Craft::$app->config->db->port`.
+- Removed `craft\services\Config::getDbTablePrefix()`. Use `Craft::$app->config->db->tablePrefix`.
+- Removed `craft\services\Config::getElevatedSessionDuration()`. Use `Craft::$app->config->general->elevatedSessionDuration`.
+- Removed `craft\services\Config::getLocalized()`. Use `Craft::$app->config->general->getLoginPath()`, et al.
+- Removed `craft\services\Config::getLoginPath()`. Use `Craft::$app->config->general->getLoginPath()`.
+- Removed `craft\services\Config::getLogoutPath()`. Use `Craft::$app->config->general->getLogoutPath()`.
+- Removed `craft\services\Config::getOmitScriptNameInUrls()`. Use `Craft::$app->config->general->omitScriptNameInUrls`.
+- Removed `craft\services\Config::getResourceTrigger()`. Use `craft\helpers\UrlHelper::resourceTrigger()`.
+- Removed `craft\services\Config::getSetPasswordPath()`. Use `Craft::$app->config->general->getSetPasswordPath()`.
+- Removed `craft\services\Config::getUseFileLocks()`. Use `craft\helpers\FileHelper::useFileLocks()`.
+- Removed `craft\services\Config::getUsePathInfo()`. Use `Craft::$app->config->general->usePathInfo`.
+- Removed `craft\services\Config::getUserSessionDuration()`. Use `Craft::$app->config->general->userSessionDuration`.
+- Removed `craft\services\Config::isExtensionAllowed()`.
+- Removed `craft\services\Config::maxPowerCaptain()`. Use `craft\helpers\App::maxPowerCaptain()`.
+- Removed `craft\services\Config::set()`.
 - Removed `Craft.showElementEditor()`.
 
 ### Fixed
 - Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
 - Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
+- Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
+- Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
 
 ## 3.0.0-beta.7 - 2017-03-10
 

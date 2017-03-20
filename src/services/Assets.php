@@ -162,7 +162,7 @@ class Assets extends Component
 
         $extension = $asset->getExtension();
 
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
+        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -873,7 +873,7 @@ class Assets extends Component
             return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset,
                 $index);
         } else {
-            if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
+            if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
                 try {
                     return $assetTransforms->ensureTransformUrlByIndexModel($index);
                 } catch (ImageException $exception) {
@@ -986,7 +986,7 @@ class Assets extends Component
 
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
+        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
