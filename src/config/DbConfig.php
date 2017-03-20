@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
 
@@ -145,9 +146,11 @@ class DbConfig extends Object
         }
 
         // Validate tablePrefix
-        $this->tablePrefix = rtrim($this->tablePrefix, '_');
-        if (strlen($this->tablePrefix) > 5) {
-            throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
+        if ($this->tablePrefix) {
+            StringHelper::ensureEndsWith($this->tablePrefix, '_');
+            if (strlen($this->tablePrefix) > 6) {
+                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
+            }
         }
 
         // Lowercase server & unixSocket
