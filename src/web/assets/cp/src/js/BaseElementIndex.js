@@ -342,7 +342,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
-            Craft.postActionRequest(this.settings.refreshSourcesPath, params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.refreshSourcesAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -574,7 +574,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             var params = this.getViewParams();
 
-            Craft.postActionRequest(this.settings.updateElementsPath, params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -653,7 +653,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.postActionRequest(this.settings.submitActionsPath, params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.submitActionsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -1574,9 +1574,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
-            refreshSourcesPath: 'element-indexes/get-source-tree-html',
-            updateElementsPath: 'element-indexes/get-elements',
-            submitActionsPath: 'element-indexes/perform-action',
+            refreshSourcesAction: 'element-indexes/get-source-tree-html',
+            updateElementsAction: 'element-indexes/get-elements',
+            submitActionsAction: 'element-indexes/perform-action',
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
