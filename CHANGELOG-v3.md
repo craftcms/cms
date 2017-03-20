@@ -34,6 +34,8 @@ Craft CMS 3.0 Working Changelog
 - #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
 - `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
 - Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
+- Removed support for `@web`, `@webroot`, and other aliases in volume settings, as they cause more problems than they solve in multi-site Craft installs.
+- Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
