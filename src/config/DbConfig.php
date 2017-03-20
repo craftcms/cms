@@ -98,6 +98,12 @@ class DbConfig extends Object
      */
     public $unixSocket;
     /**
+     * @var string|null The database connection URL, if one was provided by your hosting environment.
+     * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]]
+     * will be extracted from it.
+     */
+    public $url;
+    /**
      * @var string The database username to connect with.
      */
     public $user = 'root';
@@ -110,6 +116,29 @@ class DbConfig extends Object
      */
     public function init()
     {
+        // If $url was set, parse it to set other properties
+        if ($this->url !== null) {
+            $url = parse_url($this->url);
+            if (isset($url['scheme'])) {
+                $this->driver = $url['scheme'];
+            }
+            if (isset($url['user'])) {
+                $this->user = $url['user'];
+            }
+            if (isset($url['pass'])) {
+                $this->password = $url['pass'];
+            }
+            if (isset($url['host'])) {
+                $this->server = $url['host'];
+            }
+            if (isset($url['port'])) {
+                $this->port = $url['port'];
+            }
+            if (isset($url['path'])) {
+                $this->database = trim($url['path'], '/');
+            }
+        }
+
         // Validate driver
         if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
             throw new InvalidConfigException('Unsupported DB driver value: '.$this->driver);

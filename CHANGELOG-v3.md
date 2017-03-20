@@ -4,6 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
 - Added `craft\config\ApcConfig`.
 - Added `craft\config\DbCacheConfig`.
 - Added `craft\config\DbConfig`.
