@@ -123,7 +123,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             // Keep the toolbar at the top of the window
-            if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
+            if (
+                (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context == 'index')) &&
+                !Garnish.isMobileBrowser(true)
+            ) {
                 this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
             }
 
@@ -1586,6 +1589,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
+            toolbarFixed: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,

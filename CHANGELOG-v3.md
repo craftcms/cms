@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
 - `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
 - Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
+- #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
