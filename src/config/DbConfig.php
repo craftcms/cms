@@ -28,53 +28,6 @@ class DbConfig extends Object
     // =========================================================================
 
     /**
-     * @var string The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
-     */
-    public $server = 'localhost';
-    /**
-     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
-     */
-    public $port;
-    /**
-     * @var string The database username to connect with.
-     */
-    public $user = 'root';
-    /**
-     * @var string The database password to connect with.
-     */
-    public $password = '';
-    /**
-     * @var string The name of the database to select.
-     */
-    public $database = '';
-    /**
-     * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
-     */
-    public $driver = self::DRIVER_MYSQL;
-    /**
-     * @var string The database schema to use (PostgreSQL only).
-     *
-     * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
-     */
-    public $schema = 'public';
-    /**
-     * @var string If you're sharing Craft installs in a single database (MySQL) or a single
-     * database and using a shared schema (PostgreSQL), then you can set a table
-     * prefix here to avoid table naming conflicts per install. This can be no more than 5
-     * characters, and must be all lowercase.
-     */
-    public $tablePrefix = '';
-    /**
-     * @var string The charset to use when creating tables.
-     */
-    public $charset = 'utf8';
-    /**
-     * @var string|null MySQL only. If this is set, then the CLI connection string (used for yiic) will
-     * connect to the Unix socket, instead of the server and port. If this is
-     * specified, then 'server' and 'port' settings are ignored.
-     */
-    public $unixSocket;
-    /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
@@ -92,6 +45,18 @@ class DbConfig extends Object
      */
     public $attributes = [];
     /**
+     * @var string The charset to use when creating tables.
+     */
+    public $charset = 'utf8';
+    /**
+     * @var string The name of the database to select.
+     */
+    public $database = '';
+    /**
+     * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     */
+    public $driver = self::DRIVER_MYSQL;
+    /**
      * @var string If you want to manually specify your PDO DSN connection string you can do so here.
      *
      * - MySQL: https://secure.php.net/manual/en/ref.pdo-mysql.connection.php
@@ -101,6 +66,41 @@ class DbConfig extends Object
      * [[driver]] and [[unixSocket]] config settings will be ignored.
      */
     public $dsn;
+    /**
+     * @var string The database password to connect with.
+     */
+    public $password = '';
+    /**
+     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     */
+    public $port;
+    /**
+     * @var string The database schema to use (PostgreSQL only).
+     *
+     * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
+     */
+    public $schema = 'public';
+    /**
+     * @var string The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     */
+    public $server = 'localhost';
+    /**
+     * @var string If you're sharing Craft installs in a single database (MySQL) or a single
+     * database and using a shared schema (PostgreSQL), then you can set a table
+     * prefix here to avoid table naming conflicts per install. This can be no more than 5
+     * characters, and must be all lowercase.
+     */
+    public $tablePrefix = '';
+    /**
+     * @var string|null MySQL only. If this is set, then the CLI connection string (used for yiic) will
+     * connect to the Unix socket, instead of the server and port. If this is
+     * specified, then 'server' and 'port' settings are ignored.
+     */
+    public $unixSocket;
+    /**
+     * @var string The database username to connect with.
+     */
+    public $user = 'root';
 
     // Public Methods
     // =========================================================================
