@@ -25,6 +25,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getGeneral()`.
 - Added `craft\services\Config::getMemCache()`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
 
 ### Changed
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
