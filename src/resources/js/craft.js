@@ -1,4 +1,4 @@
-/*! Craft  - 2017-02-23 */
+/*! Craft  - 2017-03-21 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -9597,7 +9597,7 @@ Craft.EditableTable = Garnish.Base.extend(
 		else
 		{
             // Give everything a chance to initialize
-            Garnish.requestAnimationFrame($.proxy(this, 'initializeIfVisible'));
+			setTimeout($.proxy(this, 'initializeIfVisible'), 500);
 		}
 	},
 

@@ -14,6 +14,7 @@ Craft CMS Changelog
 - Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
 - #1540: Fixed some Control Panel messages that weren’t getting translated.
 - Fixed a PHP error that occurred on console requests if there was a database connection issue.
+- #1553: Fixed a bug where Table fields weren’t initializing reliably in Firefox.
 
 ## 2.6.2967 - 2017-03-10
 
