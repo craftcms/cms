@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\FolderVolumeInterface;
 use craft\elements\Asset;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetException;
@@ -447,7 +448,8 @@ class AssetsController extends Controller
         $request = Craft::$app->getRequest();
         $folderBeingMovedId = $request->getRequiredBodyParam('folderId');
         $newParentFolderId = $request->getRequiredBodyParam('parentId');
-        $conflictResolution = $request->getBodyParam('userResponse');
+        $force = $request->getBodyParam('force', false);
+        $merge = !$force ? $request->getBodyParam('merge', false) : false;
 
         $assets = Craft::$app->getAssets();
         $folderToMove = $assets->getFolderById($folderBeingMovedId);
@@ -470,65 +472,68 @@ class AssetsController extends Controller
         $this->_requirePermissionByFolder('saveAssetInVolume',
             $destinationFolder);
 
+        $targetVolume = $destinationFolder->getVolume();
+
+        $existingFolder = $assets->findFolder([
+            'parentId' => $newParentFolderId,
+            'name' => $folderToMove->name
+        ]);
+
+        if (!$existingFolder && $targetVolume instanceof FolderVolumeInterface) {
+            $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
+        }
+
+        // If this a conflict and no force or merge flags were passed in then STOP RIGHT THERE!
+        if ($existingFolder && !$force && !$merge) {
+            // Throw a prompt
+            return $this->asJson([
+                'conflict' => Craft::t('app', 'Folder “{folder}” already exists at target location', ['folder' => $folderToMove->name]),
+                'folderId' => $folderBeingMovedId,
+                'parentId' => $newParentFolderId
+            ]);
+        }
+
         try {
             $sourceTree = $assets->getAllDescendantFolders($folderToMove);
 
-            if (empty($conflictResolution)) {
-                $existingFolder = $assets->findFolder([
-                    'parentId' => $newParentFolderId,
-                    'name' => $folderToMove->name
-                ]);
+            if (!$existingFolder) {
+                // No conflicts, mirror the existing structure
+                $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder);
 
-                if ($existingFolder) {
-                    // Throw a prompt
-                    return $this->asJson([
-                        'prompt' => true,
-                        'foldername' => $folderToMove->name,
-                        'folderId' => $folderBeingMovedId,
-                        'parentId' => $newParentFolderId
-                    ]);
-                } else {
-                    // No conflicts, mirror the existing structure
-                    $folderIdChanges = Assets::mirrorFolderStructure($folderToMove,
-                        $destinationFolder);
+                // Get the file transfer list.
+                $allSourceFolderIds = array_keys($sourceTree);
+                $allSourceFolderIds[] = $folderBeingMovedId;
+                $foundAssets = Asset::find()
+                    ->folderId($allSourceFolderIds)
+                    ->all();
+                $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
 
-                    // Get the file transfer list.
-                    $allSourceFolderIds = array_keys($sourceTree);
-                    $allSourceFolderIds[] = $folderBeingMovedId;
-                    $foundAssets = Asset::find()
-                        ->folderId($allSourceFolderIds)
-                        ->all();
-                    $fileTransferList = Assets::fileTransferList($foundAssets,
-                        $folderIdChanges, $conflictResolution === 'merge');
-                }
+
             } else {
-                // Resolving a conflict
-                $existingFolder = $assets->findFolder([
-                    'parentId' => $newParentFolderId,
-                    'name' => $folderToMove->name
-                ]);
                 $targetTreeMap = [];
 
-                // When merging folders, make sure that we're not overwriting folders
-                if ($conflictResolution === 'merge') {
-                    $targetTree = $assets->getAllDescendantFolders($existingFolder);
-                    $targetPrefixLength = strlen($destinationFolder->path);
-                    $targetTreeMap = [];
-
-                    foreach ($targetTree as $existingFolder) {
-                        $targetTreeMap[substr($existingFolder->path,
-                            $targetPrefixLength)] = $existingFolder->id;
-                    }
-                } // When replacing, just nuke everything that's in our way
-                else {
-                    if ($conflictResolution === 'replace') {
+                // If an indexed folder is conflicting
+                if ($existingFolder instanceof VolumeFolder) {
+                    // Delete if using dforce
+                    if ($force) {
                         $assets->deleteFoldersByIds($existingFolder->id);
+                    } else {
+                        // Or build a map of existing folders for file move
+                        $targetTree = $assets->getAllDescendantFolders($existingFolder);
+                        $targetPrefixLength = strlen($destinationFolder->path);
+
+                        foreach ($targetTree as $existingFolder) {
+                            $targetTreeMap[substr($existingFolder->path,
+                                $targetPrefixLength)] = $existingFolder->id;
+                        }
                     }
+                } elseif ($existingFolder && $force) {
+                    // An un-indexed folder is conflicting. If we're forcing things, just remove it.
+                    $targetVolume->deleteDir(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
                 }
 
                 // Mirror the structure, passing along the exsting folder map
-                $folderIdChanges = Assets::mirrorFolderStructure($folderToMove,
-                    $destinationFolder, $targetTreeMap);
+                $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
 
                 // Get file transfer list for the progress bar
                 $allSourceFolderIds = array_keys($sourceTree);
@@ -536,8 +541,7 @@ class AssetsController extends Controller
                 $foundAssets = Asset::find()
                     ->folderId($allSourceFolderIds)
                     ->all();
-                $fileTransferList = Assets::fileTransferList($foundAssets,
-                    $folderIdChanges, $conflictResolution === 'merge');
+                $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
             }
         } catch (AssetLogicException $exception) {
             return $this->asErrorJson($exception->getMessage());

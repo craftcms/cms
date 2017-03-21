@@ -38,12 +38,12 @@ use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
-use craft\records\Asset as AssetRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use DateTime;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Assets service.
@@ -361,13 +361,14 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
+     * @param bool         $indexExisting Set to true to just index the folder if it already exists on volume.
      *
-     * @throws AssetConflictException           If a folder already exists with such a name.
-     * @throws AssetLogicException              If the parent folder is missing.
-     * @throws VolumeObjectExistsException      If the file actually exists on the volume, but on in the index.
      * @return void
+     * @throws AssetConflictException If a folder already exists with such a name.
+     * @throws InvalidConfigException
+     * @throws VolumeObjectExistsException If the file actually exists on the volume, but on in the index.
      */
-    public function createFolder(VolumeFolder $folder)
+    public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
     {
         $parent = $folder->getParent();
 
@@ -382,7 +383,7 @@ class Assets extends Component
             'name' => $folder->name
         ]);
 
-        if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder)) {
+        if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
             throw new AssetConflictException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
@@ -392,12 +393,11 @@ class Assets extends Component
 
         // If Volume has discrete folders
         if ($volume instanceof FolderVolumeInterface) {
-            // Explicitly re-throw VolumeObjectExistsException
             try {
                 $volume->createDir(rtrim($folder->path, '/'));
             } catch (VolumeObjectExistsException $exception) {
-                // Rethrow exception unless this is a temporary Volume.
-                if ($folder->volumeId !== null) {
+                // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
+                if ($folder->volumeId !== null && !$indexExisting) {
                     throw $exception;
                 }
             }

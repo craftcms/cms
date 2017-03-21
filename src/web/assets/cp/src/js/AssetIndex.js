@@ -41,7 +41,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             ]
         },
 
-
         init: function(elementType, $container, settings) {
             this.base(elementType, $container, settings);
 
@@ -273,7 +272,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     for (i = 0; i < originalAssetIds.length; i++) {
                         parameterArray.push({
                             action: 'assets/move-asset',
-                            data: {
+                            params: {
                                 assetId: originalAssetIds[i],
                                 folderId: targetFolderId
                             }
@@ -341,7 +340,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     if (returnData[i].choice == 'keepBoth') {
                                         newParameterArray.push({
                                             action: 'assets/move-asset',
-                                            data: {
+                                            params: {
                                                 folderId: targetFolderId,
                                                 assetId: returnData[i].assetId,
                                                 filename: returnData[i].suggestedFilename
@@ -352,7 +351,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     if (returnData[i].choice == 'replace') {
                                         newParameterArray.push({
                                             action: 'assets/move-asset',
-                                            data: {
+                                            params: {
                                                 folderId: targetFolderId,
                                                 assetId: returnData[i].assetId,
                                                 force: true
@@ -445,8 +444,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     for (i = 0; i < folderIds.length; i++) {
                         parameterArray.push({
-                            folderId: folderIds[i],
-                            parentId: targetFolderId
+                            action: 'assets/move-folder',
+                            params: {
+                                folderId: folderIds[i],
+                                parentId: targetFolderId
+                            }
                         });
                     }
 
@@ -474,7 +476,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     var newSourceKey = '';
 
-                    var onMoveFinish = $.proxy(function(responseArray) {
+                    var onMoveFinish = function(responseArray) {
                         this.promptHandler.resetPrompts();
 
                         // Loop trough all the responses
@@ -493,13 +495,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             }
 
                             // Push prompt into prompt array
-                            if (data.prompt) {
+                            if (data.conflict) {
                                 var promptData = {
-                                    message: this._folderConflictTemplate.message,
+                                    message: data.conflict,
                                     choices: this._folderConflictTemplate.choices
                                 };
 
-                                promptData.message = Craft.t('app', promptData.message, {folder: data.foldername});
                                 data.prompt = promptData;
 
                                 this.promptHandler.addPrompt(data);
@@ -517,14 +518,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                                 var newParameterArray = [];
 
+                                var params = {};
                                 // Loop trough all returned data and prepare a new request array
                                 for (var i = 0; i < returnData.length; i++) {
                                     if (returnData[i].choice == 'cancel') {
                                         continue;
                                     }
 
-                                    parameterArray[0].userResponse = returnData[i].choice;
-                                    newParameterArray.push(parameterArray[0]);
+                                    if (returnData[i].choice == 'replace') {
+                                        params.force = true;
+                                    }
+
+                                    if (returnData[i].choice == 'merge') {
+                                        params.merge = true;
+                                    }
+
+                                    params.folderId = data.folderId;
+                                    params.parentId = data.parentId;
+
+                                    newParameterArray.push({
+                                        action: 'assets/move-folder',
+                                        params: params
+                                    });
                                 }
 
                                 // Start working on them lists, baby
@@ -538,8 +553,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     this.progressBar.setItemCount(this.promptHandler.getPromptCount());
                                     this.progressBar.showProgressBar();
 
-                                    // Move conflicting files again with resolutions now
-                                    moveFolder(newParameterArray, 0, onMoveFinish);
+                                    this._performBatchRequests(newParameterArray, onMoveFinish);
                                 }
                             }, this);
 
@@ -551,33 +565,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         else {
                             $.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
                         }
-                    }, this);
-
-                    var moveFolder = $.proxy(function(parameterArray, parameterIndex, callback) {
-                        if (parameterIndex == 0) {
-                            responseArray = [];
-                        }
-
-                        Craft.postActionRequest('assets/move-folder', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
-                            parameterIndex++;
-                            this.progressBar.incrementProcessedItemCount(1);
-                            this.progressBar.updateProgressBar();
-
-                            if (textStatus == 'success') {
-                                responseArray.push(data);
-                            }
-
-                            if (parameterIndex >= parameterArray.length) {
-                                callback(responseArray);
-                            }
-                            else {
-                                moveFolder(parameterArray, parameterIndex, callback);
-                            }
-                        }, this));
-                    }, this);
+                    }.bind(this);
 
                     // Initiate the folder move with the built array, index of 0 and callback to use when done
-                    moveFolder(parameterArray, 0, onMoveFinish);
+                    this._performBatchRequests(parameterArray, onMoveFinish);
 
                     // Skip returning dragees until we get the Ajax response
                     return;
@@ -620,10 +611,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
             }.bind(this);
 
+
             if (fileMoveList.length > 0) {
-                this._moveFile(fileMoveList, 0, $.proxy(function() {
+                var parameterArray =[];
+
+                for (var i = 0; i < fileMoveList.length; i++) {
+                    parameterArray.push({
+                        action: 'assets/move-asset',
+                        params: fileMoveList[i]
+                    });
+
+                }
+                this._performBatchRequests(parameterArray, function() {
                     moveCallback(folderDeleteList);
-                }, this));
+                });
             }
             else {
                 moveCallback(folderDeleteList);
@@ -877,11 +878,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             this.promptHandler.resetPrompts();
 
-            var finalCallback = $.proxy(function() {
+            var finalCallback = function() {
                 this.setIndexAvailable();
                 this.progressBar.hideProgressBar();
                 this.updateElements();
-            }, this);
+            }.bind(this);
 
             this.progressBar.setItemCount(returnData.length);
 
@@ -1318,7 +1319,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var responseArray = [];
 
             var doRequest = function (parameters) {
-                Craft.postActionRequest(parameters.action, parameters.data, function (data, textStatus) {
+                Craft.postActionRequest(parameters.action, parameters.params, function (data, textStatus) {
                     this.progressBar.incrementProcessedItemCount(1);
                     this.progressBar.updateProgressBar();
 
