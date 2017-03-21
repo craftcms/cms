@@ -7,6 +7,7 @@ Craft CMS Changelog
 - Added Control Panel translations for Polish.
 
 ### Changed
+- Updated element-resize-detector to 1.1.11.
 - Updated Garnish to 0.1.16.
 
 ### Fixed

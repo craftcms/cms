@@ -1,5 +1,5 @@
 /*!
- * element-resize-detector 1.1.10
+ * element-resize-detector 1.1.11
  * Copyright (c) 2016 Lucas Wiener
  * https://github.com/wnr/element-resize-detector
  * Licensed under MIT
@@ -870,6 +870,11 @@ module.exports = function(options) {
                         return;
                     }
 
+                    if (!areElementsInjected()) {
+                        debug("Aborting because element container has not been initialized");
+                        return;
+                    }
+
                     if (options.debug) {
                         var w = element.offsetWidth;
                         var h = element.offsetHeight;
@@ -888,6 +893,11 @@ module.exports = function(options) {
                         return;
                     }
 
+                    if (!areElementsInjected()) {
+                        debug("Aborting because element container has not been initialized");
+                        return;
+                    }
+
                     positionScrollbars(element, width, height);
                 });
 
@@ -896,6 +906,11 @@ module.exports = function(options) {
                         if (!getState(element)) {
                             debug("Aborting because element has been uninstalled");
                             return;
+                        }
+
+                        if (!areElementsInjected()) {
+                          debug("Aborting because element container has not been initialized");
+                          return;
                         }
 
                         done();
