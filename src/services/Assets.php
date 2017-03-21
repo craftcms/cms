@@ -896,57 +896,6 @@ class Assets extends Component
     }
 
     /**
-     * Move an Asset.
-     *
-     * @param Asset  $asset
-     * @param int    $folderId    Id of the folder of the destination
-     * @param string $newFilename filename to use for the file at it's destination
-     *
-     * @throws AssetDisallowedExtensionException If the extension is not allowed.
-     * @throws AssetConflictException            If there is a conflict.
-     * @throws AssetLogicException               If the target folder does not exist.
-     * @return void
-     */
-    public function moveAsset(Asset $asset, int $folderId, string $newFilename = '')
-    {
-        $filename = $newFilename ?: $asset->filename;
-
-        $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                ['extension' => $extension]));
-        }
-
-        $existingAsset = Asset::find()
-            ->folderId($folderId)
-            ->filename(Db::escapeParam($filename))
-            ->one();
-
-        if ($existingAsset && $existingAsset->id !== $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                ['filename' => $filename]));
-        }
-
-        $targetFolder = $this->getFolderById($folderId);
-
-        if (!$targetFolder) {
-            throw new AssetLogicException(Craft::t('app',
-                'The destination folder does not exist'));
-        }
-
-        $this->_moveAssetFileToFolder($asset, $targetFolder, $filename);
-
-        $asset->folderId = $folderId;
-        $asset->volumeId = $targetFolder->volumeId;
-        $asset->filename = $filename;
-
-        $this->saveAsset($asset);
-    }
-
-    /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
      *
      * @param string $fullPath The path to ensure the folder exists at.
