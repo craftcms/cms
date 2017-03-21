@@ -558,6 +558,17 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_INDEX] = [];
+
+        return $scenarios;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getFieldLayout()
     {
         /** @var Volume $volume */
