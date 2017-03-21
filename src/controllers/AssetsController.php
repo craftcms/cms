@@ -592,8 +592,7 @@ class AssetsController extends Controller
         $assetId = (int)$request->getRequiredQueryParam('assetId');
         $size = (int)$request->getRequiredQueryParam('size');
 
-        // TODO the method name needs some work.
-        $filePath = Assets::editorImagePath($assetId, $size);
+        $filePath = Assets::getImageEditorSource($assetId, $size);
 
         if (!$filePath) {
             throw new BadRequestHttpException('The Asset cannot be found');

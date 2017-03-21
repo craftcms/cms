@@ -573,7 +573,7 @@ class Assets
      * @return false|string
      * @throws Exception in case of failure
      */
-    public static function editorImagePath(int $assetId, int $size)
+    public static function getImageEditorSource(int $assetId, int $size)
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
