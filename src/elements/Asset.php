@@ -988,6 +988,11 @@ class Asset extends Element
             $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
         }
 
+        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+            // Give it a default title based on the file name
+            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
+        }
+
         return parent::beforeValidate();
     }
 
@@ -1087,12 +1092,6 @@ class Asset extends Element
             $this->newFilename = null;
             $this->newLocation = null;
             $this->tempFilePath = null;
-        }
-
-        // todo: find a better way to do this
-        if ($isNew && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
-            // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         return parent::beforeSave($isNew);
