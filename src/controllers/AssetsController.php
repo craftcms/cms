@@ -704,31 +704,18 @@ class AssetsController extends Controller
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-            $asset->dateModified = filemtime($imageCopy);
-            $asset->focalPoint = $focal;
-            $assetToSave = $asset;
         } else {
             $newAsset = new Asset();
-            // Make sure there are no double spaces, if the filename had a space followed by a
-            // capital letter because of Yii's "word" logic.
-            $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($asset->filename, PATHINFO_BASENAME)));
+            $newAsset->avoidFilenameConflicts = true;
+            $newAsset->setScenario(Asset::SCENARIO_UPLOAD);
 
             $newAsset->tempFilePath = $imageCopy;
-            $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
-            $newAsset->folderId = $folder->id;
+            $newAsset->filename = $asset->filename;
+            $newAsset->newFolderId = $folder->id;
             $newAsset->volumeId = $folder->volumeId;
             $newAsset->focalPoint = $focal;
 
-            $assetToSave = $newAsset;
-        }
-
-        try {
-            $assets->saveAsset($assetToSave);
-            FileHelper::removeFile($imageCopy);
-        } // No matter what happened, delete the file on server.
-        catch (\Exception $exception) {
-            FileHelper::removeFile($imageCopy);
-            throw $exception;
+            Craft::$app->getElements()->saveElement($newAsset);
         }
 
         return $this->asJson(['success' => true]);
