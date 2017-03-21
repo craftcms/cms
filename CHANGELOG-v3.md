@@ -70,6 +70,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
 - Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
 - Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
+- Fixed a bug where it was not possible to refresh element sources in element views.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
