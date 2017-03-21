@@ -57,7 +57,7 @@ class Security extends \yii\base\Security
     {
         parent::init();
 
-        $this->_blowFishHashCost = Craft::$app->getConfig()->get('blowfishHashCost');
+        $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
     }
 
     /**
@@ -100,7 +100,7 @@ class Security extends \yii\base\Security
      */
     public function getValidationKey()
     {
-        if ($key = Craft::$app->getConfig()->get('validationKey')) {
+        if ($key = Craft::$app->getConfig()->getGeneral()->validationKey) {
             return $key;
         }
 

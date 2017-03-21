@@ -72,7 +72,7 @@ class MatrixBlock extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new MatrixBlockQuery(get_called_class());
+        return new MatrixBlockQuery(static::class);
     }
 
     /**
@@ -157,6 +157,17 @@ class MatrixBlock extends Element
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'owner';
+
+        return $attributes;
+    }
 
     /**
      * @inheritdoc

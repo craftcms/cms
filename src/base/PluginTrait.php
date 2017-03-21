@@ -98,6 +98,11 @@ trait PluginTrait
     public $downloadUrl;
 
     /**
+     * @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle.
+     */
+    public $t9nCategory;
+
+    /**
      * @var string The language that the plugin’s messages were written in
      */
     public $sourceLanguage = 'en-US';

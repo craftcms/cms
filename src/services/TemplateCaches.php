@@ -179,7 +179,7 @@ class TemplateCaches extends Component
             ]);
         }
 
-        if (Craft::$app->getConfig()->get('cacheElementQueries')) {
+        if (Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
             $this->_cachedQueries[$key] = [];
         }
 
@@ -269,7 +269,7 @@ class TemplateCaches extends Component
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
-        if (StringHelper::contains(stripslashes($body), UrlHelper::siteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))) {
+        if (StringHelper::contains(stripslashes($body), UrlHelper::siteUrl(UrlHelper::resourceTrigger().'/transforms'))) {
             return;
         }
 
@@ -288,7 +288,7 @@ class TemplateCaches extends Component
         }
 
         if (!$expiration) {
-            $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
+            $cacheDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
 
             if ($cacheDuration <= 0) {
                 $cacheDuration = 31536000; // 1 year
@@ -473,7 +473,7 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if ($deleteQueryCaches && Craft::$app->getConfig()->get('cacheElementQueries')) {
+        if ($deleteQueryCaches && Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
             // If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
             /** @var DeleteStaleTemplateCaches $task */
             $task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::class);
@@ -634,7 +634,7 @@ class TemplateCaches extends Component
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if (Craft::$app->getConfig()->get('enableTemplateCaching')) {
+        if (Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
             return true;
         }
 
@@ -661,7 +661,7 @@ class TemplateCaches extends Component
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-            $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
+            $this->_path .= '/'.Craft::$app->getConfig()->getGeneral()->pageTrigger.$pageNum;
         }
 
         return $this->_path;

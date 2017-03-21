@@ -15,6 +15,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
+use craft\helpers\App;
 use craft\models\Site;
 use craft\records\Site as SiteRecord;
 use craft\tasks\ResaveAllElements;
@@ -156,7 +157,7 @@ class Sites extends Component
 
         if (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
             // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->get('siteUrl');
+            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 
             if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
                 Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
@@ -852,7 +853,7 @@ class Sites extends Component
         // Set the new primary site
         $this->_primarySite = $this->getSiteById($newPrimarySiteId);
 
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         // Update all of the non-localized elements
         $nonLocalizedElementTypes = [];

@@ -88,7 +88,7 @@ class CraftSupport extends Widget
         ]);
 
         // Only show the DB backup option if DB backups haven't been disabled
-        $showBackupOption = (Craft::$app->getConfig()->get('backupCommand') !== false);
+        $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body', [
             'showBackupOption' => $showBackupOption

@@ -3,19 +3,100 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\config\ApcConfig`.
+- Added `craft\config\DbCacheConfig`.
+- Added `craft\config\DbConfig`.
+- Added `craft\config\FileCacheConfig`.
+- Added `craft\config\GeneralConfig`.
+- Added `craft\config\MemCacheConfig`.
+- Added `craft\helpers\App::maxPowerCaptain()`.
+- Added `craft\helpers\ConfigHelper`.
+- Added `craft\helpers\DateTimeHelper::intervalToSeconds()`.
+- Added `craft\helpers\DateTimeHelper::secondsToInterval()`.
+- Added `craft\helpers\FileHelper::useFileLocks()`.
+- Added `craft\helpers\UrlHelper::resourceTrigger()`.
+- Added `craft\services\Config::getApc()`.
+- Added `craft\services\Config::getConfigFromFile()`.
+- Added `craft\services\Config::getDb()`.
+- Added `craft\services\Config::getDbCache()`.
+- Added `craft\services\Config::getFileCache()`.
+- Added `craft\services\Config::getGeneral()`.
+- Added `craft\services\Config::getMemCache()`.
+- Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
+- #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
+- #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
+
+### Changed
+- The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
+- #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
+- `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
+- Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
+- Removed support for `@web`, `@webroot`, and other aliases in volume settings, as they cause more problems than they solve in multi-site Craft installs.
+- Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
+
+### Removed
+- Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
+- Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
+- Removed `craft\services\Config::allowAutoUpdates()`.
+- Removed `craft\services\Config::exists()`. Use `isset(Craft::$app->config->general->configSetting)`.
+- Removed `craft\services\Config::get()`. Use `Craft::$app->config->general`, et al.
+- Removed `craft\services\Config::getAllowedFileExtensions()`. Use `Craft::$app->config->general->allowedFileExtensions`.
+- Removed `craft\services\Config::getCacheDuration()`. Use `Craft::$app->config->general->cacheDuration`.
+- Removed `craft\services\Config::getCpLoginPath()`. It’s `login`.
+- Removed `craft\services\Config::getCpLogoutPath()`. It’s `logout`.
+- Removed `craft\services\Config::getCpSetPasswordPath()`. It’s `setpassword`.
+- Removed `craft\services\Config::getDbPort()`. Use `Craft::$app->config->db->port`.
+- Removed `craft\services\Config::getDbTablePrefix()`. Use `Craft::$app->config->db->tablePrefix`.
+- Removed `craft\services\Config::getElevatedSessionDuration()`. Use `Craft::$app->config->general->elevatedSessionDuration`.
+- Removed `craft\services\Config::getLocalized()`. Use `Craft::$app->config->general->getLoginPath()`, et al.
+- Removed `craft\services\Config::getLoginPath()`. Use `Craft::$app->config->general->getLoginPath()`.
+- Removed `craft\services\Config::getLogoutPath()`. Use `Craft::$app->config->general->getLogoutPath()`.
+- Removed `craft\services\Config::getOmitScriptNameInUrls()`. Use `Craft::$app->config->general->omitScriptNameInUrls`.
+- Removed `craft\services\Config::getResourceTrigger()`. Use `craft\helpers\UrlHelper::resourceTrigger()`.
+- Removed `craft\services\Config::getSetPasswordPath()`. Use `Craft::$app->config->general->getSetPasswordPath()`.
+- Removed `craft\services\Config::getUseFileLocks()`. Use `craft\helpers\FileHelper::useFileLocks()`.
+- Removed `craft\services\Config::getUsePathInfo()`. Use `Craft::$app->config->general->usePathInfo`.
+- Removed `craft\services\Config::getUserSessionDuration()`. Use `Craft::$app->config->general->userSessionDuration`.
+- Removed `craft\services\Config::isExtensionAllowed()`.
+- Removed `craft\services\Config::maxPowerCaptain()`. Use `craft\helpers\App::maxPowerCaptain()`.
+- Removed `craft\services\Config::set()`.
+- Removed `Craft.showElementEditor()`.
+
+### Fixed
+- Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+- Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
+- Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
+- Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
+
+## 3.0.0-beta.7 - 2017-03-10
+
 ### Added
-- Added `craft\servies\Assets::getCurrentUserTemporaryUploadFolder()`.
-- Added `craft\service\Assets::getUserTemporaryUploadFolder()`.
+- Added `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
+- Added `craft\services\Assets::getUserTemporaryUploadFolder()`.
 
 ### Changed
 - `UserException` reports are now styled like other exceptions when Dev Mode is enabled, with the full stack trace shown.
-- It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()`.
-- `craft\services\Volumes::getVolumeById()` now requires an integer as parameter.
-- Temporary uploads are now separated per user only.
-- Assets manager and modals now also display a "Temporary uploads" volume for each user that shows their personal temporary upload folder.
+- It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()` without passing an ID.
+- Assets indexes now show a “Temporary uploads” volume that contain any assets uploaded by the current user, which haven’t been moved to a more permanent location yet.
+- Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
+- #13: Disabled Matrix blocks are no longer shown in Live Preview.
+- #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
+- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.)
+- `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
+- `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
+- When an element is being saved across multiple sites, each site will now fire the before/after-save events.
+- Exceptions that are thrown when running a task are now logged.
+- Plugins’ translation categories are now all-lowercase by default, but they can be overridden by setting the `$t9nCategory` plugin property.
+- The `_includes/forms/checkboxSelect.html` Control Panel template no longer shows an “All” checkbox by default. Set `showAllOption = true` to show it.
+- The `_includes/forms/checkboxSelect.html` Control Panel template no longer interprets an empty default value to mean the “All” option should be checked.
 - Updated the craftcms/server-check library to 1.0.11.
 
 ### Removed
+- Removed support for chain-setting model properties via magic property setters. Models that wish to support this behavior must supply their own setter methods.
+- Removed `craft\base\Model::copy()`.
 - Removed `craft\fields\Assets::getFolderOptions()`.
 - Removed `craft\services\Assets::getUserFolder()`.
 
@@ -26,7 +107,13 @@ Craft CMS 3.0 Working Changelog
 - #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
 - #1457: Fixed the styling of Element Editor HUD headers and footers.
 - #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
-- #1414: Fixed Assets field crashing when a dynamic upload path could not be resolved.
+- #1414: Fixed an exception that occurred when an Assets field’s dynamic upload path could not be resolved.
+- #1467: Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals.
+- #1469: Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method.
+- #1470: Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type.
+- Fixed a PHP error that occurred when attempting to rerun a failed task.
+- #16: Fixed a bug where Matrix and relational field values weren’t getting propagated to new sites correctly.
+- #1472: Fixed a bug where the `CRAFT_SITE` constant wasn’t being respected.
 
 ## 3.0.0-beta.6 - 2017-03-03
 

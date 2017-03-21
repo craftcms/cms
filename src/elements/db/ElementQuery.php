@@ -210,7 +210,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $structureId;
 
     /**
-     * @var int|null The element’s level within the structure
+     * @var mixed The element’s level within the structure
      */
     public $level;
 
@@ -742,7 +742,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function level(int $value = null)
+    public function level($value = null)
     {
         $this->level = $value;
 

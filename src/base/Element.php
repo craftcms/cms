@@ -99,9 +99,20 @@ abstract class Element extends Component implements ElementInterface
     // Constants
     // =========================================================================
 
+    // Statuses
+    // -------------------------------------------------------------------------
+
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
     const STATUS_ARCHIVED = 'archived';
+
+    // Validation scenarios
+    // -------------------------------------------------------------------------
+
+    const SCENARIO_SITE_PROPAGATION = 'sitePropagation';
+
+    // Events
+    // -------------------------------------------------------------------------
 
     /**
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
@@ -819,9 +830,11 @@ abstract class Element extends Component implements ElementInterface
             'uri' => Craft::t('app', 'URI'),
         ];
 
-        foreach ($this->getFieldLayout()->getFields() as $field) {
-            /** @var Field $field */
-            $labels[$field->handle] = Craft::t('site', $field->name);
+        if (Craft::$app->getIsInstalled()) {
+            foreach ($this->getFieldLayout()->getFields() as $field) {
+                /** @var Field $field */
+                $labels[$field->handle] = Craft::t('site', $field->name);
+            }
         }
 
         return $labels;
@@ -917,6 +930,17 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_SITE_PROPAGATION] = ['siteId', 'slug', 'uri'];
+
+        return $scenarios;
     }
 
     /**
@@ -1918,7 +1942,7 @@ abstract class Element extends Component implements ElementInterface
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;

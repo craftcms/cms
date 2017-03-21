@@ -53,21 +53,7 @@
         {% endif %}
 
         <div id="multi-folder-settings"{% if field.useSingleFolder %} class="hidden"{% endif %}>
-            {% if sourceOptions %}
-                {{ forms.checkboxSelectField({
-                    label: "Sources"|t('app'),
-                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: field.displayName()|lower }),
-                    id: 'sources',
-                    name: 'sources',
-                    options: sourceOptions,
-                    values: field.sources
-                })}}
-            {% else %}
-                {{ forms.field({
-                    label: "Sources"|t('app')
-                }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
-            {% endif %}
-
+            {{ block('sourcesField') }}
 
             {{ forms.field({
                 label: "Default Upload Location"|t('app'),

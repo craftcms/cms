@@ -194,7 +194,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             if (this.settings.editable) {
                 this._handleShowElementEditor = $.proxy(function(ev) {
-                    this.elementEditor = Craft.showElementEditor($(ev.currentTarget), this.settings.editorSettings);
+                    var $element = $(ev.currentTarget);
+                    if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
+                        this.elementEditor = Craft.createElementEditor(this.settings.elementType, $element);
+                    }
                 }, this);
 
                 this.addListener($elements, 'dblclick', this._handleShowElementEditor);

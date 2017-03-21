@@ -594,7 +594,7 @@ class Assets extends BaseRelationField
             $segments = explode('/', $renderedSubpath);
             foreach ($segments as &$segment) {
                 $segment = FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => Craft::$app->getConfig()->get('convertFilenamesToAscii')
+                    'asciiOnly' => Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii
                 ]);
             }
             unset($segment);

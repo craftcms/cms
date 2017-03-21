@@ -17,6 +17,7 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -581,13 +582,10 @@ class Plugins extends Component
             'plugin' => $plugin
         ]));
 
-        // JSON-encode them and save the plugin row
-        $jsSettings = Json::encode($plugin->getSettings());
-
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
-                ['settings' => $jsSettings],
+                ['settings' => Json::encode($plugin->getSettings())],
                 ['handle' => strtolower($plugin->handle)])
             ->execute();
 
@@ -702,9 +700,14 @@ class Plugins extends Component
             return null;
         }
 
-        // Set its settings
-        if (isset($row['settings'])) {
-            $config['settings'] = $row['settings'];
+        // Set its settings, if it has any (merging DB-stored values with config file values)
+        $settings = ArrayHelper::merge(
+            $row['settings'] ?? [],
+            Craft::$app->getConfig()->getConfigFromFile(strtolower($handle))
+        );
+
+        if ($settings !== []) {
+            $config['settings'] = $settings;
         }
 
         // Create the plugin
@@ -1223,6 +1226,11 @@ class Plugins extends Component
         // downloadUrl
         if (isset($extra['downloadUrl'])) {
             $config['downloadUrl'] = $extra['downloadUrl'];
+        }
+
+        // t9nCategory
+        if (isset($extra['t9nCategory'])) {
+            $config['t9nCategory'] = $extra['t9nCategory'];
         }
 
         // sourceLanguage

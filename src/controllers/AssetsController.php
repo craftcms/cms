@@ -15,6 +15,7 @@ use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
+use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -757,7 +758,7 @@ class AssetsController extends Controller
         $this->_requirePermissionByAsset('viewAssetSource', $asset);
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
         $localPath = $asset->getCopyOfFile();
 
         $response = Craft::$app->getResponse()

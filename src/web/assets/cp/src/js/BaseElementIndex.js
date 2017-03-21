@@ -123,7 +123,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             // Keep the toolbar at the top of the window
-            if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
+            if (
+                (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context == 'index')) &&
+                !Garnish.isMobileBrowser(true)
+            ) {
                 this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
             }
 
@@ -342,7 +345,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
-            Craft.postActionRequest('element-indexes/get-source-tree-html', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.refreshSourcesAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -574,7 +577,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             var params = this.getViewParams();
 
-            Craft.postActionRequest('element-indexes/get-elements', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -653,7 +656,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.postActionRequest('element-indexes/perform-action', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.submitActionsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -664,14 +667,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             Craft.cp.displayNotice(response.message);
                         }
 
-                        // There may be a new background task that needs to be run
-                        Craft.cp.runPendingTasks();
+                        this.afterAction(action, params);
                     }
                     else {
                         Craft.cp.displayError(response.message);
                     }
                 }
             }, this));
+        },
+
+        afterAction: function(action, params) {
+
+            // There may be a new background task that needs to be run
+            Craft.cp.runPendingTasks();
+
+            this.onAfterAction(action, params);
         },
 
         hideActionTriggers: function() {
@@ -1191,6 +1201,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.trigger('disableElements', {elements: $elements});
         },
 
+        onAfterAction: function(action, params) {
+            this.settings.onAfterAction(action, params);
+            this.trigger('afterAction', {action: action, params: params});
+        },
+
         // Private methods
         // =========================================================================
 
@@ -1574,13 +1589,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
+            refreshSourcesAction: 'element-indexes/get-source-tree-html',
+            updateElementsAction: 'element-indexes/get-elements',
+            submitActionsAction: 'element-indexes/perform-action',
+            toolbarFixed: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,
-            onDisableElements: $.noop
+            onDisableElements: $.noop,
+            onAfterAction: $.noop
         }
     });
 

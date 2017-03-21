@@ -15,6 +15,7 @@ use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
@@ -200,7 +201,7 @@ trait ApplicationTrait
                     }
 
                     // Is there a default CP language?
-                    if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
+                    if ($defaultCpLanguage = Craft::$app->getConfig()->getGeneral()->defaultCpLanguage) {
                         // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
@@ -496,7 +497,7 @@ trait ApplicationTrait
     public function getIsSystemOn(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->get('isSystemOn'))) {
+        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemOn)) {
             return $on;
         }
 
@@ -654,51 +655,6 @@ trait ApplicationTrait
     public function getYiiVersion()
     {
         return \Yii::getVersion();
-    }
-
-    /**
-     * Make sure the basics are in place in the db connection file before we
-     * actually try to connect later on.
-     *
-     * @throws DbConnectException
-     * @return bool Whether the config file is valid
-     */
-    public function validateDbConfigFile(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        if ($this->_isDbConfigValid === null) {
-            $messages = [];
-
-            $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
-            $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
-            $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
-            $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
-
-            if (!$databaseServerName) {
-                $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
-            }
-
-            if (!$databaseAuthName) {
-                $messages[] = Craft::t('app', 'The database user name isn’t set in your db config file.');
-            }
-
-            if (!$databaseName) {
-                $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
-            }
-
-            if (!$databaseCharset) {
-                $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
-            }
-
-            if (!empty($messages)) {
-                $this->_isDbConfigValid = false;
-                throw new DbConnectException(Craft::t('app', 'Database configuration errors: {errors}', ['errors' => implode(PHP_EOL, $messages)]));
-            }
-
-            $this->_isDbConfigValid = true;
-        }
-
-        return $this->_isDbConfigValid;
     }
 
     /**
@@ -1219,9 +1175,6 @@ trait ApplicationTrait
     {
         $this->getLog();
 
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
-
         // Set the edition components
         $this->_setEditionComponents();
 
@@ -1266,7 +1219,7 @@ trait ApplicationTrait
     private function _setTimeZone()
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $timezone = $this->getConfig()->get('timezone');
+        $timezone = $this->getConfig()->getGeneral()->timezone;
 
         if (!$timezone) {
             $timezone = $this->getInfo()->timezone;
@@ -1326,13 +1279,12 @@ trait ApplicationTrait
         $edition = $this->getEdition();
 
         if ($edition === Craft::Client || $edition === Craft::Pro) {
-            $basePath = $this->getBasePath();
-
-            $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
-
-            if ($edition === Craft::Pro) {
-                $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
-            }
+            $basePath = $this->getBasePath().'/config/app';
+            $config = ArrayHelper::merge(
+                require $basePath.'/client.php',
+                $edition === Craft::Pro ? require $basePath.'/pro.php' : []
+            );
+            Craft::configure($this, $config);
         }
     }
 }

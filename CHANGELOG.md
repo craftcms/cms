@@ -1,6 +1,33 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Added
+- Added Control Panel translations for Polish.
+
+### Changed
+- Updated Garnish to 0.1.16.
+
+### Fixed
+- #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
+- Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
+- #1540: Fixed some Control Panel messages that weren’t getting translated.
+- Fixed a PHP error that occurred on console requests if there was a database connection issue.
+
+## 2.6.2967 - 2017-03-10
+
+### Fixed
+- #5: Fixed a bug where translatable fields on new Matrix blocks would show the current application locale rather than the locale of the element being edited.
+- Fixed a PHP error that could occur if you called `craft()->updates->isCriticalUpdateAvailable()` and there wasn't any cached plugin update info.
+- Fixed a few bugs that prevented a console request from being able to call `craft()->entries->saveEntry()` successfully in some circumstances.
+- Fixed a bug where charts were not properly taking timezone settings into account.
+
+## 2.6.2966 - 2017-03-03
+
+### Fixed
+- Fixed a PHP error occurred when saving users on servers running PHP 5.3.
+
 ## 2.6.2965 - 2017-03-03
 
 ### Changed

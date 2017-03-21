@@ -63,7 +63,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !Craft::$app->getConfig()->getOmitScriptNameInUrls();
+        $config['showScriptName'] = !Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
         $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
@@ -367,7 +367,7 @@ class UrlManager extends \yii\web\UrlManager
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $trigger = '_';
         } else {
-            $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
+            $trigger = Craft::$app->getConfig()->getGeneral()->privateTemplateTrigger;
         }
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {

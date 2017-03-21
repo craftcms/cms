@@ -14,6 +14,7 @@ use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
 use craft\errors\InvalidPluginException;
 use craft\events\UpdateEvent;
+use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Update as UpdateHelper;
@@ -174,9 +175,11 @@ class Updates extends Component
             return true;
         }
 
-        foreach ($this->_updateModel->plugins as $pluginUpdate) {
-            if ($pluginUpdate->criticalUpdateAvailable) {
-                return true;
+        if (!empty($this->_updateModel->plugins)) {
+            foreach ($this->_updateModel->plugins as $pluginUpdate) {
+                if ($pluginUpdate->criticalUpdateAvailable) {
+                    return true;
+                }
             }
         }
 
@@ -251,7 +254,7 @@ class Updates extends Component
      */
     public function checkForUpdates()
     {
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         // Prep the update models
         $update = new Update();
@@ -742,10 +745,11 @@ class Updates extends Component
                 'handle' => $handle,
             ]));
 
-            $config = Craft::$app->getConfig();
-            $config->maxPowerCaptain();
+            $configService = Craft::$app->getConfig();
+            $generalConfig = $configService->getGeneral();
+            App::maxPowerCaptain();
 
-            if ($dbBackupPath !== false && $config->get('backupOnUpdate') && $config->get('restoreOnUpdateFailure') && $config->get('restoreCommand') !== false) {
+            if ($dbBackupPath !== false && $generalConfig->backupOnUpdate && $generalConfig->restoreOnUpdateFailure && $generalConfig->restoreCommand !== false) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
                 UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);

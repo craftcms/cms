@@ -95,6 +95,11 @@ class Volumes extends Component
      */
     private $_fetchedAllVolumes = false;
 
+    /**
+     * @var array|null Volume setting overrides
+     */
+    private $_overrides;
+
     // Public Methods
     // =========================================================================
 
@@ -455,6 +460,22 @@ class Volumes extends Component
     }
 
     /**
+     * Returns any custom volume config values.
+     *
+     * @param string $handle The volume handle
+     *
+     * @return array|null
+     */
+    public function getVolumeOverrides(string $handle)
+    {
+        if ($this->_overrides === null) {
+            $this->_overrides = Craft::$app->getConfig()->getConfigFromFile('volumes');
+        }
+
+        return $this->_overrides[$handle] ?? null;
+    }
+
+    /**
      * Creates an asset volume with a given config.
      *
      * @param mixed $config The asset volume’s class name, or its config, with a `type` value and optionally a `settings` value
@@ -468,7 +489,7 @@ class Volumes extends Component
         }
 
         // Are they overriding any settings?
-        if (!empty($config['handle']) && ($override = Craft::$app->getConfig()->get($config['handle'], Config::CATEGORY_VOLUMES)) !== null) {
+        if (!empty($config['handle']) && ($override = $this->getVolumeOverrides($config['handle'])) !== null) {
             // Apply the settings early so the overrides don't get overridden
             ComponentHelper::applySettings($config);
             $config = array_merge($config, $override);

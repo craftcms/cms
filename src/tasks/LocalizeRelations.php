@@ -100,6 +100,8 @@ class LocalizeRelations extends Task
 
             return true;
         } catch (\Exception $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+
             return 'An exception was thrown while trying to save relation for the field with Id '.$this->_relations[$step]['id'].' into the site  “'.$this->_workingSiteId.'”: '.$e->getMessage();
         }
     }

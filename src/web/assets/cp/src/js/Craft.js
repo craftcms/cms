@@ -1037,6 +1037,7 @@ $.extend(Craft,
 
         _elementIndexClasses: {},
         _elementSelectorModalClasses: {},
+        _elementEditorClasses: {},
 
         /**
          * Registers an element index class for a given element type.
@@ -1052,7 +1053,6 @@ $.extend(Craft,
             this._elementIndexClasses[elementType] = func;
         },
 
-
         /**
          * Registers an element selector modal class for a given element type.
          *
@@ -1065,6 +1065,20 @@ $.extend(Craft,
             }
 
             this._elementSelectorModalClasses[elementType] = func;
+        },
+
+        /**
+         * Registers an element editor class for a given element type.
+         *
+         * @param {string} elementType
+         * @param {function} func
+         */
+        registerElementEditorClass: function(elementType, func) {
+            if (this._elementEditorClasses[elementType] !== undefined) {
+                throw 'An element editor class has already been registered for the element type “' + elementType + '”.';
+            }
+
+            this._elementEditorClasses[elementType] = func;
         },
 
         /**
@@ -1105,6 +1119,26 @@ $.extend(Craft,
             }
 
             return new func(elementType, settings);
+        },
+
+        /**
+         * Creates a new element editor HUD for a given element type.
+         *
+         * @param {string} elementType
+         * @param element $element
+         * @param {object} settings
+         */
+        createElementEditor: function(elementType, element, settings) {
+            var func;
+
+            if (this._elementEditorClasses[elementType] !== undefined) {
+                func = this._elementEditorClasses[elementType];
+            }
+            else {
+                func = Craft.BaseElementEditor;
+            }
+
+            return new func(element, settings);
         },
 
         /**
@@ -1205,18 +1239,6 @@ $.extend(Craft,
                 picturefill({
                     elements: [$newImg[0]]
                 });
-            }
-        },
-
-        /**
-         * Shows an element editor HUD.
-         *
-         * @param {object} $element
-         * @param {object} settings
-         */
-        showElementEditor: function($element, settings) {
-            if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
-                return new Craft.ElementEditor($element, settings);
             }
         }
     });

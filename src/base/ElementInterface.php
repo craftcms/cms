@@ -675,24 +675,24 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns an array of the element’s normalized custom field values, indexed by their handles.
      *
-     * @param string[] $fieldHandles The list of field handles whose values need to be returned.
-     *                               Defaults to null, meaning all fields’ values will be returned.
-     *                               If it is an array, only the fields in the array will be returned.
+     * @param string[]|null $fieldHandles The list of field handles whose values need to be returned.
+     *                                    Defaults to null, meaning all fields’ values will be returned.
+     *                                    If it is an array, only the fields in the array will be returned.
      *
      * @return array The field values (handle => value)
      */
-    public function getFieldValues(array $fieldHandles): array;
+    public function getFieldValues(array $fieldHandles = null): array;
 
     /**
      * Returns an array of the element’s serialized custom field values, indexed by their handles.
      *
-     * @param string[] $fieldHandles The list of field handles whose values need to be returned.
-     *                               Defaults to null, meaning all fields’ values will be returned.
-     *                               If it is an array, only the fields in the array will be returned.
+     * @param string[]|null $fieldHandles The list of field handles whose values need to be returned.
+     *                                    Defaults to null, meaning all fields’ values will be returned.
+     *                                    If it is an array, only the fields in the array will be returned.
      *
      * @return array
      */
-    public function getSerializedFieldValues(array $fieldHandles): array;
+    public function getSerializedFieldValues(array $fieldHandles = null): array;
 
     /**
      * Sets the element’s custom field values.

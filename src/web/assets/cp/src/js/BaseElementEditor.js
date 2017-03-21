@@ -3,7 +3,7 @@
 /**
  * Element editor
  */
-Craft.ElementEditor = Garnish.Base.extend(
+Craft.BaseElementEditor = Garnish.Base.extend(
     {
         $element: null,
         elementId: null,
@@ -20,16 +20,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         hud: null,
 
-        init: function($element, settings) {
+        init: function(element, settings) {
             // Param mapping
-            if (settings === undefined && $.isPlainObject($element)) {
+            if (settings === undefined && $.isPlainObject(element)) {
                 // (settings)
-                settings = $element;
-                $element = null;
+                settings = element;
+                element = null;
             }
 
-            this.$element = $element;
-            this.setSettings(settings, Craft.ElementEditor.defaults);
+            this.$element = $(element);
+            this.setSettings(settings, Craft.BaseElementEditor.defaults);
 
             this.loadHud();
         },

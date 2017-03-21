@@ -75,11 +75,11 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return UserElement|false|null
+     * @return UserElement|null
      */
     public function getIdentity()
     {
-        return $this->_identity;
+        return $this->_identity ?: null;
     }
 
     /**

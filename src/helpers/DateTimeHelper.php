@@ -542,44 +542,30 @@ class DateTimeHelper
     }
 
     /**
-     * Takes a PHP time format string and converts it to seconds.
-     * {@see http://www.php.net/manual/en/datetime.formats.time.php}
+     * Creates a DateInterval object based on a given number of seconds.
      *
-     * @param string $timeFormatString
+     * @param int $seconds
      *
-     * @return int|null
+     * @return \DateInterval
      */
-    public static function timeFormatToSeconds(string $timeFormatString)
+    public static function secondsToInterval(int $seconds): \DateInterval
     {
-        $interval = new \DateInterval($timeFormatString);
+        return new \DateInterval("PT{$seconds}S");
+    }
 
-        if ($interval === null) {
-            return null;
-        }
+    /**
+     * Returns the number of seconds that a given DateInterval object spans.
+     *
+     * @param \DateInterval $dateInterval
+     *
+     * @return int
+     */
+    public static function intervalToSeconds(\DateInterval $dateInterval): int
+    {
+        $reference = new \DateTimeImmutable();
+        $endTime = $reference->add($dateInterval);
 
-        $seconds = (int)$interval->s;
-
-        if ($interval->i) {
-            $seconds += ((int)$interval->i * self::SECONDS_MINUTE);
-        }
-
-        if ($interval->h) {
-            $seconds += ((int)$interval->h * self::SECONDS_HOUR);
-        }
-
-        if ($interval->d) {
-            $seconds += ((int)$interval->d * self::SECONDS_DAY);
-        }
-
-        if ($interval->m) {
-            $seconds += ((int)$interval->m * self::SECONDS_MONTH);
-        }
-
-        if ($interval->y) {
-            $seconds += ((int)$interval->y * self::SECONDS_YEAR);
-        }
-
-        return (int)$seconds;
+        return $endTime->getTimestamp() - $reference->getTimestamp();
     }
 
     /**
