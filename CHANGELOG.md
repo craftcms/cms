@@ -8,7 +8,7 @@ Craft CMS Changelog
 
 ### Changed
 - Updated element-resize-detector to 1.1.11.
-- Updated Garnish to 0.1.16.
+- Updated Garnish to 0.1.17.
 
 ### Fixed
 - #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
