@@ -9981,7 +9981,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.initialize();
             } else {
                 // Give everything a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initializeIfVisible'));
+                setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
         },
 
