@@ -476,17 +476,19 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
+            $photo->setScenario(Asset::SCENARIO_UPLOAD);
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
-            $photo->folderId = $folderId;
+            $photo->newFolderId = $folderId;
             $photo->volumeId = $volumeId;
 
-            // Save and delete the temporary file
-            $assets->saveAsset($photo);
+
+            // Save photo.
+            $elementsService = Craft::$app->getElements();
+            $elementsService->saveElement($photo);
 
             $user->photoId = $photo->id;
-            Craft::$app->getElements()->saveElement($user, false);
+            $elementsService->saveElement($user, false);
         }
 
         return true;

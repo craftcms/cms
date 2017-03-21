@@ -372,19 +372,14 @@ class Assets extends BaseRelationField
 
                     $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
                     $asset = new Asset();
-                    $asset->title = StringHelper::toTitleCase(pathinfo($file['filename'], PATHINFO_FILENAME));
                     $asset->tempFilePath = $tempPath;
                     $asset->filename = $file['filename'];
-                    $asset->folderId = $targetFolderId;
+                    $asset->newFolderId = $targetFolderId;
                     $asset->volumeId = $folder->volumeId;
-                    Craft::$app->getAssets()->saveAsset($asset);
+                    $asset->setScenario(Asset::SCENARIO_UPLOAD);
+                    Craft::$app->getElements()->saveElement($asset);
 
                     $assetIds[] = $asset->id;
-                    try {
-                        FileHelper::removeFile($tempPath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
-                    }
                 }
 
                 $assetIds = array_unique(array_merge($value, $assetIds));
