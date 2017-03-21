@@ -1061,7 +1061,7 @@ return [
     'The volume type “{type}” could not be found.' => 'The volume type “{type}” could not be found.',
     'Invalid transform handle: {handle}' => 'Invalid transform handle: {handle}',
     'Not translatable' => 'Not translatable',
-    'Are you sure you want to delete this route?' => 'Are you sure you want to delete this route?',
+    'Are you sure you want to delete this route?' => 'Вы уверены, что хотите удалить этот маршрут?',
     'User Photo Volume' => 'User Photo Volume',
     '{attribute} must be set to a new password.' => '{attribute} must be set to a new password.',
     'There was a problem during the update.' => 'There was a problem during the update.',
@@ -1121,7 +1121,7 @@ return [
     'Language' => 'Language',
     'Improved' => 'Improved',
     'Apply Time' => 'Apply Time',
-    'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()',
+    'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()',
     'Migrations' => 'Migrations',
     'Default Focal Point' => 'Default Focal Point',
     'Craft CMS requires the PDO_MYSQL driver to operate.' => 'Craft CMS requires the PDO_MYSQL driver to operate.',
@@ -1167,7 +1167,7 @@ return [
     'This field’s default upload location Volume is missing' => 'This field’s default upload location Volume is missing',
     'Choose image' => 'Choose image',
     'Display hierarchically' => 'Display hierarchically',
-    'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.' => 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.',
+    'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.' => 'У вас должен быть хотя бы Craft CMS {url}, прежде чем вы сможете вручную обновиться до Craft CMS {targetVersion}.',
     'This site has its own base URL' => 'This site has its own base URL',
     'Fixed' => 'Fixed',
     'Category URI Format' => 'Category URI Format',
@@ -1256,5 +1256,5 @@ return [
     'Today' => 'Today',
     'No content migrations.' => 'No content migrations.',
     'Application Info' => 'Application Info',
-    '1 Available Update' => '1 Available Update'
+    '1 Available Update' => '1 Available Update',
 ];

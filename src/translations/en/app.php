@@ -790,7 +790,7 @@ Thanks for creating an account with {{siteName}}! To activate your account, clic
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you were not expecting this email, just ignore it.',
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'by {creator}' => 'by {creator}',
@@ -807,7 +807,7 @@ To reset your {{siteName}} password, click on this link:
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you were not expecting this email, just ignore it.',
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'four' => 'four',
@@ -832,7 +832,9 @@ Congratulations! Craft was successfully able to send an email.
 
 Here are the settings you used:
 
-{{ settings }}',
+{% for key, setting in settings %}{{ key }}:  {{ setting }}
+
+{% endfor %}',
     'test_email_heading' => 'When you are testing your email settings:',
     'test_email_subject' => 'This is a test email from Craft',
     'three' => 'three',
@@ -843,7 +845,7 @@ Please verify your new email address by clicking on this link:
 
 {{link}}
 
-If you weren\'t expecting this email, just ignore it.',
+If you were not expecting this email, just ignore it.',
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'week' => 'week',
@@ -1134,7 +1136,7 @@ If you weren\'t expecting this email, just ignore it.',
     'File Kind' => 'File Kind',
     'How should this field’s values be translated?' => 'How should this field’s values be translated?',
     'Improved' => 'Improved',
-    'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()',
+    'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()',
     'For everything else.' => 'For everything else.',
     'Migrations' => 'Migrations',
     'Craft CMS requires the PDO_MYSQL driver to operate.' => 'Craft CMS requires the PDO_MYSQL driver to operate.',
@@ -1253,5 +1255,5 @@ If you weren\'t expecting this email, just ignore it.',
     'User Settings' => 'User Settings',
     'Today' => 'Today',
     'Application Info' => 'Application Info',
-    '1 Available Update' => '1 Available Update'
+    '1 Available Update' => '1 Available Update',
 ];
