@@ -19,11 +19,7 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$findConfig = function($constName, $argName) {
-    if (defined($constName)) {
-        return realpath(constant($constName));
-    }
-
+$findArg = function($argName) {
     if (!empty($_SERVER['argv'])) {
         foreach ($_SERVER['argv'] as $key => $arg) {
             if (strpos($arg, "--{$argName}=") !== false) {
@@ -37,6 +33,22 @@ $findConfig = function($constName, $argName) {
     }
 
     return null;
+};
+
+$findConfigPath = function($constName, $argName) use ($findArg) {
+    if (defined($constName)) {
+        return realpath(constant($constName));
+    }
+
+    return $findArg($argName);
+};
+
+$findConfig = function($constName, $argName) use ($findArg) {
+    if (defined($constName)) {
+        return constant($constName);
+    }
+
+    return $findArg($argName);
 };
 
 $createFolder = function($path) {
@@ -82,18 +94,18 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // -----------------------------------------------------------------------------
 
 // Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfig('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
+$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
 
 // Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$basePath = $findConfig('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+$basePath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfig('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
-$contentMigrationsPath = $findConfig('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
-$pluginsPath = $findConfig('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
-$storagePath = $findConfig('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
-$templatesPath = $findConfig('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
-$translationsPath = $findConfig('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
+$pluginsPath = $findConfigPath('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
