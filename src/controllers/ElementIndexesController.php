@@ -87,7 +87,7 @@ class ElementIndexesController extends BaseElementsController
         $this->_viewState = $this->_viewState();
         $this->_elementQuery = $this->_elementQuery();
 
-        if ($this->_context === 'index') {
+        if ($this->_context === 'index' && $this->_sourceKey !== null) {
             $this->_actions = $this->_availableActions();
         }
     }
