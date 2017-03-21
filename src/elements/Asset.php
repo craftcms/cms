@@ -536,14 +536,6 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
-        if ($this->id !== null && !$this->title) {
-            // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules, true);
-            if ($key !== -1) {
-                array_splice($rules, $key, 1);
-            }
-        }
-
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
