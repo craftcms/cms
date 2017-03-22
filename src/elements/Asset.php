@@ -23,7 +23,6 @@ use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\FileException;
-use craft\fields\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -570,28 +569,6 @@ class Asset extends Element
             return $volume->getFieldLayout();
         }
 
-        $folder = $this->getFolder();
-
-        if (preg_match('/field_(\d+)/', $folder->name, $matches)) {
-            $fieldId = $matches[1];
-            /** @var Assets $field */
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
-            $settings = $field->settings;
-
-            if ($settings['useSingleFolder']) {
-                $sourceId = $settings['singleUploadLocationSource'];
-            } else {
-                $sourceId = $settings['defaultUploadLocationSource'];
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeById($sourceId);
-
-            if ($volume) {
-                return $volume->getFieldLayout();
-            }
-        }
-
-
         return null;
     }
 
@@ -835,7 +812,7 @@ class Asset extends Element
      */
     public function getImageTransformSourcePath(): string
     {
-        $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        $volume = $this->getVolume();
 
         if ($volume instanceof LocalVolumeInterface) {
             return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());

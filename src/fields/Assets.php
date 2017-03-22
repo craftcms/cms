@@ -431,22 +431,13 @@ class Assets extends BaseRelationField
 
             if (!empty($assetsToMove) && !empty($targetFolderId)) {
 
+                $assetService = Craft::$app->getAssets();
+                $folder = $assetService->getFolderById($targetFolderId);
+
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
-                    $conflictingAsset = Asset::find()
-                        ->folderId($targetFolderId)
-                        ->filename(Db::escapeParam($asset->filename))
-                        ->one();
-
-                    if ($conflictingAsset) {
-                        $newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename,
-                            $targetFolderId);
-                        Craft::$app->getAssets()->moveAsset($asset,
-                            $targetFolderId, $newFilename);
-                    } else {
-                        Craft::$app->getAssets()->moveAsset($asset,
-                            $targetFolderId);
-                    }
+                    $asset->avoidFilenameConflicts = true;
+                    $assetService->moveAsset($asset, $folder);
                 }
             }
         }
@@ -468,7 +459,6 @@ class Assets extends BaseRelationField
         if ($this->useSingleFolder) {
             $folderPath = 'folder:'.$folderId;
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
-
 
             // Construct the path
             while ($folder->parentId && $folder->volumeId !== null) {
@@ -536,7 +526,8 @@ class Assets extends BaseRelationField
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
-        $assets = Craft::$app->getAssets();
+        $assetsService = Craft::$app->getAssets();
+        $assets = $assetsService;
 
         $parts = explode(':', $uploadSource);
         $folder = $assets->getFolderById((int)end($parts));
@@ -580,7 +571,7 @@ class Assets extends BaseRelationField
             unset($segment);
             $subpath = implode('/', $segments);
 
-            $folder = Craft::$app->getAssets()->findFolder([
+            $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
                 'path' => $subpath.'/'
             ]);
@@ -596,7 +587,7 @@ class Assets extends BaseRelationField
 
                 $segments = explode('/', $subpath);
                 foreach ($segments as $segment) {
-                    $folder = Craft::$app->getAssets()->findFolder([
+                    $folder = $assetsService->findFolder([
                         'parentId' => $parentFolder->id,
                         'name' => $segment
                     ]);
@@ -631,12 +622,7 @@ class Assets extends BaseRelationField
         $newFolder->volumeId = $currentFolder->volumeId;
         $newFolder->path = ltrim(rtrim($currentFolder->path, '/').'/'.$folderName, '/').'/';
 
-        try {
-            Craft::$app->getAssets()->createFolder($newFolder);
-        } catch (AssetConflictException $e) {
-            // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-            Craft::$app->getAssets()->storeFolderRecord($newFolder);
-        }
+        Craft::$app->getAssets()->createFolder($newFolder, true);
 
         return $newFolder;
     }
