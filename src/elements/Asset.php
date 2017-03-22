@@ -1005,6 +1005,10 @@ class Asset extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
         // See if we need to perform any file operations
         if ($this->newLocation) {
             list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
@@ -1097,7 +1101,7 @@ class Asset extends Element
             $this->tempFilePath = null;
         }
 
-        return parent::beforeSave($isNew);
+        return true;
     }
 
     /**

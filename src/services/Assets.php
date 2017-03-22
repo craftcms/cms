@@ -154,11 +154,6 @@ class Assets extends Component
 
         $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
 
-        // Is the event preventing this from happening?
-        if (!$event->isValid) {
-            throw new ActionCancelledException(Craft::t('app', 'Something prevented the Asset file from being replaced.'));
-        }
-
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->avoidFilenameConflicts = true;
@@ -170,6 +165,7 @@ class Assets extends Component
             'asset' => $asset,
             'filename' => $filename
         ]);
+
         $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
     }
 
