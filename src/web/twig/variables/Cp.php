@@ -241,7 +241,7 @@ class Cp extends Component
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            if ($plugin->hasSettings) {
+            if ($plugin->hasSettings()) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/'.$plugin->id,
                     'iconSvg' => $pluginsService->getPluginIconSvg($plugin->handle),
