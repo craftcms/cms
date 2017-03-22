@@ -1253,6 +1253,11 @@ class Plugins extends Component
             $config['components'] = $extra['components'];
         }
 
+        // modules
+        if (isset($extra['modules'])) {
+            $config['modules'] = $extra['modules'];
+        }
+
         return $config;
     }
 
