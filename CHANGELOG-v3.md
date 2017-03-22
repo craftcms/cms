@@ -73,6 +73,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to refresh element sources in element views.
 - Fixed an exception that could occur when loading an entry with a stored version that didn’t have a valid entry type ID.
 - #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
+- #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
 
 ## 3.0.0-beta.7 - 2017-03-10
 

@@ -19,7 +19,11 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$findArg = function($argName) {
+$findConfig = function($constName, $argName) {
+    if (defined($constName)) {
+        return constant($constName);
+    }
+
     if (!empty($_SERVER['argv'])) {
         foreach ($_SERVER['argv'] as $key => $arg) {
             if (strpos($arg, "--{$argName}=") !== false) {
@@ -35,20 +39,10 @@ $findArg = function($argName) {
     return null;
 };
 
-$findConfigPath = function($constName, $argName) use ($findArg) {
-    if (defined($constName)) {
-        return realpath(constant($constName));
-    }
+$findConfigPath = function($constName, $argName) use ($findConfig) {
+    $path = $findConfig($constName, $argName);
 
-    return $findArg($argName);
-};
-
-$findConfig = function($constName, $argName) use ($findArg) {
-    if (defined($constName)) {
-        return constant($constName);
-    }
-
-    return $findArg($argName);
+    return $path ? realpath($path) : null;
 };
 
 $createFolder = function($path) {
