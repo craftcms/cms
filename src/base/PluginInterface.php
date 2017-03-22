@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\web\twig\variables\Cp;
+
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
  *
@@ -66,6 +68,15 @@ interface PluginInterface
      * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings()]]
      */
     public function getSettingsResponse();
+
+    /**
+     * Returns the CP nav item definition for this plugin’s CP section, if it has one.
+     *
+     * @return array|null
+     * @see PluginTrait::$hasCpSection
+     * @see Cp::nav()
+     */
+    public function getCpNavItem();
 
     /**
      * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.

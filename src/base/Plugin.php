@@ -184,6 +184,24 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public function getCpNavItem()
+    {
+        if (($iconPath = $this->cpNavIconPath()) !== null) {
+            $iconSvg = file_get_contents($iconPath);
+        } else {
+            $iconSvg = false;
+        }
+
+        return [
+            'label' => $this->name,
+            'url' => $this->id,
+            'iconSvg' => $iconSvg
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defineTemplateComponent()
     {
         return null;
@@ -286,5 +304,18 @@ class Plugin extends Module implements PluginInterface
     protected function settingsHtml()
     {
         return null;
+    }
+
+    /**
+     * Returns the path to the SVG icon that should be used in the plugin’s CP nav item.
+     *
+     * @return string|null
+     * @see getCpNavItem()
+     */
+    protected function cpNavIconPath()
+    {
+        $path = $this->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
+
+        return is_file($path) ? $path : null;
     }
 }

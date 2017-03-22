@@ -97,21 +97,10 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle)
+                Craft::$app->getUser()->checkPermission('accessPlugin-'.$plugin->handle) &&
+                ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
-                $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
-
-                if (is_file($iconPath)) {
-                    $iconSvg = file_get_contents($iconPath);
-                } else {
-                    $iconSvg = false;
-                }
-
-                $navItems[] = [
-                    'label' => $plugin->name,
-                    'url' => $plugin->id,
-                    'iconSvg' => $iconSvg
-                ];
+                $navItems[] = $pluginNavItem;
             }
         }
 
