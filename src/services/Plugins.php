@@ -821,7 +821,7 @@ class Plugins extends Component
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
             $config['isEnabled'] = ($plugin !== null);
             $config['moduleId'] = $plugin !== null ? $plugin->id : Inflector::camel2id($config['handle']);
-            $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings);
+            $config['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
 
             $info[$lcHandle] = $config;
             $names[] = $config['name'];
@@ -1238,9 +1238,9 @@ class Plugins extends Component
             $config['sourceLanguage'] = $extra['sourceLanguage'];
         }
 
-        // hasSettings
-        if (isset($extra['hasSettings'])) {
-            $config['hasSettings'] = $extra['hasSettings'];
+        // hasCpSettings
+        if (isset($extra['hasCpSettings'])) {
+            $config['hasCpSettings'] = $extra['hasCpSettings'];
         }
 
         // hasCpSection

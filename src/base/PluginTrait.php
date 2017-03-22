@@ -108,9 +108,9 @@ trait PluginTrait
     public $sourceLanguage = 'en-US';
 
     /**
-     * @var bool Whether the plugin has settings
+     * @var bool Whether the plugin has a settings page in the CP
      */
-    public $hasSettings = false;
+    public $hasCpSettings = false;
 
     /**
      * @var bool Whether the plugin has its own section in the CP
