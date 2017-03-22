@@ -269,8 +269,6 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
-     *
-     * @todo All of the validation stuff here should be moved to an actual validation function
      */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
@@ -334,20 +332,8 @@ class Assets extends BaseRelationField
             }
         }
 
-        if ($this->restrictFiles && !empty($this->allowedKinds)) {
-            $allowedExtensions = $this->_getAllowedExtensions();
-        } else {
-            $allowedExtensions = false;
-        }
-
-        if (is_array($allowedExtensions)) {
-            foreach ($incomingFiles as $file) {
-                $extension = StringHelper::toLowerCase(pathinfo($file['filename'], PATHINFO_EXTENSION));
-
-                if (!in_array($extension, $allowedExtensions, true)) {
-                    $this->_failedFiles[] = $file['filename'];
-                }
-            }
+        if (!empty($incomingFiles)) {
+            $this->_validateIncomingFiles($incomingFiles);
         }
 
         if (!empty($this->_failedFiles)) {
@@ -355,7 +341,6 @@ class Assets extends BaseRelationField
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-        // If ther are any..
         if (!empty($incomingFiles)) {
             $assetIds = [];
             $targetFolderId = $this->_determineUploadFolderId($element);
@@ -677,6 +662,30 @@ class Assets extends BaseRelationField
         }
 
         return $extensions;
+    }
+
+    /**
+     * Validate incoming files against field settings.
+     *
+     * @param array $incomingFiles
+     *
+     * @return void
+     */
+    private function _validateIncomingFiles(array $incomingFiles)
+    {
+        if ($this->restrictFiles && !empty($this->allowedKinds)) {
+            $allowedExtensions = $this->_getAllowedExtensions();
+        }
+
+        foreach ($incomingFiles as $fileInfo) {
+            if (!empty($allowedExtensions)) {
+                $extension = StringHelper::toLowerCase(pathinfo($fileInfo['filename'], PATHINFO_EXTENSION));
+
+                if (!in_array($extension, $allowedExtensions, true)) {
+                    $this->_failedFiles[] = $fileInfo['filename'];
+                }
+            }
+        }
     }
 
     /**
