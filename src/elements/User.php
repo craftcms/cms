@@ -630,18 +630,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            return Craft::$app->getFields()->getLayoutByType(static::class);
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getAuthKey()
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);

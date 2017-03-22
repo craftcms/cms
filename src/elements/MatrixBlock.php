@@ -184,14 +184,6 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        return $this->getType()->getFieldLayout();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't

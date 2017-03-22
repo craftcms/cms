@@ -126,20 +126,6 @@ class Tag extends Element
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        $tagGroup = $this->getGroup();
-
-        if ($tagGroup) {
-            return $tagGroup->getFieldLayout();
-        }
-
-        return null;
-    }
-
-    /**
      * Returns the tag's group.
      *
      * @return TagGroup

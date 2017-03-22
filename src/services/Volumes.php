@@ -363,9 +363,7 @@ class Volumes extends Component
 
             $fields = Craft::$app->getFields();
 
-            if (!$isNewVolume) {
-                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
-            } else {
+            if ($isNewVolume) {
                 // Set the sort order
                 $maxSortOrder = (new Query())
                     ->from(['{{%volumes}}'])
@@ -374,11 +372,9 @@ class Volumes extends Component
                 $volumeRecord->sortOrder = $maxSortOrder + 1;
             }
 
-            // Save the new one
+            // Save the field layout
             $fieldLayout = $volume->getFieldLayout();
             $fields->saveLayout($fieldLayout);
-
-            // Update the volume record/model with the new layout ID
             $volume->fieldLayoutId = $fieldLayout->id;
             $volumeRecord->fieldLayoutId = $fieldLayout->id;
 

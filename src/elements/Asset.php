@@ -530,43 +530,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        /** @var Volume $volume */
-        $volume = $this->getVolume();
-
-        if ($volume->id !== null) {
-            return $volume->getFieldLayout();
-        }
-
-        $folder = $this->getFolder();
-
-        if (preg_match('/field_(\d+)/', $folder->name, $matches)) {
-            $fieldId = $matches[1];
-            /** @var Assets $field */
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
-            $settings = $field->settings;
-
-            if ($settings['useSingleFolder']) {
-                $sourceId = $settings['singleUploadLocationSource'];
-            } else {
-                $sourceId = $settings['defaultUploadLocationSource'];
-            }
-
-            $volume = Craft::$app->getVolumes()->getVolumeById($sourceId);
-
-            if ($volume) {
-                return $volume->getFieldLayout();
-            }
-        }
-
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(

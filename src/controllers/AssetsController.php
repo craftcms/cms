@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetException;
@@ -159,10 +160,14 @@ class AssetsController extends Controller
                 // capital letter because of Yii's "word" logic.
                 $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
+                /** @var Volume $volume */
+                $volume = $folder->getVolume();
+
                 $asset->newFilePath = $tempPath;
                 $asset->filename = $filename;
                 $asset->folderId = $folder->id;
-                $asset->volumeId = $folder->volumeId;
+                $asset->volumeId = $volume->id;
+                $asset->fieldLayoutId = $volume->fieldLayoutId;
 
                 try {
                     $assets->saveAsset($asset);
@@ -712,10 +717,14 @@ class AssetsController extends Controller
             // capital letter because of Yii's "word" logic.
             $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($asset->filename, PATHINFO_BASENAME)));
 
+            /** @var Volume $volume */
+            $volume = $folder->getVolume();
+
             $newAsset->newFilePath = $imageCopy;
             $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
             $newAsset->folderId = $folder->id;
-            $newAsset->volumeId = $folder->volumeId;
+            $newAsset->volumeId = $volume->id;
+            $newAsset->fieldLayoutId = $volume->fieldLayoutId;
             $newAsset->focalPoint = $focal;
 
             $assetToSave = $newAsset;
