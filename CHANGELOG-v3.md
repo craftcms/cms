@@ -5,6 +5,8 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\base\Plugin::cpNavIconPath()`.
+- Added `craft\base\PluginInterface::getCpNavItem()`.
 - Added `craft\config\ApcConfig`.
 - Added `craft\config\DbCacheConfig`.
 - Added `craft\config\DbConfig`.
@@ -28,11 +30,13 @@ Craft CMS 3.0 Working Changelog
 - #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 - #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
 - #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
+- #1559: Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. (nateiler)
 
 ### Changed
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
 - #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
 - `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
+- Renamed `craft\base\PluginTrait::$hasSettings` to `$hasCpSettings`.
 - Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
 - Removed support for `@web`, `@webroot`, and other aliases in volume settings, as they cause more problems than they solve in multi-site Craft installs.
 - Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
@@ -71,6 +75,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
 - Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
 - Fixed a bug where it was not possible to refresh element sources in element views.
+- Fixed an exception that could occur when loading an entry with a stored version that didn’t have a valid entry type ID.
+- #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
+- #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
