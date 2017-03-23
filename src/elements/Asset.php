@@ -23,6 +23,7 @@ use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\FileException;
+use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -55,6 +56,15 @@ class Asset extends Element
 {
     // Constants
     // =========================================================================
+
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
+     */
+    const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -998,6 +1008,12 @@ class Asset extends Element
         }
 
         $tempPath = null;
+
+        // Give the plugins a chance to do something with the file being uploaded.
+        if ($this->getScenario() === self::SCENARIO_UPLOAD) {
+            $event = new AssetEvent(['asset' => $this, 'isNew' => $isNew]);
+            $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
+        }
 
         // Yes/no?
         if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
