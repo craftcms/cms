@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Exception;
 
@@ -54,7 +55,12 @@ class DeleteAssets extends ElementAction
     {
         try {
             foreach ($query->all() as $asset) {
-                Craft::$app->getElements()->deleteElement($asset);
+                /**
+                 * @var Asset $asset
+                 */
+                if (Craft::$app->getUser()->checkPermission('removeFromVolume:'.$asset->volumeId)) {
+                    Craft::$app->getElements()->deleteElement($asset);
+                }
             }
         } catch (Exception $exception) {
             $this->setMessage($exception->getMessage());
