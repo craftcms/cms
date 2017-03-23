@@ -30,6 +30,21 @@ interface FieldInterface extends SavableComponentInterface
      */
     public static function hasContentColumn(): bool;
 
+    /**
+     * Returns which translation methods the field supports.
+     *
+     * This method should return an array with at least one of the following values:
+     *
+     * - 'none' (values will always be copied to other sites)
+     * - 'language' (values will be copied to other sites with the same language)
+     * - 'site' (values will never be copied to other sites)
+     * - 'custom' (values will be copied/not copied depending on a custom translation key)
+     *
+     * @return string[]
+     * @see getTranslationKey()
+     */
+    public static function supportedTranslationMethods(): array;
+
     // Public Methods
     // =========================================================================
 
