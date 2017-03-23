@@ -527,14 +527,13 @@ class Assets extends BaseRelationField
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
         $assetsService = Craft::$app->getAssets();
-        $assets = $assetsService;
 
         $parts = explode(':', $uploadSource);
-        $folder = $assets->getFolderById((int)end($parts));
+        $folder = $assetsService->getFolderById((int)end($parts));
         $volumeId = $folder ? $folder->volumeId : 0;
 
         // Make sure the volume and root folder actually exists
-        if ($volumeId === 0 || !($rootFolder = $assets->getRootFolderByVolumeId($volumeId))) {
+        if ($volumeId === 0 || !($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId))) {
             throw new InvalidVolumeException();
         }
 
