@@ -31,6 +31,11 @@ trait ElementTrait
     public $uid;
 
     /**
+     * @var int|null The element’s field layout ID
+     */
+    public $fieldLayoutId;
+
+    /**
      * @var int|null The element’s structure ID
      */
     public $structureId;

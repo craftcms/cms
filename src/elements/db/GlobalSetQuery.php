@@ -98,7 +98,6 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
-            'globalsets.fieldLayoutId',
         ]);
 
         if ($this->handle) {

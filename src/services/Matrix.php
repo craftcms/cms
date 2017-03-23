@@ -327,24 +327,20 @@ class Matrix extends Component
 
                 $fieldLayout = new FieldLayout();
                 $fieldLayout->type = MatrixBlock::class;
+
+                if (isset($oldBlockType)) {
+                    $fieldLayout->id = $oldBlockType->fieldLayoutId;
+                }
+
                 $fieldLayout->setTabs([$fieldLayoutTab]);
                 $fieldLayout->setFields($fieldLayoutFields);
-
                 $fieldsService->saveLayout($fieldLayout);
-
-                // Update the block type model & record with our new field layout ID
                 $blockType->setFieldLayout($fieldLayout);
                 $blockType->fieldLayoutId = (int)$fieldLayout->id;
                 $blockTypeRecord->fieldLayoutId = $fieldLayout->id;
 
                 // Update the block type with the field layout ID
                 $blockTypeRecord->save(false);
-
-                /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-                if (isset($oldBlockType)) {
-                    // Delete the old field layout
-                    $fieldsService->deleteLayoutById($oldBlockType->fieldLayoutId);
-                }
 
                 $transaction->commit();
             } catch (\Exception $e) {

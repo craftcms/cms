@@ -261,14 +261,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        return $this->getGroup()->getFieldLayout();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getUriFormat()
     {
         $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();

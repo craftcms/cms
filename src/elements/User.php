@@ -17,7 +17,6 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -638,6 +637,7 @@ class User extends Element implements IdentityInterface
 
         return null;
     }
+
 
     /**
      * @inheritdoc

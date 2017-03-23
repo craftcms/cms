@@ -1767,6 +1767,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Merge in the default columns
             $select = array_merge($select, [
                 'elements.id',
+                'elements.fieldLayoutId',
                 'elements.uid',
                 'elements.enabled',
                 'elements.archived',

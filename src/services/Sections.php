@@ -827,17 +827,6 @@ class Sections extends Component
             if (!$entryTypeRecord) {
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
-
-            $oldEntryType = new EntryType($entryTypeRecord->toArray([
-                'id',
-                'sectionId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleLabel',
-                'titleFormat',
-            ]));
         } else {
             $entryTypeRecord = new EntryTypeRecord();
 
@@ -860,23 +849,11 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Is there a new field layout?
+            // Save the field layout
             $fieldLayout = $entryType->getFieldLayout();
-
-            if (!$fieldLayout->id) {
-                // Delete the old one
-                /** @noinspection PhpUndefinedVariableInspection */
-                if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
-                }
-
-                // Save the new one
-                Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                // Update the entry type record/model with the new layout ID
-                $entryType->fieldLayoutId = $fieldLayout->id;
-                $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-            }
+            Craft::$app->getFields()->saveLayout($fieldLayout);
+            $entryType->fieldLayoutId = $fieldLayout->id;
+            $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
 
             // Save the entry type
             $entryTypeRecord->save(false);
@@ -1129,6 +1106,7 @@ class Sections extends Component
             $entry->siteId = $firstSiteSettings->siteId;
             $entry->sectionId = $section->id;
             $entry->typeId = $firstEntryType->id;
+            $entry->fieldLayoutId = $firstEntryType->fieldLayoutId;
         }
 
         // (Re)save it with an updated title, slug, and URI format.

@@ -546,6 +546,9 @@ class UsersController extends Controller
                 if ($edition === Craft::Pro) {
                     // Registering a new user
                     $user = new User();
+                    if (($fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class)) !== null) {
+                        $user->fieldLayoutId = $fieldLayout->id;
+                    }
                 } else {
                     // Nada.
                     throw new NotFoundHttpException('User not found');
@@ -868,6 +871,9 @@ class UsersController extends Controller
                 }
 
                 $user = new User();
+                if (($fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class)) !== null) {
+                    $user->fieldLayoutId = $fieldLayout->id;
+                }
             }
         }
 
@@ -1406,7 +1412,6 @@ class UsersController extends Controller
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
-        Craft::$app->getFields()->deleteLayoutsByType(User::class);
 
         if (!Craft::$app->getFields()->saveLayout($fieldLayout)) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));

@@ -42,8 +42,11 @@
 
 
 <div id="fieldlayoutform" class="fieldlayoutform">
+    {% if fieldLayout and fieldLayout.id %}
+        <input type="hidden" name="fieldLayoutId" value="{{ fieldLayout.id }}">
+    {% endif %}
 
-    <h2>{{ "Design your field layout"|t('app') }}</h2>
+    <h2 class="first">{{ "Design your field layout"|t('app') }}</h2>
 
     {% if instructions is defined %}
         <div class="instructions">{{ instructions|md }}</div>

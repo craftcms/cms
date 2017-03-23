@@ -403,6 +403,7 @@ class Elements extends Component
             }
 
             // Set the attributes
+            $elementRecord->fieldLayoutId = $element->fieldLayoutId;
             $elementRecord->enabled = (bool)$element->enabled;
             $elementRecord->archived = (bool)$element->archived;
 

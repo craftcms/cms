@@ -15,6 +15,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -235,14 +236,21 @@ class TagsController extends Controller
      * Creates a new tag.
      *
      * @return Response
+     * @throws BadRequestHttpException if the groupId param is missing or invalid
      */
     public function actionCreateTag(): Response
     {
         $this->requireLogin();
         $this->requireAcceptsJson();
 
+        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+        if (($group = Craft::$app->getTags()->getTagGroupById($groupId)) === null) {
+            throw new BadRequestHttpException('Invalid tag group ID: '.$groupId);
+        }
+
         $tag = new Tag();
-        $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+        $tag->groupId = $group->id;
+        $tag->fieldLayoutId = $group->fieldLayoutId;
         $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
         $tag->validateCustomFields = false;
 

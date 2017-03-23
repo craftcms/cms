@@ -565,21 +565,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        /** @var Volume $volume */
-        $volume = $this->getVolume();
-
-        if ($volume->id !== null) {
-            return $volume->getFieldLayout();
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(

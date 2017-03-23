@@ -437,6 +437,9 @@ class AssetIndexer extends Component
             throw new AssetLogicException("The folder {$path} does not exist");
         }
 
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
+
         // Check if the extension is allowed
         $extension = pathinfo($indexEntryModel->uri, PATHINFO_EXTENSION);
         $filename = basename($indexEntryModel->uri);
@@ -458,7 +461,8 @@ class AssetIndexer extends Component
         // Create an Asset if there is none.
         if ($asset === null) {
             $asset = new Asset();
-            $asset->volumeId = $folder->volumeId;
+            $asset->volumeId = $volume->id;
+            $asset->fieldLayoutId = $volume->fieldLayoutId;
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;
