@@ -430,11 +430,6 @@ class Asset extends Element
     public $keepFileOnDelete = false;
 
     /**
-     * @var bool Whether the file is currently being indexed
-     */
-    public $indexInProgress = false;
-
-    /**
      * @var
      */
     private $_transform;
