@@ -643,7 +643,7 @@ class Assets extends Component
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new InvalidConfigException('Invalid folder ID: '.$this->folderId);
+            throw new InvalidConfigException('Invalid folder ID: '.$folderId);
         }
 
         $volume = $folder->getVolume();
