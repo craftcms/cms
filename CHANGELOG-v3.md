@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\base\FolderVolumeInterface::folderExists()`.
 - Added `craft\base\Plugin::cpNavIconPath()`.
 - Added `craft\base\PluginInterface::getCpNavItem()`.
 - Added `craft\config\ApcConfig`.
@@ -13,7 +14,14 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\FileCacheConfig`.
 - Added `craft\config\GeneralConfig`.
 - Added `craft\config\MemCacheConfig`.
+- Added `craft\controller\actionDeleteAsset()`.
+- Added `craft\elements\Asset::EVENT_BEFORE_UPLOAD_ASSET` event constant.
+- Added `craft\elements\Asset::beforeValidate()`.
+- Added `craft\elements\Asset::$avoidFilenameConflicts` which defines the behaviour when encountering a conflict during file operations.
+- Added `craft\elements\Asset::$newFolderId` which indicates an Asset's new intended folder.
+- Added `craft\elements\Asset::$newLocation` which indicates an Asset's new intended location. If omitted, it will be constructed during validation from `newFolderId` and `newFilename properties.
 - Added `craft\helpers\App::maxPowerCaptain()`.
+- Added `craft\helpers\Assets::parseFileLocation()`.
 - Added `craft\helpers\ConfigHelper`.
 - Added `craft\helpers\DateTimeHelper::intervalToSeconds()`.
 - Added `craft\helpers\DateTimeHelper::secondsToInterval()`.
@@ -26,6 +34,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getFileCache()`.
 - Added `craft\services\Config::getGeneral()`.
 - Added `craft\services\Config::getMemCache()`.
+- Added `craft\validators\AssetLocationValidator`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
 - #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 - #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
@@ -33,6 +42,26 @@ Craft CMS 3.0 Working Changelog
 - #1559: Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. (nateiler)
 
 ### Changed
+- Refactored Assets reducing complexity and moving the file validation to an `AssetLocationValidator` validator class.
+- `craft\controllers\AssetsController::actionSaveAsset()` no longer accepts `assetId` and `userResponse` POST variables.
+- `craft\controllers\AssetsController::actionSaveAsset()` no longer returns a `prompt` response key during upload conflict, instead returning `conflict` key which includes the error message and a `conflictingAssetId` key.
+- `craft\controllers\AssetsController::actionReplaceFile()` now also accepts `sourceAssetId` and `targetFilename` POST variables.
+- `craft\controllers\AssetsController::actionMoveAsset()` no longer accepts `userResponse` POST variable, but accepts a `force` POST variable.
+- `craft\controllers\AssetsController::actionMoveAsset()` no longer returns a `prompt` response key during a move conflict, instead returning `conflict` key which includes the error message and a `suggestedFilename` key which contains a conflict-free filename.
+- `craft\controllers\AssetsController::actionMoveFolder()` no longer accepts `userResponse` POST variable, but accepts `force` and `merge` POST variables with `force` taking precedence.
+- `craft\controllers\AssetsController::actionMoveFolder()` no longer returns `prompt` and `foldername` response keys during a move conflict, instead returning `conflict` key which includes the error message.
+- `craft\elements\Asset` now supports a `fileOperations` scenario that should be used when an existing Asset is being moved around.
+- `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an Asset.
+- `craft\elements\Asset` now supports a `upload` scenario that should be used when uploading a file to create a new Asset.
+- `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an Asset file.
+- `craft\elements\Asset` now does all the heavy lifting for Volume operations in `craft\elements\Asset::beforeSave()`.
+- `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.`
+- `craft\helpers\Assets::editorImagePath()` renamed to `craft\helpers\Assets::getImageEditorSource()`.
+- `craft\services\Assets::createFolder()` now accepts an `$indexExisting` boolean parameter to indicate whether folders existing on Volume but not in Asset index should be indexed silently. Defaults to false.
+- `craft\services\Assets::getNameReplacementInFolder()` now combines the file list on Volume and the one found in Asset Index when figuring out a safe replacement filename to use.
+- `craft\services\Assets::getNameReplacementInFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
+- `craft\services\Assets::moveAsset()` now requires an instance of `craft\models\VolumeFolder` instead of `$folderId`.
+- `craft\services\Assets::moveAsset()` now returns a boolean value.
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
 - #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
 - `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
@@ -43,7 +72,11 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
+- Removed `craft\elements\Asset::$indexInProgress`.
 - Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
+- Removed `craft\services\Assets::EVENT_BEFORE_UPLOAD_ASSET` event constant.
+- Removed `craft\services\Assets::renameFile()`.
+- Removed `craft\services\Assets::saveAsset()`.
 - Removed `craft\services\Config::allowAutoUpdates()`.
 - Removed `craft\services\Config::exists()`. Use `isset(Craft::$app->config->general->configSetting)`.
 - Removed `craft\services\Config::get()`. Use `Craft::$app->config->general`, et al.
@@ -67,6 +100,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Config::isExtensionAllowed()`.
 - Removed `craft\services\Config::maxPowerCaptain()`. Use `craft\helpers\App::maxPowerCaptain()`.
 - Removed `craft\services\Config::set()`.
+- Removed `craft\validators\AssetFilenameValidator`.
 - Removed `Craft.showElementEditor()`.
 
 ### Fixed
@@ -78,6 +112,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed an exception that could occur when loading an entry with a stored version that didn’t have a valid entry type ID.
 - #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
 - #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
+- Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
