@@ -17,7 +17,6 @@ use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\helpers\ArrayHelper;
-use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
@@ -626,6 +625,19 @@ class User extends Element implements IdentityInterface
 
         return $scenarios;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            return Craft::$app->getFields()->getLayoutByType(static::class);
+        }
+
+        return null;
+    }
+
 
     /**
      * @inheritdoc
