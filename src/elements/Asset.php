@@ -405,7 +405,7 @@ class Asset extends Element
     public $newFilename;
 
     /**
-     * @var string|null New folder id
+     * @var int|null New folder id
      */
     public $newFolderId;
 
