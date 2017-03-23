@@ -49,6 +49,7 @@ use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Fields service.
@@ -1004,10 +1005,15 @@ class Fields extends Component
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
-        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = Craft::$app->getRequest()->getBodyParam($paramPrefix.'requiredFields', []);
+        $request = Craft::$app->getRequest();
 
-        return $this->assembleLayout($postedFieldLayout, $requiredFields);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+
+        $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
+        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+
+        return $fieldLayout;
     }
 
     /**
@@ -1102,9 +1108,27 @@ class Fields extends Component
             'isNew' => $isNewLayout,
         ]));
 
-        // First save the layout
-        $layoutRecord = new FieldLayoutRecord();
+        if (!$isNewLayout) {
+            // Delete the old tabs/fields
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%fieldlayouttabs}}', ['layoutId' => $layout->id])
+                ->execute();
+
+            // Get the current layout
+            if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
+                throw new Exception('Invalid field layout ID: '.$layout->id);
+            }
+        } else {
+            $layoutRecord = new FieldLayoutRecord();
+        }
+
+        // Save it
         $layoutRecord->type = $layout->type;
+
+        if (!$isNewLayout) {
+            $layoutRecord->id = $layout->id;
+        }
+
         $layoutRecord->save(false);
 
         if ($isNewLayout) {

@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -355,7 +356,7 @@ class Assets extends BaseRelationField
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-        // If ther are any..
+        // If there are any..
         if (!empty($incomingFiles)) {
             $assetIds = [];
             $targetFolderId = $this->_determineUploadFolderId($element);
@@ -371,12 +372,16 @@ class Assets extends BaseRelationField
                     }
 
                     $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                    /** @var Volume $volume */
+                    $volume = $folder->getVolume();
+
                     $asset = new Asset();
                     $asset->title = StringHelper::toTitleCase(pathinfo($file['filename'], PATHINFO_FILENAME));
                     $asset->newFilePath = $tempPath;
                     $asset->filename = $file['filename'];
                     $asset->folderId = $targetFolderId;
-                    $asset->volumeId = $folder->volumeId;
+                    $asset->volumeId = $volume->id;
+                    $asset->fieldLayoutId = $volume->fieldLayoutId;
                     Craft::$app->getAssets()->saveAsset($asset);
 
                     $assetIds[] = $asset->id;

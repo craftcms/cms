@@ -620,6 +620,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $block = new MatrixBlock();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
+            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
@@ -673,6 +674,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         /** @var Element $element */
         // Get the possible block types for this field
+        /** @var MatrixBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id), 'handle');
 
         if (!is_array($value)) {
@@ -731,6 +733,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
+                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->ownerId = $ownerId;
                 $block->siteId = $element->siteId;
 

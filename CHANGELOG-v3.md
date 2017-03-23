@@ -31,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
 - #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
 - #1559: Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. (nateiler)
+- Elements are now “hard-coded” with their field layout IDs, via a new `fieldLayoutId` column in the `elements` table and a `$fieldLayoutId` property on `craft\base\ElementTrait`. Plugins that provide custom element types should start making sure `$fieldLayoutId` is set on their elements before passing them to `Craft::$app->elements->saveElement()`.
 
 ### Changed
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
@@ -40,6 +41,9 @@ Craft CMS 3.0 Working Changelog
 - Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
 - Removed support for `@web`, `@webroot`, and other aliases in volume settings, as they cause more problems than they solve in multi-site Craft installs.
 - Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
+- `craft\base\Element::getFieldLayout()` now returns a field layout based on the `$fieldLayoutId` property (if set). It no longer returns the first field layout associated with the static element class.
+- `craft\services\Fields::assembleLayoutFromPost()` now sets the ID on the returned field layout if the post data came from a Field Layout Designer for an existing field layout.
+- `craft\services\Fields::saveLayout()` is now capable of updating existing field layouts, not just creating new ones. So there’s no longer a need to delete the old field layout and save a brand new one each time something changes.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.

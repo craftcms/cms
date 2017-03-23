@@ -563,14 +563,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
-    {
-        return $this->getType()->getFieldLayout();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         $sites = [];

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -460,6 +461,7 @@ class Users extends Component
         $volumes = Craft::$app->getVolumes();
         $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
 
+        /** @var Volume $volume */
         if (!($volumeId && $volume = $volumes->getVolumeById($volumeId))) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
@@ -472,7 +474,7 @@ class Users extends Component
             // No longer a new file.
             $assets->replaceAssetFile($assets->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $volumes->ensureTopFolder($volumes->getVolumeById($volumeId));
+            $folderId = $volumes->ensureTopFolder($volume);
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
@@ -480,7 +482,8 @@ class Users extends Component
             $photo->newFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;
-            $photo->volumeId = $volumeId;
+            $photo->volumeId = $volume->id;
+            $photo->fieldLayoutId = $volume->fieldLayoutId;
 
             // Save and delete the temporary file
             $assets->saveAsset($photo);

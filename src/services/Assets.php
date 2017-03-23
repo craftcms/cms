@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\FolderVolumeInterface;
 use craft\base\LocalVolumeInterface;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -281,6 +282,7 @@ class Assets extends Component
             // because the target Asset is nuked and the new one takes it's place.
             $assetToReplaceWith->folderId = $assetToReplace->folderId;
             $assetToReplaceWith->volumeId = $assetToReplace->volumeId;
+            $assetToReplaceWith->fieldLayoutId = $assetToReplace->fieldLayoutId;
             $assetToReplaceWith->filename = $assetToReplace->filename;
 
             // At this point the Asset being moved effectively takes place of the target Asset.
@@ -1012,8 +1014,12 @@ class Assets extends Component
 
         $this->_moveAssetFileToFolder($asset, $targetFolder, $filename);
 
+        /** @var Volume $volume */
+        $volume = $targetFolder->getVolume();
+
         $asset->folderId = $folderId;
-        $asset->volumeId = $targetFolder->volumeId;
+        $asset->volumeId = $volume->id;
+        $asset->fieldLayoutId = $volume->fieldLayoutId;
         $asset->filename = $filename;
 
         $this->saveAsset($asset);
