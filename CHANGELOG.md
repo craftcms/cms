@@ -7,6 +7,7 @@ Craft CMS Changelog
 - Added Control Panel translations for Polish.
 
 ### Changed
+- #1556: Removed the Delete button from entry version/draft pages.
 - Updated element-resize-detector to 1.1.11.
 - Updated Garnish to 0.1.17.
 
