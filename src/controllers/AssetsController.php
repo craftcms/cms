@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\FolderVolumeInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
-use craft\errors\AssetConflictException;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
@@ -20,12 +20,10 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -104,10 +102,6 @@ class AssetsController extends Controller
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
             $asset = new Asset();
-
-            // Make sure there are no double spaces, if the filename had a space followed by a
-            // capital letter because of Yii's "word" logic.
-            $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
             $asset->tempFilePath = $tempPath;
             $asset->filename = $filename;

@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -21,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
+use craft\volumes\Temp;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 

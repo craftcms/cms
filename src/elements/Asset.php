@@ -1044,8 +1044,12 @@ class Asset extends Element
                 Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
             }
 
+            /** @var Volume $volume */
+            $volume = $newFolder->getVolume();
+
             // Update file properties
             $this->volumeId = $newFolder->volumeId;
+            $this->fieldLayoutId = $volume->fieldLayoutId;
             $this->folderId = $folderId;
             $this->folderPath = $newFolder->path;
             $this->filename = $filename;
