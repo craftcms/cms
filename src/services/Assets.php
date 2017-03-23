@@ -603,8 +603,8 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset,
-                $index);
+
+            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
         } else {
             if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
                 try {
@@ -618,6 +618,7 @@ class Assets extends Component
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 $tasks = Craft::$app->getTasks();
+
                 if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
                     $tasks->createTask(GeneratePendingTransforms::class);
                 }
@@ -634,15 +635,18 @@ class Assets extends Component
      * @param string $originalFilename the original filename for which to find a replacement.
      * @param int    $folderId         THe folder in which to find the replacement
      *
+     * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @return string
+     * @throws InvalidConfigException If an invalid folder id is passed.
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
+
         if (!$folder) {
-            throw new AssetLogicException();
+            throw new InvalidConfigException('Invalid folder ID: '.$this->folderId);
         }
+
         $volume = $folder->getVolume();
         $fileList = $volume->getFileList((string)$folder->path, false);
 
@@ -662,7 +666,7 @@ class Assets extends Component
             ->where(['folderId' => $folderId])
             ->column();
 
-        // Do an improvised merge and combine the lists.
+        // Combine the indexed list and the actual file list to make the final potential conflict list.
         foreach ($fileList as $file) {
             $existingFiles[StringHelper::toLowerCase($file)] = true;
         }
@@ -678,7 +682,6 @@ class Assets extends Component
 
         $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
         $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
-
 
         // If the file already ends with something that looks like a timestamp, use that instead.
         if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
@@ -825,7 +828,6 @@ class Assets extends Component
             // A little obfuscation never hurt anyone
             $folderName = 'user_'.sha1(Craft::$app->getSession()->id);
         }
-
 
         $folder = $this->findFolder([
             'name' => $folderName,
