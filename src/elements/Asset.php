@@ -22,7 +22,8 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\fields\Assets;
+use craft\errors\FileException;
+use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -33,9 +34,10 @@ use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
-use craft\validators\AssetFilenameValidator;
+use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\volumes\Temp;
+use DateTime;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -55,10 +57,28 @@ class Asset extends Element
     // Constants
     // =========================================================================
 
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
+     */
+    const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
+
+    // Location error codes
+    // -------------------------------------------------------------------------
+
+    const ERROR_DISALLOWED_EXTENSION = 'disallowed_extension';
+    const ERROR_FILENAME_CONFLICT = 'filename_conflict';
+
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_FILENAME = 'filename';
+    const SCENARIO_FILEOPS = 'fileOperations';
+    const SCENARIO_INDEX = 'index';
+    const SCENARIO_UPLOAD = 'upload';
+    const SCENARIO_REPLACE = 'replace';
 
     // Static
     // =========================================================================
@@ -369,24 +389,45 @@ class Asset extends Element
     public $dateModified;
 
     /**
+     * @var string|null New file location
+     */
+    public $newLocation;
+
+    /**
+     * @var string|null Location error code
+     * @see AssetLocationValidator::validateAttribute()
+     */
+    public $locationError;
+
+    /**
      * @var string|null New filename
      */
     public $newFilename;
 
     /**
-     * @var string|null The new file path
+     * @var string|null New folder id
      */
-    public $newFilePath;
+    public $newFolderId;
+
+    /**
+     * @var string|null The temp file path
+     */
+    public $tempFilePath;
+
+    /**
+     * @var bool Whether Asset should avoid filename conflicts when saved.
+     */
+    public $avoidFilenameConflicts = false;
+
+    /**
+     * @var string|null The suggested filename in case of a conflict.
+     */
+    public $suggestedFilename;
 
     /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
      */
     public $keepFileOnDelete = false;
-
-    /**
-     * @var bool Whether the file is currently being indexed
-     */
-    public $indexInProgress = false;
 
     /**
      * @var
@@ -499,19 +540,13 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
-        if ($this->id !== null && !$this->title) {
-            // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules, true);
-            if ($key !== -1) {
-                array_splice($rules, $key, 1);
-            }
-        }
-
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-        $rules[] = [['newFilename'], AssetFilenameValidator::class];
+        $rules[] = [['newLocation'], AssetLocationValidator::class, 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
+        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_FILEOPS]];
+        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE]];
 
         return $rules;
     }
@@ -522,7 +557,7 @@ class Asset extends Element
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_FILENAME] = ['newFilename'];
+        $scenarios[self::SCENARIO_INDEX] = [];
 
         return $scenarios;
     }
@@ -767,7 +802,7 @@ class Asset extends Element
      */
     public function getImageTransformSourcePath(): string
     {
-        $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        $volume = $this->getVolume();
 
         if ($volume instanceof LocalVolumeInterface) {
             return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
@@ -879,7 +914,7 @@ class Asset extends Element
                 'id' => 'newFilename',
                 'name' => 'newFilename',
                 'value' => $this->filename,
-                'errors' => $this->getErrors('filename'),
+                'errors' => $this->getErrors('newLocation'),
                 'first' => true,
                 'required' => true,
                 'class' => 'renameHelper text'
@@ -908,16 +943,142 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @return bool
      */
-    public function beforeSave(bool $isNew): bool
+    public function beforeValidate()
     {
-        if ($isNew && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+        if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
+            $folderId = $this->newFolderId ?: $this->folderId;
+            $filename = $this->newFilename ?: $this->filename;
+            $this->newLocation = "{folder:{$folderId}}{$filename}";
+        }
+
+        // Set the kind based on filename, if not set already
+        if (empty($this->kind) && !empty($this->filename)) {
+            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
+        }
+
+        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
             // Give it a default title based on the file name
             $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
-        return parent::beforeSave($isNew);
+        return parent::beforeValidate();
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        if (!parent::beforeSave($isNew)) {
+            return false;
+        }
+
+        // See if we need to perform any file operations
+        if ($this->newLocation) {
+            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            $hasNewFolder = $folderId != $this->folderId;
+            $hasNewFilename = $filename != $this->filename;
+        } else {
+            $folderId = $this->folderId;
+            $filename = $this->filename;
+            $hasNewFolder = $hasNewFilename = false;
+        }
+
+        $tempPath = null;
+
+        // Give the plugins a chance to do something with the file being uploaded.
+        if ($this->getScenario() === self::SCENARIO_UPLOAD) {
+            $event = new AssetEvent(['asset' => $this, 'isNew' => $isNew]);
+            $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
+        }
+
+        // Yes/no?
+        if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
+            $assetsService = Craft::$app->getAssets();
+
+            $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
+            $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+
+            $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
+            $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
+
+            $oldPath = $this->folderId ? $this->getUri() : null;
+            $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
+
+            // Is this just a simple move/rename within the same volume?
+            if (!$this->tempFilePath && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+                $oldVolume->renameFile($oldPath, $newPath);
+            } else {
+                // Get the temp path
+                if ($this->tempFilePath) {
+                    $tempPath = $this->tempFilePath;
+                } else {
+                    $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
+                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                    $oldVolume->saveFileLocally($oldPath, $tempPath);
+                }
+
+                // Try to open a file stream
+                if (($stream = fopen($tempPath, 'rb')) === false) {
+                    FileHelper::removeFile($tempPath);
+                    throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
+                }
+
+                // Delete the old path first.
+                if ($this->folderId) {
+                    // Delete the old file
+                    $oldVolume->deleteFile($oldPath);
+                }
+
+                // Upload the file to the new location
+                $newVolume->createFileByStream($newPath, $stream, []);
+                fclose($stream);
+
+            }
+
+            if ($this->folderId) {
+                // Nuke the transforms
+                Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+            }
+
+            /** @var Volume $volume */
+            $volume = $newFolder->getVolume();
+
+            // Update file properties
+            $this->volumeId = $newFolder->volumeId;
+            $this->fieldLayoutId = $volume->fieldLayoutId;
+            $this->folderId = $folderId;
+            $this->folderPath = $newFolder->path;
+            $this->filename = $filename;
+
+            // If there was a new file involved, update file data.
+            if ($tempPath) {
+                $this->kind = AssetsHelper::getFileKindByExtension($filename);
+
+                if ($this->kind === 'image') {
+                    list ($this->width, $this->height) = Image::imageSize($tempPath);
+                } else {
+                    $this->width = null;
+                    $this->height = null;
+                }
+
+                $this->size = filesize($tempPath);
+                $this->dateModified = new DateTime('@'.filemtime($tempPath));
+
+                // Delete the temp file
+                FileHelper::removeFile($tempPath);
+            }
+
+            $this->newFolderId = null;
+            $this->newFilename = null;
+            $this->newLocation = null;
+            $this->tempFilePath = null;
+        }
+
+        return true;
     }
 
     /**
@@ -933,16 +1094,12 @@ class Asset extends Element
             if (!$record) {
                 throw new Exception('Invalid asset ID: '.$this->id);
             }
-
-            if ($this->filename !== $record->filename) {
-                throw new Exception('Unable to change an asset’s filename like this.');
-            }
         } else {
             $record = new AssetRecord();
             $record->id = $this->id;
-            $record->filename = $this->filename;
         }
 
+        $record->filename = $this->filename;
         $record->volumeId = $this->volumeId;
         $record->folderId = $this->folderId;
         $record->kind = $this->kind;
@@ -953,15 +1110,8 @@ class Asset extends Element
         $record->dateModified = $this->dateModified;
         $record->save(false);
 
-        if ($this->newFilename !== null) {
-            if ($this->newFilename === $this->filename) {
-                $this->newFilename = null;
-            } else {
-                Craft::$app->getAssets()->renameFile($this, false);
-            }
-        }
-
         parent::afterSave($isNew);
+
     }
 
     /**

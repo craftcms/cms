@@ -24,6 +24,15 @@ interface FolderVolumeInterface extends VolumeInterface
     // =========================================================================
 
     /**
+     * Checks whether a folder exists at the given path.
+     *
+     * @param string $path The path to the folder to check.
+     *
+     * @return array|bool|null
+     */
+    public function folderExists(string $path);
+
+    /**
      *
      * Creates a directory.
      *

@@ -467,11 +467,13 @@ class AssetIndexer extends Component
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
-            $asset->indexInProgress = true;
         }
+
 
         $asset->size = $indexEntryModel->size;
         $timeModified = $indexEntryModel->timestamp;
+
+        $asset->setScenario(Asset::SCENARIO_INDEX);
 
         // All sorts of fun stuff for images.
         if ($asset->kind === 'image') {
@@ -522,10 +524,7 @@ class AssetIndexer extends Component
 
         $asset->dateModified = $timeModified;
 
-        // Make sure there are no double spaces, if the filename had a space followed by a
-        // capital letter because of Yii's "word" logic.
-        $asset->title = str_replace('  ', ' ',StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
-        Craft::$app->getAssets()->saveAsset($asset, false);
+        Craft::$app->getElements()->saveElement($asset);
 
         return $asset;
     }

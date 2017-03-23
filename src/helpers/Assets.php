@@ -187,8 +187,7 @@ class Assets
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = ($folderIdChanges[$sourceFolder->parentId] ?? $destinationFolder->id);
-
-                $assets->createFolder($folder);
+                $assets->createFolder($folder, true);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -203,35 +202,22 @@ class Assets
      *
      * @param array $assets          List of assets
      * @param array $folderIdChanges A map of folder id changes
-     * @param bool  $merge           If set to true, files will be merged in folders
      *
      * @return array
      */
-    public static function fileTransferList(array $assets, array $folderIdChanges, bool $merge = false): array
+    public static function fileTransferList(array $assets, array $folderIdChanges): array
     {
         $fileTransferList = [];
 
         // Build the transfer list for files
         foreach ($assets as $asset) {
             $newFolderId = $folderIdChanges[$asset->folderId];
-            $transferItem = [
+
+            $fileTransferList[] = [
                 'assetId' => $asset->id,
-                'folderId' => $newFolderId
-            ];
-
-            // If we're merging, preemptively figure out if there'll be conflicts and resolve them
-            if ($merge) {
-                $conflictingAsset = Asset::find()
-                    ->folderId($newFolderId)
-                    ->filename(Db::escapeParam($asset->filename))
-                    ->one();
-
-                if ($conflictingAsset) {
-                    $transferItem['userResponse'] = 'replace';
-                }
-            }
-
-            $fileTransferList[] = $transferItem;
+                'folderId' => $newFolderId,
+                'force' => true
+            ];;
         }
 
         return $fileTransferList;
@@ -303,7 +289,7 @@ class Assets
     }
 
     /**
-     * Return a file's kind by a given extension.
+     * Return a file's kind by a file's extension.
      *
      * @param string $file The file name/path
      *
@@ -322,6 +308,25 @@ class Assets
         }
 
         return 'unknown';
+    }
+
+    /**
+     * Parses a file location in the format of `{folder:X}filename.ext` returns the folder ID + filename.
+     *
+     * @param string $location
+     *
+     * @return array
+     * @throws Exception if the file location is invalid
+     */
+    public static function parseFileLocation($location)
+    {
+        if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
+            throw new Exception('Invalid file location format: '.$location);
+        }
+
+        list(, $folderId, $filename) = $matches;
+
+        return [$folderId, $filename];
     }
 
     // Private Methods
@@ -568,7 +573,7 @@ class Assets
      * @return false|string
      * @throws Exception in case of failure
      */
-    public static function editorImagePath(int $assetId, int $size)
+    public static function getImageEditorSource(int $assetId, int $size)
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 

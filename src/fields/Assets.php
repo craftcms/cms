@@ -22,6 +22,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
+use craft\volumes\Temp;
 use craft\web\UploadedFile;
 use yii\base\ErrorException;
 
@@ -270,8 +271,6 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
-     *
-     * @todo All of the validation stuff here should be moved to an actual validation function
      */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
@@ -335,20 +334,8 @@ class Assets extends BaseRelationField
             }
         }
 
-        if ($this->restrictFiles && !empty($this->allowedKinds)) {
-            $allowedExtensions = $this->_getAllowedExtensions();
-        } else {
-            $allowedExtensions = false;
-        }
-
-        if (is_array($allowedExtensions)) {
-            foreach ($incomingFiles as $file) {
-                $extension = StringHelper::toLowerCase(pathinfo($file['filename'], PATHINFO_EXTENSION));
-
-                if (!in_array($extension, $allowedExtensions, true)) {
-                    $this->_failedFiles[] = $file['filename'];
-                }
-            }
+        if (!empty($incomingFiles)) {
+            $this->_validateIncomingFiles($incomingFiles);
         }
 
         if (!empty($this->_failedFiles)) {
@@ -356,7 +343,6 @@ class Assets extends BaseRelationField
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-        // If there are any..
         if (!empty($incomingFiles)) {
             $assetIds = [];
             $targetFolderId = $this->_determineUploadFolderId($element);
@@ -372,24 +358,15 @@ class Assets extends BaseRelationField
                     }
 
                     $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
-                    /** @var Volume $volume */
-                    $volume = $folder->getVolume();
-
                     $asset = new Asset();
-                    $asset->title = StringHelper::toTitleCase(pathinfo($file['filename'], PATHINFO_FILENAME));
-                    $asset->newFilePath = $tempPath;
+                    $asset->tempFilePath = $tempPath;
                     $asset->filename = $file['filename'];
-                    $asset->folderId = $targetFolderId;
-                    $asset->volumeId = $volume->id;
-                    $asset->fieldLayoutId = $volume->fieldLayoutId;
-                    Craft::$app->getAssets()->saveAsset($asset);
+                    $asset->newFolderId = $targetFolderId;
+                    $asset->volumeId = $folder->volumeId;
+                    $asset->setScenario(Asset::SCENARIO_UPLOAD);
+                    Craft::$app->getElements()->saveElement($asset);
 
                     $assetIds[] = $asset->id;
-                    try {
-                        FileHelper::removeFile($tempPath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage(), __METHOD__);
-                    }
                 }
 
                 $assetIds = array_unique(array_merge($value, $assetIds));
@@ -456,22 +433,13 @@ class Assets extends BaseRelationField
 
             if (!empty($assetsToMove) && !empty($targetFolderId)) {
 
+                $assetService = Craft::$app->getAssets();
+                $folder = $assetService->getFolderById($targetFolderId);
+
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
-                    $conflictingAsset = Asset::find()
-                        ->folderId($targetFolderId)
-                        ->filename(Db::escapeParam($asset->filename))
-                        ->one();
-
-                    if ($conflictingAsset) {
-                        $newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename,
-                            $targetFolderId);
-                        Craft::$app->getAssets()->moveAsset($asset,
-                            $targetFolderId, $newFilename);
-                    } else {
-                        Craft::$app->getAssets()->moveAsset($asset,
-                            $targetFolderId);
-                    }
+                    $asset->avoidFilenameConflicts = true;
+                    $assetService->moveAsset($asset, $folder);
                 }
             }
         }
@@ -493,7 +461,6 @@ class Assets extends BaseRelationField
         if ($this->useSingleFolder) {
             $folderPath = 'folder:'.$folderId;
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
-
 
             // Construct the path
             while ($folder->parentId && $folder->volumeId !== null) {
@@ -561,14 +528,14 @@ class Assets extends BaseRelationField
      */
     private function _resolveVolumePathToFolderId(string $uploadSource, string $subpath, ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
-        $assets = Craft::$app->getAssets();
+        $assetsService = Craft::$app->getAssets();
 
         $parts = explode(':', $uploadSource);
-        $folder = $assets->getFolderById((int)end($parts));
+        $folder = $assetsService->getFolderById((int)end($parts));
         $volumeId = $folder ? $folder->volumeId : 0;
 
         // Make sure the volume and root folder actually exists
-        if ($volumeId === 0 || !($rootFolder = $assets->getRootFolderByVolumeId($volumeId))) {
+        if ($volumeId === 0 || !($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId))) {
             throw new InvalidVolumeException();
         }
 
@@ -605,7 +572,7 @@ class Assets extends BaseRelationField
             unset($segment);
             $subpath = implode('/', $segments);
 
-            $folder = Craft::$app->getAssets()->findFolder([
+            $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
                 'path' => $subpath.'/'
             ]);
@@ -621,7 +588,7 @@ class Assets extends BaseRelationField
 
                 $segments = explode('/', $subpath);
                 foreach ($segments as $segment) {
-                    $folder = Craft::$app->getAssets()->findFolder([
+                    $folder = $assetsService->findFolder([
                         'parentId' => $parentFolder->id,
                         'name' => $segment
                     ]);
@@ -656,12 +623,7 @@ class Assets extends BaseRelationField
         $newFolder->volumeId = $currentFolder->volumeId;
         $newFolder->path = ltrim(rtrim($currentFolder->path, '/').'/'.$folderName, '/').'/';
 
-        try {
-            Craft::$app->getAssets()->createFolder($newFolder);
-        } catch (AssetConflictException $e) {
-            // If folder doesn't exist in DB, but we can't create it, it probably exists on the server.
-            Craft::$app->getAssets()->storeFolderRecord($newFolder);
-        }
+        Craft::$app->getAssets()->createFolder($newFolder, true);
 
         return $newFolder;
     }
@@ -687,6 +649,30 @@ class Assets extends BaseRelationField
         }
 
         return $extensions;
+    }
+
+    /**
+     * Validate incoming files against field settings.
+     *
+     * @param array $incomingFiles
+     *
+     * @return void
+     */
+    private function _validateIncomingFiles(array $incomingFiles)
+    {
+        if ($this->restrictFiles && !empty($this->allowedKinds)) {
+            $allowedExtensions = $this->_getAllowedExtensions();
+        }
+
+        foreach ($incomingFiles as $fileInfo) {
+            if (!empty($allowedExtensions)) {
+                $extension = StringHelper::toLowerCase(pathinfo($fileInfo['filename'], PATHINFO_EXTENSION));
+
+                if (!in_array($extension, $allowedExtensions, true)) {
+                    $this->_failedFiles[] = $fileInfo['filename'];
+                }
+            }
+        }
     }
 
     /**
