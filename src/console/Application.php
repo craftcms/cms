@@ -23,7 +23,6 @@ use yii\console\Response;
  *
  * @method Request   getRequest()      Returns the request component.
  * @method Response  getResponse()     Returns the response component.
- * @method User      getUser()         Returns the user component.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -82,5 +81,15 @@ class Application extends \yii\console\Application
     public function getSession()
     {
         throw new MissingComponentException('Session does not exist in a console request.');
+    }
+
+    /**
+     * Returns the user component.
+     *
+     * @return User
+     */
+    public function getUser()
+    {
+        return $this->get('user');
     }
 }

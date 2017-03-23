@@ -120,6 +120,7 @@ Craft CMS 3.0 Working Changelog
 - #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
 - Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
 - #1560: Fixed a bug where Matrix and relational fields’ values were getting propagated across other sites, even if they were set to manage blocks/relations on a per-site basis.
+- #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
