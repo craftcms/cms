@@ -71,6 +71,10 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('No target destination provided for uploading');
         }
 
+        if ($uploadedFile === null) {
+            throw new BadRequestHttpException('No file was uploaded');
+        }
+
         try {
             $assets = Craft::$app->getAssets();
 
@@ -845,7 +849,7 @@ class AssetsController extends Controller
      * @return string
      * @throws UploadFailedException
      */
-    private function _getUploadedFileTempPath($uploadedFile)
+    private function _getUploadedFileTempPath(UploadedFile $uploadedFile)
     {
         if ($uploadedFile->getHasError()) {
             throw new UploadFailedException($uploadedFile->error);
