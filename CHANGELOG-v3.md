@@ -124,6 +124,7 @@ Craft CMS 3.0 Working Changelog
 - #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
 - #1543: Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters.
 - Fixed a bug that could prevent Craft from updating correctly in case of missing files.
+- Fixed a PHP error that could occur when saving an element that says it has content, but doesn’t have a field layout.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
