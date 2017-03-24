@@ -249,17 +249,6 @@ class Globals extends Component
             if (!$globalSetRecord) {
                 throw new GlobalSetNotFoundException("No global set exists with the ID '{$globalSet->id}'");
             }
-
-            /** @var GlobalSet $oldSet */
-            $oldSet = new GlobalSet($globalSetRecord->toArray([
-                'name',
-                'handle',
-                'fieldLayoutId',
-                'id',
-                'uid',
-                'dateCreated',
-                'dateUpdated',
-            ]));
         } else {
             $globalSetRecord = new GlobalSetRecord();
         }
