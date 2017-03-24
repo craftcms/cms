@@ -655,7 +655,7 @@ class Raster extends Image
     private function _getSaveOptions(int $quality = null, string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
-        $quality = ($quality === null ? $this->_quality : $quality);
+        $quality = $quality ?: $this->_quality;
         $extension = (!$extension ? $this->getExtension() : $extension);
 
         switch ($extension) {

@@ -679,6 +679,7 @@ class CategoriesController extends Controller
      * Fetches or creates a Category.
      *
      * @return Category
+     * @throws BadRequestHttpException if the requested category group doesn't exist
      * @throws NotFoundHttpException if the requested category cannot be found
      */
     private function _getCategoryModel(): Category

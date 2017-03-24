@@ -48,11 +48,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     private $_adapter;
 
-    /**
-     * @var Filesystem|null The Flysystem filesystem
-     */
-    private $_filesystem;
-
     // Public Methods
     // =========================================================================
 

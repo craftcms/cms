@@ -1218,6 +1218,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setParent(ElementInterface $parent = null)
     {
+        /** @var Element $parent */
         $this->_parent = $parent;
 
         if ($parent) {

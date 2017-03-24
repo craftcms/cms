@@ -1087,6 +1087,7 @@ class Fields extends Component
      * @param bool        $runValidation Whether the layout should be validated
      *
      * @return bool Whether the field layout was saved successfully
+     * @throws Exception if $layout->id is set to an invalid layout ID
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {

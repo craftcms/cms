@@ -1,11 +1,11 @@
 <?php
 
-use craft\models\DeprecationError;
 use craft\helpers\UrlHelper;
+use craft\models\DeprecationError;
 
 /** @var $panel craft\debug\DeprecatedPanel */
 ?>
-    <h1>Deprecation Errors</h1>
+<h1>Deprecation Errors</h1>
 <?php
 
 array_walk($panel->data, function(&$log) {
@@ -21,7 +21,8 @@ $logs = $panel->data;
     <p>No deprecation errors were logged on this request.</p>
 <?php else: ?>
     <div class="table-responsive">
-        <table class="table table-condensed table-bordered table-striped table-hover" style="table-layout: fixed;">
+        <table class="table table-condensed table-bordered table-striped table-hover"
+               style="table-layout: fixed;">
             <thead>
             <tr>
                 <th style="nowrap">Error Message</th>
@@ -32,7 +33,8 @@ $logs = $panel->data;
             <?php foreach ($logs as $log): ?>
                 <tr>
                     <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
-                    <td><?= htmlentities($log->getOrigin(), null, 'UTF-8') ?> – <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">StackTrace</a>
+                    <td><?= htmlentities($log->getOrigin(), null, 'UTF-8') ?> –
+                        <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">StackTrace</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -41,4 +43,5 @@ $logs = $panel->data;
     </div>
 <?php endif; ?>
 
-<p><a href="<?= UrlHelper::cpUrl('utilities/deprecation-errors') ?>" target="_parent">View all deprecation errors</a></p>
+<p><a href="<?= UrlHelper::cpUrl('utilities/deprecation-errors') ?>"
+      target="_parent">View all deprecation errors</a></p>

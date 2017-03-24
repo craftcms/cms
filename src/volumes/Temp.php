@@ -65,14 +65,6 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function getRootPath(): string
-    {
-        return $this->path;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getRootUrl()
     {
         return $this->url;

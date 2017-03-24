@@ -476,7 +476,7 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->setScenario(Asset::SCENARIO_UPLOAD);
+            $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
