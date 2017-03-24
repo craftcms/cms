@@ -688,9 +688,9 @@ class AssetsFieldType extends BaseElementFieldType
 		}
 		catch (InvalidSubpathException $e)
 		{
-			// If this is a new element, the subpath probably just contained a token that returned null, like {id}
+			// If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
 			// so use the user's upload folder instead
-			if (empty($this->element->id) || !$createDynamicFolders)
+			if (!isset($this->element) || !$this->element->id || !$this->element->enabled || !$createDynamicFolders)
 			{
 				$userModel = craft()->userSession->getUser();
 				$userFolder = craft()->assets->getUserFolder($userModel);
