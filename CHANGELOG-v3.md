@@ -18,8 +18,9 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\MemCacheConfig`.
 - Added `craft\controllers\AssetsController::actionDeleteAsset()`.
 - Added `craft\elements\Asset::$avoidFilenameConflicts`, which determines whether new files’ names should be automatically renamed to avoid conflicts with exiting files.
-- Added `craft\elements\Asset::$newFolderId`, which indicates an Asset's new intended folder ID.
-- Added `craft\elements\Asset::$newLocation`, which indicates an Asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename properties.
+- Added `craft\elements\Asset::$conflictingFilename`, which stores a record of the attempted filename that ended up conflicting with an existing file.
+- Added `craft\elements\Asset::$newFolderId`, which indicates an asset's new intended folder ID.
+- Added `craft\elements\Asset::$newLocation`, which indicates an asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename properties.
 - Added `craft\helpers\App::maxPowerCaptain()`.
 - Added `craft\helpers\Assets::parseFileLocation()`.
 - Added `craft\helpers\ConfigHelper`.
@@ -53,10 +54,10 @@ Craft CMS 3.0 Working Changelog
 - `craft\controllers\AssetsController::actionReplaceFile()` now accepts `sourceAssetId` and `targetFilename` params.
 - `craft\controllers\AssetsController::actionSaveAsset()` no longer accepts `assetId` and `userResponse` params.
 - `craft\controllers\AssetsController::actionSaveAsset()` now returns `conflict` and `conflictingAssetId` keys in the event of a filename conflict, rather than `prompt`.
-- `craft\elements\Asset` now supports a `fileOperations` scenario that should be used when an existing Asset is being moved around.
-- `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an Asset.
-- `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an Asset file.
-- `craft\elements\Asset` now supports a `upload` scenario that should be used when uploading a file to create a new Asset.
+- `craft\elements\Asset` now supports a `create` scenario that should be used when creating a new asset.
+- `craft\elements\Asset` now supports a `fileOperations` scenario that should be used when an existing asset’s file is being moved around.
+- `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an asset’s file.
+- `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an asset’s file.
 - `craft\helpers\Assets::editorImagePath()` was renamed to `getImageEditorSource()`.
 - `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.`
 - `craft\services\Assets::createFolder()` now accepts an `$indexExisting` argument that determines whether unindexed folders on the volume should be silently indexed.
