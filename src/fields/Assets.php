@@ -10,21 +10,16 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
-use craft\errors\AssetConflictException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
-use craft\volumes\Temp;
 use craft\web\UploadedFile;
-use yii\base\ErrorException;
 
 /**
  * Assets represents an Assets field.
@@ -484,6 +479,7 @@ class Assets extends BaseRelationField
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['hideSidebar'] = (int)$this->useSingleFolder;
+
         return $variables;
     }
 
