@@ -127,6 +127,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that could prevent Craft from updating correctly in case of missing files.
 - Fixed a PHP error that could occur when saving an element that says it has content, but doesn’t have a field layout.
 - Fixed a bug where editing an asset from an Assets field wouldn’t show the correct custom fields, if the element hadn’t been saved yet or was disabled, and the asset hadn’t been placed in its target volume yet due to a dynamic subfolder path setting on the Assets field.
+- Fixed a PHP error that could occur when updating Craft if an Assets field didn’t have valid settings.
 - Fixed a PHP error that could occur when updating Craft if a Plain Text field didn’t have valid settings.
 
 ## 3.0.0-beta.7 - 2017-03-10
