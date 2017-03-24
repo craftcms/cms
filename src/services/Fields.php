@@ -728,11 +728,6 @@ class Fields extends Component
                         ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 }
-
-                // Clear the translation key format if not using a custom translation method
-                if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-                    $field->translationKeyFormat = null;
-                }
             } else {
                 // Did the old field have a column we need to remove?
                 if (
@@ -744,9 +739,10 @@ class Fields extends Component
                         ->dropColumn($contentTable, $oldColumnName)
                         ->execute();
                 }
+            }
 
-                // Fields without a content column don't get translated
-                $field->translationMethod = Field::TRANSLATION_METHOD_NONE;
+            // Clear the translation key format if not using a custom translation method
+            if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
                 $field->translationKeyFormat = null;
             }
 

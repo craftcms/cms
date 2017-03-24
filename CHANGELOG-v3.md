@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\base\FieldInterface::supportedTranslationMethods()`.
 - Added `craft\base\FolderVolumeInterface::folderExists()`.
 - Added `craft\base\Plugin::cpNavIconPath()`.
 - Added `craft\base\PluginInterface::getCpNavItem()`.
@@ -73,6 +74,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Element::getFieldLayout()` now returns a field layout based on the `$fieldLayoutId` property (if set). It no longer returns the first field layout associated with the static element class.
 - `craft\services\Fields::assembleLayoutFromPost()` now sets the ID on the returned field layout if the post data came from a Field Layout Designer for an existing field layout.
 - `craft\services\Fields::saveLayout()` is now capable of updating existing field layouts, not just creating new ones. So there’s no longer a need to delete the old field layout and save a brand new one each time something changes.
+- Field types that don’t support a column in the `content` table are no longer assumed to be untranslatable. If a field type wants to opt out of having a Translation Method setting, it should override its static `supportedTranslationMethods()` method and return either `['none']` or `['site']`, depending on whether its values should be propagated across other sites or not.
 
 ### Removed
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
@@ -117,6 +119,9 @@ Craft CMS 3.0 Working Changelog
 - #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
 - #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
 - Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
+- #1560: Fixed a bug where Matrix and relational fields’ values were getting propagated across other sites, even if they were set to manage blocks/relations on a per-site basis.
+- #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
+- #1543: Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters.
 - Fixed a bug that could prevent Craft from updating correctly in case of missing files.
 
 ## 3.0.0-beta.7 - 2017-03-10

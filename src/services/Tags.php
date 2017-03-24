@@ -218,13 +218,6 @@ class Tags extends Component
             if (!$tagGroupRecord) {
                 throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
             }
-
-            $oldTagGroup = new TagGroup($tagGroupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-                'fieldLayoutId',
-            ]));
         } else {
             $tagGroupRecord = new TagGroupRecord();
         }
