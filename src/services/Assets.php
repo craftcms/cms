@@ -37,7 +37,7 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
-use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 
 /**
  * Class Assets service.
@@ -181,18 +181,16 @@ class Assets extends Component
      * @param bool         $indexExisting Set to true to just index the folder if it already exists on volume.
      *
      * @return void
-     * @throws AssetConflictException If a folder already exists with such a name.
-     * @throws InvalidConfigException
-     * @throws VolumeObjectExistsException If the file actually exists on the volume, but on in the index.
+     * @throws AssetConflictException if a folder already exists with such a name
+     * @throws InvalidParamException if $folder doesn’t have a parent
+     * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
      */
     public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
     {
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new InvalidConfigException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                ['id' => $folder->parentId]));
+            throw new InvalidParamException('Folder '.$folder->id.' doesn\'t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -636,14 +634,14 @@ class Assets extends Component
      *
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @throws InvalidConfigException If an invalid folder id is passed.
+     * @throws InvalidParamException If $folderId is invalid
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
 
         if (!$folder) {
-            throw new InvalidConfigException('Invalid folder ID: '.$folderId);
+            throw new InvalidParamException('Invalid folder ID: '.$folderId);
         }
 
         $volume = $folder->getVolume();
