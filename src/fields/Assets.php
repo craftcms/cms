@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -479,6 +480,7 @@ class Assets extends BaseRelationField
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
 
         return $variables;
     }
@@ -716,5 +718,25 @@ class Assets extends BaseRelationField
         $folder = Craft::$app->getAssets()->getFolderById((int)$parts[1]);
 
         return $folder->volumeId ?? null;
+    }
+
+    /**
+     * Returns the target upload volume for the field.
+     *
+     * @return Volume|null
+     */
+    private function _uploadVolume()
+    {
+        if ($this->useSingleFolder) {
+            $sourceKey = $this->singleUploadLocationSource;
+        } else {
+            $sourceKey = $this->defaultUploadLocationSource;
+        }
+
+        if (($volumeId = $this->_volumeIdBySourceKey($sourceKey)) === null) {
+            return null;
+        }
+
+        return Craft::$app->getVolumes()->getVolumeById($volumeId);
     }
 }

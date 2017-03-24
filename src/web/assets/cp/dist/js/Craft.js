@@ -6150,6 +6150,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             this._attachUploader();
         },
 
+        createElementEditor: function($element) {
+            return Craft.createElementEditor(this.settings.elementType, $element, {
+                params: {
+                    defaultFieldLayoutId: this.settings.defaultFieldLayoutId
+                }
+            });
+        },
+
         /**
          * Attach the uploader with drag event handler
          */
