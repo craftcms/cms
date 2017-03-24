@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2968 - 2017-03-24
+
 ### Added
 - Added Control Panel translations for Polish.
 
