@@ -117,6 +117,7 @@ Craft CMS 3.0 Working Changelog
 - #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
 - #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
 - Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
+- Fixed a bug that could prevent Craft from updating correctly in case of missing files.
 
 ## 3.0.0-beta.7 - 2017-03-10
 
