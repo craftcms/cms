@@ -20,7 +20,7 @@ abstract class FolderVolume extends Volume implements FolderVolumeInterface
     /**
      * @inheritdoc
      */
-    public function folderExists(string $path)
+    public function folderExists(string $path): bool
     {
         return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
