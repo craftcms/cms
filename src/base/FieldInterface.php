@@ -64,6 +64,11 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the field’s translation key, based on a given element.
      *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getTranslationKey()` will be called for each custom field and for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s value will be copied over
+     * to the target site.
+     *
      * @param ElementInterface $element The element being saved
      *
      * @return string The translation key
