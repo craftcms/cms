@@ -517,12 +517,10 @@ class Assets extends BaseRelationField
     {
         $assetsService = Craft::$app->getAssets();
 
-        $parts = explode(':', $uploadSource);
-        $folder = $assetsService->getFolderById((int)end($parts));
-        $volumeId = $folder ? $folder->volumeId : 0;
+        $volumeId = $this->_volumeIdBySourceKey($uploadSource);
 
         // Make sure the volume and root folder actually exists
-        if ($volumeId === 0 || !($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId))) {
+        if ($volumeId === null || ($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId)) === null) {
             throw new InvalidVolumeException();
         }
 
@@ -702,5 +700,25 @@ class Assets extends BaseRelationField
         }
 
         return $folderId;
+    }
+
+    /**
+     * Returns a volume ID from an upload source key.
+     *
+     * @param string $sourceKey
+     *
+     * @return int|null
+     */
+    public function _volumeIdBySourceKey(string $sourceKey)
+    {
+        $parts = explode(':', $sourceKey, 2);
+
+        if (count($parts) !== 2 || !is_numeric($parts[1])) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderById((int)$parts[1]);
+
+        return $folder->volumeId ?? null;
     }
 }
