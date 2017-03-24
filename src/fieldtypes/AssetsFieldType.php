@@ -300,19 +300,15 @@ class AssetsFieldType extends BaseElementFieldType
 			$elementFiles = $elementFiles->find();
 		}
 
-		$filesToMove = array();
-
-		if (is_array($elementFiles) && count($elementFiles))
+		if (is_array($elementFiles) && !empty($elementFiles))
 		{
+			$filesToMove = array();
 			$settings = $this->getSettings();
+			$targetFolderId = $this->_determineUploadFolderId($settings);
 
-			if ($this->getSettings()->useSingleFolder)
+			if ($settings->useSingleFolder)
 			{
-				$targetFolderId = $this->_resolveSourcePathToFolderId(
-					$settings->singleUploadLocationSource,
-					$settings->singleUploadLocationSubpath);
-
-				// Move only the fiels with a changed folder ID.
+				// Move only the files with a changed folder ID.
 				foreach ($elementFiles as $elementFile)
 				{
 					if ($targetFolderId != $elementFile->folderId)
@@ -342,14 +338,6 @@ class AssetsFieldType extends BaseElementFieldType
 				foreach ($filesInTempSource as $file)
 				{
 					$filesToMove[] = $file->id;
-				}
-
-				// If we have some files to move, make sure the folder exists.
-				if (!empty($filesToMove))
-				{
-					$targetFolderId = $this->_resolveSourcePathToFolderId(
-						$settings->defaultUploadLocationSource,
-						$settings->defaultUploadLocationSubpath);
 				}
 			}
 
