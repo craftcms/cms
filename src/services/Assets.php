@@ -157,9 +157,9 @@ class Assets extends Component
     /**
      * Move or rename an Asset.
      *
-     * @param Asset         $asset         The asset whose file should be renamed
-     * @param VolumeFolder  $folder        The Volume Folder to move the Asset to.
-     * @param string        $filename      The new filename
+     * @param Asset        $asset    The asset whose file should be renamed
+     * @param VolumeFolder $folder   The Volume Folder to move the Asset to.
+     * @param string       $filename The new filename
      *
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
@@ -793,7 +793,8 @@ class Assets extends Component
      *
      * @return VolumeFolder
      */
-    public function getCurrentUserTemporaryUploadFolder() {
+    public function getCurrentUserTemporaryUploadFolder()
+    {
         return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
     }
 
@@ -842,7 +843,7 @@ class Assets extends Component
         FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
 
         /**
-         * @var VolumeFolder $folder;
+         * @var VolumeFolder $folder ;
          */
         return $folder;
     }

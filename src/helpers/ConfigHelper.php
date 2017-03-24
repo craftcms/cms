@@ -57,9 +57,9 @@ class ConfigHelper
     /**
      * Returns a localized config setting value.
      *
-     * @param mixed $value The config setting value. If it's an array, the item
-     *                     with a key that matches the site handle will be returned,
-     *                     or the first value if that doesn't exist.
+     * @param mixed       $value      The config setting value. If it's an array, the item
+     *                                with a key that matches the site handle will be returned,
+     *                                or the first value if that doesn't exist.
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      *
      * @return mixed

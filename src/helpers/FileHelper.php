@@ -11,7 +11,6 @@ use Craft;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplFileInfo;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidParamException;

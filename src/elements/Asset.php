@@ -1048,7 +1048,6 @@ class Asset extends Element
                 // Upload the file to the new location
                 $newVolume->createFileByStream($newPath, $stream, []);
                 fclose($stream);
-
             }
 
             if ($this->folderId) {
@@ -1123,7 +1122,6 @@ class Asset extends Element
         $record->save(false);
 
         parent::afterSave($isNew);
-
     }
 
     /**

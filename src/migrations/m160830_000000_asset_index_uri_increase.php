@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\migrations;
 
 use craft\db\Migration;

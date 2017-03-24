@@ -948,8 +948,7 @@ class AssetTransforms extends Component
     public function deleteQueuedSourceFiles()
     {
         $this->_sourcesToBeDeleted = array_unique($this->_sourcesToBeDeleted);
-        foreach ($this->_sourcesToBeDeleted as $source)
-        {
+        foreach ($this->_sourcesToBeDeleted as $source) {
             FileHelper::removeFile($source);
         }
     }

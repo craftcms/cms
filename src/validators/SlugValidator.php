@@ -8,10 +8,8 @@
 namespace craft\validators;
 
 use Craft;
-use craft\base\Element;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
-use yii\validators\StringValidator;
 use yii\validators\Validator;
 
 /**

@@ -57,6 +57,7 @@ class m170223_224012_plain_text_settings extends Migration
     public function safeDown()
     {
         echo "m170223_224012_plain_text_column_types cannot be reverted.\n";
+
         return false;
     }
 }

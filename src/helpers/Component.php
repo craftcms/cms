@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use craft\base\ComponentInterface;
-use craft\base\SavableComponentInterface;
 use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
 

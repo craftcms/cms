@@ -160,7 +160,8 @@ class AssetsController extends Controller
         // Must have either uploaded file or source Asset.
         if ((empty($assetId) && empty($sourceAssetId)) ||
             (empty($assetId) && empty($targetFilename)) ||
-            ($uploadedFile === null && empty($sourceAssetId))) {
+            ($uploadedFile === null && empty($sourceAssetId))
+        ) {
 
             throw new BadRequestHttpException('Incorrect combination of parameters.');
         }
@@ -323,7 +324,6 @@ class AssetsController extends Controller
         }
 
         return $this->asJson(['success' => true]);
-
     }
 
     /**
@@ -505,8 +505,6 @@ class AssetsController extends Controller
                     ->folderId($allSourceFolderIds)
                     ->all();
                 $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
-
-
             } else {
                 $targetTreeMap = [];
 

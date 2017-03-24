@@ -551,7 +551,7 @@ class EntryRevisions extends Component
      * Updates a revision model with entry properties that aren't saved in the revision tables.
      *
      * @param BaseEntryRevisionModel $revision
-     * @param Entry $entry
+     * @param Entry                  $entry
      *
      * @return void
      */

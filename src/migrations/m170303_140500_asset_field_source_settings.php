@@ -26,7 +26,7 @@ class m170303_140500_asset_field_source_settings extends Migration
             ->where(['type' => Assets::class])
             ->all();
 
-        $getFolderPathFromVolumeId = function ($volumeId) {
+        $getFolderPathFromVolumeId = function($volumeId) {
             if (empty($volumeId)) {
                 return '';
             }
@@ -67,6 +67,7 @@ class m170303_140500_asset_field_source_settings extends Migration
     public function safeDown()
     {
         echo "m170303_140500_asset_field_source_settings cannot be reverted.\n";
+
         return false;
     }
 }

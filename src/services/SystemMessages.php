@@ -193,7 +193,7 @@ class SystemMessages extends Component
      * Saves the subject/body overrides for a system email message.
      *
      * @param SystemMessage $message
-     * @param string|null $language
+     * @param string|null   $language
      *
      * @return bool
      */

@@ -14,7 +14,6 @@ use craft\errors\EtException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
-use craft\services\Config;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
 use yii\base\Exception;

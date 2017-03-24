@@ -9,9 +9,8 @@ namespace craft\validators;
 
 use Craft;
 use craft\elements\Asset;
-use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Assets;
-use craft\helpers\Db;
+use craft\helpers\Assets as AssetsHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\validators\Validator;
@@ -140,7 +139,6 @@ class AssetLocationValidator extends Validator
 
                 return;
             }
-
         }
 
         // Update the newLocation attribute in case the filename changed

@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\services;
 
 use Craft;
@@ -126,7 +127,8 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array {
+    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array
+    {
 
         $fileList = $volume->getFileList($directory, true);
 
@@ -171,8 +173,9 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function extractSkippedItemsFromIndexList(array &$indexList): array {
-        $skippedItems = array_filter($indexList, function ($entry) {
+    public function extractSkippedItemsFromIndexList(array &$indexList): array
+    {
+        $skippedItems = array_filter($indexList, function($entry) {
             return preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename']);
         });
 
@@ -188,8 +191,9 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function extractFolderItemsFromIndexList(array &$indexList): array {
-        $folderItems = array_filter($indexList, function ($entry) {
+    public function extractFolderItemsFromIndexList(array &$indexList): array
+    {
+        $folderItems = array_filter($indexList, function($entry) {
             return $entry['type'] === 'dir';
         });
 
@@ -245,6 +249,7 @@ class AssetIndexer extends Component
         try {
             $asset = $this->_indexFileByIndexData($indexEntryModel, $cacheImages);
             $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0, 'recordId' => $asset->id]);
+
             return ['result' => $asset->id];
         } catch (AssetDisallowedExtensionException $exception) {
             $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0]);
@@ -364,7 +369,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      * @param string $path
-     * @param string $sessionId optional indexing session id.
+     * @param string $sessionId   optional indexing session id.
      * @param bool   $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
@@ -405,7 +410,7 @@ class AssetIndexer extends Component
      * Indexes a file.
      *
      * @param AssetIndexData $indexEntryModel Asset Index Data entry that contains information for the Asset-to-be.
-     * @param bool           $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
+     * @param bool           $cacheImages     Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      *
      * @return Asset
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.

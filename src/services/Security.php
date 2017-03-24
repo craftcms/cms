@@ -177,7 +177,7 @@ class Security extends \yii\base\Security
     /**
      * Checks the given key to see if it looks like it contains sensitive info, and if so, redacts the given value.
      *
-     * @param string $name
+     * @param string       $name
      * @param string|array $value
      *
      * @return string|array The possibly-redacted value

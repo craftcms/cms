@@ -1283,7 +1283,7 @@ class Elements extends Component
      * Propagates an element to a different site
      *
      * @param ElementInterface $element
-     * @param bool $isNewElement
+     * @param bool             $isNewElement
      * @param array            $siteInfo
      *
      * @return void

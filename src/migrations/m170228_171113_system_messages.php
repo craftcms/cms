@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\helpers\MigrationHelper;
 
@@ -27,6 +26,7 @@ class m170228_171113_system_messages extends Migration
     public function safeDown()
     {
         echo "m170228_171113_system_messages cannot be reverted.\n";
+
         return false;
     }
 }

@@ -10,7 +10,6 @@ namespace craft\db\mysql;
 use Craft;
 use craft\db\TableSchema;
 use craft\helpers\FileHelper;
-use craft\services\Config;
 use yii\db\Exception;
 
 /**

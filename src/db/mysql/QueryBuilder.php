@@ -9,7 +9,6 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\Connection;
-use craft\services\Config;
 use yii\db\Expression;
 
 /**

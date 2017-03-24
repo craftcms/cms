@@ -16,7 +16,6 @@ use craft\mail\Mailer;
 use craft\mail\transportadapters\Php;
 use craft\models\Info;
 use craft\models\Site;
-use craft\services\Config;
 
 /**
  * Installation Migration

@@ -97,6 +97,7 @@ where [[e.type]] = :type',
     public function safeDown()
     {
         echo "m170322_204706_element_field_layout_ids cannot be reverted.\n";
+
         return false;
     }
 }

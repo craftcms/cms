@@ -16,7 +16,6 @@ use craft\events\RestoreEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
-use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
 use yii\base\NotSupportedException;

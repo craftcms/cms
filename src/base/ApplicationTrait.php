@@ -22,7 +22,6 @@ use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
-use craft\services\Config;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;

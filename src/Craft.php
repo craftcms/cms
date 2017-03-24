@@ -11,7 +11,6 @@ use craft\behaviors\ElementQueryBehavior;
 use craft\behaviors\ElementQueryTrait;
 use craft\db\Query;
 use craft\helpers\FileHelper;
-use craft\services\Config;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
 use yii\helpers\VarDumper;
