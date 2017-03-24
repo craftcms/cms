@@ -951,6 +951,10 @@ class Asset extends Element
      */
     public function beforeValidate()
     {
+        if (!$this->fieldLayoutId) {
+            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
+        }
+
         if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?: $this->filename;
