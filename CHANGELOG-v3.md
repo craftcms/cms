@@ -16,12 +16,10 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\FileCacheConfig`.
 - Added `craft\config\GeneralConfig`.
 - Added `craft\config\MemCacheConfig`.
-- Added `craft\controller\actionDeleteAsset()`.
-- Added `craft\elements\Asset::$avoidFilenameConflicts` which defines the behaviour when encountering a conflict during file operations.
-- Added `craft\elements\Asset::$newFolderId` which indicates an Asset's new intended folder.
-- Added `craft\elements\Asset::$newLocation` which indicates an Asset's new intended location. If omitted, it will be constructed during validation from `newFolderId` and `newFilename properties.
-- Added `craft\elements\Asset::beforeValidate()`.
-- Added `craft\elements\Asset::EVENT_BEFORE_UPLOAD_ASSET` event constant.
+- Added `craft\controllers\AssetsController::actionDeleteAsset()`.
+- Added `craft\elements\Asset::$avoidFilenameConflicts`, which determines whether new files’ names should be automatically renamed to avoid conflicts with exiting files.
+- Added `craft\elements\Asset::$newFolderId`, which indicates an Asset's new intended folder ID.
+- Added `craft\elements\Asset::$newLocation`, which indicates an Asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename properties.
 - Added `craft\helpers\App::maxPowerCaptain()`.
 - Added `craft\helpers\Assets::parseFileLocation()`.
 - Added `craft\helpers\ConfigHelper`.
@@ -37,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getGeneral()`.
 - Added `craft\services\Config::getMemCache()`.
 - Added `craft\validators\AssetLocationValidator`.
+- Added the `beforeHandleFile` event to `craft\elements\Asset`, which fires whenever a new file is getting uploaded, or an existing file is being moved/renamed.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
 - Added `Craft.BaseElementSelectInput::createElementEditor()`, making it possible for subclasses to customize the settings passed to the element editor.
 - #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
@@ -46,25 +45,24 @@ Craft CMS 3.0 Working Changelog
 - Elements are now “hard-coded” with their field layout IDs, via a new `fieldLayoutId` column in the `elements` table and a `$fieldLayoutId` property on `craft\base\ElementTrait`. Plugins that provide custom element types should start making sure `$fieldLayoutId` is set on their elements before passing them to `Craft::$app->elements->saveElement()`.
 
 ### Changed
-- Refactored Assets reducing complexity and moving the file validation to an `AssetLocationValidator` validator class.
-- `craft\controllers\AssetsController::actionSaveAsset()` no longer accepts `assetId` and `userResponse` POST variables.
-- `craft\controllers\AssetsController::actionSaveAsset()` no longer returns a `prompt` response key during upload conflict, instead returning `conflict` key which includes the error message and a `conflictingAssetId` key.
-- `craft\controllers\AssetsController::actionReplaceFile()` now also accepts `sourceAssetId` and `targetFilename` POST variables.
-- `craft\controllers\AssetsController::actionMoveAsset()` no longer accepts `userResponse` POST variable, but accepts a `force` POST variable.
-- `craft\controllers\AssetsController::actionMoveAsset()` no longer returns a `prompt` response key during a move conflict, instead returning `conflict` key which includes the error message and a `suggestedFilename` key which contains a conflict-free filename.
-- `craft\controllers\AssetsController::actionMoveFolder()` no longer accepts `userResponse` POST variable, but accepts `force` and `merge` POST variables with `force` taking precedence.
-- `craft\controllers\AssetsController::actionMoveFolder()` no longer returns `prompt` and `foldername` response keys during a move conflict, instead returning `conflict` key which includes the error message.
+- Asset file operations have been refactored to work alongside asset element saving.
+- `craft\controllers\AssetsController::actionMoveAsset()` now accepts a `force` param, rather than `userResponse`.
+- `craft\controllers\AssetsController::actionMoveAsset()` now returns `conflict` and `suggestedFilename` keys in the event of a filename conflict, rather than `prompt`
+- `craft\controllers\AssetsController::actionMoveFolder()` now accepts `force` and `merge` params, rather than `userResponse`.
+- `craft\controllers\AssetsController::actionMoveFolder()` now returns a `conflict` key in the event of a filename conflict, rather than `prompt` and `foldername`.
+- `craft\controllers\AssetsController::actionReplaceFile()` now accepts `sourceAssetId` and `targetFilename` params.
+- `craft\controllers\AssetsController::actionSaveAsset()` no longer accepts `assetId` and `userResponse` params.
+- `craft\controllers\AssetsController::actionSaveAsset()` now returns `conflict` and `conflictingAssetId` keys in the event of a filename conflict, rather than `prompt`.
 - `craft\elements\Asset` now supports a `fileOperations` scenario that should be used when an existing Asset is being moved around.
 - `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an Asset.
-- `craft\elements\Asset` now supports a `upload` scenario that should be used when uploading a file to create a new Asset.
 - `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an Asset file.
-- `craft\elements\Asset` now does all the heavy lifting for Volume operations in `craft\elements\Asset::beforeSave()`.
+- `craft\elements\Asset` now supports a `upload` scenario that should be used when uploading a file to create a new Asset.
+- `craft\helpers\Assets::editorImagePath()` was renamed to `getImageEditorSource()`.
 - `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.`
-- `craft\helpers\Assets::editorImagePath()` renamed to `craft\helpers\Assets::getImageEditorSource()`.
-- `craft\services\Assets::createFolder()` now accepts an `$indexExisting` boolean parameter to indicate whether folders existing on Volume but not in Asset index should be indexed silently. Defaults to false.
-- `craft\services\Assets::getNameReplacementInFolder()` now combines the file list on Volume and the one found in Asset Index when figuring out a safe replacement filename to use.
-- `craft\services\Assets::getNameReplacementInFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
-- `craft\services\Assets::moveAsset()` now requires an instance of `craft\models\VolumeFolder` instead of `$folderId`.
+- `craft\services\Assets::createFolder()` now accepts an `$indexExisting` argument that determines whether unindexed folders on the volume should be silently indexed.
+- `craft\services\Assets::getNameReplacementInFolder()` now combines the file lists on the volume and the asset index when figuring out a safe replacement filename to use.
+- `craft\services\Assets::getNameReplacementInFolder()` now throws an `InvalidParamException` if `$folderId` is set to an invalid folder ID.
+- `craft\services\Assets::moveAsset()` now accepts an instance of `craft\models\VolumeFolder` instead of a folder ID.
 - `craft\services\Assets::moveAsset()` now returns a boolean value.
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
 - #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
@@ -79,10 +77,10 @@ Craft CMS 3.0 Working Changelog
 - Field types that don’t support a column in the `content` table are no longer assumed to be untranslatable. If a field type wants to opt out of having a Translation Method setting, it should override its static `supportedTranslationMethods()` method and return either `['none']` or `['site']`, depending on whether its values should be propagated across other sites or not.
 
 ### Removed
+- Removed the `beforeUploadAsset` event from `craft\services\Asset`.
 - Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
 - Removed `craft\elements\Asset::$indexInProgress`.
 - Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
-- Removed `craft\services\Assets::EVENT_BEFORE_UPLOAD_ASSET` event constant.
 - Removed `craft\services\Assets::renameFile()`.
 - Removed `craft\services\Assets::saveAsset()`.
 - Removed `craft\services\Config::allowAutoUpdates()`.
