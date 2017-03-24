@@ -62,6 +62,18 @@ interface FieldInterface extends SavableComponentInterface
     public function getContentColumnType(): string;
 
     /**
+     * Returns whether the field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether the field’s value will get copied over to other
+     * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
+     *
+     * @param ElementInterface $element The element being edited
+     *
+     * @return bool
+     */
+    public function getIsTranslatable(ElementInterface $element): bool;
+
+    /**
      * Returns the field’s translation key, based on a given element.
      *
      * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
