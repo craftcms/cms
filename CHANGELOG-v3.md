@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\base\FieldInterface::getIsTranslatable()`.
 - Added `craft\base\FieldInterface::supportedTranslationMethods()`.
 - Added `craft\base\FolderVolumeInterface::folderExists()`.
 - Added `craft\base\Plugin::cpNavIconPath()`.
@@ -37,6 +38,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getMemCache()`.
 - Added `craft\validators\AssetLocationValidator`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- Added `Craft.BaseElementSelectInput::createElementEditor()`, making it possible for subclasses to customize the settings passed to the element editor.
 - #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 - #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
 - #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
@@ -123,6 +125,10 @@ Craft CMS 3.0 Working Changelog
 - #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
 - #1543: Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters.
 - Fixed a bug that could prevent Craft from updating correctly in case of missing files.
+- Fixed a PHP error that could occur when saving an element that says it has content, but doesn’t have a field layout.
+- Fixed a bug where editing an asset from an Assets field wouldn’t show the correct custom fields, if the element hadn’t been saved yet or was disabled, and the asset hadn’t been placed in its target volume yet due to a dynamic subfolder path setting on the Assets field.
+- Fixed a PHP error that could occur when updating Craft if an Assets field didn’t have valid settings.
+- Fixed a PHP error that could occur when updating Craft if a Plain Text field didn’t have valid settings.
 
 ## 3.0.0-beta.7 - 2017-03-10
 

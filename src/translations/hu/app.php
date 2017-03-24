@@ -1217,7 +1217,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'New site' => 'New site',
     'Cache remote images?' => 'Cache remote images?',
     'What type of volume is this?' => 'What type of volume is this?',
-    'Temporary uploads' => 'Temporary uploads',
+    'Temporary Uploads' => 'Temporary Uploads',
     'Your email settings are invalid.' => 'Your email settings are invalid.',
     'Status updated, with some failures due to validation errors.' => 'Status updated, with some failures due to validation errors.',
     '{attribute} must be an array.' => '{attribute} must be an array.',

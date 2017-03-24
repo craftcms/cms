@@ -235,6 +235,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getIsTranslatable(ElementInterface $element): bool
+    {
+        return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTranslationKey(ElementInterface $element): string
     {
         /** @var Element $element */

@@ -1316,9 +1316,9 @@ class Elements extends Component
             if ($isNewSiteForElement) {
                 // Copy all the field values
                 $siteElement->setFieldValues($element->getFieldValues());
-            } else {
+            } else if (($fieldLayout = $element->getFieldLayout()) !== null) {
                 // Only copy the non-translatable field values
-                foreach ($element->getFieldLayout()->getFields() as $field) {
+                foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
                     // Does this field produce the same translation key as it did for the master element?
                     if ($field->getTranslationKey($siteElement) === $field->getTranslationKey($element)) {

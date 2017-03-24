@@ -317,6 +317,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         return null;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getIsTranslatable(ElementInterface $element): bool
+    {
+        return $this->localizeBlocks;
+    }
 
     /**
      * @inheritdoc

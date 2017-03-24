@@ -2,11 +2,13 @@
 
 ## About Craft CMS
 
-Craft is a content-first CMS that aims to make life enjoyable for developers and content managers alike. It is optimized for bespoke web and application development, offering developers a clean slate to build out exactly what they want, rather than wrestling with a theme. 
+Craft is a content-first CMS that aims to make life enjoyable for developers and content managers alike. It is optimized for bespoke web and application development, offering developers a clean slate to build out exactly what they want, rather than wrestling with a theme.
 
-## How to Install
+Learn more about Craft at [craftcms.com](https://craftcms.com).
 
-To install the Craft 3 Beta, follow the [installation instructions](https://github.com/craftcms/docs/blob/master/en/installation.md) outlined in the documentation.
+## How to Install Craft 3 Beta
+
+Installation instructions can be found in the [Craft 3 documentation](https://github.com/craftcms/docs/blob/master/en/installation.md).
 
 ## Resources
 
@@ -21,4 +23,5 @@ To install the Craft 3 Beta, follow the [installation instructions](https://gith
 - [Mijingo](https://mijingo.com/craft) – Video courses and other learning resources
 - [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) – Video courses
 - [Straight Up Craft](http://straightupcraft.com/) – Articles, tutorials, and more
+- [Craft Cookbook](https://craftcookbook.net/) – Quick answers for common tasks
 - [pluginfactory.io](https://pluginfactory.io/) – Craft plugin scaffold generator

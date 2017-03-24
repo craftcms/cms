@@ -155,7 +155,7 @@ class Asset extends Element
         // Add the customized temporary upload source
         if ($context !== 'settings') {
             $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
-            $temporaryUploadFolder->name = Craft::t('app', 'Temporary uploads');
+            $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }
 
@@ -913,6 +913,10 @@ class Asset extends Element
      */
     public function getEditorHtml(): string
     {
+        if (!$this->fieldLayoutId) {
+            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
+        }
+
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Filename'),
@@ -952,6 +956,10 @@ class Asset extends Element
      */
     public function beforeValidate()
     {
+        if (!$this->fieldLayoutId) {
+            $this->fieldLayoutId = Craft::$app->getRequest()->getBodyParam('defaultFieldLayoutId');
+        }
+
         if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?: $this->filename;

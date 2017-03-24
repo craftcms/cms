@@ -14,17 +14,13 @@ use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
-use craft\errors\AssetConflictException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
-use craft\volumes\Temp;
 use craft\web\UploadedFile;
-use yii\base\ErrorException;
 
 /**
  * Assets represents an Assets field.
@@ -386,20 +382,16 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $element->getFieldValue($this->handle);
-        $assetsToMove = [];
 
         if ($value instanceof AssetQuery) {
             $value = $value->all();
         }
 
-        if (is_array($value) && count($value)) {
-            if ($this->useSingleFolder) {
-                $targetFolderId = $this->_resolveVolumePathToFolderId(
-                    $this->singleUploadLocationSource,
-                    $this->singleUploadLocationSubpath,
-                    $element
-                );
+        if (is_array($value) && !empty($value)) {
+            $assetsToMove = [];
+            $targetFolderId = $this->_determineUploadFolderId($element);
 
+            if ($this->useSingleFolder) {
                 // Move only those Assets that have had their folder changed.
                 foreach ($value as $asset) {
                     if ($targetFolderId != $asset->folderId) {
@@ -420,15 +412,6 @@ class Assets extends BaseRelationField
                     'volumeId' => ':empty:'
                 ]);
                 $assetsToMove = $query->all();
-
-                // If we have some files to move, make sure the folder exists.
-                if (!empty($assetsToMove)) {
-                    $targetFolderId = $this->_resolveVolumePathToFolderId(
-                        $this->defaultUploadLocationSource,
-                        $this->defaultUploadLocationSubpath,
-                        $element
-                    );
-                }
             }
 
             if (!empty($assetsToMove) && !empty($targetFolderId)) {
@@ -497,6 +480,8 @@ class Assets extends BaseRelationField
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['hideSidebar'] = (int)$this->useSingleFolder;
+        $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
+
         return $variables;
     }
 
@@ -530,12 +515,10 @@ class Assets extends BaseRelationField
     {
         $assetsService = Craft::$app->getAssets();
 
-        $parts = explode(':', $uploadSource);
-        $folder = $assetsService->getFolderById((int)end($parts));
-        $volumeId = $folder ? $folder->volumeId : 0;
+        $volumeId = $this->_volumeIdBySourceKey($uploadSource);
 
         // Make sure the volume and root folder actually exists
-        if ($volumeId === 0 || !($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId))) {
+        if ($volumeId === null || ($rootFolder = $assetsService->getRootFolderByVolumeId($volumeId)) === null) {
             throw new InvalidVolumeException();
         }
 
@@ -686,6 +669,7 @@ class Assets extends BaseRelationField
      */
     private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
+        /** @var Element $element */
         if ($this->useSingleFolder) {
             $uploadSource = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
@@ -699,9 +683,9 @@ class Assets extends BaseRelationField
         try {
             $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
         } catch (InvalidSubpathException $exception) {
-            // If this is a new element, the subpath probably just contained a token that returned null, like {id}
+            // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
-            if (empty($element->id) || !$createDynamicFolders) {
+            if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
                 $userModel = Craft::$app->getUser()->getIdentity();
 
                 $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
@@ -714,5 +698,45 @@ class Assets extends BaseRelationField
         }
 
         return $folderId;
+    }
+
+    /**
+     * Returns a volume ID from an upload source key.
+     *
+     * @param string $sourceKey
+     *
+     * @return int|null
+     */
+    public function _volumeIdBySourceKey(string $sourceKey)
+    {
+        $parts = explode(':', $sourceKey, 2);
+
+        if (count($parts) !== 2 || !is_numeric($parts[1])) {
+            return null;
+        }
+
+        $folder = Craft::$app->getAssets()->getFolderById((int)$parts[1]);
+
+        return $folder->volumeId ?? null;
+    }
+
+    /**
+     * Returns the target upload volume for the field.
+     *
+     * @return Volume|null
+     */
+    private function _uploadVolume()
+    {
+        if ($this->useSingleFolder) {
+            $sourceKey = $this->singleUploadLocationSource;
+        } else {
+            $sourceKey = $this->defaultUploadLocationSource;
+        }
+
+        if (($volumeId = $this->_volumeIdBySourceKey($sourceKey)) === null) {
+            return null;
+        }
+
+        return Craft::$app->getVolumes()->getVolumeById($volumeId);
     }
 }

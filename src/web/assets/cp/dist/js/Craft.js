@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-03-23 */
+/*! Craft 3.0.0 - 2017-03-24 */
 (function($){
 
 /** global: Craft */
@@ -3983,7 +3983,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 this._handleShowElementEditor = $.proxy(function(ev) {
                     var $element = $(ev.currentTarget);
                     if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
-                        this.elementEditor = Craft.createElementEditor(this.settings.elementType, $element);
+                        this.elementEditor = this.createElementEditor($element);
                     }
                 }, this);
 
@@ -4000,6 +4000,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             this.$elements = this.$elements.add($elements);
             this.updateAddElementsBtn();
+        },
+
+        createElementEditor: function($element) {
+            return Craft.createElementEditor(this.settings.elementType, $element);
         },
 
         removeElements: function($elements) {
@@ -6144,6 +6148,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.base.apply(this, arguments);
             this._attachUploader();
+        },
+
+        createElementEditor: function($element) {
+            return Craft.createElementEditor(this.settings.elementType, $element, {
+                params: {
+                    defaultFieldLayoutId: this.settings.defaultFieldLayoutId
+                }
+            });
         },
 
         /**
