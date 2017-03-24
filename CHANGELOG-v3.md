@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.8 - 2017-03-24
 
 ### Added
 - #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
