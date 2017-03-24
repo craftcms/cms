@@ -64,7 +64,7 @@ class Asset extends Element
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
-    const EVENT_BEFORE_HANDLE_FILE = 'beforeMoveFile';
+    const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
 
     // Location error codes
     // -------------------------------------------------------------------------
