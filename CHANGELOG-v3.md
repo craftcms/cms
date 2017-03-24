@@ -17,11 +17,11 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\GeneralConfig`.
 - Added `craft\config\MemCacheConfig`.
 - Added `craft\controller\actionDeleteAsset()`.
-- Added `craft\elements\Asset::EVENT_BEFORE_UPLOAD_ASSET` event constant.
-- Added `craft\elements\Asset::beforeValidate()`.
 - Added `craft\elements\Asset::$avoidFilenameConflicts` which defines the behaviour when encountering a conflict during file operations.
 - Added `craft\elements\Asset::$newFolderId` which indicates an Asset's new intended folder.
 - Added `craft\elements\Asset::$newLocation` which indicates an Asset's new intended location. If omitted, it will be constructed during validation from `newFolderId` and `newFilename properties.
+- Added `craft\elements\Asset::beforeValidate()`.
+- Added `craft\elements\Asset::EVENT_BEFORE_UPLOAD_ASSET` event constant.
 - Added `craft\helpers\App::maxPowerCaptain()`.
 - Added `craft\helpers\Assets::parseFileLocation()`.
 - Added `craft\helpers\ConfigHelper`.
