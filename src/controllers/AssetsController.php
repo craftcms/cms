@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\FolderVolumeInterface;
-use craft\base\Volume;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -112,17 +111,17 @@ class AssetsController extends Controller
             $asset->newFolderId = $folder->id;
             $asset->volumeId = $folder->volumeId;
             $asset->avoidFilenameConflicts = true;
-            $asset->setScenario(Asset::SCENARIO_UPLOAD);
+            $asset->setScenario(Asset::SCENARIO_CREATE);
 
             Craft::$app->getElements()->saveElement($asset);
 
-            if ($filename !== $asset->filename) {
-                $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $filename]);
+            if ($asset->conflictingFilename !== null) {
+                $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
                 return $this->asJson([
-                    'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $filename]),
+                    'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                     'assetId' => $asset->id,
-                    'filename' => $filename,
+                    'filename' => $asset->conflictingFilename,
                     'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null
                 ]);
             }
@@ -705,7 +704,7 @@ class AssetsController extends Controller
         } else {
             $newAsset = new Asset();
             $newAsset->avoidFilenameConflicts = true;
-            $newAsset->setScenario(Asset::SCENARIO_UPLOAD);
+            $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
             $newAsset->tempFilePath = $imageCopy;
             $newAsset->filename = $asset->filename;
