@@ -64,7 +64,7 @@ class Asset extends Element
     /**
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
-    const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
+    const EVENT_BEFORE_HANDLE_FILE = 'beforeMoveFile';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -77,7 +77,7 @@ class Asset extends Element
 
     const SCENARIO_FILEOPS = 'fileOperations';
     const SCENARIO_INDEX = 'index';
-    const SCENARIO_UPLOAD = 'upload';
+    const SCENARIO_CREATE = 'create';
     const SCENARIO_REPLACE = 'replace';
 
     // Static
@@ -425,6 +425,11 @@ class Asset extends Element
     public $suggestedFilename;
 
     /**
+     * @var string|null The filename that was used that caused a conflict.
+     */
+    public $conflictingFilename;
+
+    /**
      * @var bool Whether the associated file should be preserved if the asset record is deleted.
      */
     public $keepFileOnDelete = false;
@@ -545,8 +550,8 @@ class Asset extends Element
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], AssetLocationValidator::class, 'avoidFilenameConflicts' => $this->avoidFilenameConflicts];
-        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_FILEOPS]];
-        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_UPLOAD, self::SCENARIO_REPLACE]];
+        $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_FILEOPS]];
+        $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
 
         return $rules;
     }
@@ -953,6 +958,11 @@ class Asset extends Element
             $this->newLocation = "{folder:{$folderId}}{$filename}";
         }
 
+        if ($this->newLocation || $this->tempFilePath) {
+            $event = new AssetEvent(['asset' => $this, 'isNew' => !$this->id]);
+            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, $event);
+        }
+
         // Set the kind based on filename, if not set already
         if (empty($this->kind) && !empty($this->filename)) {
             $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
@@ -976,6 +986,8 @@ class Asset extends Element
             return false;
         }
 
+        $assetsService = Craft::$app->getAssets();
+
         // See if we need to perform any file operations
         if ($this->newLocation) {
             list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
@@ -989,15 +1001,8 @@ class Asset extends Element
 
         $tempPath = null;
 
-        // Give the plugins a chance to do something with the file being uploaded.
-        if ($this->getScenario() === self::SCENARIO_UPLOAD) {
-            $event = new AssetEvent(['asset' => $this, 'isNew' => $isNew]);
-            $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
-        }
-
         // Yes/no?
         if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
-            $assetsService = Craft::$app->getAssets();
 
             $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
             $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
