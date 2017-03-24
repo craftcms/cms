@@ -155,7 +155,7 @@ class Asset extends Element
         // Add the customized temporary upload source
         if ($context !== 'settings') {
             $temporaryUploadFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
-            $temporaryUploadFolder->name = Craft::t('app', 'Temporary uploads');
+            $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
             $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
         }
 
