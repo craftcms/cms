@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.15
+ * @version   0.1.17
  * @license   MIT
  */
 (function($){
@@ -2697,6 +2697,8 @@ Garnish.HUD = Garnish.Base.extend(
 
         showing: false,
         orientation: null,
+        listeningForUpdateSizeAndPositionEvents: false,
+        pendingUpdateSizeAndPosition: false,
 
         /**
          * Constructor
@@ -2748,22 +2750,16 @@ Garnish.HUD = Garnish.Base.extend(
             this.addListener(this.$body, 'submit', '_handleSubmit');
             this.addListener(this.$shade, 'tap', 'hide');
 
-            if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0]) {
-                this.addListener(Garnish.$scrollContainer, 'scroll', 'updateSizeAndPosition');
-            }
-
             if (this.settings.closeBtn) {
                 this.addListener(this.settings.closeBtn, 'activate', 'hide');
             }
-
-            this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
         },
 
         /**
          * Update the body contents
          */
         updateBody: function(bodyContents) {
-            this.removeListener(this.$main, 'resize');
+            this.removeUpdateSizeAndPositionListeners();
 
             // Cleanup
             this.$main.html('');
@@ -2824,29 +2820,28 @@ Garnish.HUD = Garnish.Base.extend(
             this.$hud.appendTo(Garnish.$bod);
 
             this.$hud.show();
-            this.updateSizeAndPosition();
-
             this.$shade.show();
-
             this.showing = true;
             Garnish.HUD.activeHUDs[this._namespace] = this;
-
             Garnish.escManager.register(this, 'hide');
 
             this.onShow();
-
-            // Reposition one last time just in case
-            Garnish.requestAnimationFrame($.proxy(this, 'updateSizeAndPosition'));
-
             this.enable();
+
+            this.queueUpdateSizeAndPosition();
         },
 
         onShow: function() {
             this.trigger('show');
         },
 
-        updateSizeAndPosition: function() {
-            this.removeListener(this.$main, 'resize');
+        updateSizeAndPosition: function(e) {
+            if (e && e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            this.pendingUpdateSizeAndPosition = false;
+            this.removeUpdateSizeAndPositionListeners();
 
             var windowWidth,
                 windowHeight,
@@ -3083,10 +3078,47 @@ Garnish.HUD = Garnish.Base.extend(
             }
 
             Garnish.requestAnimationFrame($.proxy(function() {
-                this.addListener(this.$main, 'resize', 'updateSizeAndPosition');
+                this.addUpdateSizeAndPositionListeners()
             }, this));
 
             this.trigger('updateSizeAndPosition');
+        },
+
+        queueUpdateSizeAndPosition: function() {
+            if (this.pendingUpdateSizeAndPosition) {
+                return;
+            }
+
+            Garnish.requestAnimationFrame($.proxy(this, 'updateSizeAndPosition'));
+            this.pendingUpdateSizeAndPosition = true;
+        },
+
+        addUpdateSizeAndPositionListeners: function() {
+            if (this.listeningForUpdateSizeAndPositionEvents) {
+                return;
+            }
+
+            this.addListener(Garnish.$win, 'resize', 'queueUpdateSizeAndPosition');
+            this.addListener(this.$main, 'resize', 'queueUpdateSizeAndPosition');
+            if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0]) {
+                this.addListener(Garnish.$scrollContainer, 'scroll', 'queueUpdateSizeAndPosition');
+            }
+
+            this.listeningForUpdateSizeAndPositionEvents = true;
+        },
+
+        removeUpdateSizeAndPositionListeners: function() {
+            if (!this.listeningForUpdateSizeAndPositionEvents) {
+                return;
+            }
+
+            this.removeListener(Garnish.$win, 'resize');
+            this.removeListener(this.$main, 'resize');
+            if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0]) {
+                this.removeListener(Garnish.$scrollContainer, 'scroll');
+            }
+
+            this.listeningForUpdateSizeAndPositionEvents = false;
         },
 
         /**
@@ -4555,7 +4587,7 @@ Garnish.NiceText = Garnish.Base.extend(
                 });
 
                 // Line breaks
-                val = val.replace(/[\n\r]$/g, '<br/>&nbps;');
+                val = val.replace(/[\n\r]$/g, '<br/>&nbsp;');
                 val = val.replace(/[\n\r]/g, '<br/>');
             }
 

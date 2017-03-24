@@ -189,7 +189,7 @@ body.rtl a.fieldtoggle:before { right: -6px; }
 /* emphasis */
 em, i { font-style: italic; }
 
-strong, b, i em { font-weight: bold; font-family: sans-serif; }
+strong, b, i em { font-weight: bold; }
 
 /* text styles */
 .topalign { vertical-align: top; }

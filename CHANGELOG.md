@@ -1,6 +1,26 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+## 2.6.2968 - 2017-03-24
+
+### Added
+- Added Control Panel translations for Polish.
+
+### Changed
+- #1556: Removed the Delete button from entry version/draft pages.
+- Assets fields no longer throw an exception if they can’t resolve a dynamic upload path for a disabled element.
+- Updated element-resize-detector to 1.1.11.
+- Updated Garnish to 0.1.17.
+
+### Fixed
+- #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
+- Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
+- #1540: Fixed some Control Panel messages that weren’t getting translated.
+- Fixed a PHP error that occurred on console requests if there was a database connection issue.
+- #1553: Fixed a bug where Table fields weren’t initializing reliably in Firefox.
+
 ## 2.6.2967 - 2017-03-10
 
 ### Fixed

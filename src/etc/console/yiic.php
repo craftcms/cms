@@ -22,7 +22,7 @@ if (isset($_SERVER['argv']))
 		if (strpos($arg, '--configPath=') !== false)
 		{
 			$parts = explode('=', $arg);
-			$frontConfigPath = rtrim($parts[1], '/').'/';
+			$frontConfigPath = realpath($parts[1]).'/';
 			unset($_SERVER['argv'][$key]);
 			break;
 		}

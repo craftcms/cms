@@ -31,7 +31,7 @@
 			{% for field in tabFields %}
 				<div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.fieldId }}">
 					<a class="settings icon" title="{{ 'Edit'|t }}"></a>
-					<span>{{ field.getField().name }}</span>
+					<span>{{ field.getField().name|t }}</span>
 					<input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.fieldId }}">
 					{% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.fieldId }}">{% endif %}
 				</div>
@@ -88,7 +88,7 @@
 					{% for field in group.fields %}
 						{% set selected = fieldLayout and field.id in fieldLayout.getFieldIds() %}
 						<div class="fld-field unused{% if selected %} hidden{% endif %}" data-id="{{ field.id }}">
-							<span>{{ field.name }}</span>
+							<span>{{ field.name|t }}</span>
 						</div>
 					{% endfor %}
 				</div>
