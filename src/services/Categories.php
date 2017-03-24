@@ -13,6 +13,7 @@ use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
+use craft\helpers\App;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -344,24 +345,12 @@ class Categories extends Component
             $groupRecord->structureId = $structure->id;
             $group->structureId = $structure->id;
 
-            // Is there a new field layout?
+            // Save the field layout
             /** @var FieldLayout $fieldLayout */
             $fieldLayout = $group->getFieldLayout();
-
-            if (!$fieldLayout->id) {
-                // Delete the old one
-                /** @noinspection PhpUndefinedVariableInspection */
-                if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
-                }
-
-                // Save the new one
-                Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                // Update the category group record/model with the new layout ID
-                $groupRecord->fieldLayoutId = $fieldLayout->id;
-                $group->fieldLayoutId = $fieldLayout->id;
-            }
+            Craft::$app->getFields()->saveLayout($fieldLayout);
+            $groupRecord->fieldLayoutId = $fieldLayout->id;
+            $group->fieldLayoutId = $fieldLayout->id;
 
             // Save the category group
             $groupRecord->save(false);
@@ -459,7 +448,7 @@ class Categories extends Component
                             ->execute();
                     } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
-                            Craft::$app->getConfig()->maxPowerCaptain();
+                            App::maxPowerCaptain();
 
                             // Loop through each of the changed sites and update all of the categories’ slugs and
                             // URIs

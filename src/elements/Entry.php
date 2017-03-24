@@ -123,7 +123,7 @@ class Entry extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new EntryQuery(get_called_class());
+        return new EntryQuery(static::class);
     }
 
     /**
@@ -558,14 +558,6 @@ class Entry extends Element
 
 
         return parent::beforeValidate();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        return $this->getType()->getFieldLayout();
     }
 
     /**

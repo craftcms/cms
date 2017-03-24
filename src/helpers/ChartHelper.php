@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Connection;
 use craft\db\Query;
-use craft\services\Config;
 use DateTime;
 use yii\base\Exception;
 
@@ -58,7 +57,7 @@ class ChartHelper
             'valueType' => 'number',
         ], $options);
 
-        $databaseType = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
+        $databaseType = Craft::$app->getConfig()->getDb()->driver;
 
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];

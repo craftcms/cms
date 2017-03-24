@@ -14,7 +14,6 @@ use craft\errors\EtException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
-use craft\services\Config;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
 use yii\base\Exception;
@@ -50,8 +49,6 @@ class EtTransport
      */
     public function __construct($endpoint)
     {
-        $endpoint .= Craft::$app->getConfig()->get('endpointSuffix');
-
         $this->_endpoint = $endpoint;
 
         // There can be a race condition after an update from older Craft versions where they lose session
@@ -69,11 +66,11 @@ class EtTransport
             'localVersion' => Craft::$app->version,
             'localEdition' => Craft::$app->getEdition(),
             'userEmail' => $userEmail,
-            'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
+            'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,
             'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
                 'phpVersion' => PHP_VERSION,
-                'databaseType' => Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB),
+                'databaseType' => Craft::$app->getConfig()->getDb()->driver,
                 'databaseVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
                 'proc' => function_exists('proc_open') ? 1 : 0,
             ],

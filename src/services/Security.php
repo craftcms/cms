@@ -57,7 +57,7 @@ class Security extends \yii\base\Security
     {
         parent::init();
 
-        $this->_blowFishHashCost = Craft::$app->getConfig()->get('blowfishHashCost');
+        $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
     }
 
     /**
@@ -100,7 +100,7 @@ class Security extends \yii\base\Security
      */
     public function getValidationKey()
     {
-        if ($key = Craft::$app->getConfig()->get('validationKey')) {
+        if ($key = Craft::$app->getConfig()->getGeneral()->validationKey) {
             return $key;
         }
 
@@ -177,7 +177,7 @@ class Security extends \yii\base\Security
     /**
      * Checks the given key to see if it looks like it contains sensitive info, and if so, redacts the given value.
      *
-     * @param string $name
+     * @param string       $name
      * @param string|array $value
      *
      * @return string|array The possibly-redacted value

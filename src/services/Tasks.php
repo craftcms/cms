@@ -13,6 +13,7 @@ use craft\base\TaskInterface;
 use craft\db\Query;
 use craft\errors\MissingComponentException;
 use craft\events\TaskEvent;
+use craft\helpers\App;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -103,7 +104,7 @@ class Tasks extends Component
         if (
             $maybeAutoRun === true &&
             $this->_listeningForResponse === false &&
-            Craft::$app->getConfig()->get('runTasksAutomatically') &&
+            Craft::$app->getConfig()->getGeneral()->runTasksAutomatically &&
             !Craft::$app->getRequest()->getIsConsoleRequest()
         ) {
             Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
@@ -311,7 +312,7 @@ class Tasks extends Component
         }
 
         // It's go time.
-        Craft::$app->getConfig()->maxPowerCaptain();
+        App::maxPowerCaptain();
 
         while ($task = $this->getNextPendingTask()) {
             $this->_runningTask = $task;

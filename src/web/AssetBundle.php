@@ -30,7 +30,7 @@ class AssetBundle extends \yii\web\AssetBundle
             return self::$_useCompressedJs;
         }
 
-        return self::$_useCompressedJs = (bool)Craft::$app->getConfig()->get('useCompressedJs');
+        return self::$_useCompressedJs = (bool)Craft::$app->getConfig()->getGeneral()->useCompressedJs;
     }
 
     /**

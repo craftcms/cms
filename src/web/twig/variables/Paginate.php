@@ -63,7 +63,7 @@ class Paginate
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
+                $pageTrigger = Craft::$app->getConfig()->getGeneral()->pageTrigger;
 
                 if (!is_string($pageTrigger) || $pageTrigger === '') {
                     $pageTrigger = 'p';
@@ -74,7 +74,7 @@ class Paginate
                     $pageTrigger = trim($pageTrigger, '?=');
 
                     // Avoid conflict with the path param
-                    $pathParam = Craft::$app->getConfig()->get('pathParam');
+                    $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
                     if ($pageTrigger === $pathParam) {
                         $pageTrigger = $pathParam === 'p' ? 'pg' : 'p';
                     }

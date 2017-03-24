@@ -652,8 +652,7 @@
                     label: Craft.t('app', 'Instructions'),
                     id: this.inputIdPrefix + '-instructions',
                     'class': 'nicetext',
-                    name: this.inputNamePrefix + '[instructions]',
-                    maxlength: 64
+                    name: this.inputNamePrefix + '[instructions]'
                 }).appendTo($container);
 
                 Craft.ui.createCheckboxField({

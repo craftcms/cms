@@ -45,6 +45,7 @@ class m170227_120814_focal_point_percentage extends Migration
     public function safeDown()
     {
         echo "m170227_120814_focal_point_percentage cannot be reverted.\n";
+
         return false;
     }
 }

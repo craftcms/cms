@@ -45,6 +45,17 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         return Craft::t('app', 'Matrix');
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function supportedTranslationMethods(): array
+    {
+        // Don't ever automatically propagate values to other sites.
+        return [
+            self::TRANSLATION_METHOD_SITE,
+        ];
+    }
+
     // Properties
     // =========================================================================
 
@@ -306,6 +317,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         return null;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getIsTranslatable(ElementInterface $element): bool
+    {
+        return $this->localizeBlocks;
+    }
 
     /**
      * @inheritdoc
@@ -620,6 +638,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $block = new MatrixBlock();
             $block->fieldId = $this->id;
             $block->typeId = $blockType->id;
+            $block->fieldLayoutId = $blockType->fieldLayoutId;
 
             if ($element) {
                 $block->setOwner($element);
@@ -673,6 +692,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         /** @var Element $element */
         // Get the possible block types for this field
+        /** @var MatrixBlockType[] $blockTypes */
         $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id), 'handle');
 
         if (!is_array($value)) {
@@ -731,6 +751,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
+                $block->fieldLayoutId = $blockType->fieldLayoutId;
                 $block->ownerId = $ownerId;
                 $block->siteId = $element->siteId;
 

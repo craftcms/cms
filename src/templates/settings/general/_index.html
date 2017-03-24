@@ -32,7 +32,7 @@
     {{ forms.lightswitchField({
         first: true,
         label: "System Status"|t('app'),
-        warning: (craft.app.config.get('isSystemOn') is same as(true) or craft.app.config.get('isSystemOn') is same as(false) ? configWarning('isSystemOn')),
+        warning: (craft.app.config.general.isSystemOn is same as(true) or craft.app.config.general.isSystemOn is same as(false) ? configWarning('isSystemOn')),
         id: 'on',
         name: 'on',
         on: info.on
@@ -40,7 +40,7 @@
 
     {{ forms.selectField({
         label: "Timezone"|t('app'),
-        warning: (craft.app.config.get('timezone') ? configWarning('timezone')),
+        warning: (craft.app.config.general.timezone ? configWarning('timezone')),
         id: 'timezone',
         name: 'timezone',
         value: info.timezone,
@@ -58,11 +58,13 @@
         {% do view.registerAssetBundle("craft\\web\\assets\\imageeditor\\ImageEditorAsset") %}
 
         {{ forms.field({
-            label: "Login Page Logo"|t('app')
+            label: "Login Page Logo"|t('app'),
+            instructions: "SVG file recommended. The logo will be displayed at {size} wide."|t('app', { size: '300px' })
         }, include('settings/general/_images/logo')) }}
 
         {{ forms.field({
-            label: "Site Icon"|t('app')
+            label: "Site Icon"|t('app'),
+            instructions: "Square SVG file recommended. The logo will be displayed at {size} by {size}."|t('app', { size: '32px' })
         }, include('settings/general/_images/icon')) }}
 
         <div class="clear"></div>

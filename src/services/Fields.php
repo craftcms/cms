@@ -47,7 +47,9 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use yii\base\Application;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Fields service.
@@ -184,6 +186,12 @@ class Fields extends Component
      * @var
      */
     private $_layoutsByType;
+
+    /**
+     * @var bool Whether we’re listening for the request end, to update the field version
+     * @see updateFieldVersionAfterRequest()
+     */
+    private $_listeningForRequestEnd = false;
 
     // Public Methods
     // =========================================================================
@@ -720,11 +728,6 @@ class Fields extends Component
                         ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 }
-
-                // Clear the translation key format if not using a custom translation method
-                if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-                    $field->translationKeyFormat = null;
-                }
             } else {
                 // Did the old field have a column we need to remove?
                 if (
@@ -736,9 +739,10 @@ class Fields extends Component
                         ->dropColumn($contentTable, $oldColumnName)
                         ->execute();
                 }
+            }
 
-                // Fields without a content column don't get translated
-                $field->translationMethod = Field::TRANSLATION_METHOD_NONE;
+            // Clear the translation key format if not using a custom translation method
+            if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
                 $field->translationKeyFormat = null;
             }
 
@@ -784,10 +788,8 @@ class Fields extends Component
 
             $field->afterSave($isNewField);
 
-            // Update the field version
-            if ($field->context === 'global') {
-                $this->_updateFieldVersion();
-            }
+            // Update the field version at the end of the request
+            $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -864,9 +866,8 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            if ($field->context === 'global') {
-                $this->_updateFieldVersion();
-            }
+            // Update the field version at the end of the request
+            $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -1000,10 +1001,15 @@ class Fields extends Component
     public function assembleLayoutFromPost(string $namespace = null): FieldLayout
     {
         $paramPrefix = ($namespace ? rtrim($namespace, '.').'.' : '');
-        $postedFieldLayout = Craft::$app->getRequest()->getBodyParam($paramPrefix.'fieldLayout', []);
-        $requiredFields = Craft::$app->getRequest()->getBodyParam($paramPrefix.'requiredFields', []);
+        $request = Craft::$app->getRequest();
 
-        return $this->assembleLayout($postedFieldLayout, $requiredFields);
+        $postedFieldLayout = $request->getBodyParam($paramPrefix.'fieldLayout', []);
+        $requiredFields = $request->getBodyParam($paramPrefix.'requiredFields', []);
+
+        $fieldLayout = $this->assembleLayout($postedFieldLayout, $requiredFields);
+        $fieldLayout->id = $request->getBodyParam($paramPrefix.'fieldLayoutId');
+
+        return $fieldLayout;
     }
 
     /**
@@ -1081,6 +1087,7 @@ class Fields extends Component
      * @param bool        $runValidation Whether the layout should be validated
      *
      * @return bool Whether the field layout was saved successfully
+     * @throws Exception if $layout->id is set to an invalid layout ID
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
@@ -1098,9 +1105,27 @@ class Fields extends Component
             'isNew' => $isNewLayout,
         ]));
 
-        // First save the layout
-        $layoutRecord = new FieldLayoutRecord();
+        if (!$isNewLayout) {
+            // Delete the old tabs/fields
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%fieldlayouttabs}}', ['layoutId' => $layout->id])
+                ->execute();
+
+            // Get the current layout
+            if (($layoutRecord = FieldLayoutRecord::findOne($layout->id)) === null) {
+                throw new Exception('Invalid field layout ID: '.$layout->id);
+            }
+        } else {
+            $layoutRecord = new FieldLayoutRecord();
+        }
+
+        // Save it
         $layoutRecord->type = $layout->type;
+
+        if (!$isNewLayout) {
+            $layoutRecord->id = $layout->id;
+        }
+
         $layoutRecord->save(false);
 
         if ($isNewLayout) {
@@ -1199,6 +1224,29 @@ class Fields extends Component
             ->execute();
 
         return (bool)$affectedRows;
+    }
+
+    /**
+     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     */
+    public function updateFieldVersionAfterRequest()
+    {
+        if ($this->_listeningForRequestEnd) {
+            return;
+        }
+
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'updateFieldVersion']);
+        $this->_listeningForRequestEnd = true;
+    }
+
+    /**
+     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
+     */
+    public function updateFieldVersion()
+    {
+        $info = Craft::$app->getInfo();
+        $info->fieldVersion = StringHelper::randomString(12);
+        Craft::$app->saveInfo($info);
     }
 
     // Private Methods
@@ -1326,15 +1374,5 @@ class Fields extends Component
         }
 
         return $this->_fieldRecordsById[$field->id];
-    }
-
-    /**
-     * Increases the app's field version, so the ContentBehavior (et al) classes get regenerated.
-     */
-    private function _updateFieldVersion()
-    {
-        $info = Craft::$app->getInfo();
-        $info->fieldVersion = StringHelper::randomString(12);
-        Craft::$app->saveInfo($info);
     }
 }

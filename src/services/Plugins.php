@@ -17,6 +17,7 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -581,13 +582,10 @@ class Plugins extends Component
             'plugin' => $plugin
         ]));
 
-        // JSON-encode them and save the plugin row
-        $jsSettings = Json::encode($plugin->getSettings());
-
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
-                ['settings' => $jsSettings],
+                ['settings' => Json::encode($plugin->getSettings())],
                 ['handle' => strtolower($plugin->handle)])
             ->execute();
 
@@ -702,9 +700,14 @@ class Plugins extends Component
             return null;
         }
 
-        // Set its settings
-        if (isset($row['settings'])) {
-            $config['settings'] = $row['settings'];
+        // Set its settings, if it has any (merging DB-stored values with config file values)
+        $settings = ArrayHelper::merge(
+            $row['settings'] ?? [],
+            Craft::$app->getConfig()->getConfigFromFile(strtolower($handle))
+        );
+
+        if ($settings !== []) {
+            $config['settings'] = $settings;
         }
 
         // Create the plugin
@@ -818,7 +821,7 @@ class Plugins extends Component
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
             $config['isEnabled'] = ($plugin !== null);
             $config['moduleId'] = $plugin !== null ? $plugin->id : Inflector::camel2id($config['handle']);
-            $config['hasSettings'] = ($plugin !== null && $plugin->hasSettings);
+            $config['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
 
             $info[$lcHandle] = $config;
             $names[] = $config['name'];
@@ -1235,9 +1238,9 @@ class Plugins extends Component
             $config['sourceLanguage'] = $extra['sourceLanguage'];
         }
 
-        // hasSettings
-        if (isset($extra['hasSettings'])) {
-            $config['hasSettings'] = $extra['hasSettings'];
+        // hasCpSettings
+        if (isset($extra['hasCpSettings'])) {
+            $config['hasCpSettings'] = $extra['hasCpSettings'];
         }
 
         // hasCpSection
@@ -1248,6 +1251,11 @@ class Plugins extends Component
         // components
         if (isset($extra['components'])) {
             $config['components'] = $extra['components'];
+        }
+
+        // modules
+        if (isset($extra['modules'])) {
+            $config['modules'] = $extra['modules'];
         }
 
         return $config;

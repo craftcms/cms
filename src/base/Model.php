@@ -9,7 +9,6 @@ namespace craft\base;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use yii\base\UnknownMethodException;
 
 /**
  * Model base class.

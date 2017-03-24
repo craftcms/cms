@@ -73,7 +73,7 @@ class GlobalSet extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new GlobalSetQuery(get_called_class());
+        return new GlobalSetQuery(static::class);
     }
 
     // Properties
@@ -144,17 +144,6 @@ class GlobalSet extends Element
         ];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        /** @var FieldLayoutBehavior $behavior */
-        $behavior = $this->getBehavior('fieldLayout');
-
-        return $behavior->getFieldLayout();
     }
 
     /**

@@ -16,7 +16,6 @@ use craft\mail\Mailer;
 use craft\mail\transportadapters\Php;
 use craft\models\Info;
 use craft\models\Site;
-use craft\services\Config;
 
 /**
  * Installation Migration
@@ -62,7 +61,7 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $this->driver = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
+        $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
@@ -249,6 +248,7 @@ class Install extends Migration
         ]);
         $this->createTable('{{%elements}}', [
             'id' => $this->primaryKey(),
+            'fieldLayoutId' => $this->integer(),
             'type' => $this->string()->notNull(),
             'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'archived' => $this->boolean()->defaultValue(false)->notNull(),
@@ -749,6 +749,7 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%content}}', 'title', false, true), '{{%content}}', 'title', false);
         $this->createIndex($this->db->getIndexName('{{%deprecationerrors}}', 'key,fingerprint', true), '{{%deprecationerrors}}', 'key,fingerprint', true);
         $this->createIndex($this->db->getIndexName('{{%elementindexsettings}}', 'type', true), '{{%elementindexsettings}}', 'type', true);
+        $this->createIndex($this->db->getIndexName('{{%elements}}', 'fieldLayoutId', false, true), '{{%elements}}', 'fieldLayoutId', false);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'type', false), '{{%elements}}', 'type', false);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'enabled', false), '{{%elements}}', 'enabled', false);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'archived,dateCreated', false), '{{%elements}}', 'archived,dateCreated', false);
@@ -923,6 +924,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'siteId'), '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'elementId'), '{{%content}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%elements}}', 'fieldLayoutId'), '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'elementId'), '{{%elements_i18n}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'authorId'), '{{%entries}}', 'authorId', '{{%users}}', 'id', 'CASCADE', null);

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Plugin;
+use craft\config\GeneralConfig;
 use craft\enums\PluginUpdateStatus;
 use craft\errors\EtException;
 use craft\errors\InvalidPluginException;
@@ -152,7 +153,7 @@ EOD;
                 unset($pluginInfo);
             }
 
-            $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
+            $response['allowAutoUpdates'] = $this->_allowAutoUpdates();
 
             return $this->asJson($response);
         }
@@ -246,7 +247,7 @@ EOD;
             // If it's not a manual update, make sure they have auto-update permissions.
             $this->requirePermission('performUpdates');
 
-            if (!Craft::$app->getConfig()->allowAutoUpdates()) {
+            if (!$this->_allowAutoUpdates()) {
                 return $this->asJson([
                     'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                     'finished' => true
@@ -293,7 +294,7 @@ EOD;
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        if (!Craft::$app->getConfig()->allowAutoUpdates()) {
+        if (!$this->_allowAutoUpdates()) {
             return $this->asJson([
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
@@ -344,7 +345,7 @@ EOD;
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        if (!Craft::$app->getConfig()->allowAutoUpdates()) {
+        if (!$this->_allowAutoUpdates()) {
             return $this->asJson([
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
@@ -390,7 +391,7 @@ EOD;
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        if (!Craft::$app->getConfig()->allowAutoUpdates()) {
+        if (!$this->_allowAutoUpdates()) {
             return $this->asJson([
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
@@ -548,7 +549,7 @@ EOD;
         if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
-            $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
+            $returnUrl = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
         }
 
         return $this->asJson([
@@ -745,9 +746,9 @@ EOD;
      */
     private function _shouldBackupDb(): bool
     {
-        $config = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        return ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false);
+        return ($generalConfig->backupOnUpdate && $generalConfig->backupCommand !== false);
     }
 
     /**
@@ -774,5 +775,37 @@ EOD;
         }
 
         return $this->asJson($response);
+    }
+
+    /**
+     * Returns whether the system is allowed to be auto-updated to the latest Craft release.
+     *
+     * @return bool Whether the system is allowed to be auto-updated to the latest release.
+     */
+    private function _allowAutoUpdates(): bool
+    {
+        $update = Craft::$app->getUpdates()->getUpdates();
+
+        if (!$update) {
+            return false;
+        }
+
+        $configVal = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+
+        if (is_bool($configVal)) {
+            return $configVal;
+        }
+
+        if ($configVal === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
+            // Return true if the major and minor versions are still the same
+            return (App::majorMinorVersion($update->app->latestVersion) === App::majorMinorVersion(Craft::$app->version));
+        }
+
+        if ($configVal === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
+            // Return true if the major version is still the same
+            return (App::majorVersion($update->app->latestVersion) === App::majorVersion(Craft::$app->version));
+        }
+
+        return false;
     }
 }

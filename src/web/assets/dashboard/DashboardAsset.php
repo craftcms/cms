@@ -31,7 +31,7 @@ class DashboardAsset extends AssetBundle
         ];
 
         $this->js = [
-            'dashboard'.$this->dotJs(),
+            'Dashboard'.$this->dotJs(),
         ];
 
         parent::init();

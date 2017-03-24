@@ -98,7 +98,7 @@ class Category extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new CategoryQuery(get_called_class());
+        return new CategoryQuery(static::class);
     }
 
     /**
@@ -256,14 +256,6 @@ class Category extends Element
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
 
         return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        return $this->getGroup()->getFieldLayout();
     }
 
     /**

@@ -10,7 +10,6 @@ namespace craft\db\mysql;
 use Craft;
 use craft\db\TableSchema;
 use craft\helpers\FileHelper;
-use craft\services\Config;
 use yii\db\Exception;
 
 /**
@@ -273,12 +272,12 @@ SQL;
     {
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
-        $config = Craft::$app->getConfig();
+        $dbConfig = Craft::$app->getConfig()->getDb();
         $contents = '[client]'.PHP_EOL.
-            'user='.$config->get('user', Config::CATEGORY_DB).PHP_EOL.
-            'password='.$config->get('password', Config::CATEGORY_DB).PHP_EOL.
-            'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
-            'port='.$config->getDbPort();
+            'user='.$dbConfig->user.PHP_EOL.
+            'password='.$dbConfig->password.PHP_EOL.
+            'host='.$dbConfig->server.PHP_EOL.
+            'port='.$dbConfig->port;
 
         FileHelper::writeToFile($filePath, $contents);
 

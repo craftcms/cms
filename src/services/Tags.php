@@ -218,13 +218,6 @@ class Tags extends Component
             if (!$tagGroupRecord) {
                 throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
             }
-
-            $oldTagGroup = new TagGroup($tagGroupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-                'fieldLayoutId',
-            ]));
         } else {
             $tagGroupRecord = new TagGroupRecord();
         }
@@ -235,22 +228,11 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Is there a new field layout?
+            // Save the field layout
             $fieldLayout = $tagGroup->getFieldLayout();
-            if (!$fieldLayout->id) {
-                // Delete the old one
-                /** @noinspection PhpUndefinedVariableInspection */
-                if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
-                }
-
-                // Save the new one
-                Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                // Update the tag group record/model with the new layout ID
-                $tagGroup->fieldLayoutId = $fieldLayout->id;
-                $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
-            }
+            Craft::$app->getFields()->saveLayout($fieldLayout);
+            $tagGroup->fieldLayoutId = $fieldLayout->id;
+            $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
 
             // Save it!
             $tagGroupRecord->save(false);

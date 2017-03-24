@@ -130,12 +130,12 @@ class Search extends Component
     public function filterElementIdsByQuery(array $elementIds, $query, bool $scoreResults = true, int $siteId = null, bool $returnScores = false): array
     {
         if (is_string($query)) {
-            $query = new SearchQuery($query, Craft::$app->getConfig()->get('defaultSearchTermOptions'));
+            $query = new SearchQuery($query, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
         } else if (is_array($query)) {
             $options = $query;
             $query = $options['query'];
             unset($options['query']);
-            $options = array_merge(Craft::$app->getConfig()->get('defaultSearchTermOptions'), $options);
+            $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
             $query = new SearchQuery($query, $options);
         }
 

@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\helpers\Json;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -89,7 +88,7 @@ class TasksController extends Controller
         try {
             Craft::$app->getTasks()->rerunTaskById($taskId);
         } catch (Exception $e) {
-            throw new BadRequestHttpException(null ,0, $e);
+            throw new BadRequestHttpException(null, 0, $e);
         }
 
         // Prep the response

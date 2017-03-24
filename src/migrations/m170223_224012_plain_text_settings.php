@@ -29,6 +29,10 @@ class m170223_224012_plain_text_settings extends Migration
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
 
+            if (!is_array($settings)) {
+                continue;
+            }
+
             // maxLength => charLimit
             ArrayHelper::rename($settings, 'maxLength', 'charLimit');
 
@@ -53,6 +57,7 @@ class m170223_224012_plain_text_settings extends Migration
     public function safeDown()
     {
         echo "m170223_224012_plain_text_column_types cannot be reverted.\n";
+
         return false;
     }
 }

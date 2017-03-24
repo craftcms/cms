@@ -6,6 +6,7 @@
 {%- set instructions = (instructions is defined ? instructions : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
+{%- set translatable = translatable ?? site is not same as(null) %}
 {%- set errors = (errors is defined ? errors : null) -%}
 {%- set fieldClass = [
     'field',
@@ -20,7 +21,7 @@
             {% if label %}
                 <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
                     {{- label|raw -}}
-                    {%- if site %} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.'|t('app') }}"></span>{% endif -%}
+                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ 'This field is translatable.'|t('app') }}"></span>{% endif -%}
                 </label>
             {% endif %}
             {% if instructions %}

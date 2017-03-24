@@ -870,9 +870,9 @@ class View extends \yii\web\View
             $this->_indexTemplateFilenames = ['index'];
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
-            $configService = Craft::$app->getConfig();
-            $this->_defaultTemplateExtensions = $configService->get('defaultTemplateExtensions');
-            $this->_indexTemplateFilenames = $configService->get('indexTemplateFilenames');
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
+            $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
         }
     }
 
@@ -1271,6 +1271,7 @@ class View extends \yii\web\View
             $element->getHtmlAttributes($context['context']),
             [
                 'class' => 'element '.$elementSize,
+                'data-type' => get_class($element),
                 'data-id' => $element->id,
                 'data-site-id' => $element->siteId,
                 'data-status' => $element->getStatus(),

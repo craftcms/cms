@@ -48,25 +48,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     private $_adapter;
 
-    /**
-     * @var Filesystem|null The Flysystem filesystem
-     */
-    private $_filesystem;
-
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if ($this->url !== null) {
-            $this->url = Craft::getAlias($this->url);
-        }
-    }
 
     /**
      * @inheritdoc
@@ -131,7 +114,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function getFileList(string $directory, bool $recursive): array
     {
-        $fileList =  $this->filesystem()->listContents($directory, $recursive);
+        $fileList = $this->filesystem()->listContents($directory, $recursive);
         $output = [];
 
         foreach ($fileList as $entry) {

@@ -71,7 +71,7 @@ class UniqueValidator extends YiiUniqueValidator
             $record->setIsNewRecord($isNewRecord);
 
             // Set the new attribute value(s) on the record
-            $targetAttribute = $this->targetAttribute === null ? $attribute : $this->targetAttribute;
+            $targetAttribute = $this->targetAttribute ?? $attribute;
 
             if (is_array($targetAttribute)) {
                 foreach ($targetAttribute as $k => $v) {

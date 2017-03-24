@@ -89,7 +89,7 @@ class HandleValidator extends Validator
             } else {
                 if (!preg_match('/^'.static::$handlePattern.'$/', $handle)) {
                     $altMessage = Craft::t('app', '“{handle}” isn’t a valid handle.', ['handle' => $handle]);
-                    $message = $this->message !== null ? $this->message : $altMessage;
+                    $message = $this->message ?? $altMessage;
                     $this->addError($object, $attribute, $message);
                 }
             }

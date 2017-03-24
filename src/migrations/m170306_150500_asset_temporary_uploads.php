@@ -68,6 +68,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
             // If the file doesn't even exist, delete the record of it.
             if (!file_exists($from)) {
                 $this->delete('{{%elements}}', ['id' => $asset['id']]);
+                continue;
             }
 
             if (file_exists($to)) {

@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\Categories;
@@ -22,7 +21,8 @@ class m170217_044740_category_branch_limits extends Migration
         $categoryFields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
-            ->where(['and',
+            ->where([
+                'and',
                 ['type' => Categories::class],
                 ['not', ['settings' => null]]
             ])
@@ -47,6 +47,7 @@ class m170217_044740_category_branch_limits extends Migration
     public function safeDown()
     {
         echo "m170217_044740_category_branch_limits cannot be reverted.\n";
+
         return false;
     }
 }

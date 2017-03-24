@@ -319,7 +319,7 @@ class m160807_144858_sites extends Migration
                 // Drop the old FK
                 MigrationHelper::dropForeignKey($refTable, $columns, $this);
 
-                $originalRefTable = StringHelper::removeLeft($refTable, Craft::$app->getConfig()->getDbTablePrefix());
+                $originalRefTable = StringHelper::removeLeft($refTable, Craft::$app->getConfig()->getDb()->tablePrefix);
                 $originalRefTable = Craft::$app->getDb()->getTableSchema('{{%'.$originalRefTable.'}}');
 
                 // Add a new *__siteId column + FK for each column in this FK that points to locales.locale

@@ -53,8 +53,10 @@ class Tokens extends Component
     public function createToken($route, int $usageLimit = null, DateTime $expiryDate = null)
     {
         if (!$expiryDate) {
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->defaultTokenDuration);
             $expiryDate = DateTimeHelper::currentUTCDateTime();
-            $expiryDate->add(new \DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
+            $expiryDate->add($interval);
         }
 
         $tokenRecord = new TokenRecord();

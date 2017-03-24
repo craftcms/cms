@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\helpers\MigrationHelper;
 
@@ -39,6 +38,7 @@ class m170217_120224_asset_indexing_columns extends Migration
     public function safeDown()
     {
         echo "m170217_120224_asset_indexing_columns cannot be reverted.\n";
+
         return false;
     }
 }

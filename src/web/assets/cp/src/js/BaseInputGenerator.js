@@ -41,15 +41,9 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onTextChange');
+            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
+            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
-
-            this.addListener(this.$target, 'focus', function() {
-                this.addListener(this.$target, 'textchange', 'stopListening');
-                this.addListener(this.$target, 'blur', function() {
-                    this.removeListener(this.$target, 'textchange,blur');
-                });
-            });
         },
 
         stopListening: function() {
@@ -59,17 +53,27 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = false;
 
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+
             this.removeAllListeners(this.$source);
             this.removeAllListeners(this.$target);
             this.removeAllListeners(this.$form);
         },
 
-        onTextChange: function() {
+        onSourceTextChange: function() {
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
 
             this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
+        },
+
+        onTargetTextChange: function() {
+            if (this.$target.get(0) === document.activeElement) {
+                this.stopListening();
+            }
         },
 
         onFormSubmit: function() {
@@ -85,7 +89,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
                 targetVal = this.generateTargetValue(sourceVal);
 
             this.$target.val(targetVal);
-            this.$target.trigger('textchange');
+            this.$target.trigger('change');
         },
 
         generateTargetValue: function(sourceVal) {

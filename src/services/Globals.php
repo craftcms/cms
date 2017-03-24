@@ -249,17 +249,6 @@ class Globals extends Component
             if (!$globalSetRecord) {
                 throw new GlobalSetNotFoundException("No global set exists with the ID '{$globalSet->id}'");
             }
-
-            /** @var GlobalSet $oldSet */
-            $oldSet = new GlobalSet($globalSetRecord->toArray([
-                'name',
-                'handle',
-                'fieldLayoutId',
-                'id',
-                'uid',
-                'dateCreated',
-                'dateUpdated',
-            ]));
         } else {
             $globalSetRecord = new GlobalSetRecord();
         }
@@ -294,23 +283,11 @@ class Globals extends Component
                             $globalSetRecord->id = $globalSet->id;
                         }
 
-                        // Is there a new field layout?
+                        // Save the field layout
                         $fieldLayout = $globalSet->getFieldLayout();
-
-                        if (!$fieldLayout->id) {
-                            // Delete the old one
-                            /** @noinspection PhpUndefinedVariableInspection */
-                            if (!$isNewSet && $oldSet->fieldLayoutId) {
-                                Craft::$app->getFields()->deleteLayoutById($oldSet->fieldLayoutId);
-                            }
-
-                            // Save the new one
-                            Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                            // Update the global set record/model with the new layout ID
-                            $globalSet->fieldLayoutId = $fieldLayout->id;
-                            $globalSetRecord->fieldLayoutId = $fieldLayout->id;
-                        }
+                        Craft::$app->getFields()->saveLayout($fieldLayout);
+                        $globalSet->fieldLayoutId = $fieldLayout->id;
+                        $globalSetRecord->fieldLayoutId = $fieldLayout->id;
 
                         $globalSetRecord->save(false);
 

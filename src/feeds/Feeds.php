@@ -8,7 +8,7 @@
 namespace craft\feeds;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
+use craft\helpers\ConfigHelper;
 use craft\models\Url;
 use DateTime;
 use yii\base\Component;
@@ -52,10 +52,10 @@ class Feeds extends Component
      * - **summary** – The item’s summary content.
      * - **title** – The item’s title.
      *
-     * @param string          $url           The feed’s URL.
-     * @param int|null        $limit         The maximum number of items to return. Default is 0 (no limit).
-     * @param int|null        $offset        The number of items to skip. Defaults to 0.
-     * @param int|string|null $cacheDuration Number of seconds to cache the results, or a valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
+     * @param string     $url           The feed’s URL.
+     * @param int|null   $limit         The maximum number of items to return. Default is 0 (no limit).
+     * @param int|null   $offset        The number of items to skip. Defaults to 0.
+     * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
      *
      * @return array|string The list of feed items.
      * @throws \Zend\Feed\Reader\Exception\RuntimeException
@@ -76,13 +76,9 @@ class Feeds extends Component
 
         $return = [];
 
-        if (is_string($cacheDuration)) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
-
-            if ($cacheDuration === null) {
-                $cacheDuration = 0;
-            }
+        // Normalize the cache duration
+        if ($cacheDuration !== null) {
+            $cacheDuration = ConfigHelper::durationInSeconds($cacheDuration);
         }
 
         // Potentially long-running request, so close session to prevent session blocking on subsequent requests.

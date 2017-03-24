@@ -9,22 +9,18 @@ namespace craft\services;
 
 use Craft;
 use craft\base\FolderVolumeInterface;
-use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetLogicException;
 use craft\errors\FileException;
 use craft\errors\ImageException;
-use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\events\AssetEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -35,15 +31,13 @@ use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
-use craft\models\AssetTransformIndex;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
-use craft\records\Asset as AssetRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
-use DateTime;
 use yii\base\Component;
+use yii\base\InvalidParamException;
 
 /**
  * Class Assets service.
@@ -59,16 +53,7 @@ class Assets extends Component
     // =========================================================================
 
     /**
-     * @event AssetEvent The event that is triggered before an asset is uploaded.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from getting saved.
-     */
-    const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
-
-    /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being replaced.
      */
     const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
@@ -126,187 +111,6 @@ class Assets extends Component
     }
 
     /**
-     * Save an Asset.
-     *
-     * Saves an Asset. If the 'newFilePath' property is set, will replace the existing file.
-     * For new assets, this property MUST bet set.
-     *
-     * @param Asset $asset
-     * @param bool  $runValidation Whether the Asset should be validated
-     *
-     * @throws AssetDisallowedExtensionException If the file extension is not allowed.
-     * @throws FileException                     If there was a problem with the actual file.
-     * @throws AssetConflictException            If a file with such name already exists.
-     * @throws AssetLogicException               If it's a new Asset and there's no file or there's no folder id set.
-     * @throws VolumeObjectExistsException       If the file actually exists on the volume, but on in the index.
-     * @throws UploadFailedException             If for some reason it's not possible to write the file to the final location
-     * @return void
-     */
-    public function saveAsset(Asset $asset, $runValidation = true)
-    {
-        $isNew = !$asset->id;
-
-        if ($isNew) {
-            $asset->folderPath = $asset->getFolder()->path;
-        }
-
-        if ($isNew && empty($asset->newFilePath) && empty($asset->indexInProgress)) {
-            throw new AssetLogicException(Craft::t('app',
-                'A new Asset cannot be created without a file.'));
-        }
-
-        if (!$asset->folderId) {
-            throw new AssetLogicException(Craft::t('app',
-                'All Assets must have folder ID set.'));
-        }
-
-        $extension = $asset->getExtension();
-
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                ['extension' => $extension]));
-        }
-
-        $existingAsset = Asset::find()
-            ->folderId($asset->folderId)
-            ->filename(Db::escapeParam($asset->filename))
-            ->one();
-
-        if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                ['filename' => $asset->filename]));
-        }
-
-        $volume = $asset->getVolume();
-
-        if (!$volume) {
-            throw new AssetLogicException(Craft::t('app',
-                'Volume does not exist with the id of {id}.',
-                ['id' => $asset->volumeId]));
-        }
-
-        if (!empty($asset->newFilePath)) {
-            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) === 'image') {
-                Image::cleanImageByPath($asset->newFilePath);
-            }
-
-            $stream = fopen($asset->newFilePath, 'rb');
-
-            if (!$stream) {
-                throw new FileException(Craft::t('app',
-                    'Could not open file for streaming at {path}',
-                    ['path' => $asset->newFilePath]));
-            }
-
-            $uriPath = $asset->getUri();
-
-            $event = new AssetEvent(['asset' => $asset, 'isNew' => $isNew]);
-            $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
-
-            // Explicitly re-throw VolumeFileExistsException
-            try {
-                $result = $volume->createFileByStream($uriPath, $stream, []);
-            } catch (VolumeObjectExistsException $exception) {
-                // Replace the file if this is the temporary Volume.
-                if ($asset->volumeId === null) {
-                    $volume->deleteFile($uriPath);
-                    $result = $volume->createFileByStream($uriPath, $stream, []);
-                } else {
-                    throw $exception;
-                }
-            }
-
-            if (!$result) {
-                throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
-            }
-
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-
-            $asset->dateModified = new DateTime();
-            $asset->size = filesize($asset->newFilePath);
-            $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
-
-            if ($asset->kind === 'image' && !empty($asset->newFilePath)) {
-
-                list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
-            }
-        }
-
-        Craft::$app->getElements()->saveElement($asset, $runValidation);
-
-        // Now that we have an ID, store the source
-        if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->newFilePath)) {
-            // Store the local source for now and set it up for deleting, if needed
-            $assetTransforms = Craft::$app->getAssetTransforms();
-            $assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
-            $assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
-        }
-    }
-
-    /**
-     * Replaces an Asset with another.
-     *
-     * @param Asset $assetToReplace
-     * @param Asset $assetToReplaceWith
-     * @param bool  $mergeRelationships should the relations be merged for the conflicting Assets
-     *
-     * @return void
-     */
-    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, bool $mergeRelationships = false)
-    {
-        $targetVolume = $assetToReplace->getVolume();
-
-        // Clear all thumb and transform data
-        if (Image::isImageManipulatable($assetToReplace->getExtension())) {
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($assetToReplace);
-        }
-
-        // Handle things differently depending if the relationships should be merged
-        // for the Asset being replaced.
-        if ($mergeRelationships) {
-            // This deletes the $assetToReplace element and merges their relationships.
-            Craft::$app->getElements()->mergeElementsByIds($assetToReplace->id,
-                $assetToReplaceWith->id);
-
-            // Replace the file - delete the conflicting file and move the new file in it's place.
-            $targetVolume->deleteFile($assetToReplace->getUri());
-            $this->_moveAssetFileToFolder($assetToReplaceWith,
-                $assetToReplace->getFolder());
-
-            // Update attribute on the Asset being merged into an existing one
-            // because the target Asset is nuked and the new one takes it's place.
-            $assetToReplaceWith->folderId = $assetToReplace->folderId;
-            $assetToReplaceWith->volumeId = $assetToReplace->volumeId;
-            $assetToReplaceWith->filename = $assetToReplace->filename;
-
-            // At this point the Asset being moved effectively takes place of the target Asset.
-            $this->saveAsset($assetToReplaceWith);
-        } else {
-            // Update the file-related attributes on the target Asset based on the incoming Asset
-            $assetToReplace->dateModified = $assetToReplaceWith->dateModified;
-            $assetToReplace->size = $assetToReplaceWith->size;
-            $assetToReplace->kind = $assetToReplaceWith->kind;
-            $assetToReplace->width = $assetToReplaceWith->width;
-            $assetToReplace->height = $assetToReplaceWith->height;
-
-            // Replace the file - delete the conflicting file and move the new file in it's place.
-            $targetVolume->deleteFile($assetToReplace->getUri());
-            $this->_moveAssetFileToFolder($assetToReplaceWith,
-                $assetToReplace->getFolder(), $assetToReplace->filename);
-
-            // At this point the existing Asset has its properties changed and the Asset
-            // file itself is changed as well. Save the existing Asset and delete the other one.
-            $this->saveAsset($assetToReplace);
-            $assetToReplaceWith->keepFileOnDelete = true;
-            Craft::$app->getElements()->saveElement($assetToReplaceWith);
-        }
-    }
-
-    /**
      * Replace an Asset's file.
      *
      * Replace an Asset's file by it's id, a local file and the filename to use.
@@ -335,131 +139,58 @@ class Assets extends Component
 
         $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
 
-        // Is the event preventing this from happening?
-        if (!$event->isValid) {
-            throw new ActionCancelledException(Craft::t('app', 'Something prevented the Asset file from being replaced.'));
-        }
+        $asset->tempFilePath = $pathOnServer;
+        $asset->newFilename = $filename;
+        $asset->avoidFilenameConflicts = true;
+        $asset->setScenario(Asset::SCENARIO_REPLACE);
 
-        $volume = $asset->getVolume();
-
-        // Clear all thumb and transform data
-        if (Image::isImageManipulatable($asset->getExtension())) {
-            Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
-        }
-
-        // Open the stream for, uhh, streaming
-        $stream = fopen($pathOnServer, 'rb');
-
-        if (!$stream) {
-            throw new FileException(Craft::t('app',
-                'Could not open file for streaming at {path}',
-                ['path' => $pathOnServer]));
-        }
-
-        // Re-use the same filename
-        if (StringHelper::toLowerCase($asset->filename) === StringHelper::toLowerCase($filename)) {
-            // The case is changing in the filename
-            if ($asset->filename !== $filename) {
-                // Delete old, change the name, upload the new
-                $volume->deleteFile($asset->getUri());
-                $asset->newFilename = $filename;
-                $volume->createFileByStream($asset->getUri(), $stream, []);
-            } else {
-                $volume->updateFileByStream($asset->getUri(), $stream, []);
-            }
-        } else {
-            // Get an available name to avoid conflicts and upload the file
-            $filename = $this->getNameReplacementInFolder($filename,
-                $asset->folderId);
-
-            // Delete old, change the name, upload the new
-            $volume->deleteFile($asset->getUri());
-            $asset->newFilename = $filename;
-            $volume->createFileByStream($asset->getUri(), $stream, []);
-
-            $asset->kind = AssetsHelper::getFileKindByExtension($filename);
-        }
-
-        if (is_resource($stream)) {
-            fclose($stream);
-        }
-
-        if ($asset->kind === 'image') {
-            list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
-        } else {
-            $asset->width = null;
-            $asset->height = null;
-        }
-
-        $asset->size = filesize($pathOnServer);
-        $asset->dateModified = new DateTime('@'.filemtime($pathOnServer));
-
-        $this->saveAsset($asset);
+        Craft::$app->getElements()->saveElement($asset);
 
         $event = new ReplaceAssetEvent([
             'asset' => $asset,
             'filename' => $filename
         ]);
+
         $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
     }
 
     /**
-     * Rename an Asset.
+     * Move or rename an Asset.
      *
-     * @param Asset $asset         The asset whose file should be renamed
-     * @param bool  $runValidation Whether the filename should be validated
+     * @param Asset        $asset    The asset whose file should be renamed
+     * @param VolumeFolder $folder   The Volume Folder to move the Asset to.
+     * @param string       $filename The new filename
      *
      * @return bool Whether the asset was renamed successfully
      * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameFile(Asset $asset, bool $runValidation = true): bool
+    public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        if ($runValidation && !$asset->validate(['newFilename'])) {
-            Craft::info('Asset file not renamed due to validation error.', __METHOD__);
+        // Set the new combined target location, and save it
+        $asset->newFilename = $filename;
+        $asset->newFolderId = $folder->id;
+        $asset->setScenario(Asset::SCENARIO_FILEOPS);
 
-            return false;
-        }
-
-        $volume = $asset->getVolume();
-
-        if (!$volume) {
-            throw new AssetLogicException('Invalid volume ID: '.$asset->volumeId);
-        }
-
-        if (!$volume->renameFile($asset->getUri(), $asset->getUri($asset->newFilename))) {
-            return false;
-        }
-
-        // Update the record
-        $record = AssetRecord::findOne($asset->id);
-        $record->filename = $asset->newFilename;
-        $record->save(false);
-
-        // Update the model
-        $asset->filename = $asset->newFilename;
-        $asset->newFilename = null;
-
-        return true;
+        return Craft::$app->getElements()->saveElement($asset);
     }
 
     /**
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
+     * @param bool         $indexExisting Set to true to just index the folder if it already exists on volume.
      *
-     * @throws AssetConflictException           If a folder already exists with such a name.
-     * @throws AssetLogicException              If the parent folder is missing.
-     * @throws VolumeObjectExistsException      If the file actually exists on the volume, but on in the index.
      * @return void
+     * @throws AssetConflictException if a folder already exists with such a name
+     * @throws InvalidParamException if $folder doesn’t have a parent
+     * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
      */
-    public function createFolder(VolumeFolder $folder)
+    public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
     {
         $parent = $folder->getParent();
 
         if (!$parent) {
-            throw new AssetLogicException(Craft::t('app',
-                'No folder exists with the ID “{id}”',
-                ['id' => $folder->parentId]));
+            throw new InvalidParamException('Folder '.$folder->id.' doesn\'t have a parent.');
         }
 
         $existingFolder = $this->findFolder([
@@ -467,7 +198,7 @@ class Assets extends Component
             'name' => $folder->name
         ]);
 
-        if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder)) {
+        if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
             throw new AssetConflictException(Craft::t('app',
                 'A folder with the name “{folderName}” already exists in the volume.',
                 ['folderName' => $folder->name]));
@@ -477,12 +208,11 @@ class Assets extends Component
 
         // If Volume has discrete folders
         if ($volume instanceof FolderVolumeInterface) {
-            // Explicitly re-throw VolumeObjectExistsException
             try {
                 $volume->createDir(rtrim($folder->path, '/'));
             } catch (VolumeObjectExistsException $exception) {
-                // Rethrow exception unless this is a temporary Volume.
-                if ($folder->volumeId !== null) {
+                // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
+                if ($folder->volumeId !== null && !$indexExisting) {
                     throw $exception;
                 }
             }
@@ -870,10 +600,10 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset,
-                $index);
+
+            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
         } else {
-            if (Craft::$app->getConfig()->get('generateTransformsBeforePageLoad')) {
+            if (Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad) {
                 try {
                     return $assetTransforms->ensureTransformUrlByIndexModel($index);
                 } catch (ImageException $exception) {
@@ -885,6 +615,7 @@ class Assets extends Component
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 $tasks = Craft::$app->getTasks();
+
                 if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
                     $tasks->createTask(GeneratePendingTransforms::class);
                 }
@@ -901,15 +632,18 @@ class Assets extends Component
      * @param string $originalFilename the original filename for which to find a replacement.
      * @param int    $folderId         THe folder in which to find the replacement
      *
+     * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @return string
+     * @throws InvalidParamException If $folderId is invalid
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
         $folder = $this->getFolderById($folderId);
+
         if (!$folder) {
-            throw new AssetLogicException();
+            throw new InvalidParamException('Invalid folder ID: '.$folderId);
         }
+
         $volume = $folder->getVolume();
         $fileList = $volume->getFileList((string)$folder->path, false);
 
@@ -920,6 +654,18 @@ class Assets extends Component
             if (StringHelper::toLowerCase(rtrim($folder->path, '/')) === StringHelper::toLowerCase($file['dirname'])) {
                 $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
             }
+        }
+
+        // Get a list from DB as well
+        $fileList = (new Query())
+            ->select(['filename'])
+            ->from(['{{%assets}}'])
+            ->where(['folderId' => $folderId])
+            ->column();
+
+        // Combine the indexed list and the actual file list to make the final potential conflict list.
+        foreach ($fileList as $file) {
+            $existingFiles[StringHelper::toLowerCase($file)] = true;
         }
 
         // Shorthand.
@@ -933,7 +679,6 @@ class Assets extends Component
 
         $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
         $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
-
 
         // If the file already ends with something that looks like a timestamp, use that instead.
         if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
@@ -967,58 +712,6 @@ class Assets extends Component
 
         return $newFilename;
     }
-
-    /**
-     * Move an Asset.
-     *
-     * @param Asset  $asset
-     * @param int    $folderId    Id of the folder of the destination
-     * @param string $newFilename filename to use for the file at it's destination
-     *
-     * @throws AssetDisallowedExtensionException If the extension is not allowed.
-     * @throws AssetConflictException            If there is a conflict.
-     * @throws AssetLogicException               If the target folder does not exist.
-     * @return void
-     */
-    public function moveAsset(Asset $asset, int $folderId, string $newFilename = '')
-    {
-        $filename = $newFilename ?: $asset->filename;
-
-        $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                ['extension' => $extension]));
-        }
-
-        $existingAsset = Asset::find()
-            ->folderId($folderId)
-            ->filename(Db::escapeParam($filename))
-            ->one();
-
-        if ($existingAsset && $existingAsset->id !== $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                ['filename' => $filename]));
-        }
-
-        $targetFolder = $this->getFolderById($folderId);
-
-        if (!$targetFolder) {
-            throw new AssetLogicException(Craft::t('app',
-                'The destination folder does not exist'));
-        }
-
-        $this->_moveAssetFileToFolder($asset, $targetFolder, $filename);
-
-        $asset->folderId = $folderId;
-        $asset->volumeId = $targetFolder->volumeId;
-        $asset->filename = $filename;
-
-        $this->saveAsset($asset);
-    }
-
 
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
@@ -1100,7 +793,8 @@ class Assets extends Component
      *
      * @return VolumeFolder
      */
-    public function getCurrentUserTemporaryUploadFolder() {
+    public function getCurrentUserTemporaryUploadFolder()
+    {
         return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
     }
 
@@ -1133,7 +827,6 @@ class Assets extends Component
             $folderName = 'user_'.sha1(Craft::$app->getSession()->id);
         }
 
-
         $folder = $this->findFolder([
             'name' => $folderName,
             'parentId' => $volumeTopFolder->id
@@ -1150,98 +843,13 @@ class Assets extends Component
         FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
 
         /**
-         * @var VolumeFolder $folder;
+         * @var VolumeFolder $folder ;
          */
         return $folder;
     }
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * Move an Asset's file to the specified folder.
-     *
-     * @param Asset        $asset
-     * @param VolumeFolder $targetFolder
-     * @param string       $newFilename new filename to use
-     *
-     * @throws FileException If there was a problem with the actual file.
-     * @return void
-     */
-    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, string $newFilename = '')
-    {
-        $filename = $newFilename ?: $asset->filename;
-
-        $sourceVolume = $asset->getVolume();
-        $fromPath = $asset->getUri();
-        $toPath = $targetFolder->path.$filename;
-
-        // Move inside the source.
-        $assetTransforms = Craft::$app->getAssetTransforms();
-        if ($asset->volumeId === $targetFolder->volumeId) {
-            if ($fromPath === $toPath) {
-                return;
-            }
-
-            $sourceVolume->renameFile($fromPath, $toPath);
-            $transformIndexes = $assetTransforms->getAllCreatedTransformsForAsset($asset);
-
-            // Move the transforms
-            foreach ($transformIndexes as $transformIndex) {
-                /** @var AssetTransformIndex $transformIndex */
-                $fromTransformPath = $assetTransforms->getTransformSubpath($asset,
-                    $transformIndex);
-                $toTransformPath = $fromTransformPath;
-
-                // In case we're changing the filename, make sure that we're not missing that.
-                $parts = explode('/', $toTransformPath);
-                $transformName = array_pop($parts);
-                $toTransformPath = implode('/', $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
-
-                $baseFrom = $asset->getFolder()->path;
-                $baseTo = $targetFolder->path;
-
-                // Overwrite existing transforms
-                $sourceVolume->deleteFile($baseTo.$toTransformPath);
-
-                try {
-                    $sourceVolume->renameFile($baseFrom.$fromTransformPath,
-                        $baseTo.$toTransformPath);
-                    $transformIndex->filename = $filename;
-                    $assetTransforms->storeTransformIndexData($transformIndex);
-                } catch (VolumeObjectNotFoundException $exception) {
-                    // No biggie, just delete the transform index as well then
-                    $assetTransforms->deleteTransformIndex($transformIndex->id);
-                }
-            }
-        } // Move between volumes
-        else {
-            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
-            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-            $sourceVolume->saveFileLocally($asset->getUri(), $tempPath);
-            $targetVolume = $targetFolder->getVolume();
-            $stream = fopen($tempPath, 'rb');
-
-            if (!$stream) {
-                FileHelper::removeFile($tempPath);
-                throw new FileException(Craft::t('app',
-                    'Could not open file for streaming at {path}',
-                    ['path' => $asset->newFilePath]));
-            }
-
-            $targetVolume->createFileByStream($toPath, $stream, []);
-            $sourceVolume->deleteFile($asset->getUri());
-
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-
-            FileHelper::removeFile($tempPath);
-
-            // Nuke the transforms
-            $assetTransforms->deleteAllTransformData($asset);
-        }
-    }
 
     /**
      * Returns a DbCommand object prepped for retrieving assets.

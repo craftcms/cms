@@ -21,7 +21,7 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
 
 $findConfig = function($constName, $argName) {
     if (defined($constName)) {
-        return realpath(constant($constName));
+        return constant($constName);
     }
 
     if (!empty($_SERVER['argv'])) {
@@ -37,6 +37,12 @@ $findConfig = function($constName, $argName) {
     }
 
     return null;
+};
+
+$findConfigPath = function($constName, $argName) use ($findConfig) {
+    $path = $findConfig($constName, $argName);
+
+    return $path ? realpath($path) : null;
 };
 
 $createFolder = function($path) {
@@ -82,18 +88,18 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // -----------------------------------------------------------------------------
 
 // Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfig('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
+$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
 
 // Set the base directory path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$basePath = $findConfig('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+$basePath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfig('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
-$contentMigrationsPath = $findConfig('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
-$pluginsPath = $findConfig('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
-$storagePath = $findConfig('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
-$templatesPath = $findConfig('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
-$translationsPath = $findConfig('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
+$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
+$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
+$pluginsPath = $findConfigPath('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
+$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
+$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
+$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -150,7 +156,7 @@ $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'src'.DIRE
 if ($appType === 'console') {
     $devMode = true;
 } else {
-    $devMode = $configService->get('devMode');
+    $devMode = ArrayHelper::getValue($configService->getConfigFromFile('general'), 'devMode', false);
 }
 
 if ($devMode) {
@@ -199,10 +205,9 @@ $config = ArrayHelper::merge(
         'env' => $environment,
         'components' => $components,
     ],
-    require $srcPath.'/config/main.php',
-    require $srcPath.'/config/common.php',
-    require $srcPath.'/config/'.$appType.'.php',
-    $configService->getConfigSettings(Config::CATEGORY_APP)
+    require "{$srcPath}/config/app/main.php",
+    require "{$srcPath}/config/app/{$appType}.php",
+    $configService->getConfigFromFile('app')
 );
 
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
@@ -210,13 +215,13 @@ if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
 }
 
 // Initialize the application
-$class = 'craft\\'.$appType.'\\Application';
+$class = "craft\\{$appType}\\Application";
 /** @var $app craft\web\Application|craft\console\Application */
 $app = new $class($config);
 
 if ($appType === 'web') {
     // See if the resource base path exists and is writable
-    $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
+    $resourceBasePath = Craft::getAlias($app->config->getGeneral()->resourceBasePath);
     @FileHelper::createDirectory($resourceBasePath);
 
     if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {

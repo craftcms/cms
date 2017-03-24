@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\services;
 
 use Craft;
@@ -126,7 +127,8 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array {
+    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array
+    {
 
         $fileList = $volume->getFileList($directory, true);
 
@@ -171,8 +173,9 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function extractSkippedItemsFromIndexList(array &$indexList): array {
-        $skippedItems = array_filter($indexList, function ($entry) {
+    public function extractSkippedItemsFromIndexList(array &$indexList): array
+    {
+        $skippedItems = array_filter($indexList, function($entry) {
             return preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename']);
         });
 
@@ -188,8 +191,9 @@ class AssetIndexer extends Component
      *
      * @return array
      */
-    public function extractFolderItemsFromIndexList(array &$indexList): array {
-        $folderItems = array_filter($indexList, function ($entry) {
+    public function extractFolderItemsFromIndexList(array &$indexList): array
+    {
+        $folderItems = array_filter($indexList, function($entry) {
             return $entry['type'] === 'dir';
         });
 
@@ -245,6 +249,7 @@ class AssetIndexer extends Component
         try {
             $asset = $this->_indexFileByIndexData($indexEntryModel, $cacheImages);
             $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0, 'recordId' => $asset->id]);
+
             return ['result' => $asset->id];
         } catch (AssetDisallowedExtensionException $exception) {
             $this->updateIndexEntry($indexEntryModel->id, ['completed' => 1, 'inProgress' => 0]);
@@ -364,7 +369,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      * @param string $path
-     * @param string $sessionId optional indexing session id.
+     * @param string $sessionId   optional indexing session id.
      * @param bool   $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
@@ -405,7 +410,7 @@ class AssetIndexer extends Component
      * Indexes a file.
      *
      * @param AssetIndexData $indexEntryModel Asset Index Data entry that contains information for the Asset-to-be.
-     * @param bool           $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
+     * @param bool           $cacheImages     Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      *
      * @return Asset
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
@@ -437,11 +442,14 @@ class AssetIndexer extends Component
             throw new AssetLogicException("The folder {$path} does not exist");
         }
 
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
+
         // Check if the extension is allowed
         $extension = pathinfo($indexEntryModel->uri, PATHINFO_EXTENSION);
         $filename = basename($indexEntryModel->uri);
 
-        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
+        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File “{$indexEntryModel->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
@@ -458,16 +466,19 @@ class AssetIndexer extends Component
         // Create an Asset if there is none.
         if ($asset === null) {
             $asset = new Asset();
-            $asset->volumeId = $folder->volumeId;
+            $asset->volumeId = $volume->id;
+            $asset->fieldLayoutId = $volume->fieldLayoutId;
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
-            $asset->indexInProgress = true;
         }
+
 
         $asset->size = $indexEntryModel->size;
         $timeModified = $indexEntryModel->timestamp;
+
+        $asset->setScenario(Asset::SCENARIO_INDEX);
 
         // All sorts of fun stuff for images.
         if ($asset->kind === 'image') {
@@ -518,10 +529,7 @@ class AssetIndexer extends Component
 
         $asset->dateModified = $timeModified;
 
-        // Make sure there are no double spaces, if the filename had a space followed by a
-        // capital letter because of Yii's "word" logic.
-        $asset->title = str_replace('  ', ' ',StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
-        Craft::$app->getAssets()->saveAsset($asset, false);
+        Craft::$app->getElements()->saveElement($asset);
 
         return $asset;
     }

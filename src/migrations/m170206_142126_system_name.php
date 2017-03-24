@@ -36,6 +36,7 @@ class m170206_142126_system_name extends Migration
     public function safeDown()
     {
         echo "m170206_142126_system_name cannot be reverted.\n";
+
         return false;
     }
 }

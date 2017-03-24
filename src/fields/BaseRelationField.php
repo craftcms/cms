@@ -42,6 +42,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function supportedTranslationMethods(): array
+    {
+        // Don't ever automatically propagate values to other sites.
+        return [
+            self::TRANSLATION_METHOD_SITE,
+        ];
+    }
+
+    /**
      * Returns the element class associated with this field type.
      *
      * @return string The Element class name
@@ -274,6 +285,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTranslatable(ElementInterface $element): bool
+    {
+        return $this->localizeRelations;
     }
 
     /**

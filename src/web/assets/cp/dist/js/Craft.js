@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-03-07 */
+/*! Craft 3.0.0 - 2017-03-24 */
 (function($){
 
 /** global: Craft */
@@ -1040,6 +1040,7 @@ $.extend(Craft,
 
         _elementIndexClasses: {},
         _elementSelectorModalClasses: {},
+        _elementEditorClasses: {},
 
         /**
          * Registers an element index class for a given element type.
@@ -1055,7 +1056,6 @@ $.extend(Craft,
             this._elementIndexClasses[elementType] = func;
         },
 
-
         /**
          * Registers an element selector modal class for a given element type.
          *
@@ -1068,6 +1068,20 @@ $.extend(Craft,
             }
 
             this._elementSelectorModalClasses[elementType] = func;
+        },
+
+        /**
+         * Registers an element editor class for a given element type.
+         *
+         * @param {string} elementType
+         * @param {function} func
+         */
+        registerElementEditorClass: function(elementType, func) {
+            if (this._elementEditorClasses[elementType] !== undefined) {
+                throw 'An element editor class has already been registered for the element type “' + elementType + '”.';
+            }
+
+            this._elementEditorClasses[elementType] = func;
         },
 
         /**
@@ -1108,6 +1122,26 @@ $.extend(Craft,
             }
 
             return new func(elementType, settings);
+        },
+
+        /**
+         * Creates a new element editor HUD for a given element type.
+         *
+         * @param {string} elementType
+         * @param element $element
+         * @param {object} settings
+         */
+        createElementEditor: function(elementType, element, settings) {
+            var func;
+
+            if (this._elementEditorClasses[elementType] !== undefined) {
+                func = this._elementEditorClasses[elementType];
+            }
+            else {
+                func = Craft.BaseElementEditor;
+            }
+
+            return new func(element, settings);
         },
 
         /**
@@ -1208,18 +1242,6 @@ $.extend(Craft,
                 picturefill({
                     elements: [$newImg[0]]
                 });
-            }
-        },
-
-        /**
-         * Shows an element editor HUD.
-         *
-         * @param {object} $element
-         * @param {object} settings
-         */
-        showElementEditor: function($element, settings) {
-            if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
-                return new Craft.ElementEditor($element, settings);
             }
         }
     });
@@ -1474,6 +1496,326 @@ Garnish.$doc.ready(function() {
 /** global: Craft */
 /** global: Garnish */
 /**
+ * Element editor
+ */
+Craft.BaseElementEditor = Garnish.Base.extend(
+    {
+        $element: null,
+        elementId: null,
+        siteId: null,
+
+        $form: null,
+        $fieldsContainer: null,
+        $cancelBtn: null,
+        $saveBtn: null,
+        $spinner: null,
+
+        $languageSelect: null,
+        $siteSpinner: null,
+
+        hud: null,
+
+        init: function(element, settings) {
+            // Param mapping
+            if (settings === undefined && $.isPlainObject(element)) {
+                // (settings)
+                settings = element;
+                element = null;
+            }
+
+            this.$element = $(element);
+            this.setSettings(settings, Craft.BaseElementEditor.defaults);
+
+            this.loadHud();
+        },
+
+        setElementAttribute: function(name, value) {
+            if (!this.settings.attributes) {
+                this.settings.attributes = {};
+            }
+
+            if (value === null) {
+                delete this.settings.attributes[name];
+            }
+            else {
+                this.settings.attributes[name] = value;
+            }
+        },
+
+        getBaseData: function() {
+            var data = $.extend({}, this.settings.params);
+
+            if (this.settings.siteId) {
+                data.siteId = this.settings.siteId;
+            }
+            else if (this.$element && this.$element.data('site-id')) {
+                data.siteId = this.$element.data('site-id');
+            }
+
+            if (this.settings.elementId) {
+                data.elementId = this.settings.elementId;
+            }
+            else if (this.$element && this.$element.data('id')) {
+                data.elementId = this.$element.data('id');
+            }
+
+            if (this.settings.elementType) {
+                data.elementType = this.settings.elementType;
+            }
+
+            if (this.settings.attributes) {
+                data.attributes = this.settings.attributes;
+            }
+
+            return data;
+        },
+
+        loadHud: function() {
+            this.onBeginLoading();
+            var data = this.getBaseData();
+            data.includeSites = this.settings.showSiteSwitcher;
+            Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
+        },
+
+        showHud: function(response, textStatus) {
+            this.onEndLoading();
+
+            if (textStatus == 'success') {
+                var $hudContents = $();
+
+                if (response.sites) {
+                    var $header = $('<div class="hud-header"/>'),
+                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
+
+                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+
+                    for (var i = 0; i < response.sites.length; i++) {
+                        var siteInfo = response.sites[i];
+                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                    }
+
+                    this.addListener(this.$siteSelect, 'change', 'switchSite');
+
+                    $hudContents = $hudContents.add($header);
+                }
+
+                this.$form = $('<div/>');
+                this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
+
+                this.updateForm(response);
+
+                this.onCreateForm(this.$form);
+
+                var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
+                    $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
+                this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
+                this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
+                this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
+
+                $hudContents = $hudContents.add(this.$form);
+
+                if (!this.hud) {
+                    var hudTrigger = (this.settings.hudTrigger || this.$element);
+
+                    this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
+                        bodyClass: 'body elementeditor',
+                        closeOtherHUDs: false,
+                        onShow: $.proxy(this, 'onShowHud'),
+                        onHide: $.proxy(this, 'onHideHud'),
+                        onSubmit: $.proxy(this, 'saveElement')
+                    });
+
+                    this.hud.$hud.data('elementEditor', this);
+
+                    this.hud.on('hide', $.proxy(function() {
+                        delete this.hud;
+                    }, this));
+                }
+                else {
+                    this.hud.updateBody($hudContents);
+                    this.hud.updateSizeAndPosition();
+                }
+
+                // Focus on the first text input
+                $hudContents.find('.text:first').focus();
+
+                this.addListener(this.$cancelBtn, 'click', function() {
+                    this.hud.hide();
+                });
+            }
+        },
+
+        switchSite: function() {
+            var newSiteId = this.$siteSelect.val();
+
+            if (newSiteId == this.siteId) {
+                return;
+            }
+
+            this.$siteSpinner.removeClass('hidden');
+
+
+            var data = this.getBaseData();
+            data.siteId = newSiteId;
+
+            Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
+                this.$siteSpinner.addClass('hidden');
+
+                if (textStatus == 'success') {
+                    this.updateForm(response);
+                }
+                else {
+                    this.$languageSelect.val(this.siteId);
+                }
+            }, this));
+        },
+
+        updateForm: function(response) {
+            this.siteId = response.siteId;
+
+            this.$fieldsContainer.html(response.html);
+
+            // Swap any instruction text with info icons
+            var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
+
+            for (var i = 0; i < $instructions.length; i++) {
+
+                $instructions.eq(i)
+                    .replaceWith($('<span/>', {
+                        'class': 'info',
+                        'html': $instructions.eq(i).children().html()
+                    }))
+                    .infoicon();
+            }
+
+            Garnish.requestAnimationFrame($.proxy(function() {
+                Craft.appendHeadHtml(response.headHtml);
+                Craft.appendFootHtml(response.footHtml);
+                Craft.initUiElements(this.$fieldsContainer);
+            }, this));
+        },
+
+        saveElement: function() {
+            var validators = this.settings.validators;
+
+            if ($.isArray(validators)) {
+                for (var i = 0; i < validators.length; i++) {
+                    if ($.isFunction(validators[i]) && !validators[i].call()) {
+                        return false;
+                    }
+                }
+            }
+
+            this.$spinner.removeClass('hidden');
+
+            var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
+                this.$spinner.addClass('hidden');
+
+                if (textStatus == 'success') {
+                    if (textStatus == 'success' && response.success) {
+                        if (this.$element && this.siteId == this.$element.data('site-id')) {
+                            // Update the label
+                            var $title = this.$element.find('.title'),
+                                $a = $title.find('a');
+
+                            if ($a.length && response.cpEditUrl) {
+                                $a.attr('href', response.cpEditUrl);
+                                $a.text(response.newTitle);
+                            }
+                            else {
+                                $title.text(response.newTitle);
+                            }
+                        }
+
+                        // Update Live Preview
+                        if (Craft.livePreview !== undefined) {
+                            Craft.livePreview.updateIframe(true);
+                        }
+
+                        this.closeHud();
+                        this.onSaveElement(response);
+                    }
+                    else {
+                        this.updateForm(response);
+                        Garnish.shake(this.hud.$hud);
+                    }
+                }
+            }, this));
+        },
+
+        closeHud: function() {
+            this.hud.hide();
+            delete this.hud;
+        },
+
+        // Events
+        // -------------------------------------------------------------------------
+
+        onShowHud: function() {
+            this.settings.onShowHud();
+            this.trigger('showHud');
+        },
+
+        onHideHud: function() {
+            this.settings.onHideHud();
+            this.trigger('hideHud');
+        },
+
+        onBeginLoading: function() {
+            if (this.$element) {
+                this.$element.addClass('loading');
+            }
+
+            this.settings.onBeginLoading();
+            this.trigger('beginLoading');
+        },
+
+        onEndLoading: function() {
+            if (this.$element) {
+                this.$element.removeClass('loading');
+            }
+
+            this.settings.onEndLoading();
+            this.trigger('endLoading');
+        },
+
+        onSaveElement: function(response) {
+            this.settings.onSaveElement(response);
+            this.trigger('saveElement', {
+                response: response
+            });
+        },
+
+        onCreateForm: function($form) {
+            this.settings.onCreateForm($form);
+        }
+    },
+    {
+        defaults: {
+            hudTrigger: null,
+            showSiteSwitcher: true,
+            elementId: null,
+            elementType: null,
+            siteId: null,
+            attributes: null,
+            params: null,
+
+            onShowHud: $.noop,
+            onHideHud: $.noop,
+            onBeginLoading: $.noop,
+            onEndLoading: $.noop,
+            onCreateForm: $.noop,
+            onSaveElement: $.noop,
+
+            validators: []
+        }
+    });
+
+/** global: Craft */
+/** global: Garnish */
+/**
  * Element index class
  */
 Craft.BaseElementIndex = Garnish.Base.extend(
@@ -1596,7 +1938,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             // Keep the toolbar at the top of the window
-            if (this.settings.context == 'index' && !Garnish.isMobileBrowser(true)) {
+            if (
+                (this.settings.toolbarFixed || (this.settings.toolbarFixed === null && this.settings.context == 'index')) &&
+                !Garnish.isMobileBrowser(true)
+            ) {
                 this.addListener(Garnish.$win, 'resize,scroll', 'updateFixedToolbar');
             }
 
@@ -1815,7 +2160,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             this.setIndexBusy();
 
-            Craft.postActionRequest('element-indexes/get-source-tree-html', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.refreshSourcesAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -2047,7 +2392,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             var params = this.getViewParams();
 
-            Craft.postActionRequest('element-indexes/get-elements', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.updateElementsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -2126,7 +2471,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.postActionRequest('element-indexes/perform-action', params, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest(this.settings.submitActionsAction, params, $.proxy(function(response, textStatus) {
                 this.setIndexAvailable();
 
                 if (textStatus == 'success') {
@@ -2137,14 +2482,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             Craft.cp.displayNotice(response.message);
                         }
 
-                        // There may be a new background task that needs to be run
-                        Craft.cp.runPendingTasks();
+                        this.afterAction(action, params);
                     }
                     else {
                         Craft.cp.displayError(response.message);
                     }
                 }
             }, this));
+        },
+
+        afterAction: function(action, params) {
+
+            // There may be a new background task that needs to be run
+            Craft.cp.runPendingTasks();
+
+            this.onAfterAction(action, params);
         },
 
         hideActionTriggers: function() {
@@ -2664,6 +3016,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.trigger('disableElements', {elements: $elements});
         },
 
+        onAfterAction: function(action, params) {
+            this.settings.onAfterAction(action, params);
+            this.trigger('afterAction', {action: action, params: params});
+        },
+
         // Private methods
         // =========================================================================
 
@@ -3047,13 +3404,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             multiSelect: false,
             buttonContainer: null,
             hideSidebar: false,
+            refreshSourcesAction: 'element-indexes/get-source-tree-html',
+            updateElementsAction: 'element-indexes/get-elements',
+            submitActionsAction: 'element-indexes/perform-action',
+            toolbarFixed: null,
 
             onAfterInit: $.noop,
             onSelectSource: $.noop,
             onUpdateElements: $.noop,
             onSelectionChange: $.noop,
             onEnableElements: $.noop,
-            onDisableElements: $.noop
+            onDisableElements: $.noop,
+            onAfterAction: $.noop
         }
     });
 
@@ -3379,7 +3741,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
 
         createElementEditor: function($element) {
-            new Craft.ElementEditor($element);
+            Craft.createElementEditor(this.elementIndex.elementType, $element);
         },
 
         disable: function() {
@@ -3619,7 +3981,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             if (this.settings.editable) {
                 this._handleShowElementEditor = $.proxy(function(ev) {
-                    this.elementEditor = Craft.showElementEditor($(ev.currentTarget), this.settings.editorSettings);
+                    var $element = $(ev.currentTarget);
+                    if (Garnish.hasAttr($element, 'data-editable') && !$element.hasClass('disabled') && !$element.hasClass('loading')) {
+                        this.elementEditor = this.createElementEditor($element);
+                    }
                 }, this);
 
                 this.addListener($elements, 'dblclick', this._handleShowElementEditor);
@@ -3635,6 +4000,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             this.$elements = this.$elements.add($elements);
             this.updateAddElementsBtn();
+        },
+
+        createElementEditor: function($element) {
+            return Craft.createElementEditor(this.settings.elementType, $element);
         },
 
         removeElements: function($elements) {
@@ -4124,15 +4493,9 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onTextChange');
+            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
+            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
-
-            this.addListener(this.$target, 'focus', function() {
-                this.addListener(this.$target, 'textchange', 'stopListening');
-                this.addListener(this.$target, 'blur', function() {
-                    this.removeListener(this.$target, 'textchange,blur');
-                });
-            });
         },
 
         stopListening: function() {
@@ -4142,17 +4505,27 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = false;
 
+            if (this.timeout) {
+                clearTimeout(this.timeout);
+            }
+
             this.removeAllListeners(this.$source);
             this.removeAllListeners(this.$target);
             this.removeAllListeners(this.$form);
         },
 
-        onTextChange: function() {
+        onSourceTextChange: function() {
             if (this.timeout) {
                 clearTimeout(this.timeout);
             }
 
             this.timeout = setTimeout($.proxy(this, 'updateTarget'), 250);
+        },
+
+        onTargetTextChange: function() {
+            if (this.$target.get(0) === document.activeElement) {
+                this.stopListening();
+            }
         },
 
         onFormSubmit: function() {
@@ -4168,7 +4541,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
                 targetVal = this.generateTargetValue(sourceVal);
 
             this.$target.val(targetVal);
-            this.$target.trigger('textchange');
+            this.$target.trigger('change');
         },
 
         generateTargetValue: function(sourceVal) {
@@ -4432,20 +4805,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         _tempExpandedFolders: [],
 
         _fileConflictTemplate: {
-            message: "File “{file}” already exists at target location.",
             choices: [
                 {value: 'keepBoth', title: Craft.t('app', 'Keep both')},
                 {value: 'replace', title: Craft.t('app', 'Replace it')}
             ]
         },
         _folderConflictTemplate: {
-            message: "Folder “{folder}” already exists at target location",
             choices: [
                 {value: 'replace', title: Craft.t('app', 'Replace the folder (all existing files will be deleted)')},
                 {value: 'merge', title: Craft.t('app', 'Merge the folder (any conflicting files will be replaced)')}
             ]
         },
-
 
         init: function(elementType, $container, settings) {
             this.base(elementType, $container, settings);
@@ -4677,8 +5047,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     var parameterArray = [];
                     for (i = 0; i < originalAssetIds.length; i++) {
                         parameterArray.push({
-                            assetId: originalAssetIds[i],
-                            folderId: targetFolderId
+                            action: 'assets/move-asset',
+                            params: {
+                                assetId: originalAssetIds[i],
+                                folderId: targetFolderId
+                            }
                         });
                     }
 
@@ -4691,15 +5064,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             var response = responseArray[i];
 
                             // Push prompt into prompt array
-                            if (response.prompt) {
-                                var promptData = {
-                                    message: this._fileConflictTemplate.message,
-                                    choices: this._fileConflictTemplate.choices
-                                };
-                                promptData.message = Craft.t('app', promptData.message, {file: response.filename});
-                                response.prompt = promptData;
-
-                                this.promptHandler.addPrompt(response);
+                            if (response.conflict) {
+                                this.promptHandler.addPrompt({
+                                    assetId: response.assetId,
+                                    suggestedFilename: response.suggestedFilename,
+                                    prompt: {message: response.conflict, choices: this._fileConflictTemplate.choices}
+                                });
                             }
 
                             if (response.error) {
@@ -4743,12 +5113,26 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                         continue;
                                     }
 
-                                    // Find the matching request parameters for this file and modify them slightly
-                                    for (var ii = 0; ii < parameterArray.length; ii++) {
-                                        if (parameterArray[ii].assetId == returnData[i].assetId) {
-                                            parameterArray[ii].userResponse = returnData[i].choice;
-                                            newParameterArray.push(parameterArray[ii]);
-                                        }
+                                    if (returnData[i].choice == 'keepBoth') {
+                                        newParameterArray.push({
+                                            action: 'assets/move-asset',
+                                            params: {
+                                                folderId: targetFolderId,
+                                                assetId: returnData[i].assetId,
+                                                filename: returnData[i].suggestedFilename
+                                            }
+                                        });
+                                    }
+
+                                    if (returnData[i].choice == 'replace') {
+                                        newParameterArray.push({
+                                            action: 'assets/move-asset',
+                                            params: {
+                                                folderId: targetFolderId,
+                                                assetId: returnData[i].assetId,
+                                                force: true
+                                            }
+                                        });
                                     }
                                 }
 
@@ -4764,7 +5148,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     this.progressBar.showProgressBar();
 
                                     // Move conflicting files again with resolutions now
-                                    this._moveFile(newParameterArray, 0, onMoveFinish);
+                                    this._performBatchRequests(newParameterArray, onMoveFinish);
                                 }
                             }, this);
 
@@ -4778,7 +5162,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     }, this);
 
                     // Initiate the file move with the built array, index of 0 and callback to use when done
-                    this._moveFile(parameterArray, 0, onMoveFinish);
+                    this._performBatchRequests(parameterArray, onMoveFinish);
 
                     // Skip returning dragees
                     return;
@@ -4836,8 +5220,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     for (i = 0; i < folderIds.length; i++) {
                         parameterArray.push({
-                            folderId: folderIds[i],
-                            parentId: targetFolderId
+                            action: 'assets/move-folder',
+                            params: {
+                                folderId: folderIds[i],
+                                parentId: targetFolderId
+                            }
                         });
                     }
 
@@ -4865,7 +5252,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     var newSourceKey = '';
 
-                    var onMoveFinish = $.proxy(function(responseArray) {
+                    var onMoveFinish = function(responseArray) {
                         this.promptHandler.resetPrompts();
 
                         // Loop trough all the responses
@@ -4884,13 +5271,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             }
 
                             // Push prompt into prompt array
-                            if (data.prompt) {
+                            if (data.conflict) {
                                 var promptData = {
-                                    message: this._folderConflictTemplate.message,
+                                    message: data.conflict,
                                     choices: this._folderConflictTemplate.choices
                                 };
 
-                                promptData.message = Craft.t('app', promptData.message, {folder: data.foldername});
                                 data.prompt = promptData;
 
                                 this.promptHandler.addPrompt(data);
@@ -4908,14 +5294,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                                 var newParameterArray = [];
 
+                                var params = {};
                                 // Loop trough all returned data and prepare a new request array
                                 for (var i = 0; i < returnData.length; i++) {
                                     if (returnData[i].choice == 'cancel') {
                                         continue;
                                     }
 
-                                    parameterArray[0].userResponse = returnData[i].choice;
-                                    newParameterArray.push(parameterArray[0]);
+                                    if (returnData[i].choice == 'replace') {
+                                        params.force = true;
+                                    }
+
+                                    if (returnData[i].choice == 'merge') {
+                                        params.merge = true;
+                                    }
+
+                                    params.folderId = data.folderId;
+                                    params.parentId = data.parentId;
+
+                                    newParameterArray.push({
+                                        action: 'assets/move-folder',
+                                        params: params
+                                    });
                                 }
 
                                 // Start working on them lists, baby
@@ -4929,8 +5329,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                                     this.progressBar.setItemCount(this.promptHandler.getPromptCount());
                                     this.progressBar.showProgressBar();
 
-                                    // Move conflicting files again with resolutions now
-                                    moveFolder(newParameterArray, 0, onMoveFinish);
+                                    this._performBatchRequests(newParameterArray, onMoveFinish);
                                 }
                             }, this);
 
@@ -4942,33 +5341,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         else {
                             $.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
                         }
-                    }, this);
-
-                    var moveFolder = $.proxy(function(parameterArray, parameterIndex, callback) {
-                        if (parameterIndex == 0) {
-                            responseArray = [];
-                        }
-
-                        Craft.postActionRequest('assets/move-folder', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
-                            parameterIndex++;
-                            this.progressBar.incrementProcessedItemCount(1);
-                            this.progressBar.updateProgressBar();
-
-                            if (textStatus == 'success') {
-                                responseArray.push(data);
-                            }
-
-                            if (parameterIndex >= parameterArray.length) {
-                                callback(responseArray);
-                            }
-                            else {
-                                moveFolder(parameterArray, parameterIndex, callback);
-                            }
-                        }, this));
-                    }, this);
+                    }.bind(this);
 
                     // Initiate the folder move with the built array, index of 0 and callback to use when done
-                    moveFolder(parameterArray, 0, onMoveFinish);
+                    this._performBatchRequests(parameterArray, onMoveFinish);
 
                     // Skip returning dragees until we get the Ajax response
                     return;
@@ -5011,10 +5387,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
             }.bind(this);
 
+
             if (fileMoveList.length > 0) {
-                this._moveFile(fileMoveList, 0, $.proxy(function() {
+                var parameterArray =[];
+
+                for (var i = 0; i < fileMoveList.length; i++) {
+                    parameterArray.push({
+                        action: 'assets/move-asset',
+                        params: fileMoveList[i]
+                    });
+
+                }
+                this._performBatchRequests(parameterArray, function() {
                     moveCallback(folderDeleteList);
-                }, this));
+                });
             }
             else {
                 moveCallback(folderDeleteList);
@@ -5032,42 +5418,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             if (this._getSourceLevel($source) > 1) {
                 return $source.parent().parent().siblings('a');
             }
-        },
-
-        /**
-         * Move a file using data from a parameter array.
-         *
-         * @param parameterArray
-         * @param parameterIndex
-         * @param callback
-         * @private
-         */
-        _moveFile: function(parameterArray, parameterIndex, callback) {
-            if (parameterIndex == 0) {
-                this.responseArray = [];
-            }
-
-            Craft.postActionRequest('assets/move-asset', parameterArray[parameterIndex], $.proxy(function(data, textStatus) {
-                this.progressBar.incrementProcessedItemCount(1);
-                this.progressBar.updateProgressBar();
-
-                if (textStatus == 'success') {
-                    this.responseArray.push(data);
-
-                    // If assets were just merged we should get the referece tags updated right away
-                    Craft.cp.runPendingTasks();
-                }
-
-                parameterIndex++;
-
-                if (parameterIndex >= parameterArray.length) {
-                    callback(this.responseArray);
-                }
-                else {
-                    this._moveFile(parameterArray, parameterIndex, callback);
-                }
-
-            }, this));
         },
 
         _selectSourceByFolderId: function(targetFolderId) {
@@ -5249,14 +5599,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             var doReload = true;
 
-            if (response.success || response.prompt) {
+            if (response.success || response.conflict) {
                 // Add the uploaded file to the selected ones, if appropriate
                 this._uploadedAssetIds.push(response.assetId);
 
                 // If there is a prompt, add it to the queue
-                if (response.prompt) {
+                if (response.conflict) {
                     var promptData = {
-                        message: this._fileConflictTemplate.message,
+                        message: response.conflict,
                         choices: this._fileConflictTemplate.choices
                     };
                     promptData.message = Craft.t('app', promptData.message, {file: response.filename});
@@ -5304,24 +5654,23 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
             this.promptHandler.resetPrompts();
 
-            var finalCallback = $.proxy(function() {
+            var finalCallback = function() {
                 this.setIndexAvailable();
                 this.progressBar.hideProgressBar();
                 this.updateElements();
-            }, this);
+            }.bind(this);
 
             this.progressBar.setItemCount(returnData.length);
 
-            var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback) {
-                var postData = {
-                    assetId: parameterArray[parameterIndex].assetId,
-                    filename: parameterArray[parameterIndex].filename,
-                    userResponse: parameterArray[parameterIndex].choice
-                };
+            var doFollowup = function(parameterArray, parameterIndex, callback) {
+                var postData = {};
+                var action = null;
 
-                Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus) {
+                var followupCallback = function (data, textStatus) {
                     if (textStatus == 'success' && data.assetId) {
                         this._uploadedAssetIds.push(data.assetId);
+                    } else if (data.error) {
+                        alert(data.error);
                     }
                     parameterIndex++;
                     this.progressBar.incrementProcessedItemCount(1);
@@ -5333,9 +5682,30 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     else {
                         doFollowup(parameterArray, parameterIndex, callback);
                     }
-                }, this));
 
-            }, this);
+                }.bind(this);
+
+                if (parameterArray[parameterIndex].choice == 'replace') {
+                    action = 'assets/replace-file';
+                    postData.sourceAssetId = parameterArray[parameterIndex].assetId;
+
+                    if (parameterArray[parameterIndex].conflictingAssetId) {
+                        postData.assetId = parameterArray[parameterIndex].conflictingAssetId;
+                    } else {
+                        postData.targetFilename = parameterArray[parameterIndex].filename;
+                    }
+                } else if (parameterArray[parameterIndex].choice == 'cancel') {
+                    action = 'assets/delete-asset';
+                    postData.assetId = parameterArray[parameterIndex].assetId;
+                }
+
+                if (!action) {
+                    // We don't really need to do another request, so let's pretend that already happened
+                    followupCallback({assetId: parameterArray[parameterIndex].assetId}, 'success');
+                } else {
+                    Craft.postActionRequest(action, postData, followupCallback);
+                }
+            }.bind(this);
 
             this.progressBar.showProgressBar();
             doFollowup(returnData, 0, finalCallback);
@@ -5718,6 +6088,33 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.progressBar.$progressBar.css({
                 top: offset
             });
+        },
+
+        _performBatchRequests: function(parameterArray, finalCallback) {
+
+            var responseArray = [];
+
+            var doRequest = function (parameters) {
+                Craft.postActionRequest(parameters.action, parameters.params, function (data, textStatus) {
+                    this.progressBar.incrementProcessedItemCount(1);
+                    this.progressBar.updateProgressBar();
+
+                    if (textStatus == 'success') {
+                        responseArray.push(data);
+
+                        // If assets were just merged we should get the reference tags updated right away
+                        Craft.cp.runPendingTasks();
+                    }
+
+                    if (responseArray.length >= parameterArray.length) {
+                        finalCallback(responseArray);
+                    }
+                }.bind(this));
+            }.bind(this);
+
+            for (var i = 0; i < parameterArray.length; i++) {
+                doRequest(parameterArray[i]);
+            }
         }
 
     });
@@ -5751,6 +6148,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
 
             this.base.apply(this, arguments);
             this._attachUploader();
+        },
+
+        createElementEditor: function($element) {
+            return Craft.createElementEditor(this.settings.elementType, $element, {
+                params: {
+                    defaultFieldLayoutId: this.settings.defaultFieldLayoutId
+                }
+            });
         },
 
         /**
@@ -6703,7 +7108,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             var newCategoryBtnText = this.$newCategoryBtn.text();
             this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
 
-            new Craft.ElementEditor({
+            Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newCategoryBtnGroup,
                 elementType: 'craft\\elements\\Category',
                 siteId: this.siteId,
@@ -9612,7 +10017,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 this.initialize();
             } else {
                 // Give everything a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initializeIfVisible'));
+                setTimeout($.proxy(this, 'initializeIfVisible'), 500);
             }
         },
 
@@ -10075,326 +10480,6 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
 /** global: Craft */
 /** global: Garnish */
 /**
- * Element editor
- */
-Craft.ElementEditor = Garnish.Base.extend(
-    {
-        $element: null,
-        elementId: null,
-        siteId: null,
-
-        $form: null,
-        $fieldsContainer: null,
-        $cancelBtn: null,
-        $saveBtn: null,
-        $spinner: null,
-
-        $languageSelect: null,
-        $siteSpinner: null,
-
-        hud: null,
-
-        init: function($element, settings) {
-            // Param mapping
-            if (settings === undefined && $.isPlainObject($element)) {
-                // (settings)
-                settings = $element;
-                $element = null;
-            }
-
-            this.$element = $element;
-            this.setSettings(settings, Craft.ElementEditor.defaults);
-
-            this.loadHud();
-        },
-
-        setElementAttribute: function(name, value) {
-            if (!this.settings.attributes) {
-                this.settings.attributes = {};
-            }
-
-            if (value === null) {
-                delete this.settings.attributes[name];
-            }
-            else {
-                this.settings.attributes[name] = value;
-            }
-        },
-
-        getBaseData: function() {
-            var data = $.extend({}, this.settings.params);
-
-            if (this.settings.siteId) {
-                data.siteId = this.settings.siteId;
-            }
-            else if (this.$element && this.$element.data('site-id')) {
-                data.siteId = this.$element.data('site-id');
-            }
-
-            if (this.settings.elementId) {
-                data.elementId = this.settings.elementId;
-            }
-            else if (this.$element && this.$element.data('id')) {
-                data.elementId = this.$element.data('id');
-            }
-
-            if (this.settings.elementType) {
-                data.elementType = this.settings.elementType;
-            }
-
-            if (this.settings.attributes) {
-                data.attributes = this.settings.attributes;
-            }
-
-            return data;
-        },
-
-        loadHud: function() {
-            this.onBeginLoading();
-            var data = this.getBaseData();
-            data.includeSites = this.settings.showSiteSwitcher;
-            Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
-        },
-
-        showHud: function(response, textStatus) {
-            this.onEndLoading();
-
-            if (textStatus == 'success') {
-                var $hudContents = $();
-
-                if (response.sites) {
-                    var $header = $('<div class="hud-header"/>'),
-                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
-
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
-
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
-                    }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
-
-                    $hudContents = $hudContents.add($header);
-                }
-
-                this.$form = $('<div/>');
-                this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
-
-                this.updateForm(response);
-
-                this.onCreateForm(this.$form);
-
-                var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
-                    $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-                this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
-                this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
-                this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
-
-                $hudContents = $hudContents.add(this.$form);
-
-                if (!this.hud) {
-                    var hudTrigger = (this.settings.hudTrigger || this.$element);
-
-                    this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
-                        bodyClass: 'body elementeditor',
-                        closeOtherHUDs: false,
-                        onShow: $.proxy(this, 'onShowHud'),
-                        onHide: $.proxy(this, 'onHideHud'),
-                        onSubmit: $.proxy(this, 'saveElement')
-                    });
-
-                    this.hud.$hud.data('elementEditor', this);
-
-                    this.hud.on('hide', $.proxy(function() {
-                        delete this.hud;
-                    }, this));
-                }
-                else {
-                    this.hud.updateBody($hudContents);
-                    this.hud.updateSizeAndPosition();
-                }
-
-                // Focus on the first text input
-                $hudContents.find('.text:first').focus();
-
-                this.addListener(this.$cancelBtn, 'click', function() {
-                    this.hud.hide();
-                });
-            }
-        },
-
-        switchSite: function() {
-            var newSiteId = this.$siteSelect.val();
-
-            if (newSiteId == this.siteId) {
-                return;
-            }
-
-            this.$siteSpinner.removeClass('hidden');
-
-
-            var data = this.getBaseData();
-            data.siteId = newSiteId;
-
-            Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
-                this.$siteSpinner.addClass('hidden');
-
-                if (textStatus == 'success') {
-                    this.updateForm(response);
-                }
-                else {
-                    this.$languageSelect.val(this.siteId);
-                }
-            }, this));
-        },
-
-        updateForm: function(response) {
-            this.siteId = response.siteId;
-
-            this.$fieldsContainer.html(response.html);
-
-            // Swap any instruction text with info icons
-            var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
-
-            for (var i = 0; i < $instructions.length; i++) {
-
-                $instructions.eq(i)
-                    .replaceWith($('<span/>', {
-                        'class': 'info',
-                        'html': $instructions.eq(i).children().html()
-                    }))
-                    .infoicon();
-            }
-
-            Garnish.requestAnimationFrame($.proxy(function() {
-                Craft.appendHeadHtml(response.headHtml);
-                Craft.appendFootHtml(response.footHtml);
-                Craft.initUiElements(this.$fieldsContainer);
-            }, this));
-        },
-
-        saveElement: function() {
-            var validators = this.settings.validators;
-
-            if ($.isArray(validators)) {
-                for (var i = 0; i < validators.length; i++) {
-                    if ($.isFunction(validators[i]) && !validators[i].call()) {
-                        return false;
-                    }
-                }
-            }
-
-            this.$spinner.removeClass('hidden');
-
-            var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
-            Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
-                this.$spinner.addClass('hidden');
-
-                if (textStatus == 'success') {
-                    if (textStatus == 'success' && response.success) {
-                        if (this.$element && this.siteId == this.$element.data('site-id')) {
-                            // Update the label
-                            var $title = this.$element.find('.title'),
-                                $a = $title.find('a');
-
-                            if ($a.length && response.cpEditUrl) {
-                                $a.attr('href', response.cpEditUrl);
-                                $a.text(response.newTitle);
-                            }
-                            else {
-                                $title.text(response.newTitle);
-                            }
-                        }
-
-                        // Update Live Preview
-                        if (Craft.livePreview !== undefined) {
-                            Craft.livePreview.updateIframe(true);
-                        }
-
-                        this.closeHud();
-                        this.onSaveElement(response);
-                    }
-                    else {
-                        this.updateForm(response);
-                        Garnish.shake(this.hud.$hud);
-                    }
-                }
-            }, this));
-        },
-
-        closeHud: function() {
-            this.hud.hide();
-            delete this.hud;
-        },
-
-        // Events
-        // -------------------------------------------------------------------------
-
-        onShowHud: function() {
-            this.settings.onShowHud();
-            this.trigger('showHud');
-        },
-
-        onHideHud: function() {
-            this.settings.onHideHud();
-            this.trigger('hideHud');
-        },
-
-        onBeginLoading: function() {
-            if (this.$element) {
-                this.$element.addClass('loading');
-            }
-
-            this.settings.onBeginLoading();
-            this.trigger('beginLoading');
-        },
-
-        onEndLoading: function() {
-            if (this.$element) {
-                this.$element.removeClass('loading');
-            }
-
-            this.settings.onEndLoading();
-            this.trigger('endLoading');
-        },
-
-        onSaveElement: function(response) {
-            this.settings.onSaveElement(response);
-            this.trigger('saveElement', {
-                response: response
-            });
-        },
-
-        onCreateForm: function($form) {
-            this.settings.onCreateForm($form);
-        }
-    },
-    {
-        defaults: {
-            hudTrigger: null,
-            showSiteSwitcher: true,
-            elementId: null,
-            elementType: null,
-            siteId: null,
-            attributes: null,
-            params: null,
-
-            onShowHud: $.noop,
-            onHideHud: $.noop,
-            onBeginLoading: $.noop,
-            onEndLoading: $.noop,
-            onCreateForm: $.noop,
-            onSaveElement: $.noop,
-
-            validators: []
-        }
-    });
-
-/** global: Craft */
-/** global: Garnish */
-/**
  * Elevated Session Form
  */
 Craft.ElevatedSessionForm = Garnish.Base.extend(
@@ -10800,7 +10885,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             var newEntryBtnText = this.$newEntryBtn.text();
             this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
 
-            new Craft.ElementEditor({
+            Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newEntryBtnGroup,
                 elementType: 'craft\\elements\\Entry',
                 siteId: this.siteId,
@@ -15026,7 +15111,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         },
 
         createElementEditor: function($element) {
-            new Craft.ElementEditor($element, {
+            Craft.createElementEditor(this.elementIndex.elementType, $element, {
                 params: {
                     includeTableAttributesForSource: this.elementIndex.sourceKey
                 },

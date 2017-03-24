@@ -176,7 +176,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             var newEntryBtnText = this.$newEntryBtn.text();
             this.$newEntryBtn.text(Craft.t('app', 'New {section} entry', {section: section.name}));
 
-            new Craft.ElementEditor({
+            Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newEntryBtnGroup,
                 elementType: 'craft\\elements\\Entry',
                 siteId: this.siteId,

@@ -30,6 +30,21 @@ interface FieldInterface extends SavableComponentInterface
      */
     public static function hasContentColumn(): bool;
 
+    /**
+     * Returns which translation methods the field supports.
+     *
+     * This method should return an array with at least one of the following values:
+     *
+     * - 'none' (values will always be copied to other sites)
+     * - 'language' (values will be copied to other sites with the same language)
+     * - 'site' (values will never be copied to other sites)
+     * - 'custom' (values will be copied/not copied depending on a custom translation key)
+     *
+     * @return string[]
+     * @see getTranslationKey()
+     */
+    public static function supportedTranslationMethods(): array;
+
     // Public Methods
     // =========================================================================
 
@@ -47,7 +62,24 @@ interface FieldInterface extends SavableComponentInterface
     public function getContentColumnType(): string;
 
     /**
+     * Returns whether the field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether the field’s value will get copied over to other
+     * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
+     *
+     * @param ElementInterface $element The element being edited
+     *
+     * @return bool
+     */
+    public function getIsTranslatable(ElementInterface $element): bool;
+
+    /**
      * Returns the field’s translation key, based on a given element.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getTranslationKey()` will be called for each custom field and for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s value will be copied over
+     * to the target site.
      *
      * @param ElementInterface $element The element being saved
      *

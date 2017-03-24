@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -25,7 +26,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
@@ -213,8 +213,9 @@ class Users extends Component
 
         if ($userRecord) {
             $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-            $duration = new \DateInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
-            $minCodeIssueDate->sub($duration);
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
+            $minCodeIssueDate->sub($interval);
             $verificationCodeIssuedDate = new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'));
 
             $valid = $verificationCodeIssuedDate > $minCodeIssueDate;
@@ -391,7 +392,7 @@ class Users extends Component
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
             // We want to hide the CP trigger if they don't have access to the CP.
-            $path = Craft::$app->getConfig()->get('actionTrigger').'/users/verify-email';
+            $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/verify-email';
             $params = [
                 'code' => $unhashedVerificationCode,
                 'id' => $user->uid
@@ -419,7 +420,7 @@ class Users extends Component
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/users/set-password';
+        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/set-password';
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -458,6 +459,7 @@ class Users extends Component
         $volumes = Craft::$app->getVolumes();
         $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
 
+        /** @var Volume $volume */
         if (!($volumeId && $volume = $volumes->getVolumeById($volumeId))) {
             throw new VolumeException(Craft::t('app',
                 'The volume set for user photo storage is not valid.'));
@@ -470,21 +472,23 @@ class Users extends Component
             // No longer a new file.
             $assets->replaceAssetFile($assets->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $volumes->ensureTopFolder($volumes->getVolumeById($volumeId));
+            $folderId = $volumes->ensureTopFolder($volume);
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
-            $photo->newFilePath = $fileLocation;
+            $photo->setScenario(Asset::SCENARIO_CREATE);
+            $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
-            $photo->folderId = $folderId;
+            $photo->newFolderId = $folderId;
             $photo->volumeId = $volumeId;
+            $photo->fieldLayoutId = $volume->fieldLayoutId;
 
-            // Save and delete the temporary file
-            $assets->saveAsset($photo);
+            // Save photo.
+            $elementsService = Craft::$app->getElements();
+            $elementsService->saveElement($photo);
 
             $user->photoId = $photo->id;
-            Craft::$app->getElements()->saveElement($user, false);
+            $elementsService->saveElement($user, false);
         }
 
         return true;
@@ -538,7 +542,7 @@ class Users extends Component
         $userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
         $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
 
-        $maxInvalidLogins = Craft::$app->getConfig()->get('maxInvalidLogins');
+        $maxInvalidLogins = Craft::$app->getConfig()->getGeneral()->maxInvalidLogins;
 
         if ($maxInvalidLogins) {
             if ($this->_isUserInsideInvalidLoginWindow($userRecord)) {
@@ -633,7 +637,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->email = $user->unverifiedEmail;
 
-            if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
                 $userRecord->username = $user->unverifiedEmail;
             }
 
@@ -910,8 +914,10 @@ class Users extends Component
      */
     public function purgeExpiredPendingUsers()
     {
-        if (($duration = Craft::$app->getConfig()->get('purgePendingUsersDuration')) !== false) {
-            $interval = new \DateInterval($duration);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgePendingUsersDuration !== 0) {
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->purgePendingUsersDuration);
             $expire = DateTimeHelper::currentUTCDateTime();
             $pastTime = $expire->sub($interval);
 
@@ -929,7 +935,7 @@ class Users extends Component
                 foreach ($userIds as $userId) {
                     $user = $this->getUserById($userId);
                     Craft::$app->getElements()->deleteElement($user);
-                    Craft::info('Just deleted pending userId '.$userId.' ('.$user->username.'), because the were more than '.$duration.' old', __METHOD__);
+                    Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
                 }
             }
         }
@@ -1098,9 +1104,10 @@ class Users extends Component
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord): bool
     {
         if ($userRecord->invalidLoginWindowStart) {
-            $duration = new \DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $interval = DateTimeHelper::secondsToInterval($generalConfig->invalidLoginWindowDuration);
             $invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
-            $end = $invalidLoginWindowStart->add($duration);
+            $end = $invalidLoginWindowStart->add($interval);
 
             return ($end >= DateTimeHelper::currentUTCDateTime());
         }

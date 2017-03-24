@@ -2,11 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\Assets;
-use craft\helpers\FileHelper;
 use craft\helpers\Json;
 
 /**
@@ -28,7 +26,7 @@ class m170303_140500_asset_field_source_settings extends Migration
             ->where(['type' => Assets::class])
             ->all();
 
-        $getFolderPathFromVolumeId = function ($volumeId) {
+        $getFolderPathFromVolumeId = function($volumeId) {
             if (empty($volumeId)) {
                 return '';
             }
@@ -46,8 +44,15 @@ class m170303_140500_asset_field_source_settings extends Migration
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
-            $settings['defaultUploadLocationSource'] = $getFolderPathFromVolumeId($settings['defaultUploadLocationSource']);
-            $settings['singleUploadLocationSource'] = $getFolderPathFromVolumeId($settings['singleUploadLocationSource']);
+
+            if (!empty($settings['defaultUploadLocationSource'])) {
+                $settings['defaultUploadLocationSource'] = $getFolderPathFromVolumeId($settings['defaultUploadLocationSource']);
+            }
+
+            if (!empty($settings['singleUploadLocationSource'])) {
+                $settings['singleUploadLocationSource'] = $getFolderPathFromVolumeId($settings['singleUploadLocationSource']);
+            }
+
             $settings = Json::encode($settings);
 
             $this->update('{{%fields}}', ['settings' => $settings], ['id' => $field['id']]);
@@ -62,6 +67,7 @@ class m170303_140500_asset_field_source_settings extends Migration
     public function safeDown()
     {
         echo "m170303_140500_asset_field_source_settings cannot be reverted.\n";
+
         return false;
     }
 }

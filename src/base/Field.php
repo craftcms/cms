@@ -83,6 +83,19 @@ abstract class Field extends SavableComponent implements FieldInterface
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function supportedTranslationMethods(): array
+    {
+        return [
+            self::TRANSLATION_METHOD_NONE,
+            self::TRANSLATION_METHOD_LANGUAGE,
+            self::TRANSLATION_METHOD_SITE,
+            self::TRANSLATION_METHOD_CUSTOM,
+        ];
+    }
+
     // Properties
     // =========================================================================
 
@@ -108,6 +121,24 @@ abstract class Field extends SavableComponent implements FieldInterface
             return Craft::t('site', $this->name);
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Validate the translation method
+        $supportedTranslationMethods = static::supportedTranslationMethods() ?: [self::TRANSLATION_METHOD_NONE];
+        if (!in_array($this->translationMethod, $supportedTranslationMethods, true)) {
+            $this->translationMethod = reset($supportedTranslationMethods);
+        }
+
+        if ($this->translationMethod !== self::TRANSLATION_METHOD_CUSTOM) {
+            $this->translationKeyFormat = null;
         }
     }
 
@@ -199,6 +230,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getContentColumnType(): string
     {
         return Schema::TYPE_STRING;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTranslatable(ElementInterface $element): bool
+    {
+        return ($this->translationMethod !== self::TRANSLATION_METHOD_NONE);
     }
 
     /**

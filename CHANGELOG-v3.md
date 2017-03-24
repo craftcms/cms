@@ -1,6 +1,134 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.8 - 2017-03-24
+
+### Added
+- #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added `craft\base\FieldInterface::getIsTranslatable()`.
+- Added `craft\base\FieldInterface::supportedTranslationMethods()`.
+- Added `craft\base\FolderVolumeInterface::folderExists()`.
+- Added `craft\base\Plugin::cpNavIconPath()`.
+- Added `craft\base\PluginInterface::getCpNavItem()`.
+- Added `craft\config\ApcConfig`.
+- Added `craft\config\DbCacheConfig`.
+- Added `craft\config\DbConfig`.
+- Added `craft\config\FileCacheConfig`.
+- Added `craft\config\GeneralConfig`.
+- Added `craft\config\MemCacheConfig`.
+- Added `craft\controllers\AssetsController::actionDeleteAsset()`.
+- Added `craft\elements\Asset::$avoidFilenameConflicts`, which determines whether new files’ names should be automatically renamed to avoid conflicts with exiting files.
+- Added `craft\elements\Asset::$conflictingFilename`, which stores a record of the attempted filename that ended up conflicting with an existing file.
+- Added `craft\elements\Asset::$newFolderId`, which indicates an asset's new intended folder ID.
+- Added `craft\elements\Asset::$newLocation`, which indicates an asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename properties.
+- Added `craft\helpers\App::maxPowerCaptain()`.
+- Added `craft\helpers\Assets::parseFileLocation()`.
+- Added `craft\helpers\ConfigHelper`.
+- Added `craft\helpers\DateTimeHelper::intervalToSeconds()`.
+- Added `craft\helpers\DateTimeHelper::secondsToInterval()`.
+- Added `craft\helpers\FileHelper::useFileLocks()`.
+- Added `craft\helpers\UrlHelper::resourceTrigger()`.
+- Added `craft\services\Config::getApc()`.
+- Added `craft\services\Config::getConfigFromFile()`.
+- Added `craft\services\Config::getDb()`.
+- Added `craft\services\Config::getDbCache()`.
+- Added `craft\services\Config::getFileCache()`.
+- Added `craft\services\Config::getGeneral()`.
+- Added `craft\services\Config::getMemCache()`.
+- Added `craft\validators\AssetLocationValidator`.
+- Added the `beforeHandleFile` event to `craft\elements\Asset`, which fires whenever a new file is getting uploaded, or an existing file is being moved/renamed.
+- Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- Added `Craft.BaseElementSelectInput::createElementEditor()`, making it possible for subclasses to customize the settings passed to the element editor.
+- #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
+- #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
+- #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
+- #1559: Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. (nateiler)
+- Elements are now “hard-coded” with their field layout IDs, via a new `fieldLayoutId` column in the `elements` table and a `$fieldLayoutId` property on `craft\base\ElementTrait`. Plugins that provide custom element types should start making sure `$fieldLayoutId` is set on their elements before passing them to `Craft::$app->elements->saveElement()`.
+
+### Changed
+- Asset file operations have been refactored to work alongside asset element saving.
+- `craft\controllers\AssetsController::actionMoveAsset()` now accepts a `force` param, rather than `userResponse`.
+- `craft\controllers\AssetsController::actionMoveAsset()` now returns `conflict` and `suggestedFilename` keys in the event of a filename conflict, rather than `prompt`
+- `craft\controllers\AssetsController::actionMoveFolder()` now accepts `force` and `merge` params, rather than `userResponse`.
+- `craft\controllers\AssetsController::actionMoveFolder()` now returns a `conflict` key in the event of a filename conflict, rather than `prompt` and `foldername`.
+- `craft\controllers\AssetsController::actionReplaceFile()` now accepts `sourceAssetId` and `targetFilename` params.
+- `craft\controllers\AssetsController::actionSaveAsset()` no longer accepts `assetId` and `userResponse` params.
+- `craft\controllers\AssetsController::actionSaveAsset()` now returns `conflict` and `conflictingAssetId` keys in the event of a filename conflict, rather than `prompt`.
+- `craft\elements\Asset` now supports a `create` scenario that should be used when creating a new asset.
+- `craft\elements\Asset` now supports a `fileOperations` scenario that should be used when an existing asset’s file is being moved around.
+- `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an asset’s file.
+- `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an asset’s file.
+- `craft\helpers\Assets::editorImagePath()` was renamed to `getImageEditorSource()`.
+- `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.`
+- `craft\services\Assets::createFolder()` now accepts an `$indexExisting` argument that determines whether unindexed folders on the volume should be silently indexed.
+- `craft\services\Assets::getNameReplacementInFolder()` now combines the file lists on the volume and the asset index when figuring out a safe replacement filename to use.
+- `craft\services\Assets::getNameReplacementInFolder()` now throws an `InvalidParamException` if `$folderId` is set to an invalid folder ID.
+- `craft\services\Assets::moveAsset()` now accepts an instance of `craft\models\VolumeFolder` instead of a folder ID.
+- `craft\services\Assets::moveAsset()` now returns a boolean value.
+- The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
+- #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
+- `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
+- Renamed `craft\base\PluginTrait::$hasSettings` to `$hasCpSettings`.
+- Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
+- Removed support for `@web`, `@webroot`, and other aliases in volume settings, as they cause more problems than they solve in multi-site Craft installs.
+- Local volumes’ “File System Path” settings can now begin with `@webroot`, which is an alias for the path to the directory that `index.php` lives in.
+- `craft\base\Element::getFieldLayout()` now returns a field layout based on the `$fieldLayoutId` property (if set). It no longer returns the first field layout associated with the static element class.
+- `craft\services\Fields::assembleLayoutFromPost()` now sets the ID on the returned field layout if the post data came from a Field Layout Designer for an existing field layout.
+- `craft\services\Fields::saveLayout()` is now capable of updating existing field layouts, not just creating new ones. So there’s no longer a need to delete the old field layout and save a brand new one each time something changes.
+- Field types that don’t support a column in the `content` table are no longer assumed to be untranslatable. If a field type wants to opt out of having a Translation Method setting, it should override its static `supportedTranslationMethods()` method and return either `['none']` or `['site']`, depending on whether its values should be propagated across other sites or not.
+
+### Removed
+- Removed the `beforeUploadAsset` event from `craft\services\Asset`.
+- Removed `craft\base\ApplicationTrait::validateDbConfigFile()`.
+- Removed `craft\elements\Asset::$indexInProgress`.
+- Removed `craft\helpers\DateTimeHelper::timeFormatToSeconds()`.
+- Removed `craft\services\Assets::renameFile()`.
+- Removed `craft\services\Assets::saveAsset()`.
+- Removed `craft\services\Config::allowAutoUpdates()`.
+- Removed `craft\services\Config::exists()`. Use `isset(Craft::$app->config->general->configSetting)`.
+- Removed `craft\services\Config::get()`. Use `Craft::$app->config->general`, et al.
+- Removed `craft\services\Config::getAllowedFileExtensions()`. Use `Craft::$app->config->general->allowedFileExtensions`.
+- Removed `craft\services\Config::getCacheDuration()`. Use `Craft::$app->config->general->cacheDuration`.
+- Removed `craft\services\Config::getCpLoginPath()`. It’s `login`.
+- Removed `craft\services\Config::getCpLogoutPath()`. It’s `logout`.
+- Removed `craft\services\Config::getCpSetPasswordPath()`. It’s `setpassword`.
+- Removed `craft\services\Config::getDbPort()`. Use `Craft::$app->config->db->port`.
+- Removed `craft\services\Config::getDbTablePrefix()`. Use `Craft::$app->config->db->tablePrefix`.
+- Removed `craft\services\Config::getElevatedSessionDuration()`. Use `Craft::$app->config->general->elevatedSessionDuration`.
+- Removed `craft\services\Config::getLocalized()`. Use `Craft::$app->config->general->getLoginPath()`, et al.
+- Removed `craft\services\Config::getLoginPath()`. Use `Craft::$app->config->general->getLoginPath()`.
+- Removed `craft\services\Config::getLogoutPath()`. Use `Craft::$app->config->general->getLogoutPath()`.
+- Removed `craft\services\Config::getOmitScriptNameInUrls()`. Use `Craft::$app->config->general->omitScriptNameInUrls`.
+- Removed `craft\services\Config::getResourceTrigger()`. Use `craft\helpers\UrlHelper::resourceTrigger()`.
+- Removed `craft\services\Config::getSetPasswordPath()`. Use `Craft::$app->config->general->getSetPasswordPath()`.
+- Removed `craft\services\Config::getUseFileLocks()`. Use `craft\helpers\FileHelper::useFileLocks()`.
+- Removed `craft\services\Config::getUsePathInfo()`. Use `Craft::$app->config->general->usePathInfo`.
+- Removed `craft\services\Config::getUserSessionDuration()`. Use `Craft::$app->config->general->userSessionDuration`.
+- Removed `craft\services\Config::isExtensionAllowed()`.
+- Removed `craft\services\Config::maxPowerCaptain()`. Use `craft\helpers\App::maxPowerCaptain()`.
+- Removed `craft\services\Config::set()`.
+- Removed `craft\validators\AssetFilenameValidator`.
+- Removed `Craft.showElementEditor()`.
+
+### Fixed
+- Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+- Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
+- Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
+- Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
+- Fixed a bug where it was not possible to refresh element sources in element views.
+- Fixed an exception that could occur when loading an entry with a stored version that didn’t have a valid entry type ID.
+- #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
+- #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
+- Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
+- #1560: Fixed a bug where Matrix and relational fields’ values were getting propagated across other sites, even if they were set to manage blocks/relations on a per-site basis.
+- #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
+- #1543: Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters.
+- Fixed a bug that could prevent Craft from updating correctly in case of missing files.
+- Fixed a PHP error that could occur when saving an element that says it has content, but doesn’t have a field layout.
+- Fixed a bug where editing an asset from an Assets field wouldn’t show the correct custom fields, if the element hadn’t been saved yet or was disabled, and the asset hadn’t been placed in its target volume yet due to a dynamic subfolder path setting on the Assets field.
+- Fixed a PHP error that could occur when updating Craft if an Assets field didn’t have valid settings.
+- Fixed a PHP error that could occur when updating Craft if a Plain Text field didn’t have valid settings.
+
 ## 3.0.0-beta.7 - 2017-03-10
 
 ### Added
@@ -14,7 +142,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
 - #13: Disabled Matrix blocks are no longer shown in Live Preview.
 - #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
-- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.
+- `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.)
 - `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
 - `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
 - When an element is being saved across multiple sites, each site will now fire the before/after-save events.

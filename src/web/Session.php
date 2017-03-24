@@ -56,7 +56,7 @@ class Session extends \yii\web\Session
         $config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
 
         // Set the session name
-        $this->setName(Craft::$app->getConfig()->get('phpSessionName'));
+        $this->setName(Craft::$app->getConfig()->getGeneral()->phpSessionName);
 
         // Set the default session cookie params
         $this->setCookieParams(Craft::cookieConfig());

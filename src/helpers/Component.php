@@ -8,12 +8,11 @@
 namespace craft\helpers;
 
 use craft\base\ComponentInterface;
-use craft\base\SavableComponentInterface;
 use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
 
 /**
- * Class Element
+ * Component helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

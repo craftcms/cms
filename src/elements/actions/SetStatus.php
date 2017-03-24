@@ -10,9 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\events\SetStatusEvent;
 
 /**
  * SetStatus represents a Set Status element action.

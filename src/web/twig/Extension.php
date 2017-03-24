@@ -641,10 +641,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function csrfInputFunction()
     {
-        $config = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        if ($config->get('enableCsrfProtection') === true) {
-            return Template::raw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+        if ($generalConfig->enableCsrfProtection === true) {
+            return Template::raw('<input type="hidden" name="'.$generalConfig->csrfTokenName.'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
         }
 
         return null;
@@ -719,6 +719,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         $isInstalled = Craft::$app->getIsInstalled();
         $request = Craft::$app->getRequest();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         $globals = [
             // View
@@ -743,8 +744,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['loginUrl'] = UrlHelper::url(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = UrlHelper::url(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = UrlHelper::siteUrl($generalConfig->getLoginPath());
+        $globals['logoutUrl'] = UrlHelper::siteUrl($generalConfig->getLogoutPath());
         $globals['isInstalled'] = $isInstalled;
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {

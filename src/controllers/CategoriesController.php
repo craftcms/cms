@@ -19,6 +19,7 @@ use craft\models\Site;
 use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -641,6 +642,7 @@ class CategoriesController extends Controller
             } else {
                 $variables['category'] = new Category();
                 $variables['category']->groupId = $variables['group']->id;
+                $variables['category']->fieldLayoutId = $variables['group']->fieldLayoutId;
                 $variables['category']->enabled = true;
                 $variables['category']->siteId = $site->id;
             }
@@ -677,6 +679,7 @@ class CategoriesController extends Controller
      * Fetches or creates a Category.
      *
      * @return Category
+     * @throws BadRequestHttpException if the requested category group doesn't exist
      * @throws NotFoundHttpException if the requested category cannot be found
      */
     private function _getCategoryModel(): Category
@@ -691,8 +694,14 @@ class CategoriesController extends Controller
                 throw new NotFoundHttpException('Category not found');
             }
         } else {
+            $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+            if (($group = Craft::$app->getCategories()->getGroupById($groupId)) === null) {
+                throw new BadRequestHttpException('Invalid category group ID: '.$groupId);
+            }
+
             $category = new Category();
-            $category->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+            $category->groupId = $group->id;
+            $category->fieldLayoutId = $group->fieldLayoutId;
 
             if ($siteId) {
                 $category->siteId = $siteId;

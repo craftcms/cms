@@ -29,7 +29,7 @@ class Environment extends \Twig_Environment
             /** @noinspection PhpInternalEntityUsedInspection */
             return parent::loadTemplate($name, $index);
         } catch (\Twig_Error $e) {
-            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+            if (Craft::$app->getConfig()->getGeneral()->suppressTemplateErrors) {
                 // Just log it and return an empty template
                 Craft::$app->getErrorHandler()->logException($e);
 

@@ -335,10 +335,14 @@ class EntriesController extends BaseEntriesController
             (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id ? '/'.$site->handle : '');
 
         // Can the user delete the entry?
-        $variables['canDeleteEntry'] = $entry->id !== null && (
+        $variables['canDeleteEntry'] = (
+            get_class($entry) === Entry::class &&
+            $entry->id !== null &&
+            (
                 ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries'.$variables['permissionSuffix'])) ||
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
-            );
+            )
+        );
 
         // Full page form variables
         $variables['fullPageForm'] = true;
@@ -772,8 +776,8 @@ class EntriesController extends BaseEntriesController
         }
 
         $variables['entry']->typeId = $typeId;
-
         $variables['entryType'] = $variables['entry']->getType();
+        $variables['entry']->fieldLayoutId = $variables['entryType']->fieldLayoutId;
 
         // Define the content tabs
         // ---------------------------------------------------------------------
@@ -854,6 +858,7 @@ class EntriesController extends BaseEntriesController
             $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
 
+        $entry->fieldLayoutId = $entry->getType()->fieldLayoutId;
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 

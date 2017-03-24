@@ -338,7 +338,7 @@ class I18N extends \yii\i18n\I18N
     private function _shouldAddTranslationDebugOutput()
     {
         if ($this->_translationDebugOutput === null) {
-            $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->get('translationDebugOutput');
+            $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->getGeneral()->translationDebugOutput;
         }
 
         return $this->_translationDebugOutput;

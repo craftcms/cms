@@ -68,7 +68,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if config.hasSettings %}
+                            {% if config.hasCpSettings %}
                                 <a href="{{ url('settings/plugins/'~config.moduleId) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
                             {% endif %}
                         </td>

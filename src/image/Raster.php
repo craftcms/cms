@@ -86,9 +86,9 @@ class Raster extends Image
      */
     public function __construct($config = [])
     {
-        $configService = Craft::$app->getConfig();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        $extension = strtolower($configService->get('imageDriver'));
+        $extension = strtolower($generalConfig->imageDriver);
 
         // If it's explicitly set, take their word for it.
         if ($extension === 'gd') {
@@ -106,7 +106,7 @@ class Raster extends Image
             }
         }
 
-        $this->_quality = $configService->get('defaultImageQuality');
+        $this->_quality = $generalConfig->defaultImageQuality;
 
         parent::__construct($config);
     }
@@ -359,7 +359,7 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->get('optimizeImageFilesize')) {
+            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
                 $this->_image->smartResize(new Box($targetWidth,
                     $targetHeight), false, $this->_quality);
             } else {
@@ -655,7 +655,7 @@ class Raster extends Image
     private function _getSaveOptions(int $quality = null, string $extension = null): array
     {
         // Because it's possible for someone to set the quality to 0.
-        $quality = ($quality === null ? $this->_quality : $quality);
+        $quality = $quality ?: $this->_quality;
         $extension = (!$extension ? $this->getExtension() : $extension);
 
         switch ($extension) {

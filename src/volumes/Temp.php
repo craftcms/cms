@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\volumes;
 
 use Craft;
@@ -59,14 +60,6 @@ class Temp extends Local
     public function getSettingsHtml()
     {
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootPath(): string
-    {
-        return $this->path;
     }
 
     /**

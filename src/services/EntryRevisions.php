@@ -22,6 +22,7 @@ use craft\models\Section;
 use craft\records\EntryDraft as EntryDraftRecord;
 use craft\records\EntryVersion as EntryVersionRecord;
 use yii\base\Component;
+use yii\base\InvalidConfigException;
 
 /**
  * Class EntryRevisions service.
@@ -110,7 +111,8 @@ class EntryRevisions extends Component
         $config['data'] = Json::decode($config['data']);
         $draft = new EntryDraft($config);
 
-        $this->_configureRevisionWithEntryProperties($draft);
+        $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
+        $this->_configureRevisionWithEntryProperties($draft, $entry);
 
         return $draft;
     }
@@ -127,6 +129,10 @@ class EntryRevisions extends Component
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        }
+
+        if (($entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId)) === null) {
+            return [];
         }
 
         $drafts = [];
@@ -156,7 +162,9 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $drafts[] = new EntryDraft($result);
+            $draft = new EntryDraft($result);
+            $this->_configureRevisionWithEntryProperties($draft, $entry);
+            $drafts[] = $draft;
         }
 
         return $drafts;
@@ -345,7 +353,8 @@ class EntryRevisions extends Component
         $config['data'] = Json::decode($config['data']);
         $version = new EntryVersion($config);
 
-        $this->_configureRevisionWithEntryProperties($version);
+        $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->siteId);
+        $this->_configureRevisionWithEntryProperties($version, $entry);
 
         return $version;
     }
@@ -364,6 +373,10 @@ class EntryRevisions extends Component
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        }
+
+        if (($entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId)) === null) {
+            return [];
         }
 
         $versions = [];
@@ -395,7 +408,9 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $versions[] = new EntryVersion($result);
+            $version = new EntryVersion($result);
+            $this->_configureRevisionWithEntryProperties($version, $entry);
+            $versions[] = $version;
         }
 
         return $versions;
@@ -536,16 +551,27 @@ class EntryRevisions extends Component
      * Updates a revision model with entry properties that aren't saved in the revision tables.
      *
      * @param BaseEntryRevisionModel $revision
+     * @param Entry                  $entry
      *
      * @return void
      */
-    private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision)
+    private function _configureRevisionWithEntryProperties(BaseEntryRevisionModel $revision, Entry $entry)
     {
-        $entry = Craft::$app->getEntries()->getEntryById($revision->id, $revision->siteId);
         $revision->contentId = $entry->contentId;
         $revision->root = $entry->root;
         $revision->lft = $entry->lft;
         $revision->rgt = $entry->rgt;
         $revision->level = $entry->level;
+
+        // Make sure the revision's entry type still exists
+        try {
+            $revision->getType();
+        } catch (InvalidConfigException $e) {
+            // Nope. Use the entry's current type instead
+            $revision->typeId = $entry->typeId;
+        }
+
+        // Set the field layout ID based on the entry type
+        $revision->fieldLayoutId = $revision->getType()->fieldLayoutId;
     }
 }

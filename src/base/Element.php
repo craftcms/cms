@@ -830,9 +830,11 @@ abstract class Element extends Component implements ElementInterface
             'uri' => Craft::t('app', 'URI'),
         ];
 
-        foreach ($this->getFieldLayout()->getFields() as $field) {
-            /** @var Field $field */
-            $labels[$field->handle] = Craft::t('site', $field->name);
+        if (Craft::$app->getIsInstalled()) {
+            foreach ($this->getFieldLayout()->getFields() as $field) {
+                /** @var Field $field */
+                $labels[$field->handle] = Craft::t('site', $field->name);
+            }
         }
 
         return $labels;
@@ -1016,7 +1018,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getFieldLayout()
     {
-        return Craft::$app->getFields()->getLayoutByType(static::class);
+        if ($this->fieldLayoutId) {
+            return Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
+        }
+
+        return null;
     }
 
     /**
@@ -1212,6 +1218,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function setParent(ElementInterface $parent = null)
     {
+        /** @var Element $parent */
         $this->_parent = $parent;
 
         if ($parent) {
@@ -1940,7 +1947,7 @@ abstract class Element extends Component implements ElementInterface
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;

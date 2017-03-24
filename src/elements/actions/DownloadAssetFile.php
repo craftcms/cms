@@ -64,7 +64,7 @@ EOD;
             '{csrfName}',
             '{csrfValue}'
         ], [
-            Craft::$app->getConfig()->get('csrfTokenName'),
+            Craft::$app->getConfig()->getGeneral()->csrfTokenName,
             Craft::$app->getRequest()->getCsrfToken()
         ], $js);
 

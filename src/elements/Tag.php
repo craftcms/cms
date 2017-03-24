@@ -74,7 +74,7 @@ class Tag extends Element
      */
     public static function find(): ElementQueryInterface
     {
-        return new TagQuery(get_called_class());
+        return new TagQuery(static::class);
     }
 
     /**
@@ -123,20 +123,6 @@ class Tag extends Element
     public function getIsEditable(): bool
     {
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFieldLayout()
-    {
-        $tagGroup = $this->getGroup();
-
-        if ($tagGroup) {
-            return $tagGroup->getFieldLayout();
-        }
-
-        return null;
     }
 
     /**

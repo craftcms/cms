@@ -18,13 +18,9 @@ use craft\errors\VolumeObjectNotFoundException;
 abstract class FolderVolume extends Volume implements FolderVolumeInterface
 {
     /**
-     * Checks whether a folder exists at the given path.
-     *
-     * @param string $path The path to the folder to check.
-     *
-     * @return array|bool|null
+     * @inheritdoc
      */
-    public function folderExists(string $path)
+    public function folderExists(string $path): bool
     {
         return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
