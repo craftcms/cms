@@ -349,6 +349,8 @@ class Sections extends Component
             return false;
         }
 
+        $isNewSection = false;
+
         if ($section->id) {
             $sectionRecord = SectionRecord::find()
                 ->where(['id' => $section->id])
@@ -367,7 +369,6 @@ class Sections extends Component
                 'type',
                 'enableVersioning',
             ]));
-            $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
             $isNewSection = true;
