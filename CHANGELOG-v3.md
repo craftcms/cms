@@ -38,6 +38,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getMemCache()`.
 - Added `craft\validators\AssetLocationValidator`.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
+- Added `Craft.BaseElementSelectInput::createElementEditor()`, making it possible for subclasses to customize the settings passed to the element editor.
 - #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
 - #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
 - #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
