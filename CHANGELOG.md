@@ -8,6 +8,7 @@ Craft CMS Changelog
 
 ### Changed
 - #1556: Removed the Delete button from entry version/draft pages.
+- Assets fields no longer throw an exception if they can’t resolve a dynamic upload path for a disabled element.
 - Updated element-resize-detector to 1.1.11.
 - Updated Garnish to 0.1.17.
 

@@ -386,20 +386,16 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         $value = $element->getFieldValue($this->handle);
-        $assetsToMove = [];
 
         if ($value instanceof AssetQuery) {
             $value = $value->all();
         }
 
-        if (is_array($value) && count($value)) {
-            if ($this->useSingleFolder) {
-                $targetFolderId = $this->_resolveVolumePathToFolderId(
-                    $this->singleUploadLocationSource,
-                    $this->singleUploadLocationSubpath,
-                    $element
-                );
+        if (is_array($value) && !empty($value)) {
+            $assetsToMove = [];
+            $targetFolderId = $this->_determineUploadFolderId($element);
 
+            if ($this->useSingleFolder) {
                 // Move only those Assets that have had their folder changed.
                 foreach ($value as $asset) {
                     if ($targetFolderId != $asset->folderId) {
@@ -420,15 +416,6 @@ class Assets extends BaseRelationField
                     'volumeId' => ':empty:'
                 ]);
                 $assetsToMove = $query->all();
-
-                // If we have some files to move, make sure the folder exists.
-                if (!empty($assetsToMove)) {
-                    $targetFolderId = $this->_resolveVolumePathToFolderId(
-                        $this->defaultUploadLocationSource,
-                        $this->defaultUploadLocationSubpath,
-                        $element
-                    );
-                }
             }
 
             if (!empty($assetsToMove) && !empty($targetFolderId)) {
@@ -686,6 +673,7 @@ class Assets extends BaseRelationField
      */
     private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
+        /** @var Element $element */
         if ($this->useSingleFolder) {
             $uploadSource = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
@@ -699,9 +687,9 @@ class Assets extends BaseRelationField
         try {
             $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
         } catch (InvalidSubpathException $exception) {
-            // If this is a new element, the subpath probably just contained a token that returned null, like {id}
+            // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
-            if (empty($element->id) || !$createDynamicFolders) {
+            if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
                 $userModel = Craft::$app->getUser()->getIdentity();
 
                 $userFolder = $assets->getUserTemporaryUploadFolder($userModel);
