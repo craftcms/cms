@@ -20,7 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\elements\Asset::$avoidFilenameConflicts`, which determines whether new files’ names should be automatically renamed to avoid conflicts with exiting files.
 - Added `craft\elements\Asset::$conflictingFilename`, which stores a record of the attempted filename that ended up conflicting with an existing file.
 - Added `craft\elements\Asset::$newFolderId`, which indicates an asset's new intended folder ID.
-- Added `craft\elements\Asset::$newLocation`, which indicates an asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename properties.
+- Added `craft\elements\Asset::$newLocation`, which indicates an asset's new intended location. If null, it will be constructed from the `$newFolderId` and `$newFilename` properties.
 - Added `craft\helpers\App::maxPowerCaptain()`.
 - Added `craft\helpers\Assets::parseFileLocation()`.
 - Added `craft\helpers\ConfigHelper`.
@@ -59,7 +59,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\elements\Asset` now supports a `index` scenario scenario that should be used when indexing an asset’s file.
 - `craft\elements\Asset` now supports a `replace` scenario that should be used when replacing an asset’s file.
 - `craft\helpers\Assets::editorImagePath()` was renamed to `getImageEditorSource()`.
-- `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.`
+- `craft\helpers\Assets::fileTransferList()` no longer accepts a `$merge` argument.
 - `craft\services\Assets::createFolder()` now accepts an `$indexExisting` argument that determines whether unindexed folders on the volume should be silently indexed.
 - `craft\services\Assets::getNameReplacementInFolder()` now combines the file lists on the volume and the asset index when figuring out a safe replacement filename to use.
 - `craft\services\Assets::getNameReplacementInFolder()` now throws an `InvalidParamException` if `$folderId` is set to an invalid folder ID.
@@ -786,7 +786,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\base\Field::beforeElementSave()` now has an `$isNew` argument, which will indicate whether the element is brand new.
 - `craft\base\SavableComponent::afterSave()` now has an `$isNew` argument, which will indicate whether the element is brand new.
 - `craft\base\SavableComponent::beforeSave()` now has an `$isNew` argument, which will indicate whether the element is brand new.
-- `craft\db\Connection::columnExists()`’s `$table` argument can now be a \`craft\yii\db\TableSchema` object.
+- `craft\db\Connection::columnExists()`’s `$table` argument can now be a `craft\yii\db\TableSchema` object.
 - `craft\elements\Asset::getFolder()` now throws a `yii\base\InvalidConfigException` if its `$folderId` property is set to an invalid folder ID.
 - `craft\elements\Asset::getVolume()` now throws a `yii\base\InvalidConfigException` if its `$volumeId` property is set to an invalid volume ID.
 - `craft\elements\Tag::getGroup()` now throws a `yii\base\InvalidConfigException` if its `$groupId` property is set to an invalid tag group ID.
