@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - #1568: Fixed a bug where clicking “Sign out” in the Control Panel would generally result in a 404 error.
 - #1423: Fixed a bug where saving an Assets field without Volumes defined and then trying to use it would result in an exception.
 - Fixed an issue where deleting an Asset volume would delete all of the physical files of Assets indexed.
+- Fixed a bug where Craft could not connect to MySQL databases using the `unixSocket` setting.
 
 ## 3.0.0-beta.8 - 2017-03-24
 
