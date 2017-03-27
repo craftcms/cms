@@ -89,11 +89,6 @@ class GlobalSet extends Element
      */
     public $handle;
 
-    /**
-     * @var int|null Field layout ID
-     */
-    public $fieldLayoutId;
-
     // Public Methods
     // =========================================================================
 
@@ -144,6 +139,16 @@ class GlobalSet extends Element
         ];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

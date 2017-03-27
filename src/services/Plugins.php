@@ -22,6 +22,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\helpers\Inflector;
@@ -275,6 +276,34 @@ class Plugins extends Component
         foreach ($this->_plugins as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->packageName === $packageName) {
+                return $plugin;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the plugin that contains the given class, if any.
+     *
+     * @param string $class
+     *
+     * @return PluginInterface|null The plugin, or null if it can’t be determined.
+     */
+    public function getPluginByClass(string $class)
+    {
+        // Figure out the path to the folder that contains this class
+        try {
+            // Add a trailing slash so we don't get false positives
+            $classPath = dirname((new \ReflectionClass($class))->getFileName()).'/';
+        } catch (\ReflectionException $e) {
+            return null;
+        }
+
+        // Find the plugin that contains this path (if any)
+        foreach ($this->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
+            if (StringHelper::startsWith($classPath, $plugin->getBasePath().'/')) {
                 return $plugin;
             }
         }
@@ -673,12 +702,6 @@ class Plugins extends Component
     {
         $lcHandle = strtolower($handle);
         $config = $this->getConfig($lcHandle);
-
-        if (isset($config['aliases'])) {
-            foreach ($config['aliases'] as $alias => $path) {
-                Craft::setAlias($alias, $path);
-            }
-        }
 
         // Make sure it was a valid config
         if ($config === null) {

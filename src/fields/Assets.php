@@ -167,11 +167,9 @@ class Assets extends BaseRelationField
                 ]).
                 '</p>';
         } catch (InvalidVolumeException $e) {
-            $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
-
             return '<p class="warning">'.
                 '<span data-icon="alert"></span> '.
-                $message.
+                $e->getMessage().
                 '</p>';
         }
     }
@@ -664,8 +662,9 @@ class Assets extends BaseRelationField
      * @param ElementInterface|null $element
      * @param bool                  $createDynamicFolders whether missing folders should be created in the process
      *
+     * @return int if the folder subpath is not valid
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @return int
+     * @throws InvalidVolumeException if there's a problem with the field's volume configuration
      */
     private function _determineUploadFolderId(ElementInterface $element = null, bool $createDynamicFolders = true): int
     {
@@ -678,10 +677,17 @@ class Assets extends BaseRelationField
             $subpath = $this->defaultUploadLocationSubpath;
         }
 
+        if (!$uploadSource) {
+            throw new InvalidVolumeException(Craft::t('app', 'This field\'s Volume configuration is invalid.'));
+        }
+
         $assets = Craft::$app->getAssets();
 
         try {
             $folderId = $this->_resolveVolumePathToFolderId($uploadSource, $subpath, $element, $createDynamicFolders);
+        } catch (InvalidVolumeException $exception) {
+            $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
+            throw new InvalidVolumeException($message);
         } catch (InvalidSubpathException $exception) {
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead

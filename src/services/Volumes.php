@@ -588,6 +588,7 @@ class Volumes extends Component
                 ->all();
 
             foreach ($assets as $asset) {
+                $asset->keepFileOnDelete = true;
                 Craft::$app->getElements()->deleteElement($asset);
             }
 
