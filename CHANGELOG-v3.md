@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Plugins::getPluginByClass()`.
+
 ### Fixed
 - Fixed a PHP error that occurred on the Dashboard if there were any Quick Post widgets.
 - Fixed a bug where there was no visible “Content” tab in the Field Layout Designer when creating a new global set.
