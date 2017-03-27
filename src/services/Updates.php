@@ -522,8 +522,6 @@ class Updates extends Component
         ]));
 
         try {
-            $updater = new Updater();
-
             // Make sure we still meet the existing requirements. This will throw an exception if the server doesn't meet Craft's current requirements.
             Craft::$app->runAction('templates/requirements-check');
 
@@ -547,7 +545,7 @@ class Updates extends Component
                     Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.", __METHOD__);
                 }
 
-                $result = $updater->getUpdateFileInfo($handle);
+                $result = (new Updater())->getUpdateFileInfo($handle);
             }
 
             $result['success'] = true;
