@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a PHP error that occurred when updating Craft if the OPcache restrict_api config setting was set.
+
 ## 2.6.2968 - 2017-03-24
 
 ### Added

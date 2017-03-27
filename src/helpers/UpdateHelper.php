@@ -168,7 +168,7 @@ class UpdateHelper
 									/** @var \SplFileInfo $file */
 									if ($oldFile->isFile())
 									{
-										opcache_invalidate($oldFile, true);
+										@opcache_invalidate($oldFile, true);
 									}
 								}
 							}
