@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.9 - 2017-03-27
 
 ### Added
 - Added `craft\services\Plugins::getPluginByClass()`.
