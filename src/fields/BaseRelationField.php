@@ -290,7 +290,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getIsTranslatable(ElementInterface $element): bool
+    public function getIsTranslatable(ElementInterface $element = null): bool
     {
         return $this->localizeRelations;
     }

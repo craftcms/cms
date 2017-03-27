@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that occurred on the Dashboard if there were any Quick Post widgets.
+
 ## 3.0.0-beta.8 - 2017-03-24
 
 ### Added

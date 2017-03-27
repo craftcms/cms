@@ -67,11 +67,11 @@ interface FieldInterface extends SavableComponentInterface
      * Note this method has no effect on whether the field’s value will get copied over to other
      * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
      *
-     * @param ElementInterface $element The element being edited
+     * @param ElementInterface|null $element The element being edited
      *
      * @return bool
      */
-    public function getIsTranslatable(ElementInterface $element): bool;
+    public function getIsTranslatable(ElementInterface $element = null): bool;
 
     /**
      * Returns the field’s translation key, based on a given element.
