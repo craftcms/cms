@@ -149,6 +149,16 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl()
     {
         return UrlHelper::cpUrl('globals/'.$this->handle);
