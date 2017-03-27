@@ -290,7 +290,7 @@ class Plugins extends Component
      *
      * @return PluginInterface|null The plugin, or null if it can’t be determined.
      */
-    public function getPluginByClass($class)
+    public function getPluginByClass(string $class)
     {
         // Figure out the path to the folder that contains this class
         try {
