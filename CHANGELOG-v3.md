@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where there was no visible “Content” tab in the Field Layout Designer when creating a new global set.
 - #1570: Fixed a PHP error that occurred when saving a new global set.
 - #1568: Fixed a bug where clicking “Sign out” in the Control Panel would generally result in a 404 error.
+- #1423: Fixed a bug where saving an Assets field without Volumes defined and then trying to use it would result in an exception.
 
 ## 3.0.0-beta.8 - 2017-03-24
 
