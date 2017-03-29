@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
+
 ## 3.0.0-beta.9 - 2017-03-27
 
 ### Added
