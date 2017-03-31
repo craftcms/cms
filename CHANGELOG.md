@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a PHP error that occurred when updating Craft if the OPcache restrict_api config setting was set.
 - Fixed a bug where Redactor dialogs would list the Asset Source in the wrong order.
+- Fixed a bug where temporary upload folders were not being created correctly.
 
 ## 2.6.2968 - 2017-03-24
 
