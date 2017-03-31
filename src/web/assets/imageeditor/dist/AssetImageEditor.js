@@ -440,7 +440,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var currentWidth = this.image.width;
                 var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
-                var ratio = newWidth / currentWidth;
+                var ratio = newWidth / currentWidth / this.scaleFactor;
 
                 offsetX -= (previousEditorDimensions.width - this.editorWidth) / 2;
                 offsetY -= (previousEditorDimensions.height - this.editorHeight) / 2;
@@ -638,8 +638,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             } else if (this.focalPoint) {
                 var zoomFactor = 1 / this.zoomRatio;
                 this.focalPointState = {
-                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor,
-                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor,
+                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor / this.scaleFactor,
+                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor / this.scaleFactor,
                     imageDimensions: this.getScaledImageDimensions()
                 };
             }
