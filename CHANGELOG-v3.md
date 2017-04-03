@@ -3,6 +3,9 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Changed
+- `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
+
 ### Fixed
 - #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
 - #1305: Fixed an issue where focal point would not be tracked correctly under certain circumstances.

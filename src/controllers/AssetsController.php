@@ -655,6 +655,10 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('Invalid cropping parameters passed');
         }
 
+        $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
+        $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
+        $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
+
         $imageCopy = $asset->getCopyOfFile();
 
         $imageSize = Image::imageSize($imageCopy);
@@ -663,17 +667,23 @@ class AssetsController extends Controller
         $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
         list($originalImageWidth, $originalImageHeight) = $imageSize;
 
-        if (!empty($flipData['x'])) {
-            $image->flipHorizontally();
+        if ($imageFlipped) {
+            if (!empty($flipData['x'])) {
+                $image->flipHorizontally();
+            }
+
+            if (!empty($flipData['y'])) {
+                $image->flipVertically();
+            }
         }
 
-        if (!empty($flipData['y'])) {
-            $image->flipVertically();
+        if ($zoom !== 1.0) {
+            $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
         }
 
-        $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
-
-        $image->rotate($imageRotation + $viewportRotation);
+        if ($imageRotated) {
+            $image->rotate($imageRotation + $viewportRotation);
+        }
 
         $imageCenterX = $image->getWidth() / 2;
         $imageCenterY = $image->getHeight() / 2;
