@@ -6,11 +6,15 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
 
+### Removed
+- Removed `craft\base\TaskInterface::getDescription()`.
+
 ### Fixed
 - #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
 - #1305: Fixed an issue where focal point would not be tracked correctly under certain circumstances.
 - #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
 - #1572: Fixed a bug where it was not possible to install plugins manually.
+- Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

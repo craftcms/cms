@@ -21,13 +21,6 @@ interface TaskInterface extends SavableComponentInterface
     // =========================================================================
 
     /**
-     * Returns the task’s description.
-     *
-     * @return string The task’s description
-     */
-    public function getDescription(): string;
-
-    /**
      * Returns the total number of steps for this task.
      *
      * @return int The total number of steps for this task
