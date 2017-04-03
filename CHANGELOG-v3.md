@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
 - #1305: Fixed an issue where focal point would not be tracked correctly under certain circumstances.
 - #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
+- #1572: Fixed a bug where it was not possible to install plugins manually.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

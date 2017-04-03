@@ -703,6 +703,15 @@ class Plugins extends Component
         $lcHandle = strtolower($handle);
         $config = $this->getConfig($lcHandle);
 
+        if (isset($config['aliases'])) {
+            foreach ($config['aliases'] as $alias => $path) {
+                Craft::setAlias($alias, $path);
+            }
+
+            // Unset them so we don't end up calling Module::setAliases()
+            unset($config['aliases']);
+        }
+
         // Make sure it was a valid config
         if ($config === null) {
             return null;
