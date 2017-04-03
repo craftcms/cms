@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
 - #1572: Fixed a bug where it was not possible to install plugins manually.
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
+- #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
