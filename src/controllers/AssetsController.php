@@ -614,14 +614,14 @@ class AssetsController extends Controller
         $request = Craft::$app->getRequest();
 
         $assetId = $request->getRequiredBodyParam('assetId');
-        $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
-        $imageRotation = $request->getRequiredBodyParam('imageRotation');
+        $viewportRotation = (int)$request->getRequiredBodyParam('viewportRotation');
+        $imageRotation = (float)$request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
         $cropData = $request->getRequiredBodyParam('cropData');
         $focalPoint = $request->getBodyParam('focalPoint');
         $imageDimensions = $request->getBodyParam('imageDimensions');
         $flipData = $request->getBodyParam('flipData');
-        $zoom = $request->getBodyParam('zoom', 1);
+        $zoom = (float)$request->getBodyParam('zoom', 1);
 
         $asset = $assets->getAssetById($assetId);
 
@@ -703,9 +703,13 @@ class AssetsController extends Controller
             $focal = number_format($fx / $originalImageWidth, 4).';'.number_format($fy / $originalImageHeight, 4);
         }
 
-        $image->crop($x, $x + $width, $y, $y + $height);
+        if ($imageCropped) {
+            $image->crop($x, $x + $width, $y, $y + $height);
+        }
 
-        $image->saveAs($imageCopy);
+        if ($imageCropped || $imageRotated || $imageFlipped) {
+            $image->saveAs($imageCopy);
+        }
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
