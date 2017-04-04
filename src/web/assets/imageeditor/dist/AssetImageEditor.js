@@ -1101,8 +1101,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             if (this.cropperState) {
                 var cropData = {};
 
-                // Let's keep all the image-editing state logic in JS and modify the data
-                // before sending it off.
                 cropData.height = this.cropperState.height;
                 cropData.width = this.cropperState.width;
                 cropData.offsetX = this.cropperState.offsetX;
@@ -1349,7 +1347,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         disableCropMode: function() {
 
-            var imageDimensions = this.getScaledImageDimensions();
             var viewportProperties = {};
 
             var imageProperties = {
