@@ -1122,9 +1122,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             postData.flipData = this.flipData;
             postData.zoom = this.zoomRatio;
 
-            // TODO add some error-handling, perhaps
-            Craft.postActionRequest('assets/save-image', postData, function() {
+            Craft.postActionRequest('assets/save-image', postData, function(data) {
                 this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
                 this.onSave();
                 this.hide();
             }.bind(this));
