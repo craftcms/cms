@@ -9322,7 +9322,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 case 'cancel': {
                     Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
-                            this.destroy();
+                            Craft.cp.trackTaskProgress(false);
                         }
                     }, this));
                 }
