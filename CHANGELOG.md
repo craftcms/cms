@@ -12,6 +12,7 @@ Craft CMS Changelog
 - Fixed a bug where Redactor dialogs would list the Asset Source in the wrong order.
 - Fixed a bug where temporary upload folders were not being created correctly.
 - #1577: Fixed a bug where Craft was not redirecting users to the correct URL after login, if the site homepage had a `{% requireLogin %}` tag, and was accessed with a query string.
+- #1593: Fixed a bug where the DeleteStaleTemplateCaches could potentially miss some caches that should be busted.
 
 ## 2.6.2968 - 2017-03-24
 

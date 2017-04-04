@@ -151,6 +151,9 @@ class DeleteStaleTemplateCachesTask extends BaseTask
 			// whose caches should be recreated (see http://craftcms.stackexchange.com/a/2611/9)
 			$criteria->status = null;
 
+			// Fixes https://github.com/craftcms/cms/issues/1593
+			$criteria->limit = null;
+
 			// See if any of the updated elements would get fetched by this query
 			if (array_intersect($criteria->ids(), $this->_elementIds))
 			{
