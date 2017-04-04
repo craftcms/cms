@@ -28,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - #1565: Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set.
 - #1567: Fixed a PHP error that could occur after a task failure.
 - #1566: Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled.
+- #1573: Fixed a PHP error that occurred when saving a new Structure section.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

@@ -447,6 +447,8 @@ class Sections extends Component
                     ->where(['sectionId' => $section->id])
                     ->indexBy('siteId')
                     ->all();
+            } else {
+                $allOldSiteSettingsRecords = [];
             }
 
             foreach ($allSiteSettings as $siteId => $siteSettings) {
