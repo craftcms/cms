@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - It's now possible to execute `AssetsFieldType::prepValueFromPost()` only once per field instance. Subsequent calls will return previous execution result.
+- #13: Disabled Matrix blocks are no longer shown in Live Preview.
 
 ### Fixed
 - Fixed a PHP error that occurred when updating Craft if the OPcache restrict_api config setting was set.
