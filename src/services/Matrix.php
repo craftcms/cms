@@ -653,6 +653,13 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
         $query = $owner->getFieldValue($field->handle);
+
+        // Skip if the query's site ID is different than the element's
+        // (Indicates that the value as copied from another site for element propagation)
+        if ($query->siteId != $owner->siteId) {
+            return false;
+        }
+
         $blocks = $query->all();
 
         $transaction = Craft::$app->getDb()->beginTransaction();

@@ -22,6 +22,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 - #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
 - Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
+- Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
