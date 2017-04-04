@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
+- Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
