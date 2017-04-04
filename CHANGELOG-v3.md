@@ -24,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
 - Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
+- Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

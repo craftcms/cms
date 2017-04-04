@@ -187,6 +187,7 @@ class FieldsController extends Controller
         }
 
         $fieldTypeOptions = [];
+        $supportedTranslationMethods = [];
 
         foreach ($allFieldTypes as $class) {
             if ($class === get_class($field) || $class::isSelectable()) {
@@ -194,6 +195,8 @@ class FieldsController extends Controller
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
+
+                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
 
@@ -253,6 +256,7 @@ class FieldsController extends Controller
             'fieldId' => $fieldId,
             'field' => $field,
             'fieldTypeOptions' => $fieldTypeOptions,
+            'supportedTranslationMethods' => $supportedTranslationMethods,
             'allFieldTypes' => $allFieldTypes,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
