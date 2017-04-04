@@ -6,7 +6,6 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
-- Added support for error messages when saving an edited image fails for some reason.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
@@ -18,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - #1572: Fixed a bug where it was not possible to install plugins manually.
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 - #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
+- Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

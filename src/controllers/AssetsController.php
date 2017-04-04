@@ -713,6 +713,7 @@ class AssetsController extends Controller
             }
 
             if ($replace) {
+                $asset->focalPoint = $focal;
                 $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
             } else {
                 $newAsset = new Asset();
