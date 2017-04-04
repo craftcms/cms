@@ -878,7 +878,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var previousAngle = this.image.angle;
 
-                this.imageStraightenAngle = parseFloat(slider.value) % 360;
+                this.imageStraightenAngle = (this.settings.allowDegreeFractions ? parseFloat(slider.value) : Math.round(slider.value)) % 360;
 
                 // Straighten the image
                 this.image.set({
@@ -2244,7 +2244,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         defaults: {
             animationDuration: 100,
             allowSavingAsNew: true,
-            onSave: $.noop
+            onSave: $.noop,
+            allowDegreeFractions: true
         }
     }
 );

@@ -53,6 +53,7 @@
             isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},
             translations:          {{ view.getTranslations()|json_encode|raw }},
             maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
+            isImagick:             {{ craft.app.images.getIsImagick() ? 'true' : 'false' }},
             forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
             {% if craft.app.config.general.enableCsrfProtection %}
                 csrfTokenValue:        "{{ craft.app.request.getCsrfToken()|e('js') }}",
