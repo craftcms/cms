@@ -32,10 +32,6 @@
         {% endif %}
     {% endblock %}
 
-    {% block targetSiteField %}
-        {{ field.getTargetSiteFieldHtml()|raw }}
-    {% endblock %}
-
     {% block limitField %}
         {% if field.allowLimit %}
             {{ forms.textField({
@@ -66,14 +62,24 @@
         }) }}
     {% endblock %}
 
-    {% block localizeRelationsField %}
+    {% block advancedSettings %}
         {% if craft.app.getIsMultiSite() %}
-            {{ forms.checkboxField({
-                label: "Manage relations on a per-site basis"|t('app'),
-                id: 'localize-relations',
-                name: 'localizeRelations',
-                checked: field.localizeRelations
-            }) }}
+            <hr>
+            <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+            <div id="advanced" class="hidden">
+                {% block targetSiteField %}
+                    {{ field.getTargetSiteFieldHtml()|raw }}
+                {% endblock %}
+
+                {% block localizeRelationsField %}
+                    {{ forms.checkboxField({
+                        label: "Manage relations on a per-site basis"|t('app'),
+                        id: 'localize-relations',
+                        name: 'localizeRelations',
+                        checked: field.localizeRelations
+                    }) }}
+                {% endblock %}
+            </div>
         {% endif %}
     {% endblock %}
 {% endblock %}

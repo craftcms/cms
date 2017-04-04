@@ -5,7 +5,6 @@
 
 {% block fieldSettings %}
     {{ block('sourcesField') }}
-    {{ block('targetSiteField') }}
 
     {% block branchLimitField %}
         {{ forms.textField({
@@ -21,5 +20,5 @@
 
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}
-    {{ block('localizeRelationsField') }}
+    {{ block('advancedSettings') }}
 {% endblock %}

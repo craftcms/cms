@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
 - Improved the behavior of auto-generated text inputs (like Handle fields).
+- #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
