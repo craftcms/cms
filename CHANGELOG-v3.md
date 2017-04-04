@@ -25,6 +25,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 - Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
+- #1565: Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
