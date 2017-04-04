@@ -26,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 - Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
 - #1565: Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set.
+- #1567: Fixed a PHP error that could occur after a task failure.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
