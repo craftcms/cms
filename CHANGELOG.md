@@ -11,6 +11,7 @@ Craft CMS Changelog
 - Fixed a PHP error that occurred when updating Craft if the OPcache restrict_api config setting was set.
 - Fixed a bug where Redactor dialogs would list the Asset Source in the wrong order.
 - Fixed a bug where temporary upload folders were not being created correctly.
+- #1577: Fixed a bug where Craft was not redirecting users to the correct URL after login, if the site homepage had a `{% requireLogin %}` tag, and was accessed with a query string.
 
 ## 2.6.2968 - 2017-03-24
 

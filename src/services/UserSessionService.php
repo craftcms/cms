@@ -436,14 +436,7 @@ class UserSessionService extends \CWebUser
 
 				if (($queryString = craft()->request->getQueryStringWithoutPath()))
 				{
-					if (craft()->request->getPathInfo())
-					{
-						$url .= '?'.$queryString;
-					}
-					else
-					{
-						$url .= '&'.$queryString;
-					}
+					$url .= '?'.$queryString;
 				}
 
 				$this->setReturnUrl($url);
