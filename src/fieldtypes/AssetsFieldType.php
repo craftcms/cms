@@ -52,7 +52,7 @@ class AssetsFieldType extends BaseElementFieldType
 	private $_failedFiles = array();
 
     /**
-     * Results of the prepValueFromPost method when it was ran.
+     * Results of the prepValueFromPost method when it was run.
      *
      * @var array
      */
