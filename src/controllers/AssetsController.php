@@ -696,6 +696,7 @@ class AssetsController extends Controller
             $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
 
             $focal = null;
+            // TODO this is not being set properly if image is being cropped. 
             if ($focalPoint) {
                 $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
                 $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
