@@ -223,6 +223,27 @@ $.extend(Craft,
         },
 
         /**
+         * Selects the full value of a given text input.
+         *
+         * @param input
+         */
+        selectFullValue: function(input) {
+            var $input = $(input);
+            var val = $input.val();
+
+            // Does the browser support setSelectionRange()?
+            if ($input[0].setSelectionRange !== undefined) {
+                // Select the whole value
+                var length = val.length * 2;
+                $input[0].setSelectionRange(0, length);
+            }
+            else {
+                // Refresh the value to get the cursor positioned at the end
+                $input.val(val);
+            }
+        },
+
+        /**
          * Formats an ID out of an input name.
          *
          * @param {string} inputName
@@ -4542,6 +4563,12 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.$target.val(targetVal);
             this.$target.trigger('change');
+
+            // If the target already has focus, select its whole value to mimic
+            // the behavior if the value had already been generated and they just tabbed in
+            if (this.$target.is(':focus')) {
+                Craft.selectFullValue(this.$target);
+            }
         },
 
         generateTargetValue: function(sourceVal) {
@@ -10282,18 +10309,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             }
 
             setTimeout(function() {
-                var val = $textarea.val();
-
-                // Does the browser support setSelectionRange()?
-                if ($textarea[0].setSelectionRange !== undefined) {
-                    // Select the whole value
-                    var length = val.length * 2;
-                    $textarea[0].setSelectionRange(0, length);
-                }
-                else {
-                    // Refresh the value to get the cursor positioned at the end
-                    $textarea.val(val);
-                }
+                Craft.selectFullValue($textarea);
             }, 0);
         },
 

@@ -3,9 +3,13 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `Craft.selectFullValue()`.
+
 ### Changed
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
+- Improved the behavior of auto-generated text inputs (like Handle fields).
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
