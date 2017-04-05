@@ -15,16 +15,6 @@ if (!extension_loaded('mbstring') || (extension_loaded('mbstring') && ini_get('m
 // PHP environment normalization
 // -----------------------------------------------------------------------------
 
-// These have been deprecated in PHP 5.6 in favor of default_charset, which defaults to 'UTF-8'
-// http://php.net/manual/en/migration56.deprecated.php
-if (PHP_VERSION_ID < 50600) {
-    // Set MB to use UTF-8
-    mb_internal_encoding('UTF-8');
-    mb_regex_encoding('UTF-8');
-    mb_http_input('UTF-8');
-    mb_http_output('UTF-8');
-}
-
 mb_detect_order('auto');
 
 // Normalize how PHP's string methods (strtoupper, etc) behave.
