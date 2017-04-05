@@ -31,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - #1566: Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled.
 - #1573: Fixed a PHP error that occurred when saving a new Structure section.
 - #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
+- #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
