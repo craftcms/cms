@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the behavior of auto-generated text inputs (like Handle fields).
 - #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
 - The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
+- `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.

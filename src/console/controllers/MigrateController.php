@@ -92,6 +92,18 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @inheritdoc
+     */
+    public function optionAliases()
+    {
+        $aliases = parent::optionAliases();
+        $aliases['t'] = 'type';
+        $aliases['p'] = 'plugin';
+
+        return $aliases;
+    }
+
+    /**
+     * @inheritdoc
      *
      * @throws Exception if the 'plugin' option isn't valid
      */
