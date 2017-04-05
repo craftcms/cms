@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\GlobalSet;
+use yii\base\Event;
 
 /**
  * Global Set event class.
@@ -15,7 +16,7 @@ use craft\elements\GlobalSet;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GlobalSetEvent extends CancelableEvent
+class GlobalSetEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -297,6 +297,12 @@ EOD;
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
+
+        // Invalidate opcache
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($destinationPath, true);
+        }
+
         include $destinationPath;
     }
 }

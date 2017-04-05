@@ -81,10 +81,25 @@ class MigrateController extends BaseMigrateController
      */
     public function options($actionID)
     {
-        return array_merge(
-            parent::options($actionID),
-            ['type', 'plugin']
-        );
+        $options = parent::options($actionID);
+
+        // Global options
+        $options[] = 'type';
+        $options[] = 'plugin';
+
+        return $options;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function optionAliases()
+    {
+        $aliases = parent::optionAliases();
+        $aliases['t'] = 'type';
+        $aliases['p'] = 'plugin';
+
+        return $aliases;
     }
 
     /**

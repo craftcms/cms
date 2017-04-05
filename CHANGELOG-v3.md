@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\console\User::getId()`.
+- Added `craft\helpers\Console`.
 - Added `Craft.selectFullValue()`.
 
 ### Changed
@@ -12,6 +13,9 @@ Craft CMS 3.0 Working Changelog
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
 - Improved the behavior of auto-generated text inputs (like Handle fields).
 - #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
+- The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
+- `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
+- #1580: Console requests now report if there are any database connection issues.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
@@ -31,6 +35,9 @@ Craft CMS 3.0 Working Changelog
 - #1566: Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled.
 - #1573: Fixed a PHP error that occurred when saving a new Structure section.
 - #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
+- #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
+- #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
+- #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
