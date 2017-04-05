@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\console\User::getId()`.
+- Added `craft\helpers\Console`.
 - Added `Craft.selectFullValue()`.
 
 ### Changed
