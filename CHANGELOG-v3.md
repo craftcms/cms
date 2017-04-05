@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
 - #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
 - #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
+- #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
