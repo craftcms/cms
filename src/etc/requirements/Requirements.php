@@ -34,39 +34,45 @@ class Requirements
 			),
 			new Requirement(
 				'Reflection extension',
-				class_exists('Reflection', false),
+				extension_loaded('reflection'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The Reflection extension is required.'
 			),
 			new Requirement(
 				'PCRE extension',
 				extension_loaded('pcre'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The PCRE extension is required.'
 			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded('SPL'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The SPL extension is required.'
 			),
 			new Requirement(
 				'PDO extension',
 				extension_loaded('pdo'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The PDO extension is required.'
 			),
 			new Requirement(
 				'PDO MySQL extension',
 				extension_loaded('pdo_mysql'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The PDO MySQL extension is required.'
 			),
 			new Requirement(
 				'Mcrypt extension',
 				extension_loaded('mcrypt'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The Mcrypt extension is required.'
 			),
 			new Requirement(
 				'GD extension',
@@ -100,13 +106,15 @@ class Requirements
 				'OpenSSL extension',
 				extension_loaded('openssl'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The OpenSSL extension is required.'
 			),
 			new Requirement(
 				'cURL extension',
 				extension_loaded('curl'),
 				true,
-				'<a href="http://craftcms.com">Craft CMS</a>'
+				'<a href="http://craftcms.com">Craft CMS</a>',
+				'The cURL extension is required.'
 			),
 			new Requirement(
 				'crypt() with CRYPT_BLOWFISH enabled',
