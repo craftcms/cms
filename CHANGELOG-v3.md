@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
 - Improved the behavior of auto-generated text inputs (like Handle fields).
 - #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
+- The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
@@ -32,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - #1573: Fixed a PHP error that occurred when saving a new Structure section.
 - #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
 - #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
+- #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

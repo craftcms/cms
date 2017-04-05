@@ -15,6 +15,7 @@ use craft\events\GlobalSetEvent;
 use craft\helpers\ArrayHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Globals service.
@@ -233,15 +234,29 @@ class Globals extends Component
     /**
      * Saves a global set.
      *
-     * @param GlobalSet $globalSet
+     * @param GlobalSet $globalSet     The global set to be saved
+     * @param bool      $runValidation Whether the global set should be validated
      *
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSet(GlobalSet $globalSet): bool
+    public function saveSet(GlobalSet $globalSet, bool $runValidation = true): bool
     {
+        $globalSet->validateCustomFields = false;
+        if ($runValidation && !$globalSet->validate()) {
+            Craft::info('Global set not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewSet = !$globalSet->id;
+
+        // Fire a 'beforeSaveGlobalSet' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, new GlobalSetEvent([
+            'globalSet' => $globalSet,
+            'isNew' => $isNewSet,
+        ]));
 
         if (!$isNewSet) {
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
@@ -256,61 +271,40 @@ class Globals extends Component
         $globalSetRecord->name = $globalSet->name;
         $globalSetRecord->handle = $globalSet->handle;
 
-        $globalSetRecord->validate();
-        $globalSet->addErrors($globalSetRecord->getErrors());
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-        $success = false;
+        try {
+            // Save the field layout
+            $fieldLayout = $globalSet->getFieldLayout();
+            Craft::$app->getFields()->saveLayout($fieldLayout);
+            $globalSet->fieldLayoutId = $fieldLayout->id;
+            $globalSetRecord->fieldLayoutId = $fieldLayout->id;
 
-        if (!$globalSet->hasErrors()) {
-
-            $transaction = Craft::$app->getDb()->beginTransaction();
-
-            try {
-                // Fire a 'beforeSaveGlobalSet' event
-                $event = new GlobalSetEvent([
-                    'globalSet' => $globalSet,
-                    'isNew' => $isNewSet
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, $event);
-
-                // Is the event giving us the go-ahead?
-                if ($event->isValid) {
-                    $globalSet->validateCustomFields = false;
-                    if ($success = Craft::$app->getElements()->saveElement($globalSet)) {
-                        // Now that we have an element ID, save it on the other stuff
-                        if ($isNewSet) {
-                            $globalSetRecord->id = $globalSet->id;
-                        }
-
-                        // Save the field layout
-                        $fieldLayout = $globalSet->getFieldLayout();
-                        Craft::$app->getFields()->saveLayout($fieldLayout);
-                        $globalSet->fieldLayoutId = $fieldLayout->id;
-                        $globalSetRecord->fieldLayoutId = $fieldLayout->id;
-
-                        $globalSetRecord->save(false);
-
-                        $transaction->commit();
-                    }
-                }
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
+            // Save the global set
+            if (!Craft::$app->getElements()->saveElement($globalSet)) {
+                throw new Exception('Couldn’t save the global set.');
             }
 
-            if ($success) {
-                // Fire an 'afterSaveGlobalSet' event
-                $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET,
-                    new GlobalSetEvent([
-                        'globalSet' => $globalSet,
-                        'isNew' => $isNewSet
-                    ])
-                );
+            // Now that we have an element ID, save the record
+            if ($isNewSet) {
+                $globalSetRecord->id = $globalSet->id;
             }
+
+            $globalSetRecord->save(false);
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        return $success;
+        // Fire an 'afterSaveGlobalSet' event
+        $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
+            'globalSet' => $globalSet,
+            'isNew' => $isNewSet
+        ]));
+
+        return true;
     }
 }

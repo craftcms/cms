@@ -11,9 +11,9 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 
 /**
- * m170322_204706_element_field_layout_ids migration.
+ * m170405_132309_element_field_layout_ids migration.
  */
-class m170322_204706_element_field_layout_ids extends Migration
+class m170405_132309_element_field_layout_ids extends Migration
 {
     // Properties
     // -------------------------------------------------------------------------
@@ -34,9 +34,11 @@ class m170322_204706_element_field_layout_ids extends Migration
         $this->_isMysql = $this->db->getIsMysql();
 
         // Add the elements.fieldLayoutId column + FK
-        $this->addColumn('{{%elements}}', 'fieldLayoutId', $this->integer());
-        $this->createIndex($this->db->getIndexName('{{%elements}}', 'fieldLayoutId', false, true), '{{%elements}}', 'fieldLayoutId', false);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%elements}}', 'fieldLayoutId'), '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        if (!$this->db->columnExists('{{%elements}}', 'fieldLayoutId')) {
+            $this->addColumn('{{%elements}}', 'fieldLayoutId', $this->integer());
+            $this->createIndex($this->db->getIndexName('{{%elements}}', 'fieldLayoutId', false, true), '{{%elements}}', 'fieldLayoutId', false);
+            $this->addForeignKey($this->db->getForeignKeyName('{{%elements}}', 'fieldLayoutId'), '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        }
 
         // Update the elements
         $this->_updateAssets();
