@@ -45,7 +45,7 @@
             <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
                 {{ forms.textField({
                     label: "Base URL"|t('app'),
-                    instructions: "The base URL to the assets in this volume. An absolute ({ex1}) or protocol-relative ({ex2}) is recommended."|t('app', {
+                    instructions: "The base URL to the assets in this volume. An absolute ({ex1}) or protocol-relative ({ex2}) URL is recommended."|t('app', {
                         ex1: '“`http://example.com/path/to/folder`”',
                         ex2: '“`//example.com/path/to/folder”`'
                     }),
