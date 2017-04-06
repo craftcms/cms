@@ -1,7 +1,5 @@
 <?php
 
-use yii\debug\panels\RouterPanel;
-
 return [
     'components' => [
         'request' => [
@@ -39,7 +37,7 @@ return [
                 'config' => false,
                 'user' => craft\debug\UserPanel::class,
                 'router' => [
-                    'class' => RouterPanel::class,
+                    'class' => yii\debug\panels\RouterPanel::class,
                     'categories' => [
                         'craft\web\UrlManager::_getMatchedElementRoute',
                         'craft\web\UrlManager::_getMatchedUrlRoute',
