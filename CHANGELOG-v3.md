@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
 - #1580: Console requests now report if there are any database connection issues.
 - `craft\elements\db\ElementQuery::one()` now returns the first cached element if the element query has any results cached on it.
+- `craft\base\SavableComponent::settingsAttributes()` now returns all public, non-static properties on any parent classes in addition to the called class, so long as they weren’t defined in an abstract class.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
