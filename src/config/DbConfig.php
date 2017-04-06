@@ -147,7 +147,7 @@ class DbConfig extends Object
 
         // Validate tablePrefix
         if ($this->tablePrefix) {
-            StringHelper::ensureEndsWith($this->tablePrefix, '_');
+            StringHelper::ensureRight($this->tablePrefix, '_');
             if (strlen($this->tablePrefix) > 6) {
                 throw new InvalidConfigException('tablePrefix must be 5 or less characters long: '.$this->tablePrefix);
             }

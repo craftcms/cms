@@ -470,7 +470,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            StringHelper::ensureStartsWith($format, 'php:');
+            StringHelper::ensureLeft($format, 'php:');
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
@@ -498,7 +498,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            StringHelper::ensureStartsWith($format, 'php:');
+            StringHelper::ensureLeft($format, 'php:');
         }
 
         $date = \twig_date_converter($env, $date, $timezone);

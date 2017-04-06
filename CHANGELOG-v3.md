@@ -19,6 +19,8 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
+- Removed `craft\helpers\StringHelper::ensureEndsWith()`. Use `ensureRight()` instead.
+- Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
 
 ### Fixed
 - #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
