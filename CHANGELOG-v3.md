@@ -23,6 +23,8 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
+- Removed `craft\db\Connection::DRIVER_MYSQL`. Use `craft\config\DbConfig::DRIVER_MYSQL` instead.
+- Removed `craft\db\Connection::DRIVER_PGSQL`. Use `craft\config\DbConfig::DRIVER_PGSQL` instead.
 - Removed `craft\helpers\StringHelper::ensureEndsWith()`. Use `ensureRight()` instead.
 - Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
 

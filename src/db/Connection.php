@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use Craft;
+use craft\config\DbConfig;
 use craft\db\mysql\QueryBuilder;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
@@ -60,9 +61,6 @@ class Connection extends \yii\db\Connection
      */
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
 
-    const DRIVER_MYSQL = 'mysql';
-    const DRIVER_PGSQL = 'pgsql';
-
     // Public Methods
     // =========================================================================
 
@@ -73,7 +71,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsMysql(): bool
     {
-        return $this->getDriverName() === self::DRIVER_MYSQL;
+        return $this->getDriverName() === DbConfig::DRIVER_MYSQL;
     }
 
     /**
@@ -83,7 +81,7 @@ class Connection extends \yii\db\Connection
      */
     public function getIsPgsql(): bool
     {
-        return $this->getDriverName() === self::DRIVER_PGSQL;
+        return $this->getDriverName() === DbConfig::DRIVER_PGSQL;
     }
 
     /**
@@ -102,7 +100,7 @@ class Connection extends \yii\db\Connection
             $driverName = $this->getDriverName();
 
             switch ($driverName) {
-                case static::DRIVER_MYSQL:
+                case DbConfig::DRIVER_MYSQL:
                     if (!extension_loaded('pdo')) {
                         throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
                     } else if (!extension_loaded('pdo_mysql')) {
@@ -111,7 +109,7 @@ class Connection extends \yii\db\Connection
 
                     break;
 
-                case static::DRIVER_PGSQL:
+                case DbConfig::DRIVER_PGSQL:
                     if (!extension_loaded('pdo')) {
                         throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
                     } else if (!extension_loaded('pdo_pgsql')) {
