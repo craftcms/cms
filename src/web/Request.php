@@ -129,22 +129,9 @@ class Request extends \yii\web\Request
      */
     public function __construct($config = [])
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        // Is CSRF protection enabled?
-        if ($generalConfig->enableCsrfProtection === true) {
-            $config['enableCsrfValidation'] = true;
-            $config['csrfParam'] = $generalConfig->csrfTokenName;
+        if (!isset($config['csrfCookie'])) {
             $config['csrfCookie'] = Craft::cookieConfig([], $this);
-
-            if (!$generalConfig->enableCsrfCookie) {
-                $config['enableCsrfCookie'] = false;
-            }
-        } else {
-            $config['enableCsrfValidation'] = false;
         }
-
-        $this->cookieValidationKey = Craft::$app->getSecurity()->getValidationKey();
 
         parent::__construct($config);
     }

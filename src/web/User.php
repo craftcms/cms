@@ -50,36 +50,6 @@ class User extends \yii\web\User
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        // Set the configurable properties
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
-        $request = Craft::$app->getRequest();
-
-        if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
-            $config['loginUrl'] = UrlHelper::siteUrl($generalConfig->getLoginPath());
-        } else {
-            $config['loginUrl'] = UrlHelper::cpUrl('login');
-        }
-
-        $config['authTimeout'] = $generalConfig->userSessionDuration ?: null;
-
-        // Set the state-based property names
-        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
-        $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
-        $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
-        $config['idParam'] = $stateKeyPrefix.'__id';
-        $config['authTimeoutParam'] = $stateKeyPrefix.'__expire';
-        $config['absoluteAuthTimeoutParam'] = $stateKeyPrefix.'__absoluteExpire';
-        $config['returnUrlParam'] = $stateKeyPrefix.'__returnUrl';
-
-        parent::__construct($config);
-    }
-
-    /**
      * Initializes the application component.
      */
     public function init()
