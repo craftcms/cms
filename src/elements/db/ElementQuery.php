@@ -984,9 +984,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function count($q = '*', $db = null)
     {
-        $cachedResult = $this->getCachedResult();
-
-        if ($cachedResult !== null) {
+        // Cached?
+        if (($cachedResult = $this->getCachedResult()) !== null) {
             return count($cachedResult);
         }
 
@@ -1005,9 +1004,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function all($db = null)
     {
-        $cachedResult = $this->getCachedResult();
-
-        if ($cachedResult !== null) {
+        // Cached?
+        if (($cachedResult = $this->getCachedResult()) !== null) {
             return $cachedResult;
         }
 
