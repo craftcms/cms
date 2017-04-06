@@ -589,7 +589,7 @@ class View extends \yii\web\View
     public function registerJs($js, $position = self::POS_READY, $key = null)
     {
         // Trim any whitespace and ensure it ends with a semicolon.
-        $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B;"), ';');
+        $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
         parent::registerJs($js, $position, $key);
     }
 
