@@ -40,6 +40,7 @@ Craft CMS 3.0 Working Changelog
 - #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
 - #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
 - #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
+- #1602: Fixed incorrectly named Asset permissions.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

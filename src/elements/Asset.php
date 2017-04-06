@@ -200,16 +200,16 @@ class Asset extends Element
 
             // Rename File
             if (
-                $userSessionService->checkPermission('removeFromVolume:'.$volume->id)
+                $userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)
                 &&
-                $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
+                $userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)
             ) {
                 $actions[] = RenameFile::class;
                 $actions[] = EditImage::class;
             }
 
             // Replace File
-            if ($userSessionService->checkPermission('uploadToVolume:'.$volume->id)) {
+            if ($userSessionService->checkPermission('saveAssetInVolume:'.$volume->id)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -222,7 +222,7 @@ class Asset extends Element
             );
 
             // Delete
-            if ($userSessionService->checkPermission('removeFromVolume:'.$volume->id)) {
+            if ($userSessionService->checkPermission('deleteFilesAndFoldersInVolume:'.$volume->id)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -320,7 +320,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('saveAssetInVolume:'.$folder->volumeId)
             ]
         ];
 
@@ -572,7 +572,7 @@ class Asset extends Element
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission(
-            'uploadToVolume:'.$this->volumeId
+            'saveAssetInVolume:'.$this->volumeId
         );
     }
 

@@ -465,7 +465,7 @@ class AssetsController extends Controller
         // in target Volume and save Assets in target Volume.
         $this->_requirePermissionByFolder('deleteFilesAndFolders',
             $folderToMove);
-        $this->_requirePermissionByFolder('createSubfoldersInAssetSource',
+        $this->_requirePermissionByFolder('createFoldersInVolume',
             $destinationFolder);
         $this->_requirePermissionByFolder('saveAssetInVolume',
             $destinationFolder);
@@ -696,7 +696,7 @@ class AssetsController extends Controller
             $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
 
             $focal = null;
-            // TODO this is not being set properly if image is being cropped. 
+            // TODO this is not being set properly if image is being cropped.
             if ($focalPoint) {
                 $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
                 $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
