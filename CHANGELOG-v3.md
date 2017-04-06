@@ -5,7 +5,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\console\User::getId()`.
+- Added `craft\helpers\ArrayHelper::filterByValue()`.
 - Added `craft\helpers\Console`.
+- Added the `|filterByValue` Twig filter.
 - Added `Craft.selectFullValue()`.
 
 ### Changed
