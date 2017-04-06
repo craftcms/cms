@@ -8,8 +8,12 @@ return [
             'class' => craft\web\Request::class,
             'enableCookieValidation' => true,
         ],
-        'response' => craft\web\Response::class,
-        'session' => craft\web\Session::class,
+        'response' => [
+            'class' => craft\web\Response::class,
+        ],
+        'session' => [
+            'class' => craft\web\Session::class,
+        ],
         'urlManager' => [
             'class' => craft\web\UrlManager::class,
             'enablePrettyUrl' => true,

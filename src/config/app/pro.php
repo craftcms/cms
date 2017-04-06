@@ -2,6 +2,8 @@
 
 return [
     'components' => [
-        'userGroups' => craft\services\UserGroups::class,
+        'userGroups' => [
+            'class' => craft\services\UserGroups::class,
+        ],
     ],
 ];
