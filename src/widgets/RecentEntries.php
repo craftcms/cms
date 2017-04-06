@@ -227,6 +227,10 @@ class RecentEntries extends Widget
      */
     private function _getTargetSiteId()
     {
+        if (!Craft::$app->getIsMultiSite()) {
+            return $this->siteId;
+        }
+
         // Make sure that the user is actually allowed to edit entries in the current site. Otherwise grab entries in
         // their first editable site.
 

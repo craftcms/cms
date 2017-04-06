@@ -45,6 +45,7 @@ Craft CMS 3.0 Working Changelog
 - #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
 - #1602: Fixed incorrectly named Asset permissions.
 - #1597: Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation.
+- #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
