@@ -313,7 +313,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     /**
      * @inheritdoc
      *
-     * @return ElementInterface|null The resulting element.
+     * @return ElementInterface|null|false The resulting element.
      */
     public function one($db = null);
 
