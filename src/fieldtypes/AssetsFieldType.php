@@ -56,7 +56,7 @@ class AssetsFieldType extends BaseElementFieldType
      *
      * @var array
      */
-	private $_prepValueFromPostResults = null;
+	private $_prepValueFromPostResults = [];
 
 	// Public Methods
 	// =========================================================================
@@ -150,11 +150,13 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function prepValueFromPost($value)
 	{
-	    if ($this->_prepValueFromPostResults !== null) {
-	        return $this->_prepValueFromPostResults;
-        }
-
-        $this->_prepValueFromPostResults = array();
+		if (
+			($hash = $this->element ? spl_object_hash($this->element) : null) &&
+			isset($this->_prepValueFromPostResults[$hash])
+		)
+		{
+			return $this->_prepValueFromPostResults[$hash];
+		}
 
 		$dataFiles = array();
 
@@ -295,7 +297,10 @@ class AssetsFieldType extends BaseElementFieldType
 		// so they make it into entry draft/version data
 		$this->element->setRawPostContent($this->model->handle, $fileIds);
 
-		$this->_prepValueFromPostResults = $fileIds;
+		if ($hash)
+		{
+			$this->_prepValueFromPostResults[$hash] = $fileIds;
+		}
 
 		return $fileIds;
 	}

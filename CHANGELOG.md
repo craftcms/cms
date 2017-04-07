@@ -4,6 +4,7 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Fixed
+- Fixed a bug where the first value of an Assets field within a Matrix field was getting set on all subsequent instances of that Assets field.
 - Fixed a bug where Craft would not specify which required PHP extensions were missing when attempting to install.
 
 ## 2.6.2969 - 2017-04-07
