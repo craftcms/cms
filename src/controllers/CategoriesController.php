@@ -422,6 +422,7 @@ class CategoriesController extends Controller
         $this->requirePostRequest();
 
         $category = $this->_getCategoryModel();
+        $request = Craft::$app->getRequest();
 
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
@@ -431,7 +432,7 @@ class CategoriesController extends Controller
 
         // Save the category
         if (!Craft::$app->getElements()->saveElement($category)) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
                     'errors' => $category->getErrors(),
@@ -448,7 +449,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true,
                 'id' => $category->id,
