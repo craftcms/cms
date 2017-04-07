@@ -55,10 +55,22 @@ class Feed extends Widget
     /**
      * @var int The maximum number of feed items to display
      */
-    public $limit = 5;
+    public $limit;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (!$this->limit) {
+            $this->limit = 5;
+        }
+    }
 
     /**
      * @inheritdoc

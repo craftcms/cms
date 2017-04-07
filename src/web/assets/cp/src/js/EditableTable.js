@@ -297,18 +297,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             }
 
             setTimeout(function() {
-                var val = $textarea.val();
-
-                // Does the browser support setSelectionRange()?
-                if ($textarea[0].setSelectionRange !== undefined) {
-                    // Select the whole value
-                    var length = val.length * 2;
-                    $textarea[0].setSelectionRange(0, length);
-                }
-                else {
-                    // Refresh the value to get the cursor positioned at the end
-                    $textarea.val(val);
-                }
+                Craft.selectFullValue($textarea);
             }, 0);
         },
 

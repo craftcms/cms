@@ -2150,11 +2150,11 @@ body.rtl #container .topbar .show-nav { margin-right: -24px; }
 body.focused #page-header.fixed { position: absolute; }
 
 @media only screen and (max-width: 992px) { #page-header.fixed { left: 0; } }
-#page-header #page-title { flex-grow: 1; -ms-flex: 1; color: #da5a47; }
+#page-header #page-title { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; flex-grow: 1; -ms-flex: 1; }
 
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis; }
 
-#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; }
+#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; color: #da5a47; }
 body.ltr #page-header #page-title h1 { margin-right: 7px; }
 body.rtl #page-header #page-title h1 { margin-left: 7px; }
 

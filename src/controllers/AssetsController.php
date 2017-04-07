@@ -80,13 +80,13 @@ class AssetsController extends Controller
             $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
             if (empty($folderId)) {
-                $field = Craft::$app->getFields()->getFieldById($fieldId);
+                $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
                 if (!($field instanceof AssetsField)) {
                     throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
+                $element = $elementId ? Craft::$app->getElements()->getElementById((int)$elementId) : null;
                 $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
@@ -128,7 +128,8 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'filename' => $asset->filename
+                'filename' => $asset->filename,
+                'assetId' => $asset->id
             ]);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
@@ -465,7 +466,7 @@ class AssetsController extends Controller
         // in target Volume and save Assets in target Volume.
         $this->_requirePermissionByFolder('deleteFilesAndFolders',
             $folderToMove);
-        $this->_requirePermissionByFolder('createSubfoldersInAssetSource',
+        $this->_requirePermissionByFolder('createFoldersInVolume',
             $destinationFolder);
         $this->_requirePermissionByFolder('saveAssetInVolume',
             $destinationFolder);
@@ -613,104 +614,124 @@ class AssetsController extends Controller
         $assets = Craft::$app->getAssets();
         $request = Craft::$app->getRequest();
 
-        $assetId = $request->getRequiredBodyParam('assetId');
-        $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
-        $imageRotation = $request->getRequiredBodyParam('imageRotation');
-        $replace = $request->getRequiredBodyParam('replace');
-        $cropData = $request->getRequiredBodyParam('cropData');
-        $focalPoint = $request->getBodyParam('focalPoint');
-        $imageDimensions = $request->getBodyParam('imageDimensions');
-        $flipData = $request->getBodyParam('flipData');
-        $zoom = $request->getBodyParam('zoom', 1);
+        try {
+            $assetId = $request->getRequiredBodyParam('assetId');
+            $viewportRotation = (int)$request->getRequiredBodyParam('viewportRotation');
+            $imageRotation = (float)$request->getRequiredBodyParam('imageRotation');
+            $replace = $request->getRequiredBodyParam('replace');
+            $cropData = $request->getRequiredBodyParam('cropData');
+            $focalPoint = $request->getBodyParam('focalPoint');
+            $imageDimensions = $request->getBodyParam('imageDimensions');
+            $flipData = $request->getBodyParam('flipData');
+            $zoom = (float)$request->getBodyParam('zoom', 1);
 
-        $asset = $assets->getAssetById($assetId);
+            $asset = $assets->getAssetById($assetId);
 
-        if (empty($asset)) {
-            throw new BadRequestHttpException('The Asset cannot be found');
-        }
+            if (empty($asset)) {
+                throw new BadRequestHttpException('The Asset cannot be found');
+            }
 
-        $folder = $asset->getFolder();
+            $folder = $asset->getFolder();
 
-        if (empty($folder)) {
-            throw new BadRequestHttpException('The folder cannot be found');
-        }
+            if (empty($folder)) {
+                throw new BadRequestHttpException('The folder cannot be found');
+            }
 
-        // Check the permissions to save in the resolved folder.
-        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
+            // Check the permissions to save in the resolved folder.
+            $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
 
-        // If replacing, check for permissions to replace existing Asset files.
-        if ($replace) {
-            $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
-        }
+            // If replacing, check for permissions to replace existing Asset files.
+            if ($replace) {
+                $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+            }
 
-        // Verify parameter adequacy
-        if (!in_array($viewportRotation, [0, 90, 180, 270], false)) {
-            throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
-        }
+            // Verify parameter adequacy
+            if (!in_array($viewportRotation, [0, 90, 180, 270], false)) {
+                throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
+            }
 
-        if (
-            is_array($cropData) &&
-            array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))
-        ) {
-            throw new BadRequestHttpException('Invalid cropping parameters passed');
-        }
+            if (
+                is_array($cropData) &&
+                array_diff(['offsetX', 'offsetY', 'height', 'width'], array_keys($cropData))
+            ) {
+                throw new BadRequestHttpException('Invalid cropping parameters passed');
+            }
 
-        $imageCopy = $asset->getCopyOfFile();
+            $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
+            $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
+            $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
 
-        $imageSize = Image::imageSize($imageCopy);
+            $imageCopy = $asset->getCopyOfFile();
 
-        /** @var Raster $image */
-        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
-        list($originalImageWidth, $originalImageHeight) = $imageSize;
+            $imageSize = Image::imageSize($imageCopy);
 
-        if (!empty($flipData['x'])) {
-            $image->flipHorizontally();
-        }
+            /** @var Raster $image */
+            $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+            list($originalImageWidth, $originalImageHeight) = $imageSize;
 
-        if (!empty($flipData['y'])) {
-            $image->flipVertically();
-        }
+            if ($imageFlipped) {
+                if (!empty($flipData['x'])) {
+                    $image->flipHorizontally();
+                }
 
-        $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+                if (!empty($flipData['y'])) {
+                    $image->flipVertically();
+                }
+            }
 
-        $image->rotate($imageRotation + $viewportRotation);
+            if ($zoom !== 1.0) {
+                $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+            }
 
-        $imageCenterX = $image->getWidth() / 2;
-        $imageCenterY = $image->getHeight() / 2;
+            if ($imageRotated) {
+                $image->rotate($imageRotation + $viewportRotation);
+            }
 
-        $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
-        $width = $cropData['width'] * $zoom * $adjustmentRatio;
-        $height = $cropData['height'] * $zoom * $adjustmentRatio;
-        $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width / 2;
-        $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
+            $imageCenterX = $image->getWidth() / 2;
+            $imageCenterY = $image->getHeight() / 2;
 
-        $focal = null;
-        if ($focalPoint) {
-            $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
-            $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
-            $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
+            $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
+            $width = $cropData['width'] * $zoom * $adjustmentRatio;
+            $height = $cropData['height'] * $zoom * $adjustmentRatio;
+            $x = $imageCenterX + ($cropData['offsetX'] * $zoom * $adjustmentRatio) - $width / 2;
+            $y = $imageCenterY + ($cropData['offsetY'] * $zoom * $adjustmentRatio) - $height / 2;
 
-            $focal = number_format($fx / $originalImageWidth, 4).';'.number_format($fy / $originalImageHeight, 4);
-        }
+            $focal = null;
+            // TODO this is not being set properly if image is being cropped.
+            if ($focalPoint) {
+                $adjustmentRatio = min($originalImageWidth / $focalPoint['imageDimensions']['width'], $originalImageHeight / $focalPoint['imageDimensions']['height']);
+                $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
+                $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
 
-        $image->crop($x, $x + $width, $y, $y + $height);
+                $focal = number_format($fx / $originalImageWidth, 4).';'.number_format($fy / $originalImageHeight, 4);
+            }
 
-        $image->saveAs($imageCopy);
+            if ($imageCropped) {
+                $image->crop($x, $x + $width, $y, $y + $height);
+            }
 
-        if ($replace) {
-            $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
-        } else {
-            $newAsset = new Asset();
-            $newAsset->avoidFilenameConflicts = true;
-            $newAsset->setScenario(Asset::SCENARIO_CREATE);
+            if ($imageCropped || $imageRotated || $imageFlipped) {
+                $image->saveAs($imageCopy);
+            }
 
-            $newAsset->tempFilePath = $imageCopy;
-            $newAsset->filename = $asset->filename;
-            $newAsset->newFolderId = $folder->id;
-            $newAsset->volumeId = $folder->volumeId;
-            $newAsset->focalPoint = $focal;
+            if ($replace) {
+                $asset->focalPoint = $focal;
+                $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+            } else {
+                $newAsset = new Asset();
+                $newAsset->avoidFilenameConflicts = true;
+                $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
-            Craft::$app->getElements()->saveElement($newAsset);
+                $newAsset->tempFilePath = $imageCopy;
+                $newAsset->filename = $asset->filename;
+                $newAsset->newFolderId = $folder->id;
+                $newAsset->volumeId = $folder->volumeId;
+                $newAsset->focalPoint = $focal;
+
+                Craft::$app->getElements()->saveElement($newAsset);
+            }
+        } catch (\Exception $exception) {
+            return $this->asErrorJson($exception->getMessage());
         }
 
         return $this->asJson(['success' => true]);

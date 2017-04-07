@@ -2,12 +2,14 @@
 
 {{ textField({
     label: "File System Path"|t('app'),
-    instructions: "The path to the volume’s directory on the file system."|t('app'),
+    instructions: "The path to the volume’s directory on the file system. An absolute path ({ex}) is recommended."|t('app', {
+        ex: '“`/path/to/folder`”'
+    }),
     id: 'path',
     class: 'ltr',
     name: 'path',
     value: volume.path,
     errors: volume.getErrors('path'),
     required: true,
-    placeholder: "/path/to/folder/"|t('app')
+    placeholder: "/path/to/folder"|t('app')
 }) }}

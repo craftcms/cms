@@ -85,7 +85,8 @@ class EditImage extends ElementAction
             var settings = {
                 onSave: function () {
                     Craft.elementIndex.updateElements();
-                }
+                },
+                allowDegreeFractions: Craft.isImagick,
             };
             
             new Craft.AssetImageEditor(element.id, settings);

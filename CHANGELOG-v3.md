@@ -1,6 +1,63 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.10 - 2017-04-07
+
+### Added
+- Added `craft\console\User::getId()`.
+- Added `craft\controllers\ElementsController::actionGetElementHtml()`
+- Added `craft\helpers\ArrayHelper::filterByValue()`.
+- Added `craft\helpers\Console`.
+- Added `craft\services\Elements::duplicateElement()`.
+- Added the `|filterByValue` Twig filter.
+- Added `Craft.selectFullValue()`.
+
+### Changed
+- `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
+- Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
+- Improved the behavior of auto-generated text inputs (like Handle fields).
+- #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
+- The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
+- `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
+- #1580: Console requests now report if there are any database connection issues.
+- `craft\elements\db\ElementQuery::one()` now returns the first cached element if the element query has any results cached on it.
+- `craft\base\SavableComponent::settingsAttributes()` now returns all public, non-static properties on any parent classes in addition to the called class, so long as they weren’t defined in an abstract class.
+- `craft\controllers\AssetsController::uploadFile()` now also returns `assetId` on a successful upload.
+- Renamed `craft\base\Element::SCENARIO_SITE_PROPAGATION` to `SCENARIO_ESSENTIALS`.
+
+### Removed
+- Removed `craft\base\TaskInterface::getDescription()`.
+- Removed `craft\db\Connection::DRIVER_MYSQL`. Use `craft\config\DbConfig::DRIVER_MYSQL` instead.
+- Removed `craft\db\Connection::DRIVER_PGSQL`. Use `craft\config\DbConfig::DRIVER_PGSQL` instead.
+- Removed `craft\helpers\StringHelper::ensureEndsWith()`. Use `ensureRight()` instead.
+- Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
+
+### Fixed
+- #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
+- #1305: Fixed an issue where focal point would not be tracked correctly under certain circumstances.
+- #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
+- #1572: Fixed a bug where it was not possible to install plugins manually.
+- Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
+- #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
+- Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
+- Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
+- Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
+- #1565: Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set.
+- #1567: Fixed a PHP error that could occur after a task failure.
+- #1566: Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled.
+- #1573: Fixed a PHP error that occurred when saving a new Structure section.
+- #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
+- #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
+- #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
+- #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
+- #1602: Fixed incorrectly named Asset permissions.
+- #1597: Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation.
+- #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
+- #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
+- #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
+- Fixed a bug where it was not possible to trigger a prompt when uploading an Asset with a conflicting name.
+- #1523: Fixed a bug where clicking “Save as a new entry” on an Edit Entry page, or “Save as a new category” on an Edit Category page, would only use the current site’s content, discarding the title and any translatable custom field values from other sites.
+
 ## 3.0.0-beta.9 - 2017-03-27
 
 ### Added

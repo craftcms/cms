@@ -34,19 +34,6 @@ class User extends Component
     // =========================================================================
 
     /**
-     * Returns a value indicating whether the user is a guest (not authenticated).
-     *
-     * @return bool Whether the current user is a guest.
-     */
-    public function getIsGuest(): bool
-    {
-        return $this->getIdentity() === null;
-    }
-
-    // Authorization
-    // -------------------------------------------------------------------------
-
-    /**
      * Returns whether the current user is an admin.
      *
      * @return bool Whether the current user is an admin.
@@ -99,5 +86,28 @@ class User extends Component
         } else {
             throw new InvalidValueException('The identity object must implement IdentityInterface.');
         }
+    }
+
+    /**
+     * Returns whether the current user is a guest (not authenticated).
+     *
+     * @return bool Whether the current user is a guest.
+     */
+    public function getIsGuest(): bool
+    {
+        return $this->getIdentity() === null;
+    }
+
+    /**
+     * Returns the current user’s ID, if they are logged in.
+     *
+     * @return int|null
+     * @see getIdentity()
+     */
+    public function getId()
+    {
+        $identity = $this->getIdentity();
+
+        return $identity !== null ? $identity->getId() : null;
     }
 }

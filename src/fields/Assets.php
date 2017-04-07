@@ -437,7 +437,7 @@ class Assets extends BaseRelationField
     protected function inputSources(ElementInterface $element = null)
     {
         $folderId = $this->_determineUploadFolderId($element, false);
-        Craft::$app->getSession()->authorize('uploadToVolume:'.$folderId);
+        Craft::$app->getSession()->authorize('saveAssetInVolume:'.$folderId);
 
         if ($this->useSingleFolder) {
             $folderPath = 'folder:'.$folderId;

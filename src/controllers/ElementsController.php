@@ -197,6 +197,24 @@ class ElementsController extends BaseElementsController
         ]);
     }
 
+    /**
+     * Returns the HTML for a single element
+     *
+     * @return Response
+     */
+    public function actionGetElementHtml(): Response
+    {
+        $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
+        $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+
+        $view = $this->getView();
+        $html = $view->renderTemplate('_elements/element', array('element' => $element));
+        $headHtml = $view->getHeadHtml();
+
+        return $this->asJson(array('html' => $html, 'headHtml' => $headHtml));
+    }
+
     // Private Methods
     // =========================================================================
 

@@ -157,6 +157,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
+    public function __construct(array $config = [])
+    {
+        // If useTargetSite is in here, but empty, then disregard targetSiteId
+        if (array_key_exists('useTargetSite', $config)) {
+            if (empty($config['useTargetSite'])) {
+                unset($config['targetSiteId']);
+            }
+            unset($config['useTargetSite']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
@@ -457,15 +473,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @inheritdoc
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
-    {
+
+        /** @var ElementQuery $value */    {
         $value = $element->getFieldValue($this->handle);
 
-        if ($value instanceof ElementQueryInterface && $value->id !== null) {
-            /** @var ElementQuery $value */
-            $value = $value->id ?: [];
-            /** @var int|int[]|false|null $value */
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        // $id will be set if we're saving new relations
+        if ($value->id !== null) {
+            $targetIds = $value->id ?: [];
+        } else {
+            $targetIds = $value->ids();
         }
+
+        /** @var int|int[]|false|null $targetIds */
+        Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
         parent::afterElementSave($element, $isNew);
     }
@@ -507,32 +527,47 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var Element $class */
         $class = static::elementType();
 
-        if (Craft::$app->getIsMultiSite() && $class::isLocalized()) {
-            $siteOptions = [
-                ['label' => Craft::t('app', 'Same as source'), 'value' => null]
-            ];
-
-            foreach (Craft::$app->getSites()->getAllSites() as $site) {
-                $siteOptions[] = [
-                    'label' => Craft::t('site', $site->name),
-                    'value' => $site->id
-                ];
-            }
-
-            return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
-                [
-                    [
-                        'label' => Craft::t('app', 'Target Site'),
-                        'instructions' => Craft::t('app', 'Which site do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
-                        'id' => 'targetSiteId',
-                        'name' => 'targetSiteId',
-                        'options' => $siteOptions,
-                        'value' => $this->targetSiteId
-                    ]
-                ]);
+        if (!Craft::$app->getIsMultiSite() || !$class::isLocalized()) {
+            return null;
         }
 
-        return null;
+        $type = StringHelper::toLowerCase(static::displayName());
+        $showTargetSite = !empty($this->targetSiteId);
+
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
+            [
+                [
+                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
+                    'name' => 'useTargetSite',
+                    'checked' => $showTargetSite,
+                    'toggle' => 'target-site-container'
+                ]
+            ]) .
+            '<div id="target-site-container"'.(!$showTargetSite ? ' class="hidden"' : '').'>';
+
+        $siteOptions = [];
+
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteOptions[] = [
+                'label' => Craft::t('site', $site->name),
+                'value' => $site->id
+            ];
+        }
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
+            [
+                [
+                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $type]),
+                    'id' => 'targetSiteId',
+                    'name' => 'targetSiteId',
+                    'options' => $siteOptions,
+                    'value' => $this->targetSiteId
+                ]
+            ]);
+
+        $html .= '</div>';
+
+        return $html;
     }
 
     /**

@@ -440,7 +440,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var currentWidth = this.image.width;
                 var newWidth = this.getScaledImageDimensions().width * this.zoomRatio;
-                var ratio = newWidth / currentWidth;
+                var ratio = newWidth / currentWidth / this.scaleFactor;
 
                 offsetX -= (previousEditorDimensions.width - this.editorWidth) / 2;
                 offsetY -= (previousEditorDimensions.height - this.editorHeight) / 2;
@@ -638,8 +638,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             } else if (this.focalPoint) {
                 var zoomFactor = 1 / this.zoomRatio;
                 this.focalPointState = {
-                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor,
-                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor,
+                    offsetX: (this.focalPoint.left - this.image.left) * zoomFactor / this.scaleFactor,
+                    offsetY: (this.focalPoint.top - this.image.top) * zoomFactor / this.scaleFactor,
                     imageDimensions: this.getScaledImageDimensions()
                 };
             }
@@ -764,7 +764,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
-                            // TODO revisit this after beta goes live
+
                             // Let me just cheat a little and fix my incorrectly positioned focal point.
                             this.straighten(this.straighteningInput);
                             this.canvas.add(this.focalPoint);
@@ -878,7 +878,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var previousAngle = this.image.angle;
 
-                this.imageStraightenAngle = parseFloat(slider.value) % 360;
+                this.imageStraightenAngle = (this.settings.allowDegreeFractions ? parseFloat(slider.value) : Math.round(slider.value)) % 360;
 
                 // Straighten the image
                 this.image.set({
@@ -1101,8 +1101,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             if (this.cropperState) {
                 var cropData = {};
 
-                // Let's keep all the image-editing state logic in JS and modify the data
-                // before sending it off.
                 cropData.height = this.cropperState.height;
                 cropData.width = this.cropperState.width;
                 cropData.offsetX = this.cropperState.offsetX;
@@ -1122,9 +1120,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             postData.flipData = this.flipData;
             postData.zoom = this.zoomRatio;
 
-            // TODO add some error-handling, perhaps
-            Craft.postActionRequest('assets/save-image', postData, function() {
+            Craft.postActionRequest('assets/save-image', postData, function(data) {
                 this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
                 this.onSave();
                 this.hide();
             }.bind(this));
@@ -1295,7 +1298,48 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Switch to crop mode.
          */
         enableCropMode: function() {
-            this._setEditorMode('crop');
+            var imageDimensions = this.getScaledImageDimensions();
+            this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
+
+            var viewportProperties = {
+                width: this.editorWidth,
+                height: this.editorHeight
+            };
+
+            var imageProperties = {
+                width: imageDimensions.width * this.zoomRatio,
+                height: imageDimensions.height * this.zoomRatio,
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2
+            };
+
+            var callback = function() {
+                this._setFittedImageVerticeCoordinates();
+
+                // Restore cropper
+                var state = this.cropperState;
+                var scaledImageDimensions = this.getScaledImageDimensions();
+                var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
+
+                // Restore based on the stored information
+                var cropperData = {
+                    left: this.image.left + (state.offsetX * sizeFactor * this.zoomRatio),
+                    top: this.image.top + (state.offsetY * sizeFactor * this.zoomRatio),
+                    width: state.width * sizeFactor * this.zoomRatio,
+                    height: state.height * sizeFactor * this.zoomRatio
+                };
+
+                this._showCropper(cropperData);
+
+                if (this.focalPoint) {
+                    sizeFactor = scaledImageDimensions.width / this.focalPointState.imageDimensions.width;
+                    this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
+                    this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                    this.canvas.add(this.focalPoint);
+                }
+            }.bind(this);
+
+            this._editorModeTransition(callback, imageProperties, viewportProperties);
         },
 
         /**
@@ -1303,26 +1347,64 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         disableCropMode: function() {
 
-            this._setEditorMode('regular');
+            var viewportProperties = {};
+
+            var imageProperties = {
+                left: this.editorWidth / 2,
+                top: this.editorHeight / 2
+            };
+
+            this._hideCropper();
+            var targetZoom = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
+            var inverseZoomFactor = targetZoom / this.zoomRatio;
+            this.zoomRatio = targetZoom;
+
+            var offsetX = this.clipper.left - this.image.left;
+            var offsetY = this.clipper.top - this.image.top;
+
+            var imageOffsetX = offsetX * inverseZoomFactor;
+            var imageOffsetY = offsetY * inverseZoomFactor;
+            imageProperties.left = (this.editorWidth / 2) - imageOffsetX;
+            imageProperties.top = (this.editorHeight / 2) - imageOffsetY;
+
+            // Calculate the cropper dimensions after all the zooming
+            viewportProperties.height = this.clipper.height * inverseZoomFactor;
+            viewportProperties.width = this.clipper.width * inverseZoomFactor;
+
+            if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper)) {
+                this.focalPoint.set({opacity: 1});
+                var state = this.focalPointState;
+                state.offsetX = 0;
+                state.offsetY = 0;
+                this.storeFocalPointState(state);
+                this.toggleFocalPoint();
+            }
+
+            var callback = function() {
+                // Reposition focal point correctly
+                if (this.focalPoint) {
+                    var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+                    this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
+                    this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
+                    this.canvas.add(this.focalPoint);
+                }
+            }.bind(this);
+
+            this._editorModeTransition(callback, imageProperties, viewportProperties);
         },
 
         /**
-         * Switch the editor mode.
-         * @param mode
+         * Transition between cropping end editor modes
+         *
+         * @param callback
+         * @param imageProperties
+         * @param viewportProperties
+         * @private
          */
-        _setEditorMode: function(mode) {
-            // TODO perhaps move more of this code out to disable/enableCropMode methods to clean this up.
+        _editorModeTransition: function (callback, imageProperties, viewportProperties) {
+
             if (!this.animationInProgress) {
                 this.animationInProgress = true;
-
-                var imageDimensions = this.getScaledImageDimensions();
-                var viewportDimensions = $.extend({}, imageDimensions);
-                var imageCoords = {
-                    left: this.editorWidth / 2,
-                    top: this.editorHeight / 2
-                };
-
-                var callback = $.noop;
 
                 // Without this it looks semi-broken during animation
                 if (this.focalPoint) {
@@ -1330,84 +1412,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this.renderImage();
                 }
 
-                if (mode == 'crop') {
-                    this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
-                    viewportDimensions = {
-                        width: this.editorWidth,
-                        height: this.editorHeight
-                    };
-
-                    callback = function() {
-                        this._setFittedImageVerticeCoordinates();
-
-                        // Restore cropper
-                        var state = this.cropperState;
-                        var scaledImageDimensions = this.getScaledImageDimensions();
-                        var sizeFactor = scaledImageDimensions.width / state.imageDimensions.width;
-
-                        // Restore based on the stored information
-                        var cropperData = {
-                            left: this.image.left + (state.offsetX * sizeFactor * this.zoomRatio),
-                            top: this.image.top + (state.offsetY * sizeFactor * this.zoomRatio),
-                            width: state.width * sizeFactor * this.zoomRatio,
-                            height: state.height * sizeFactor * this.zoomRatio
-                        };
-
-                        this._showCropper(cropperData);
-
-                        if (this.focalPoint) {
-                            sizeFactor = scaledImageDimensions.width / this.focalPointState.imageDimensions.width;
-                            this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
-                            this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
-                            this.canvas.add(this.focalPoint);
-                        }
-                    }.bind(this);
-                } else {
-
-                    this._hideCropper();
-                    var targetZoom = this.getZoomToCoverRatio(this.getScaledImageDimensions()) * this.scaleFactor;
-                    var inverseZoomFactor = targetZoom / this.zoomRatio;
-                    this.zoomRatio = targetZoom;
-
-                    var offsetX = this.clipper.left - this.image.left;
-                    var offsetY = this.clipper.top - this.image.top;
-
-                    var imageOffsetX = offsetX * inverseZoomFactor;
-                    var imageOffsetY = offsetY * inverseZoomFactor;
-                    imageCoords.left = (this.editorWidth / 2) - imageOffsetX;
-                    imageCoords.top = (this.editorHeight / 2) - imageOffsetY;
-
-                    // Calculate the cropper dimensions after all the zooming
-                    viewportDimensions.height = this.clipper.height * inverseZoomFactor;
-                    viewportDimensions.width = this.clipper.width * inverseZoomFactor;
-
-                    if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper)) {
-                        this.focalPoint.set({opacity: 1});
-                        var state = this.focalPointState;
-                        state.offsetX = 0;
-                        state.offsetY = 0;
-                        this.storeFocalPointState(state);
-                        this.toggleFocalPoint();
-                    }
-
-                    callback = function() {
-                        // Reposition focal point correctly
-                        if (this.focalPoint) {
-                            var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
-                            this.focalPoint.left = this.image.left + (this.focalPointState.offsetX * sizeFactor * this.zoomRatio);
-                            this.focalPoint.top = this.image.top + (this.focalPointState.offsetY * sizeFactor * this.zoomRatio);
-                            this.canvas.add(this.focalPoint);
-                        }
-                    }.bind(this);
-                }
-
-                // Animate image and viewport
-                this.image.animate({
-                    width: imageDimensions.width * this.zoomRatio,
-                    height: imageDimensions.height * this.zoomRatio,
-                    left: imageCoords.left,
-                    top: imageCoords.top
-                }, {
+                this.image.animate(imageProperties, {
                     onChange: this.canvas.renderAll.bind(this.canvas),
                     duration: this.settings.animationDuration,
                     onComplete: function() {
@@ -1417,10 +1422,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     }.bind(this)
                 });
 
-                this.viewport.animate({
-                    width: viewportDimensions.width,
-                    height: viewportDimensions.height
-                }, {
+                this.viewport.animate(viewportProperties, {
                     duration: this.settings.animationDuration
                 });
             }
@@ -2244,7 +2246,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         defaults: {
             animationDuration: 100,
             allowSavingAsNew: true,
-            onSave: $.noop
+            onSave: $.noop,
+            allowDegreeFractions: true
         }
     }
 );

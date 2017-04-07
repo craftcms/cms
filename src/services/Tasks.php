@@ -472,8 +472,14 @@ class Tasks extends Component
         foreach ($this->getAllTasks() as $task) {
             /** @var Task $task */
             $info = $task->toArray(['id', 'level', 'description', 'status', 'progress']);
+
             // Include how many seconds it's been since it was updated
-            $info['age'] = time() - $task->dateUpdated->getTimestamp();
+            if ($task->dateUpdated instanceof \DateTime) {
+                $info['age'] = time() - $task->dateUpdated->getTimestamp();
+            } else {
+                $info['age'] = 0;
+            }
+
             $taskInfo[] = $info;
         }
 

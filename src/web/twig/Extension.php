@@ -150,6 +150,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
+            new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
             new \Twig_SimpleFilter('hash', [$security, 'hashData']),
             new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
@@ -470,7 +471,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            StringHelper::ensureStartsWith($format, 'php:');
+            $format = StringHelper::ensureLeft($format, 'php:');
         }
 
         $date = \twig_date_converter($env, $date, $timezone);
@@ -498,7 +499,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         // Is this a custom PHP date format?
         if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
-            StringHelper::ensureStartsWith($format, 'php:');
+            $format = StringHelper::ensureLeft($format, 'php:');
         }
 
         $date = \twig_date_converter($env, $date, $timezone);

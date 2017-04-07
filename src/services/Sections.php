@@ -447,6 +447,8 @@ class Sections extends Component
                     ->where(['sectionId' => $section->id])
                     ->indexBy('siteId')
                     ->all();
+            } else {
+                $allOldSiteSettingsRecords = [];
             }
 
             foreach ($allSiteSettings as $siteId => $siteSettings) {
@@ -1111,7 +1113,7 @@ class Sections extends Component
 
         // (Re)save it with an updated title, slug, and URI format.
         $entry->title = $section->name;
-        $entry->setScenario(Element::SCENARIO_SITE_PROPAGATION);
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getElements()->saveElement($entry)) {
             throw new Exception('Couldn\'t save single entry due to validation errors on the slug and/or URI');
         }

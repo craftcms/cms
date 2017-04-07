@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\db\Query;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
@@ -65,6 +65,13 @@ class Search extends Component
      * @var
      */
     private $_groups;
+
+    /**
+     * @var int Because the `keywords` column in the search index table is a B-TREE index on Postgres,
+     *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
+     *          is a hard limit to truncate search index data for a single row in Postgres.
+     */
+    public $maxPostgresKeywordLength = 19562;
 
     // Public Methods
     // =========================================================================
@@ -249,6 +256,7 @@ class Search extends Component
     private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId = null, string $dirtyKeywords)
     {
         $attribute = StringHelper::toLowerCase($attribute);
+        $driver = Craft::$app->getDb()->getDriverName();
 
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -270,33 +278,19 @@ class Search extends Component
             $cleanKeywords = ' '.$cleanKeywords.' ';
         }
 
-        $cleanKeywordsLength = strlen($cleanKeywords);
+        if ($driver === DbConfig::DRIVER_PGSQL) {
+            $maxSize = $this->maxPostgresKeywordLength;
+        } else {
+            $maxSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
+        }
 
-        $maxDbColumnSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
-
-        if ($maxDbColumnSize !== null) {
-            // Give ourselves 10% wiggle room.
-            $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-            if ($cleanKeywordsLength > $maxDbColumnSize) {
-                // Time to truncate.
-                $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
-
-                // Make sure we don't cut off a word in the middle.
-                if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
-                    $position = mb_strrpos($cleanKeywords, ' ');
-
-                    if ($position) {
-                        $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
-                    }
-                }
-            }
+        if ($maxSize !== null && $maxSize !== false) {
+            $cleanKeywords = $this->_truncateSearchIndexKeywords($cleanKeywords, $maxSize);
         }
 
         $keywordColumns = ['keywords' => $cleanKeywords];
 
-        // PostgreSQL?
-        if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_PGSQL) {
+        if ($driver === DbConfig::DRIVER_PGSQL) {
             $keywordColumns['keywords_vector'] = $cleanKeywords;
         }
 
@@ -463,7 +457,7 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive) {
-                    if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
+                    if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_MYSQL) {
                         $keywords = '+'.$keywords;
                     }
                 }
@@ -539,7 +533,7 @@ class Search extends Component
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                if ($driver === Connection::DRIVER_PGSQL && $term->phrase) {
+                if ($driver === DbConfig::DRIVER_PGSQL && $term->phrase) {
                     $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
                 } else {
 
@@ -547,10 +541,10 @@ class Search extends Component
                     if ($this->_doFullTextSearch($keywords, $term)) {
                         if ($term->subRight) {
                             switch ($driver) {
-                                case Connection::DRIVER_MYSQL:
+                                case DbConfig::DRIVER_MYSQL:
                                     $keywords .= '*';
                                     break;
-                                case Connection::DRIVER_PGSQL:
+                                case DbConfig::DRIVER_PGSQL:
                                     $keywords .= ':*';
                                     break;
                                 default:
@@ -559,7 +553,7 @@ class Search extends Component
                         }
 
                         // Add quotes for exact match
-                        if ($driver === Connection::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
+                        if ($driver === DbConfig::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
                             $keywords = '"'.$keywords.'"';
                         }
 
@@ -673,10 +667,10 @@ class Search extends Component
     {
         $driver = Craft::$app->getDb()->getDriverName();
         switch ($driver) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
 
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 if ($andOr === ' AND ') {
                     $andOr = ' & ';
                 } else {
@@ -757,5 +751,36 @@ class Search extends Component
         $likeVal = !$exact ? '%'.$val.'%' : $val;
 
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", Craft::$app->getDb()->quoteColumnName('keywords_vector'), $ftVal, Craft::$app->getDb()->quoteColumnName('keywords'), $likeVal);
+    }
+
+    /**
+     * @param string $cleanKeywords The string of space separated search keywords.
+     * @param int    $maxSize       The maximum size the keywords string should be.
+     *
+     * @return string The (possibly) truncated keyword string.
+     */
+    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize) : string
+    {
+        $cleanKeywordsLength = strlen($cleanKeywords);
+
+        // Give ourselves a little wiggle room.
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        $maxSize = ceil($maxSize * 0.95);
+
+        if ($cleanKeywordsLength > $maxSize) {
+            // Time to truncate.
+            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxSize);
+
+            // Make sure we don't cut off a word in the middle.
+            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
+                $position = mb_strrpos($cleanKeywords, ' ');
+
+                if ($position) {
+                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                }
+            }
+        }
+
+        return $cleanKeywords;
     }
 }

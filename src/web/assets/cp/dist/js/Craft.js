@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-03-24 */
+/*! Craft 3.0.0 - 2017-04-07 */
 (function($){
 
 /** global: Craft */
@@ -220,6 +220,27 @@ $.extend(Craft,
             }
 
             return str;
+        },
+
+        /**
+         * Selects the full value of a given text input.
+         *
+         * @param input
+         */
+        selectFullValue: function(input) {
+            var $input = $(input);
+            var val = $input.val();
+
+            // Does the browser support setSelectionRange()?
+            if ($input[0].setSelectionRange !== undefined) {
+                // Select the whole value
+                var length = val.length * 2;
+                $input[0].setSelectionRange(0, length);
+            }
+            else {
+                // Refresh the value to get the cursor positioned at the end
+                $input.val(val);
+            }
         },
 
         /**
@@ -4542,6 +4563,12 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.$target.val(targetVal);
             this.$target.trigger('change');
+
+            // If the target already has focus, select its whole value to mimic
+            // the behavior if the value had already been generated and they just tabbed in
+            if (this.$target.is(':focus')) {
+                Craft.selectFullValue(this.$target);
+            }
         },
 
         generateTargetValue: function(sourceVal) {
@@ -5996,6 +6023,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     if (textStatus == 'success' && data.success) {
                         $targetFolder.text(data.newName);
+
+                        // If the current folder was renamed.
+                        if (this._getFolderIdFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderIdFromSourceKey($targetFolder.data('key'))) {
+                            this.updateElements();
+                        }
                     }
 
                     if (textStatus == 'success' && data.error) {
@@ -6165,7 +6197,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
             var options = {
-                url: Craft.getActionUrl('assets/express-upload'),
+                url: Craft.getActionUrl('assets/save-asset'),
                 dropZone: this.$container,
                 formData: {
                     fieldId: this.settings.fieldId,
@@ -6251,17 +6283,24 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         _onUploadComplete: function(event, data) {
             if (data.result.error) {
                 alert(data.result.error);
-            }
-            else {
-                var html = $(data.result.html);
-                Craft.appendHeadHtml(data.result.headHtml);
-                this.selectUploadedFile(Craft.getElementInfo(html));
-            }
+            } else {
+                var elementId = data.result.assetId;
+                
+                Craft.postActionRequest('elements/get-element-html', {elementId: elementId, siteId: this.settings.criteria.siteId}, function (data) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        var html = $(data.html);
+                        Craft.appendHeadHtml(data.headHtml);
+                        this.selectUploadedFile(Craft.getElementInfo(html));
+                    }
 
-            // Last file
-            if (this.uploader.isLastUpload()) {
-                this.progressBar.hideProgressBar();
-                this.$container.removeClass('uploading');
+                    // Last file
+                    if (this.uploader.isLastUpload()) {
+                        this.progressBar.hideProgressBar();
+                        this.$container.removeClass('uploading');
+                    }
+                }.bind(this));
             }
         },
 
@@ -9290,7 +9329,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 case 'cancel': {
                     Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus == 'success') {
-                            this.destroy();
+                            Craft.cp.trackTaskProgress(false);
                         }
                     }, this));
                 }
@@ -10277,18 +10316,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             }
 
             setTimeout(function() {
-                var val = $textarea.val();
-
-                // Does the browser support setSelectionRange()?
-                if ($textarea[0].setSelectionRange !== undefined) {
-                    // Select the whole value
-                    var length = val.length * 2;
-                    $textarea[0].setSelectionRange(0, length);
-                }
-                else {
-                    // Refresh the value to get the cursor positioned at the end
-                    $textarea.val(val);
-                }
+                Craft.selectFullValue($textarea);
             }, 0);
         },
 
@@ -16773,7 +16801,8 @@ Craft.Uploader = Garnish.Base.extend(
             allowedKinds: null,
             events: {},
             canAddMoreFiles: null,
-            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'},
+            paramName: 'assets-upload'
         }
     });
 

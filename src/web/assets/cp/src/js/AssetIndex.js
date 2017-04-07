@@ -1220,6 +1220,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                     if (textStatus == 'success' && data.success) {
                         $targetFolder.text(data.newName);
+
+                        // If the current folder was renamed.
+                        if (this._getFolderIdFromSourceKey(this.sourceSelect.$selectedItems.data('key')) === this._getFolderIdFromSourceKey($targetFolder.data('key'))) {
+                            this.updateElements();
+                        }
                     }
 
                     if (textStatus == 'success' && data.error) {

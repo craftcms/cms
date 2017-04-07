@@ -132,9 +132,10 @@ class AssetLocationValidator extends Validator
         $suggestedFilename = Craft::$app->getAssets()->getNameReplacementInFolder($filename, $folderId);
 
         if ($suggestedFilename !== $filename) {
+            $model->{$this->conflictingFilenameAttribute} = $filename;
+            
             if (!$this->avoidFilenameConflicts) {
                 $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
-                $model->{$this->conflictingFilenameAttribute} = $filename;
                 $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
 
                 return;

@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\db\Query;
 use DateTime;
 use yii\base\Exception;
@@ -66,13 +66,13 @@ class ChartHelper
         }
 
         switch ($databaseType) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 $yearSql = "YEAR([[{$dateColumn}]])";
                 $monthSql = "MONTH([[{$dateColumn}]])";
                 $daySql = "DAY([[{$dateColumn}]])";
                 $hourSql = "HOUR([[{$dateColumn}]])";
                 break;
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
                 $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
                 $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
@@ -85,10 +85,10 @@ class ChartHelper
         switch ($intervalUnit) {
             case 'year':
                 switch ($databaseType) {
-                    case Connection::DRIVER_MYSQL:
+                    case DbConfig::DRIVER_MYSQL:
                         $sqlDateFormat = '%Y-01-01';
                         break;
-                    case Connection::DRIVER_PGSQL:
+                    case DbConfig::DRIVER_PGSQL:
                         $sqlDateFormat = 'YYYY-01-01';
                         break;
                     default:
@@ -99,10 +99,10 @@ class ChartHelper
                 break;
             case 'month':
                 switch ($databaseType) {
-                    case Connection::DRIVER_MYSQL:
+                    case DbConfig::DRIVER_MYSQL:
                         $sqlDateFormat = '%Y-%m-01';
                         break;
-                    case Connection::DRIVER_PGSQL:
+                    case DbConfig::DRIVER_PGSQL:
                         $sqlDateFormat = 'YYYY-MM-01';
                         break;
                     default:
@@ -113,10 +113,10 @@ class ChartHelper
                 break;
             case 'day':
                 switch ($databaseType) {
-                    case Connection::DRIVER_MYSQL:
+                    case DbConfig::DRIVER_MYSQL:
                         $sqlDateFormat = '%Y-%m-%d';
                         break;
-                    case Connection::DRIVER_PGSQL:
+                    case DbConfig::DRIVER_PGSQL:
                         $sqlDateFormat = 'YYYY-MM-DD';
                         break;
                     default:
@@ -127,10 +127,10 @@ class ChartHelper
                 break;
             case 'hour':
                 switch ($databaseType) {
-                    case Connection::DRIVER_MYSQL:
+                    case DbConfig::DRIVER_MYSQL:
                         $sqlDateFormat = '%Y-%m-%d %H:00:00';
                         break;
-                    case Connection::DRIVER_PGSQL:
+                    case DbConfig::DRIVER_PGSQL:
                         $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
                         break;
                     default:
@@ -144,10 +144,10 @@ class ChartHelper
         }
 
         switch ($databaseType) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
                 break;
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
                 break;
             default:

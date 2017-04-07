@@ -9,7 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\helpers\App;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
@@ -95,10 +95,10 @@ class SystemReport extends Utility
         $driverName = $db->getDriverName();
 
         switch ($driverName) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 $driverName = 'MySQL';
                 break;
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 $driverName = 'PostgreSQL';
                 break;
         }

@@ -422,16 +422,27 @@ class CategoriesController extends Controller
         $this->requirePostRequest();
 
         $category = $this->_getCategoryModel();
+        $request = Craft::$app->getRequest();
 
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
+
+        // Are we duplicating the category?
+        if ($request->getBodyParam('duplicate')) {
+            // Swap $category with the duplicate
+            try {
+                $category = Craft::$app->getElements()->duplicateElement($category);
+            } catch (\Exception $e) {
+                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
+            }
+        }
 
         // Populate the category with post data
         $this->_populateCategoryModel($category);
 
         // Save the category
         if (!Craft::$app->getElements()->saveElement($category)) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
                     'errors' => $category->getErrors(),
@@ -448,7 +459,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true,
                 'id' => $category->id,

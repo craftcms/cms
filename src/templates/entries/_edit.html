@@ -127,7 +127,7 @@
                     <li><a class="formsubmit" data-action="entry-revisions/save-draft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
 
                     {% if not isSingle and entry.id %}
-                        <li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
+                        <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
                     {% endif %}
                 </ul>
             </div>

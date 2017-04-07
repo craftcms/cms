@@ -35,20 +35,24 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->description === null) {
+            $this->description = $this->defaultDescription();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         return [
             [['id', 'currentStep', 'totalSteps'], 'number', 'integerOnly' => true],
             [['status'], 'in', 'range' => [self::STATUS_PENDING, self::STATUS_RUNNING, self::STATUS_ERROR]],
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getDescription(): string
-    {
-        return $this->description ?: $this->defaultDescription();
     }
 
     /**

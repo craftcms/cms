@@ -378,11 +378,11 @@ class Raster extends Image
     /**
      * Rotates the image by the given degrees.
      *
-     * @param int $degrees
+     * @param float $degrees
      *
      * @return static Self reference
      */
-    public function rotate(int $degrees)
+    public function rotate(float $degrees)
     {
         $this->_image->rotate($degrees);
 

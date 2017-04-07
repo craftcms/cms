@@ -574,12 +574,8 @@
             },
 
             setFieldType: function(type) {
-                // Show or hide the translation settings depending on if this type has content
-                if ($.inArray(type, Craft.fieldTypesWithContent) != -1) {
-                    this.$translationSettingsContainer.removeClass('hidden');
-                } else {
-                    this.$translationSettingsContainer.addClass('hidden');
-                }
+                // Update the Translation Method settings
+                Craft.updateTranslationMethodSettings(type, this.$translationSettingsContainer);
 
                 if (this.selectedFieldType) {
                     this.initializedFieldTypeSettings[this.selectedFieldType].detach();
@@ -687,12 +683,7 @@
                         label: Craft.t('app', 'Translation Method'),
                         id: this.inputIdPrefix + '-translation-method',
                         name: this.inputNamePrefix + '[translationMethod]',
-                        options: [
-                            {value: 'none', label: Craft.t('app', 'Not translatable')},
-                            {value: 'language', label: Craft.t('app', 'Translate for each language')},
-                            {value: 'site', label: Craft.t('app', 'Translate for each site')},
-                            {value: 'custom', label: Craft.t('app', 'Custom…')}
-                        ],
+                        options: [],
                         value: 'none',
                         toggle: true,
                         targetPrefix: this.inputIdPrefix + '-translation-method-'

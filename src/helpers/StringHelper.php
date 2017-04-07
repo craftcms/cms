@@ -163,22 +163,6 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Ensures that a string ends with a given substring.
-     *
-     * @param string &$str          The string to amend
-     * @param string $substring     The substring to look for
-     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity.
-     *
-     * @return void
-     */
-    public static function ensureEndsWith(string &$str, string $substring, bool $caseSensitive = true)
-    {
-        if (!self::endsWith($str, $substring, $caseSensitive)) {
-            $str .= $substring;
-        }
-    }
-
-    /**
      * Ensures that the string begins with $substring. If it doesn't, it's prepended.
      *
      * @param string $str       The string to modify.
@@ -192,7 +176,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Ensures that the string begins with $substring. If it doesn't, it's appended.
+     * Ensures that the string ends with $substring. If it doesn't, it's appended.
      *
      * @param string $str       The string to modify.
      * @param string $substring The substring to add if not present.
@@ -748,22 +732,6 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function startsWith($str, $substring, $caseSensitive = true): bool
     {
         return Stringy::create($str)->startsWith($substring, $caseSensitive);
-    }
-
-    /**
-     * Ensures that a string starts with a given substring.
-     *
-     * @param string &$str          The string to amend
-     * @param string $substring     The substring to look for
-     * @param bool   $caseSensitive Whether or not to enforce case-sensitivity.
-     *
-     * @return void
-     */
-    public static function ensureStartsWith(string &$str, string $substring, bool $caseSensitive = true)
-    {
-        if (!self::startsWith($str, $substring, $caseSensitive)) {
-            $str = $substring.$str;
-        }
     }
 
     /**

@@ -45,25 +45,6 @@ class Session extends \yii\web\Session
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        // Set the state-based property names
-        $stateKeyPrefix = md5('Craft.'.get_class($this).'.'.Craft::$app->id);
-        $config['flashParam'] = $stateKeyPrefix.'__flash';
-        $config['authAccessParam'] = $stateKeyPrefix.'__auth_access';
-
-        // Set the session name
-        $this->setName(Craft::$app->getConfig()->getGeneral()->phpSessionName);
-
-        // Set the default session cookie params
-        $this->setCookieParams(Craft::cookieConfig());
-
-        parent::__construct($config);
-    }
-
     // Flash Data
     // -------------------------------------------------------------------------
 

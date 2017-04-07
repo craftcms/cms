@@ -19,7 +19,7 @@ use yii\web\Request;
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
  *
- * It encapsulates [[Yii]] and ultimately [[YiiBase]], which provides the actual implementation.
+ * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -297,6 +297,12 @@ EOD;
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
+
+        // Invalidate opcache
+        if (function_exists('opcache_invalidate')) {
+            @opcache_invalidate($destinationPath, true);
+        }
+
         include $destinationPath;
     }
 }

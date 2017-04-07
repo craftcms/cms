@@ -2,6 +2,8 @@
 
 return [
     'components' => [
-        'userPermissions' => craft\services\UserPermissions::class,
+        'userPermissions' => [
+            'class' => craft\services\UserPermissions::class,
+        ],
     ],
 ];
