@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2971 - 2017-04-07
+
+### Fixed
+- Fixed a PHP error that occurred when editing elements with a Rich Text field set to show all available asset sources.
+
 ## 2.6.2970 - 2017-04-07
 
 ### Fixed
