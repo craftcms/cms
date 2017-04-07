@@ -49,6 +49,7 @@ Craft CMS 3.0 Working Changelog
 - #1602: Fixed incorrectly named Asset permissions.
 - #1597: Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation.
 - #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
+- #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
 
 ## 3.0.0-beta.9 - 2017-03-27
 
