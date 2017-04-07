@@ -429,6 +429,7 @@ class EntriesController extends BaseEntriesController
      * Saves an entry.
      *
      * @return Response|null
+     * @throws ServerErrorHttpException if reasons
      */
     public function actionSaveEntry()
     {
@@ -437,8 +438,11 @@ class EntriesController extends BaseEntriesController
         $entry = $this->_getEntryModel();
         $request = Craft::$app->getRequest();
 
+        // Are we duplicating the entry?
+        $duplicate = (bool)$request->getBodyParam('duplicate');
+
         // Permission enforcement
-        $this->enforceEditEntryPermissions($entry);
+        $this->enforceEditEntryPermissions($entry, $duplicate);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         // Is this another user's entry (and it's not a Single)?
@@ -450,6 +454,15 @@ class EntriesController extends BaseEntriesController
         ) {
             // Make sure they have permission to make live changes to those
             $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
+        }
+
+        // If we're duplicating the entry, swap $entry with the duplicate
+        if ($duplicate) {
+            try {
+                $entry = Craft::$app->getElements()->duplicateElement($entry);
+            } catch (\Exception $e) {
+                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
+            }
         }
 
         // Populate the entry with post data

@@ -664,41 +664,57 @@ class Matrix extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // First thing's first. Let's make sure that the blocks for this field/owner respect the field's translation
-            // setting
-            $this->_applyFieldTranslationSetting($owner, $field, $blocks);
+            // Make sure that the blocks for this field/owner respect the field's translation setting
+            $this->_applyFieldTranslationSetting($query->ownerId, $query->siteId, $field, $blocks);
 
-            $blockIds = [];
-            $collapsedBlockIds = [];
-
-            foreach ($blocks as $block) {
-                $block->ownerId = $owner->id;
-                $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
-
-                Craft::$app->getElements()->saveElement($block, false);
-
-                $blockIds[] = $block->id;
-
-                // Tell the browser to collapse this block?
-                if ($block->collapsed) {
-                    $collapsedBlockIds[] = $block->id;
+            // If the query is set to fetch blocks of a different owner, we're probably duplicating an element
+            if ($query->ownerId != $owner->id) {
+                // Make sure this owner doesn't already have blocks
+                $newQuery = clone $query;
+                $newQuery->ownerId = $owner->id;
+                if (!$newQuery->exists()) {
+                    // Duplicate the blocks for the new owner
+                    $elementsService = Craft::$app->getElements();
+                    foreach ($blocks as $block) {
+                        $elementsService->duplicateElement($block, [
+                            'ownerId' => $owner->id,
+                            'ownerSiteId' => $field->localizeBlocks ? $owner->siteId : null
+                        ]);
+                    }
                 }
-            }
-
-            // Delete any blocks that shouldn't be there anymore
-            $deleteBlocksQuery = MatrixBlock::find()
-                ->ownerId($owner->id)
-                ->fieldId($field->id)
-                ->where(['not', ['elements.id' => $blockIds]]);
-
-            if ($field->localizeBlocks) {
-                $deleteBlocksQuery->ownerSiteId($owner->siteId);
             } else {
-                $deleteBlocksQuery->siteId($owner->siteId);
-            }
+                $blockIds = [];
+                $collapsedBlockIds = [];
 
-            foreach ($deleteBlocksQuery->all() as $deleteBlock) {
-                Craft::$app->getElements()->deleteElement($deleteBlock);
+                foreach ($blocks as $block) {
+                    $block->ownerId = $owner->id;
+                    $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
+
+                    Craft::$app->getElements()->saveElement($block, false);
+
+                    $blockIds[] = $block->id;
+
+                    // Tell the browser to collapse this block?
+                    if ($block->collapsed) {
+                        $collapsedBlockIds[] = $block->id;
+                    }
+                }
+
+                // Delete any blocks that shouldn't be there anymore
+                $deleteBlocksQuery = MatrixBlock::find()
+                    ->ownerId($owner->id)
+                    ->fieldId($field->id)
+                    ->where(['not', ['elements.id' => $blockIds]]);
+
+                if ($field->localizeBlocks) {
+                    $deleteBlocksQuery->ownerSiteId($owner->siteId);
+                } else {
+                    $deleteBlocksQuery->siteId($owner->siteId);
+                }
+
+                foreach ($deleteBlocksQuery->all() as $deleteBlock) {
+                    Craft::$app->getElements()->deleteElement($deleteBlock);
+                }
             }
 
             $transaction->commit();
@@ -821,15 +837,15 @@ class Matrix extends Component
     /**
      * Applies the field's translation setting to a set of blocks.
      *
-     * @param ElementInterface $owner
-     * @param MatrixField      $field
-     * @param MatrixBlock[]    $blocks
+     * @param int           $ownerId
+     * @param int           $ownerSiteId
+     * @param MatrixField   $field
+     * @param MatrixBlock[] $blocks
      *
      * @return void
      */
-    private function _applyFieldTranslationSetting(ElementInterface $owner, MatrixField $field, array $blocks)
+    private function _applyFieldTranslationSetting(int $ownerId, int $ownerSiteId, MatrixField $field, array $blocks)
     {
-        /** @var Element $owner */
         // Does it look like any work is needed here?
         $applyNewTranslationSetting = false;
 
@@ -857,7 +873,7 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         $query = MatrixBlock::find()
             ->fieldId($field->id)
-            ->ownerId($owner->id)
+            ->ownerId($ownerId)
             ->status(null)
             ->enabledForSite(false)
             ->limit(null);
@@ -867,7 +883,7 @@ class Matrix extends Component
         }
 
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            if ($siteId === $owner->siteId) {
+            if ($siteId === $ownerSiteId) {
                 continue;
             }
 

@@ -23,7 +23,7 @@
                 <li><a class="formsubmit" data-redirect="{{ ('categories/'~groupHandle~'/new?parentId={parent.id}')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
 
                 {% if category.id %}
-                    <li><a class="formsubmit" data-param="categoryId" data-value="" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new category"|t('app') }}</a></li>
+                    <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new category"|t('app') }}</a></li>
                 {% endif %}
             </ul>
         </div>

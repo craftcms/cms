@@ -523,6 +523,77 @@ class Elements extends Component
     }
 
     /**
+     * Duplicates an element.
+     *
+     * @param ElementInterface $element the element to duplicate
+     * @param array $newAttributes any attributes to apply to the duplicate
+     *
+     * @return ElementInterface the duplicated element
+     * @throws \Exception if reasons
+     */
+    public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
+    {
+        /** @var Element $element */
+        $supportedSites = ElementHelper::supportedSitesForElement($element);
+
+        // Make sure the element actually supports its own site ID
+        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
+        if (($thisSiteKey = array_search($element->siteId, $supportedSiteIds, false)) === false) {
+            throw new Exception('Attempting to duplicate an element in an unsupported site.');
+        }
+
+        /** @var Element $returnElement */
+        $returnElement = null;
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $class = get_class($element);
+
+            $newId = null;
+
+            foreach ($supportedSites as $siteInfo) {
+                if ($siteInfo['siteId'] == $element->siteId) {
+                    $siteElement = $element;
+                } else {
+                    $siteElement = $this->getElementById($element->id, $class, $siteInfo['siteId']);
+
+                    if ($siteElement === null) {
+                        throw new Exception('Element '.$element->id.' doesn\'t exist in the site '.$siteInfo['siteId']);
+                    }
+                }
+
+                /** @var Element $siteClone */
+                $siteClone = $this->_cloneElement($siteElement);
+                $siteClone->setAttributes($newAttributes);
+                $siteClone->setScenario(Element::SCENARIO_ESSENTIALS);
+                $siteClone->id = $newId;
+                $siteClone->contentId = null;
+
+                if (!$this->saveElement($siteClone, true, false)) {
+                    throw new Exception('Element '.$element->id.' could not be duplicated for site '.$siteInfo['siteId']);
+                }
+
+                if ($newId === null) {
+                    $newId = $siteClone->id;
+                }
+
+                if ($siteInfo['siteId'] == $element->siteId) {
+                    $returnElement = $siteClone;
+                    $returnElement->setScenario($element->getScenario());
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        return $returnElement;
+    }
+
+    /**
      * Updates an element’s slug and URI, along with any descendants.
      *
      * @param ElementInterface $element           The element to update.
@@ -1300,10 +1371,8 @@ class Elements extends Component
 
         // If it doesn't exist yet, just clone the master site
         if ($isNewSiteForElement = $siteElement === null) {
-            $class = get_class($element);
             /** @var Element $siteElement */
-            $siteElement = new $class();
-            $siteElement->setAttributes($element->getAttributes(), false);
+            $siteElement = $this->_cloneElement($element);
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
@@ -1341,5 +1410,25 @@ class Elements extends Component
             Craft::error($error);
             throw new Exception('Couldn\'t propagate element to other site.');
         }
+    }
+
+    /**
+     * Creates a new element based on the given one, with all the same attribute values.
+     *
+     * The clone is not actually saved in the database.
+     *
+     * @param ElementInterface $element the element to be cloned
+     *
+     * @return ElementInterface the clone
+     */
+    private function _cloneElement(ElementInterface $element): ElementInterface
+    {
+        /** @var Element $element */
+        $class = get_class($element);
+        /** @var Element $clone */
+        $clone = new $class();
+        $clone->setAttributes($element->getAttributes(), false);
+
+        return $clone;
     }
 }

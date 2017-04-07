@@ -427,6 +427,16 @@ class CategoriesController extends Controller
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
 
+        // Are we duplicating the category?
+        if ($request->getBodyParam('duplicate')) {
+            // Swap $category with the duplicate
+            try {
+                $category = Craft::$app->getElements()->duplicateElement($category);
+            } catch (\Exception $e) {
+                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
+            }
+        }
+
         // Populate the category with post data
         $this->_populateCategoryModel($category);
 

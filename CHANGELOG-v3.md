@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\controllers\ElementsController::actionGetElementHtml()`
 - Added `craft\helpers\ArrayHelper::filterByValue()`.
 - Added `craft\helpers\Console`.
+- Added `craft\services\Elements::duplicateElement()`.
 - Added the `|filterByValue` Twig filter.
 - Added `Craft.selectFullValue()`.
 
@@ -55,6 +56,7 @@ Craft CMS 3.0 Working Changelog
 - #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
 - #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
 - Fixed a bug where it was not possible to trigger a prompt when uploading an Asset with a conflicting name.
+- #1523: Fixed a bug where clicking “Save as a new entry” on an Edit Entry page, or “Save as a new category” on an Edit Category page, would only use the current site’s content, discarding the title and any translatable custom field values from other sites.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

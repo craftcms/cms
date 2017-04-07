@@ -31,10 +31,11 @@ abstract class BaseEntriesController extends Controller
      * Enforces all Edit Entry permissions.
      *
      * @param Entry $entry
+     * @param bool  $duplicate
      *
      * @return void
      */
-    protected function enforceEditEntryPermissions(Entry $entry)
+    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
         $userSessionService = Craft::$app->getUser();
         $permissionSuffix = ':'.$entry->sectionId;
@@ -48,7 +49,7 @@ abstract class BaseEntriesController extends Controller
         $this->requirePermission('editEntries'.$permissionSuffix);
 
         // Is it a new entry?
-        if ($entry->id === null) {
+        if (!$entry->id || $duplicate) {
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {

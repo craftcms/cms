@@ -473,15 +473,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @inheritdoc
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
-    {
+
+        /** @var ElementQuery $value */    {
         $value = $element->getFieldValue($this->handle);
 
-        if ($value instanceof ElementQueryInterface && $value->id !== null) {
-            /** @var ElementQuery $value */
-            $value = $value->id ?: [];
-            /** @var int|int[]|false|null $value */
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        // $id will be set if we're saving new relations
+        if ($value->id !== null) {
+            $targetIds = $value->id ?: [];
+        } else {
+            $targetIds = $value->ids();
         }
+
+        /** @var int|int[]|false|null $targetIds */
+        Craft::$app->getRelations()->saveRelations($this, $element, $targetIds);
 
         parent::afterElementSave($element, $isNew);
     }
