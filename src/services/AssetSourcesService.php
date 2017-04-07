@@ -170,8 +170,8 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getPublicSourceIds()
 	{
-
-		if (!isset($this->_publicSourceIds)) {
+		if (!isset($this->_publicSourceIds))
+		{
 			$this->_publicSourceIds = array();
 
 			/**

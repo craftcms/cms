@@ -430,7 +430,7 @@ class RichTextFieldType extends BaseFieldType
 
 		$assetSourceIds = $this->getSettings()->availableAssetSources;
 
-		if (!$assetSourceIds)
+		if ($assetSourceIds === '*' || !$assetSourceIds)
 		{
 			$assetSourceIds = craft()->assetSources->getPublicSourceIds();
 		}
