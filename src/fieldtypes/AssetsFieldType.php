@@ -51,6 +51,13 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	private $_failedFiles = array();
 
+    /**
+     * Results of the prepValueFromPost method when it was run.
+     *
+     * @var array
+     */
+	private $_prepValueFromPostResults = null;
+
 	// Public Methods
 	// =========================================================================
 
@@ -143,6 +150,12 @@ class AssetsFieldType extends BaseElementFieldType
 	 */
 	public function prepValueFromPost($value)
 	{
+	    if ($this->_prepValueFromPostResults !== null) {
+	        return $this->_prepValueFromPostResults;
+        }
+
+        $this->_prepValueFromPostResults = array();
+
 		$dataFiles = array();
 
 		// Grab data strings
@@ -281,6 +294,8 @@ class AssetsFieldType extends BaseElementFieldType
 		// Make it look like the actual POST data contained these file IDs as well,
 		// so they make it into entry draft/version data
 		$this->element->setRawPostContent($this->model->handle, $fileIds);
+
+		$this->_prepValueFromPostResults = $fileIds;
 
 		return $fileIds;
 	}

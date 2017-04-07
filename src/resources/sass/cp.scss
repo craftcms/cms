@@ -199,9 +199,9 @@ body.mobile #container {
 /* page header */
 #page-header { @include display-flex; @include justify-content(space-between); position: relative; z-index: 1; padding: 20px 24px; }
 
-#page-header #page-title { @include flex-grow(1); color: $submitcolor; }
+#page-header #page-title { @include display-flex; @include flex-grow(1); }
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis;  }
-#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; @include margin-right(7px); }
+#page-header #page-title h1 { line-height: 1.3; margin: 0; display: inline; white-space: nowrap; @include margin-right(7px); color: $submitcolor; }
 #page-header #page-title .btn { vertical-align: bottom; }
 
 #page-header #extra-headers { flex-shrink: 0; }
