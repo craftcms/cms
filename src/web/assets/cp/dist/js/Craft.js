@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-04-04 */
+/*! Craft 3.0.0 - 2017-04-07 */
 (function($){
 
 /** global: Craft */
@@ -6197,7 +6197,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
 
             var options = {
-                url: Craft.getActionUrl('assets/express-upload'),
+                url: Craft.getActionUrl('assets/save-asset'),
                 dropZone: this.$container,
                 formData: {
                     fieldId: this.settings.fieldId,
@@ -6283,17 +6283,23 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         _onUploadComplete: function(event, data) {
             if (data.result.error) {
                 alert(data.result.error);
-            }
-            else {
-                var html = $(data.result.html);
-                Craft.appendHeadHtml(data.result.headHtml);
-                this.selectUploadedFile(Craft.getElementInfo(html));
-            }
+            } else {
+                var elementId = data.result.assetId;
+                Craft.postActionRequest('elements/get-element-html', {elementId: elementId}, function (data) {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        var html = $(data.html);
+                        Craft.appendHeadHtml(data.headHtml);
+                        this.selectUploadedFile(Craft.getElementInfo(html));
+                    }
 
-            // Last file
-            if (this.uploader.isLastUpload()) {
-                this.progressBar.hideProgressBar();
-                this.$container.removeClass('uploading');
+                    // Last file
+                    if (this.uploader.isLastUpload()) {
+                        this.progressBar.hideProgressBar();
+                        this.$container.removeClass('uploading');
+                    }
+                }.bind(this));
             }
         },
 
@@ -16794,7 +16800,8 @@ Craft.Uploader = Garnish.Base.extend(
             allowedKinds: null,
             events: {},
             canAddMoreFiles: null,
-            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'},
+            paramName: 'assets-upload'
         }
     });
 
