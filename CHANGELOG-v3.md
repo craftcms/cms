@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.10 - 2017-04-07
 
 ### Added
 - Added `craft\console\User::getId()`.
