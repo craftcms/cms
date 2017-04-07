@@ -205,7 +205,8 @@ class ElementsController extends BaseElementsController
     public function actionGetElementHtml(): Response
     {
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $element = Craft::$app->getElements()->getElementById($elementId);
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
+        $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
         $html = $view->renderTemplate('_elements/element', array('element' => $element));

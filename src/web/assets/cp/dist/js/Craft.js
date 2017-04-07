@@ -6285,7 +6285,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 alert(data.result.error);
             } else {
                 var elementId = data.result.assetId;
-                Craft.postActionRequest('elements/get-element-html', {elementId: elementId}, function (data) {
+                
+                Craft.postActionRequest('elements/get-element-html', {elementId: elementId, siteId: this.settings.criteria.siteId}, function (data) {
                     if (data.error) {
                         alert(data.error);
                     } else {
