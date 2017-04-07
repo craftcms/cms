@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where Craft would not specify which required PHP extensions were missing when attempting to install.
+
 ## 2.6.2969 - 2017-04-07
 
 ### Changed
@@ -15,7 +18,6 @@ Craft CMS Changelog
 - Fixed a bug where temporary upload folders were not being created correctly.
 - #1577: Fixed a bug where Craft was not redirecting users to the correct URL after login, if the site homepage had a `{% requireLogin %}` tag, and was accessed with a query string.
 - #1593: Fixed a bug where the DeleteStaleTemplateCaches could potentially miss some caches that should be busted.
-- Fixed a bug where Craft would not specify which required PHP extensions were missing when attempting to install.
 
 ## 2.6.2968 - 2017-03-24
 
