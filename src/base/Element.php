@@ -109,7 +109,7 @@ abstract class Element extends Component implements ElementInterface
     // Validation scenarios
     // -------------------------------------------------------------------------
 
-    const SCENARIO_SITE_PROPAGATION = 'sitePropagation';
+    const SCENARIO_ESSENTIALS = 'essentials';
 
     // Events
     // -------------------------------------------------------------------------
@@ -938,7 +938,7 @@ abstract class Element extends Component implements ElementInterface
     public function scenarios()
     {
         $scenarios = parent::scenarios();
-        $scenarios[self::SCENARIO_SITE_PROPAGATION] = ['siteId', 'slug', 'uri'];
+        $scenarios[self::SCENARIO_ESSENTIALS] = ['siteId', 'slug', 'uri'];
 
         return $scenarios;
     }

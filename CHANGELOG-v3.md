@@ -22,6 +22,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\elements\db\ElementQuery::one()` now returns the first cached element if the element query has any results cached on it.
 - `craft\base\SavableComponent::settingsAttributes()` now returns all public, non-static properties on any parent classes in addition to the called class, so long as they weren’t defined in an abstract class.
 - `craft\controllers\AssetsController::uploadFile()` now also returns `assetId` on a successful upload.
+- Renamed `craft\base\Element::SCENARIO_SITE_PROPAGATION` to `SCENARIO_ESSENTIALS`.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
