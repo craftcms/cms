@@ -6,7 +6,9 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\console\User::getId()`.
 - Added `craft\controllers\ElementsController::actionGetElementHtml()`
+- Added `craft\helpers\ArrayHelper::filterByValue()`.
 - Added `craft\helpers\Console`.
+- Added the `|filterByValue` Twig filter.
 - Added `Craft.selectFullValue()`.
 
 ### Changed
@@ -17,10 +19,14 @@ Craft CMS 3.0 Working Changelog
 - The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
 - `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
 - #1580: Console requests now report if there are any database connection issues.
+- `craft\elements\db\ElementQuery::one()` now returns the first cached element if the element query has any results cached on it.
+- `craft\base\SavableComponent::settingsAttributes()` now returns all public, non-static properties on any parent classes in addition to the called class, so long as they weren’t defined in an abstract class.
 - `craft\controllers\AssetsController::uploadFile()` now also returns `assetId` on a successful upload.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
+- Removed `craft\db\Connection::DRIVER_MYSQL`. Use `craft\config\DbConfig::DRIVER_MYSQL` instead.
+- Removed `craft\db\Connection::DRIVER_PGSQL`. Use `craft\config\DbConfig::DRIVER_PGSQL` instead.
 - Removed `craft\helpers\StringHelper::ensureEndsWith()`. Use `ensureRight()` instead.
 - Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
 
@@ -43,6 +49,9 @@ Craft CMS 3.0 Working Changelog
 - #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
 - #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
 - #1602: Fixed incorrectly named Asset permissions.
+- #1597: Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation.
+- #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
+- #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
 - #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
 
 ## 3.0.0-beta.9 - 2017-03-27

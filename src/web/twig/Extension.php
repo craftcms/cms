@@ -150,6 +150,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
+            new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
             new \Twig_SimpleFilter('hash', [$security, 'hashData']),
             new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),

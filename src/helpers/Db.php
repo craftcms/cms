@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
+use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use yii\base\Exception;
@@ -481,7 +482,7 @@ class Db
 
             if (StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
-                    if ($driver === Connection::DRIVER_MYSQL) {
+                    if ($driver === DbConfig::DRIVER_MYSQL) {
                         $condition[] = [
                             'or',
                             [$column => null],
@@ -492,7 +493,7 @@ class Db
                         $condition[] = [$column => null];
                     }
                 } else {
-                    if ($driver === Connection::DRIVER_MYSQL) {
+                    if ($driver === DbConfig::DRIVER_MYSQL) {
                         $condition[] = [
                             'not',
                             [

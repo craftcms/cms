@@ -8,7 +8,7 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\db\Migration;
 use craft\elements\User;
 use craft\helpers\StringHelper;
@@ -866,7 +866,7 @@ class Install extends Migration
 
         // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
         switch ($this->driver) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 $this->createTable('{{%searchindex}}', [
                     'elementId' => $this->integer()->notNull(),
                     'attribute' => $this->string(25)->notNull(),
@@ -884,7 +884,7 @@ class Install extends Migration
 
                 $this->db->createCommand($sql)->execute();
                 break;
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 $this->createTable('{{%searchindex}}', [
                     'elementId' => $this->integer()->notNull(),
                     'attribute' => $this->string(25)->notNull(),

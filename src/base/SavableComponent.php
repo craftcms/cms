@@ -101,11 +101,12 @@ abstract class SavableComponent extends Component implements SavableComponentInt
      */
     public function settingsAttributes(): array
     {
+        // By default, include all public, non-static properties that were not defined in an abstract class
         $class = new \ReflectionClass($this);
         $names = [];
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic() && $property->getDeclaringClass()->getName() === static::class) {
+            if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }
         }

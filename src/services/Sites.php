@@ -133,8 +133,10 @@ class Sites extends Component
         // Fetch all the sites
         $this->_loadAllSites();
 
+        $isInstalled = Craft::$app->getIsInstalled();
+
         // Set $this->currentSite to an actual Site model if it's not already
-        if (!($this->currentSite instanceof Site)) {
+        if ($isInstalled && !($this->currentSite instanceof Site)) {
             if ($this->currentSite !== null) {
                 if (is_numeric($this->currentSite)) {
                     $site = $this->getSiteById($this->currentSite);
@@ -147,7 +149,7 @@ class Sites extends Component
                 }
 
                 $this->currentSite = $site;
-            } else if (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+            } else if ($isInstalled && !Craft::$app->getIsUpdating()) {
                 // Default to the primary site
                 $this->currentSite = $this->getPrimarySite();
             } else {
@@ -155,7 +157,7 @@ class Sites extends Component
             }
         }
 
-        if (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getIsUpdating()) {
             // Is the config overriding the site URL?
             $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 

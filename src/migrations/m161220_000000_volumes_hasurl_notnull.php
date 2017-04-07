@@ -3,7 +3,7 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\db\Migration;
 
 /**
@@ -17,7 +17,7 @@ class m161220_000000_volumes_hasurl_notnull extends Migration
     public function safeUp()
     {
         // https://github.com/yiisoft/yii2/issues/4492
-        if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_PGSQL) {
+        if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_PGSQL) {
             $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET NOT NULL');
             $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET DEFAULT FALSE');
         } else {

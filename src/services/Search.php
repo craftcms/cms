@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\db\Connection;
+use craft\config\DbConfig;
 use craft\db\Query;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
@@ -278,7 +278,7 @@ class Search extends Component
             $cleanKeywords = ' '.$cleanKeywords.' ';
         }
 
-        if ($driver === Connection::DRIVER_PGSQL) {
+        if ($driver === DbConfig::DRIVER_PGSQL) {
             $maxSize = $this->maxPostgresKeywordLength;
         } else {
             $maxSize = Db::getTextualColumnStorageCapacity(Schema::TYPE_TEXT);
@@ -290,7 +290,7 @@ class Search extends Component
 
         $keywordColumns = ['keywords' => $cleanKeywords];
 
-        if ($driver === Connection::DRIVER_PGSQL) {
+        if ($driver === DbConfig::DRIVER_PGSQL) {
             $keywordColumns['keywords_vector'] = $cleanKeywords;
         }
 
@@ -457,7 +457,7 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive) {
-                    if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
+                    if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_MYSQL) {
                         $keywords = '+'.$keywords;
                     }
                 }
@@ -533,7 +533,7 @@ class Search extends Component
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                if ($driver === Connection::DRIVER_PGSQL && $term->phrase) {
+                if ($driver === DbConfig::DRIVER_PGSQL && $term->phrase) {
                     $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
                 } else {
 
@@ -541,10 +541,10 @@ class Search extends Component
                     if ($this->_doFullTextSearch($keywords, $term)) {
                         if ($term->subRight) {
                             switch ($driver) {
-                                case Connection::DRIVER_MYSQL:
+                                case DbConfig::DRIVER_MYSQL:
                                     $keywords .= '*';
                                     break;
-                                case Connection::DRIVER_PGSQL:
+                                case DbConfig::DRIVER_PGSQL:
                                     $keywords .= ':*';
                                     break;
                                 default:
@@ -553,7 +553,7 @@ class Search extends Component
                         }
 
                         // Add quotes for exact match
-                        if ($driver === Connection::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
+                        if ($driver === DbConfig::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
                             $keywords = '"'.$keywords.'"';
                         }
 
@@ -667,10 +667,10 @@ class Search extends Component
     {
         $driver = Craft::$app->getDb()->getDriverName();
         switch ($driver) {
-            case Connection::DRIVER_MYSQL:
+            case DbConfig::DRIVER_MYSQL:
                 return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
 
-            case Connection::DRIVER_PGSQL:
+            case DbConfig::DRIVER_PGSQL:
                 if ($andOr === ' AND ') {
                     $andOr = ' & ';
                 } else {
