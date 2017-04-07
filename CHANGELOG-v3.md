@@ -53,6 +53,7 @@ Craft CMS 3.0 Working Changelog
 - #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
 - #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
 - #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
+- Fixed a bug where it was not possible to trigger a prompt when uploading an Asset with a conflicting name.
 
 ## 3.0.0-beta.9 - 2017-03-27
 
