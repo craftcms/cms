@@ -3,6 +3,11 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where Craft would not specify which required PHP extensions were missing when attempting to install.
+
+## 2.6.2969 - 2017-04-07
+
 ### Changed
 - It's now possible to execute `AssetsFieldType::prepValueFromPost()` only once per field instance. Subsequent calls will return previous execution result.
 - #13: Disabled Matrix blocks are no longer shown in Live Preview.
