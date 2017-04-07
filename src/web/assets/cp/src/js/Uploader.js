@@ -242,6 +242,7 @@ Craft.Uploader = Garnish.Base.extend(
             allowedKinds: null,
             events: {},
             canAddMoreFiles: null,
-            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'}
+            headers: {'Accept' : 'application/json;q=0.9,*/*;q=0.8'},
+            paramName: 'assets-upload'
         }
     });

@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\console\User::getId()`.
+- Added `craft\controllers\ElementsController::actionGetElementHtml()`
 - Added `craft\helpers\Console`.
 - Added `Craft.selectFullValue()`.
 
@@ -16,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
 - `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
 - #1580: Console requests now report if there are any database connection issues.
+- `craft\controllers\AssetsController::uploadFile()` now also returns `assetId` on a successful upload.
 
 ### Removed
 - Removed `craft\base\TaskInterface::getDescription()`.
@@ -41,6 +43,7 @@ Craft CMS 3.0 Working Changelog
 - #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
 - #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
 - #1602: Fixed incorrectly named Asset permissions.
+- #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
 
 ## 3.0.0-beta.9 - 2017-03-27
 

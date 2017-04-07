@@ -80,13 +80,13 @@ class AssetsController extends Controller
             $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
             if (empty($folderId)) {
-                $field = Craft::$app->getFields()->getFieldById($fieldId);
+                $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
                 if (!($field instanceof AssetsField)) {
                     throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                $element = $elementId ? Craft::$app->getElements()->getElementById($elementId) : null;
+                $element = $elementId ? Craft::$app->getElements()->getElementById((int)$elementId) : null;
                 $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
@@ -128,7 +128,8 @@ class AssetsController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'filename' => $asset->filename
+                'filename' => $asset->filename,
+                'assetId' => $asset->id
             ]);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
