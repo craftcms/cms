@@ -1,6 +1,14 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where clearing all caches could result in temporary upload folder breakage.
+
+### Security
+- Fixed a brute force attack vector.
+
 ## 2.6.2971 - 2017-04-07
 
 ### Fixed
