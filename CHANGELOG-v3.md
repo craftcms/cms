@@ -1,11 +1,6 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleases
-
-### Fixed
-- Pro edition now needed to access additional Asset volume types.
-
 ## 3.0.0-beta.10 - 2017-04-07
 
 ### Added
