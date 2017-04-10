@@ -118,12 +118,17 @@ class Volumes extends Component
             Local::class
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $volumeTypes
-        ]);
-        $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
+        // Only Pro gets additional volume types.
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            $event = new RegisterComponentTypesEvent([
+                'types' => $volumeTypes
+            ]);
+            $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
-        return $event->types;
+            $volumeTypes = $event->types;
+        }
+
+        return $volumeTypes;
     }
 
     /**
