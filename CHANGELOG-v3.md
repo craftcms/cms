@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- #1610: Fixed a PHP error that occurred when creating new elements with Matrix fields.
+
 ## 3.0.0-beta.10 - 2017-04-07
 
 ### Added

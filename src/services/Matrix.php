@@ -664,11 +664,13 @@ class Matrix extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Make sure that the blocks for this field/owner respect the field's translation setting
-            $this->_applyFieldTranslationSetting($query->ownerId, $query->siteId, $field, $blocks);
+            // If this is a preexisting element, make sure that the blocks for this field/owner respect the field's translation setting
+            if ($query->ownerId) {
+                $this->_applyFieldTranslationSetting($query->ownerId, $query->siteId, $field, $blocks);
+            }
 
             // If the query is set to fetch blocks of a different owner, we're probably duplicating an element
-            if ($query->ownerId != $owner->id) {
+            if ($query->ownerId && $query->ownerId != $owner->id) {
                 // Make sure this owner doesn't already have blocks
                 $newQuery = clone $query;
                 $newQuery->ownerId = $owner->id;
