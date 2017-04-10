@@ -288,7 +288,7 @@ class UsersController extends Controller
         }
 
         // If there haven't been any errors, or there were, and it's not one logged in user editing another
-        // // and we want to pretend like there wasn't any errors...
+        // and we want to pretend like there wasn't any errors...
         if (empty($errors) || (count($errors) > 0 && !$existingUser && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);

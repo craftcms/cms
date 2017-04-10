@@ -4,7 +4,10 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where clearing all caches could result in temporary upload folder breakage.
+- Fixed a bug where clearing all caches could have unintended side effects on temporary upload folders.
+- Fixed a bug where `jquery.ui.widget.js` was getting loaded twice in the Control Panel.
+- Fixed a bug where submitting a “forgot password” form on the front-end without a username or password would result in an “Invalid username or email” error in addition to “Username or email is required”.
+- #1605: Fixed a bug where the `users/forgotPassword` controller action would act like the password reset email was sent successfully, even if no username/email was submitted, if the `preventUserEnumeration` config setting was enabled.
 
 ### Security
 - Fixed a brute force attack vector.
