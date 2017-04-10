@@ -260,7 +260,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 								url += ':'+transform;
 							}
 
-							this.redactor.insert.node($('<img src="'+url+'" />')[0]);
+							this.redactor.insert.node($('<figure><img src="'+url+'" /></figure>')[0]);
 							this.redactor.code.sync();
 						}
 						this.redactor.observe.images();

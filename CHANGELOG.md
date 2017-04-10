@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- #1611: Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior.
+
 ### Fixed
 - Fixed a bug where clearing all caches could have unintended side effects on temporary upload folders.
 - Fixed a bug where `jquery.ui.widget.js` was getting loaded twice in the Control Panel.
