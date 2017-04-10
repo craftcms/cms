@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where clearing all caches could result in temporary upload folder breakage.
+- Fixed a bug where `jquery.ui.widget.js` was incorrectly being loaded twice.
 
 ### Security
 - Fixed a brute force attack vector.
