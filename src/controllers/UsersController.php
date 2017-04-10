@@ -237,12 +237,14 @@ class UsersController extends BaseController
 				$errors[] = Craft::t('Username or email is required.');
 				$this->_handleSendPasswordResetError($errors);
 			}
-
-			$user = craft()->users->getUserByUsernameOrEmail($loginName);
-
-			if (!$user)
+			else
 			{
-				$errors[] = Craft::t('Invalid username or email.');
+				$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+				if (!$user)
+				{
+					$errors[] = Craft::t('Invalid username or email.');
+				}
 			}
 		}
 
