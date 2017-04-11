@@ -447,7 +447,7 @@ class RichText extends Field
 
         $volumeKeys = [];
 
-        usort($folders, function ($a, $b) use ($sortedVolumeIds) {
+        usort($folders, function($a, $b) use ($sortedVolumeIds) {
             // In case Temporary volumes ever make an appearance in RTF modals, sort them to the end of the list.
             $aOrder = $sortedVolumeIds[$a->volumeId] ?? PHP_INT_MAX;
             $bOrder = $sortedVolumeIds[$b->volumeId] ?? PHP_INT_MAX;
