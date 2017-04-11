@@ -440,7 +440,19 @@ class RichText extends Field
         }
 
         $folders = Craft::$app->getAssets()->findFolders($criteria);
+
+        // Sort volumes in the same order as they are sorted in the CP
+        $sortedVolumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        $sortedVolumeIds = array_flip($sortedVolumeIds);
+
         $volumeKeys = [];
+
+        usort($folders, function ($a, $b) use ($sortedVolumeIds) {
+            // In case Temporary volumes ever make an appearance in RTF modals, sort them to the end of the list.
+            $aOrder = $sortedVolumeIds[$a->volumeId] ?? PHP_INT_MAX;
+            $bOrder = $sortedVolumeIds[$b->volumeId] ?? PHP_INT_MAX;
+            return $aOrder - $bOrder;
+        });
 
         foreach ($folders as $folder) {
             $volumeKeys[] = 'folder:'.$folder->id;
