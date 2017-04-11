@@ -105,10 +105,10 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
-     * @var array the registered JsonLd blocks
-     * @see registerJsonLd()
+     * @var array the registered generic <script> code blocks
+     * @see registerScript()
      */
-    public $_jsonLd;
+    public $_scripts;
 
     /**
      * @var array
@@ -649,17 +649,17 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a JsonLd block.
-     * @param string $jsonLd the JsonLd block to be registered
+     * Registers a generic <script> code block.
+     * @param string $script the generic <script> code block to be registered
      *
-     * @param string $key the key that identifies the JsonLd block. If null, it will use
-     * $jsonLd as the key. If two JsonLd blocks are registered with the same key, the latter
+     * @param string $key the key that identifies the generic <script> code block. If null, it will use
+     * $script as the key. If two generic <script> code blocks are registered with the same key, the latter
      * will overwrite the former.
      */
-    public function registerJsonLd($jsonLd, $key = null)
+    public function registerScript($script, $options = [], $key = null)
     {
-        $key = $key ?: md5($jsonLd);
-        $this->_jsonLd[$key] = Html::script($jsonLd, ['type' => 'application/ld+json']);
+        $key = $key ?: md5($script);
+        $this->_scripts[$key] = Html::script($script, $options);
     }
 
     /**
@@ -679,14 +679,14 @@ class View extends \yii\web\View
     /**
      * @inheritdoc
      */
-    protected function renderBodyBeginHtml()
+    protected function renderBodyEndHtml($ajaxMode)
     {
         $lines = [];
-        if (!empty($this->_jsonLd)) {
-            $lines[] = implode("\n", $this->_jsonLd);
+        if (!empty($this->_scripts)) {
+            $lines[] = implode("\n", $this->_scripts);
         }
 
-        $html = parent::renderBodyBeginHtml();
+        $html = parent::renderBodyEndHtml($ajaxMode);
         return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
 
