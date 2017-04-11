@@ -9,6 +9,7 @@
         uploadButtonSelector: '.btn.upload-photo',
         deleteButtonSelector: '.btn.delete-photo',
         fileInputSelector: 'input[name=photo]',
+        uploadParamName: 'photo',
 
         onAfterRefreshImage: function(response) {
             if (response.html !== undefined) {

@@ -5,6 +5,10 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - #1610: Fixed a PHP error that occurred when creating new elements with Matrix fields.
+- Fixed a bug where it was impossible to upload user photos, site icon and site logo.
+
+### Changed
+- `Craft.ImageUpload()` now supports an `uploadParamName` setting which specifies the POST field to use for uploads. It defaults to "files".
 
 ## 3.0.0-beta.10 - 2017-04-07
 

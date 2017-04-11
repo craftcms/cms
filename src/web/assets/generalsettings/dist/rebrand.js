@@ -7,7 +7,7 @@
         uploadButtonSelector: '.btn.upload',
         deleteButtonSelector: '.btn.delete',
         fileInputSelector: 'input[name=image]',
-
+        uploadParamName: 'image'
     };
 
     var logoSettings = $.extend({}, settings, {

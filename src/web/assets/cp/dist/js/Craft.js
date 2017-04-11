@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-04-07 */
+/*! Craft 3.0.0 - 2017-04-11 */
 (function($){
 
 /** global: Craft */
@@ -6285,7 +6285,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 alert(data.result.error);
             } else {
                 var elementId = data.result.assetId;
-                
+
                 Craft.postActionRequest('elements/get-element-html', {elementId: elementId, siteId: this.settings.criteria.siteId}, function (data) {
                     if (data.error) {
                         alert(data.error);
@@ -12418,7 +12418,8 @@ Craft.ImageUpload = Garnish.Base.extend(
             var options = {
                 url: Craft.getActionUrl(this.settings.uploadAction),
                 formData: this.settings.postParameters,
-                fileInput: this.$container.find(this.settings.fileInputSelector)
+                fileInput: this.$container.find(this.settings.fileInputSelector),
+                paramName: this.settings.uploadParamName
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
@@ -12511,7 +12512,9 @@ Craft.ImageUpload = Garnish.Base.extend(
             containerSelector: null,
 
             uploadButtonSelector: null,
-            deleteButtonSelector: null
+            deleteButtonSelector: null,
+
+            uploadParamName: 'files'
         }
     }
 );
