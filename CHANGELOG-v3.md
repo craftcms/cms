@@ -3,13 +3,14 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `craft\web\View::registerScript()`, as a more generic way to register new `<script>` tags on the page than `registerJs()`. ([#1617](https://github.com/craftcms/cms/pull/1617))
+- Added the `uploadParamName` setting to `Craft.ImageUpload`, which specifies the param name that should be used for file uploads. (Default is `files`.)
+
 ### Fixed
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))
 - Fixed a bug where it was impossible to upload user photos, site icon and site logo.
 - Fixed an issue where Rich Text Field Asset modals would ignore the defined Volume order.
-
-### Changed
-- `Craft.ImageUpload()` now supports an `uploadParamName` setting which specifies the POST field to use for uploads. It defaults to "files".
 
 ## 3.0.0-beta.10 - 2017-04-07
 
