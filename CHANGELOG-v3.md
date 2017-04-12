@@ -42,7 +42,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\helpers\StringHelper::ensureEndsWith()`. Use `ensureRight()` instead.
 - Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
 
-### Fixed
+### Fixed
 - Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements. ([#1474](https://github.com/craftcms/cms/issues/1474))
 - Fixed an issue where focal point would not be tracked correctly under certain circumstances. ([#1305](https://github.com/craftcms/cms/issues/1305))
 - #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
