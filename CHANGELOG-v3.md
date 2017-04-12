@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Fixed
-- #1610: Fixed a PHP error that occurred when creating new elements with Matrix fields.
+- Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))
 - Fixed a bug where it was impossible to upload user photos, site icon and site logo.
 - Fixed an issue where Rich Text Field Asset modals would ignore the defined Volume order.
 
@@ -26,10 +26,10 @@ Craft CMS 3.0 Working Changelog
 - `craft\image\Raster::rotate()` now requires a float parameter, instead of an integer.
 - Rotating images by degree fractions in image editor is now possible only when using Imagick as the image driver.
 - Improved the behavior of auto-generated text inputs (like Handle fields).
-- #1499: The “Target Site” relational field setting has been redesigned as two-step process, for added clarity.
+- The “Target Site” relational field setting has been redesigned as two-step process, for added clarity. ([#1499](https://github.com/craftcms/cms/issues/1499))
 - The `beforeSaveGlobalSet` event on `craft\services\Globals` is no longer cancellable.
 - `migrate` console actions now support `-t` and `-p` aliases for `--type` and `--plugin` options.
-- #1580: Console requests now report if there are any database connection issues.
+- Console requests now report if there are any database connection issues. ([#1580](https://github.com/craftcms/cms/issues/1580))
 - `craft\elements\db\ElementQuery::one()` now returns the first cached element if the element query has any results cached on it.
 - `craft\base\SavableComponent::settingsAttributes()` now returns all public, non-static properties on any parent classes in addition to the called class, so long as they weren’t defined in an abstract class.
 - `craft\controllers\AssetsController::uploadFile()` now also returns `assetId` on a successful upload.
@@ -43,30 +43,30 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\helpers\StringHelper::ensureStartsWith()`. Use `ensureLeft()` instead.
 
 ### Fixed
-- #1474: Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements.
-- #1305: Fixed an issue where focal point would not be tracked correctly under certain circumstances.
+- Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements. ([#1474](https://github.com/craftcms/cms/issues/1474))
+- Fixed an issue where focal point would not be tracked correctly under certain circumstances. ([#1305](https://github.com/craftcms/cms/issues/1305))
 - #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
-- #1572: Fixed a bug where it was not possible to install plugins manually.
+- Fixed a bug where it was not possible to install plugins manually. ([#1572](https://github.com/craftcms/cms/issues/1572))
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
-- #1589: Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed.
+- Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed. ([#1589](https://github.com/craftcms/cms/issues/1589))
 - Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 - Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
-- #1565: Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set.
-- #1567: Fixed a PHP error that could occur after a task failure.
-- #1566: Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled.
-- #1573: Fixed a PHP error that occurred when saving a new Structure section.
-- #1581: Fixed a PHP error that would occur when creating a new entry without an author from a console controller.
-- #1586: Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL.
-- #1582: Fixed a bug where newly-created global sets weren’t remembering their field layouts.
-- #1595: Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`.
-- #1602: Fixed incorrectly named Asset permissions.
-- #1597: Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation.
-- #1601: Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs.
-- #1494: Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file. 
-- #1604: Fixed a bug where drag-and-drop uploading was not possible for Asset fields.
+- Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set. ([#1565](https://github.com/craftcms/cms/issues/1565))
+- Fixed a PHP error that could occur after a task failure. ([#1567](https://github.com/craftcms/cms/issues/1567))
+- Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled. ([#1566](https://github.com/craftcms/cms/issues/1566))
+- Fixed a PHP error that occurred when saving a new Structure section. ([#1573](https://github.com/craftcms/cms/issues/1573))
+- Fixed a PHP error that would occur when creating a new entry without an author from a console controller. ([#1581](https://github.com/craftcms/cms/issues/1581))
+- Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL. ([#1586](https://github.com/craftcms/cms/issues/1586))
+- Fixed a bug where newly-created global sets weren’t remembering their field layouts. ([#1582](https://github.com/craftcms/cms/issues/1582))
+- Fixed a bug where Craft wasn’t invalidating OPcache after writing new auto-generated classes in `storage/runtime/compiled_classes/`. ([#1595](https://github.com/craftcms/cms/issues/1595))
+- Fixed incorrectly named Asset permissions. ([#1602](https://github.com/craftcms/cms/issues/1602))
+- Fixed a bug where calling `.one()` on a Matrix/relation field within a custom entry title format would not return the first *posted* matrix block/relation. ([#1597](https://github.com/craftcms/cms/issues/1597))
+- Fixed a bug where the Recent Entries widget wasn’t displaying any entries for non-admin users on single-site Craft installs. ([#1601](https://github.com/craftcms/cms/issues/1601))
+- Fixed a PHP error that would occur if Craft was not installed and you had the `CRAFT_SITE` constant defined in your public index.php file.  ([#1494](https://github.com/craftcms/cms/issues/1494))
+- Fixed a bug where drag-and-drop uploading was not possible for Asset fields. ([#1604](https://github.com/craftcms/cms/issues/1604))
 - Fixed a bug where it was not possible to trigger a prompt when uploading an Asset with a conflicting name.
-- #1523: Fixed a bug where clicking “Save as a new entry” on an Edit Entry page, or “Save as a new category” on an Edit Category page, would only use the current site’s content, discarding the title and any translatable custom field values from other sites.
+- Fixed a bug where clicking “Save as a new entry” on an Edit Entry page, or “Save as a new category” on an Edit Category page, would only use the current site’s content, discarding the title and any translatable custom field values from other sites. ([#1523](https://github.com/craftcms/cms/issues/1523))
 
 ## 3.0.0-beta.9 - 2017-03-27
 
@@ -76,16 +76,16 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a PHP error that occurred on the Dashboard if there were any Quick Post widgets.
 - Fixed a bug where there was no visible “Content” tab in the Field Layout Designer when creating a new global set.
-- #1570: Fixed a PHP error that occurred when saving a new global set.
-- #1568: Fixed a bug where clicking “Sign out” in the Control Panel would generally result in a 404 error.
-- #1423: Fixed a bug where saving an Assets field without Volumes defined and then trying to use it would result in an exception.
+- Fixed a PHP error that occurred when saving a new global set. ([#1570](https://github.com/craftcms/cms/issues/1570))
+- Fixed a bug where clicking “Sign out” in the Control Panel would generally result in a 404 error. ([#1568](https://github.com/craftcms/cms/issues/1568))
+- Fixed a bug where saving an Assets field without Volumes defined and then trying to use it would result in an exception. ([#1423](https://github.com/craftcms/cms/issues/1423))
 - Fixed an issue where deleting an Asset volume would delete all of the physical files of Assets indexed.
 - Fixed a bug where Craft could not connect to MySQL databases using the `unixSocket` setting.
 
 ## 3.0.0-beta.8 - 2017-03-24
 
 ### Added
-- #1317: Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions.
+- Added support for a `url` DB config setting, which can be set to a DB connection URL as provided by some PaaS solutions. ([#1317](https://github.com/craftcms/cms/issues/1317))
 - Added `craft\base\FieldInterface::getIsTranslatable()`.
 - Added `craft\base\FieldInterface::supportedTranslationMethods()`.
 - Added `craft\base\FolderVolumeInterface::folderExists()`.
@@ -120,10 +120,10 @@ Craft CMS 3.0 Working Changelog
 - Added the `beforeHandleFile` event to `craft\elements\Asset`, which fires whenever a new file is getting uploaded, or an existing file is being moved/renamed.
 - Added `Craft.registerElementEditorClass()` and the `Craft.createElementEditor()` factory function, making it possible to set element editor classes specific to an element type.
 - Added `Craft.BaseElementSelectInput::createElementEditor()`, making it possible for subclasses to customize the settings passed to the element editor.
-- #1504: Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling.
-- #1480: Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. (nateiler)
-- #1534: Added an `onAfterAction()` method to `Craft.BaseElementIndex`. (nateiler)
-- #1559: Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. (nateiler)
+- Element indexes now have a `toolbarFixed` setting, which dictates whether the toolbar should be fixed when scrolling. ([#1504](https://github.com/craftcms/cms/issues/1504))
+- Element indexes now have `refreshSourcesAction`, `updateElementsAction`, and `submitActionsAction` settings, which define the controller actions that various Ajax requests should be posted to. ([#1480](https://github.com/craftcms/cms/issues/1480))
+- Added an `onAfterAction()` method to `Craft.BaseElementIndex`. ([#1534](https://github.com/craftcms/cms/issues/1534))
+- Plugins can now define [sub-modules](http://www.yiiframework.com/doc-2.0/guide-structure-modules.html) via `extra.modules` in their `composer.json` file. ([#1559](https://github.com/craftcms/cms/issues/1559))
 - Elements are now “hard-coded” with their field layout IDs, via a new `fieldLayoutId` column in the `elements` table and a `$fieldLayoutId` property on `craft\base\ElementTrait`. Plugins that provide custom element types should start making sure `$fieldLayoutId` is set on their elements before passing them to `Craft::$app->elements->saveElement()`.
 
 ### Changed
@@ -147,7 +147,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\services\Assets::moveAsset()` now accepts an instance of `craft\models\VolumeFolder` instead of a folder ID.
 - `craft\services\Assets::moveAsset()` now returns a boolean value.
 - The `cacheDuration`, `cooldownDuration`, `defaultTokenDuration`, `elevatedSessionDuration`, `invalidLoginWindowDuration`, `purgePendingUsersDuration`, `rememberUsernameDuration`, `rememberedUserSessionDuration`, `userSessionDuration`, and `verificationCodeDuration` config settings can now be set to an integer (number of seconds), string ([duration interval](https://en.wikipedia.org/wiki/ISO_8601#Durations)), or `DateInterval` object.
-- #1096: Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.)
+- Plugin config file values in `config/pluginhandle.php` are now merged with database-stored plugin settings, and applied to the plugin’s settings model. (Also removed support for plugin `config.php` files.) ([#1096](https://github.com/craftcms/cms/issues/1096))
 - `craft\services\Config::getConfigSettings()` now only accepts a `$category` value of `apc`, `db`, `dbcache`, `filecache`, `general`, or `memcache`. (It no longer accepts plugin handles.)
 - Renamed `craft\base\PluginTrait::$hasSettings` to `$hasCpSettings`.
 - Removed support for automatically determining the values for the `omitScriptNameInUrls` and `usePathInfo` config settings.
@@ -192,18 +192,18 @@ Craft CMS 3.0 Working Changelog
 - Removed `Craft.showElementEditor()`.
 
 ### Fixed
-- Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. (luwes)
+- Fixed a bug where `Dashboard.js` would not load on case-sensitive file systems. ([#1500](https://github.com/craftcms/cms/issues/1500))
 - Fixed a bug that would cause a SQL error on some Craft 2.6 to 3 updates.
 - Fixed a bug where Craft’s stored field version would not update after saving/deleting a field in a non-global context.
 - Fixed a PHP error that occurred when installing Craft, if the user settings had any validation errors.
 - Fixed a bug where it was not possible to refresh element sources in element views.
 - Fixed an exception that could occur when loading an entry with a stored version that didn’t have a valid entry type ID.
-- #1547: Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved.
-- #1555: Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working.
+- Fixed a bug where Single entries weren’t getting their URIs or slugs updated when the section settings were re-saved. ([#1547](https://github.com/craftcms/cms/issues/1547))
+- Fixed a bug where the `CRAFT_ENVIRONMENT` PHP constant wasn’t working. ([#1555](https://github.com/craftcms/cms/issues/1555))
 - Fixed a bug where permissions were not checked prior to deleting an Asset via Element Action.
-- #1560: Fixed a bug where Matrix and relational fields’ values were getting propagated across other sites, even if they were set to manage blocks/relations on a per-site basis.
-- #1562: Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing.
-- #1543: Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters.
+- Fixed a bug where Matrix and relational fields’ values were getting propagated across other sites, even if they were set to manage blocks/relations on a per-site basis. ([#1560](https://github.com/craftcms/cms/issues/1560))
+- Fixed a PHP error that occurred on some console requests due to `craft\console\Application::getUser()` not existing. ([#1562](https://github.com/craftcms/cms/issues/1562))
+- Fixed a bug where newly-created Matrix block type fields’ Instructions settings were limited to 64 characters. ([#1543](https://github.com/craftcms/cms/issues/1543))
 - Fixed a bug that could prevent Craft from updating correctly in case of missing files.
 - Fixed a PHP error that could occur when saving an element that says it has content, but doesn’t have a field layout.
 - Fixed a bug where editing an asset from an Assets field wouldn’t show the correct custom fields, if the element hadn’t been saved yet or was disabled, and the asset hadn’t been placed in its target volume yet due to a dynamic subfolder path setting on the Assets field.
@@ -221,8 +221,8 @@ Craft CMS 3.0 Working Changelog
 - It is no longer possible to create a temporary volume by calling `craft\services\Volumes::getVolumeById()` without passing an ID.
 - Assets indexes now show a “Temporary uploads” volume that contain any assets uploaded by the current user, which haven’t been moved to a more permanent location yet.
 - Craft now stores temporary asset uploads on a per-user basis, rather than per-user/per-Assets field.
-- #13: Disabled Matrix blocks are no longer shown in Live Preview.
-- #21: Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so.
+- Disabled Matrix blocks are no longer shown in Live Preview. ([#13](https://github.com/craftcms/cms/issues/13))
+- Rich Text fields now remember if their “Available Volumes” or “Available Transforms” settings were saved with no options selected, and disables the corresponding functionalities if so. ([#21](https://github.com/craftcms/cms/issues/21))
 - `craft\base\Plugin::beforeUpdate()` and `afterUpdate()` now get passed a `$fromVersion` argument.)
 - `craft\console\User::getIdentity()`’s return types are now consistent with `craft\web\User::getIdentity()`.
 - `craft\services\Elements::saveElement()` now has a `$propagate` argument, which determines whether the element should be saved across all its supported sites (defaults to `true`).
@@ -241,18 +241,18 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a bug where the `deferPublicRegistrationPassword` config setting was having the opposite effect it was intended for.
-- #1427: Fixed a PHP error that would occur if some, but not all, of the auto-generated classes in `storage/runtime/compiled_classes/` didn’t exist or was out of date.
-- #1454: Fixed a bug where exceptions that were thrown during template rendering were being displayed without any styling.
-- #1461: Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event.
-- #1457: Fixed the styling of Element Editor HUD headers and footers.
-- #1456: Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field.
-- #1414: Fixed an exception that occurred when an Assets field’s dynamic upload path could not be resolved.
-- #1467: Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals.
-- #1469: Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method.
-- #1470: Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type.
+- Fixed a PHP error that would occur if some, but not all, of the auto-generated classes in `storage/runtime/compiled_classes/` didn’t exist or was out of date. ([#1427](https://github.com/craftcms/cms/issues/1427))
+- Fixed a bug where exceptions that were thrown during template rendering were being displayed without any styling. ([#1454](https://github.com/craftcms/cms/issues/1454))
+- Fixed a bug where the Clear Caches utility was ignoring any cache options registered with the `registerCacheOptions` event. ([#1461](https://github.com/craftcms/cms/issues/1461))
+- Fixed the styling of Element Editor HUD headers and footers. ([#1457](https://github.com/craftcms/cms/issues/1457))
+- Fixed a Slug validation error that would occur when saving an entry with no slug, if the entry type was configured to not show the Title field. ([#1456](https://github.com/craftcms/cms/issues/1456))
+- Fixed an exception that occurred when an Assets field’s dynamic upload path could not be resolved. ([#1414](https://github.com/craftcms/cms/issues/1414))
+- Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals. ([#1467](https://github.com/craftcms/cms/issues/1467))
+- Fixed a PHP error that occurred when passing anything besides an integer into an element query’s `level()` method. ([#1469](https://github.com/craftcms/cms/issues/1469))
+- Fixed a bug where the Edit Entry page would always assume an entry had the first available entry type. ([#1470](https://github.com/craftcms/cms/issues/1470))
 - Fixed a PHP error that occurred when attempting to rerun a failed task.
-- #16: Fixed a bug where Matrix and relational field values weren’t getting propagated to new sites correctly.
-- #1472: Fixed a bug where the `CRAFT_SITE` constant wasn’t being respected.
+- Fixed a bug where Matrix and relational field values weren’t getting propagated to new sites correctly. ([#16](https://github.com/craftcms/cms/issues/16))
+- Fixed a bug where the `CRAFT_SITE` constant wasn’t being respected. ([#1472](https://github.com/craftcms/cms/issues/1472))
 
 ## 3.0.0-beta.6 - 2017-03-03
 
@@ -277,10 +277,10 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - Asset focal point coordinates are now stored as decimal fractions instead of absolute coordinates.
-- #1420: Craft now does fuzzy searching on the right side of a keyword by default.
+- Craft now does fuzzy searching on the right side of a keyword by default. ([#1420](https://github.com/craftcms/cms/issues/1420))
 - It’s now possible to add columns to an element query’s `select` clause without completely replacing all of the default columns, by calling its `addSelect()` method.
-- #1421: Users are no longer logged out when verifying a new email address on their own account.
-- #1422: Users no longer get an exception or error message if they click on an invalid/expired email verification link and are already logged in. Instead they’ll be redirected to wherever they would normally be taken immediately after logging in.
+- Users are no longer logged out when verifying a new email address on their own account. ([#1421](https://github.com/craftcms/cms/issues/1421))
+- Users no longer get an exception or error message if they click on an invalid/expired email verification link and are already logged in. Instead they’ll be redirected to wherever they would normally be taken immediately after logging in. ([#1422](https://github.com/craftcms/cms/issues/1422))
 - `craft\base\Volume::filesystem()` now accepts a config parameter.
 - `craft\base\Volume::getFileList()` now returns the file list array indexed by the file URIs.
 - `craft\base\Volume::getMissingFiles()` no longer accepts a list of volume IDs and returns all missing files for that session,
@@ -342,7 +342,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added a “Column Type” advanced setting to Plain Text fields.
-- #1381: Added a “Column Type” advanced setting to Table fields.
+- Added a “Column Type” advanced setting to Table fields. ([#1381](https://github.com/craftcms/cms/issues/1381))
 - Added `craft\base\ElementInterface::hasUris()`. Elements that can have URIs must add this static method and return `true` now.
 - Added `craft\db\Connection::getIsMysql()`.
 - Added `craft\db\Connection::getIsPgsql()`.
@@ -391,36 +391,36 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\helpers\ElementHelper::setValidSlug()`.
 
 ### Fixed
-- #1373: Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation.
-- #1392: Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`.
+- Fixed a bug where Assets Indexing utility would generate an erroneous request at the end of the operation. ([#1373](https://github.com/craftcms/cms/issues/1373))
+- Fixed a JS error that occurred on edit pages with a Color field, unless the `useCompressedJs` config setting was set to `false`. ([#1392](https://github.com/craftcms/cms/issues/1392))
 - Fixed a bug where the `cacheDuration` config setting wasn’t getting applied to data caches, so everything was getting cached indefinitely by default.
-- #1390: Fixed a PHP error that occurred when saving a new entry draft, if the entry’s section only had one entry type.
+- Fixed a PHP error that occurred when saving a new entry draft, if the entry’s section only had one entry type. ([#1390](https://github.com/craftcms/cms/issues/1390))
 - Fixed a bug where entries’ “Title” field would receive two identical validation errors if a brand new entry was immediately saved as a draft, and didn’t have a title yet.
-- #1403: Fixed a bug where it was not possible to edit categories on anything but the primary site.
+- Fixed a bug where it was not possible to edit categories on anything but the primary site. ([#1403](https://github.com/craftcms/cms/issues/1403))
 - Fixed a PHP type error that could occur when editing an entry or category, if its corresponding template was `NULL` in the database, for some reason.
-- #1405: Fixed an exception that occurred when testing email settings, if the settings weren’t correct.
-- #1410: Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard.
-- #1374: Fixed a bug where Assets modal would not work when using dynamic paths.
+- Fixed an exception that occurred when testing email settings, if the settings weren’t correct. ([#1405](https://github.com/craftcms/cms/issues/1405))
+- Fixed a bug where new Dashboard widgets would get placed before other widgets after reloading the Dashboard. ([#1410](https://github.com/craftcms/cms/issues/1410))
+- Fixed a bug where Assets modal would not work when using dynamic paths. ([#1374](https://github.com/craftcms/cms/issues/1374))
 - Fixed a bug that prevented the database from being restored properly in certain circumstances if a 2.x to 3.0 upgrade failed.
 - Removed the “Column Type” setting from Rich Text fields for PostgreSQL installs, since PostgreSQL doesn’t have/need a `mediumtext` column type.
-- Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. (my2ter)
+- Fixed a bug where clicking on the link in a forgot password email would cause a “Invalid Verification Code” error to be thrown. ([#1386](https://github.com/craftcms/cms/pull/1386))
 - Fixed a bug where the admin “Copy Password Reset URL” option for a user account would give an error when used.
-- #1411: Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user.
+- Fixed a bug where checking the “Require a password reset on next login” for a user would cause a SQL error when saving that user. ([#1411](https://github.com/craftcms/cms/issues/1411))
 - Fixed a bug where custom field validation errors didn’t always include the correct field name.
 - Fixed a bug where Craft was throwing an exception when it couldn’t set a valid slug on an element during save, rather than adding a validation error.
-- #1383: Fixed a bug where saving an element with the title “0” would result in the element’s title getting saved as “-”.
+- Fixed a bug where saving an element with the title “0” would result in the element’s title getting saved as “-”. ([#1383](https://github.com/craftcms/cms/issues/1383))
 - Fixed a bug where the Control Panel layout templates didn’t to a good job handling pages with a title of “0”.
 - Fixed a bug where the migration responsible for converting user photos to Assets would fail intermittently.
-- #1407: Fixed a bug where existing entries were not getting their structure data if their section was converted from a Single/Channel to a Structure.
+- Fixed a bug where existing entries were not getting their structure data if their section was converted from a Single/Channel to a Structure. ([#1407](https://github.com/craftcms/cms/issues/1407))
 - Fixed a bug where `craft\services\Globals::saveSet()` could return `true` even if the global set hadn’t been saved successfully.
-- #22: Fixed a bug where it was possible to save an element without a slug if the Title didn’t contain any alphanumeric characters.
-- #1416: Fixed a bug where it was possible to save a Single section with an invalid URI.
-- #1416: Fixed a bug where saving an element with an invalid URI would halfway work.
+- Fixed a bug where it was possible to save an element without a slug if the Title didn’t contain any alphanumeric characters. ([#22](https://github.com/craftcms/cms/issues/22))
+- Fixed a bug where it was possible to save a Single section with an invalid URI. ([#1416](https://github.com/craftcms/cms/issues/1416))
+- Fixed a bug where saving an element with an invalid URI would halfway work. ([#1416](https://github.com/craftcms/cms/issues/1416))
 
 ## 3.0.0-beta.4 - 2017-02-17
 
 ### Added
-- #1388: Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting.
+- Added the “Branch Limit” Categories field setting, which replaces the “Limit” setting. ([#1388](https://github.com/craftcms/cms/issues/1388))
 - Added the `withStructure` param to element queries (defaults to `true` for entry and category queries).
 - Added `craft\base\PluginInterface::setSettings()`.
 - Added `craft\base\FolderVolumeInterface` that should be used by all Volumes supporting discrete folders.
@@ -462,44 +462,44 @@ Craft CMS 3.0 Working Changelog
 - Removed the `table.inputs` styles. Use `div.flex` instead.
 
 ### Fixed
-- #1361: Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values.
+- Fixed a bug where a plugin’s `init()` method couldn’t access its own settings values. ([#1361](https://github.com/craftcms/cms/issues/1361))
 - Fixed a PHP type error if you tried to save a Number field’s setting with “Min Value” set to nothing.
 - Fixed a bug where it was not possible to rename a file with the Asset "Rename File" action.
-- #1367: Fixed a PHP error that occurred when uploading a user photo.
-- #1365: Fixed a bug where element titles were not translatable.
-- #1366: Fixed a PHP error that occurred on the Settings → General page if the `timezone` config setting was set.
+- Fixed a PHP error that occurred when uploading a user photo. ([#1367](https://github.com/craftcms/cms/issues/1367))
+- Fixed a bug where element titles were not translatable. ([#1365](https://github.com/craftcms/cms/issues/1365))
+- Fixed a PHP error that occurred on the Settings → General page if the `timezone` config setting was set. ([#1366](https://github.com/craftcms/cms/issues/1366))
 - Fixed a bug where some Control Panel message strings were getting translated with the `site` translation category rather than `app`.
 - Fixed a bug where pagination URLs would define page numbers using a `pg` query string param if the `pageTrigger` config setting was set to `'?p'` and the `pathParam` config setting was set to something besides `'p'`.
 - Fixed a bug where if a Craft update failed and the attempt to restore the database from a backup failed, the UI would still show that the restore was successful.
 - Fixed several migration related bugs that were preventing some Craft 2.6 installs from being able to update to Craft 3.
 - Fixed a bug where renaming a folder would remove it’s trailing slash from path.
-- #1371: Fixed a bug where asset bundles weren’t always getting re-published when a sub-file(s) had been updated.
+- Fixed a bug where asset bundles weren’t always getting re-published when a sub-file(s) had been updated. ([#1371](https://github.com/craftcms/cms/issues/1371))
 - Fixed a bug where SVG images without a viewbox defined would not be scaled correctly.
 - Fixed a bug where Craft would generate warning when trying to index images with no content in them.
-- #1372: Fixed a bug where the Database Backup utility wouldn’t show an error when the backup failed.
+- Fixed a bug where the Database Backup utility wouldn’t show an error when the backup failed. ([#1372](https://github.com/craftcms/cms/issues/1372))
 - Fixed a bug where saving preexisting Active Record objects was not updating the `dateUpdated` column automatically.
-- #1380: Fixed a bug where required fields on a field layout were not being enforced.
+- Fixed a bug where required fields on a field layout were not being enforced. ([#1380](https://github.com/craftcms/cms/issues/1380))
 - Fixed a bug where required Plain Text fields were not getting a validation error if left blank.
 - Fixed a PHP type error that occurred when calling `craft\base\Element::getPrevSibling()` or `getNextSibling()`.
-- #1375: Fixed a bug where Structure-related element methods (e.g. `getParent()`) weren’t working for elements that weren’t queried with the `structureId` param set.
-- #1389: Fixed a bug where an exception was thrown when saving an element with a slug that was more than 255 characters long, rather than giving the slug a validation error.
-- #1391: Fixed a bug where the Password input on the Control Panel Login page was getting extra padding on the right side instead of the left side for browsers that preferred a RTL language.
+- Fixed a bug where Structure-related element methods (e.g. `getParent()`) weren’t working for elements that weren’t queried with the `structureId` param set. ([#1375](https://github.com/craftcms/cms/issues/1375))
+- Fixed a bug where an exception was thrown when saving an element with a slug that was more than 255 characters long, rather than giving the slug a validation error. ([#1389](https://github.com/craftcms/cms/issues/1389))
+- Fixed a bug where the Password input on the Control Panel Login page was getting extra padding on the right side instead of the left side for browsers that preferred a RTL language. ([#1391](https://github.com/craftcms/cms/issues/1391))
 - Fixed several issues and unexpected behaviors around the Number field, its default values, min and max settings and required validation.
 - Fixed a bug where the element listing wouldn’t get refreshed after running the “Set status” action, if any of the elements couldn’t be enabled due to validation errors.
 
 ## 3.0.0-beta.3 - 2017-02-07
 
 ### Added
-- #1338: Added the new “System Name” general setting, which defines the name that should be visible in the global CP sidebar.
+- Added the new “System Name” general setting, which defines the name that should be visible in the global CP sidebar. ([#1338](https://github.com/craftcms/cms/issues/1338))
 - Added `craft\base\ElementInterface::getSearchKeywords()`.
 - Added `craft\helpers\Db::areColumnTypesCompatible()`.
 - Added `craft\helpers\Db::getSimplifiedColumnType()`.
 - Added `craft\services\Security::redactIfSensitive()`.
 
 ### Changed
-- #2: The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them.
+- The “Set status” batch element action now goes through the normal element save process, rather than directly modifying the DB values, ensuring that the elements validate before enabling them. ([#2](https://github.com/craftcms/cms/issues/2))
 - The “Set status” batch element action now updates elements’ site statuses in addition to their global statuses, when setting the status to Enabled.
-- #1328: Sensitive global values are now redacted from the logs.
+- Sensitive global values are now redacted from the logs. ([#1328](https://github.com/craftcms/cms/issues/1328))
 - Editable tables now support a `radioMode` checkbox column option, which prevents more than one of the column’s checkboxes from being checked at a time.
 - `craft\helpers\Db::getNumericalColumnType()` no longer returns unsigned integer column types for MySQL.
 - The “Field Type” setting on Edit Field pages no longer shows field type options where there’s no chance the existing field data will map over.
@@ -518,34 +518,34 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
 - Fixed some asterisk icons.
 - #1334 Fixed a bug where it was impossible to upload user photo, site logo or site icon.
-- #8: Fixed a bug where it was possible to select multiple default options for Dropdown and Radio Buttons fields.
-- #9: Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals. 
-- #1341: Fixed a bug that occurred when generating transforms for images with focal points/
-- #1342: Fixed a bug where the utility status was overlapping the submit button in Utilities.
+- Fixed a bug where it was possible to select multiple default options for Dropdown and Radio Buttons fields. ([#8](https://github.com/craftcms/cms/issues/8))
+- Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals.  ([#9](https://github.com/craftcms/cms/issues/9))
+- Fixed a bug that occurred when generating transforms for images with focal points/ ([#1341](https://github.com/craftcms/cms/issues/1341))
+- Fixed a bug where the utility status was overlapping the submit button in Utilities. ([#1342](https://github.com/craftcms/cms/issues/1342))
 - Fixed a bug where `craft\helpers\Db::getNumericalColumnType()` could return a column type that wouldn’t actually fix the `$max` argument in PostgreSQL.
-- #15: Fixed a bug where entry URIs weren’t getting updated after an entry type was updated when the URI format referenced entry type properties.
-- #1332: Fixed a bug that broke site administration.
+- Fixed a bug where entry URIs weren’t getting updated after an entry type was updated when the URI format referenced entry type properties. ([#15](https://github.com/craftcms/cms/issues/15))
+- Fixed a bug that broke site administration. ([#1332](https://github.com/craftcms/cms/issues/1332))
 - Fixed a PHP error that occurred when saving an entry with a Matrix field on a multi-site install, in some cases.
-- #1332: Fixed a PHP error that occurred when saving an element with a Date/Time field.
-- #1354: Fixed a Twig syntax error when editing an element with a Color field.
+- Fixed a PHP error that occurred when saving an element with a Date/Time field. ([#1332](https://github.com/craftcms/cms/issues/1332))
+- Fixed a Twig syntax error when editing an element with a Color field. ([#1354](https://github.com/craftcms/cms/issues/1354))
 - Fixed a bug where fields that implemented `craft\base\PreviewableFieldInterface` were not showing up as options on element indexes.
 - Fixed task re-running.
 - Fixed a bug with transforming SVG files.
 - Fixed a bug with transforming images on external sources.
-- #1344: `config/app.php` can now be a multi-environment config.
-- #1345: Fixed a PHP error that occurred when creating a new tag.
-- #1360: Fixed a bug where relations would be dropped when running the Resave Elements task.
-- #1346: Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element.
-- #1349: Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language.
-- #1351: Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`.
-- #1350: Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings.
-- #1355: Fixed a 404 error that would occur when switching sites when editing a global set.
-- #1359: Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags.
-- #1358: Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs.
+- `config/app.php` can now be a multi-environment config. ([#1344](https://github.com/craftcms/cms/issues/1344))
+- Fixed a PHP error that occurred when creating a new tag. ([#1345](https://github.com/craftcms/cms/issues/1345))
+- Fixed a bug where relations would be dropped when running the Resave Elements task. ([#1360](https://github.com/craftcms/cms/issues/1360))
+- Fixed a PHP error that occurred when executing an element query with the `relatedTo` param set to an element. ([#1346](https://github.com/craftcms/cms/issues/1346))
+- Fixed a JavaScript error that was preventing Redactor from loading for Rich Text fields, for users with a non-English preferred language. ([#1349](https://github.com/craftcms/cms/issues/1349))
+- Fixed a PHP type error that would occur when calling `craft\services\Globals::getSetByHandle()`. ([#1351](https://github.com/craftcms/cms/issues/1351))
+- Fixed a bug where Plain Text fields weren’t enforcing their Max Length setting, and Number fields weren’t enfoncing their Min and Max Value settings. ([#1350](https://github.com/craftcms/cms/issues/1350))
+- Fixed a 404 error that would occur when switching sites when editing a global set. ([#1355](https://github.com/craftcms/cms/issues/1355))
+- Fixed a bug that broke reference tags for Global Sets, Matrix Blocks and Tags. ([#1359](https://github.com/craftcms/cms/issues/1359))
+- Fixed a Twig parse error that occurred when using the deprecated `{% includecss %}` or `{% includejs %}` tags as tag pairs. ([#1358](https://github.com/craftcms/cms/issues/1358))
 - Fixed a bug where Craft was only logging warnings and errors when Dev Mode was enabled.
-- #1356: Fixed the “x” button’s icon that appears in search inputs, used to clear the search input.
+- Fixed the “x” button’s icon that appears in search inputs, used to clear the search input. ([#1356](https://github.com/craftcms/cms/issues/1356))
 - Fixed a bug where you would get a validation error if you tried to purchase Craft with a 100%-off coupon code.
-- #1347: Fixed a migration error that was preventing Craft 2.6 installs from being able to update to Craft 3. 
+- Fixed a migration error that was preventing Craft 2.6 installs from being able to update to Craft 3.  ([#1347](https://github.com/craftcms/cms/issues/1347))
 
 ## 3.0.0-beta.2 - 2017-02-02
 
@@ -553,39 +553,39 @@ Craft CMS 3.0 Working Changelog
 - Craft now logs `craft\db\QueryAbortedException`s.
 - Element queries will now throw `craft\db\QueryAbortedException`s if any structure params are set, but `structureId` is not set.
 - `craft\services\Categories::fillGapsInCategoryIds()` now has a required `$structureId` argument.
-- #1331: Added `type` and `value` to the list of reserved field handles.
+- Added `type` and `value` to the list of reserved field handles. ([#1331](https://github.com/craftcms/cms/issues/1331))
 - Console requests now get the CP template mode by default.
-- #1335: Site requests now resolve plugin template paths as if they were CP requests when rendering with the CP template mode.
+- Site requests now resolve plugin template paths as if they were CP requests when rendering with the CP template mode. ([#1335](https://github.com/craftcms/cms/issues/1335))
 - Updated Yii to 2.0.11.1.
 
 ### Removed
-- Removed support for Memcache (without a d), as it is not compatible with PHP 7. (ostark)
+- Removed support for Memcache (without a d), as it is not compatible with PHP 7. ([#1309](https://github.com/craftcms/cms/pull/1309))
 
 ### Fixed
 - Fixed a bug where `craft\feeds\Feeds::getFeedItems()` was returning `null` when the results were not already cached, resulting in an “unknown error” on the Dashboard.
 - Fixed an InvalidConfigException that would get thrown when attempting to edit an entry version with an author that had been deleted.
-- Fixed a bug where swapping between entries in a section enabled for multiple sites would cause a PHP type error. (carlcs)
+- Fixed a bug where swapping between entries in a section enabled for multiple sites would cause a PHP type error. ([#1310](https://github.com/craftcms/cms/pull/1310))
 - Fixed a bug where the “Save as a draft” entry Save menu option would take you to a 404.
 - Fixed a bug where the “Publish draft” entry draft Save menu option would take you to a 404.
 - Fixed a bug where the “Delete draft” entry draft Save menu options would take you to a 404.
 - Fixed a bug where the “Delete” category button would take you to a 404.
 - Fixed a bug where saving a user with no permissions would result in a PHP type error.
 - Fixed a bug where removing a user’s admin permissions using PostgreSQL would result in a SQL error.
-- #1037: Fixed a bug where the “Revert entry to this version” button on entry version pages would result in an “No element exists with the ID 'X'” exception.
-- #1311: Fixed a bug where creating a new user would cause a PHP type error.
-- #1314: Fixed a bug where `src/config/defaults/general.php` was listing `'redis'` as a possible `cacheMethod` setting value, but Yii 2 does not have native support for Redis.
+- Fixed a bug where the “Revert entry to this version” button on entry version pages would result in an “No element exists with the ID 'X'” exception. ([#1037](https://github.com/craftcms/cms/issues/1037))
+- Fixed a bug where creating a new user would cause a PHP type error. ([#1311](https://github.com/craftcms/cms/issues/1311))
+- Fixed a bug where `src/config/defaults/general.php` was listing `'redis'` as a possible `cacheMethod` setting value, but Yii 2 does not have native support for Redis. ([#1314](https://github.com/craftcms/cms/issues/1314))
 - Fixed a bug where `craft\db\QueryAbortedException`s were not getting caught when calling `craft\db\Query::scalar()` or `column()`.
-- #1321: Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty.
-- #1316: Fixed some `TypeError`s in controller action responses.
-- #1313: Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field.
+- Fixed a bug where expanding a collapsed Structure entry or category on an index page would come up empty. ([#1321](https://github.com/craftcms/cms/issues/1321))
+- Fixed some `TypeError`s in controller action responses. ([#1316](https://github.com/craftcms/cms/issues/1316))
+- Fixed a PHP error that occurred when using the `{% nav %}` tag, or when selecting categories in a Categories field. ([#1313](https://github.com/craftcms/cms/issues/1313))
 - Fixed a bug where deleting all the selections in a relation field would result in no changes being made to the field on save.
-- #1322: Fixed a PHP error that occurred when editing a Rich Text field with the “Available Transforms” setting set to `*`.
-- #1312: Fixed a PHP error that occurred when editing an image using GD.
-- #1323: Fixed a PHP error that occurred when generating image transforms.
+- Fixed a PHP error that occurred when editing a Rich Text field with the “Available Transforms” setting set to `*`. ([#1322](https://github.com/craftcms/cms/issues/1322))
+- Fixed a PHP error that occurred when editing an image using GD. ([#1312](https://github.com/craftcms/cms/issues/1312))
+- Fixed a PHP error that occurred when generating image transforms. ([#1323](https://github.com/craftcms/cms/issues/1323))
 - Fixed a bug where Assets fields’ “Sources” settings weren’t working.
-- #1325: Fixed a bug where disabled entries and categories weren’t showing up in their Control Panel indexes.
+- Fixed a bug where disabled entries and categories weren’t showing up in their Control Panel indexes. ([#1325](https://github.com/craftcms/cms/issues/1325))
 - Fixed a bug where creating a Number field type on PostgreSQL would result a SQL error.
-- #1326: Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. (my2ter)
+- Fixed a bug where calling `craft\services\Sections::getEntryTypesByHandle()` would cause a PHP type error. ([#1326](https://github.com/craftcms/cms/issues/1326))
 - Fixed a bug where plugin updates could be displayed with the wrong date if the system time zone was behind UTC.
 
 ## 3.0.0-beta.1 - 2017-01-29
