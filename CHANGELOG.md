@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2972 - 2017-04-12
+
 ### Changed
 - Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior. ([#1611](https://github.com/craftcms/cms/issues/1611))
 - Improved the legibility of text in Live Preview in Safari. ([#1578](https://github.com/craftcms/cms/issues/1578))
