@@ -212,7 +212,7 @@ Craft CMS 3.0 Working Changelog
 
 ## 3.0.0-beta.7 - 2017-03-10
 
-### Added
+### Added
 - Added `craft\services\Assets::getCurrentUserTemporaryUploadFolder()`.
 - Added `craft\services\Assets::getUserTemporaryUploadFolder()`.
 
