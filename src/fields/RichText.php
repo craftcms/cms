@@ -229,6 +229,20 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        $keywords = parent::getSearchKeywords($value, $element);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $keywords = StringHelper::encodeMb4($keywords);
+        }
+
+        return $keywords;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */

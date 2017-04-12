@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))
 - Fixed a bug where it was impossible to upload user photos, site icon and site logo.
 - Fixed an issue where Rich Text Field Asset modals would ignore the defined Volume order.
+- Fixed a SQL error that occurred when saving an entry with a Rich Text field that contained a 4-byte character (like an emoji), if using MySQL. ([#1627](https://github.com/craftcms/cms/issues/1627))
 
 ## 3.0.0-beta.10 - 2017-04-07
 
