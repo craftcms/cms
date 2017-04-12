@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - #1611: Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior.
+- #1578: Improved the legibility of text in Live Preview in Safari. (carlcs)
 
 ### Fixed
 - Fixed a bug where clearing all caches could have unintended side effects on temporary upload folders.
