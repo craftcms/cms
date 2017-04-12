@@ -12,6 +12,7 @@ Craft CMS Changelog
 - Fixed a bug where `jquery.ui.widget.js` was getting loaded twice in the Control Panel.
 - Fixed a bug where submitting a “forgot password” form on the front-end without a username or password would result in an “Invalid username or email” error in addition to “Username or email is required”.
 - #1605: Fixed a bug where the `users/sendPasswordResetEmail` controller action would act like the password reset email was sent successfully, even if no username/email was submitted, if the `preventUserEnumeration` config setting was enabled.
+- #1622: Fixed a bug where Command/Ctrl/Shift-clicking on multiple elements in an element selector modal in quick succession could be mistaken for a double-click, causing the elements to become selected and the modal to close.
 
 ### Security
 - Fixed a brute force attack vector.
