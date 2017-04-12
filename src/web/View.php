@@ -675,6 +675,9 @@ class View extends \yii\web\View
     protected function renderHeadHtml()
     {
         $lines = [];
+        if (!empty($this->title)) {
+            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
+        }
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
         }
