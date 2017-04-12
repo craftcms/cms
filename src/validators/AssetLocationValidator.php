@@ -133,7 +133,7 @@ class AssetLocationValidator extends Validator
 
         if ($suggestedFilename !== $filename) {
             $model->{$this->conflictingFilenameAttribute} = $filename;
-            
+
             if (!$this->avoidFilenameConflicts) {
                 $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
                 $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
