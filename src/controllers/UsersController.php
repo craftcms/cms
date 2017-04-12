@@ -236,6 +236,8 @@ class UsersController extends BaseController
 				// If they didn't even enter a username/email, just bail now.
 				$errors[] = Craft::t('Username or email is required.');
 				$this->_handleSendPasswordResetError($errors);
+
+				return;
 			}
 
 			$user = craft()->users->getUserByUsernameOrEmail($loginName);
@@ -255,7 +257,7 @@ class UsersController extends BaseController
 		}
 
 		// If there haven't been any errors, or there were, and it's not one logged in user editing another
-		// // and we want to pretend like there wasn't any errors...
+		// and we want to pretend like there wasn't any errors...
 		if (empty($errors) || (count($errors) > 0 && !$existingUser && craft()->config->get('preventUserEnumeration')))
 		{
 			if (craft()->request->isAjaxRequest())
@@ -1965,7 +1967,5 @@ class UsersController extends BaseController
 				'loginName' => $loginName,
 			));
 		}
-
-		return;
 	}
 }

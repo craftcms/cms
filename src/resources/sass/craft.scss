@@ -23,7 +23,7 @@ body, html { background: $bgcolor; }
 html.noscroll,
 html.noscroll body { overflow: hidden; }
 
-body { font-size: 13px; line-height: 18px; color: $textcolor; }
+body { font-size: 13px; line-height: 18px; color: $textcolor; -webkit-font-smoothing: subpixel-antialiased; }
 body.rtl { direction: rtl; }
 body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 

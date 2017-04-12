@@ -35,7 +35,7 @@ body, html { background: #ebedef; }
 
 html.noscroll, html.noscroll body { overflow: hidden; }
 
-body { font-size: 13px; line-height: 18px; color: #29323d; }
+body { font-size: 13px; line-height: 18px; color: #29323d; -webkit-font-smoothing: subpixel-antialiased; }
 
 body.rtl { direction: rtl; }
 

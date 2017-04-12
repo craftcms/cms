@@ -136,18 +136,8 @@ class UserIdentity extends \CUserIdentity
 
 			case UserStatus::Locked:
 			{
-				// If the account is locked, but they just entered a valid password
-				if (craft()->users->validatePassword($user->password, $this->password))
-				{
-					// Let them know how much time they have to wait (if any) before their account is unlocked.
-					$this->errorCode = $this->_getLockedAccountErrorCode();
-				}
-				else
-				{
-					// Otherwise, just give them the invalid username/password message to
-					// help prevent user enumeration.
-					$this->errorCode = static::ERROR_USERNAME_INVALID;
-				}
+				// Let them know how much time they have to wait (if any) before their account is unlocked.
+				$this->errorCode = $this->_getLockedAccountErrorCode();
 
 				break;
 			}

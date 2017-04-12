@@ -730,7 +730,7 @@ class AssetsFieldType extends BaseElementFieldType
 					$folderId = $this->_createSubFolder($userFolder, $folderName);
 				}
 
-				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$folderName);
+				IOHelper::ensureFolderExists(craft()->path->getAssetsTempSourcePath().$userFolder->path.'/'.$folderName);
 			}
 			else
 			{
