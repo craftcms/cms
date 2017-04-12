@@ -650,18 +650,19 @@ class View extends \yii\web\View
 
     /**
      * Registers a generic <script> code block.
-     * @param string $script the generic <script> code block to be registered
-     * @param int $position the position at which the generic <script> code block should be inserted
-     * in a page. The possible values are:
+     *
+     * @param string $script   the generic <script> code block to be registered
+     * @param int    $position the position at which the generic <script> code block should be inserted
+     *                         in a page. The possible values are:
      *
      * - [[POS_HEAD]]: in the head section
      * - [[POS_BEGIN]]: at the beginning of the body section
      * - [[POS_END]]: at the end of the body section
      *
-     * @param array $options the HTML attributes for the <script> tag.
-     * @param string $key the key that identifies the generic <script> code block. If null, it will use
-     * $script as the key. If two generic <script> code blocks are registered with the same key, the latter
-     * will overwrite the former.
+     * @param array  $options  the HTML attributes for the <script> tag.
+     * @param string $key      the key that identifies the generic <script> code block. If null, it will use
+     *                         $script as the key. If two generic <script> code blocks are registered with the same key, the latter
+     *                         will overwrite the former.
      */
     public function registerScript($script, $position = self::POS_END, $options = [], $key = null)
     {
@@ -676,14 +677,15 @@ class View extends \yii\web\View
     {
         $lines = [];
         if (!empty($this->title)) {
-            $lines[] = '<title>' . Html::encode($this->title) . '</title>';
+            $lines[] = '<title>'.Html::encode($this->title).'</title>';
         }
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
         }
 
         $html = parent::renderHeadHtml();
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
     }
 
     /**
@@ -697,7 +699,8 @@ class View extends \yii\web\View
         }
 
         $html = parent::renderBodyBeginHtml();
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
     }
 
     /**
@@ -711,7 +714,8 @@ class View extends \yii\web\View
         }
 
         $html = parent::renderBodyEndHtml($ajaxMode);
-        return empty($lines) ? $html : implode("\n", $lines) . $html;
+
+        return empty($lines) ? $html : implode("\n", $lines).$html;
     }
 
     /**
