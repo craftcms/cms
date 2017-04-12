@@ -4,15 +4,15 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-- #1611: Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior.
-- #1578: Improved the legibility of text in Live Preview in Safari. (carlcs)
+- Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior. ([#1611](https://github.com/craftcms/cms/issues/1611))
+- Improved the legibility of text in Live Preview in Safari. ([#1578](https://github.com/craftcms/cms/issues/1578))
 
 ### Fixed
 - Fixed a bug where clearing all caches could have unintended side effects on temporary upload folders.
 - Fixed a bug where `jquery.ui.widget.js` was getting loaded twice in the Control Panel.
 - Fixed a bug where submitting a “forgot password” form on the front-end without a username or password would result in an “Invalid username or email” error in addition to “Username or email is required”.
-- #1605: Fixed a bug where the `users/sendPasswordResetEmail` controller action would act like the password reset email was sent successfully, even if no username/email was submitted, if the `preventUserEnumeration` config setting was enabled.
-- #1622: Fixed a bug where Command/Ctrl/Shift-clicking on multiple elements in an element selector modal in quick succession could be mistaken for a double-click, causing the elements to become selected and the modal to close.
+- Fixed a bug where the `users/sendPasswordResetEmail` controller action would act like the password reset email was sent successfully, even if no username/email was submitted, if the `preventUserEnumeration` config setting was enabled. ([#1605](https://github.com/craftcms/cms/issues/1605))
+- Fixed a bug where Command/Ctrl/Shift-clicking on multiple elements in an element selector modal in quick succession could be mistaken for a double-click, causing the elements to become selected and the modal to close. ([#1622](https://github.com/craftcms/cms/issues/1622))
 
 ### Security
 - Fixed a brute force attack vector.
@@ -32,14 +32,14 @@ Craft CMS Changelog
 
 ### Changed
 - It's now possible to execute `AssetsFieldType::prepValueFromPost()` only once per field instance. Subsequent calls will return previous execution result.
-- #13: Disabled Matrix blocks are no longer shown in Live Preview.
+- Disabled Matrix blocks are no longer shown in Live Preview. ([#13](https://github.com/craftcms/cms/issues/13))
 
 ### Fixed
 - Fixed a PHP error that occurred when updating Craft if the OPcache restrict_api config setting was set.
 - Fixed a bug where Redactor dialogs would list the Asset Source in the wrong order.
 - Fixed a bug where temporary upload folders were not being created correctly.
-- #1577: Fixed a bug where Craft was not redirecting users to the correct URL after login, if the site homepage had a `{% requireLogin %}` tag, and was accessed with a query string.
-- #1593: Fixed a bug where the DeleteStaleTemplateCaches could potentially miss some caches that should be busted.
+- Fixed a bug where Craft was not redirecting users to the correct URL after login, if the site homepage had a `{% requireLogin %}` tag, and was accessed with a query string. ([#1577](https://github.com/craftcms/cms/issues/1577))
+- Fixed a bug where the DeleteStaleTemplateCaches could potentially miss some caches that should be busted. ([#1593](https://github.com/craftcms/cms/issues/1593))
 
 ## 2.6.2968 - 2017-03-24
 
@@ -47,22 +47,22 @@ Craft CMS Changelog
 - Added Control Panel translations for Polish.
 
 ### Changed
-- #1556: Removed the Delete button from entry version/draft pages.
+- Removed the Delete button from entry version/draft pages. ([#1556](https://github.com/craftcms/cms/issues/1556))
 - Assets fields no longer throw an exception if they can’t resolve a dynamic upload path for a disabled element.
 - Updated element-resize-detector to 1.1.11.
 - Updated Garnish to 0.1.17.
 
 ### Fixed
-- #1441: Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text.
+- Fixed a bug where bold text in Rich Text fields was getting set to the system’s default sans-serif font, unlike the rest of the text. ([#1441](https://github.com/craftcms/cms/issues/1441))
 - Fixed a bug where jQuery DatePicker was missing some of the locale files that the Craft Control Panel is translated into.
-- #1540: Fixed some Control Panel messages that weren’t getting translated.
+- Fixed some Control Panel messages that weren’t getting translated. ([#1540](https://github.com/craftcms/cms/issues/1540))
 - Fixed a PHP error that occurred on console requests if there was a database connection issue.
-- #1553: Fixed a bug where Table fields weren’t initializing reliably in Firefox.
+- Fixed a bug where Table fields weren’t initializing reliably in Firefox. ([#1553](https://github.com/craftcms/cms/issues/1553))
 
 ## 2.6.2967 - 2017-03-10
 
 ### Fixed
-- #5: Fixed a bug where translatable fields on new Matrix blocks would show the current application locale rather than the locale of the element being edited.
+- Fixed a bug where translatable fields on new Matrix blocks would show the current application locale rather than the locale of the element being edited. ([#5](https://github.com/craftcms/cms/issues/5))
 - Fixed a PHP error that could occur if you called `craft()->updates->isCriticalUpdateAvailable()` and there wasn't any cached plugin update info.
 - Fixed a few bugs that prevented a console request from being able to call `craft()->entries->saveEntry()` successfully in some circumstances.
 - Fixed a bug where charts were not properly taking timezone settings into account.
@@ -75,8 +75,8 @@ Craft CMS Changelog
 ## 2.6.2965 - 2017-03-03
 
 ### Changed
-- #1447: Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`.
-- #1451: Ajax requests to controller actions that require a user session now get a 403 response rather than the Login page HTML, if the user isn’t logged in.
+- Craft database backups will no longer include the `cache` table created when the `cacheMethod` config setting is set to `'db'`. ([#1447](https://github.com/craftcms/cms/issues/1447))
+- Ajax requests to controller actions that require a user session now get a 403 response rather than the Login page HTML, if the user isn’t logged in. ([#1451](https://github.com/craftcms/cms/issues/1451))
 - Relational and Matrix fields now check if their values have been eager-loaded when displaying their inputs.
 
 ### Fixed
@@ -91,8 +91,8 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where it was not possible to access the edit page for entries and categories in the non-primary site, or entry drafts/versions.
-- #1435: Fixed a bug where unordered lists in Rich Text fields weren’t getting bullets.
-- #1433: Fixed a JavaScript error that occurred when adding a page break to Rich Text fields.
+- Fixed a bug where unordered lists in Rich Text fields weren’t getting bullets. ([#1435](https://github.com/craftcms/cms/issues/1435))
+- Fixed a JavaScript error that occurred when adding a page break to Rich Text fields. ([#1433](https://github.com/craftcms/cms/issues/1433))
 
 ## 2.6.2963 - 2017-02-23
 
@@ -102,8 +102,8 @@ Craft CMS Changelog
 - Element indexes now get a reference to their containing element selector modal via `this.settings.modal`.
 
 ### Fixed
-- #1378: Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`.
-- #1387: Fixed a bug where hidden login page inputs were still focusable by pressing Tab after clicking the “Forget your password?” link.
+- Fixed a bug where the `forms/checkboxSelect.html` include template wouldn’t display a checkbox option with the value of `0`. ([#1378](https://github.com/craftcms/cms/issues/1378))
+- Fixed a bug where hidden login page inputs were still focusable by pressing Tab after clicking the “Forget your password?” link. ([#1387](https://github.com/craftcms/cms/issues/1387))
 - Fixed a bug where the requirements checker would error if the `craft` folder and the public `index.php` file lived at the root of the file system.
 - Fixed a bug where modals were super laggy, especially in Safari.
 - Fixed a bug where Rich Text field settings were stating that MEDIUMTEXT columns could store 4GB, when in reality they store 16MB.
