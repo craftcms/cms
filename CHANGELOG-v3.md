@@ -9,6 +9,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - If `craft\web\View::$title` is set, a `<title>` tag will now automatically get injected into the page’s `<head>`. ([#1625](https://github.com/craftcms/cms/pull/1625))
+- Craft no longer encodes 4-byte characters (like emojis) present in Rich Text fields and template caches, if using PostgreSQL.
 
 ### Fixed
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))

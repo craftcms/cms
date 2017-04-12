@@ -290,8 +290,10 @@ class RichText extends Field
             },
             $value);
 
-        // Encode any 4-byte UTF-8 characters.
-        $value = StringHelper::encodeMb4($value);
+        if (Craft::$app->getDb()->getIsMysql()) {
+            // Encode any 4-byte UTF-8 characters.
+            $value = StringHelper::encodeMb4($value);
+        }
 
         return $value;
     }
