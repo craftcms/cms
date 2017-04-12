@@ -105,6 +105,12 @@ class View extends \yii\web\View
     private $_jsBuffers = [];
 
     /**
+     * @var array the registered JsonLd blocks
+     * @see registerJsonLd()
+     */
+    public $_jsonLd;
+
+    /**
      * @var array
      */
     private $_translations = [];
@@ -640,6 +646,48 @@ class View extends \yii\web\View
         }
 
         return $js;
+    }
+
+    /**
+     * Registers a JsonLd block.
+     * @param string $jsonLd the JsonLd block to be registered
+     *
+     * @param string $key the key that identifies the JsonLd block. If null, it will use
+     * $jsonLd as the key. If two JsonLd blocks are registered with the same key, the latter
+     * will overwrite the former.
+     */
+    public function registerJsonLd($jsonLd, $key = null)
+    {
+        $key = $key ?: md5($jsonLd);
+        $this->_jsonLd[$key] = Html::script($jsonLd, ['type' => 'application/ld+json']);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderHeadHtml()
+    {
+        $lines = [];
+        if (!empty($this->title)) {
+            $lines[] = '<title>' . Html::encode($this->title) . '</title>' . "\n";
+        }
+
+        $html = parent::renderHeadHtml();
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function renderBodyBeginHtml()
+    {
+        $lines = [];
+        if (!empty($this->_jsonLd)) {
+            $lines[] = implode("\n", $this->_jsonLd);
+        }
+
+        $html = parent::renderBodyBeginHtml();
+        return empty($lines) ? $html : implode("\n", $lines) . $html;
     }
 
     /**
