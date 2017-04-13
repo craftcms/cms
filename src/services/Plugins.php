@@ -851,6 +851,7 @@ class Plugins extends Component
             $plugin = $this->getPlugin($lcHandle);
 
             $config['isInstalled'] = isset($this->_installedPluginInfo[$lcHandle]);
+            $config['isComposerInstall'] = $this->isComposerInstall($lcHandle);
             $config['isEnabled'] = ($plugin !== null);
             $config['moduleId'] = $plugin !== null ? $plugin->id : Inflector::camel2id($config['handle']);
             $config['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
