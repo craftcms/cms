@@ -1,25 +1,18 @@
 {% import '_includes/forms' as forms %}
 
-{% if configOptions|length > 1 %}
-    {% set configInput %}
-        {{ forms.select({
-            id: 'configFle',
-            name: 'configFile',
-            options: configOptions,
-            value: field.configFile
-        }) }}
-    {% endset %}
-{% else %}
-    {% set configInput %}
-        <p>{{ 'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t('app')|raw }}</p>
-    {% endset %}
-{% endif %}
-
-{{ forms.field({
-    label: "Config"|t('app'),
-    instructions: "You can save custom Redactor configs as .json files in config/redactor/."|t('app')~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t('app')~'</a>.',
-    id: 'configFile'
-}, configInput) }}
+{{ forms.selectField({
+    label: "Redactor Config"|t('app'),
+    instructions: "You can save custom {name} configs as {ext} files in {path}."|t('app', {
+            name: 'Redactor',
+            ext: '`.json`',
+            path: '`craft/config/redactor/`'
+        }) ~
+        ' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t('app')~'</a>',
+    id: 'configFle',
+    name: 'configFile',
+    options: redactorConfigOptions,
+    value: field.configFile
+}) }}
 
 {{ forms.checkboxSelectField({
     id: 'availableVolumes',
@@ -59,8 +52,25 @@
         warning: 'Disable this at your own risk!'|t('app'),
         id: 'purifyHtml',
         name: 'purifyHtml',
-        checked: field.purifyHtml
+        checked: field.purifyHtml,
+        toggle: 'purifier-config-container'
     }) }}
+
+    <div id="purifier-config-container"{% if not field.purifyHtml %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: "HTML Purifier Config"|t('app'),
+            instructions: "You can save custom {name} configs as {ext} files in {path}."|t('app', {
+                name: 'HTML Purifier Config',
+                ext: '`.json`',
+                path: '`craft/config/htmlpurifier/`'
+            }) ~
+            ' <a href="http://htmlpurifier.org/live/configdoc/plain.html" target="_blank">'~"View available settings"|t('app')~'</a>',
+            id: 'purifierConfig',
+            name: 'purifierConfig',
+            options: purifierConfigOptions,
+            value: field.purifierConfig
+        }) }}
+    </div>
 
     {% if craft.app.db.isMysql %}
         {{ forms.selectField({

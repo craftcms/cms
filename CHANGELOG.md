@@ -3,9 +3,15 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added the “HTML Purifier Config” setting to Rich Text fields ([#1415](https://github.com/craftcms/cms/issues/1415))
+
+## 2.6.2972 - 2017-04-12
+
 ### Changed
 - Images added to Rich Text fields are now nested within a `<figure>` element, for consistency with Redactor’s default image behavior. ([#1611](https://github.com/craftcms/cms/issues/1611))
 - Improved the legibility of text in Live Preview in Safari. ([#1578](https://github.com/craftcms/cms/issues/1578))
+- It is now possible to override the default element criteria used on index pages in the Control Panel, by modifying `Craft.defaultIndexCriteria`.
 
 ### Fixed
 - Fixed a bug where clearing all caches could have unintended side effects on temporary upload folders.

@@ -63,6 +63,11 @@ class RichText extends Field
     public $configFile;
 
     /**
+     * @var string|null The HTML Purifier config file to use
+     */
+    public $purifierConfig;
+
+    /**
      * @var bool Whether the HTML should be cleaned up on save
      */
     public $cleanupHtml = true;
@@ -100,20 +105,6 @@ class RichText extends Field
      */
     public function getSettingsHtml()
     {
-        $configOptions = ['' => Craft::t('app', 'Default')];
-        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor';
-
-        if (is_dir($configPath)) {
-            $configFiles = FileHelper::findFiles($configPath, [
-                'only' => ['*.json'],
-                'recursive' => false
-            ]);
-
-            foreach ($configFiles as $file) {
-                $configOptions[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
-            }
-        }
-
         $volumeOptions = [];
         /** @var $volume Volume */
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
@@ -136,7 +127,8 @@ class RichText extends Field
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',
             [
                 'field' => $this,
-                'configOptions' => $configOptions,
+                'redactorConfigOptions' => $this->_getCustomConfigOptions('redactor'),
+                'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
                 'volumeOptions' => $volumeOptions,
                 'transformOptions' => $transformOptions,
             ]);
@@ -171,7 +163,7 @@ class RichText extends Field
     {
         /** @var RichTextData|null $value */
         /** @var Element $element */
-        $configJs = $this->_getConfigJson();
+        $configJs = $this->_getRedactorConfigJson();
         $this->_includeFieldResources($configJs);
 
         $view = Craft::$app->getView();
@@ -264,10 +256,7 @@ class RichText extends Field
             $value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
             if ($this->purifyHtml) {
-                $value = HtmlPurifier::process($value, [
-                    'Attr.AllowedFrameTargets' => ['_blank'],
-                    'HTML.AllowedComments' => ['pagebreak']
-                ]);
+                $value = HtmlPurifier::process($value, $this->_getPurifierConfig());
             }
 
             if ($this->cleanupHtml) {
@@ -467,6 +456,7 @@ class RichText extends Field
             // In case Temporary volumes ever make an appearance in RTF modals, sort them to the end of the list.
             $aOrder = $sortedVolumeIds[$a->volumeId] ?? PHP_INT_MAX;
             $bOrder = $sortedVolumeIds[$b->volumeId] ?? PHP_INT_MAX;
+
             return $aOrder - $bOrder;
         });
 
@@ -504,11 +494,37 @@ class RichText extends Field
     }
 
     /**
+     * Returns the available Redactor config options.
+     *
+     * @param string $dir The directory name within the config/ folder to look for config files
+     *
+     * @return array
+     */
+    private function _getCustomConfigOptions(string $dir): array
+    {
+        $options = ['' => Craft::t('app', 'Default')];
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir;
+
+        if (is_dir($path)) {
+            $files = FileHelper::findFiles($path, [
+                'only' => ['*.json'],
+                'recursive' => false
+            ]);
+
+            foreach ($files as $file) {
+                $options[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
+            }
+        }
+
+        return $options;
+    }
+
+    /**
      * Returns the Redactor config JSON used by this field.
      *
      * @return string
      */
-    private function _getConfigJson(): string
+    private function _getRedactorConfigJson(): string
     {
         if (!$this->configFile) {
             return '{}';
@@ -523,6 +539,27 @@ class RichText extends Field
         }
 
         return file_get_contents($configPath);
+    }
+
+    /**
+     * Returns the HTML Purifier config used by this field.
+     *
+     * @return array
+     */
+    private function _getPurifierConfig(): array
+    {
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'htmlpurifier'.DIRECTORY_SEPARATOR.$this->purifierConfig;
+
+        if (!$this->purifierConfig || !is_file($path)) {
+            return [
+                'Attr.AllowedFrameTargets' => ['_blank'],
+                'HTML.AllowedComments' => ['pagebreak'],
+            ];
+        }
+
+        $json = file_get_contents($path);
+
+        return Json::decode($json);
     }
 
     /**
