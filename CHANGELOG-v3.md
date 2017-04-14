@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Checkboxes and Multi-select fields weren’t saving their values properly, or normalizing their values properly. ([#1619](https://github.com/craftcms/cms/issues/1619))
+
 ## 3.0.0-beta.11 - 2017-04-14
 
 ### Added
