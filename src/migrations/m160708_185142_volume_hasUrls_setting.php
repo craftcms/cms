@@ -27,7 +27,7 @@ class m160708_185142_volume_hasUrls_setting extends Migration
         $volumes = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%volumes}}'])
-            ->all();
+            ->all($this->db);
 
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);

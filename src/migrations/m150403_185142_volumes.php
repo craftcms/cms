@@ -64,7 +64,7 @@ class m150403_185142_volumes extends Migration
             ->select(['id', 'name'])
             ->from(['{{%userpermissions}}'])
             ->where(['like', 'name', 'assetsource'])
-            ->all();
+            ->all($this->db);
 
         foreach ($permissions as $permission) {
             $newName = str_replace('assetsource', 'volume', $permission['name']);

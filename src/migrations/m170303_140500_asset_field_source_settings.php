@@ -24,7 +24,7 @@ class m170303_140500_asset_field_source_settings extends Migration
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
             ->where(['type' => Assets::class])
-            ->all();
+            ->all($this->db);
 
         $getFolderPathFromVolumeId = function($volumeId) {
             if (empty($volumeId)) {
@@ -36,7 +36,7 @@ class m170303_140500_asset_field_source_settings extends Migration
                 ->from(['{{%volumefolders}}'])
                 ->where(['parentId' => null])
                 ->andWhere(['volumeId' => $volumeId])
-                ->scalar();
+                ->scalar($this->db);
 
             // If the folder does not exist, set an invalid id to trigger field error when viewing
             return $folderId ? 'folder:'.$folderId : 'folder:0';

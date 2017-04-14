@@ -40,7 +40,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
             ->from(['{{%usergroups}}'])
             ->groupBy([$type])
             ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
-            ->all();
+            ->all($this->db);
 
         if (!empty($duplicates)) {
             echo ' found '.count($duplicates)."\n";
@@ -52,7 +52,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                     ->from(['{{%usergroups}}'])
                     ->where([$type => $duplicate[$type]])
                     ->orderBy(['dateCreated' => SORT_ASC])
-                    ->all();
+                    ->all($this->db);
 
                 // Find more than one?
                 if (count($rows) > 1) {
@@ -73,7 +73,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                             $exists = (new Query())
                                 ->from(['{{%usergroups}}'])
                                 ->where([$type => $newString])
-                                ->exists();
+                                ->exists($this->db);
 
                             // Found a free one.
                             if (!$exists) {

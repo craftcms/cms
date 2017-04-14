@@ -21,7 +21,7 @@ class m161021_102916_fix_recent_entries_widgets extends Migration
         $siteResults = (new Query())
             ->select(['id', 'handle'])
             ->from(['{{%sites}}'])
-            ->all();
+            ->all($this->db);
         $siteIdsByHandle = ArrayHelper::map($siteResults, 'handle', 'id');
 
         $sitesMigration = new m160807_144858_sites();

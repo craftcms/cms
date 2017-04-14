@@ -22,7 +22,7 @@ class m160707_000001_rename_richtext_assetsource_setting extends Migration
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
             ->where(['type' => RichText::class])
-            ->all();
+            ->all($this->db);
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);

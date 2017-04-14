@@ -28,7 +28,7 @@ class m161108_000000_new_version_format extends Migration
         $infoRow = (new Query())
             ->select(['version', 'build', 'track'])
             ->from(['{{%info}}'])
-            ->one();
+            ->one($this->db);
 
         // Update the version
         $version = $infoRow['version'];
