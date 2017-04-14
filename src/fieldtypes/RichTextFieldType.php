@@ -41,22 +41,6 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$configOptions = array('' => Craft::t('Default'));
-		$configPath = craft()->path->getConfigPath().'redactor/';
-
-		if (IOHelper::folderExists($configPath))
-		{
-			$configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
-
-			if (is_array($configFiles))
-			{
-				foreach ($configFiles as $file)
-				{
-					$configOptions[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
-				}
-			}
-		}
-
 		$columns = array(
 			'text'       => 'text (~64K)',
 			'mediumtext' => 'mediumtext (~16MB)'
@@ -76,7 +60,7 @@ class RichTextFieldType extends BaseFieldType
 
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
-			'configOptions' => $configOptions,
+			'redactorConfigOptions' => $this->_getRedactorConfigOptions(),
 			'assetSourceOptions' => $sourceOptions,
 			'transformOptions' => $transformOptions,
 			'columns' => $columns,
@@ -478,6 +462,32 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		return $transformList;
+	}
+
+	/**
+	 * Returns the available Redactor config options.
+	 *
+	 * @return array
+	 */
+	private function _getRedactorConfigOptions()
+	{
+		$options = array('' => Craft::t('Default'));
+		$path = craft()->path->getConfigPath().'redactor/';
+
+		if (IOHelper::folderExists($path))
+		{
+			$configFiles = IOHelper::getFolderContents($path, false, '\.json$');
+
+			if (is_array($configFiles))
+			{
+				foreach ($configFiles as $file)
+				{
+					$options[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+				}
+			}
+		}
+
+		return $options;
 	}
 
 	/**

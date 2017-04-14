@@ -1,11 +1,11 @@
 {% import '_includes/forms' as forms %}
 
-{% if configOptions|length > 1 %}
+{% if redactorConfigOptions|length > 1 %}
 	{% set configInput %}
 		{{ forms.select({
 			id: 'configFle',
 			name: 'configFile',
-			options: configOptions,
+			options: redactorConfigOptions,
 			value: settings.configFile
 		}) }}
 	{% endset %}
@@ -25,7 +25,7 @@
 {% endset %}
 
 {{ forms.field({
-	label: "Config"|t,
+	label: "Redactor Config"|t,
 	instructions: "You can save custom Redactor configs as .json files in craft/config/redactor/."|t~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t~'</a>.',
 	id: 'configFile'
 }, configInput) }}
