@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.11 - 2017-04-14
 
 ### Added
 - Added `craft\web\View::registerScript()`, as a more generic way to register new `<script>` tags on the page than `registerJs()`. ([#1617](https://github.com/craftcms/cms/pull/1617))
