@@ -60,7 +60,7 @@ class RichText extends Field
     /**
      * @var string|null The Redactor config file to use
      */
-    public $configFile;
+    public $redactorConfig;
 
     /**
      * @var string|null The HTML Purifier config file to use
@@ -526,11 +526,11 @@ class RichText extends Field
      */
     private function _getRedactorConfigJson(): string
     {
-        if (!$this->configFile) {
+        if (!$this->redactorConfig) {
             return '{}';
         }
 
-        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor'.DIRECTORY_SEPARATOR.$this->configFile;
+        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor'.DIRECTORY_SEPARATOR.$this->redactorConfig;
 
         if (!is_file($configPath)) {
             Craft::warning("Redactor config file doesn't exist: {$configPath}", __METHOD__);

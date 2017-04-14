@@ -8,10 +8,10 @@
             path: '`craft/config/redactor/`'
         }) ~
         ' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t('app')~'</a>',
-    id: 'configFle',
-    name: 'configFile',
+    id: 'redactorConfig',
+    name: 'redactorConfig',
     options: redactorConfigOptions,
-    value: field.configFile
+    value: field.redactorConfig
 }) }}
 
 {{ forms.checkboxSelectField({

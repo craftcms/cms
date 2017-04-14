@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - If `craft\web\View::$title` is set, a `<title>` tag will now automatically get injected into the page’s `<head>`. ([#1625](https://github.com/craftcms/cms/pull/1625))
 - Craft no longer encodes 4-byte characters (like emojis) present in Rich Text fields and template caches, if using PostgreSQL.
 - It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loabable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
+- Renamed Rich Text fields’ `configFile` setting to `redactorConfig`, to avoid ambiguity with the new `purifierConfig` setting.
 
 ### Fixed
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))
