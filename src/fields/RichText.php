@@ -60,7 +60,12 @@ class RichText extends Field
     /**
      * @var string|null The Redactor config file to use
      */
-    public $configFile;
+    public $redactorConfig;
+
+    /**
+     * @var string|null The HTML Purifier config file to use
+     */
+    public $purifierConfig;
 
     /**
      * @var bool Whether the HTML should be cleaned up on save
@@ -100,20 +105,6 @@ class RichText extends Field
      */
     public function getSettingsHtml()
     {
-        $configOptions = ['' => Craft::t('app', 'Default')];
-        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor';
-
-        if (is_dir($configPath)) {
-            $configFiles = FileHelper::findFiles($configPath, [
-                'only' => ['*.json'],
-                'recursive' => false
-            ]);
-
-            foreach ($configFiles as $file) {
-                $configOptions[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
-            }
-        }
-
         $volumeOptions = [];
         /** @var $volume Volume */
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
@@ -136,7 +127,8 @@ class RichText extends Field
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/RichText/settings',
             [
                 'field' => $this,
-                'configOptions' => $configOptions,
+                'redactorConfigOptions' => $this->_getCustomConfigOptions('redactor'),
+                'purifierConfigOptions' => $this->_getCustomConfigOptions('htmlpurifier'),
                 'volumeOptions' => $volumeOptions,
                 'transformOptions' => $transformOptions,
             ]);
@@ -171,8 +163,8 @@ class RichText extends Field
     {
         /** @var RichTextData|null $value */
         /** @var Element $element */
-        $configJs = $this->_getConfigJson();
-        $this->_includeFieldResources($configJs);
+        $redactorConfig = $this->_getRedactorConfig();
+        $this->_includeFieldResources($redactorConfig);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
@@ -184,7 +176,7 @@ class RichText extends Field
             'volumes' => $this->_getVolumeKeys(),
             'transforms' => $this->_getTransforms(),
             'elementSiteId' => $site->id,
-            'redactorConfig' => Json::decode($configJs),
+            'redactorConfig' => $redactorConfig,
             'redactorLang' => self::$_redactorLang,
         ];
 
@@ -229,6 +221,20 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
+    public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        $keywords = parent::getSearchKeywords($value, $element);
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $keywords = StringHelper::encodeMb4($keywords);
+        }
+
+        return $keywords;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */
@@ -250,10 +256,7 @@ class RichText extends Field
             $value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
             if ($this->purifyHtml) {
-                $value = HtmlPurifier::process($value, [
-                    'Attr.AllowedFrameTargets' => ['_blank'],
-                    'HTML.AllowedComments' => ['pagebreak']
-                ]);
+                $value = HtmlPurifier::process($value, $this->_getPurifierConfig());
             }
 
             if ($this->cleanupHtml) {
@@ -290,8 +293,10 @@ class RichText extends Field
             },
             $value);
 
-        // Encode any 4-byte UTF-8 characters.
-        $value = StringHelper::encodeMb4($value);
+        if (Craft::$app->getDb()->getIsMysql()) {
+            // Encode any 4-byte UTF-8 characters.
+            $value = StringHelper::encodeMb4($value);
+        }
 
         return $value;
     }
@@ -440,7 +445,20 @@ class RichText extends Field
         }
 
         $folders = Craft::$app->getAssets()->findFolders($criteria);
+
+        // Sort volumes in the same order as they are sorted in the CP
+        $sortedVolumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        $sortedVolumeIds = array_flip($sortedVolumeIds);
+
         $volumeKeys = [];
+
+        usort($folders, function($a, $b) use ($sortedVolumeIds) {
+            // In case Temporary volumes ever make an appearance in RTF modals, sort them to the end of the list.
+            $aOrder = $sortedVolumeIds[$a->volumeId] ?? PHP_INT_MAX;
+            $bOrder = $sortedVolumeIds[$b->volumeId] ?? PHP_INT_MAX;
+
+            return $aOrder - $bOrder;
+        });
 
         foreach ($folders as $folder) {
             $volumeKeys[] = 'folder:'.$folder->id;
@@ -476,45 +494,100 @@ class RichText extends Field
     }
 
     /**
-     * Returns the Redactor config JSON used by this field.
+     * Returns the available Redactor config options.
      *
-     * @return string
+     * @param string $dir The directory name within the config/ folder to look for config files
+     *
+     * @return array
      */
-    private function _getConfigJson(): string
+    private function _getCustomConfigOptions(string $dir): array
     {
-        if (!$this->configFile) {
-            return '{}';
+        $options = ['' => Craft::t('app', 'Default')];
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir;
+
+        if (is_dir($path)) {
+            $files = FileHelper::findFiles($path, [
+                'only' => ['*.json'],
+                'recursive' => false
+            ]);
+
+            foreach ($files as $file) {
+                $options[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
+            }
         }
 
-        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor'.DIRECTORY_SEPARATOR.$this->configFile;
+        return $options;
+    }
 
-        if (!is_file($configPath)) {
-            Craft::warning("Redactor config file doesn't exist: {$configPath}", __METHOD__);
-
-            return '{}';
+    /**
+     * Returns a JSON-decoded config, if it exists.
+     *
+     * @param string      $dir  The directory name within the config/ folder to look for the config file
+     * @param string|null $file The filename to load
+     *
+     * @return array|false The config, or false if the file doesn't exist
+     */
+    private function _getConfig(string $dir, string $file = null)
+    {
+        if (!$file) {
+            return false;
         }
 
-        return file_get_contents($configPath);
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.$dir.DIRECTORY_SEPARATOR.$file;
+
+        if (!is_file($path)) {
+            return false;
+        }
+
+        return Json::decode(file_get_contents($path));
+    }
+
+    /**
+     * Returns the Redactor config used by this field.
+     *
+     * @return array
+     */
+    private function _getRedactorConfig(): array
+    {
+        return $this->_getConfig('redactor', $this->redactorConfig) ?: [];
+    }
+
+    /**
+     * Returns the HTML Purifier config used by this field.
+     *
+     * @return array
+     */
+    private function _getPurifierConfig(): array
+    {
+        if ($config = $this->_getConfig('htmlpurifier', $this->purifierConfig)) {
+            return $config;
+        }
+
+        // Default config
+        return [
+            'Attr.AllowedFrameTargets' => ['_blank'],
+            'HTML.AllowedComments' => ['pagebreak'],
+        ];
     }
 
     /**
      * Includes the input resources.
      *
-     * @param string $configJs
+     * @param array $redactorConfig
      *
      * @return void
      */
-    private function _includeFieldResources(string $configJs)
+    private function _includeFieldResources(array $redactorConfig)
     {
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(RichTextAsset::class);
 
-        $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
-        $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
-        $this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
-        $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
-        $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
+        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'fullscreen', false);
+        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'source', false);
+        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'table', false);
+        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'video', false);
+        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'pagebreak', true);
 
         $view->registerTranslations('app', [
             'Insert image',
@@ -565,30 +638,28 @@ class RichText extends Field
     /**
      * Includes a plugin’s JS file, if it appears to be requested by the config file.
      *
-     * @param string $configJs
+     * @param array  $redactorConfig
      * @param string $plugin
      * @param bool   $includeCss
      *
      * @return void
      */
-    private function _maybeIncludeRedactorPlugin(string $configJs, string $plugin, bool $includeCss)
+    private function _maybeIncludeRedactorPlugin(array $redactorConfig, string $plugin, bool $includeCss)
     {
-        if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
-            if (($pipe = strpos($plugin, '|')) !== false) {
-                $plugin = substr($plugin, 0, $pipe);
-            }
-
-            $am = Craft::$app->getAssetManager();
-            $view = Craft::$app->getView();
-
-            if ($includeCss) {
-                $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
-            }
-
-            $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
-                'depends' => RedactorAsset::class
-            ]);
+        if (!isset($redactorConfig['plugins']) || !in_array($plugin, $redactorConfig['plugins'], true)) {
+            return;
         }
+
+        $am = Craft::$app->getAssetManager();
+        $view = Craft::$app->getView();
+
+        if ($includeCss) {
+            $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
+        }
+
+        $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
+            'depends' => RedactorAsset::class
+        ]);
     }
 
     /**

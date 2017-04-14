@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-04-07 */
+/*! Craft 3.0.0 - 2017-04-12 */
 (function($){
 
 /** global: Craft */
@@ -4448,7 +4448,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                     });
 
                     // Double-clicking or double-tapping should select the elements
-                    this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
+                    this.addListener(this.elementIndex.$elements, 'doubletap', function(ev, touchData) {
+                        // Make sure the touch targets are the same
+                        // (they may be different if Command/Ctrl/Shift-clicking on multiple elements quickly)
+                        if (touchData.firstTap.target === touchData.secondTap.target) {
+                            this.selectElements();
+                        }
+                    });
                 }
 
             }, this));
@@ -6285,7 +6291,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 alert(data.result.error);
             } else {
                 var elementId = data.result.assetId;
-                
+
                 Craft.postActionRequest('elements/get-element-html', {elementId: elementId, siteId: this.settings.criteria.siteId}, function (data) {
                     if (data.error) {
                         alert(data.error);
@@ -12418,7 +12424,8 @@ Craft.ImageUpload = Garnish.Base.extend(
             var options = {
                 url: Craft.getActionUrl(this.settings.uploadAction),
                 formData: this.settings.postParameters,
-                fileInput: this.$container.find(this.settings.fileInputSelector)
+                fileInput: this.$container.find(this.settings.fileInputSelector),
+                paramName: this.settings.uploadParamName
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
@@ -12511,7 +12518,9 @@ Craft.ImageUpload = Garnish.Base.extend(
             containerSelector: null,
 
             uploadButtonSelector: null,
-            deleteButtonSelector: null
+            deleteButtonSelector: null,
+
+            uploadParamName: 'files'
         }
     }
 );

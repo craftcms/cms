@@ -26,7 +26,7 @@ class m170217_044740_category_branch_limits extends Migration
                 ['type' => Categories::class],
                 ['not', ['settings' => null]]
             ])
-            ->all();
+            ->all($this->db);
 
         foreach ($categoryFields as $field) {
             $settings = Json::decode($field['settings']);

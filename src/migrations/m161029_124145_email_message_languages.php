@@ -28,14 +28,14 @@ class m161029_124145_email_message_languages extends Migration
         $siteResults = (new Query())
             ->select(['id', 'language'])
             ->from('{{%sites}}')
-            ->all();
+            ->all($this->db);
 
         $siteLanguages = ArrayHelper::map($siteResults, 'id', 'language');
 
         $messageResults = (new Query())
             ->select(['id', 'siteId', 'key'])
             ->from('{{%emailmessages}}')
-            ->all();
+            ->all($this->db);
 
         $handledLanguagesByKey = [];
 

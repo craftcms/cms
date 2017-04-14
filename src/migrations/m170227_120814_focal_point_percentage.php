@@ -23,7 +23,7 @@ class m170227_120814_focal_point_percentage extends Migration
             ->select(['id', 'width', 'height', 'focalPoint'])
             ->from(['{{%assets}}'])
             ->where($focalPointColumn.' IS NOT NULL')
-            ->all();
+            ->all($this->db);
 
         // Alter columns
         $this->alterColumn('{{%assets}}', 'focalPoint', $this->string(13));

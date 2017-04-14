@@ -25,7 +25,7 @@ class m151005_142750_volume_s3_storage_settings extends Migration
             ->select(['id', 'settings'])
             ->from(['{{%volumes}}'])
             ->where(['like', 'type', '%AwsS3', false])
-            ->all();
+            ->all($this->db);
 
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);

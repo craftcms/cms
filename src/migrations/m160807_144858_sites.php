@@ -84,13 +84,13 @@ class m160807_144858_sites extends Migration
         $siteInfo = (new Query())
             ->select(['siteName', 'siteUrl'])
             ->from(['{{%info}}'])
-            ->one();
+            ->one($this->db);
 
         $locales = (new Query())
             ->select(['locale'])
             ->from(['{{%locales}}'])
             ->orderBy(['sortOrder' => SORT_ASC])
-            ->column();
+            ->column($this->db);
 
         $siteIdsByLocale = [];
         $this->caseSql = 'case';
@@ -368,7 +368,7 @@ class m160807_144858_sites extends Migration
                         '[[nestedUrlFormat]] = [[uriFormat]]'
                     ]
                 ])
-                ->all();
+                ->all($this->db);
 
             foreach ($results as $result) {
                 $uriFormat = '{% if object.level == 1 %}'.$result['uriFormat'].'{% else %}'.$result['nestedUrlFormat'].'{% endif %}';
@@ -386,7 +386,7 @@ class m160807_144858_sites extends Migration
             $results = (new Query())
                 ->select(['id', 'hasUrls', 'template'])
                 ->from([$tables['primary']])
-                ->all();
+                ->all($this->db);
 
             foreach ($results as $result) {
                 $this->update($tables['i18n'], [
@@ -443,7 +443,7 @@ class m160807_144858_sites extends Migration
                     Users::class
                 ]
             ])
-            ->all();
+            ->all($this->db);
 
         foreach ($fields as $field) {
             try {
@@ -511,7 +511,7 @@ class m160807_144858_sites extends Migration
             ->select(['id', 'settings'])
             ->from(['{{%widgets}}'])
             ->where(['like', 'settings', '"locale":'])
-            ->all();
+            ->all($this->db);
 
         foreach ($widgetResults as $result) {
             $settings = Json::decode($result['settings']);

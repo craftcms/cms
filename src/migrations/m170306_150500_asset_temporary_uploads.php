@@ -29,7 +29,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
             ->from('{{%assets}} assets')
             ->innerJoin('{{%volumefolders}} volumeFolders', $folderId.' = '.$volumeFoldersId)
             ->where(['assets.volumeId' => null])
-            ->all();
+            ->all($this->db);
 
         $folderCache = [];
         $previousFolderList = [];
@@ -46,7 +46,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
                     ->from('{{%volumefolders}}')
                     ->where(['volumeId' => null])
                     ->andWhere(['path' => $topFolderPath.'/'])
-                    ->scalar();
+                    ->scalar($this->db);
             }
 
             $topFolderId = $folderCache[$topFolderPath];

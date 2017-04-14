@@ -27,7 +27,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
                 'el.type' => Entry::class,
                 'en.id' => null
             ])
-            ->column();
+            ->column($this->db);
 
         if (!empty($ids)) {
             echo '    > Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids)."\n";

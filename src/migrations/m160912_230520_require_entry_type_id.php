@@ -31,7 +31,7 @@ class m160912_230520_require_entry_type_id extends Migration
                 'typeId' => $subQuery
             ])
             ->from(['{{%sections}} s'])
-            ->all();
+            ->all($this->db);
 
         if (!empty($results)) {
             // Build the mapping case SQL
@@ -58,7 +58,7 @@ class m160912_230520_require_entry_type_id extends Migration
             ->select(['id'])
             ->from(['{{%entries}}'])
             ->where(['typeId' => null])
-            ->column();
+            ->column($this->db);
 
         if (!empty($typelessEntryIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);

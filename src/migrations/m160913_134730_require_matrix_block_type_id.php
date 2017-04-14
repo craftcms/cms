@@ -21,7 +21,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
             ->select(['id'])
             ->from(['{{%matrixblocks}}'])
             ->where(['typeId' => null])
-            ->column();
+            ->column($this->db);
 
         if (!empty($typelessBlockIds)) {
             $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);

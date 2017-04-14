@@ -55,6 +55,7 @@
             maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
             isImagick:             {{ craft.app.images.getIsImagick() ? 'true' : 'false' }},
             forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
+            defaultIndexCriteria:  { enabledForSite: null },
             {% if craft.app.config.general.enableCsrfProtection %}
                 csrfTokenValue:        "{{ craft.app.request.getCsrfToken()|e('js') }}",
                 csrfTokenName:         "{{ craft.app.config.general.csrfTokenName|e('js') }}",

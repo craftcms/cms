@@ -5,30 +5,29 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\fields\RichText;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 
 /**
- * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
+ * m160707_000001_rename_richtext_assetsource_setting migration.
  */
-class m160707_000000_rename_richtext_assetsource_setting extends Migration
+class m160707_000001_rename_richtext_assetsource_setting extends Migration
 {
     /**
      * @inheritdoc
      */
     public function safeUp()
     {
-        // Update permissions
         $fields = (new Query())
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
             ->where(['type' => RichText::class])
-            ->all();
+            ->all($this->db);
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);
-            if (!empty($settings['availableAssetSources'])) {
-                $settings['availableVolumes'] = $settings['availableAssetSources'];
-                unset($settings['availableAssetSources']);
+            if (array_key_exists('availableAssetSources', $settings)) {
+                $settings['availableVolumes'] = ArrayHelper::remove($settings, 'availableAssetSources');
                 $this->update('{{%fields}}', ['settings' => Json::encode($settings)], ['id' => $field['id']]);
             }
         }
@@ -39,7 +38,7 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
      */
     public function safeDown()
     {
-        echo "m160707_000000_rename_richtext_assetsource_setting cannot be reverted.\n";
+        echo "m160707_000001_rename_richtext_assetsource_setting cannot be reverted.\n";
 
         return false;
     }

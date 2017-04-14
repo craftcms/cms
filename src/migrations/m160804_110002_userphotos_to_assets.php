@@ -106,7 +106,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ->select(['id', 'photo'])
                 ->from(['{{%users}}'])
                 ->where(['username' => $subDir])
-                ->one();
+                ->one($this->db);
 
             // Make sure the user still exists and has a photo
             if (!$user || empty($user['photo'])) {
@@ -162,7 +162,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->select(['id'])
             ->from(['{{%volumes}}'])
             ->where(['handle' => $handle])
-            ->one();
+            ->one($this->db);
 
         while (!empty($existingVolume)) {
             $handle = 'userPhotos'.++$counter;
@@ -175,13 +175,13 @@ class m160804_110002_userphotos_to_assets extends Migration
                     ['handle' => $handle],
                     ['name' => $name]
                 ])
-                ->one();
+                ->one($this->db);
         }
 
         // Set the sort order
         $maxSortOrder = (new Query())
             ->from(['{{%volumes}}'])
-            ->max('[[sortOrder]]');
+            ->max('[[sortOrder]]', $this->db);
 
         $volumeData = [
             'type' => Local::class,
@@ -245,7 +245,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $locales = (new Query())
             ->select(['locale'])
             ->from(['{{%locales}}'])
-            ->column();
+            ->column($this->db);
 
         $folderId = (new Query())
             ->select(['id'])
@@ -254,7 +254,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 'parentId' => null,
                 'volumeId' => $volumeId
             ])
-            ->scalar();
+            ->scalar($this->db);
 
         $changes = [];
 
@@ -269,7 +269,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']
                 ])
-                ->one();
+                ->one($this->db);
 
             if (!$assetExists && is_file($filePath)) {
                 $elementData = [

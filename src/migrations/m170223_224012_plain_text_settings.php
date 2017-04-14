@@ -24,7 +24,7 @@ class m170223_224012_plain_text_settings extends Migration
             ->select(['id', 'settings'])
             ->from(['{{%fields}}'])
             ->where(['type' => PlainText::class])
-            ->all();
+            ->all($this->db);
 
         foreach ($fields as $field) {
             $settings = Json::decode($field['settings']);

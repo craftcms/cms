@@ -29,7 +29,7 @@ class m151002_095935_volume_cache_settings extends Migration
                 ['like', 'type', '%AwsS3', false],
                 ['like', 'type', '%GoogleCloud', false]
             ])
-            ->all();
+            ->all($this->db);
 
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);

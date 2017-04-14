@@ -57,7 +57,9 @@
                                     {{ csrfInput() }}
                                     {% if config.isEnabled %}
                                         <span class="status on"></span> {{ "Enabled"|t('app') }} 
-                                        <input type="button" value="{{ 'Disable'|t('app') }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
+                                        {% if not config.isComposerInstall %}
+                                            <input type="button" value="{{ 'Disable'|t('app') }}" class="btn small formsubmit" data-action="plugins/disable-plugin">
+                                        {% endif %}
                                     {% else %}
                                         <span class="status off"></span> {{ "Disabled"|t('app') }} 
                                         <input type="button" value="{{ 'Enable'|t('app') }}" class="btn small formsubmit" data-action="plugins/enable-plugin">

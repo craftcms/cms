@@ -144,6 +144,7 @@ class Volumes extends Component
         return $this->_allVolumeIds = (new Query())
             ->select(['id'])
             ->from(['{{%volumes}}'])
+            ->orderBy('sortOrder asc')
             ->column();
     }
 
