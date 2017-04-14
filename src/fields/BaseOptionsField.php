@@ -16,6 +16,7 @@ use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\Json;
 use yii\db\Schema;
 
 /**
@@ -150,6 +151,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if (is_string($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+
         $selectedValues = ArrayHelper::toArray($value);
 
         if ($this->multi) {

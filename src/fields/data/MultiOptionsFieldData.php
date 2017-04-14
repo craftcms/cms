@@ -59,7 +59,8 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
         $value = (string)$value;
 
         foreach ($this as $selectedValue) {
-            if ($value == $selectedValue->value) {
+            /** @var OptionData $selectedValue */
+            if ($value === $selectedValue->value) {
                 return true;
             }
         }
@@ -72,6 +73,13 @@ class MultiOptionsFieldData extends \ArrayObject implements Serializable
      */
     public function serialize()
     {
-        return Json::encode($this->getArrayCopy());
+        $serialized = [];
+
+        foreach ($this as $selectedValue) {
+            /** @var OptionData $selectedValue */
+            $serialized[] = $selectedValue->value;
+        }
+
+        return Json::encode($serialized);
     }
 }
