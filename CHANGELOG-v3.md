@@ -13,6 +13,9 @@ Craft CMS 3.0 Working Changelog
 - It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loabable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
 - Renamed Rich Text fields’ `configFile` setting to `redactorConfig`, to avoid ambiguity with the new `purifierConfig` setting.
 
+### Removed
+- Removed support for referring to Redactor’s `source` plugin by its old name, `html`, within Redactor JSON configs.
+
 ### Fixed
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))
 - Fixed a bug where it was impossible to upload user photos, site icon and site logo.
