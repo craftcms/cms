@@ -3,7 +3,7 @@
  * Database Configuration
  *
  * All of your system's database connection settings go in here. You can see a
- * list of the default settings in `vendor/craftcms/cms/src/config/defaults/db.php`.
+ * list of the available settings in vendor/craftcms/cms/src/config/DbConfig.php.
  */
 
 return [
