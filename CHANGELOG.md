@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2973 - 2017-04-17
+
 ### Added
 - Added the “HTML Purifier Config” setting to Rich Text fields. ([#1415](https://github.com/craftcms/cms/issues/1415))
 
