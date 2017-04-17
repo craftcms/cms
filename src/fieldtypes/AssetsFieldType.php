@@ -56,7 +56,7 @@ class AssetsFieldType extends BaseElementFieldType
      *
      * @var array
      */
-	private $_prepValueFromPostResults = [];
+	private $_prepValueFromPostResults = array();
 
 	// Public Methods
 	// =========================================================================

@@ -8,6 +8,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where Craft would set a hard-coded PHP time limit of 30 seconds when uploading some types of images.
+- Fixed a PHP error that would occur when running PHP 5.3 and using an Assets field type.
 
 ## 2.6.2972 - 2017-04-12
 
