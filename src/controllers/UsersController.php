@@ -513,7 +513,12 @@ class UsersController extends Controller
                             }
                         } else {
                             // Get the existing client account, if there is one
-                            $user = Craft::$app->getUsers()->getClient();
+                            /** @var User|null $user */
+                            $user = User::find()
+                                ->client()
+                                ->status(null)
+                                ->addSelect('users.passwordResetRequired')
+                                ->one();
 
                             if (!$user) {
                                 // Registering the Client
@@ -531,7 +536,12 @@ class UsersController extends Controller
                             }
                         } else {
                             // Get the user by its ID
-                            $user = Craft::$app->getUsers()->getUserById($userId);
+                            /** @var User|null $user */
+                            $user = User::find()
+                                ->id($userId)
+                                ->status(null)
+                                ->addSelect('users.passwordResetRequired')
+                                ->one();
 
                             if (!$user) {
                                 throw new NotFoundHttpException('User not found');
@@ -824,7 +834,7 @@ class UsersController extends Controller
             $user = User::find()
                 ->id($userId)
                 ->status(null)
-                ->addSelect(['users.password'])
+                ->addSelect(['users.password', 'users.passwordResetRequired'])
                 ->one();
 
             if (!$user) {
@@ -842,7 +852,12 @@ class UsersController extends Controller
                 $this->requireAdmin();
 
                 // Make sure there's no Client user yet
-                if (Craft::$app->getUsers()->getClient()) {
+                $clientExists = User::find()
+                    ->client()
+                    ->status(null)
+                    ->exists();
+
+                if ($clientExists) {
                     throw new BadRequestHttpException('A client account already exists');
                 }
 

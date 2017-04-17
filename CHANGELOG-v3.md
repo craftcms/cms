@@ -1,6 +1,14 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Removed
+- Removed `craft\services\Users::getClient()`.
+
+### Fixed
+- Fixed a bug where Craft was not enforcing the “Require a password reset on next login” user setting. ([#1632](https://github.com/craftcms/cms/issues/1632))
+
 ## 3.0.0-beta.12 - 2017-04-14
 
 ### Fixed
