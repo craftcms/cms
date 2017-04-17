@@ -1,20 +1,5 @@
 {% import '_includes/forms' as forms %}
 
-{% if configOptions|length > 1 %}
-	{% set configInput %}
-		{{ forms.select({
-			id: 'configFle',
-			name: 'configFile',
-			options: configOptions,
-			value: settings.configFile
-		}) }}
-	{% endset %}
-{% else %}
-	{% set configInput %}
-		<p>{{ 'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t|raw }}</p>
-	{% endset %}
-{% endif %}
-
 {% set columnType %}
 	{{ forms.select({
 		id: 'columnType',
@@ -24,11 +9,19 @@
 	}) }}
 {% endset %}
 
-{{ forms.field({
-	label: "Config"|t,
-	instructions: "You can save custom Redactor configs as .json files in craft/config/redactor/."|t~' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t~'</a>.',
-	id: 'configFile'
-}, configInput) }}
+{{ forms.selectField({
+	label: "Redactor Config"|t,
+    instructions: "You can save custom {name} configs as {ext} files in {path}."|t({
+			name: 'Redactor',
+			ext: '`.json`',
+			path: '`craft/config/redactor/`'
+		}) ~
+		' <a href="http://imperavi.com/redactor/docs/settings/" target="_blank">'~"View available settings"|t~'</a>',
+    id: 'configFle',
+    name: 'configFile',
+    options: redactorConfigOptions,
+    value: settings.configFile
+}) }}
 
 {{ forms.checkboxSelectField({
 	id: 'availableAssetSources',
@@ -62,8 +55,25 @@
 	warning: 'Disable this at your own risk!'|t,
 	id: 'purifyHtml',
 	name: 'purifyHtml',
-	checked: settings.purifyHtml
+	checked: settings.purifyHtml,
+	toggle: 'purifier-config-container'
 }) }}
+
+<div id="purifier-config-container"{% if not settings.purifyHtml %} class="hidden"{% endif %}>
+    {{ forms.selectField({
+        label: "HTML Purifier Config"|t,
+        instructions: "You can save custom {name} configs as {ext} files in {path}."|t({
+				name: 'HTML Purifier',
+				ext: '`.json`',
+				path: '`craft/config/htmlpurifier/`'
+			}) ~
+			' <a href="http://htmlpurifier.org/live/configdoc/plain.html" target="_blank">'~"View available settings"|t~'</a>',
+        id: 'purifierConfig',
+        name: 'purifierConfig',
+        options: purifierConfigOptions,
+        value: settings.purifierConfig
+    }) }}
+</div>
 
 {{ forms.field({
 	label: "Column Type"|t,

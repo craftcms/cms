@@ -41,22 +41,6 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getSettingsHtml()
 	{
-		$configOptions = array('' => Craft::t('Default'));
-		$configPath = craft()->path->getConfigPath().'redactor/';
-
-		if (IOHelper::folderExists($configPath))
-		{
-			$configFiles = IOHelper::getFolderContents($configPath, false, '\.json$');
-
-			if (is_array($configFiles))
-			{
-				foreach ($configFiles as $file)
-				{
-					$configOptions[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
-				}
-			}
-		}
-
 		$columns = array(
 			'text'       => 'text (~64K)',
 			'mediumtext' => 'mediumtext (~16MB)'
@@ -76,7 +60,8 @@ class RichTextFieldType extends BaseFieldType
 
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(
 			'settings' => $this->getSettings(),
-			'configOptions' => $configOptions,
+			'redactorConfigOptions' => $this->_getRedactorConfigOptions(),
+			'purifierConfigOptions' => $this->_getPurifierConfigOptions(),
 			'assetSourceOptions' => $sourceOptions,
 			'transformOptions' => $transformOptions,
 			'columns' => $columns,
@@ -133,7 +118,7 @@ class RichTextFieldType extends BaseFieldType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		$configJs = $this->_getConfigJson();
+		$configJs = $this->_getRedactorConfigJson();
 		$this->_includeFieldResources($configJs);
 
 		$id = craft()->templates->formatInputId($name);
@@ -205,11 +190,7 @@ class RichTextFieldType extends BaseFieldType
 			if ($this->getSettings()->purifyHtml)
 			{
 				$purifier = new \CHtmlPurifier();
-				$purifier->setOptions(array(
-					'Attr.AllowedFrameTargets' => array('_blank'),
-					'HTML.AllowedComments' => array('pagebreak'),
-				));
-
+				$purifier->setOptions($this->_getPurifierConfig());
 				$value = $purifier->purify($value);
 			}
 
@@ -307,6 +288,7 @@ class RichTextFieldType extends BaseFieldType
 	{
 		return array(
 			'configFile'            => AttributeType::String,
+			'purifierConfig'        => AttributeType::String,
 			'cleanupHtml'           => array(AttributeType::Bool, 'default' => true),
 			'purifyHtml'            => array(AttributeType::Bool, 'default' => true),
 			'columnType'            => array(AttributeType::String),
@@ -481,11 +463,37 @@ class RichTextFieldType extends BaseFieldType
 	}
 
 	/**
+	 * Returns the available Redactor config options.
+	 *
+	 * @return array
+	 */
+	private function _getRedactorConfigOptions()
+	{
+		$options = array('' => Craft::t('Default'));
+		$path = craft()->path->getConfigPath().'redactor/';
+
+		if (IOHelper::folderExists($path))
+		{
+			$configFiles = IOHelper::getFolderContents($path, false, '\.json$');
+
+			if (is_array($configFiles))
+			{
+				foreach ($configFiles as $file)
+				{
+					$options[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+				}
+			}
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Returns the Redactor config JSON used by this field.
 	 *
 	 * @return string
 	 */
-	private function _getConfigJson()
+	private function _getRedactorConfigJson()
 	{
 		if ($this->getSettings()->configFile)
 		{
@@ -499,6 +507,55 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		return $json;
+	}
+
+	/**
+	 * Returns the available HTML Purifier config options.
+	 *
+	 * @return array
+	 */
+	private function _getPurifierConfigOptions()
+	{
+		$options = array('' => Craft::t('Default'));
+		$path = craft()->path->getConfigPath().'htmlpurifier/';
+
+		if (IOHelper::folderExists($path))
+		{
+			$configFiles = IOHelper::getFolderContents($path, false, '\.json$');
+
+			if (is_array($configFiles))
+			{
+				foreach ($configFiles as $file)
+				{
+					$options[IOHelper::getFileName($file)] = IOHelper::getFileName($file, false);
+				}
+			}
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Returns the HTML Purifier config used by this field.
+	 *
+	 * @return array
+	 */
+	private function _getPurifierConfig()
+	{
+		$file = $this->getSettings()->purifierConfig;
+		$path = craft()->path->getConfigPath().'htmlpurifier/'.$file;
+
+		if (!$file || !IOHelper::fileExists($path))
+		{
+			return array(
+				'Attr.AllowedFrameTargets' => array('_blank'),
+				'HTML.AllowedComments' => array('pagebreak'),
+			);
+		}
+
+		$json = IOHelper::getFileContents($path);
+
+		return JsonHelper::decode($json);
 	}
 
 	/**

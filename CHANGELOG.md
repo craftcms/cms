@@ -3,6 +3,15 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2973 - 2017-04-17
+
+### Added
+- Added the “HTML Purifier Config” setting to Rich Text fields. ([#1415](https://github.com/craftcms/cms/issues/1415))
+
+### Fixed
+- Fixed a bug where Craft would set a hard-coded PHP time limit of 30 seconds when uploading some types of images.
+- Fixed a PHP error that occurred when using an Assets field on servers running PHP 5.3.
+
 ## 2.6.2972 - 2017-04-12
 
 ### Changed
