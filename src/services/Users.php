@@ -169,7 +169,7 @@ class Users extends Component
                 ['username' => $usernameOrEmail],
                 ['email' => $usernameOrEmail]
             ])
-            ->addSelect(['users.password'])
+            ->addSelect(['users.password', 'users.passwordResetRequired'])
             ->status(null)
             ->one();
     }
@@ -243,30 +243,6 @@ class Users extends Component
         }
 
         return $valid;
-    }
-
-    /**
-     * Returns the “Client” user account, if it has been created yet.
-     *
-     * An exception will be thrown if this function is called from Craft Personal or Pro.
-     *
-     * ```php
-     * if (Craft::$app->getEdition() === Craft::Client)
-     * {
-     *     $clientAccount = Craft::$app->getUsers()->getClient();
-     * }
-     * ```
-     *
-     * @return User|null The “Client” user account, or `null` if it hasn’t been created yet.
-     */
-    public function getClient()
-    {
-        Craft::$app->requireEdition(Craft::Client, false);
-
-        return User::find()
-            ->client(true)
-            ->status(null)
-            ->one();
     }
 
     /**

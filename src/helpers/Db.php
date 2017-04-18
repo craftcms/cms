@@ -468,12 +468,12 @@ class Db
         $firstVal = StringHelper::toLowerCase(reset($value));
 
         if ($firstVal === 'and' || $firstVal === 'or') {
-            $conditionOperator = array_shift($value);
+            $glue = array_shift($value);
         } else {
-            $conditionOperator = 'or';
+            $glue = 'or';
         }
 
-        $condition = [$conditionOperator];
+        $condition = [$glue];
         $driver = Craft::$app->getDb()->getDriverName();
 
         foreach ($value as $val) {

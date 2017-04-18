@@ -247,15 +247,26 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } else if ($value !== '' && !empty($element->id)) {
-            $query->relatedTo([
-                'sourceElement' => $element->id,
-                'sourceSite' => $element->siteId,
-                'field' => $this->id
-            ]);
+        } else if ($value !== '' && $element->id) {
+            $query->innerJoin(
+                '{{%relations}} relations',
+                [
+                    'and',
+                    '[[relations.targetId]] = [[elements.id]]',
+                    [
+                        'relations.sourceId' => $element->id,
+                        'relations.fieldId' => $this->id,
+                    ],
+                    [
+                        'or',
+                        ['relations.sourceSiteId' => null],
+                        ['relations.sourceSiteId' => $element->siteId]
+                    ]
+                ]
+            );
 
             if ($this->sortable) {
-                $query->orderBy(['sortOrder' => SORT_ASC]);
+                $query->orderBy(['relations.sortOrder' => SORT_ASC]);
             }
 
             if (!$this->allowMultipleSources && $this->source) {

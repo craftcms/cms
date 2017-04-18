@@ -62,7 +62,9 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function createQueryBuilder(): QueryBuilder
     {
-        return new QueryBuilder($this->db);
+        return new QueryBuilder($this->db, [
+            'separator' => "\n"
+        ]);
     }
 
     /**

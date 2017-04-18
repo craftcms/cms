@@ -946,6 +946,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
+        $this->_applyJoinParams();
 
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
@@ -1421,20 +1422,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $relationParamParser = new ElementRelationParamParser();
-        $condition = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
+        $condition = (new ElementRelationParamParser())->parse($this->relatedTo);
 
         if ($condition === false) {
             throw new QueryAbortedException();
         }
 
         $this->subQuery->andWhere($condition);
-
-        // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
-        // to order by the relation sort order
-        if ($relationParamParser->getIsRelationFieldQuery()) {
-            $this->subQuery->addSelect(['sources1.sortOrder']);
-        }
     }
 
     /**
@@ -1789,6 +1783,19 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->query->select = $select;
+    }
+
+    /**
+     * Applies the 'join' params to the query being prepared.
+     */
+    private function _applyJoinParams()
+    {
+        if ($this->join !== null) {
+            foreach ($this->join as $join) {
+                $this->query->join[] = $join;
+                $this->subQuery->join[] = $join;
+            }
+        }
     }
 
     /**
