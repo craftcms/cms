@@ -269,7 +269,7 @@ class ElementRelationParamParser
 
                 /** @var Field $fieldModel */
                 // Is this a Matrix field?
-                if (get_class($fieldModel) == Matrix::class) {
+                if (get_class($fieldModel) === Matrix::class) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
