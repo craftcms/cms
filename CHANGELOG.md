@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Entry and category edit pages will now show any validation errors attached to the `parent` attribute.
+
 ## 2.6.2973 - 2017-04-17
 
 ### Added
