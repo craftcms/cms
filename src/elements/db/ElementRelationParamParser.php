@@ -368,7 +368,7 @@ class ElementRelationParamParser
             }
 
             if (!empty($normalFieldIds)) {
-                $subQuery->andWhere(Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds));
+                $subQuery->andWhere(['in', $relTableAlias.'.fieldId', $normalFieldIds]);
             }
 
             $conditions[] = ['in', 'elements.id', $subQuery];
