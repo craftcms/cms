@@ -50,6 +50,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         draggingFocal: false,
         previousMouseX: 0,
         previousMouseY: 0,
+        shiftKeyHeld: false,
         editorHeight: 0,
         editorWidth: 0,
         cropperState: false,
@@ -532,6 +533,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this._cleanupFocalPointAfterStraighten();
                 }.bind(this)
             });
+
+            // Cropper scale modifier key
+            this.addListener(Garnish.$doc, 'keydown', function(ev) {
+                if (ev.keyCode == Garnish.SHIFT_KEY) {
+                    this.shiftKeyHeld = true;
+                }
+            }.bind(this));
+            this.addListener(Garnish.$doc, 'keyup', function(ev) {
+                if (ev.keyCode == Garnish.SHIFT_KEY) {
+                    this.shiftKeyHeld = false;
+                }
+            }.bind(this));
 
             // Cropper constraint menu
             var constraintMenu = new Garnish.MenuBtn($('.crop .menubtn', this.$container), {
@@ -1954,7 +1967,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         change = -deltaY + deltaX;
                         break;
                     case 'tl':
-                        change = -deltaY - deltaY;
+                        change = -deltaY - deltaX;
                         break;
                     case 'br':
                         change = deltaY + deltaX;
@@ -1975,6 +1988,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 rectangle.height += deltaY;
                 rectangle.width += deltaX;
             } else {
+
+                // Lock the aspect ratio
+                if (this.shiftKeyHeld &&
+                    (this.scalingCropper == 'tl' || this.scalingCropper == 'tr' ||
+                    this.scalingCropper == 'bl' || this.scalingCropper == 'br')
+                ) {
+                    var ratio;
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                        ratio = this.clipper.width / this.clipper.height;
+                        deltaY = deltaX / ratio;
+                        deltaY *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+                    } else {
+                        ratio = this.clipper.width / this.clipper.height;
+                        deltaX = deltaY * ratio;
+                        deltaX *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+                    }
+                }
 
                 if (this.scalingCropper.match(/t/)) {
                     rectangle.top += deltaY;
