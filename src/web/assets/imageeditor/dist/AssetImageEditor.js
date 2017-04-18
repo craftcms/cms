@@ -1991,9 +1991,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     deltaY = change;
                     deltaX = deltaY * this.croppingConstraint;
                 }
+                
                 // TODO Improve this by adjusting positioning as well so when resizing from right, the left side stays put
                 rectangle.height += deltaY;
                 rectangle.width += deltaX;
+                rectangle.left -= deltaX / 2;
+                rectangle.top -= deltaY / 2;
             } else {
 
                 // Lock the aspect ratio
