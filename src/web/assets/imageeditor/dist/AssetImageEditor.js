@@ -1866,8 +1866,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Mock the clipping rectangle for collision tests
             var rectangle = {
-                top: this.clipper.top,
-                left: this.clipper.left,
+                left: this.clipper.left - this.clipper.width / 2,
+                top: this.clipper.top - this.clipper.height / 2,
                 width: this.clipper.width,
                 height: this.clipper.height
             };
@@ -1875,8 +1875,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // If wider than it should be
             if (this.clipper.width > this.clipper.height * this.croppingConstraint)
             {
+                var previousHeight = rectangle.height;
+
                 // Make it taller!
                 rectangle.height = this.clipper.width / this.croppingConstraint;
+
+                // Getting really awkward having to convert between 0;0 being center or top-left corner.
+                rectangle.top -= (rectangle.height - previousHeight) / 2;
 
                 // If the clipper would end up out of bounds, make it narrower instead.
                 if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
@@ -1885,11 +1890,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
             } else {
                 // Follow the same pattern, if taller than it should be.
+                var previousWidth = rectangle.width;
                 rectangle.width = this.clipper.height * this.croppingConstraint;
+                rectangle.left -= (rectangle.width - previousWidth) / 2;
 
                 if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
                     rectangle.height = this.clipper.width / this.croppingConstraint;
-                    rectangle.height = rectangle.height * this.croppingConstraint;
+                    rectangle.width = rectangle.height * this.croppingConstraint;
                 }
             }
 
