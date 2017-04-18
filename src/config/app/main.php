@@ -253,6 +253,12 @@ return [
         'db' => function() {
             $dbConfig = Craft::$app->getConfig()->getDb();
 
+            if ($dbConfig->driver === \craft\config\DbConfig::DRIVER_MYSQL) {
+                $schemaClass = craft\db\mysql\Schema::class;
+            } else {
+                $schemaClass = craft\db\pgsql\Schema::class;
+            }
+
             /** @var craft\db\Connection $db */
             $db = Craft::createObject([
                 'class' => craft\db\Connection::class,
@@ -262,8 +268,9 @@ return [
                 'charset' => $dbConfig->charset,
                 'tablePrefix' => $dbConfig->tablePrefix,
                 'schemaMap' => [
-                    'mysql' => craft\db\mysql\Schema::class,
-                    'pgsql' => craft\db\pgsql\Schema::class,
+                    $dbConfig->driver => [
+                        'class' => $schemaClass,
+                    ]
                 ],
                 'commandClass' => \craft\db\Command::class,
                 'attributes' => $dbConfig->attributes,
