@@ -10,7 +10,9 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
+use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\models\Site;
@@ -235,22 +237,17 @@ class ElementRelationParamParser
             $fields = ArrayHelper::toArray($relCriteria['field']);
 
             foreach ($fields as $field) {
+                if (($fieldModel = $this->_getField($field, $fieldHandleParts)) === null) {
+                    Craft::warning('Attempting to load relations for an invalid field: '.$field);
 
-                if (is_numeric($field)) {
-                    $fieldHandleParts = null;
-                    $fieldModel = Craft::$app->getFields()->getFieldById($field);
-                } else {
-                    $fieldHandleParts = explode('.', $field);
-                    $fieldModel = Craft::$app->getFields()->getFieldByHandle($fieldHandleParts[0]);
-                }
-
-                if (!$fieldModel) {
-                    continue;
+                    return false;
                 }
 
                 /** @var Field $fieldModel */
-                // Is this a Matrix field?
-                if (get_class($fieldModel) === Matrix::class) {
+                if ($fieldModel instanceof BaseRelationField) {
+                    // We'll deal with normal relation fields all together
+                    $relationFieldIds[] = $fieldModel->id;
+                } else if ($fieldModel instanceof Matrix) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
@@ -333,7 +330,9 @@ class ElementRelationParamParser
                     $conditions[] = ['in', 'elements.id', $subQuery];
                     unset($subQuery);
                 } else {
-                    $relationFieldIds[] = $fieldModel->id;
+                    Craft::warning('Attempting to load relations for a non-relational field: '.$fieldModel->handle);
+
+                    return false;
                 }
             }
         }
@@ -384,5 +383,26 @@ class ElementRelationParamParser
         array_unshift($conditions, 'or');
 
         return $conditions;
+    }
+
+    /**
+     * Returns a field model based on its handle or ID.
+     *
+     * @param mixed      $field
+     * @param array|null &$fieldHandleParts
+     *
+     * @return FieldInterface|null
+     */
+    private function _getField($field, array &$fieldHandleParts = null)
+    {
+        if (is_numeric($field)) {
+            $fieldHandleParts = null;
+            $fieldModel = Craft::$app->getFields()->getFieldById($field);
+        } else {
+            $fieldHandleParts = explode('.', $field);
+            $fieldModel = Craft::$app->getFields()->getFieldByHandle($fieldHandleParts[0]);
+        }
+
+        return $fieldModel;
     }
 }
