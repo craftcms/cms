@@ -1422,20 +1422,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $relationParamParser = new ElementRelationParamParser();
-        $condition = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
+        $condition = (new ElementRelationParamParser())->parse($this->relatedTo);
 
         if ($condition === false) {
             throw new QueryAbortedException();
         }
 
         $this->subQuery->andWhere($condition);
-
-        // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
-        // to order by the relation sort order
-        if ($relationParamParser->getIsRelationFieldQuery()) {
-            $this->subQuery->addSelect(['sources1.sortOrder']);
-        }
     }
 
     /**

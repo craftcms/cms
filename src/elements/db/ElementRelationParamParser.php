@@ -19,8 +19,6 @@ use craft\models\Site;
 /**
  * Parses a relatedTo param on an ElementQuery.
  *
- * @property bool $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -32,51 +30,51 @@ class ElementRelationParamParser
     /**
      * @var int
      */
-    private $_joinSourceMatrixBlocksCount = 0;
+    private $_relateSourceMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private $_joinTargetMatrixBlocksCount = 0;
+    private $_relateTargetMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private $_joinSourcesCount = 0;
+    private $_relateSourcesCount = 0;
 
     /**
      * @var int
      */
-    private $_joinTargetsCount = 0;
+    private $_relateTargetsCount = 0;
 
     // Public Methods
     // =========================================================================
 
     /**
-     * Parses a relatedTo criteria param and returns the condition(s) or 'false' if there's an issue.
+     * Parses a `relatedTo` element query param and returns the condition that should
+     * be applied back on the element query, or `false` if there's an issue.
      *
-     * @param mixed $relatedTo
-     * @param Query $query
+     * @param mixed $relatedToParam
      *
-     * @return mixed
+     * @return array|false
      */
-    public function parseRelationParam($relatedTo, Query $query)
+    public function parse($relatedToParam)
     {
         // Ensure the criteria is an array
-        if (is_string($relatedTo)) {
-            $relatedTo = ArrayHelper::toArray($relatedTo);
-        } else if (!is_array($relatedTo)) {
-            $relatedTo = [$relatedTo];
+        if (is_string($relatedToParam)) {
+            $relatedToParam = ArrayHelper::toArray($relatedToParam);
+        } else if (!is_array($relatedToParam)) {
+            $relatedToParam = [$relatedToParam];
         }
 
-        if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement'])) {
-            $relatedTo = [$relatedTo];
+        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
+            $relatedToParam = [$relatedToParam];
         }
 
         $conditions = [];
 
-        if ($relatedTo[0] === 'and' || $relatedTo[0] === 'or') {
-            $glue = array_shift($relatedTo);
+        if ($relatedToParam[0] === 'and' || $relatedToParam[0] === 'or') {
+            $glue = array_shift($relatedToParam);
         } else {
             $glue = 'or';
         }
@@ -85,20 +83,20 @@ class ElementRelationParamParser
             // Group all of the unspecified elements, so we avoid adding massive JOINs to the query
             $unspecifiedElements = [];
 
-            foreach ($relatedTo as $i => $relCriteria) {
+            foreach ($relatedToParam as $i => $relCriteria) {
                 if (!is_array($relCriteria)) {
                     $unspecifiedElements[] = $relCriteria;
-                    unset($relatedTo[$i]);
+                    unset($relatedToParam[$i]);
                 }
             }
 
             if (!empty($unspecifiedElements)) {
-                $relatedTo[] = ['element' => $unspecifiedElements];
+                $relatedToParam[] = ['element' => $unspecifiedElements];
             }
         }
 
-        foreach ($relatedTo as $relCriteria) {
-            $condition = $this->_subparseRelationParam($relCriteria, $query);
+        foreach ($relatedToParam as $relCriteria) {
+            $condition = $this->_subparse($relCriteria);
 
             if ($condition) {
                 $conditions[] = $condition;
@@ -122,33 +120,17 @@ class ElementRelationParamParser
         return $conditions;
     }
 
-    /**
-     * Returns whether the relatedTo value appears to be for selecting the targets of a single relation field.
-     *
-     * @return bool
-     */
-    public function getIsRelationFieldQuery(): bool
-    {
-        return (
-            $this->_joinSourcesCount === 1 &&
-            $this->_joinTargetsCount === 0 &&
-            $this->_joinSourceMatrixBlocksCount === 0 &&
-            $this->_joinTargetMatrixBlocksCount === 0
-        );
-    }
-
     // Private Methods
     // =========================================================================
 
     /**
-     * Parses a part of a relatedTo criteria param and returns the condition or 'false' if there's an issue.
+     * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.
      *
      * @param mixed $relCriteria
-     * @param Query $query
      *
      * @return mixed
      */
-    private function _subparseRelationParam($relCriteria, Query $query)
+    private function _subparse($relCriteria)
     {
         // Merge in default criteria params
         $relCriteria = array_merge([
@@ -220,7 +202,7 @@ class ElementRelationParamParser
         if (isset($relCriteria['element'])) {
             array_unshift($relElementIds, $glue);
 
-            return $this->parseRelationParam([
+            return $this->parse([
                 'or',
                 [
                     'sourceElement' => $relElementIds,
@@ -230,7 +212,7 @@ class ElementRelationParamParser
                     'targetElement' => $relElementIds,
                     'field' => $relCriteria['field']
                 ]
-            ], $query);
+            ]);
         }
 
         // Do we need to check for *all* of the element IDs?
@@ -242,7 +224,7 @@ class ElementRelationParamParser
                 $newRelatedToParam[] = [$elementParam => [$elementId]];
             }
 
-            return $this->parseRelationParam($newRelatedToParam, $query);
+            return $this->parse($newRelatedToParam);
         }
 
         $conditions = [];
@@ -294,71 +276,63 @@ class ElementRelationParamParser
                     }
 
                     if (isset($relCriteria['sourceElement'])) {
-                        $this->_joinSourcesCount++;
-                        $this->_joinTargetMatrixBlocksCount++;
+                        $this->_relateSourcesCount++;
+                        $this->_relateTargetMatrixBlocksCount++;
 
-                        $sourcesAlias = 'sources'.$this->_joinSourcesCount;
-                        $targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_joinTargetMatrixBlocksCount;
+                        $sourcesAlias = 'sources'.$this->_relateSourcesCount;
+                        $targetMatrixBlocksAlias = 'target_matrixblocks'.$this->_relateTargetMatrixBlocksCount;
 
-                        $relationsJoinConditions = [
-                            'and',
-                            "[[{$sourcesAlias}.targetId]] = [[elements.id]]"
-                        ];
+                        $subQuery = (new Query())
+                            ->select([$sourcesAlias.'.targetId'])
+                            ->from([$sourcesAlias => '{{%relations}}'])
+                            ->innerJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->where([
+                                'and',
+                                Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
+                                [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
+                            ]);
 
                         if ($relCriteria['sourceSite']) {
-
-                            $relationsJoinConditions[] = [
+                            $subQuery->andWhere([
                                 'or',
                                 [$sourcesAlias.'.sourceSiteId' => null],
                                 [$sourcesAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
-                            ];
+                            ]);
                         }
-
-                        $query->leftJoin("{{%relations}} {$sourcesAlias}", $relationsJoinConditions);
-                        $query->leftJoin("{{%matrixblocks}} {$targetMatrixBlocksAlias}", "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]");
-
-                        $condition = [
-                            'and',
-                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
-                            [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
-                        ];
 
                         if (!empty($blockTypeFieldIds)) {
-                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds);
+                            $subQuery->andWhere(Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds));
                         }
                     } else {
-                        $this->_joinSourceMatrixBlocksCount++;
-                        $sourceMatrixBlocksAlias = 'source_matrixblocks'.$this->_joinSourceMatrixBlocksCount;
-                        $matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_joinSourceMatrixBlocksCount;
+                        $this->_relateSourceMatrixBlocksCount++;
+                        $sourceMatrixBlocksAlias = 'source_matrixblocks'.$this->_relateSourceMatrixBlocksCount;
+                        $matrixBlockTargetsAlias = 'matrixblock_targets'.$this->_relateSourceMatrixBlocksCount;
 
-                        $relationsJoinConditions = [
-                            'and',
-                            "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]"
-                        ];
+                        $subQuery = (new Query())
+                            ->select([$sourceMatrixBlocksAlias.'.ownerId'])
+                            ->from([$sourceMatrixBlocksAlias => '{{%matrixblocks}}'])
+                            ->innerJoin('{{%relations}} '.$matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->where([
+                                'and',
+                                Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
+                                [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
+                            ]);
 
                         if ($relCriteria['sourceSite']) {
-                            $relationsJoinConditions[] = [
+                            $subQuery->andWhere([
                                 'or',
                                 [$matrixBlockTargetsAlias.'.sourceSiteId' => null],
                                 [$matrixBlockTargetsAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
-                            ];
+                            ]);
                         }
 
-                        $query->leftJoin("{{%matrixblocks}} {$sourceMatrixBlocksAlias}", "[[{$sourceMatrixBlocksAlias}.ownerId]] = [[elements.id]]");
-                        $query->leftJoin("{{%relations}} {$matrixBlockTargetsAlias}", $relationsJoinConditions);
-
-                        $condition = [
-                            'and',
-                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
-                            [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
-                        ];
-
                         if (!empty($blockTypeFieldIds)) {
-                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds);
+                            $subQuery->andWhere(Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds));
                         }
                     }
 
-                    $conditions[] = $condition;
+                    $conditions[] = ['in', 'elements.id', $subQuery];
+                    unset($subQuery);
                 } else {
                     $normalFieldIds[] = $fieldModel->id;
                 }
@@ -369,43 +343,35 @@ class ElementRelationParamParser
         // run this code if the rel criteria wasn't exclusively for Matrix.)
         if (empty($relCriteria['field']) || !empty($normalFieldIds)) {
             if (isset($relCriteria['sourceElement'])) {
-                $this->_joinSourcesCount++;
-                $relTableAlias = 'sources'.$this->_joinSourcesCount;
+                $this->_relateSourcesCount++;
+                $relTableAlias = 'sources'.$this->_relateSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
             } else {
-                // $relCriteria['targetElement'], then
-                $this->_joinTargetsCount++;
-                $relTableAlias = 'targets'.$this->_joinTargetsCount;
+                $this->_relateTargetsCount++;
+                $relTableAlias = 'targets'.$this->_relateTargetsCount;
                 $relConditionColumn = 'targetId';
                 $relElementColumn = 'sourceId';
             }
 
-            $relationsJoinConditions = [
-                'and',
-                "[[{$relTableAlias}.{$relElementColumn}]] = [[elements.id]]"
-            ];
+            $subQuery = (new Query())
+                ->select([$relTableAlias.'.'.$relElementColumn])
+                ->from([$relTableAlias => '{{%relations}}'])
+                ->where(Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds));
 
             if ($relCriteria['sourceSite']) {
-                $relationsJoinConditions[] = [
+                $subQuery->andWhere([
                     'or',
                     [$relTableAlias.'.sourceSiteId' => null],
                     [$relTableAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
-                ];
+                ]);
             }
-
-            $query->leftJoin("{{%relations}} {$relTableAlias}", $relationsJoinConditions);
-            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds);
 
             if (!empty($normalFieldIds)) {
-                $condition = [
-                    'and',
-                    $condition,
-                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds)
-                ];
+                $subQuery->andWhere(Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds));
             }
 
-            $conditions[] = $condition;
+            $conditions[] = ['in', 'elements.id', $subQuery];
         }
 
         if (empty($conditions)) {
