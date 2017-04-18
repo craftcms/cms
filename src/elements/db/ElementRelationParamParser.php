@@ -109,17 +109,17 @@ class ElementRelationParamParser
             }
         }
 
-        if (!empty($conditions)) {
-            if (count($conditions) === 1) {
-                return $conditions[0];
-            }
-
-            array_unshift($conditions, $glue);
-
-            return $conditions;
+        if (empty($conditions)) {
+            return false;
         }
 
-        return false;
+        if (count($conditions) === 1) {
+            return $conditions[0];
+        }
+
+        array_unshift($conditions, $glue);
+
+        return $conditions;
     }
 
     /**
