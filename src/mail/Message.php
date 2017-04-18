@@ -39,7 +39,7 @@ class Message extends \yii\swiftmailer\Message
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Sets the message sender.
      *
      * @param string|array|User|User[] $from The sender’s email address, or their user model(s).
      *                                       You may pass an array of addresses if this message is from multiple people.
@@ -57,7 +57,7 @@ class Message extends \yii\swiftmailer\Message
     }
 
     /**
-     * @inheritdoc
+     * Sets the message recipient(s).
      *
      * @param string|array|User|User[] $to The receiver’s email address, or their user model(s).
      *                                     You may pass an array of addresses if multiple recipients should receive this message.
@@ -83,7 +83,7 @@ class Message extends \yii\swiftmailer\Message
     }
 
     /**
-     * @inheritdoc
+     * Sets the CC (additional copy receiver) addresses of this message.
      *
      * @param string|array|User|User[] $cc The copied receiver’s email address, or their user model(s).
      *                                     You may pass an array of addresses if multiple recipients should receive this message.
@@ -101,7 +101,7 @@ class Message extends \yii\swiftmailer\Message
     }
 
     /**
-     * @inheritdoc
+     * Sets the BCC (hidden copy receiver) addresses of this message.
      *
      * @param string|array|User|User[] $bcc The hidden copied receiver’ email address, or their user model(s).
      *                                      You may pass an array of addresses if multiple recipients should receive this message.

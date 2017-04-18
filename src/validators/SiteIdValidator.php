@@ -24,13 +24,13 @@ class SiteIdValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $siteId = $object->$attribute;
+        $siteId = $model->$attribute;
 
         if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds(), false)) {
             $message = Craft::t('app', 'Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
-            $this->addError($object, $attribute, $message);
+            $this->addError($model, $attribute, $message);
         }
     }
 }

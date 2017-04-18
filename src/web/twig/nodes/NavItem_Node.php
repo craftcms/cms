@@ -21,7 +21,14 @@ class NavItem_Node extends \Twig_Node
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * NavItem_Node constructor.
+     *
+     * @param \Twig_Node_Expression_AssignName $valueTarget
+     * @param \Twig_Node|null                  $indent
+     * @param \Twig_Node|null                  $outdent
+     * @param \Twig_Node|null                  $lowerBody
+     * @param                                  $lineno
+     * @param null                             $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $valueTarget, \Twig_Node $indent = null, \Twig_Node $outdent = null, \Twig_Node $lowerBody = null, $lineno, $tag = null)
     {

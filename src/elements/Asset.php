@@ -649,7 +649,7 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
+     * Returns the element’s full URL.
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
