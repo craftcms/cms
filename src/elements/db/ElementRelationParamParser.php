@@ -13,7 +13,6 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\models\Site;
 
 /**
@@ -288,7 +287,7 @@ class ElementRelationParamParser
                             ->innerJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
                             ->where([
                                 'and',
-                                Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
+                                ['in', $targetMatrixBlocksAlias.'.ownerId', $relElementIds],
                                 [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                             ]);
 
@@ -301,7 +300,7 @@ class ElementRelationParamParser
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds));
+                            $subQuery->andWhere(['in', $sourcesAlias.'.fieldId', $blockTypeFieldIds]);
                         }
                     } else {
                         $this->_relateSourceMatrixBlocksCount++;
@@ -314,7 +313,7 @@ class ElementRelationParamParser
                             ->innerJoin('{{%relations}} '.$matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
                                 'and',
-                                Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
+                                ['in', $matrixBlockTargetsAlias.'.targetId', $relElementIds],
                                 [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                             ]);
 
@@ -327,7 +326,7 @@ class ElementRelationParamParser
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere(Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds));
+                            $subQuery->andWhere(['in', $matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds]);
                         }
                     }
 
@@ -357,7 +356,7 @@ class ElementRelationParamParser
             $subQuery = (new Query())
                 ->select([$relTableAlias.'.'.$relElementColumn])
                 ->from([$relTableAlias => '{{%relations}}'])
-                ->where(Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds));
+                ->where(['in', $relTableAlias.'.'.$relConditionColumn, $relElementIds]);
 
             if ($relCriteria['sourceSite']) {
                 $subQuery->andWhere([
