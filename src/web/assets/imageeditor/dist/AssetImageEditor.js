@@ -1956,7 +1956,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Lock the aspect ratio if needed
             if (this.croppingConstraint) {
                 var change = 0;
-                // Deduce which resize vector is the strongest
+
+                // Take into account the mouse direction and figure out the "real" change in cropper size
                 switch (this.scalingCropper) {
                     case 't':
                         change = -deltaY;
@@ -1991,12 +1992,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     deltaY = change;
                     deltaX = deltaY * this.croppingConstraint;
                 }
-                
-                // TODO Improve this by adjusting positioning as well so when resizing from right, the left side stays put
+
                 rectangle.height += deltaY;
                 rectangle.width += deltaX;
-                rectangle.left -= deltaX / 2;
-                rectangle.top -= deltaY / 2;
+
+                // Make the cropper compress/expand relative to the correct edge to make it feel "right"
+                if (this.scalingCropper.match(/t/)) {
+                    rectangle.top -= deltaY;
+                    rectangle.left -= deltaX / 2;
+                    topDelta = -deltaY/2;
+                }
+
+                if (this.scalingCropper.match(/b/)) {
+                    rectangle.left += -deltaX / 2;
+                    topDelta = deltaY/2;
+                }
+
+                if (this.scalingCropper.match(/r/)) {
+                    rectangle.top += -deltaY / 2;
+                    leftDelta = deltaX/2;
+                }
+
+                if (this.scalingCropper.match(/l/)) {
+                    rectangle.top -= deltaY / 2;
+                    rectangle.left -= deltaX;
+                    leftDelta = -deltaX/2;
+                }
             } else {
 
                 // Lock the aspect ratio
@@ -2039,11 +2060,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 return;
             }
 
-            var vertices = this._getRectangleVertices(rectangle);
-
             // TODO sometimes after a straighten operation you'll get cropper stuck on edges
             // so maybe be a little more lenient about this is resizing cropper inwards?
-            if (!this.arePointsInsideRectangle(vertices, this.imageVerticeCoords)) {
+            if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
                 return;
             }
 
