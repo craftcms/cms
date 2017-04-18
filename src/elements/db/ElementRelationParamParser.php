@@ -25,6 +25,12 @@ use craft\models\Site;
  */
 class ElementRelationParamParser
 {
+    // Constants
+    // =========================================================================
+
+    const DIR_FORWARD = 0;
+    const DIR_REVERSE = 1;
+
     // Properties
     // =========================================================================
 
@@ -216,6 +222,13 @@ class ElementRelationParamParser
             ]);
         }
 
+        // Figure out which direction we’re going
+        if (isset($relCriteria['sourceElement'])) {
+            $dir = self::DIR_FORWARD;
+        } else {
+            $dir = self::DIR_REVERSE;
+        }
+
         // Do we need to check for *all* of the element IDs?
         if ($glue === 'and') {
             // Spread it across multiple relation sub-params
@@ -271,7 +284,7 @@ class ElementRelationParamParser
                         }
                     }
 
-                    if (isset($relCriteria['sourceElement'])) {
+                    if ($dir === self::DIR_FORWARD) {
                         $this->_relateSourcesCount++;
                         $this->_relateTargetMatrixBlocksCount++;
 
@@ -340,7 +353,7 @@ class ElementRelationParamParser
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
-            if (isset($relCriteria['sourceElement'])) {
+            if ($dir === self::DIR_FORWARD) {
                 $this->_relateSourcesCount++;
                 $relTableAlias = 'sources'.$this->_relateSourcesCount;
                 $relConditionColumn = 'sourceId';
