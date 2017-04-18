@@ -92,7 +92,6 @@ class SystemReport extends Utility
     private static function _dbDriver(): string
     {
         $db = Craft::$app->getDb();
-        $driverName = $db->getDriverName();
 
         if ($db->getIsMysql()) {
             $driverName = 'MySQL';
