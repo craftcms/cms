@@ -57,7 +57,7 @@ class ChartHelper
             'valueType' => 'number',
         ], $options);
 
-        $databaseType = Craft::$app->getConfig()->getDb()->driver;
+        $isMysql = Craft::$app->getDb()->getIsMysql();
 
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
@@ -65,76 +65,51 @@ class ChartHelper
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
         }
 
-        switch ($databaseType) {
-            case DbConfig::DRIVER_MYSQL:
-                $yearSql = "YEAR([[{$dateColumn}]])";
-                $monthSql = "MONTH([[{$dateColumn}]])";
-                $daySql = "DAY([[{$dateColumn}]])";
-                $hourSql = "HOUR([[{$dateColumn}]])";
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
-                $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
-                $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
-                $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
-                break;
-            default:
-                throw new Exception('Unsupported connection type: '.$databaseType);
+        if ($isMysql) {
+            $yearSql = "YEAR([[{$dateColumn}]])";
+            $monthSql = "MONTH([[{$dateColumn}]])";
+            $daySql = "DAY([[{$dateColumn}]])";
+            $hourSql = "HOUR([[{$dateColumn}]])";
+        } else {
+            $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
+            $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
+            $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
+            $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
         }
 
         switch ($intervalUnit) {
             case 'year':
-                switch ($databaseType) {
-                    case DbConfig::DRIVER_MYSQL:
-                        $sqlDateFormat = '%Y-01-01';
-                        break;
-                    case DbConfig::DRIVER_PGSQL:
-                        $sqlDateFormat = 'YYYY-01-01';
-                        break;
-                    default:
-                        throw new Exception('Unsupported connection type: '.$databaseType);
+                if ($isMysql) {
+                    $sqlDateFormat = '%Y-01-01';
+                } else {
+                    $sqlDateFormat = 'YYYY-01-01';
                 }
                 $phpDateFormat = 'Y-01-01';
                 $sqlGroup = [$yearSql];
                 break;
             case 'month':
-                switch ($databaseType) {
-                    case DbConfig::DRIVER_MYSQL:
-                        $sqlDateFormat = '%Y-%m-01';
-                        break;
-                    case DbConfig::DRIVER_PGSQL:
-                        $sqlDateFormat = 'YYYY-MM-01';
-                        break;
-                    default:
-                        throw new Exception('Unsupported connection type: '.$databaseType);
+                if ($isMysql) {
+                    $sqlDateFormat = '%Y-%m-01';
+                } else {
+                    $sqlDateFormat = 'YYYY-MM-01';
                 }
                 $phpDateFormat = 'Y-m-01';
                 $sqlGroup = [$yearSql, $monthSql];
                 break;
             case 'day':
-                switch ($databaseType) {
-                    case DbConfig::DRIVER_MYSQL:
-                        $sqlDateFormat = '%Y-%m-%d';
-                        break;
-                    case DbConfig::DRIVER_PGSQL:
-                        $sqlDateFormat = 'YYYY-MM-DD';
-                        break;
-                    default:
-                        throw new Exception('Unsupported connection type: '.$databaseType);
+                if ($isMysql) {
+                    $sqlDateFormat = '%Y-%m-%d';
+                } else {
+                    $sqlDateFormat = 'YYYY-MM-DD';
                 }
                 $phpDateFormat = 'Y-m-d';
                 $sqlGroup = [$yearSql, $monthSql, $daySql];
                 break;
             case 'hour':
-                switch ($databaseType) {
-                    case DbConfig::DRIVER_MYSQL:
-                        $sqlDateFormat = '%Y-%m-%d %H:00:00';
-                        break;
-                    case DbConfig::DRIVER_PGSQL:
-                        $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
-                        break;
-                    default:
-                        throw new Exception('Unsupported connection type: '.$databaseType);
+                if ($isMysql) {
+                    $sqlDateFormat = '%Y-%m-%d %H:00:00';
+                } else {
+                    $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
                 }
                 $phpDateFormat = 'Y-m-d H:00:00';
                 $sqlGroup = [$yearSql, $monthSql, $daySql, $hourSql];
@@ -143,15 +118,10 @@ class ChartHelper
                 throw new Exception('Invalid interval unit: '.$intervalUnit);
         }
 
-        switch ($databaseType) {
-            case DbConfig::DRIVER_MYSQL:
-                $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
-                break;
-            default:
-                throw new Exception('Unsupported connection type: '.$databaseType);
+        if ($isMysql) {
+            $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
+        } else {
+            $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
         }
 
         $sqlGroup[] = '[[date]]';

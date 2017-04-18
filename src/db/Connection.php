@@ -97,30 +97,20 @@ class Connection extends \yii\db\Connection
         } catch (DbException $e) {
             Craft::error($e->getMessage(), __METHOD__);
 
-            $driverName = $this->getDriverName();
-
-            switch ($driverName) {
-                case DbConfig::DRIVER_MYSQL:
-                    if (!extension_loaded('pdo')) {
-                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-                    } else if (!extension_loaded('pdo_mysql')) {
-                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
-                    }
-
-                    break;
-
-                case DbConfig::DRIVER_PGSQL:
-                    if (!extension_loaded('pdo')) {
-                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-                    } else if (!extension_loaded('pdo_pgsql')) {
-                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'));
-                    }
-
-                    break;
-
-                default:
-                    /** @noinspection ThrowRawExceptionInspection */
-                    throw new \Exception('Unsupported connection type: '.$driverName);
+            if ($this->getIsMysql()) {
+                if (!extension_loaded('pdo')) {
+                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                }
+                if (!extension_loaded('pdo_mysql')) {
+                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
+                }
+            } else {
+                if (!extension_loaded('pdo')) {
+                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                }
+                if (!extension_loaded('pdo_pgsql')) {
+                    throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'));
+                }
             }
 
             Craft::error($e->getMessage(), __METHOD__);

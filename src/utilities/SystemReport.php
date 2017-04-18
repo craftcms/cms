@@ -94,13 +94,10 @@ class SystemReport extends Utility
         $db = Craft::$app->getDb();
         $driverName = $db->getDriverName();
 
-        switch ($driverName) {
-            case DbConfig::DRIVER_MYSQL:
-                $driverName = 'MySQL';
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                $driverName = 'PostgreSQL';
-                break;
+        if ($db->getIsMysql()) {
+            $driverName = 'MySQL';
+        } else {
+            $driverName = 'PostgreSQL';
         }
 
         return $driverName.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION);

@@ -439,7 +439,7 @@ class Search extends Component
      */
     private function _processTokens(array $tokens = [], bool $inclusive = true, int $siteId = null)
     {
-        $andOr = $inclusive ? ' AND ' : ' OR ';
+        $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
         $words = [];
 
@@ -456,10 +456,8 @@ class Search extends Component
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
             else if ($keywords !== null && $keywords !== '') {
-                if ($inclusive) {
-                    if (Craft::$app->getDb()->getDriverName() === DbConfig::DRIVER_MYSQL) {
-                        $keywords = '+'.$keywords;
-                    }
+                if ($inclusive && Craft::$app->getDb()->getIsMysql()) {
+                    $keywords = '+'.$keywords;
                 }
 
                 $words[] = $keywords;
@@ -468,13 +466,13 @@ class Search extends Component
 
         // If we collected full-text words, combine them into one
         if (!empty($words)) {
-            $where[] = $this->_sqlFullText($words, true, $andOr);
+            $where[] = $this->_sqlFullText($words, true, $glue);
         }
 
         // If we have valid where clauses now, stringify them
         if (!empty($where)) {
             // Implode WHERE clause to a string
-            $where = implode($andOr, $where);
+            $where = implode($glue, $where);
 
             // And group together for non-inclusive queries
             if (!$inclusive) {
@@ -504,7 +502,7 @@ class Search extends Component
         // Initiate return value
         $sql = null;
         $keywords = null;
-        $driver = Craft::$app->getDb()->getDriverName();
+        $isMysql = Craft::$app->getDb()->getIsMysql();
 
         // Check for other attributes
         if ($term->attribute !== null) {
@@ -533,27 +531,22 @@ class Search extends Component
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                if ($driver === DbConfig::DRIVER_PGSQL && $term->phrase) {
+                if (!$isMysql && $term->phrase) {
                     $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
                 } else {
 
                     // Create fulltext clause from term
                     if ($this->_doFullTextSearch($keywords, $term)) {
                         if ($term->subRight) {
-                            switch ($driver) {
-                                case DbConfig::DRIVER_MYSQL:
-                                    $keywords .= '*';
-                                    break;
-                                case DbConfig::DRIVER_PGSQL:
-                                    $keywords .= ':*';
-                                    break;
-                                default:
-                                    throw new DbException('Unsupported connection type: '.$driver);
+                            if ($isMysql) {
+                                $keywords .= '*';
+                            } else {
+                                $keywords .= ':*';
                             }
                         }
 
                         // Add quotes for exact match
-                        if ($driver === DbConfig::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
+                        if ($isMysql && StringHelper::contains($keywords, ' ')) {
                             $keywords = '"'.$keywords.'"';
                         }
 
@@ -656,42 +649,36 @@ class Search extends Component
     /**
      * Get SQL necessary for a full text search.
      *
-     * @param mixed  $val   String or Array of keywords
-     * @param bool   $bool  Use In Boolean Mode or not
-     * @param string $andOr If multiple values are passed in as an array, whether to AND or OR then.
+     * @param mixed  $val  String or Array of keywords
+     * @param bool   $bool Use In Boolean Mode or not
+     * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      *
      * @return string
      * @throws Exception
      */
-    private function _sqlFullText($val, bool $bool = true, string $andOr = ' AND '): string
+    private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
     {
-        $driver = Craft::$app->getDb()->getDriverName();
-        switch ($driver) {
-            case DbConfig::DRIVER_MYSQL:
-                return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
-
-            case DbConfig::DRIVER_PGSQL:
-                if ($andOr === ' AND ') {
-                    $andOr = ' & ';
-                } else {
-                    $andOr = ' | ';
-                }
-
-                if (is_array($val)) {
-                    foreach ($val as $key => $value) {
-                        if (StringHelper::contains($value, ' ')) {
-                            $temp = explode(' ', $val[$key]);
-                            $temp = implode(' & ', $temp);
-                            $val[$key] = $temp;
-                        }
-                    }
-                }
-
-                return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($andOr, $val) : $val));
-
-            default:
-                throw new DbException('Unsupported connection type: '.$driver);
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
         }
+
+        if ($glue === ' AND ') {
+            $glue = ' & ';
+        } else {
+            $glue = ' | ';
+        }
+
+        if (is_array($val)) {
+            foreach ($val as $key => $value) {
+                if (StringHelper::contains($value, ' ')) {
+                    $temp = explode(' ', $val[$key]);
+                    $temp = implode(' & ', $temp);
+                    $val[$key] = $temp;
+                }
+            }
+        }
+
+        return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($glue, $val) : $val));
     }
 
     /**
