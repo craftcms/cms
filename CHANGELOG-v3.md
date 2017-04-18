@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\web\View::registerScript()`, as a more generic way to register new `<script>` tags on the page than `registerJs()`. ([#1617](https://github.com/craftcms/cms/pull/1617))
 - Added the `uploadParamName` setting to `Craft.ImageUpload`, which specifies the param name that should be used for file uploads. (Default is `files`.)
+- Image editor now has a cropping constraint feature.
 
 ### Changed
 - If `craft\web\View::$title` is set, a `<title>` tag will now automatically get injected into the page’s `<head>`. ([#1625](https://github.com/craftcms/cms/pull/1625))
@@ -28,6 +29,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed support for referring to Redactor’s `source` plugin by its old name, `html`, within Redactor JSON configs.
+
+### Removed
+- Image editor no longer locks cropper aspect ratio when shift key is held down. Use the "Current" cropper restraint setting for that.
 
 ### Fixed
 - Fixed a PHP error that occurred when creating new elements with Matrix fields. ([#1610](https://github.com/craftcms/cms/issues/1610))

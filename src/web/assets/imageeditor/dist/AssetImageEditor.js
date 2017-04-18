@@ -50,13 +50,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         draggingFocal: false,
         previousMouseX: 0,
         previousMouseY: 0,
-        shiftKeyHeld: false,
         editorHeight: 0,
         editorWidth: 0,
         cropperState: false,
         scaleFactor: 1,
         flipData: {},
         focalPointState: false,
+        croppingConstraint: false,
 
         // Rendering proxy functions
         renderImage: null,
@@ -533,17 +533,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }.bind(this)
             });
 
-            // Cropper scale modifier key
-            this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                if (ev.keyCode == Garnish.SHIFT_KEY) {
-                    this.shiftKeyHeld = true;
-                }
-            }.bind(this));
-            this.addListener(Garnish.$doc, 'keyup', function(ev) {
-                if (ev.keyCode == Garnish.SHIFT_KEY) {
-                    this.shiftKeyHeld = false;
-                }
-            }.bind(this));
+            // Cropper constraint menu
+            var constraintMenu = new Garnish.MenuBtn($('.crop .menubtn', this.$container), {
+                onOptionSelect: function (option) {
+                    $('.constraint', this.$container).html($(option).html());
+                    this.setCroppingConstraint($(option).data('constraint'));
+                    this.enforceCroppingConstraint();
+                }.bind(this)
+            });
+            constraintMenu.menu.$container.addClass('dark');
         },
 
         /**
@@ -1661,8 +1659,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleMouseDown: function(ev) {
-
-
             // Focal before resize before dragging
             var focal = this.focalPoint && this._isMouseOver(ev, this.focalPoint);
             var move = this.croppingCanvas && this._isMouseOver(ev, this.clipper);
@@ -1789,7 +1785,119 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     left: this.focalPoint.left + deltaX,
                     top: this.focalPoint.top + deltaY
                 });
+
+                this._adaptFocalColor();
             }
+        },
+
+        _adaptFocalColor: function () {
+            // Seems that touching canvas at this points just makes it render black while dragging focal. Investigate.
+            /*var red = 0;
+            var green = 0;
+            var blue = 0;
+            var colors = this.canvas.getContext().getImageData(Math.round(this.focalPoint.left-5), Math.round(this.focalPoint.top-5), 1, 1).data;
+            for (var pixel = 0; pixel < colors.length; pixel += 4) {
+                red += colors[pixel];
+                green += colors[pixel+1];
+                blue += colors[pixel+2];
+            }
+
+            red = Math.round(red / (colors.length / 4));
+            green = Math.round(green / (colors.length / 4));
+            blue = Math.round(blue / (colors.length / 4));
+            var color = 'rgba('+red+','+green+','+blue+',0.8)';
+            this.focalPoint.forEachObject(function (obj) {
+                obj.set({stroke: color});
+            });*/
+        },
+
+        /**
+         * Set the cropping constraint
+         * @param constraint
+         */
+        setCroppingConstraint: function(constraint) {
+
+            // In case this caused the sidebar width to change.
+            this.updateSizeAndPosition();
+
+            switch (constraint) {
+                case 'none':
+                    constraint = false;
+                    break;
+
+                case 'original':
+                    constraint = this.originalWidth / this.originalHeight;
+                    break;
+
+                case 'current':
+                    constraint = this.clipper.width / this.clipper.height;
+                    break;
+
+                default:
+                    constraint = parseFloat(constraint);
+                    break;
+            }
+
+            this.croppingConstraint = constraint;
+        },
+
+        /**
+         * Enforce the cropping constraint
+         */
+        enforceCroppingConstraint: function () {
+            if (this.animationInProgress || !this.croppingConstraint) {
+                return;
+            }
+
+            this.animationInProgress = true;
+
+            // Mock the clipping rectangle for collision tests
+            var rectangle = {
+                top: this.clipper.top,
+                left: this.clipper.left,
+                width: this.clipper.width,
+                height: this.clipper.height
+            };
+
+            // If wider than it should be
+            if (this.clipper.width > this.clipper.height * this.croppingConstraint)
+            {
+                // Make it taller!
+                rectangle.height = this.clipper.width / this.croppingConstraint;
+
+                // If the clipper would end up out of bounds, make it narrower instead.
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+                    rectangle.width = this.clipper.height * this.croppingConstraint;
+                    rectangle.height = rectangle.width / this.croppingConstraint;
+                }
+            } else {
+                // Follow the same pattern, if taller than it should be.
+                rectangle.width = this.clipper.height * this.croppingConstraint;
+
+                if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
+                    rectangle.height = this.clipper.width / this.croppingConstraint;
+                    rectangle.height = rectangle.height * this.croppingConstraint;
+                }
+            }
+
+            var properties = {
+                height: rectangle.height,
+                width: rectangle.width
+            };
+
+            // Make sure to redraw cropper handles and gridlines when resizing
+            this.clipper.animate(properties, {
+                onChange: function() {
+                    this._redrawCropperElements();
+                    this.croppingCanvas.renderAll();
+                }.bind(this),
+                duration: this.settings.animationDuration,
+                onComplete: function() {
+                    this._redrawCropperElements();
+                    this.animationInProgress = false;
+                    this.renderCropper();
+                }.bind(this)
+            });
         },
 
         /**
@@ -1798,28 +1906,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param ev
          */
         _handleCropperResize: function(ev) {
+            // Size deltas
             var deltaX = ev.pageX - this.previousMouseX;
             var deltaY = ev.pageY - this.previousMouseY;
 
-            if (deltaX == 0 && deltaY == 0) {
-                return;
+            // Center deltas
+            var topDelta = 0;
+            var leftDelta = 0;
+
+            if (this.scalingCropper == 'b' || this.scalingCropper == 't') {
+                deltaX = 0;
             }
 
-            // Lock the aspect ratio
-            if (this.shiftKeyHeld &&
-                (this.scalingCropper == 'tl' || this.scalingCropper == 'tr' ||
-                this.scalingCropper == 'bl' || this.scalingCropper == 'br')
-            ) {
-                var ratio;
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-                    ratio = this.clipper.width / this.clipper.height;
-                    deltaY = deltaX / ratio;
-                    deltaY *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
-                } else {
-                    ratio = this.clipper.width / this.clipper.height;
-                    deltaX = deltaY * ratio;
-                    deltaX *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
-                }
+            if (this.scalingCropper == 'l' || this.scalingCropper == 'r') {
+                deltaY = 0;
+            }
+
+            if (deltaX == 0 && deltaY == 0) {
+                return;
             }
 
             var rectangle = {
@@ -1829,41 +1933,66 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 height: this.clipper.height
             };
 
-            switch (this.scalingCropper) {
-                case 't':
+            // Lock the aspect ratio if needed
+            if (this.croppingConstraint) {
+                var change = 0;
+                // Deduce which resize vector is the strongest
+                switch (this.scalingCropper) {
+                    case 't':
+                        change = -deltaY;
+                        break;
+                    case 'b':
+                        change = deltaY;
+                        break;
+                    case 'r':
+                        change = deltaX;
+                        break;
+                    case 'l':
+                        change = -deltaX;
+                        break;
+                    case 'tr':
+                        change = -deltaY + deltaX;
+                        break;
+                    case 'tl':
+                        change = -deltaY - deltaY;
+                        break;
+                    case 'br':
+                        change = deltaY + deltaX;
+                        break;
+                    case 'bl':
+                        change = deltaY - deltaX;
+                        break;
+                }
+
+                if (this.croppingConstraint > 1) {
+                    deltaX = change;
+                    deltaY = deltaX / this.croppingConstraint;
+                } else {
+                    deltaY = change;
+                    deltaX = deltaY * this.croppingConstraint;
+                }
+                // TODO Improve this by adjusting positioning as well so when resizing from right, the left side stays put
+                rectangle.height += deltaY;
+                rectangle.width += deltaX;
+            } else {
+
+                if (this.scalingCropper.match(/t/)) {
                     rectangle.top += deltaY;
                     rectangle.height -= deltaY;
-                    break;
-                case 'b':
+                }
+                if (this.scalingCropper.match(/b/)) {
                     rectangle.height += deltaY;
-                    break;
-                case 'l':
+                }
+                if (this.scalingCropper.match(/r/)) {
+                    rectangle.width += deltaX;
+                }
+                if (this.scalingCropper.match(/l/)) {
                     rectangle.left += deltaX;
                     rectangle.width -= deltaX;
-                    break;
-                case 'r':
-                    rectangle.width += deltaX;
-                    break;
-                case 'tl':
-                    rectangle.top += deltaY;
-                    rectangle.height -= deltaY;
-                    rectangle.left += deltaX;
-                    rectangle.width -= deltaX;
-                    break;
-                case 'tr':
-                    rectangle.top += deltaY;
-                    rectangle.height -= deltaY;
-                    rectangle.width += deltaX;
-                    break;
-                case 'bl':
-                    rectangle.height += deltaY;
-                    rectangle.left += deltaX;
-                    rectangle.width -= deltaX;
-                    break;
-                case 'br':
-                    rectangle.height += deltaY;
-                    rectangle.width += deltaX;
-                    break;
+                }
+
+                topDelta = deltaY/2;
+                leftDelta = deltaX/2;
             }
 
             if (rectangle.height < 30 || rectangle.width < 30) {
@@ -1879,8 +2008,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
 
             this.clipper.set({
-                top: rectangle.top + rectangle.height / 2,
-                left: rectangle.left + rectangle.width / 2,
+                top: this.clipper.top + topDelta,
+                left: this.clipper.left + leftDelta,
                 width: rectangle.width,
                 height: rectangle.height
             });
@@ -1993,6 +2122,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Get vertices of a rectangle defined by left,top,height and width properties.
          * Optionally it's possible to provide offsetX and offsetY values.
+         * Left and top properties of rectangle reference the top-left corner.
          *
          * @param rectangle
          * @param [offsetX]
