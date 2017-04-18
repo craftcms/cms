@@ -228,7 +228,7 @@ class ElementRelationParamParser
         }
 
         $conditions = [];
-        $normalFieldIds = [];
+        $relationFieldIds = [];
 
         if ($relCriteria['field']) {
             // Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
@@ -334,14 +334,14 @@ class ElementRelationParamParser
                     $conditions[] = ['in', 'elements.id', $subQuery];
                     unset($subQuery);
                 } else {
-                    $normalFieldIds[] = $fieldModel->id;
+                    $relationFieldIds[] = $fieldModel->id;
                 }
             }
         }
 
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
-        if (empty($relCriteria['field']) || !empty($normalFieldIds)) {
+        if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if (isset($relCriteria['sourceElement'])) {
                 $this->_relateSourcesCount++;
                 $relTableAlias = 'sources'.$this->_relateSourcesCount;
@@ -367,8 +367,8 @@ class ElementRelationParamParser
                 ]);
             }
 
-            if (!empty($normalFieldIds)) {
-                $subQuery->andWhere(['in', $relTableAlias.'.fieldId', $normalFieldIds]);
+            if (!empty($relationFieldIds)) {
+                $subQuery->andWhere(['in', $relTableAlias.'.fieldId', $relationFieldIds]);
             }
 
             $conditions[] = ['in', 'elements.id', $subQuery];
