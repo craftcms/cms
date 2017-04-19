@@ -1072,8 +1072,6 @@ class Elements extends Component
         }, $str);
 
         if (empty($allRefTagTokens)) {
-            unset ($allRefTagTokens);
-
             return $str;
         }
 
@@ -1136,8 +1134,6 @@ class Elements extends Component
 
         // Swap the tokens with the references
         $str = str_replace($search, $replace, $str);
-
-        unset ($allRefTagTokens);
 
         return $str;
     }
