@@ -5,13 +5,28 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which pluigns can listen to if they supply any Redactor plugins that may need be registered on the page.
+- Added `craft\base\VolumeInterface::createDir()`.
+- Added `craft\base\VolumeInterface::deleteDir()`.
+- Added `craft\base\VolumeInterface::renameDir()`.
+- Added `craft\base\Volume::folderExists()`.
+- Added `craft\base\Volume::createDir()`.
+- Added `craft\base\Volume::deleteDir()`.
+- Added `craft\base\Volume::renameDir()`.
+
 
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
+- No more separation of Volumes by support of discrete folders. `craft\base\Volume` and `craft\base\VolumeInterface` should be used by all Volumes.
+- `craft\volumes\Local` now extends `craft\base\Volume` instead of `craft\base\FolderVolume`.
 
 ### Fixed
 - Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
 - Fixed a bug where Craft would sometimes upload an Asset file but fail to create an Asset.
+
+### Removed
+- Remove `craft\base\FolderVolumeInterface`.
+- Removed `craft\base\FolderVolume`.
+
 
 ## 3.0.0-beta.13 - 2017-04-18
 

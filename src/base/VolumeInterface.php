@@ -133,4 +133,45 @@ interface VolumeInterface extends SavableComponentInterface
      * @return resource
      */
     public function getFileStream(string $uriPath);
+
+    /**
+     * Returns whether a folder exists at the given path.
+     *
+     * @param string $path The folder path to check
+     *
+     * @return bool
+     */
+    public function folderExists(string $path): bool;
+
+    /**
+     *
+     * Creates a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root.
+     *
+     * @throws VolumeObjectExistsException if a directory with such name already exists.
+     * @return bool Whether the operation was successful.
+     */
+    public function createDir(string $path): bool;
+
+    /**
+     * Deletes a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root.
+     *
+     * @return bool Whether the operation was successful.
+     */
+    public function deleteDir(string $path): bool;
+
+    /**
+     * Renames a directory.
+     *
+     * @param string $path    The path of the directory, relative to the source’s root.
+     * @param string $newName The new path of the directory, relative to the source’s root.
+     *
+     * @throws VolumeObjectExistsException if a directory with such name already exists.
+     * @throws VolumeObjectNotFoundException if a directory with such name already exists.
+     * @return bool Whether the operation was successful.
+     */
+    public function renameDir(string $path, string $newName): bool;
 }
