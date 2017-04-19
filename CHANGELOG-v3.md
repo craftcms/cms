@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Image editor now has a cropping constraint feature.
+- Added a constraint menu to the Image Editor’s Crop tool.
 - Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which plugins can listen to if they supply any Redactor plugins that may need be registered on the page.
 - Added `craft\base\VolumeInterface::createDir()`.
 - Added `craft\base\VolumeInterface::deleteDir()`.
