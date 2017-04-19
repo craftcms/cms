@@ -22,7 +22,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
 - Fixed a bug where Craft would sometimes upload an Asset file but fail to create an Asset.
-- Fixed a bug where Rich Text fields were not parsing their reference tags correctly. ([#1645](https://github.com/craftcms/cms/issues/1645))
+- Fixed a bug where reference tags created automatically by Rich Text fields included the full element class name, rather than the element type’s reference handle. ([#1645](https://github.com/craftcms/cms/issues/1645))
 
 ### Removed
 - Remove `craft\base\FolderVolumeInterface`.

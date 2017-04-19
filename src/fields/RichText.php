@@ -400,6 +400,7 @@ class RichText extends Field
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to an entry'),
                 'elementType' => Entry::class,
+                'refHandle' => Entry::refHandle(),
                 'sources' => $sectionSources,
             ];
         }
@@ -408,6 +409,7 @@ class RichText extends Field
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to a category'),
                 'elementType' => Category::class,
+                'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
             ];
         }
@@ -417,8 +419,18 @@ class RichText extends Field
             'linkOptions' => $linkOptions
         ]);
         $this->trigger(self::EVENT_REGISTER_LINK_OPTIONS, $event);
+        $linkOptions = $event->linkOptions;
 
-        return $event->linkOptions;
+        // Fill in any missing ref handles
+        foreach ($linkOptions as &$linkOption) {
+            if (!isset($linkOption['refHandle'])) {
+                /** @var ElementInterface|string $class */
+                $class = $linkOption['elementType'];
+                $linkOption['refHandle'] = $class::refHandle() ?? $class;
+            }
+        }
+
+        return $linkOptions;
     }
 
     /**
