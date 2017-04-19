@@ -18,7 +18,7 @@ Craft CMS 3.0 Working Changelog
 - No more separation of Volumes by support of discrete folders. `craft\base\Volume` and `craft\base\VolumeInterface` should be used by all Volumes.
 - `craft\volumes\Local` now extends `craft\base\Volume` instead of `craft\base\FolderVolume`.
 - Craft now supports reference tags that begin with the fully qualified element class name.
-- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved.
+- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
 
 ### Fixed
 - Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
