@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which pluigns can listen to if they supply any Redactor plugins that may need be registered on the page.
+- Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which plugins can listen to if they supply any Redactor plugins that may need be registered on the page.
 - Added `craft\base\VolumeInterface::createDir()`.
 - Added `craft\base\VolumeInterface::deleteDir()`.
 - Added `craft\base\VolumeInterface::renameDir()`.
@@ -12,7 +12,6 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Volume::createDir()`.
 - Added `craft\base\Volume::deleteDir()`.
 - Added `craft\base\Volume::renameDir()`.
-
 
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
@@ -26,7 +25,6 @@ Craft CMS 3.0 Working Changelog
 ### Removed
 - Remove `craft\base\FolderVolumeInterface`.
 - Removed `craft\base\FolderVolume`.
-
 
 ## 3.0.0-beta.13 - 2017-04-18
 
@@ -60,7 +58,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - If `craft\web\View::$title` is set, a `<title>` tag will now automatically get injected into the page’s `<head>`. ([#1625](https://github.com/craftcms/cms/pull/1625))
 - Craft no longer encodes 4-byte characters (like emojis) present in Rich Text fields and template caches, if using PostgreSQL.
-- It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loabable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
+- It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loadable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
 - Renamed Rich Text fields’ `configFile` setting to `redactorConfig`, to avoid ambiguity with the new `purifierConfig` setting.
 
 ### Removed
@@ -111,12 +109,12 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to install plugins manually. ([#1572](https://github.com/craftcms/cms/issues/1572))
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 - Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed. ([#1589](https://github.com/craftcms/cms/issues/1589))
-- Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
+- Fixed a bug where focal point would not be updated when replacing an image with the image editor.
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 - Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
 - Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set. ([#1565](https://github.com/craftcms/cms/issues/1565))
 - Fixed a PHP error that could occur after a task failure. ([#1567](https://github.com/craftcms/cms/issues/1567))
-- Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled. ([#1566](https://github.com/craftcms/cms/issues/1566))
+- Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually canceled. ([#1566](https://github.com/craftcms/cms/issues/1566))
 - Fixed a PHP error that occurred when saving a new Structure section. ([#1573](https://github.com/craftcms/cms/issues/1573))
 - Fixed a PHP error that would occur when creating a new entry without an author from a console controller. ([#1581](https://github.com/craftcms/cms/issues/1581))
 - Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL. ([#1586](https://github.com/craftcms/cms/issues/1586))
