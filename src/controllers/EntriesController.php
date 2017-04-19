@@ -34,7 +34,7 @@ use yii\web\ServerErrorHttpException;
  * swapping between entry types, previewing, deleting and sharing entries.
  *
  * Note that all actions in the controller except [[actionViewSharedEntry]] require an authenticated Craft session
- * via [[Controller::allowAnonymous]].
+ * via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

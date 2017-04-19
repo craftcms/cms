@@ -280,7 +280,7 @@ interface FieldInterface extends SavableComponentInterface
      * If the method returns `false`, the query will be stopped before it ever gets a chance to execute.
      *
      * @param ElementQueryInterface $query The element query
-     * @param mixed                 $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
+     * @param mixed                 $value The value that was set on this field’s corresponding element query param,
      *                                     if any.
      *
      * @return null|false `false` in the event that the method is sure that no elements are going to be found.

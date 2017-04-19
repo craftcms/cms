@@ -34,7 +34,7 @@ use yii\web\ServerErrorHttpException;
  *
  * Note that all actions in the controller, except for [[actionPrepare]], [[actionBackupDatabase]],
  * [[actionUpdateDatabase]], [[actionCleanUp]] and [[actionRollback]] require an authenticated Craft session
- * via [[Controller::allowAnonymous]].
+ * via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

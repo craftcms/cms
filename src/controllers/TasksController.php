@@ -19,7 +19,7 @@ use yii\web\Response;
  * The TasksController class is a controller that handles various task related operations such as running, checking task
  * status, re-running and deleting tasks.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

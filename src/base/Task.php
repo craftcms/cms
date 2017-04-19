@@ -99,7 +99,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     // =========================================================================
 
     /**
-     * Returns a default description for [[getDescription()]], if [[description]] isn’t set.
+     * Returns a default description for [[description]].
      *
      * @return string The default task description
      */

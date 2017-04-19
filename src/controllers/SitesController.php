@@ -19,7 +19,7 @@ use yii\web\Response;
  * The SitesController class is a controller that handles various actions related to categories and category
  * groups, such as creating, editing and deleting them.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

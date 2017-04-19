@@ -211,7 +211,7 @@ interface ElementInterface extends ComponentInterface
      * It should return an array whose keys are the status values, and values are the human-facing status labels.
      *
      * You can customize the database query condition that should be applied for your custom statuses from
-     * [[getElementQueryStatusCondition()]].
+     * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *
      * @return array
      * @see hasStatuses()
@@ -417,7 +417,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      * @see hasUris()
-     * @see getElementRoute()
+     * @see getRoute()
      */
     public function getUriFormat();
 

@@ -25,7 +25,7 @@ use yii\helpers\Console;
  * This controllers provides support for tracking the migration history, updating migrations, and creating new
  * migration skeleton files.
  *
- * The migration history is stored in a database table named [[migrationTable]]. The table will be automatically
+ * The migration history is stored in a database table named `migrations`. The table will be automatically
  * created the first time this controller is executed, if it does not exist.
  *
  * Below are some common usages of this command:

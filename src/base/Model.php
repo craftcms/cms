@@ -37,9 +37,11 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
-     * Returns the names of any attributes that should be converted to DateTime objects from [[populate()]].
+     * Returns the names of any attributes that should hold [[\DateTime]] values.
      *
      * @return string[]
+     * @see init()
+     * @see fields()
      */
     public function datetimeAttributes(): array
     {

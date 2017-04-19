@@ -23,7 +23,7 @@ use yii\web\Response;
  * The ElementsController class is a controller that handles various element related actions including retrieving and
  * saving element and their corresponding HTML.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -945,7 +945,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Calls a custom validation function on a custom field.
      *
-     * This will be called by [[yii\validators\InlineValidator]] if a custom field specified
+     * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
      * a closure or the name of a class-level method as the validation type.
      *
      * @param string     $attribute The field handle

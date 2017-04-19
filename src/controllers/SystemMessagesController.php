@@ -18,7 +18,7 @@ Craft::$app->requireEdition(Craft::Client);
  * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
