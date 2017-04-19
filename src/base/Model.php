@@ -18,14 +18,6 @@ use craft\helpers\DateTimeHelper;
  */
 abstract class Model extends \yii\base\Model
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var string
-     */
-    protected $classSuffix = 'Model';
-
     // Public Methods
     // =========================================================================
 

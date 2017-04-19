@@ -39,11 +39,6 @@ class Install extends Migration
     public $password;
 
     /**
-     * @var string|null The database driver to use
-     */
-    public $driver;
-
-    /**
      * @var string|null The admin user’s email
      */
     public $email;
@@ -61,7 +56,6 @@ class Install extends Migration
      */
     public function safeUp()
     {
-        $this->driver = Craft::$app->getConfig()->getDb()->driver;
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
@@ -865,43 +859,40 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false, true), '{{%widgets}}', 'userId', false);
 
         // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
-        switch ($this->driver) {
-            case DbConfig::DRIVER_MYSQL:
-                $this->createTable('{{%searchindex}}', [
-                    'elementId' => $this->integer()->notNull(),
-                    'attribute' => $this->string(25)->notNull(),
-                    'fieldId' => $this->integer()->notNull(),
-                    'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this->text()->notNull(),
-                ], ' ENGINE=MyISAM');
+        if ($this->db->getIsMysql()) {
+            $this->createTable('{{%searchindex}}', [
+                'elementId' => $this->integer()->notNull(),
+                'attribute' => $this->string(25)->notNull(),
+                'fieldId' => $this->integer()->notNull(),
+                'siteId' => $this->integer()->notNull(),
+                'keywords' => $this->text()->notNull(),
+            ], ' ENGINE=MyISAM');
 
-                $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
+            $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-                $sql = 'CREATE FULLTEXT INDEX '.
-                    $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-                    $this->db->quoteTableName('{{%searchindex}}').' '.
-                    '('.$this->db->quoteColumnName('keywords').')';
+            $sql = 'CREATE FULLTEXT INDEX '.
+                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
+                $this->db->quoteTableName('{{%searchindex}}').' '.
+                '('.$this->db->quoteColumnName('keywords').')';
 
-                $this->db->createCommand($sql)->execute();
-                break;
-            case DbConfig::DRIVER_PGSQL:
-                $this->createTable('{{%searchindex}}', [
-                    'elementId' => $this->integer()->notNull(),
-                    'attribute' => $this->string(25)->notNull(),
-                    'fieldId' => $this->integer()->notNull(),
-                    'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this->text()->notNull(),
-                    'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
-                ]);
+            $this->db->createCommand($sql)->execute();
+        } else {
+            $this->createTable('{{%searchindex}}', [
+                'elementId' => $this->integer()->notNull(),
+                'attribute' => $this->string(25)->notNull(),
+                'fieldId' => $this->integer()->notNull(),
+                'siteId' => $this->integer()->notNull(),
+                'keywords' => $this->text()->notNull(),
+                'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+            ]);
 
-                $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
+            $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
-                $this->db->createCommand($sql)->execute();
+            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
+            $this->db->createCommand($sql)->execute();
 
-                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
-                $this->db->createCommand($sql)->execute();
-                break;
+            $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
+            $this->db->createCommand($sql)->execute();
         }
     }
 

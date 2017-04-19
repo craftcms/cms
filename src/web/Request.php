@@ -652,16 +652,28 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the request’s query string params, without the path parameter.
+     *
+     * @return string[] The query string, without the path parameter
+     */
+    public function getQueryParamsWithoutPath(): array
+    {
+        $queryParams = $this->getQueryParams();
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
+
+        unset($queryParams[$pathParam]);
+
+        return $queryParams;
+    }
+
+    /**
      * Returns the request’s query string, without the path parameter.
      *
      * @return string The query string.
      */
     public function getQueryStringWithoutPath(): string
     {
-        $queryParams = $this->getQueryParams();
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        unset($queryParams[$pathParam]);
+        $queryParams = $this->getQueryParamsWithoutPath();
 
         return http_build_query($queryParams);
     }

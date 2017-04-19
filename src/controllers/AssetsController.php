@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\FolderVolumeInterface;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -478,7 +477,7 @@ class AssetsController extends Controller
             'name' => $folderToMove->name
         ]);
 
-        if (!$existingFolder && $targetVolume instanceof FolderVolumeInterface) {
+        if (!$existingFolder) {
             $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
         }
 

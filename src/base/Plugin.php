@@ -48,6 +48,9 @@ class Plugin extends Module implements PluginInterface
     {
         parent::init();
 
+        // Set this as the global instance of this plugin class
+        static::setInstance($this);
+
         if ($this->t9nCategory === null) {
             $this->t9nCategory = strtolower($this->handle);
         }

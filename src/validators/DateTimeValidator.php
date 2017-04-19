@@ -24,13 +24,13 @@ class DateTimeValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $value = $object->$attribute;
+        $value = $model->$attribute;
 
         if ($value && !$value instanceof \DateTime) {
             // Just automatically convert it rather than complaining about it
-            $object->$attribute = DateTimeHelper::toDateTime($value);
+            $model->$attribute = DateTimeHelper::toDateTime($value);
         }
     }
 }

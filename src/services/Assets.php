@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\FolderVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -206,15 +205,12 @@ class Assets extends Component
 
         $volume = $parent->getVolume();
 
-        // If Volume has discrete folders
-        if ($volume instanceof FolderVolumeInterface) {
-            try {
-                $volume->createDir(rtrim($folder->path, '/'));
-            } catch (VolumeObjectExistsException $exception) {
-                // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
-                if ($folder->volumeId !== null && !$indexExisting) {
-                    throw $exception;
-                }
+        try {
+            $volume->createDir(rtrim($folder->path, '/'));
+        } catch (VolumeObjectExistsException $exception) {
+            // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
+            if ($folder->volumeId !== null && !$indexExisting) {
+                throw $exception;
             }
         }
 
@@ -265,36 +261,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        // If Volume has discrete folders
-        if ($volume instanceof FolderVolumeInterface) {
-            $volume->renameDir(rtrim($folder->path, '/'), $newName);
-        } else {
-            // Otherwise, get a list of all files and rename them.
-            $contents = $volume->getFileList($folder->path, true);
-            $dirs = [];
-
-            foreach ($contents as $item) {
-                // Store directories for later.
-                if ($item['type'] === 'dir') {
-                    $dirs[] = $item;
-                    continue;
-                }
-
-                $newFilePath = preg_replace('#^'.$folder->path.'#', $newFolderPath, $item['path']);
-                $volume->renameFile($item['path'], $newFilePath);
-            }
-
-            // Deal as best as we can with pseudo-directories. With fire.
-            if (!empty($dirs)) {
-                foreach ($dirs as $dir) {
-                    $volume->deleteFile($dir['path']);
-                }
-            }
-
-            // Remove the original folder as well.
-            $volume->deleteFile(rtrim($folder->path, '/'));
-        }
-
+        $volume->renameDir(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
@@ -327,17 +294,7 @@ class Assets extends Component
             if ($folder) {
                 if ($deleteDir) {
                     $volume = $folder->getVolume();
-
-                    // If Volume has discrete folders, just nuke it.
-                    if ($volume instanceof FolderVolumeInterface) {
-                        $volume->deleteDir($folder->path);
-                    } else {
-                        // Otherwise, get a list of all files and delete them.
-                        $files = $volume->getFileList($folder->path, true);
-                        foreach ($files as $file) {
-                            @$volume->deleteFile($file['path']);
-                        }
-                    }
+                    $volume->deleteDir($folder->path);
                 }
 
                 VolumeFolderRecord::deleteAll(['id' => $folderId]);

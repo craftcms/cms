@@ -649,7 +649,7 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
+     * Returns the element’s full URL.
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
@@ -1047,7 +1047,11 @@ class Asset extends Element
 
                 // Upload the file to the new location
                 $newVolume->createFileByStream($newPath, $stream, []);
-                fclose($stream);
+
+                // Rackspace will disconnect the stream automatically
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
             }
 
             if ($this->folderId) {

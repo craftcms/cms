@@ -946,6 +946,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
         $this->_applySelectParam();
+        $this->_applyJoinParams();
 
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
@@ -1094,7 +1095,43 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * Returns the list of fields that should be returned by default by [[toArray()]] when no specific fields are specified.
+     *
+     * A field is a named element in the returned array by [[toArray()]].
+     *
+     * This method should return an array of field names or field definitions.
+     * If the former, the field name will be treated as an object property name whose value will be used
+     * as the field value. If the latter, the array key should be the field name while the array value should be
+     * the corresponding field definition which can be either an object property name or a PHP callable
+     * returning the corresponding field value. The signature of the callable should be:
+     *
+     * ```php
+     * function ($model, $field) {
+     *     // return field value
+     * }
+     * ```
+     *
+     * For example, the following code declares four fields:
+     *
+     * - `email`: the field name is the same as the property name `email`;
+     * - `firstName` and `lastName`: the field names are `firstName` and `lastName`, and their
+     *   values are obtained from the `first_name` and `last_name` properties;
+     * - `fullName`: the field name is `fullName`. Its value is obtained by concatenating `first_name`
+     *   and `last_name`.
+     *
+     * ```php
+     * return [
+     *     'email',
+     *     'firstName' => 'first_name',
+     *     'lastName' => 'last_name',
+     *     'fullName' => function ($model) {
+     *         return $model->first_name . ' ' . $model->last_name;
+     *     },
+     * ];
+     * ```
+     *
+     * @return array The list of field names or field definitions.
+     * @see toArray()
      */
     public function fields()
     {
@@ -1421,20 +1458,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $relationParamParser = new ElementRelationParamParser();
-        $condition = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
+        $condition = (new ElementRelationParamParser())->parse($this->relatedTo);
 
         if ($condition === false) {
             throw new QueryAbortedException();
         }
 
         $this->subQuery->andWhere($condition);
-
-        // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
-        // to order by the relation sort order
-        if ($relationParamParser->getIsRelationFieldQuery()) {
-            $this->subQuery->addSelect(['sources1.sortOrder']);
-        }
     }
 
     /**
@@ -1789,6 +1819,19 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $this->query->select = $select;
+    }
+
+    /**
+     * Applies the 'join' params to the query being prepared.
+     */
+    private function _applyJoinParams()
+    {
+        if ($this->join !== null) {
+            foreach ($this->join as $join) {
+                $this->query->join[] = $join;
+                $this->subQuery->join[] = $join;
+            }
+        }
     }
 
     /**

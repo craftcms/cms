@@ -72,9 +72,9 @@ class HandleValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $handle = $object->$attribute;
+        $handle = $model->$attribute;
 
         // Handles are always required, so if it's blank, the required validator will catch this.
         if ($handle) {
@@ -85,12 +85,12 @@ class HandleValidator extends Validator
             if (in_array($lcHandle, $reservedWords, true)) {
                 $message = Craft::t('app', '“{handle}” is a reserved word.',
                     ['handle' => $handle]);
-                $this->addError($object, $attribute, $message);
+                $this->addError($model, $attribute, $message);
             } else {
                 if (!preg_match('/^'.static::$handlePattern.'$/', $handle)) {
                     $altMessage = Craft::t('app', '“{handle}” isn’t a valid handle.', ['handle' => $handle]);
                     $message = $this->message ?? $altMessage;
-                    $this->addError($object, $attribute, $message);
+                    $this->addError($model, $attribute, $message);
                 }
             }
         }

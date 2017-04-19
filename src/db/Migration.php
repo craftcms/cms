@@ -109,7 +109,8 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * Creates and executes an INSERT SQL statement.
+     * The method will properly escape the column names, and bind the values to be inserted.
      *
      * @param string $table                The table that new rows will be inserted into.
      * @param array  $columns              The column data (name=>value) to be inserted into the table.
@@ -127,7 +128,8 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @inheritdoc
+     * Creates and executes an batch INSERT SQL statement.
+     * The method will properly escape the column names, and bind the values to be inserted.
      *
      * @param string $table               The table that new rows will be inserted into.
      * @param array  $columns             The column names.
@@ -166,7 +168,8 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @inheritdoc
+     * Creates and executes an UPDATE SQL statement.
+     * The method will properly escape the column names and bind the values to be updated.
      *
      * @param string       $table               The table to be updated.
      * @param array        $columns             The column data (name => value) to be updated.

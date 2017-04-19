@@ -50,7 +50,9 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function createQueryBuilder(): QueryBuilder
     {
-        return new QueryBuilder($this->db);
+        return new QueryBuilder($this->db, [
+            'separator' => "\n"
+        ]);
     }
 
     /**

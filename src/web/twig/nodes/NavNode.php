@@ -27,7 +27,17 @@ class NavNode extends \Twig_Node_For
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * NavNode constructor.
+     *
+     * @param \Twig_Node_Expression_AssignName $keyTarget
+     * @param \Twig_Node_Expression_AssignName $valueTarget
+     * @param \Twig_Node_Expression            $seq
+     * @param \Twig_Node                       $upperBody
+     * @param \Twig_Node|null                  $lowerBody
+     * @param \Twig_Node|null                  $indent
+     * @param \Twig_Node|null                  $outdent
+     * @param null                             $lineno
+     * @param null                             $tag
      */
     public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_Node $upperBody, \Twig_Node $lowerBody = null, \Twig_Node $indent = null, \Twig_Node $outdent = null, $lineno, $tag = null)
     {

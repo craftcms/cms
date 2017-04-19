@@ -65,7 +65,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     /**
      * @inheritdoc
      */
-    public function performAction(ElementQueryInterface $criteria): bool
+    public function performAction(ElementQueryInterface $query): bool
     {
         return true;
     }
