@@ -246,13 +246,13 @@ class RichText extends Field
         if ($value !== null && StringHelper::contains($value, '{')) {
             // Parse ref tags in URLs, while preserving the original tag values in the URL fragments
             // e.g. {entry:id:url} => [entry-url]#entry:id:url
+            // Leave any other ref tags alone for the input, since they were probably manually added
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
-                // href=/src=, "/', ref tag, ref, #fragment?
-                return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
-            }, $value);
+                list (, $attr, $q, $refTag, $ref) = $matches;
+                $fragment = $matches[5] ?? '';
 
-            // Now parse 'em
-            $value = Craft::$app->getElements()->parseRefs($value);
+                return $attr.$q.Craft::$app->getElements()->parseRefs($refTag).$fragment.'#'.$ref.$q;
+            }, $value);
         }
 
         // Swap any <!--pagebreak-->'s with <hr>'s
@@ -328,6 +328,7 @@ class RichText extends Field
         $value = preg_replace_callback(
             '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)([\w\\\\]+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
             function($matches) {
+                // Create the ref tag, and make sure :url is in there
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
                 $hash = (!empty($matches[3]) ? $matches[3] : '');
 
