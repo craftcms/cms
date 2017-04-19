@@ -1047,7 +1047,11 @@ class Asset extends Element
 
                 // Upload the file to the new location
                 $newVolume->createFileByStream($newPath, $stream, []);
-                fclose($stream);
+
+                // Rackspace will disconnect the stream automatically
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
             }
 
             if ($this->folderId) {
