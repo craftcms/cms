@@ -1069,9 +1069,10 @@ class Elements extends Component
             $allRefTagTokens[$elementType][$refType][$matches[2]][] = [$token, $matches];
 
             return $token;
-        }, $str);
+        }, $str, -1, $count);
 
-        if (empty($allRefTagTokens)) {
+        if ($count === 0) {
+            // No ref tags
             return $str;
         }
 
