@@ -435,19 +435,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * Returns whether the given value should be considered "empty" for required-field validation purposes.
-     *
-     * @param mixed            $value   The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
-     *
-     * @return bool Whether the value should be considered "empty"
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        return empty($value);
-    }
-
-    /**
      * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with

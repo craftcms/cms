@@ -388,12 +388,19 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'validateBlocks',
             [
                 ArrayValidator::class,
-                'min' => $this->required ? 1 : null,
                 'max' => $this->maxBlocks ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty($value): bool
+    {
+        /** @var MatrixBlockQuery $value */
+        return $value->count() === 0;
     }
 
     /**
@@ -559,18 +566,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         return parent::beforeElementDelete($element);
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        /** @var MatrixBlockQuery $value */
-        return $value->count() === 0;
     }
 
     // Private Methods

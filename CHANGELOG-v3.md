@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
 
 ### Removed
+- Removed `craft\base\Field::isValueEmpty()`.
 - Removed `craft\base\FolderVolumeInterface`.
 - Removed `craft\base\FolderVolume`.
 
@@ -32,6 +33,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where reference tags created automatically by Rich Text fields included the full element class name, rather than the element type’s reference handle. ([#1645](https://github.com/craftcms/cms/issues/1645))
 - Fixed an error that displayed in the Control Panel after submitting  the Database Backup utility, if “Download backup?” was unchecked, even though the backup may have been created successfully. ([#1644](https://github.com/craftcms/cms/issues/1644))
 - Fixed a bug where the Image Editor could have a white background.
+- Fixed a bug where non-required Dropdown and Radio Buttons fields were getting validation errors when omitted from a front-end entry form.
+- Fixed a bug where required Checkboxes, Dropdown, Multi-select, Radio Buttons, and Rich Text fields were not getting validation errors when submitted without a value.
+- Fixed a bug where Assets fields weren’t enforcing their Limit settings during server-side validation.
 
 ## 3.0.0-beta.13 - 2017-04-18
 

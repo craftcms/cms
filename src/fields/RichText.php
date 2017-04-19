@@ -287,6 +287,19 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
+    public function isEmpty($value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        /** @var RichTextData $value */
+        return parent::isEmpty($value->getRawContent());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function serializeValue($value, ElementInterface $element = null)
     {
         /** @var RichTextData|null $value */
@@ -352,24 +365,6 @@ class RichText extends Field
         }
 
         return $value;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        /** @var RichTextData|null $value */
-        if ($value) {
-            $rawContent = $value->getRawContent();
-
-            return empty($rawContent);
-        }
-
-        return true;
     }
 
     // Private Methods
