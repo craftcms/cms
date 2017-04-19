@@ -6,6 +6,9 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
 
+### Fixed
+- Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
+
 ## 3.0.0-beta.13 - 2017-04-18
 
 ### Added
