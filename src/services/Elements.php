@@ -1057,10 +1057,12 @@ class Elements extends Component
         // and replace them with placeholder tokens
         global $allRefTagTokens;
         $allRefTagTokens = [];
-        $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) {
+        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) {
             global $allRefTagTokens;
-            // Make sure this is a valid element type
-            if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
+            // Does it already have a full element type class name?
+            if (is_subclass_of($matches[1], ElementInterface::class)) {
+                $elementType = $matches[1];
+            } else if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
                 // Leave the tag alone
                 return $matches[0];
             }
