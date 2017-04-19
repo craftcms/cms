@@ -856,11 +856,9 @@ abstract class Element extends Component implements ElementInterface
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
         ];
 
-        $requiredAttributes = [];
-
         if (static::hasTitles()) {
             $rules[] = [['title'], 'string', 'max' => 255];
-            $requiredAttributes[] = 'title';
+            $rules[] = [['title'], 'required'];
         }
 
         if (static::hasUris()) {
@@ -876,7 +874,7 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 if ($field->required) {
-                    $requiredAttributes[] = $field->handle;
+                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty']];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -912,6 +910,11 @@ abstract class Element extends Component implements ElementInterface
                                 ];
                             }
 
+                            // Set isEmpty to the field's isEmpty() method by default
+                            if (!array_key_exists('isEmpty', $rule)) {
+                                $rule['isEmpty'] = [$field, 'isEmpty'];
+                            }
+
                             $rules[] = $rule;
                         } else {
                             throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
@@ -923,10 +926,6 @@ abstract class Element extends Component implements ElementInterface
             if (!empty($fieldsWithColumns)) {
                 $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize'];
             }
-        }
-
-        if (!empty($requiredAttributes)) {
-            $rules[] = [$requiredAttributes, 'required'];
         }
 
         return $rules;
@@ -985,6 +984,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        // Ignore empty values
+        if ($value === null || $value === '') {
+            return;
+        }
 
         if ($simpleColumnType === Db::SIMPLE_TYPE_NUMERIC) {
             $validator = new NumberValidator([

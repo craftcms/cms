@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use yii\validators\Validator;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -220,6 +221,16 @@ interface FieldInterface extends SavableComponentInterface
      * @return array
      */
     public function getElementValidationRules(): array;
+
+    /**
+     * Returns whether the given value should be considered “empty” to a validator.
+     *
+     * @param mixed $value The field’s value
+     *
+     * @return bool Whether the value should be considered “empty”
+     * @see Validator::$isEmpty
+     */
+    public function isEmpty($value): bool;
 
     /**
      * Returns the search keywords that should be associated with this field.

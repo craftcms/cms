@@ -303,6 +303,15 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function isEmpty($value): bool
+    {
+        // Default to yii\validators\Validator::isEmpty()'s behavior
+        return $value === null || $value === [] || $value === '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSearchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
