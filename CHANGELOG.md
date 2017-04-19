@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - Entry and category edit pages will now show any validation errors attached to the `parent` attribute.
 
+### Fixed
+- Fixed timezone bug when requesting data for a run chart in `\Craft\ChartHelper::getRunChartDataFromQuery()`
+
 ## 2.6.2973 - 2017-04-17
 
 ### Added
