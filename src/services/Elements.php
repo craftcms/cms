@@ -1097,38 +1097,13 @@ class Elements extends Component
 
                 $elements = ArrayHelper::index($elementQuery->all(), $refType);
 
+                // Now append new token search/replace strings
                 foreach ($tokensByName as $refName => $tokens) {
                     $element = $elements[$refName] ?? null;
 
                     foreach ($tokens as list($token, $matches)) {
                         $search[] = $token;
-
-                        if ($element === null) {
-                            // Put the ref tag back
-                            $replace[] = $matches[0];
-                            continue;
-                        }
-
-                        /** @var ElementInterface $element */
-                        if (empty($matches[3]) || !isset($element->{$matches[3]})) {
-                            // Default to the URL
-                            $replace[] = $element->getUrl();
-                            continue;
-                        }
-
-                        try {
-                            $value = $element->{$matches[3]};
-                            if (is_object($value) && !method_exists($value, '__toString')) {
-                                throw new Exception('Object of class '.get_class($value).' could not be converted to string');
-                            }
-                            $replace[] = $this->parseRefs((string)$value);
-                        } catch (\Exception $e) {
-                            // Log it
-                            Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
-
-                            // Replace the token with the original ref tag
-                            $replace[] = $matches[0];
-                        }
+                        $replace[] = $this->_getRefTokenReplacement($element, $matches);
                     }
                 }
             }
@@ -1408,5 +1383,42 @@ class Elements extends Component
         $clone->setAttributes($element->getAttributes(), false);
 
         return $clone;
+    }
+
+    /**
+     * Returns the replacement for a given reference tag.
+     *
+     * @param ElementInterface|null $element
+     * @param array $matches
+     *
+     * @return string
+     * @see parseRefs()
+     */
+    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string {
+        if ($element === null) {
+            // Put the ref tag back
+            return $matches[0];
+        }
+
+        if (empty($matches[3]) || !isset($element->{$matches[3]})) {
+            // Default to the URL
+            return $element->getUrl();
+        }
+
+        try {
+            $value = $element->{$matches[3]};
+
+            if (is_object($value) && !method_exists($value, '__toString')) {
+                throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+            }
+
+            return $this->parseRefs((string)$value);
+        } catch (\Exception $e) {
+            // Log it
+            Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
+
+            // Replace the token with the original ref tag
+            return $matches[0];
+        }
     }
 }
