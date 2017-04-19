@@ -1109,6 +1109,7 @@ class Elements extends Component
                             continue;
                         }
 
+                        /** @var ElementInterface $element */
                         if (empty($matches[3]) || !isset($element->{$matches[3]})) {
                             // Default to the URL
                             $replace[] = $element->getUrl();
