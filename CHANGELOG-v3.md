@@ -24,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
 - Fixed a bug where Craft would sometimes upload an Asset file but fail to create an Asset.
 - Fixed a bug where reference tags created automatically by Rich Text fields included the full element class name, rather than the element type’s reference handle. ([#1645](https://github.com/craftcms/cms/issues/1645))
+- Fixed an error that displayed in the Control Panel after submitting  the Database Backup utility, if “Download backup?” was unchecked, even though the backup may have been created successfully. ([#1644](https://github.com/craftcms/cms/issues/1644))
 
 ### Removed
 - Remove `craft\base\FolderVolumeInterface`.

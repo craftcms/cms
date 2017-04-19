@@ -380,7 +380,7 @@ class UtilitiesController extends Controller
         }
 
         if (empty($params['downloadBackup'])) {
-            return null;
+            return $this->asJson(['success' => true]);
         }
 
         $zipPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
