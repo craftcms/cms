@@ -2,79 +2,79 @@
 html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 /* Image Editor */
-.imageeditor { background: #222; color: #fff; opacity: 1; user-select: none; }
+.modal.imageeditor { background: #222; color: #fff; opacity: 1; user-select: none; }
 
-.imageeditor.modal { border-radius: 0; }
+.modal.imageeditor.modal { border-radius: 0; }
 
-.imageeditor.modal .body:after { display: none; }
+.modal.imageeditor.modal .body:after { display: none; }
 
-.imageeditor .btn:not(.submit):not(.noborder) { background: #444; color: #fff; }
+.modal.imageeditor .btn:not(.submit):not(.noborder) { background: #444; color: #fff; }
 
-.imageeditor .btn:not(.submit):not(.noborder):hover { background: #3e3e3e; }
+.modal.imageeditor .btn:not(.submit):not(.noborder):hover { background: #3e3e3e; }
 
-.imageeditor .icon::before { width: 24px; height: 24px; margin-top: -4px; margin-left: -3px; display: inline-block; content: ' '; }
+.modal.imageeditor .icon::before { width: 24px; height: 24px; margin-top: -4px; margin-left: -3px; display: inline-block; content: ' '; }
 
-.imageeditor .icon.rotate-left::before { background: url("images/rotate-left.svg"); }
+.modal.imageeditor .icon.rotate-left::before { background: url("images/rotate-left.svg"); }
 
-.imageeditor .icon.rotate-right::before { background-image: url("images/rotate-right.svg"); }
+.modal.imageeditor .icon.rotate-right::before { background-image: url("images/rotate-right.svg"); }
 
-.imageeditor .icon.flip-vertical::before { background: url("images/flip-vertical.svg"); }
+.modal.imageeditor .icon.flip-vertical::before { background: url("images/flip-vertical.svg"); }
 
-.imageeditor .icon.flip-horizontal::before { background-image: url("images/flip-horizontal.svg"); }
+.modal.imageeditor .icon.flip-horizontal::before { background-image: url("images/flip-horizontal.svg"); }
 
-.imageeditor .icon.constraint::before { background-image: url("images/unconstrained.svg"); }
+.modal.imageeditor .icon.constraint::before { background-image: url("images/unconstrained.svg"); }
 
-.imageeditor .icon.focal-point::before { background-image: url("images/focal-point.svg"); }
+.modal.imageeditor .icon.focal-point::before { background-image: url("images/focal-point.svg"); }
 
-.imageeditor .body { display: flex; padding: 0; }
+.modal.imageeditor .body { display: flex; padding: 0; }
 
-.imageeditor .body .tabs { border-right: 1px solid #000; }
+.modal.imageeditor .body .tabs { border-right: 1px solid #000; }
 
-.imageeditor .body .tabs ul { width: 100px; }
+.modal.imageeditor .body .tabs ul { width: 100px; }
 
-.imageeditor .body .tabs ul li { padding: 14px; text-align: center; border-bottom: 1px solid #000; }
+.modal.imageeditor .body .tabs ul li { padding: 14px; text-align: center; border-bottom: 1px solid #000; }
 
-.imageeditor .body .tabs ul li i { background-repeat: no-repeat; background-position: top center; display: block; height: 24px; }
+.modal.imageeditor .body .tabs ul li i { background-repeat: no-repeat; background-position: top center; display: block; height: 24px; }
 
-.imageeditor .body .tabs ul li[data-view="rotate"] i { background-image: url("images/rotate-left.svg"); }
+.modal.imageeditor .body .tabs ul li[data-view="rotate"] i { background-image: url("images/rotate-left.svg"); }
 
-.imageeditor .body .tabs ul li[data-view="crop"] i { background-image: url("images/crop.svg"); }
+.modal.imageeditor .body .tabs ul li[data-view="crop"] i { background-image: url("images/crop.svg"); }
 
-.imageeditor .body .tabs ul li[data-view="filters"] i { background-image: url("images/filters.svg"); }
+.modal.imageeditor .body .tabs ul li[data-view="filters"] i { background-image: url("images/filters.svg"); }
 
-.imageeditor .body .tabs ul li.selected { background-color: #444; }
+.modal.imageeditor .body .tabs ul li.selected { background-color: #444; }
 
-.imageeditor .body .tabs ul li:hover { cursor: pointer; }
+.modal.imageeditor .body .tabs ul li:hover { cursor: pointer; }
 
-.imageeditor .body .views { padding: 24px; overflow: auto; }
+.modal.imageeditor .body .views { padding: 24px; overflow: auto; }
 
-.imageeditor .body .views .buttons > .btn { float: none; display: block; margin: 7px 0 0 0; }
+.modal.imageeditor .body .views .buttons > .btn { float: none; display: block; margin: 7px 0 0 0; }
 
-.imageeditor .body .views .filters ul { width: 100px; }
+.modal.imageeditor .body .views .filters ul { width: 100px; }
 
-.imageeditor .body .views .filters ul li { text-align: center; margin-right: 14px; margin-bottom: 14px; }
+.modal.imageeditor .body .views .filters ul li { text-align: center; margin-right: 14px; margin-bottom: 14px; }
 
-.imageeditor .body .views .filters ul li:last-child { margin-right: 0; }
+.modal.imageeditor .body .views .filters ul li:last-child { margin-right: 0; }
 
-.imageeditor .body .views .filters ul li img { border: 3px solid transparent; border-radius: 4px; }
+.modal.imageeditor .body .views .filters ul li img { border: 3px solid transparent; border-radius: 4px; }
 
-.imageeditor .body .views .filters ul li span { display: block; }
+.modal.imageeditor .body .views .filters ul li span { display: block; }
 
-.imageeditor .body .views .filters ul li:hover { cursor: pointer; }
+.modal.imageeditor .body .views .filters ul li:hover { cursor: pointer; }
 
-.imageeditor .body .views .filters ul li.selected img { border-color: #fff; }
+.modal.imageeditor .body .views .filters ul li.selected img { border-color: #fff; }
 
-.imageeditor .body .image-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.modal.imageeditor .body .image-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
 
-.imageeditor .body .image-container .image { text-align: center; flex-grow: 1; position: relative; }
+.modal.imageeditor .body .image-container .image { text-align: center; flex-grow: 1; position: relative; }
 
-.imageeditor .body .image-container .image canvas { position: absolute; top: 0; left: 0; }
+.modal.imageeditor .body .image-container .image canvas { position: absolute; top: 0; left: 0; }
 
-.imageeditor .body .image-container .image-tools { text-align: center; }
+.modal.imageeditor .body .image-container .image-tools { text-align: center; }
 
-.imageeditor .body .image-container .image-tools .straightening { max-width: 400px; display: block; margin: 0 auto; overflow: hidden; }
+.modal.imageeditor .body .image-container .image-tools .straightening { max-width: 400px; display: block; margin: 0 auto; overflow: hidden; }
 
-.imageeditor .footer { position: absolute; background: transparent; bottom: 0; left: 0; width: 100%; border-top: 1px solid #000; }
+.modal.imageeditor .footer { position: absolute; background: transparent; bottom: 0; left: 0; width: 100%; border-top: 1px solid #000; }
 
 /* Vertical */
 .vertical.imageeditor .body { flex-direction: column-reverse; }
