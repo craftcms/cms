@@ -1046,7 +1046,6 @@ class Plugins extends Component
     {
         /** @var Plugin $plugin */
         $lcHandle = strtolower($plugin->handle);
-        $plugin::setInstance($plugin);
         $this->_plugins[$lcHandle] = $plugin;
         Craft::$app->setModule($plugin->id, $plugin);
     }
