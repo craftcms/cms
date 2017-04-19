@@ -35,6 +35,14 @@ use yii\db\Schema;
  */
 class RichText extends Field
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     */
+    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
+
     // Static
     // =========================================================================
 
@@ -45,14 +53,6 @@ class RichText extends Field
     {
         return Craft::t('app', 'Rich Text');
     }
-
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
-     */
-    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
 
     // Properties
     // =========================================================================
