@@ -22,16 +22,16 @@ Craft CMS 3.0 Working Changelog
 - Craft now supports reference tags that begin with the fully qualified element class name.
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
 
+### Removed
+- Removed `craft\base\FolderVolumeInterface`.
+- Removed `craft\base\FolderVolume`.
+
 ### Fixed
 - Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
 - Fixed a bug where Craft would sometimes upload an Asset file but fail to create an Asset.
 - Fixed a bug where reference tags created automatically by Rich Text fields included the full element class name, rather than the element type’s reference handle. ([#1645](https://github.com/craftcms/cms/issues/1645))
 - Fixed an error that displayed in the Control Panel after submitting  the Database Backup utility, if “Download backup?” was unchecked, even though the backup may have been created successfully. ([#1644](https://github.com/craftcms/cms/issues/1644))
 - Fixed a bug where the Image Editor could have a white background.
-
-### Removed
-- Removed `craft\base\FolderVolumeInterface`.
-- Removed `craft\base\FolderVolume`.
 
 ## 3.0.0-beta.13 - 2017-04-18
 
