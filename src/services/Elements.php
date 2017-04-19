@@ -105,6 +105,11 @@ class Elements extends Component
      */
     private $_placeholderElements;
 
+    /**
+     * @var string[]
+     */
+    private $_elementTypesByRefHandle = [];
+
     // Public Methods
     // =========================================================================
 
@@ -1018,17 +1023,21 @@ class Elements extends Component
      */
     public function getElementTypeByRefHandle(string $refHandle)
     {
+        if (array_key_exists($refHandle, $this->_elementTypesByRefHandle)) {
+            return $this->_elementTypesByRefHandle[$refHandle];
+        }
+
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
             ) {
-                return $class;
+                return $this->_elementTypesByRefHandle[$refHandle] = $class;
             }
         }
 
-        return null;
+        return $this->_elementTypesByRefHandle[$refHandle] = null;
     }
 
     /**
@@ -1040,124 +1049,95 @@ class Elements extends Component
      */
     public function parseRefs(string $str): string
     {
-        if (StringHelper::contains($str, '{')) {
-            global $refTagsByElementHandle;
-            $refTagsByElementHandle = [];
+        if (!StringHelper::contains($str, '{')) {
+            return $str;
+        }
 
-            $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/',
-                function($matches) {
-                    global $refTagsByElementHandle;
+        // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
+        // and replace them with placeholder tokens
+        global $allRefTagTokens;
+        $allRefTagTokens = [];
+        $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) {
+            global $allRefTagTokens;
+            // Make sure this is a valid element type
+            if (($elementType = $this->getElementTypeByRefHandle($matches[1])) === null) {
+                // Leave the tag alone
+                return $matches[0];
+            }
+            $refType = is_numeric($matches[2]) ? 'id' : 'ref';
+            $token = '{'.StringHelper::randomString(9).'}';
+            $allRefTagTokens[$elementType][$refType][$matches[2]][] = [$token, $matches];
 
-                    if (strpos($matches[1], '_') === false) {
-                        $elementTypeHandle = ucfirst($matches[1]);
-                    } else {
-                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function($matches) {
-                            return strtoupper($matches[0]);
-                        }, $matches[1]);
-                    }
+            return $token;
+        }, $str);
 
-                    $token = '{'.StringHelper::randomString(9).'}';
+        if (empty($allRefTagTokens)) {
+            unset ($allRefTagTokens);
 
-                    $refTagsByElementHandle[$elementTypeHandle][] = [
-                        'token' => $token,
-                        'matches' => $matches
-                    ];
+            return $str;
+        }
 
-                    return $token;
-                }, $str);
+        // Now swap them with the resolved values
+        $search = [];
+        $replace = [];
 
-            if (!empty($refTagsByElementHandle)) {
-                $search = [];
-                $replace = [];
+        foreach ($allRefTagTokens as $elementType => $tokensByType) {
+            /** @var Element|string $elementType */
+            foreach ($tokensByType as $refType => $tokensByName) {
+                // Get the elements, indexed by their ref value
+                $refNames = array_keys($tokensByName);
+                $elementQuery = $elementType::find()
+                    ->status(null)
+                    ->limit(null);
 
-                $things = ['id', 'ref'];
+                if ($refType === 'id') {
+                    $elementQuery->id($refNames);
+                } else {
+                    $elementQuery->ref($refNames);
+                }
 
-                foreach ($refTagsByElementHandle as $elementTypeHandle => $refTags) {
-                    $elementType = $this->getElementTypeByRefHandle($elementTypeHandle);
+                $elements = ArrayHelper::index($elementQuery->all(), $refType);
 
-                    if ($elementType === null) {
-                        // Just put the ref tags back the way they were
-                        foreach ($refTags as $refTag) {
-                            $search[] = $refTag['token'];
-                            $replace[] = $refTag['matches'][0];
+                foreach ($tokensByName as $refName => $tokens) {
+                    $element = $elements[$refName] ?? null;
+
+                    foreach ($tokens as list($token, $matches)) {
+                        $search[] = $token;
+
+                        if ($element === null) {
+                            // Put the ref tag back
+                            $replace[] = $matches[0];
+                            continue;
                         }
-                    } else {
-                        $refTagsById = [];
-                        $refTagsByRef = [];
 
-                        foreach ($refTags as $refTag) {
-                            // Searching by ID?
-                            if (is_numeric($refTag['matches'][2])) {
-                                $refTagsById[$refTag['matches'][2]][] = $refTag;
-                            } else {
-                                $refTagsByRef[$refTag['matches'][2]][] = $refTag;
-                            }
+                        if (empty($matches[3]) || !isset($element->{$matches[3]})) {
+                            // Default to the URL
+                            $replace[] = $element->getUrl();
+                            continue;
                         }
 
-                        // Things are about to get silly...
-                        foreach ($things as $thing) {
-                            $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
-
-                            if (!empty($refTagsByThing)) {
-                                /** @var Element|string $elementType */
-                                $elementQuery = $elementType::find();
-                                $elementQuery->status(null);
-                                $elementQuery->limit(null);
-                                $elementQuery->$thing(array_keys($refTagsByThing));
-                                $elements = $elementQuery->all();
-
-                                $elementsByThing = [];
-
-                                foreach ($elements as $element) {
-                                    $elementsByThing[$element->$thing] = $element;
-                                }
-
-                                foreach ($refTagsByThing as $thingVal => $thingRefTags) {
-                                    if (isset($elementsByThing[$thingVal])) {
-                                        $element = $elementsByThing[$thingVal];
-                                    } else {
-                                        $element = false;
-                                    }
-
-                                    foreach ($thingRefTags as $refTag) {
-                                        $search[] = $refTag['token'];
-
-                                        if ($element) {
-                                            if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]})) {
-                                                try {
-                                                    $value = $element->{$refTag['matches'][3]};
-
-                                                    if (is_object($value) && !method_exists($value, '__toString')) {
-                                                        throw new Exception('Object of class '.get_class($value).' could not be converted to string');
-                                                    }
-
-                                                    $replace[] = $this->parseRefs((string)$value);
-                                                } catch (\Exception $e) {
-                                                    // Log it
-                                                    Craft::error('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage(), __METHOD__);
-
-                                                    // Replace the token with the original ref tag
-                                                    $replace[] = $refTag['matches'][0];
-                                                }
-                                            } else {
-                                                // Default to the URL
-                                                $replace[] = $element->getUrl();
-                                            }
-                                        } else {
-                                            $replace[] = $refTag['matches'][0];
-                                        }
-                                    }
-                                }
+                        try {
+                            $value = $element->{$matches[3]};
+                            if (is_object($value) && !method_exists($value, '__toString')) {
+                                throw new Exception('Object of class '.get_class($value).' could not be converted to string');
                             }
+                            $replace[] = $this->parseRefs((string)$value);
+                        } catch (\Exception $e) {
+                            // Log it
+                            Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
+
+                            // Replace the token with the original ref tag
+                            $replace[] = $matches[0];
                         }
                     }
                 }
-
-                $str = str_replace($search, $replace, $str);
             }
-
-            unset ($refTagsByElementHandle);
         }
+
+        // Swap the tokens with the references
+        $str = str_replace($search, $replace, $str);
+
+        unset ($allRefTagTokens);
 
         return $str;
     }
