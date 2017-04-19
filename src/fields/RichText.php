@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\events\RegisterRedactorPluginEvent;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
 use craft\helpers\FileHelper;
@@ -25,6 +26,7 @@ use craft\models\Section;
 use craft\validators\HandleValidator;
 use craft\web\assets\redactor\RedactorAsset;
 use craft\web\assets\richtext\RichTextAsset;
+use yii\base\Event;
 use yii\db\Schema;
 
 /**
@@ -39,6 +41,11 @@ class RichText extends Field
     // =========================================================================
 
     /**
+     * @event RegisterRedactorPluginEvent The event that is triggered when registering a Redactor plugin's resources.
+     */
+    const EVENT_REGISTER_REDACTOR_PLUGIN = 'registerRedactorPlugin';
+
+    /**
      * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
      */
     const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
@@ -47,11 +54,55 @@ class RichText extends Field
     // =========================================================================
 
     /**
+     * @var array List of the Redactor plugins that have already been registered for this request
+     */
+    private static $_registeredPlugins = [];
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('app', 'Rich Text');
+    }
+
+    /**
+     * Registers a Redactor plugin’s resources, if any
+     *
+     * @param string $plugin
+     *
+     * @return void
+     */
+    public static function registerRedactorPlugin(string $plugin)
+    {
+        if (isset(static::$_registeredPlugins[$plugin])) {
+            return;
+        }
+
+        switch ($plugin) {
+            case 'fullscreen': // no break
+            case 'source': // no break
+            case 'table': // no break
+            case 'video': // no break
+            case 'pagebreak':
+                $am = Craft::$app->getAssetManager();
+                $view = Craft::$app->getView();
+                $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
+                    'depends' => RedactorAsset::class
+                ]);
+                if ($plugin === 'pagebreak') {
+                    $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
+                }
+                break;
+            default:
+                // Maybe a plugin-supplied Redactor plugin
+                Event::trigger(static::class, self::EVENT_REGISTER_REDACTOR_PLUGIN, new RegisterRedactorPluginEvent([
+                    'plugin' => $plugin
+                ]));
+        }
+
+        // Don't do this twice
+        static::$_registeredPlugins[$plugin] = true;
     }
 
     // Properties
@@ -164,7 +215,7 @@ class RichText extends Field
         /** @var RichTextData|null $value */
         /** @var Element $element */
         $redactorConfig = $this->_getRedactorConfig();
-        $this->_includeFieldResources($redactorConfig);
+        $this->_registerFieldResources($redactorConfig);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
@@ -571,23 +622,23 @@ class RichText extends Field
     }
 
     /**
-     * Includes the input resources.
+     * Registers the front end resources for the field.
      *
      * @param array $redactorConfig
      *
      * @return void
      */
-    private function _includeFieldResources(array $redactorConfig)
+    private function _registerFieldResources(array $redactorConfig)
     {
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(RichTextAsset::class);
 
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'fullscreen', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'source', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'table', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'video', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'pagebreak', true);
+        if (isset($redactorConfig['plugins'])) {
+            foreach ($redactorConfig['plugins'] as $plugin) {
+                static::registerRedactorPlugin($plugin);
+            }
+        }
 
         $view->registerTranslations('app', [
             'Insert image',
@@ -633,33 +684,6 @@ class RichText extends Field
             '$.extend($.Redactor.opts.langs["'.self::$_redactorLang.'"], '.
             Json::encode($customTranslations).
             ');');
-    }
-
-    /**
-     * Includes a plugin’s JS file, if it appears to be requested by the config file.
-     *
-     * @param array  $redactorConfig
-     * @param string $plugin
-     * @param bool   $includeCss
-     *
-     * @return void
-     */
-    private function _maybeIncludeRedactorPlugin(array $redactorConfig, string $plugin, bool $includeCss)
-    {
-        if (!isset($redactorConfig['plugins']) || !in_array($plugin, $redactorConfig['plugins'], true)) {
-            return;
-        }
-
-        $am = Craft::$app->getAssetManager();
-        $view = Craft::$app->getView();
-
-        if ($includeCss) {
-            $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
-        }
-
-        $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
-            'depends' => RedactorAsset::class
-        ]);
     }
 
     /**
