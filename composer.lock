@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9cd96bf034b2ec35f2d798ae793a093e",
-    "content-hash": "616f960142ddc2f2bc4931dec5159836",
+    "hash": "01471d885b1417cc7bbfb03d0faa2049",
+    "content-hash": "887c8f73818a498e12afa0ae88961fe9",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -436,16 +436,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "1.24.1.1",
+            "version": "1.33.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Twig.git",
-                "reference": "c3d05badcfd54fa35782c002ddfd1968133129c1"
+                "reference": "ab1e550378251d5f644c756064ef0e8e99502859"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/Twig/zipball/c3d05badcfd54fa35782c002ddfd1968133129c1",
-                "reference": "c3d05badcfd54fa35782c002ddfd1968133129c1",
+                "url": "https://api.github.com/repos/pixelandtonic/Twig/zipball/ab1e550378251d5f644c756064ef0e8e99502859",
+                "reference": "ab1e550378251d5f644c756064ef0e8e99502859",
                 "shasum": ""
             },
             "require": {
@@ -494,9 +494,9 @@
             ],
             "support": {
                 "forum": "https://groups.google.com/forum/#!forum/twig-users",
-                "source": "https://github.com/pixelandtonic/Twig/tree/1.24.1.1"
+                "source": "https://github.com/pixelandtonic/Twig/tree/1.33.2.1"
             },
-            "time": "2016-07-14 23:35:41"
+            "time": "2017-04-20 23:54:49"
         },
         {
             "name": "yiisoft/yii",
@@ -700,12 +700,12 @@
             "version": "0.9.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/padraic/mockery.git",
+                "url": "https://github.com/mockery/mockery.git",
                 "reference": "70bba85e4aabc9449626651f48b9018ede04f86b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/padraic/mockery/zipball/70bba85e4aabc9449626651f48b9018ede04f86b",
+                "url": "https://api.github.com/repos/mockery/mockery/zipball/70bba85e4aabc9449626651f48b9018ede04f86b",
                 "reference": "70bba85e4aabc9449626651f48b9018ede04f86b",
                 "shasum": ""
             },
