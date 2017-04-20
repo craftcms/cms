@@ -231,9 +231,14 @@ class UsersController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->redirect('');
         }
+
+        // Redirect to the login page if this is a CP request
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->redirect('login');
+        }
+
+        return $this->redirect(Craft::$app->getConfig()->getGeneral()->postLogoutRedirect);
     }
 
     /**

@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added a constraint menu to the Image Editor’s Crop tool.
+- Added the `postLogoutRedirect` config setting, making it possible to customize where users should be redirected to after logging out from the front-end. ([#1003](https://github.com/craftcms/cms/issues/1003))
 - Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which plugins can listen to if they supply any Redactor plugins that may need be registered on the page.
 - Added `craft\base\FieldInterface::isEmpty()`, which gives field types a chance to determine whether their value should be considered empty for validators.
 - Added `craft\base\VolumeInterface::createDir()`.

@@ -452,6 +452,10 @@ class GeneralConfig extends Object
      */
     public $postLoginRedirect = '';
     /**
+     * @var string The path that users should be redirected to after logging out from the front-end site.
+     */
+    public $postLogoutRedirect = '';
+    /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
      * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
