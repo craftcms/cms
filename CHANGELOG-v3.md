@@ -15,6 +15,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\Volume::createDir()`.
 - Added `craft\base\Volume::deleteDir()`.
 - Added `craft\base\Volume::renameDir()`.
+- Added `craft\db\Query::getRawSql()`, as a shortcut for `createCommand()->getRawSql()`.
 
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
