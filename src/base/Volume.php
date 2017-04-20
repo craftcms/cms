@@ -251,6 +251,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists(string $path): bool
     {
+        // Calling adapter directly instead of filesystem to avoid losing the trailing slash (if any)
         return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
