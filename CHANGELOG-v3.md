@@ -37,6 +37,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where non-required Dropdown and Radio Buttons fields were getting validation errors when omitted from a front-end entry form.
 - Fixed a bug where required Checkboxes, Dropdown, Multi-select, Radio Buttons, and Rich Text fields were not getting validation errors when submitted without a value.
 - Fixed a bug where Assets fields weren’t enforcing their Limit settings during server-side validation.
+- Fixed a bug where deleting folders on remote sources would not work in some cases.
 
 ## 3.0.0-beta.13 - 2017-04-18
 

@@ -287,13 +287,43 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function renameDir(string $path, string $newName): bool
     {
-        if (!$this->folderExists($path)) {
+        // Get the list of dir contents
+        $fileList = $this->getFileList($path, true);
+        $directoryList = [];
+
+        $parts = explode('/', $path);
+
+        array_pop($parts);
+        $parts[] = $newName;
+
+        $newPath = implode('/', $parts);
+
+        $pattern = '/^'.preg_quote($path, '/').'/';
+
+        // Rename every file and build a list of directories
+        foreach ($fileList as $object) {
+            if ($object['type'] !== 'dir') {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            } else {
+                $directoryList[] = $object['path'];
+            }
+        }
+
+        // It's possible for a folder object to not exist on remote volumes, so to throw an exception
+        // we must make sure that there are no files AS WELL as no folder.
+        if (empty($fileList) && !$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
                 'Folder “{folder}” cannot be found on the volume.',
                 ['folder' => $path]));
         }
 
-        return $this->filesystem()->rename($path, $newName);
+        // The files are moved, but the directories remain. Delete them.
+        foreach ($directoryList as $dir) {
+            $this->deleteDir($dir);
+        }
+
+        return true;
     }
 
     // Protected Methods
