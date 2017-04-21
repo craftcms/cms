@@ -31,7 +31,7 @@ class FieldModel extends BaseComponentModel
 	 */
 	public function __toString()
 	{
-		return Craft::t($this->name);
+		return (string)Craft::t($this->name);
 	}
 
 	/**

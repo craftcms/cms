@@ -31,7 +31,7 @@ class TagModel extends BaseElementModel
 	 */
 	public function __toString()
 	{
-		return $this->getContent()->title;
+		return (string)$this->getContent()->title;
 	}
 
 	/**
