@@ -723,10 +723,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         $globals = [
-            // View
             'view' => $this->view,
 
-            // Constants
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'POS_HEAD' => View::POS_HEAD,
@@ -735,28 +733,24 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             'POS_READY' => View::POS_READY,
             'POS_LOAD' => View::POS_LOAD,
 
-            // User
-            'user' => null,
-            'currentUser' => null,
+            'isInstalled' => $isInstalled,
+            'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
+            'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
+            'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 
         // Keep the 'blx' variable around for now
-        $craftVariable = new CraftVariable();
-        $globals['craft'] = $craftVariable;
-        $globals['blx'] = $craftVariable;
-
-        $globals['loginUrl'] = UrlHelper::siteUrl($generalConfig->getLoginPath());
-        $globals['logoutUrl'] = UrlHelper::siteUrl($generalConfig->getLogoutPath());
-        $globals['isInstalled'] = $isInstalled;
+        $globals['craft'] = $globals['blx'] = new CraftVariable();
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
-            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
+            // Keep 'user' around so long as it's not hurting anyone.
+            // Technically deprecated, though.
+            $globals['currentUser'] = $globals['user'] = Craft::$app->getUser()->getIdentity();
+        } else {
+            $globals['currentUser'] = $globals['user'] = null;
         }
 
-        // Keep 'user' around so long as it's not hurting anyone.
-        // Technically deprecated, though.
-        $globals['user'] = $globals['currentUser'];
-
+        // CP-only variables
         if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
             $globals['CraftEdition'] = Craft::$app->getEdition();
             $globals['CraftPersonal'] = Craft::Personal;
@@ -764,14 +758,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $globals['CraftPro'] = Craft::Pro;
         }
 
-        $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
-
-        $globals['POS_HEAD'] = View::POS_HEAD;
-        $globals['POS_BEGIN'] = View::POS_BEGIN;
-        $globals['POS_END'] = View::POS_END;
-        $globals['POS_READY'] = View::POS_READY;
-        $globals['POS_LOAD'] = View::POS_LOAD;
-
+        // Only set these things when Craft is installed and not being updated
         if ($isInstalled && !Craft::$app->getIsUpdating()) {
             $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
@@ -779,6 +766,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $globals['siteName'] = $site->name;
             $globals['siteUrl'] = $site->baseUrl;
 
+            // Global sets (front end only)
             if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
                     $globals[$globalSet->handle] = $globalSet;
