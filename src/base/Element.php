@@ -831,9 +831,13 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            foreach ($this->getFieldLayout()->getFields() as $field) {
-                /** @var Field $field */
-                $labels[$field->handle] = Craft::t('site', $field->name);
+            $layout = $this->getFieldLayout();
+
+            if ($layout !== null) {
+                foreach ($layout->getFields() as $field) {
+                    /** @var Field $field */
+                    $labels[$field->handle] = Craft::t('site', $field->name);
+                }
             }
         }
 

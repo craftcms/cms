@@ -41,6 +41,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where deleting folders on remote sources would not work in some cases.
 - Fixed a bug where renaming a folder would sometims leave a folder behind.
 - Fixed a bug where creating a new Asset would not trigger the `beforeSave()` method for it's fields. ([#1623](https://github.com/craftcms/cms/issues/1623))
+- Fixed a bug where it was impossible to set validation errors on elements that had no field layouts set. ([#1598](https://github.com/craftcms/cms/issues/1598))
 
 ## 3.0.0-beta.13 - 2017-04-18
 
