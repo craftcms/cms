@@ -11,6 +11,9 @@ Craft CMS Changelog
 ### Fixed
 - Fixed timezone bug when requesting data for a run chart in `\Craft\ChartHelper::getRunChartDataFromQuery()`
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 2.6.2973 - 2017-04-17
 
 ### Added
