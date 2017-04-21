@@ -40,6 +40,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Assets fields weren’t enforcing their Limit settings during server-side validation.
 - Fixed a bug where deleting folders on remote sources would not work in some cases.
 - Fixed a bug where renaming a folder would sometims leave a folder behind.
+- Fixed a bug where creating a new Asset would not trigger the `beforeSave()` method for it's fields. ([#1623](https://github.com/craftcms/cms/issues/1623))
 
 ## 3.0.0-beta.13 - 2017-04-18
 
