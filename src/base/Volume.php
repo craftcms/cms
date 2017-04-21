@@ -289,7 +289,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         // Get the list of dir contents
         $fileList = $this->getFileList($path, true);
-        $directoryList = [];
+        $directoryList = [$path];
 
         $parts = explode('/', $path);
 

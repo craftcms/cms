@@ -112,7 +112,13 @@ class AssetsController extends Controller
             $asset->avoidFilenameConflicts = true;
             $asset->setScenario(Asset::SCENARIO_CREATE);
 
-            Craft::$app->getElements()->saveElement($asset);
+            $result = Craft::$app->getElements()->saveElement($asset);
+
+            // In case of error, let user know about it.
+            if (!$result) {
+                $errors = $asset->getFirstErrors();
+                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n") . implode(";\n", $errors));
+            }
 
             if ($asset->conflictingFilename !== null) {
                 $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
