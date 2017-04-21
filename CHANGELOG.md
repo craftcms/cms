@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2974 - 2017-04-21
+
 ### Changed
 - Entry and category edit pages will now show any validation errors attached to the `parent` attribute.
 - Updated Yii to 1.1.18.
