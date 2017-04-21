@@ -504,12 +504,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/yii.git",
-                "reference": "56208292f2522f9d9a50bc7edce108764d5ad8e3"
+                "reference": "6a58fda0256743ce7c1645c41d7889fbb3d49ab6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/56208292f2522f9d9a50bc7edce108764d5ad8e3",
-                "reference": "56208292f2522f9d9a50bc7edce108764d5ad8e3",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/6a58fda0256743ce7c1645c41d7889fbb3d49ab6",
+                "reference": "6a58fda0256743ce7c1645c41d7889fbb3d49ab6",
                 "shasum": ""
             },
             "require": {
@@ -592,7 +592,7 @@
                 "irc": "irc://irc.freenode.net/yii",
                 "source": "https://github.com/yiisoft/yii"
             },
-            "time": "2017-04-20 23:18:55"
+            "time": "2017-04-21 00:59:22"
         }
     ],
     "packages-dev": [
