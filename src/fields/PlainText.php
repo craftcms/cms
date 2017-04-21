@@ -42,9 +42,9 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $placeholder;
 
     /**
-     * @var bool|null Whether the input should allow line breaks
+     * @var bool Whether the input should allow line breaks
      */
-    public $multiline;
+    public $multiline = false;
 
     /**
      * @var int The minimum number of rows the input should have, if multi-line
