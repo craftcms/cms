@@ -48,7 +48,7 @@ class AssetFileModel extends BaseElementModel
 	{
 		if (isset($this->_transform))
 		{
-			return $this->getUrl();
+			return (string)$this->getUrl();
 		}
 		else
 		{
@@ -253,7 +253,7 @@ class AssetFileModel extends BaseElementModel
 		{
 			return false;
 		}
-		
+
 		if (is_array($transform))
 		{
 			if (isset($transform['width']))
