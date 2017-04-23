@@ -34,11 +34,6 @@ trait PluginTrait
     public $handle;
 
     /**
-     * @var string|null The plugin’s version number
-     */
-    public $version;
-
-    /**
      * @var string|null The plugin’s schema version number
      */
     public $schemaVersion;

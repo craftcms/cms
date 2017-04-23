@@ -475,7 +475,7 @@ class Plugins extends Component
         try {
             $info = [
                 'handle' => $lcHandle,
-                'version' => $plugin->version,
+                'version' => $plugin->getVersion(),
                 'schemaVersion' => $plugin->schemaVersion,
                 'enabled' => true,
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
@@ -640,7 +640,7 @@ class Plugins extends Component
         $lcHandle = $plugin->handle;
 
         if (isset($this->_installedPluginInfo[$lcHandle])) {
-            if ($plugin->version !== $this->_installedPluginInfo[$lcHandle]['version']) {
+            if ($plugin->getVersion()!== $this->_installedPluginInfo[$lcHandle]['version']) {
                 return true;
             }
         }
@@ -757,7 +757,7 @@ class Plugins extends Component
             Craft::$app->getDb()->createCommand()
                 ->update(
                     '{{%plugins}}',
-                    ['version' => $plugin->version],
+                    ['version' => $plugin->getVersion()],
                     ['id' => $row['id']])
                 ->execute();
         }

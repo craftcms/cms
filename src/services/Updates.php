@@ -238,7 +238,7 @@ class Updates extends Component
             ->update(
                 '{{%plugins}}',
                 [
-                    'version' => $plugin->version,
+                    'version' => $plugin->getVersion(),
                     'schemaVersion' => $plugin->schemaVersion
                 ],
                 ['handle' => $plugin->handle])
@@ -267,7 +267,7 @@ class Updates extends Component
         foreach ($plugins as $plugin) {
             $update->plugins[$plugin->packageName] = new PluginUpdate([
                 'packageName' => $plugin->packageName,
-                'localVersion' => $plugin->version
+                'localVersion' => $plugin->getVersion()
             ]);
         }
 
@@ -320,7 +320,7 @@ class Updates extends Component
                 $latestRelease = $releaseModels[0];
                 $pluginUpdate->status = PluginUpdateStatus::UpdateAvailable;
                 $pluginUpdate->displayName = $plugin->name;
-                $pluginUpdate->localVersion = $plugin->version;
+                $pluginUpdate->localVersion = $plugin->getVersion();
                 $pluginUpdate->latestDate = $latestRelease->date;
                 $pluginUpdate->latestVersion = $latestRelease->version;
                 $pluginUpdate->manualDownloadEndpoint = $plugin->downloadUrl;
@@ -420,7 +420,7 @@ class Updates extends Component
                 // Is it an H2 version heading?
                 if (preg_match('/^## \[?v?(\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z-\.]+)?)\]?(?:\(.*?\)|\[.*?\])? - (\d{4}-\d\d?-\d\d?)( \[critical\])?/i', $line, $match)) {
                     // Is it <= the current plugin version?
-                    if (version_compare($match[1], $plugin->version, '<=')) {
+                    if (version_compare($match[1], $plugin->getVersion(), '<=')) {
                         break;
                     }
 

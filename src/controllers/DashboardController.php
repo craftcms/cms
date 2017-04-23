@@ -338,7 +338,7 @@ class DashboardController extends Controller
             $pluginNames = [];
 
             foreach ($plugins as $plugin) {
-                $pluginNames[] = $plugin->name.' '.$plugin->version.' ('.$plugin->developer.')';
+                $pluginNames[] = $plugin->name.' '.$plugin->getVersion().' ('.$plugin->developer.')';
             }
 
             $message .= "\nPlugins: ".implode(', ', $pluginNames);
