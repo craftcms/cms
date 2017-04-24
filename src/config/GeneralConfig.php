@@ -434,21 +434,33 @@ class GeneralConfig extends Object
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var string The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
      *
      * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)
      * or the CP’s root URL (/admin) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostCpLoginRedirect()
      */
     public $postCpLoginRedirect = 'dashboard';
     /**
-     * @var string The path that users should be redirected to after logging in from the front-end site.
+     * @var mixed The path that users should be redirected to after logging in from the front-end site.
      *
      * This setting will also come into effect if the user visits the Login page (as specified by the loginPath config
      * setting) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLoginRedirect()
      */
     public $postLoginRedirect = '';
     /**
-     * @var string The path that users should be redirected to after logging out from the front-end site.
+     * @var mixed The path that users should be redirected to after logging out from the front-end site.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLogoutRedirect()
      */
     public $postLogoutRedirect = '';
     /**
@@ -825,6 +837,43 @@ class GeneralConfig extends Object
     public function getLogoutPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Post-CP Login Redirect path.
+     *
+     * @return string
+     * @see postCpLoginRedirect
+     */
+    public function getPostCpLoginRedirect(): string
+    {
+        return ConfigHelper::localizedValue($this->postCpLoginRedirect, null);
+    }
+
+    /**
+     * Returns the localized Post-Login Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLoginRedirect
+     */
+    public function getPostLoginRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Post-Logout Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLogoutRedirect
+     */
+    public function getPostLogoutRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
     }
 
     /**

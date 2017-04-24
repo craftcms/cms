@@ -238,7 +238,7 @@ class UsersController extends Controller
             return $this->redirect('login');
         }
 
-        return $this->redirect(Craft::$app->getConfig()->getGeneral()->postLogoutRedirect);
+        return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
     }
 
     /**
@@ -1853,7 +1853,7 @@ class UsersController extends Controller
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
-            $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
+            $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);

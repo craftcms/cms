@@ -549,7 +549,7 @@ EOD;
         if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
-            $returnUrl = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
+            $returnUrl = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
         }
 
         return $this->asJson([
