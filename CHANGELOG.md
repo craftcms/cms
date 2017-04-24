@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number.
+- Fixed a potential security issue where you could browse the contents of any file in the `craft\app` folder.
 
 ## 2.6.2974 - 2017-04-21
 
