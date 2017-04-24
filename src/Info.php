@@ -3,4 +3,4 @@ namespace Craft;
 
 define('CRAFT_VERSION', '2.6.2974');
 define('CRAFT_SCHEMA_VERSION', '2.6.9');
-define('CRAFT_MIN_VERSION_REQUIRED', '2.1.2570');
+define('CRAFT_MIN_VERSION_REQUIRED', '2.6.2922');
