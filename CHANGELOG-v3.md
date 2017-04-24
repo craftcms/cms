@@ -25,6 +25,8 @@ Craft CMS 3.0 Working Changelog
 - `craft\volumes\Local` now extends `craft\base\Volume` instead of `craft\base\FolderVolume`.
 - Craft now supports reference tags that begin with the fully qualified element class name.
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
+- `craft\helpers\ConfigHelper::localizedValue()` now accepts a PHP callable value for `$value`.
+- The following config settings can now be set to a PHP callable, which returns the desired value at runtime: `activateAccountSuccessPath`, `invalidUserTokenPath`, `loginPath`, `logoutPath`, `setPasswordPath`, and `setPasswordSuccessPath`.
 
 ### Removed
 - Removed `craft\base\Field::isValueEmpty()`.
