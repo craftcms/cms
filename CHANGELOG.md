@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number.
+
 ## 2.6.2974 - 2017-04-21
 
 ### Changed
