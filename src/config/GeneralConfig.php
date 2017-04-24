@@ -48,11 +48,10 @@ class GeneralConfig extends Object
      */
     public $actionTrigger = 'actions';
     /**
-     * @var string|string[] The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getActivateAccountSuccessPath()
      */
@@ -337,11 +336,10 @@ class GeneralConfig extends Object
      */
     public $invalidLoginWindowDuration = 3600;
     /**
-     * @var string|string[] The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
+     * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
      * resetting user account passwords.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getInvalidUserTokenPath()
      */
@@ -359,19 +357,17 @@ class GeneralConfig extends Object
      */
     public $limitAutoSlugsToAscii = false;
     /**
-     * @var string|string[] The URI Craft should use for user login.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user login.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
-     * @var string|string[] The URI Craft should use for user logout.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user logout.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLogoutPath()
      */
@@ -565,20 +561,18 @@ class GeneralConfig extends Object
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var string|string[] The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordPath()
      */
     public $setPasswordPath = 'setpassword';
     /**
-     * @var string|string[] The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordSuccessPath()
      */
