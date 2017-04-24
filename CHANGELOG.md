@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Added a `$useHttpHost` argument to `HttpRequestService::getHostInfo()`, which determines whether the `HTTP_HOST` environment variable should be used if available (defaults to `false`).
+
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number.
 - Fixed a potential security issue where you could browse the contents of any file in the `craft\app` folder.
