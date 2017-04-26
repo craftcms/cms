@@ -59,17 +59,9 @@ class Image
      *
      * @return bool
      */
-    public static function isImageManipulatable(string $extension): bool
+    public static function canManipulateAsImage(string $extension): bool
     {
-        $file = Craft::getAlias('@app/sampleimages/sample.'.strtolower($extension));
-
-        try {
-            Craft::$app->getImages()->loadImage($file);
-
-            return true;
-        } catch (\Exception $e) {
-            return false;
-        }
+        return in_array(StringHelper::toLowerCase($extension), Craft::$app->getImages()->getSupportedImageFormats(), true);
     }
 
     /**
@@ -180,7 +172,7 @@ class Image
             return;
         }
 
-        if (static::isImageManipulatable($extension)) {
+        if (static::canManipulateAsImage($extension)) {
             Craft::$app->getImages()->cleanImage($imagePath);
         }
     }

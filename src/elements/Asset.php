@@ -698,12 +698,7 @@ class Asset extends Element
      */
     public function getHasThumb(): bool
     {
-        return (
-            $this->kind === 'image' &&
-            $this->getHeight() &&
-            $this->getWidth() &&
-            (!in_array($this->getExtension(), ['svg', 'bmp'], true) || Craft::$app->getImages()->getIsImagick())
-        );
+        return Image::canManipulateAsImage($this->getExtension());
     }
 
     /**
@@ -736,7 +731,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !Image::isImageManipulatable(
+        if ($transform !== null && !Image::canManipulateAsImage(
                 $this->getExtension()
             )
         ) {
@@ -755,7 +750,7 @@ class Asset extends Element
      */
     public function getWidth(string $transform = null)
     {
-        if ($transform !== null && !Image::isImageManipulatable(
+        if ($transform !== null && !Image::canManipulateAsImage(
                 $this->getExtension()
             )
         ) {
@@ -1157,7 +1152,7 @@ class Asset extends Element
         if ($context === 'index') {
             // Eligible for the image editor?
             $ext = $this->getExtension();
-            if (strcasecmp($ext, 'svg') !== 0 && Image::isImageManipulatable($ext)) {
+            if (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext)) {
                 $attributes['data-editable-image'] = null;
             }
         }

@@ -545,7 +545,7 @@ class Assets extends Component
      */
     public function getUrlForAsset(Asset $asset, $transform = null): string
     {
-        if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);

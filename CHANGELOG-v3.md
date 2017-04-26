@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\GeneralConfig::getPostLoginRedirect()`.
 - Added `craft\config\GeneralConfig::getPostLogoutRedirect()`.
 - Added `craft\db\Query::getRawSql()`, as a shortcut for `createCommand()->getRawSql()`.
+- Added `craft\services\Images::getSupportedImageFormats()`.
 - Added `craft\web\View::getIsRenderingPageTemplate()`. ([#1652](https://github.com/craftcms/cms/pull/1652))
 
 ### Changed
@@ -30,6 +31,8 @@ Craft CMS 3.0 Working Changelog
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
 - `craft\helpers\ConfigHelper::localizedValue()` now accepts a PHP callable value for `$value`.
 - The following config settings can now be set to a PHP callable, which returns the desired value at runtime: `activateAccountSuccessPath`, `invalidUserTokenPath`, `loginPath`, `logoutPath`, `postCpLoginRedirect`, `postLoginRedirect`, `postLogoutRedirect`, `setPasswordPath`, and `setPasswordSuccessPath`.
+- Changed `craft\helpers\Image::isImageManipulatable()` to `craft\helpers\Image::canManipulateAsImage()`.
+- Craft now checks if the current installation can manipulate an image instead of checking against a predefined list. ([#1648](https://github.com/craftcms/cms/issues/1648), [#1545](https://github.com/craftcms/cms/issues/1545))
 
 ### Removed
 - Removed `craft\base\Field::isValueEmpty()`.

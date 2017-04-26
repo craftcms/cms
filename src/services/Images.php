@@ -14,6 +14,7 @@ use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
+use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -22,8 +23,9 @@ use yii\base\Exception;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
- * @property bool $isGd      Whether image manipulations will be performed using GD or not
- * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
+ * @property bool  $isGd                  Whether image manipulations will be performed using GD or not
+ * @property bool  $isImagick             Whether image manipulations will be performed using Imagick or not
+ * @property array $supportedImageFormats A list of all supported image formats
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -85,7 +87,6 @@ class Images extends Component
         return $this->_driver === self::DRIVER_GD;
     }
 
-
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
      *
@@ -94,6 +95,35 @@ class Images extends Component
     public function getIsImagick(): bool
     {
         return $this->_driver === self::DRIVER_IMAGICK;
+    }
+
+    /**
+     * Returns a list of all supported image formats.
+     *
+     * @return array
+     */
+    public function getSupportedImageFormats(): array
+    {
+        if ($this->getIsImagick()) {
+            return array_map(array(StringHelper::class, 'toLowerCase'), Imagick::queryFormats());
+        }
+
+        $output = [];
+        $map = [
+            IMG_JPG => ['jpg', 'jpeg'],
+            IMG_GIF => ['gif'],
+            IMG_PNG => ['png'],
+            IMG_WEBP => ['webp']
+        ];
+
+        foreach ($map as $key => $extensions) {
+            if (imagetypes() & $key) {
+                $output = array_merge($output, $extensions);
+            }
+
+        }
+
+        return $output;
     }
 
     /**

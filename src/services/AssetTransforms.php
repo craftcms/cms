@@ -970,7 +970,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(pathinfo($source, PATHINFO_EXTENSION))) {
+        if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -1307,7 +1307,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
-        if (!Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;
         }
 

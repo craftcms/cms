@@ -62,7 +62,7 @@ class RebrandController extends Controller
             if ($file) {
                 $filename = Assets::prepareAssetName($file->name, true, true);
 
-                if (!Image::isImageManipulatable($file->getExtension())) {
+                if (!Image::canManipulateAsImage($file->getExtension())) {
                     throw new BadRequestHttpException('The uploaded file is not an image');
                 }
 
