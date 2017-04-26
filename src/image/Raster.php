@@ -483,6 +483,9 @@ class Raster extends Image
             }
         }
 
+        // PNG should be the best fit for SVGs.
+        $this->_extension = 'png';
+
         return $this;
     }
 
@@ -681,15 +684,21 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-                // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
-                // a valid format: http://www.imagemagick.org/script/formats.php
-                // So 2 channel PNGs get converted to 4 channel.
-                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                    $format = 'png'.(8 * $pngInfo['channels']);
+
+                if ($this->_imageSourcePath) {
+                    $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
+                    // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+                    // a valid format: http://www.imagemagick.org/script/formats.php
+                    // So 2 channel PNGs get converted to 4 channel.
+                    if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
+                        $format = 'png'.(8 * $pngInfo['channels']);
+                    } else {
+                        $format = 'png32';
+                    }
                 } else {
                     $format = 'png32';
                 }
+
                 $options['png_format'] = $format;
 
                 return $options;
