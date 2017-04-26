@@ -17,7 +17,6 @@ coverage:
       - src/config/*
       - src/icons/*
       - src/migrations/*
-      - src/sampleimages/*
       - src/templates/*
       - src/translations/*
       - src/migration.php.template
