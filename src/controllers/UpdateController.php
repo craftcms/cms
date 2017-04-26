@@ -548,18 +548,11 @@ class UpdateController extends BaseController
 	 */
 	private function _getFixedHandle($data)
 	{
-		if (!isset($data['handle']))
+		if ($handle = craft()->security->validateData($data['handle']))
 		{
-			return 'craft';
+			return $handle;
 		}
-		else
-		{
-			if ($handle = craft()->security->validateData($data['handle']))
-			{
-				return $handle;
-			}
 
-			throw new Exception('Could not validate update handle.');
-		}
+		throw new Exception('Could not validate update handle.');
 	}
 }
