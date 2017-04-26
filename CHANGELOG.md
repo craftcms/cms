@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2975 - 2017-04-26
+
 ### Changed
 - Added a `$useHttpHost` argument to `HttpRequestService::getHostInfo()`, which determines whether the `HTTP_HOST` environment variable should be used if available (defaults to `false`).
 
