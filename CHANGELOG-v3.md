@@ -55,6 +55,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was impossible to set validation errors on elements that had no field layouts set. ([#1598](https://github.com/craftcms/cms/issues/1598))
 - Fixed a bug where no error message was being displayed on failed uploads. ([#1598](https://github.com/craftcms/cms/issues/1598))
 - Fixed a bug where the site image was getting resized to 500px instead of 300px. ([#1428](https://github.com/craftcms/cms/issues/1428))
+- Fixed a bug where it was not possible to use the Assets Replace File element action.
 
 ## 3.0.0-beta.13 - 2017-04-18
 
