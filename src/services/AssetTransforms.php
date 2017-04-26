@@ -1125,7 +1125,7 @@ class AssetTransforms extends Component
 
         foreach ($dirs as $dir) {
             $files = glob($dir.'/[0-9]*/'.$asset->id.'.[a-z]*');
-            foreach($files as $path) {
+            foreach ($files as $path) {
                 try {
                     FileHelper::removeFile($path);
                 } catch (ErrorException $e) {
