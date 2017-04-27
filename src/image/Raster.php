@@ -155,7 +155,7 @@ class Raster extends Image
         // Make sure the image says it's an image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
-        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0) {
+        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0 && strpos($mimeType, 'application/pdf') !== 0) {
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => pathinfo($path, PATHINFO_BASENAME)]));
         }
 
@@ -483,6 +483,9 @@ class Raster extends Image
             }
         }
 
+        // PNG should be the best fit for SVGs.
+        $this->_extension = 'png';
+
         return $this;
     }
 
@@ -681,15 +684,21 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-                // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
-                // a valid format: http://www.imagemagick.org/script/formats.php
-                // So 2 channel PNGs get converted to 4 channel.
-                if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
-                    $format = 'png'.(8 * $pngInfo['channels']);
+
+                if ($this->_imageSourcePath) {
+                    $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
+                    // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
+                    // a valid format: http://www.imagemagick.org/script/formats.php
+                    // So 2 channel PNGs get converted to 4 channel.
+                    if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
+                        $format = 'png'.(8 * $pngInfo['channels']);
+                    } else {
+                        $format = 'png32';
+                    }
                 } else {
                     $format = 'png32';
                 }
+
                 $options['png_format'] = $format;
 
                 return $options;

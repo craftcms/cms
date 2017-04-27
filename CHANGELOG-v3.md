@@ -20,7 +20,10 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\GeneralConfig::getPostLoginRedirect()`.
 - Added `craft\config\GeneralConfig::getPostLogoutRedirect()`.
 - Added `craft\db\Query::getRawSql()`, as a shortcut for `createCommand()->getRawSql()`.
+- Added `craft\services\Images::getSupportedImageFormats()`.
 - Added `craft\web\View::getIsRenderingPageTemplate()`. ([#1652](https://github.com/craftcms/cms/pull/1652))
+- Added `webp` as a web-safe image format.
+- Added SVG file support for image editor.
 
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
@@ -29,6 +32,8 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\ConfigHelper::localizedValue()` now accepts a PHP callable value for `$value`.
 - The following config settings can now be set to a PHP callable, which returns the desired value at runtime: `activateAccountSuccessPath`, `invalidUserTokenPath`, `loginPath`, `logoutPath`, `postCpLoginRedirect`, `postLoginRedirect`, `postLogoutRedirect`, `setPasswordPath`, and `setPasswordSuccessPath`.
 - There’s no more special treatment for volume types that have better support for subfolders.
+- Renamed `craft\helpers\Image::isImageManipulatable()` to `canManipulateAsImage()`.
+- Craft now checks if the current installation can manipulate an image instead of checking against a predefined list. ([#1648](https://github.com/craftcms/cms/issues/1648), [#1545](https://github.com/craftcms/cms/issues/1545))
 
 ### Removed
 - Removed `craft\base\Field::isValueEmpty()`.
@@ -49,6 +54,9 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where creating a new Asset would not trigger the `beforeSave()` method for it's fields. ([#1623](https://github.com/craftcms/cms/issues/1623))
 - Fixed a bug where it was impossible to set validation errors on elements that had no field layouts set. ([#1598](https://github.com/craftcms/cms/issues/1598))
 - Fixed a bug where no error message was being displayed on failed uploads. ([#1598](https://github.com/craftcms/cms/issues/1598))
+- Fixed a bug where the site image was getting resized to 500px instead of 300px. ([#1428](https://github.com/craftcms/cms/issues/1428))
+- Fixed a bug where it was not possible to use the Assets Replace File element action.
+- Fixed a bug where Asset resized versions would not be deleted if the extension had been changed during the resize.
 - Fixed an error that occurred if a plugin’s Settings model tried calling `Plugin::getInstance()` or `Craft::t()` from its `init()` method.
 
 ## 3.0.0-beta.13 - 2017-04-18

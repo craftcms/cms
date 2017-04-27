@@ -54,6 +54,7 @@ class ReplaceFile extends ElementAction
             options.url = Craft.getActionUrl('assets/replace-file');
             options.dropZone = null;
             options.fileInput = \$fileInput;
+            options.paramName = 'replaceFile';
 
             var tempUploader = new Craft.Uploader(\$fileInput, options);
             tempUploader.setParams({

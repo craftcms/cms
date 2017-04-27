@@ -997,7 +997,7 @@ class UsersController extends Controller
         $imageValidates = true;
         $photo = UploadedFile::getInstanceByName('photo');
 
-        if ($photo && !Image::isImageManipulatable($photo->getExtension())) {
+        if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
             $imageValidates = false;
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }

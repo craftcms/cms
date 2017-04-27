@@ -18,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -672,6 +673,15 @@ class AssetsController extends Controller
 
             /** @var Raster $image */
             $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+
+            // TODO Is this hacky? It seems hacky.
+            // We're rasterizing SVG, we have to make sure that the filename change does not get lost
+            if (StringHelper::toLowerCase($asset->getExtension()) === 'svg') {
+                unlink($imageCopy);
+                $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
+                $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
+            }
+
             list($originalImageWidth, $originalImageHeight) = $imageSize;
 
             if ($imageFlipped) {
