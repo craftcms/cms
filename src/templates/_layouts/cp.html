@@ -122,6 +122,14 @@
 	{% endset %}
 {% endif %}
 
+{% set containerAttributes %}
+    {%- block containerAttributes -%}
+		id="container" {% if fullPageForm -%}
+			method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload
+		{%- endif %}
+    {%- endblock -%}
+{% endset %}
+
 
 {% block body %}
 	<header id="global-sidebar">
@@ -240,10 +248,10 @@
 	</header>
 
 	{% if fullPageForm %}
-		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload>
+		<form {{ containerAttributes }}>
 			{{ getCsrfInput() }}
 	{% else %}
-		<div id="container">
+		<div {{ containerAttributes }}>
 	{% endif %}
 
 		<div id="notifications-wrapper">
@@ -378,9 +386,9 @@
 			</ul>
 		</div>
 
-	{% if not fullPageForm %}
-		</div>
-	{% else %}
+	{% if fullPageForm %}
 		</form>
+	{% else %}
+		</div>
 	{% endif %}
 {% endblock %}

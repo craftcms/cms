@@ -3,15 +3,17 @@ Craft CMS Changelog
 
 ## Unreleased
 
-## 2.6.2975 - 2017-04-26
+## 2.6.2976 - 2017-04-27
 
 ### Changed
-- Added a `$useHttpHost` argument to `HttpRequestService::getHostInfo()`, which determines whether the `HTTP_HOST` environment variable should be used if available (defaults to `false`).
+- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.
-- Fixed a potential security issue where you could browse the contents of any file in the `craft\app` folder.
-- Fixed a potential security issue that could allow a malicious user to hijack the password reset link that gets used in a forgot password user email.
+
+### Security
+- Fixed a bug where it was possible to view the contents of files in the `craft\app` folder via resource requests under certain conditions.
+- Fixed a potential security vulnerability that made it possible to fire off a forgot password email with a modified URL.
 
 ## 2.6.2974 - 2017-04-21
 
