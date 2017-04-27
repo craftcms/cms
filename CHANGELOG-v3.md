@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
-- Added a constraint menu to the Image Editor’s Crop tool.
+- Added an aspect ratio constraint menu to the Crop tool in the Image Editor.
 - Added the `postLogoutRedirect` config setting, making it possible to customize where users should be redirected to after logging out from the front-end. ([#1003](https://github.com/craftcms/cms/issues/1003))
 - Added the `currentSite` global template variable.
 - Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which plugins can listen to if they supply any Redactor plugins that may need be registered on the page.
@@ -24,12 +24,11 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
-- No more separation of Volumes by support of discrete folders. `craft\base\Volume` and `craft\base\VolumeInterface` should be used by all Volumes.
-- `craft\volumes\Local` now extends `craft\base\Volume` instead of `craft\base\FolderVolume`.
 - Craft now supports reference tags that begin with the fully qualified element class name.
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
 - `craft\helpers\ConfigHelper::localizedValue()` now accepts a PHP callable value for `$value`.
 - The following config settings can now be set to a PHP callable, which returns the desired value at runtime: `activateAccountSuccessPath`, `invalidUserTokenPath`, `loginPath`, `logoutPath`, `postCpLoginRedirect`, `postLoginRedirect`, `postLogoutRedirect`, `setPasswordPath`, and `setPasswordSuccessPath`.
+- There’s no more special treatment for volume types that have better support for subfolders.
 
 ### Removed
 - Removed `craft\base\Field::isValueEmpty()`.
@@ -46,7 +45,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where required Checkboxes, Dropdown, Multi-select, Radio Buttons, and Rich Text fields were not getting validation errors when submitted without a value.
 - Fixed a bug where Assets fields weren’t enforcing their Limit settings during server-side validation.
 - Fixed a bug where deleting folders on remote sources would not work in some cases.
-- Fixed a bug where renaming a folder would sometims leave a folder behind.
+- Fixed a bug where renaming a folder would sometimes leave a folder behind.
 - Fixed a bug where creating a new Asset would not trigger the `beforeSave()` method for it's fields. ([#1623](https://github.com/craftcms/cms/issues/1623))
 - Fixed a bug where it was impossible to set validation errors on elements that had no field layouts set. ([#1598](https://github.com/craftcms/cms/issues/1598))
 - Fixed a bug where no error message was being displayed on failed uploads. ([#1598](https://github.com/craftcms/cms/issues/1598))
