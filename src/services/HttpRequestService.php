@@ -1375,33 +1375,6 @@ class HttpRequestService extends \CHttpRequest
 		$this->getCookies()->add($cookie->name, $cookie);
 	}
 
-	/**
-	 * Overrides CHttpRequest::getHostInfo() to avoid checking $_SERVER['HTTP_HOST'] by default.
-	 *
-	 * @param string $schema
-	 * @param bool $useHttpHost
-	 *
-	 * @return string
-	 */
-	public function getHostInfo($schema='', $useHttpHost = false)
-	{
-		if (!$useHttpHost && isset($_SERVER['HTTP_HOST']))
-		{
-			$httpHost = $_SERVER['HTTP_HOST'];
-			unset($_SERVER['HTTP_HOST']);
-		}
-
-		$hostInfo = parent::getHostInfo($schema);
-
-		if (!$useHttpHost && isset($httpHost))
-		{
-			$_SERVER['HTTP_HOST'] = $httpHost;
-		}
-
-		return $hostInfo;
-	}
-
-
 	// Protected Methods
 	// =========================================================================
 

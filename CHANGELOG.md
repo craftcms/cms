@@ -4,7 +4,6 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-- Added a `$useHttpHost` argument to `HttpRequestService::getHostInfo()`, which determines whether the `HTTP_HOST` environment variable should be used if available (defaults to `false`).
 - The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
