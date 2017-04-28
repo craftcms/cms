@@ -12,7 +12,7 @@ Craft CMS Changelog
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.
 
 ### Security
-- Fixed a bug where it was possible to view the contents of files in the `craft\app` folder via resource requests under certain conditions.
+- Fixed a bug where it was possible to view the contents of files in the `craft/app/` folder via resource requests under certain conditions.
 - Fixed a potential security vulnerability that made it possible to fire off a forgot password email with a modified URL.
 
 ## 2.6.2974 - 2017-04-21
