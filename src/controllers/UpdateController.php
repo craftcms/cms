@@ -728,12 +728,8 @@ EOD;
      */
     private function _getFixedHandle(array $data): string
     {
-        if (!isset($data['handle'])) {
-            return 'craft';
-        } else {
-            if ($handle = Craft::$app->getSecurity()->validateData($data['handle'])) {
-                return $handle;
-            }
+        if (($handle = Craft::$app->getSecurity()->validateData($data['handle'])) !== false) {
+            return $handle;
         }
 
         throw new UpdateValidationException('Could not validate the update handle.');

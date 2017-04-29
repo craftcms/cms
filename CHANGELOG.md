@@ -3,8 +3,39 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2976 - 2017-04-27
+
+### Changed
+- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+
+### Fixed
+- Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.
+
+### Security
+- Fixed a bug where it was possible to view the contents of files in the `craft/app/` folder via resource requests under certain conditions.
+- Fixed a potential security vulnerability that made it possible to fire off a forgot password email with a modified URL.
+
+## 2.6.2974 - 2017-04-21
+
+### Changed
+- Entry and category edit pages will now show any validation errors attached to the `parent` attribute.
+- Updated Yii to 1.1.18.
+- Updated Twig to 1.33.2.
+
+### Fixed
+- Fixed timezone bug when requesting data for a run chart in `\Craft\ChartHelper::getRunChartDataFromQuery()`
+
+### Security
+- Fixed an XSS vulnerability.
+
+## 2.6.2973 - 2017-04-17
+
 ### Added
-- Added the “HTML Purifier Config” setting to Rich Text fields ([#1415](https://github.com/craftcms/cms/issues/1415))
+- Added the “HTML Purifier Config” setting to Rich Text fields. ([#1415](https://github.com/craftcms/cms/issues/1415))
+
+### Fixed
+- Fixed a bug where Craft would set a hard-coded PHP time limit of 30 seconds when uploading some types of images.
+- Fixed a PHP error that occurred when using an Assets field on servers running PHP 5.3.
 
 ## 2.6.2972 - 2017-04-12
 

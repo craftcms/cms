@@ -20,6 +20,8 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\GeneralConfig::getPostLoginRedirect()`.
 - Added `craft\config\GeneralConfig::getPostLogoutRedirect()`.
 - Added `craft\db\Query::getRawSql()`, as a shortcut for `createCommand()->getRawSql()`.
+- Added `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
+- Added `craft\helpers\DateTimeHelper::timeZoneOffset()`.
 - Added `craft\services\Images::getSupportedImageFormats()`.
 - Added `craft\web\View::getIsRenderingPageTemplate()`. ([#1652](https://github.com/craftcms/cms/pull/1652))
 - Added `webp` as a web-safe image format.

@@ -12,6 +12,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\Controller;
 use ErrorException;
+use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -40,6 +41,19 @@ class TemplatesController extends Controller
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        $actionSegments = Craft::$app->getRequest()->getActionSegments();
+        if (isset($actionSegments[0]) && $actionSegments[0] === 'templates') {
+            throw new ForbiddenHttpException();
+        }
+
+        return parent::beforeAction($action);
+    }
 
     /**
      * Renders a template.

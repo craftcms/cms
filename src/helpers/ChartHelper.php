@@ -8,9 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\config\DbConfig;
 use craft\db\Query;
 use DateTime;
+use DateTimeZone;
 use yii\base\Exception;
 
 
@@ -65,18 +65,24 @@ class ChartHelper
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
         }
 
+        // Convert timezone for SQL request
+        $tz = DateTimeHelper::timeZoneOffset(Craft::$app->getTimeZone());
+
         if ($isMysql) {
-            $yearSql = "YEAR([[{$dateColumn}]])";
-            $monthSql = "MONTH([[{$dateColumn}]])";
-            $daySql = "DAY([[{$dateColumn}]])";
-            $hourSql = "HOUR([[{$dateColumn}]])";
+            $dateColumnSql = "CONVERT_TZ([[{$dateColumn}]], 'UTC', '{$tz}')";
+            $yearSql = "YEAR({$dateColumnSql})";
+            $monthSql = "MONTH({$dateColumnSql})";
+            $daySql = "DAY({$dateColumnSql})";
+            $hourSql = "HOUR({$dateColumnSql})";
         } else {
-            $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
-            $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
-            $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
-            $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
+            $dateColumnSql = "[[{$dateColumn}]] AT TIME ZONE '{$tz}'";
+            $yearSql = "EXTRACT(YEAR FROM {$dateColumnSql})";
+            $monthSql = "EXTRACT(MONTH FROM {$dateColumnSql})";
+            $daySql = "EXTRACT(DAY FROM {$dateColumnSql})";
+            $hourSql = "EXTRACT(HOUR FROM {$dateColumnSql})";
         }
 
+        // Prepare the query
         switch ($intervalUnit) {
             case 'year':
                 if ($isMysql) {
@@ -119,9 +125,9 @@ class ChartHelper
         }
 
         if ($isMysql) {
-            $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
+            $select = "DATE_FORMAT({$dateColumnSql}, '{$sqlDateFormat}') AS [[date]]";
         } else {
-            $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
+            $select = "to_char({$dateColumnSql}, '{$sqlDateFormat}') AS [[date]]";
         }
 
         $sqlGroup[] = '[[date]]';
@@ -129,13 +135,11 @@ class ChartHelper
         // Execute the query
         $results = $query
             ->addSelect([$select])
-            ->andWhere([
-                'and',
-                ['>=', $dateColumn, Db::prepareDateForDb($startDate)],
-                ['<', $dateColumn, Db::prepareDateForDb($endDate)]
-            ])
+            ->andWhere(
+                ['and', "{$dateColumnSql} >= :startDate", "{$dateColumnSql} < :endDate"],
+                [':startDate' => Db::prepareDateForDb($startDate), ':endDate' => Db::prepareDateForDb($endDate)])
             ->groupBy($sqlGroup)
-            ->orderBy(['[[date]]' => SORT_ASC])
+            ->orderBy(['date' => SORT_ASC])
             ->all();
 
         // Assemble the data
@@ -146,12 +150,9 @@ class ChartHelper
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             // Do we have a record for this date?
-            $cursorDateUtc = (clone $cursorDate)
-                ->setTimezone(new \DateTimeZone('UTC'))
-                ->format($phpDateFormat);
             $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
-            if (isset($results[0]) && $results[0]['date'] === $cursorDateUtc) {
+            if (isset($results[0]) && $results[0]['date'] === $formattedCursorDate) {
                 $value = (float)$results[0]['value'];
                 array_shift($results);
             } else {

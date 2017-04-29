@@ -10,6 +10,7 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
@@ -444,6 +445,8 @@ class Raster extends Image
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
+                App::maxPowerCaptain();
+
                 $originalSize = filesize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
                 try {
@@ -596,9 +599,6 @@ class Raster extends Image
      */
     private function _autoGuessImageQuality(string $tempFileName, int $originalSize, string $extension, int $minQuality, int $maxQuality, int $step = 0): string
     {
-        // Give ourselves some extra time.
-        @set_time_limit(30);
-
         if ($step === 0) {
             $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }

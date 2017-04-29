@@ -279,6 +279,39 @@ class DateTimeHelper
     }
 
     /**
+     * Returns the timezone abbreviation for a given timezone name.
+     *
+     * @param string $timeZone
+     *
+     * @return string
+     */
+    public static function timeZoneAbbreviation(string $timeZone): string
+    {
+        return (new DateTime())
+            ->setTimezone(new \DateTimeZone($timeZone))
+            ->format('T');
+    }
+
+    /**
+     * Returns a given timezone’s offset from UTC (e.g. '+10:00' or '-06:00').
+     *
+     * @param string $timeZone
+     *
+     * @return string
+     */
+    public static function timeZoneOffset(string $timeZone): string
+    {
+        $offset = (new \DateTimeZone($timeZone))
+            ->getOffset(new DateTime('now', new \DateTimeZone('UTC')));
+
+        // Adapted from http://stackoverflow.com/a/13822928/1688568
+        return sprintf('%s%02d:%02d',
+            $offset < 0 ? '-' : '+',
+            abs($offset) / 3600,
+            abs($offset) / 60 % 60);
+    }
+
+    /**
      * Determines whether the given value is an ISO-8601-formatted date, as formatted by either
      * [DateTime::ATOM](http://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
      * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
