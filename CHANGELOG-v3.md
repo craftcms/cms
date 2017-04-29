@@ -61,6 +61,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to use the Assets Replace File element action.
 - Fixed a bug where Asset resized versions would not be deleted if the extension had been changed during the resize.
 - Fixed an error that occurred if a plugin’s Settings model tried calling `Plugin::getInstance()` or `Craft::t()` from its `init()` method.
+- Fixed an error that occurred if the “Date Created” or “Date Updated” columns were selected to be shown on the Users index.
 
 ## 3.0.0-beta.13 - 2017-04-18
 
