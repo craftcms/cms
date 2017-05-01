@@ -115,8 +115,7 @@ class AssetManager extends \yii\web\AssetManager
         $name = basename($newDir);
         if (preg_match('/^[a-f0-9]{8}$/', $name)) {
             $parent = dirname($newDir);
-            $parentName = basename($parent);
-            if (preg_match('/^[a-f0-9]{8}$/', $parentName)) {
+            if (preg_match('/^[a-f0-9]{8}$/', basename($parent))) {
                 FileHelper::clearDirectory($parent, [
                     'except' => [$name]
                 ]);
