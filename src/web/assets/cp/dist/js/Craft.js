@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-04-18 */
+/*! Craft 3.0.0 - 2017-05-01 */
 (function($){
 
 /** global: Craft */
@@ -2010,7 +2010,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
 
-                if (this.site) {
+                if (this.siteId) {
                     // Do we have a different site stored in localStorage?
                     var storedSiteId = Craft.getLocalStorage('BaseElementIndex.siteId');
 

@@ -71,6 +71,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Asset resized versions would not be deleted if the extension had been changed during the resize.
 - Fixed an error that occurred if a plugin’s Settings model tried calling `Plugin::getInstance()` or `Craft::t()` from its `init()` method.
 - Fixed an error that occurred if the “Date Created” or “Date Updated” columns were selected to be shown on the Users index.
+- Fixed a bug where element indexes weren’t remembering the selected site across page loads. ([#1653](https://github.com/craftcms/cms/issues/1653))
 
 ## 3.0.0-beta.13 - 2017-04-18
 
