@@ -178,10 +178,10 @@ body.mobile #container {
 /* end HIDE */
 
 /* notifications */
-#notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; }
+#notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; pointer-events: none; }
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
-#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
+#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto;
 	@include light-on-dark-text;
 	@include box-shadow(0 0 5px rgba(0,0,0,0.25));
 }

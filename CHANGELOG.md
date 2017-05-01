@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where Control Panel breadcrumbs where unclickable when a flash notification was visible. ([#1675](https://github.com/craftcms/cms/issues/1675))
+
 ## 2.6.2976 - 2017-04-27
 
 ### Changed
