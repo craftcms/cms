@@ -3,8 +3,12 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Assets fields no longer attempt to guard against `prepValueFromPost()` getting called multiple times.
+
 ### Fixed
 - Fixed a bug where Control Panel breadcrumbs where unclickable when a flash notification was visible. ([#1675](https://github.com/craftcms/cms/issues/1675))
+- Fixed a bug where Assets fields could associate the same image to multiple elements, when saving large batches of elements at once. ([#1673](https://github.com/craftcms/cms/issues/1673))
 
 ## 2.6.2976 - 2017-04-27
 
