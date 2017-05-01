@@ -46,6 +46,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\Image::isImageManipulatable()` to `canManipulateAsImage()`.
 - Craft now checks if the current installation can manipulate an image instead of checking against a predefined list. ([#1648](https://github.com/craftcms/cms/issues/1648), [#1545](https://github.com/craftcms/cms/issues/1545))
 - The old `Craft\DateTime` methods from Craft 2 no longer cause PHP errors when called from a template. A deprecation error will be logged instead.
+- `craft\helpers\FileHelper::clearDirectory()` now supports `filter`, `except`, and `only` options.
 
 ### Removed
 - Removed `craft\base\Field::isValueEmpty()`.
