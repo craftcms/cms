@@ -28,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - Added SVG file support for image editor.
 
 ### Changed
+- Craft’s `composer.json` no longer specifies server requirements (so the `--ignore-platform-reqs` flag is no longer necessary).
 - Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
 - Craft now supports reference tags that begin with the fully qualified element class name.
 - Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))

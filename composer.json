@@ -18,14 +18,6 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": ">=7.0.0",
-    "ext-pcre": "*",
-    "ext-pdo": "*",
-    "ext-openssl": "*",
-    "ext-mbstring": "*",
-    "ext-json": "*",
-    "ext-curl": "*",
-    "ext-zip": "*",
     "yiisoft/yii2": "2.0.11.2",
     "yiisoft/yii2-debug": "2.0.8",
     "yiisoft/yii2-swiftmailer": "2.0.6",
