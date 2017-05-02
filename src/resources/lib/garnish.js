@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.17
+ * @version   0.1.18
  * @license   MIT
  */
 (function($){
@@ -2744,6 +2744,13 @@ Garnish.HUD = Garnish.Base.extend(
             else {
                 this.$hud.css('position', 'absolute');
             }
+
+            // Hide the HUD until it gets positioned
+			var windowWidth = Garnish.$win.width();
+
+			this.$hud.css({
+                left: '-' + windowWidth + 'px',
+			});
 
             this.show();
 

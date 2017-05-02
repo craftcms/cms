@@ -9,6 +9,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where Control Panel breadcrumbs where unclickable when a flash notification was visible. ([#1675](https://github.com/craftcms/cms/issues/1675))
 - Fixed a bug where Assets fields could associate the same image to multiple elements, when saving large batches of elements at once. ([#1673](https://github.com/craftcms/cms/issues/1673))
+- Fixed a bug where HUDs where briefly showing up in the top left corner of the window before getting repositioned. ([#1647](https://github.com/craftcms/cms/issues/1647))
 
 ## 2.6.2976 - 2017-04-27
 
