@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.14 - 2017-05-02
 
 ### Added
 - Added an aspect ratio constraint menu to the Crop tool in the Image Editor.
