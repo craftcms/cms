@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2977 - 2017-05-02
 
 ### Changed
 - Assets fields no longer attempt to guard against `prepValueFromPost()` getting called multiple times.
