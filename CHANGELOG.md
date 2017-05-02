@@ -4,7 +4,7 @@ Craft CMS Changelog
 ## 2.6.2978 - 2017-05-02
 
 ### Fixed
-- Fixed a bug where Title fields on new elements could display the class name of the element by default.
+- Fixed a bug where Title fields on new elements could display the class name of the element by default. ([#1685](https://github.com/craftcms/cms/issues/1685))
 
 ## 2.6.2977 - 2017-05-02
 
