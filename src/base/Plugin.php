@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use yii\base\Module;
@@ -44,17 +45,21 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($id, $parent = null, array $config = [])
     {
-        parent::init();
+        // Set some things early in case there are any settings, and the settings model's
+        // init() method needs to call Craft::t() or Plugin::getInstance().
 
-        if ($this->t9nCategory === null) {
-            $this->t9nCategory = strtolower($this->handle);
+        $this->handle = ArrayHelper::remove($config, 'handle', $this->handle);
+        $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? strtolower($this->handle));
+        $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
+
+        if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
+            $this->setBasePath($basePath);
         }
 
-        // Set up a translation message source for the plugin
+        // Translation category
         $i18n = Craft::$app->getI18n();
-
         /** @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory.'*'])) {
             $i18n->translations[$this->t9nCategory] = [
@@ -64,6 +69,11 @@ class Plugin extends Module implements PluginInterface
                 'allowOverrides' => true,
             ];
         }
+
+        // Set this as the global instance of this plugin class
+        static::setInstance($this);
+
+        parent::__construct($id, $parent, $config);
     }
 
     /**

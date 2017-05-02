@@ -78,7 +78,7 @@ use yii\validators\Validator;
  * @property Element|null          $nextSibling           The element’s next sibling
  * @property bool                  $hasDescendants        Whether the element has descendants
  * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string                $title                 The element’s title
+ * @property string|null           $title                 The element’s title
  * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
  * @property string                $contentTable          The name of the table this element’s content is stored in
@@ -717,7 +717,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title;
+        return $this->title ?: ((string)$this->id ?: static::class);
     }
 
     /**
@@ -831,9 +831,13 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            foreach ($this->getFieldLayout()->getFields() as $field) {
-                /** @var Field $field */
-                $labels[$field->handle] = Craft::t('site', $field->name);
+            $layout = $this->getFieldLayout();
+
+            if ($layout !== null) {
+                foreach ($layout->getFields() as $field) {
+                    /** @var Field $field */
+                    $labels[$field->handle] = Craft::t('site', $field->name);
+                }
             }
         }
 
@@ -856,11 +860,9 @@ abstract class Element extends Component implements ElementInterface
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
         ];
 
-        $requiredAttributes = [];
-
         if (static::hasTitles()) {
             $rules[] = [['title'], 'string', 'max' => 255];
-            $requiredAttributes[] = 'title';
+            $rules[] = [['title'], 'required'];
         }
 
         if (static::hasUris()) {
@@ -876,7 +878,7 @@ abstract class Element extends Component implements ElementInterface
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 if ($field->required) {
-                    $requiredAttributes[] = $field->handle;
+                    $rules[] = [[$field->handle], 'required', 'isEmpty' => [$field, 'isEmpty']];
                 }
 
                 if ($field::hasContentColumn()) {
@@ -912,6 +914,11 @@ abstract class Element extends Component implements ElementInterface
                                 ];
                             }
 
+                            // Set isEmpty to the field's isEmpty() method by default
+                            if (!array_key_exists('isEmpty', $rule)) {
+                                $rule['isEmpty'] = [$field, 'isEmpty'];
+                            }
+
                             $rules[] = $rule;
                         } else {
                             throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
@@ -923,10 +930,6 @@ abstract class Element extends Component implements ElementInterface
             if (!empty($fieldsWithColumns)) {
                 $rules[] = [$fieldsWithColumns, 'validateCustomFieldContentSize'];
             }
-        }
-
-        if (!empty($requiredAttributes)) {
-            $rules[] = [$requiredAttributes, 'required'];
         }
 
         return $rules;
@@ -946,7 +949,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Calls a custom validation function on a custom field.
      *
-     * This will be called by [[yii\validators\InlineValidator]] if a custom field specified
+     * This will be called by [[\yii\validators\InlineValidator]] if a custom field specified
      * a closure or the name of a class-level method as the validation type.
      *
      * @param string     $attribute The field handle
@@ -985,6 +988,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $value = $field->serializeValue($this->getFieldValue($attribute), $this);
+
+        // Ignore empty values
+        if ($value === null || $value === '') {
+            return;
+        }
 
         if ($simpleColumnType === Db::SIMPLE_TYPE_NUMERIC) {
             $validator = new NumberValidator([

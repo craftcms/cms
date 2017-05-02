@@ -1,6 +1,6 @@
 <?php
 /**
- * The base class for all asset Volumes.  Any Volume type that does not support discrete folders must extend this class.
+ * The base class for all asset Volumes.  All Volume types must extend this class.
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since      3.0
@@ -244,6 +244,86 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         fclose($outputStream);
 
         return $bytes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function folderExists(string $path): bool
+    {
+        // Calling adapter directly instead of filesystem to avoid losing the trailing slash (if any)
+        return $this->adapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDir(string $path): bool
+    {
+        if ($this->folderExists($path)) {
+            throw new VolumeObjectExistsException(Craft::t('app',
+                'Folder “{folder}” already exists on the volume!',
+                ['folder' => $path]));
+        }
+
+        return $this->filesystem()->createDir($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDir(string $path): bool
+    {
+        try {
+            return $this->filesystem()->deleteDir($path);
+        } catch (\Exception $exception) {
+            // We catch all Exceptions because most of the times these will be 3rd party exceptions.
+            return false;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDir(string $path, string $newName): bool
+    {
+        // Get the list of dir contents
+        $fileList = $this->getFileList($path, true);
+        $directoryList = [$path];
+
+        $parts = explode('/', $path);
+
+        array_pop($parts);
+        $parts[] = $newName;
+
+        $newPath = implode('/', $parts);
+
+        $pattern = '/^'.preg_quote($path, '/').'/';
+
+        // Rename every file and build a list of directories
+        foreach ($fileList as $object) {
+            if ($object['type'] !== 'dir') {
+                $objectPath = preg_replace($pattern, $newPath, $object['path']);
+                $this->renameFile($object['path'], $objectPath);
+            } else {
+                $directoryList[] = $object['path'];
+            }
+        }
+
+        // It's possible for a folder object to not exist on remote volumes, so to throw an exception
+        // we must make sure that there are no files AS WELL as no folder.
+        if (empty($fileList) && !$this->folderExists($path)) {
+            throw new VolumeObjectNotFoundException(Craft::t('app',
+                'Folder “{folder}” cannot be found on the volume.',
+                ['folder' => $path]));
+        }
+
+        // The files are moved, but the directories remain. Delete them.
+        foreach ($directoryList as $dir) {
+            $this->deleteDir($dir);
+        }
+
+        return true;
     }
 
     // Protected Methods

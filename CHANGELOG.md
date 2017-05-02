@@ -1,10 +1,52 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2977 - 2017-05-02
+
+### Changed
+- Assets fields no longer attempt to guard against `prepValueFromPost()` getting called multiple times.
+- Updated Garnish to 0.1.18.
+
+### Fixed
+- Fixed a bug where Control Panel breadcrumbs where unclickable when a flash notification was visible. ([#1675](https://github.com/craftcms/cms/issues/1675))
+- Fixed a bug where Assets fields could associate the same image to multiple elements, when saving large batches of elements at once. ([#1673](https://github.com/craftcms/cms/issues/1673))
+- Fixed a bug where HUDs where briefly showing up in the top-left corner of the window before getting repositioned, particularly in Safari. ([#1647](https://github.com/craftcms/cms/issues/1647))
+- Fixed a bug where saving customized element index settings could wipe out all the settings in rare cases.
+- Fixed a bug where elements that don’t have titles were incorrectly passing `is empty` tests in Twig.
+
+## 2.6.2976 - 2017-04-27
+
+### Changed
+- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+
+### Fixed
+- Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.
+
+### Security
+- Fixed a bug where it was possible to view the contents of files in the `craft/app/` folder via resource requests under certain conditions.
+- Fixed a potential security vulnerability that made it possible to fire off a forgot password email with a modified URL.
+
+## 2.6.2974 - 2017-04-21
+
+### Changed
+- Entry and category edit pages will now show any validation errors attached to the `parent` attribute.
+- Updated Yii to 1.1.18.
+- Updated Twig to 1.33.2.
+
+### Fixed
+- Fixed timezone bug when requesting data for a run chart in `\Craft\ChartHelper::getRunChartDataFromQuery()`
+
+### Security
+- Fixed an XSS vulnerability.
+
+## 2.6.2973 - 2017-04-17
 
 ### Added
-- Added the “HTML Purifier Config” setting to Rich Text fields ([#1415](https://github.com/craftcms/cms/issues/1415))
+- Added the “HTML Purifier Config” setting to Rich Text fields. ([#1415](https://github.com/craftcms/cms/issues/1415))
+
+### Fixed
+- Fixed a bug where Craft would set a hard-coded PHP time limit of 30 seconds when uploading some types of images.
+- Fixed a PHP error that occurred when using an Assets field on servers running PHP 5.3.
 
 ## 2.6.2972 - 2017-04-12
 
@@ -37,7 +79,7 @@ Craft CMS Changelog
 ## 2.6.2969 - 2017-04-07
 
 ### Changed
-- It's now possible to execute `AssetsFieldType::prepValueFromPost()` only once per field instance. Subsequent calls will return previous execution result.
+- It’s now possible to execute `AssetsFieldType::prepValueFromPost()` only once per field instance. Subsequent calls will return previous execution result.
 - Disabled Matrix blocks are no longer shown in Live Preview. ([#13](https://github.com/craftcms/cms/issues/13))
 
 ### Fixed

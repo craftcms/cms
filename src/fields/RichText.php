@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\elements\Category;
 use craft\elements\Entry;
+use craft\events\RegisterRedactorPluginEvent;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
 use craft\helpers\FileHelper;
@@ -25,6 +26,7 @@ use craft\models\Section;
 use craft\validators\HandleValidator;
 use craft\web\assets\redactor\RedactorAsset;
 use craft\web\assets\richtext\RichTextAsset;
+use yii\base\Event;
 use yii\db\Schema;
 
 /**
@@ -35,8 +37,26 @@ use yii\db\Schema;
  */
 class RichText extends Field
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterRedactorPluginEvent The event that is triggered when registering a Redactor plugin's resources.
+     */
+    const EVENT_REGISTER_REDACTOR_PLUGIN = 'registerRedactorPlugin';
+
+    /**
+     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     */
+    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
+
     // Static
     // =========================================================================
+
+    /**
+     * @var array List of the Redactor plugins that have already been registered for this request
+     */
+    private static $_registeredPlugins = [];
 
     /**
      * @inheritdoc
@@ -46,13 +66,44 @@ class RichText extends Field
         return Craft::t('app', 'Rich Text');
     }
 
-    // Constants
-    // =========================================================================
-
     /**
-     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     * Registers a Redactor plugin’s resources, if any
+     *
+     * @param string $plugin
+     *
+     * @return void
      */
-    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
+    public static function registerRedactorPlugin(string $plugin)
+    {
+        if (isset(static::$_registeredPlugins[$plugin])) {
+            return;
+        }
+
+        switch ($plugin) {
+            case 'fullscreen': // no break
+            case 'source': // no break
+            case 'table': // no break
+            case 'video': // no break
+            case 'pagebreak':
+                $am = Craft::$app->getAssetManager();
+                $view = Craft::$app->getView();
+                $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
+                    'depends' => RedactorAsset::class
+                ]);
+                if ($plugin === 'pagebreak') {
+                    $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
+                }
+                break;
+            default:
+                // Maybe a plugin-supplied Redactor plugin
+                Event::trigger(static::class, self::EVENT_REGISTER_REDACTOR_PLUGIN, new RegisterRedactorPluginEvent([
+                    'plugin' => $plugin
+                ]));
+        }
+
+        // Don't do this twice
+        static::$_registeredPlugins[$plugin] = true;
+    }
 
     // Properties
     // =========================================================================
@@ -164,7 +215,7 @@ class RichText extends Field
         /** @var RichTextData|null $value */
         /** @var Element $element */
         $redactorConfig = $this->_getRedactorConfig();
-        $this->_includeFieldResources($redactorConfig);
+        $this->_registerFieldResources($redactorConfig);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
@@ -193,14 +244,15 @@ class RichText extends Field
         }
 
         if ($value !== null && StringHelper::contains($value, '{')) {
-            // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
-                function($matches) {
-                    return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
-                }, $value);
+            // Parse ref tags in URLs, while preserving the original tag values in the URL fragments
+            // e.g. {entry:id:url} => [entry-url]#entry:id:url
+            // Leave any other ref tags alone for the input, since they were probably manually added
+            $value = preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
+                list (, $attr, $q, $refTag, $ref) = $matches;
+                $fragment = $matches[5] ?? '';
 
-            // Now parse 'em
-            $value = Craft::$app->getElements()->parseRefs($value);
+                return $attr.$q.Craft::$app->getElements()->parseRefs($refTag).$fragment.'#'.$ref.$q;
+            }, $value);
         }
 
         // Swap any <!--pagebreak-->'s with <hr>'s
@@ -230,6 +282,19 @@ class RichText extends Field
         }
 
         return $keywords;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty($value): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        /** @var RichTextData $value */
+        return parent::isEmpty($value->getRawContent());
     }
 
     /**
@@ -274,8 +339,9 @@ class RichText extends Field
 
         // Find any element URLs and swap them with ref tags
         $value = preg_replace_callback(
-            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
+            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)([\w\\\\]+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
             function($matches) {
+                // Create the ref tag, and make sure :url is in there
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
                 $hash = (!empty($matches[3]) ? $matches[3] : '');
 
@@ -299,24 +365,6 @@ class RichText extends Field
         }
 
         return $value;
-    }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        /** @var RichTextData|null $value */
-        if ($value) {
-            $rawContent = $value->getRawContent();
-
-            return empty($rawContent);
-        }
-
-        return true;
     }
 
     // Private Methods
@@ -348,6 +396,7 @@ class RichText extends Field
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to an entry'),
                 'elementType' => Entry::class,
+                'refHandle' => Entry::refHandle(),
                 'sources' => $sectionSources,
             ];
         }
@@ -356,6 +405,7 @@ class RichText extends Field
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to a category'),
                 'elementType' => Category::class,
+                'refHandle' => Category::refHandle(),
                 'sources' => $categorySources,
             ];
         }
@@ -365,8 +415,18 @@ class RichText extends Field
             'linkOptions' => $linkOptions
         ]);
         $this->trigger(self::EVENT_REGISTER_LINK_OPTIONS, $event);
+        $linkOptions = $event->linkOptions;
 
-        return $event->linkOptions;
+        // Fill in any missing ref handles
+        foreach ($linkOptions as &$linkOption) {
+            if (!isset($linkOption['refHandle'])) {
+                /** @var ElementInterface|string $class */
+                $class = $linkOption['elementType'];
+                $linkOption['refHandle'] = $class::refHandle() ?? $class;
+            }
+        }
+
+        return $linkOptions;
     }
 
     /**
@@ -571,23 +631,23 @@ class RichText extends Field
     }
 
     /**
-     * Includes the input resources.
+     * Registers the front end resources for the field.
      *
      * @param array $redactorConfig
      *
      * @return void
      */
-    private function _includeFieldResources(array $redactorConfig)
+    private function _registerFieldResources(array $redactorConfig)
     {
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(RichTextAsset::class);
 
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'fullscreen', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'source', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'table', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'video', false);
-        $this->_maybeIncludeRedactorPlugin($redactorConfig, 'pagebreak', true);
+        if (isset($redactorConfig['plugins'])) {
+            foreach ($redactorConfig['plugins'] as $plugin) {
+                static::registerRedactorPlugin($plugin);
+            }
+        }
 
         $view->registerTranslations('app', [
             'Insert image',
@@ -633,33 +693,6 @@ class RichText extends Field
             '$.extend($.Redactor.opts.langs["'.self::$_redactorLang.'"], '.
             Json::encode($customTranslations).
             ');');
-    }
-
-    /**
-     * Includes a plugin’s JS file, if it appears to be requested by the config file.
-     *
-     * @param array  $redactorConfig
-     * @param string $plugin
-     * @param bool   $includeCss
-     *
-     * @return void
-     */
-    private function _maybeIncludeRedactorPlugin(array $redactorConfig, string $plugin, bool $includeCss)
-    {
-        if (!isset($redactorConfig['plugins']) || !in_array($plugin, $redactorConfig['plugins'], true)) {
-            return;
-        }
-
-        $am = Craft::$app->getAssetManager();
-        $view = Craft::$app->getView();
-
-        if ($includeCss) {
-            $view->registerCssFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.css");
-        }
-
-        $view->registerJsFile($am->getPublishedUrl('@lib/redactor')."/plugins/{$plugin}.js", [
-            'depends' => RedactorAsset::class
-        ]);
     }
 
     /**

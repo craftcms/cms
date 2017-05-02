@@ -117,9 +117,9 @@ class User extends \yii\web\User
         if ($defaultUrl === null) {
             // Is this a CP request and can they access the CP?
             if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
+                $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
             } else {
-                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->postLoginRedirect);
+                $defaultUrl = UrlHelper::siteUrl(Craft::$app->getConfig()->getGeneral()->getPostLoginRedirect());
             }
         }
 

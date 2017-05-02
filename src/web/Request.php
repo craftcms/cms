@@ -149,10 +149,10 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_filter(explode('/', $path), function($value) {
+        $this->_segments = array_values(array_filter(explode('/', $path), function($value) {
             // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
             return $value !== '';
-        });
+        }));
 
         // Is this a CP request?
         $this->_isCpRequest = ($this->getSegment(1) == $generalConfig->cpTrigger);
@@ -194,7 +194,7 @@ class Request extends \yii\web\Request
                 $newPath = $match[1];
 
                 // Reset the segments without the pagination stuff
-                $this->_segments = array_filter(explode('/', $newPath));
+                $this->_segments = array_values(array_filter(explode('/', $newPath)));
             }
         }
 
@@ -976,7 +976,7 @@ class Request extends \yii\web\Request
                     if ($triggerMatch) {
                         $this->_actionSegments = array_slice($this->_segments, 1);
                     } else if (!empty($actionParam)) {
-                        $this->_actionSegments = array_filter(explode('/', $actionParam));
+                        $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                     } else {
                         if ($this->_path == $loginPath) {
                             $this->_actionSegments = ['users', 'login'];

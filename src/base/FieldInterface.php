@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use yii\validators\Validator;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
@@ -222,6 +223,16 @@ interface FieldInterface extends SavableComponentInterface
     public function getElementValidationRules(): array;
 
     /**
+     * Returns whether the given value should be considered “empty” to a validator.
+     *
+     * @param mixed $value The field’s value
+     *
+     * @return bool Whether the value should be considered “empty”
+     * @see Validator::$isEmpty
+     */
+    public function isEmpty($value): bool;
+
+    /**
      * Returns the search keywords that should be associated with this field.
      *
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
@@ -269,7 +280,7 @@ interface FieldInterface extends SavableComponentInterface
      * If the method returns `false`, the query will be stopped before it ever gets a chance to execute.
      *
      * @param ElementQueryInterface $query The element query
-     * @param mixed                 $value The value that was set on this field’s corresponding [[ElementCriteriaModel]] param,
+     * @param mixed                 $value The value that was set on this field’s corresponding element query param,
      *                                     if any.
      *
      * @return null|false `false` in the event that the method is sure that no elements are going to be found.

@@ -13,7 +13,7 @@ use yii\web\Response;
 /**
  * The ElementIndexSettingsController class is a controller that handles various element index settings-related actions.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

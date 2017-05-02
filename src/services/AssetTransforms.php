@@ -970,7 +970,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(pathinfo($source, PATHINFO_EXTENSION))) {
+        if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -1118,33 +1118,19 @@ class AssetTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset)
     {
-        $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
         $dirs = [
             Craft::$app->getPath()->getResizedAssetsPath(),
             Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id
         ];
 
         foreach ($dirs as $dir) {
-            try {
-                $handle = opendir($dir);
-                if ($handle === false) {
-                    Craft::warning("Unable to open directory: $dir", __METHOD__);
-
-                    return;
-                }
-                while (($subDir = readdir($handle)) !== false) {
-                    if ($subDir === '.' || $subDir === '..') {
-                        continue;
-                    }
-                    $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
-                    if (!is_file($path)) {
-                        continue;
-                    }
+            $files = glob($dir.'/[0-9]*/'.$asset->id.'.[a-z]*');
+            foreach ($files as $path) {
+                try {
                     FileHelper::removeFile($path);
+                } catch (ErrorException $e) {
+                    Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
                 }
-                closedir($handle);
-            } catch (ErrorException $e) {
-                Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage(), __METHOD__);
             }
         }
     }
@@ -1307,7 +1293,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
-        if (!Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;
         }
 

@@ -88,8 +88,8 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $filename the filename to sanitize
      * @param array  $options  options for sanitization. Valid options are:
      *
-     * - asciiOnly: bool, whether only ASCII characters should be allowed. Defaults to false.
-     * - separator: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
+     * - `asciiOnly`: bool, whether only ASCII characters should be allowed. Defaults to false.
+     * - `separator`: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
      *
      * @return string The cleansed filename
      */
@@ -232,11 +232,11 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array  $options  options for file write. Valid options are:
      *
-     * - createDirs: bool, whether to create parent directories if they do
+     * - `createDirs`: bool, whether to create parent directories if they do
      *   not exist. Defaults to true.
-     * - append: bool, whether the contents should be appended to the
+     * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
-     * - lock: bool, whether a file lock should be used. Defaults to the
+     * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
      *
      * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
@@ -308,9 +308,12 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $dir     the directory to be deleted recursively.
      * @param array  $options options for directory remove. Valid options are:
      *
-     * - traverseSymlinks: bool, whether symlinks to the directories should be traversed too.
+     * - `traverseSymlinks`: bool, whether symlinks to the directories should be traversed too.
      *   Defaults to `false`, meaning the content of the symlinked directory would not be deleted.
      *   Only symlink would be removed in that default case.
+     * - `filter`: callback (see [[findFiles()]])
+     * - `except`: array (see [[findFiles()]])
+     * - `only`: array (see [[findFiles()]])
      *
      * @return void
      * @throws InvalidParamException if the dir is invalid
@@ -322,19 +325,27 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new InvalidParamException("The dir argument must be a directory: $dir");
         }
 
-        // Copied from [[removeDirectory()]] minus the root directory removal at the end
+        // Adapted from [[removeDirectory()]], plus addition of filters, and minus the root directory removal at the end
         if (!($handle = opendir($dir))) {
             return;
         }
+
+        if (!isset($options['basePath'])) {
+            $options['basePath'] = realpath($dir);
+            $options = self::_normalizeOptions($options);
+        }
+
         while (($file = readdir($handle)) !== false) {
             if ($file === '.' || $file === '..') {
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$file;
-            if (is_dir($path)) {
-                static::removeDirectory($path, $options);
-            } else {
-                static::removeFile($path);
+            if (static::filterPath($path, $options)) {
+                if (is_dir($path)) {
+                    static::removeDirectory($path, $options);
+                } else {
+                    static::removeFile($path);
+                }
             }
         }
         closedir($handle);
@@ -411,5 +422,98 @@ class FileHelper extends \yii\helpers\FileHelper
         $cacheService->set('useFileLocks', $cachedValue, 5184000);
 
         return self::$_useFileLocks;
+    }
+
+    /**
+     * @param array $options raw options
+     * @return array normalized options
+     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     */
+    private static function _normalizeOptions(array $options)
+    {
+        if (!array_key_exists('caseSensitive', $options)) {
+            $options['caseSensitive'] = true;
+        }
+        if (isset($options['except'])) {
+            foreach ($options['except'] as $key => $value) {
+                if (is_string($value)) {
+                    $options['except'][$key] = self::_parseExcludePattern($value, $options['caseSensitive']);
+                }
+            }
+        }
+        if (isset($options['only'])) {
+            foreach ($options['only'] as $key => $value) {
+                if (is_string($value)) {
+                    $options['only'][$key] = self::_parseExcludePattern($value, $options['caseSensitive']);
+                }
+            }
+        }
+        return $options;
+    }
+
+    /**
+     * Processes the pattern, stripping special characters like / and ! from the beginning and settings flags instead.
+     * @param string $pattern
+     * @param bool $caseSensitive
+     * @throws \yii\base\InvalidParamException
+     * @return array with keys: (string) pattern, (int) flags, (int|bool) firstWildcard
+     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     */
+    private static function _parseExcludePattern($pattern, $caseSensitive)
+    {
+        if (!is_string($pattern)) {
+            throw new InvalidParamException('Exclude/include pattern must be a string.');
+        }
+
+        $result = [
+            'pattern' => $pattern,
+            'flags' => 0,
+            'firstWildcard' => false,
+        ];
+
+        if (!$caseSensitive) {
+            $result['flags'] |= self::PATTERN_CASE_INSENSITIVE;
+        }
+
+        if (!isset($pattern[0])) {
+            return $result;
+        }
+
+        if ($pattern[0] === '!') {
+            $result['flags'] |= self::PATTERN_NEGATIVE;
+            $pattern = StringHelper::byteSubstr($pattern, 1, StringHelper::byteLength($pattern));
+        }
+        if (StringHelper::byteLength($pattern) && StringHelper::byteSubstr($pattern, -1, 1) === '/') {
+            $pattern = StringHelper::byteSubstr($pattern, 0, -1);
+            $result['flags'] |= self::PATTERN_MUSTBEDIR;
+        }
+        if (strpos($pattern, '/') === false) {
+            $result['flags'] |= self::PATTERN_NODIR;
+        }
+        $result['firstWildcard'] = self::_firstWildcardInPattern($pattern);
+        if ($pattern[0] === '*' && self::_firstWildcardInPattern(StringHelper::byteSubstr($pattern, 1, StringHelper::byteLength($pattern))) === false) {
+            $result['flags'] |= self::PATTERN_ENDSWITH;
+        }
+        $result['pattern'] = $pattern;
+
+        return $result;
+    }
+
+    /**
+     * Searches for the first wildcard character in the pattern.
+     * @param string $pattern the pattern to search in
+     * @return int|bool position of first wildcard character or false if not found
+     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     */
+    private static function _firstWildcardInPattern($pattern)
+    {
+        $wildcards = ['*', '?', '[', '\\'];
+        $wildcardSearch = function ($r, $c) use ($pattern) {
+            $p = strpos($pattern, $c);
+
+            return $r === false ? $p : ($p === false ? $r : min($r, $p));
+        };
+
+        return array_reduce($wildcards, $wildcardSearch, false);
     }
 }

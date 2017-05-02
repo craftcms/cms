@@ -25,7 +25,7 @@ use yii\web\Response;
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
  * creating, editing, renaming and reordering them.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

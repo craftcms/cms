@@ -577,7 +577,7 @@ class Assets
     {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
-        if (!$asset || !Image::isImageManipulatable($asset->getExtension())) {
+        if (!$asset || !Image::canManipulateAsImage($asset->getExtension())) {
             return false;
         }
 

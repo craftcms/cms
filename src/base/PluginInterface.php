@@ -65,7 +65,7 @@ interface PluginInterface
     /**
      * Returns the settings page response.
      *
-     * @return mixed The result that should be returned from [[PluginsController::actionEditPluginSettings()]]
+     * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
      */
     public function getSettingsResponse();
 

@@ -108,16 +108,4 @@ class Lightswitch extends Field implements PreviewableFieldInterface
         // It's stored as '0' in the database, but it's returned as false. Change it back to '0'.
         return $value == false ? '0' : $value;
     }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        // Lightswitch fields can never get required-field validation errors
-        return false;
-    }
 }

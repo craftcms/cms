@@ -649,7 +649,7 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
+     * Returns the element’s full URL.
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
@@ -698,12 +698,7 @@ class Asset extends Element
      */
     public function getHasThumb(): bool
     {
-        return (
-            $this->kind === 'image' &&
-            $this->getHeight() &&
-            $this->getWidth() &&
-            (!in_array($this->getExtension(), ['svg', 'bmp'], true) || Craft::$app->getImages()->getIsImagick())
-        );
+        return Image::canManipulateAsImage($this->getExtension());
     }
 
     /**
@@ -736,7 +731,7 @@ class Asset extends Element
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !Image::isImageManipulatable(
+        if ($transform !== null && !Image::canManipulateAsImage(
                 $this->getExtension()
             )
         ) {
@@ -755,7 +750,7 @@ class Asset extends Element
      */
     public function getWidth(string $transform = null)
     {
-        if ($transform !== null && !Image::isImageManipulatable(
+        if ($transform !== null && !Image::canManipulateAsImage(
                 $this->getExtension()
             )
         ) {
@@ -989,10 +984,6 @@ class Asset extends Element
      */
     public function beforeSave(bool $isNew): bool
     {
-        if (!parent::beforeSave($isNew)) {
-            return false;
-        }
-
         $assetsService = Craft::$app->getAssets();
 
         // See if we need to perform any file operations
@@ -1004,6 +995,17 @@ class Asset extends Element
             $folderId = $this->folderId;
             $filename = $this->filename;
             $hasNewFolder = $hasNewFilename = false;
+        }
+
+        // Set the field layout early.
+        $folder = $assetsService->getFolderById($folderId);
+
+        /** @var Volume $volume */
+        $volume = $folder->getVolume();
+        $this->fieldLayoutId = $volume->fieldLayoutId;
+
+        if (!parent::beforeSave($isNew)) {
+            return false;
         }
 
         $tempPath = null;
@@ -1047,7 +1049,11 @@ class Asset extends Element
 
                 // Upload the file to the new location
                 $newVolume->createFileByStream($newPath, $stream, []);
-                fclose($stream);
+
+                // Rackspace will disconnect the stream automatically
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
             }
 
             if ($this->folderId) {
@@ -1055,12 +1061,8 @@ class Asset extends Element
                 Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
             }
 
-            /** @var Volume $volume */
-            $volume = $newFolder->getVolume();
-
             // Update file properties
             $this->volumeId = $newFolder->volumeId;
-            $this->fieldLayoutId = $volume->fieldLayoutId;
             $this->folderId = $folderId;
             $this->folderPath = $newFolder->path;
             $this->filename = $filename;
@@ -1150,7 +1152,7 @@ class Asset extends Element
         if ($context === 'index') {
             // Eligible for the image editor?
             $ext = $this->getExtension();
-            if (strcasecmp($ext, 'svg') !== 0 && Image::isImageManipulatable($ext)) {
+            if (strcasecmp($ext, 'svg') !== 0 && Image::canManipulateAsImage($ext)) {
                 $attributes['data-editable-image'] = null;
             }
         }

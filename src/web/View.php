@@ -261,6 +261,16 @@ class View extends \yii\web\View
     }
 
     /**
+     * Returns whether a page template is currently being rendered.
+     *
+     * @return bool Whether a page template is currently being rendered.
+     */
+    public function getIsRenderingPageTemplate(): bool
+    {
+        return $this->_isRenderingPageTemplate;
+    }
+
+    /**
      * Renders a Twig template that represents an entire web page.
      *
      * @param string $template  The name of the template to load

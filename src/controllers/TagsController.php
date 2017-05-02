@@ -23,7 +23,7 @@ use yii\web\Response;
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
  * saving, deleting, searching and creating tags and tag groups in the control panel.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

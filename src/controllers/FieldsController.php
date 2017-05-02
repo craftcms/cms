@@ -24,7 +24,7 @@ use yii\web\ServerErrorHttpException;
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
  * and deleting both fields and field groups.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -474,7 +474,7 @@ class Db
         }
 
         $condition = [$glue];
-        $driver = Craft::$app->getDb()->getDriverName();
+        $isMysql = Craft::$app->getDb()->getIsMysql();
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
@@ -482,7 +482,7 @@ class Db
 
             if (StringHelper::toLowerCase($val) === ':empty:') {
                 if ($operator === '=') {
-                    if ($driver === DbConfig::DRIVER_MYSQL) {
+                    if ($isMysql) {
                         $condition[] = [
                             'or',
                             [$column => null],
@@ -493,7 +493,7 @@ class Db
                         $condition[] = [$column => null];
                     }
                 } else {
-                    if ($driver === DbConfig::DRIVER_MYSQL) {
+                    if ($isMysql) {
                         $condition[] = [
                             'not',
                             [

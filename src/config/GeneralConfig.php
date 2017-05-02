@@ -48,11 +48,10 @@ class GeneralConfig extends Object
      */
     public $actionTrigger = 'actions';
     /**
-     * @var string|string[] The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getActivateAccountSuccessPath()
      */
@@ -337,11 +336,10 @@ class GeneralConfig extends Object
      */
     public $invalidLoginWindowDuration = 3600;
     /**
-     * @var string|string[] The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
+     * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
      * resetting user account passwords.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getInvalidUserTokenPath()
      */
@@ -359,19 +357,17 @@ class GeneralConfig extends Object
      */
     public $limitAutoSlugsToAscii = false;
     /**
-     * @var string|string[] The URI Craft should use for user login.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user login.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLoginPath()
      */
     public $loginPath = 'login';
     /**
-     * @var string|string[] The URI Craft should use for user logout.  Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user logout.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getLogoutPath()
      */
@@ -438,19 +434,35 @@ class GeneralConfig extends Object
      */
     public $phpSessionName = 'CraftSessionId';
     /**
-     * @var string The path that users should be redirected to after logging in from the Control Panel.
+     * @var mixed The path that users should be redirected to after logging in from the Control Panel.
      *
      * This setting will also come into effect if the user visits the CP’s Login page (/admin/login)
      * or the CP’s root URL (/admin) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostCpLoginRedirect()
      */
     public $postCpLoginRedirect = 'dashboard';
     /**
-     * @var string The path that users should be redirected to after logging in from the front-end site.
+     * @var mixed The path that users should be redirected to after logging in from the front-end site.
      *
      * This setting will also come into effect if the user visits the Login page (as specified by the loginPath config
      * setting) when they are already logged in.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLoginRedirect()
      */
     public $postLoginRedirect = '';
+    /**
+     * @var mixed The path that users should be redirected to after logging out from the front-end site.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * @see getPostLogoutRedirect()
+     */
+    public $postLogoutRedirect = '';
     /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
      *
@@ -561,20 +573,18 @@ class GeneralConfig extends Object
      */
     public $sendPoweredByHeader = true;
     /**
-     * @var string|string[] The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordPath()
      */
     public $setPasswordPath = 'setpassword';
     /**
-     * @var string|string[] The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
+     * @var mixed The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
-     * basis.
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * @see getSetPasswordSuccessPath()
      */
@@ -827,6 +837,43 @@ class GeneralConfig extends Object
     public function getLogoutPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Post-CP Login Redirect path.
+     *
+     * @return string
+     * @see postCpLoginRedirect
+     */
+    public function getPostCpLoginRedirect(): string
+    {
+        return ConfigHelper::localizedValue($this->postCpLoginRedirect, null);
+    }
+
+    /**
+     * Returns the localized Post-Login Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLoginRedirect
+     */
+    public function getPostLoginRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Post-Logout Redirect path.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     *
+     * @return string
+     * @see postLogoutRedirect
+     */
+    public function getPostLogoutRedirect(string $siteHandle = null): string
+    {
+        return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
     }
 
     /**

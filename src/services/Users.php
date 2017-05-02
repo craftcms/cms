@@ -358,29 +358,7 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-        $userRecord->save();
-
-        if ($user->can('accessCp')) {
-            $url = UrlHelper::actionUrl('users/verify-email',
-                ['code' => $unhashedVerificationCode, 'id' => $user->uid],
-                Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
-        } else {
-            // We want to hide the CP trigger if they don't have access to the CP.
-            $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/verify-email';
-            $params = [
-                'code' => $unhashedVerificationCode,
-                'id' => $user->uid
-            ];
-            $protocol = UrlHelper::getProtocolForTokenizedUrl();
-
-            // todo: should we factor in the user's preferred language (as we did in v2)?
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-            $url = UrlHelper::siteUrl($path, $params, $protocol, $siteId);
-        }
-
-        return $url;
+        return $this->_getUserUrl($user, 'verify-email');
     }
 
     /**
@@ -392,25 +370,7 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-        $userRecord->save();
-
-        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger.'/users/set-password';
-        $params = [
-            'code' => $unhashedVerificationCode,
-            'id' => $user->uid
-        ];
-        $protocol = UrlHelper::getProtocolForTokenizedUrl();
-
-        if ($user->can('accessCp')) {
-            return UrlHelper::cpUrl($path, $params, $protocol);
-        }
-
-        // todo: should we factor in the user's preferred language (as we did in v2)?
-        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-
-        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
+        return $this->_getUserUrl($user, 'set-password');
     }
 
     /**
@@ -428,7 +388,7 @@ class Users extends Component
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
-        if (!Image::isImageManipulatable(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
+        if (!Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
@@ -1089,5 +1049,45 @@ class Users extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Sets a new verification code on a user, and returns their new verification URL
+     *
+     * @param User   $user   The user that should get the new Password Reset URL
+     * @param string $action The UsersController action that the URL should point to
+     *
+     * @return string The new Password Reset URL.
+     * @see getPasswordResetUrl()
+     * @see getEmailVerifyUrl()
+     */
+    private function _getUserUrl(User $user, string $action): string
+    {
+        $userRecord = $this->_getUserRecordById($user->id);
+        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+        $userRecord->save();
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $path = $generalConfig->actionTrigger.'/users/'.$action;
+        $params = [
+            'code' => $unhashedVerificationCode,
+            'id' => $user->uid
+        ];
+
+        $protocol = UrlHelper::getProtocolForTokenizedUrl();
+
+        if ($user->can('accessCp')) {
+            // Only use getCpUrl() if the base CP URL has been explicitly set,
+            // so UrlHelper won't use HTTP_HOST
+            if ($generalConfig->baseCpUrl) {
+                return UrlHelper::cpUrl($path, $params, $protocol);
+            }
+
+            $path = $generalConfig->cpTrigger.'/'.$path;
+        }
+
+        // todo: should we factor in the user's preferred language (as we did in v2)?
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
     }
 }

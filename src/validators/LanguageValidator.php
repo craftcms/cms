@@ -24,13 +24,13 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $language = $object->$attribute;
+        $language = $model->$attribute;
 
         if ($language && !in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
             $message = Craft::t('app', 'Your system isn’t set up to save content for the language “{language}”.', ['language' => $language]);
-            $this->addError($object, $attribute, $message);
+            $this->addError($model, $attribute, $message);
         }
     }
 }

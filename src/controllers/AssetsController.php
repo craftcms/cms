@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\FolderVolumeInterface;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
@@ -19,6 +18,7 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -33,8 +33,8 @@ use yii\web\Response;
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
  *
- * Note that all actions in the controller except [[actionGenerateTransform]] require an authenticated Craft session
- * via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller except [[actionGenerateTransform()]] require an authenticated Craft session
+ * via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -113,7 +113,13 @@ class AssetsController extends Controller
             $asset->avoidFilenameConflicts = true;
             $asset->setScenario(Asset::SCENARIO_CREATE);
 
-            Craft::$app->getElements()->saveElement($asset);
+            $result = Craft::$app->getElements()->saveElement($asset);
+
+            // In case of error, let user know about it.
+            if (!$result) {
+                $errors = $asset->getFirstErrors();
+                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n") . implode(";\n", $errors));
+            }
 
             if ($asset->conflictingFilename !== null) {
                 $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
@@ -478,7 +484,7 @@ class AssetsController extends Controller
             'name' => $folderToMove->name
         ]);
 
-        if (!$existingFolder && $targetVolume instanceof FolderVolumeInterface) {
+        if (!$existingFolder) {
             $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/').'/'.$folderToMove->name);
         }
 
@@ -667,6 +673,15 @@ class AssetsController extends Controller
 
             /** @var Raster $image */
             $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+
+            // TODO Is this hacky? It seems hacky.
+            // We're rasterizing SVG, we have to make sure that the filename change does not get lost
+            if (StringHelper::toLowerCase($asset->getExtension()) === 'svg') {
+                unlink($imageCopy);
+                $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
+                $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
+            }
+
             list($originalImageWidth, $originalImageHeight) = $imageSize;
 
             if ($imageFlipped) {

@@ -218,12 +218,19 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         return [
             [
                 ArrayValidator::class,
-                'min' => $this->required ? 1 : null,
                 'max' => $this->allowLimit && $this->limit ? $this->limit : null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isEmpty($value): bool
+    {
+        /** @var ElementQueryInterface $value */
+        return $value->count() === 0;
     }
 
     /**

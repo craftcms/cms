@@ -311,7 +311,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function all($db = null);
 
     /**
-     * @inheritdoc
+     * Executes the query and returns a single row of result.
+     *
+     * @param Connection $db The database connection used to execute the query.
+     *                       If this parameter is not given, the `db` application
+     *                       component will be used.
      *
      * @return ElementInterface|null The resulting element.
      */

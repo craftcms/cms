@@ -152,7 +152,7 @@ class Et extends Component
             if ($plugin) {
                 $pluginUpdate = new PluginUpdate();
                 $pluginUpdate->packageName = $plugin->packageName;
-                $pluginUpdate->localVersion = $plugin->version;
+                $pluginUpdate->localVersion = $plugin->getVersion();
 
                 $et->setData($pluginUpdate);
             }

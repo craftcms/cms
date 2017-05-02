@@ -23,13 +23,11 @@ class m161006_205918_schemaVersion_not_null extends Migration
             [],
             false);
 
-        $database = Craft::$app->getConfig()->getDb()->driver;
-
         // Two statements here because of a Yii 2/PostgreSQL bug:
         // https://github.com/yiisoft/yii2/issues/12077
-        if ($database === DbConfig::DRIVER_MYSQL) {
+        if ($this->db->getIsMysql()) {
             $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string(15)->notNull());
-        } else if ($database === DbConfig::DRIVER_PGSQL) {
+        } else {
             $pluginTable = $this->db->getSchema()->defaultSchema.'.'.$this->db->getSchema()->getRawTableName('plugins');
             $this->db->createCommand()->setSql('ALTER TABLE '.$pluginTable.' ALTER COLUMN "schemaVersion" TYPE varchar(15), ALTER COLUMN "schemaVersion" SET NOT NULL')->execute();
         }

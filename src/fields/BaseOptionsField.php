@@ -208,6 +208,19 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
+    public function isEmpty($value): bool
+    {
+        /** @var MultiOptionsFieldData|SingleOptionFieldData $value */
+        if ($value instanceof SingleOptionFieldData) {
+            return $value->value === null || $value->value === '';
+        }
+
+        return count($value) === 0;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
         if ($this->multi) {
@@ -298,19 +311,5 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        if ($this->multi) {
-            /** @var MultiOptionsFieldData $value */
-            return count($value) === 0;
-        }
-
-        /** @var SingleOptionFieldData $value */
-        return empty($value->value);
     }
 }

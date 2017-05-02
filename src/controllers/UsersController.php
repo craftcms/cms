@@ -41,7 +41,7 @@ use yii\web\Response;
  *
  * Note that all actions in the controller, except [[actionLogin]], [[actionLogout]], [[actionGetRemainingSessionTime]],
  * [[actionSendPasswordResetEmail]], [[actionSetPassword]], [[actionVerifyEmail]] and [[actionSaveUser]] require an
- * authenticated Craft session via [[Controller::allowAnonymous]].
+ * authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -231,9 +231,14 @@ class UsersController extends Controller
             return $this->asJson([
                 'success' => true
             ]);
-        } else {
-            return $this->redirect('');
         }
+
+        // Redirect to the login page if this is a CP request
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->redirect('login');
+        }
+
+        return $this->redirect(Craft::$app->getConfig()->getGeneral()->getPostLogoutRedirect());
     }
 
     /**
@@ -992,7 +997,7 @@ class UsersController extends Controller
         $imageValidates = true;
         $photo = UploadedFile::getInstanceByName('photo');
 
-        if ($photo && !Image::isImageManipulatable($photo->getExtension())) {
+        if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
             $imageValidates = false;
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
@@ -1848,7 +1853,7 @@ class UsersController extends Controller
     {
         // Can they access the CP?
         if ($user->can('accessCp')) {
-            $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
+            $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);

@@ -1,6 +1,82 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.14 - 2017-05-02
+
+### Added
+- Added an aspect ratio constraint menu to the Crop tool in the Image Editor.
+- Added the `postLogoutRedirect` config setting, making it possible to customize where users should be redirected to after logging out from the front-end. ([#1003](https://github.com/craftcms/cms/issues/1003))
+- Added the `currentSite` global template variable.
+- Added the `registerRedactorPlugin` event to `craft\fields\RichText`, which plugins can listen to if they supply any Redactor plugins that may need be registered on the page.
+- Added `craft\base\FieldInterface::isEmpty()`, which gives field types a chance to determine whether their value should be considered empty for validators.
+- Added `craft\base\VolumeInterface::createDir()`.
+- Added `craft\base\VolumeInterface::deleteDir()`.
+- Added `craft\base\VolumeInterface::renameDir()`.
+- Added `craft\base\Volume::folderExists()`.
+- Added `craft\base\Volume::createDir()`.
+- Added `craft\base\Volume::deleteDir()`.
+- Added `craft\base\Volume::renameDir()`.
+- Added `craft\config\GeneralConfig::getPostCpLoginRedirect()`.
+- Added `craft\config\GeneralConfig::getPostLoginRedirect()`.
+- Added `craft\config\GeneralConfig::getPostLogoutRedirect()`.
+- Added `craft\db\Query::getRawSql()`, as a shortcut for `createCommand()->getRawSql()`.
+- Added `craft\helpers\DateTimeHelper::timeZoneAbbreviation()`.
+- Added `craft\helpers\DateTimeHelper::timeZoneOffset()`.
+- Added `craft\services\Images::getSupportedImageFormats()`.
+- Added `craft\web\View::getIsRenderingPageTemplate()`. ([#1652](https://github.com/craftcms/cms/pull/1652))
+- Added `webp` as a web-safe image format.
+- Added SVG file support for image editor.
+
+### Changed
+- Craft’s `composer.json` no longer specifies server requirements (so the `--ignore-platform-reqs` flag is no longer necessary).
+- Loosened Craft’s dependency requirements to allow build updates without explicitly changing `composer.json`.
+- Updated Stringy to 2.4.
+- Updated Twig to 2.3.
+- Updated zend-feed to 2.8.
+- Updated D3 to 4.8.
+- Updated d3-format to 1.2.
+- Updated Velocity to 1.5.
+- Updated Fabric to 1.13.
+- Plugin classes’ global instances are now registered from `craft\base\Plugin::init()`, so `Plugin::getInstance()` can be called as early as plugins’ `init()` methods, once they’ve called `parent::init()`. ([#1641](https://github.com/craftcms/cms/issues/1641))
+- Craft now supports reference tags that begin with the fully qualified element class name.
+- Rich Text fields no longer parse reference tags that aren’t within a `href` or `src` attribute when displaying their form input, so the tags don’t get lost when the element is re-saved. ([#1643](https://github.com/craftcms/cms/issues/1643))
+- `craft\helpers\ConfigHelper::localizedValue()` now accepts a PHP callable value for `$value`.
+- The following config settings can now be set to a PHP callable, which returns the desired value at runtime: `activateAccountSuccessPath`, `invalidUserTokenPath`, `loginPath`, `logoutPath`, `postCpLoginRedirect`, `postLoginRedirect`, `postLogoutRedirect`, `setPasswordPath`, and `setPasswordSuccessPath`.
+- There’s no more special treatment for volume types that have better support for subfolders.
+- Renamed `craft\helpers\Image::isImageManipulatable()` to `canManipulateAsImage()`.
+- Craft now checks if the current installation can manipulate an image instead of checking against a predefined list. ([#1648](https://github.com/craftcms/cms/issues/1648), [#1545](https://github.com/craftcms/cms/issues/1545))
+- The old `Craft\DateTime` methods from Craft 2 no longer cause PHP errors when called from a template. A deprecation error will be logged instead.
+- `craft\helpers\FileHelper::clearDirectory()` now supports `filter`, `except`, and `only` options.
+- Craft now deletes outdated resource files when newer ones are published. ([#1670](https://github.com/craftcms/cms/issues/1670))
+
+### Removed
+- Removed `craft\base\Field::isValueEmpty()`.
+- Removed `craft\base\FolderVolumeInterface`.
+- Removed `craft\base\FolderVolume`.
+
+### Fixed
+- Fixed some JavaScript errors that could occur when expanding the Debug toolbar from the Control Panel, due to CP JavaScript files getting loaded inside the Debug panel. ([#1639](https://github.com/craftcms/cms/issues/1639))
+- Fixed a bug where Craft would sometimes upload an Asset file but fail to create an Asset.
+- Fixed a bug where reference tags created automatically by Rich Text fields included the full element class name, rather than the element type’s reference handle. ([#1645](https://github.com/craftcms/cms/issues/1645))
+- Fixed an error that displayed in the Control Panel after submitting  the Database Backup utility, if “Download backup?” was unchecked, even though the backup may have been created successfully. ([#1644](https://github.com/craftcms/cms/issues/1644))
+- Fixed a bug where the Image Editor could have a white background.
+- Fixed a bug where non-required Dropdown and Radio Buttons fields were getting validation errors when omitted from a front-end entry form.
+- Fixed a bug where required Checkboxes, Dropdown, Multi-select, Radio Buttons, and Rich Text fields were not getting validation errors when submitted without a value.
+- Fixed a bug where Assets fields weren’t enforcing their Limit settings during server-side validation.
+- Fixed a bug where deleting folders on remote sources would not work in some cases.
+- Fixed a bug where renaming a folder would sometimes leave a folder behind.
+- Fixed a bug where creating a new Asset would not trigger the `beforeSave()` method for it's fields. ([#1623](https://github.com/craftcms/cms/issues/1623))
+- Fixed a bug where it was impossible to set validation errors on elements that had no field layouts set. ([#1598](https://github.com/craftcms/cms/issues/1598))
+- Fixed a bug where no error message was being displayed on failed uploads. ([#1598](https://github.com/craftcms/cms/issues/1598))
+- Fixed a bug where the site image was getting resized to 500px instead of 300px. ([#1428](https://github.com/craftcms/cms/issues/1428))
+- Fixed a bug where it was not possible to use the Assets Replace File element action.
+- Fixed a bug where Asset resized versions would not be deleted if the extension had been changed during the resize.
+- Fixed an error that occurred if a plugin’s Settings model tried calling `Plugin::getInstance()` or `Craft::t()` from its `init()` method.
+- Fixed an error that occurred if the “Date Created” or “Date Updated” columns were selected to be shown on the Users index.
+- Fixed a bug where element indexes weren’t remembering the selected site across page loads. ([#1653](https://github.com/craftcms/cms/issues/1653))
+- Fixed a bug where Panes’ sidebar could get a wrong height when scrolling down. ([#1364](https://github.com/craftcms/cms/issues/1364))
+- Fixed a PHP error that occurred when attempting to create a new field. ([#1683](https://github.com/craftcms/cms/issues/1683))
+
 ## 3.0.0-beta.13 - 2017-04-18
 
 ### Added
@@ -33,7 +109,7 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - If `craft\web\View::$title` is set, a `<title>` tag will now automatically get injected into the page’s `<head>`. ([#1625](https://github.com/craftcms/cms/pull/1625))
 - Craft no longer encodes 4-byte characters (like emojis) present in Rich Text fields and template caches, if using PostgreSQL.
-- It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loabable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
+- It’s no longer possible to disable plugins that were installed via Composer, since their classes are auto-loadable via Composer regardless, so the concept of “disabling” them is misleading. ([#1626](https://github.com/craftcms/cms/issues/1626))
 - Renamed Rich Text fields’ `configFile` setting to `redactorConfig`, to avoid ambiguity with the new `purifierConfig` setting.
 
 ### Removed
@@ -84,12 +160,12 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to install plugins manually. ([#1572](https://github.com/craftcms/cms/issues/1572))
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 - Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed. ([#1589](https://github.com/craftcms/cms/issues/1589))
-- Fixed a bug where focal point would not be updated when raplcing an image with the image editor.
+- Fixed a bug where focal point would not be updated when replacing an image with the image editor.
 - Fixed a bug that broke the “Resaving all localizable elements” task after creating a new site, if there were any Matrix fields set to manage blocks on a per-site basis.
 - Fixed a bug where only the initially-selected field type’s supported translation methods were being taken into account when populating the Translation Method setting options.
 - Fixed an error that occurred on the Dashboard if there was a Feed widget without a Limit set. ([#1565](https://github.com/craftcms/cms/issues/1565))
 - Fixed a PHP error that could occur after a task failure. ([#1567](https://github.com/craftcms/cms/issues/1567))
-- Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually cancelled. ([#1566](https://github.com/craftcms/cms/issues/1566))
+- Fixed a bug where the tip of the task info HUD would remain visible after the last task had been manually canceled. ([#1566](https://github.com/craftcms/cms/issues/1566))
 - Fixed a PHP error that occurred when saving a new Structure section. ([#1573](https://github.com/craftcms/cms/issues/1573))
 - Fixed a PHP error that would occur when creating a new entry without an author from a console controller. ([#1581](https://github.com/craftcms/cms/issues/1581))
 - Fixed a SQL error that occurred when attempting to update to 3.0.0-beta.8 or later, on installs using PostgreSQL. ([#1586](https://github.com/craftcms/cms/issues/1586))

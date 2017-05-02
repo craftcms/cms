@@ -71,8 +71,55 @@ class AssetManager extends \yii\web\AssetManager
             return call_user_func($this->hashCallback, $path);
         }
 
-        $path = (is_file($path) ? dirname($path) : $path).FileHelper::lastModifiedTime($path);
+        // Return as two directories - one representing the path, and a subdirectory representing the modified time
+        $path = realpath($path);
+        $mtime = FileHelper::lastModifiedTime($path);
 
-        return sprintf('%x', crc32($path.Craft::getVersion()));
+        return sprintf('%x', crc32($path)).DIRECTORY_SEPARATOR.sprintf('%x', crc32($mtime));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function publishDirectory($src, $options): array
+    {
+        list($dir, $url) = parent::publishDirectory($src, $options);
+
+        // Clear out any older instances of the same directory
+        $this->_clearOldDirs($dir);
+
+        return [$dir, $url];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function publishFile($src)
+    {
+        list($file, $url) = parent::publishFile($src);
+
+        // Clear out any older instances of the same file
+        $this->_clearOldDirs(dirname($file));
+
+        return [$file, $url];
+    }
+
+    /**
+     * Deletes outdated published directories that live alongside a newly-published one.
+     *
+     * @param string $newDir The directory that was just published
+     */
+    private function _clearOldDirs($newDir)
+    {
+        // Does this look like it was named using our hash()?
+        $name = basename($newDir);
+        if (preg_match('/^[a-f0-9]{8}$/', $name)) {
+            $parent = dirname($newDir);
+            if (preg_match('/^[a-f0-9]{8}$/', basename($parent))) {
+                FileHelper::clearDirectory($parent, [
+                    'except' => [$name]
+                ]);
+            }
+        }
     }
 }

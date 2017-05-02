@@ -205,13 +205,13 @@ interface ElementInterface extends ComponentInterface
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
-     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\ElementQuery]] is querying for
+     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\db\ElementQuery]] is querying for
      * elements, to ensure that its “status” parameter is set to a valid status.
      *
      * It should return an array whose keys are the status values, and values are the human-facing status labels.
      *
      * You can customize the database query condition that should be applied for your custom statuses from
-     * [[getElementQueryStatusCondition()]].
+     * [[\craft\elements\db\ElementQuery::statusCondition()]].
      *
      * @return array
      * @see hasStatuses()
@@ -417,7 +417,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string|null
      * @see hasUris()
-     * @see getElementRoute()
+     * @see getRoute()
      */
     public function getUriFormat();
 

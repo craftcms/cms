@@ -174,7 +174,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
 
-                if (this.site) {
+                if (this.siteId) {
                     // Do we have a different site stored in localStorage?
                     var storedSiteId = Craft.getLocalStorage('BaseElementIndex.siteId');
 

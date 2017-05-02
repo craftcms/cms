@@ -34,7 +34,7 @@ use yii\web\ServerErrorHttpException;
  *
  * Note that all actions in the controller, except for [[actionPrepare]], [[actionBackupDatabase]],
  * [[actionUpdateDatabase]], [[actionCleanUp]] and [[actionRollback]] require an authenticated Craft session
- * via [[Controller::allowAnonymous]].
+ * via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -549,7 +549,7 @@ EOD;
         if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
-            $returnUrl = Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect;
+            $returnUrl = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
         }
 
         return $this->asJson([
@@ -728,12 +728,8 @@ EOD;
      */
     private function _getFixedHandle(array $data): string
     {
-        if (!isset($data['handle'])) {
-            return 'craft';
-        } else {
-            if ($handle = Craft::$app->getSecurity()->validateData($data['handle'])) {
-                return $handle;
-            }
+        if (($handle = Craft::$app->getSecurity()->validateData($data['handle'])) !== false) {
+            return $handle;
         }
 
         throw new UpdateValidationException('Could not validate the update handle.');

@@ -18,7 +18,7 @@ use yii\web\Response;
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
  * deleting displaying both globals and global sets.
  *
- * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
+ * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

@@ -118,7 +118,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function __toString()
     {
         try {
-            return Craft::t('site', $this->name);
+            return (string)Craft::t('site', $this->name);
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -303,6 +303,15 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function isEmpty($value): bool
+    {
+        // Default to yii\validators\Validator::isEmpty()'s behavior
+        return $value === null || $value === [] || $value === '';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSearchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
@@ -424,19 +433,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * Returns whether the given value should be considered "empty" for required-field validation purposes.
-     *
-     * @param mixed            $value   The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
-     *
-     * @return bool Whether the value should be considered "empty"
-     */
-    protected function isValueEmpty($value, ElementInterface $element): bool
-    {
-        return empty($value);
-    }
 
     /**
      * Returns the field’s param name on the request.

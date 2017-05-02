@@ -179,9 +179,10 @@ class Assets extends BaseRelationField
      */
     public function getElementValidationRules(): array
     {
-        return [
-            'validateFileType',
-        ];
+        $rules = parent::getElementValidationRules();
+        $rules[] = 'validateFileType';
+
+        return $rules;
     }
 
     /**
