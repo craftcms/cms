@@ -232,7 +232,7 @@ body.rtl #overflow-nav li#customize-nav-btn a:before { margin-right: -21px; }
 
 /* end HIDE */
 /* notifications */
-#notifications-wrapper { position: fixed; z-index: 101; width: 100%; }
+#notifications-wrapper { position: fixed; z-index: 101; width: 100%; pointer-events: none; }
 body.ltr #notifications-wrapper { left: 0; }
 body.rtl #notifications-wrapper { right: 0; }
 
@@ -240,7 +240,7 @@ body.rtl #notifications-wrapper { right: 0; }
 
 #notifications { text-align: center; }
 
-#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
+#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
 
 #notifications .notification.notice { background: #5286d9; }
 

@@ -735,7 +735,7 @@ abstract class BaseElementModel extends BaseModel
 	public function getTitle()
 	{
 		$content = $this->getContent();
-		return $content->title;
+		return $content->title ?: ($this->id ?: get_class($this));
 	}
 
 	/**
