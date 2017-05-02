@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2978 - 2017-05-02
+
+### Fixed
+- Fixed a bug where Title fields on new elements could display the class name of the element by default.
+
 ## 2.6.2977 - 2017-05-02
 
 ### Changed
