@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
+- Updated Stringy to 3.0.1.
 
 ## 3.0.0-beta.14 - 2017-05-02
 
