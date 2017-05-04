@@ -7,6 +7,9 @@ Craft CMS 3.0 Working Changelog
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
 - Updated Stringy to 3.0.1.
 
+### Added
+- Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
+
 ## 3.0.0-beta.14 - 2017-05-02
 
 ### Added
