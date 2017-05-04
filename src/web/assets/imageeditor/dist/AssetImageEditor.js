@@ -2239,7 +2239,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var scaledHeight = imageDimensions.height * ratio;
             var scaledWidth = imageDimensions.width * ratio;
 
-            // TODO pretty sure that left is confused with right here in variable names
             // Calculate the segments of the containing box for the image.
             // When referring to top/bottom or right/left segments, these are on the
             // right-side and bottom projection of the containing box for the zoomed out image.
