@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a PHP error that occurred when creating a new user.
+- Fixed a 403 error that occurred when a non-Admin attempted to edit a Global Set on a single-site install. ([#1687](https://github.com/craftcms/cms/issues/1687))
 
 ## 3.0.0-beta.14 - 2017-05-02
 
