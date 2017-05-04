@@ -560,7 +560,7 @@ class Assets extends Component
         $this->trigger(self::EVENT_GET_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
-        if ($event->url) {
+        if ($event->url !== null) {
             return $event->url;
         }
 
