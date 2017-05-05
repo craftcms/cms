@@ -171,12 +171,18 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
+        $view = Craft::$app->getView();
+        $namespace = $view->getNamespace();
+        $view->setNamespace('settings');
+        $settingsHtml = $this->settingsHtml();
+        $view->setNamespace($namespace);
+
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings', [
             'plugin' => $this,
-            'settingsHtml' => $this->settingsHtml()
+            'settingsHtml' => $settingsHtml
         ]);
     }
 
