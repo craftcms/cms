@@ -132,7 +132,7 @@ class TemplatesService extends BaseApplicationComponent
 	public function init()
 	{
 		// Set the initial template mode based on whether this is a CP or Site request
-		if (craft()->request->isCpRequest())
+		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
 		{
 			$this->setTemplateMode(TemplateMode::CP);
 		}
@@ -955,8 +955,8 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Otherwise maybe it's a plugin template?
 
-		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (craft()->request->isCpRequest() || craft()->request->isActionRequest())
+		// Only attempt to match against a plugin's templates if TemplateMode is set to CP
+		if (craft()->templates->getTemplateMode() === TemplateMode::CP)
 		{
 			// Sanitize
 			$name = craft()->request->decodePathInfo($name);
