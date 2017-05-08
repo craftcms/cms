@@ -119,7 +119,7 @@ class DateTimeHelper
 
             if (!empty($dt['date'])) {
                 $date = $dt['date'];
-                $format = FormatConverter::convertDateIcuToPhp('short', 'date', $locale->id);
+                $format = $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
                 // Make sure it's a 4 digit year format.
                 $format = StringHelper::replace($format, 'y', 'Y');
@@ -152,7 +152,7 @@ class DateTimeHelper
             }
 
             if (!empty($dt['time'])) {
-                $timePickerPhpFormat = FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
+                $timePickerPhpFormat = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
                 // Replace the localized "AM" and "PM"
                 if (preg_match('/(.*)('.preg_quote($locale->getAMName(), '/').'|'.preg_quote($locale->getPMName(), '/').')(.*)/u', $dt['time'], $matches)) {
                     $dt['time'] = $matches[1].$matches[3];
