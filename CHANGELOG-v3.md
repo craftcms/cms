@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when creating a new user.
 - Fixed a 403 error that occurred when a non-Admin attempted to edit a Global Set on a single-site install. ([#1687](https://github.com/craftcms/cms/issues/1687))
 - Fixed a bug where JS scripts registered from plugin settings pages weren’t getting properly namespaced, so generally didn’t work. ([#1691](https://github.com/craftcms/cms/issues/1691))
+- Fixed a bug where some locales were always showing two-digit day/month numbers in formatted dates (e.g. `01/05`).
 
 ## 3.0.0-beta.14 - 2017-05-02
 
