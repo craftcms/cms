@@ -128,6 +128,15 @@ class Cp extends Component
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
             ];
+
+            
+            // Add Plugin Store section
+
+            $navItems[] = [
+                'url' => 'plugin-store',
+                'label' => Craft::t('app', 'Plugin Store'),
+                'icon' => 'plugin'
+            ];
         }
 
         // Allow plugins to modify the nav

@@ -1,0 +1,53 @@
+{% extends "plugin-store/_layouts/cp" %}
+
+{% set title = 'Plugin Store' %}
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons">
+		<a href="{{ url('plugin-store/account') }}" class="btn">Your Account</a>
+	</div>
+{% endset %}
+
+{% set content %}
+
+	{% if not error %}
+
+		{% if plugins.error is defined %}
+			{{ plugins.error }}
+		{% else %}
+			<h2>All plugins</h2>
+
+			{% if plugins|length > 0 %}
+				<table class="data fullwidth">
+					<thead>
+						<tr>
+							<th>Plugin Name</th>
+							<th>Developer</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for plugin in plugins %}
+							{% if plugin %}
+								<tr>
+									<td>{{ plugin.name }}</td>
+									<td>
+										{% if plugin.developerUrl %}
+											<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developer }}</a>
+										{% else %}
+											{{ plugin.developer }}
+										{% endif %}
+									</td>
+								</tr>
+							{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			{% else %}
+				<p>{{ 'No plugins'|t('app') }}</p>
+			{% endif %}
+		{% endif %}
+	{% else %}
+		<p class="error">{{ error|raw }}</p>
+	{% endif %}
+
+{% endset %}

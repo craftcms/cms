@@ -70,4 +70,7 @@ return [
     ],
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
+    'plugin-store' => 'plugin-store',
+    'plugin-store/account' => 'plugin-store/account',
+    'plugin-store/callback' => 'plugin-store/callback',
 ];

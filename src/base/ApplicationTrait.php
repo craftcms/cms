@@ -69,6 +69,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
  * @property \craft\services\Path            $path               The path service
  * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property \craft\services\PluginStore     $pluginStore        The plugin store service
  * @property \craft\services\Relations       $relations          The relations service
  * @property \craft\services\Resources       $resources          The resources service
  * @property \craft\services\Routes          $routes             The routes service
@@ -964,6 +965,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('plugins');
+    }
+
+    /**
+     * Returns the plugin store service.
+     *
+     * @return \craft\services\PluginStore The plugin store service
+     */
+    public function getPluginStore()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('pluginStore');
     }
 
     /**
