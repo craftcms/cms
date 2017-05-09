@@ -164,11 +164,11 @@ body.mobile #container {
 #nav li a .badge { display: block; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; background: rgba(255,255,255,0.5); color: $headerBgColor; }
 
 /* notifications */
-#notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; }
+#notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; pointer-events: none; }
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
-#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
-    @include light-on-dark-text;
+#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto;
+  @include light-on-dark-text;
     @include box-shadow(0 0 5px rgba(0,0,0,0.25));
 }
 #notifications .notification.notice { background: $noticecolor; }
@@ -328,7 +328,7 @@ $fldGuideColor: #f4f3fb;
 
 .fieldlayoutform,
 .fld-tab,
-.fld-field { color: $fldChalkColor; font-family: 'Coming Soon', sans-serif; font-style: italic; text-transform: uppercase; }
+.fld-field { color: $fldChalkColor; font-style: italic; text-transform: uppercase; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png);
     body.ltr & { background-position: 25px 24px; }

@@ -427,7 +427,7 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * @param array $options raw options
      * @return array normalized options
-     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     * @todo Remove when Yii 2.0.12 is released
      */
     private static function _normalizeOptions(array $options)
     {
@@ -457,7 +457,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param bool $caseSensitive
      * @throws \yii\base\InvalidParamException
      * @return array with keys: (string) pattern, (int) flags, (int|bool) firstWildcard
-     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     * @todo Remove when Yii 2.0.12 is released
      */
     private static function _parseExcludePattern($pattern, $caseSensitive)
     {
@@ -503,7 +503,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * Searches for the first wildcard character in the pattern.
      * @param string $pattern the pattern to search in
      * @return int|bool position of first wildcard character or false if not found
-     * @todo Remove if Yii makes the parent method protected (https://github.com/yiisoft/yii2/pull/14098)
+     * @todo Remove when Yii 2.0.12 is released
      */
     private static function _firstWildcardInPattern($pattern)
     {

@@ -4,6 +4,22 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
+
+### Changed
+- The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
+- Updated Stringy to 3.0.
+
+### Fixed
+- Fixed a PHP error that occurred when creating a new user.
+- Fixed a 403 error that occurred when a non-Admin attempted to edit a Global Set on a single-site install. ([#1687](https://github.com/craftcms/cms/issues/1687))
+- Fixed a bug where JS scripts registered from plugin settings pages weren’t getting properly namespaced, so generally didn’t work. ([#1691](https://github.com/craftcms/cms/issues/1691))
+- Fixed a bug where some locales were always showing two-digit day/month numbers in formatted dates (e.g. `01/05`).
+- Fixed a bug where form-submitted date/time values were always being treated as US-formatted dates/times, if the Intl extension wasn’t enabled. ([#1495](https://github.com/craftcms/cms/issues/1495))
+
+## 3.0.0-beta.14 - 2017-05-02
+
+### Added
 - Added an aspect ratio constraint menu to the Crop tool in the Image Editor.
 - Added the `postLogoutRedirect` config setting, making it possible to customize where users should be redirected to after logging out from the front-end. ([#1003](https://github.com/craftcms/cms/issues/1003))
 - Added the `currentSite` global template variable.
@@ -75,6 +91,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed an error that occurred if the “Date Created” or “Date Updated” columns were selected to be shown on the Users index.
 - Fixed a bug where element indexes weren’t remembering the selected site across page loads. ([#1653](https://github.com/craftcms/cms/issues/1653))
 - Fixed a bug where Panes’ sidebar could get a wrong height when scrolling down. ([#1364](https://github.com/craftcms/cms/issues/1364))
+- Fixed a PHP error that occurred when attempting to create a new field. ([#1683](https://github.com/craftcms/cms/issues/1683))
 
 ## 3.0.0-beta.13 - 2017-04-18
 

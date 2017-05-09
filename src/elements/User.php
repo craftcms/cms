@@ -846,7 +846,7 @@ class User extends Element implements IdentityInterface
             return $fullName;
         }
 
-        return $this->username;
+        return (string)$this->username;
     }
 
     /**

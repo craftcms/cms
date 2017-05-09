@@ -126,33 +126,37 @@ class GlobalsController extends Controller
      */
     public function actionEditContent(string $globalSetHandle, string $siteHandle = null, GlobalSet $globalSet = null): Response
     {
-        // Get the sites the user is allowed to edit
-        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        if (Craft::$app->getIsMultiSite()) {
+            // Get the sites the user is allowed to edit
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        if (empty($editableSiteIds)) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
-        }
-
-        // Editing a specific site?
-        if ($siteHandle !== null) {
-            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$site) {
-                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            if (empty($editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit content in any sites');
             }
 
-            // Make sure the user has permission to edit that site
-            if (!in_array($site->id, $editableSiteIds, false)) {
-                throw new ForbiddenHttpException('User not permitted to edit content in this site');
+            // Editing a specific site?
+            if ($siteHandle !== null) {
+                $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+                if (!$site) {
+                    throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+                }
+
+                // Make sure the user has permission to edit that site
+                if (!in_array($site->id, $editableSiteIds, false)) {
+                    throw new ForbiddenHttpException('User not permitted to edit content in this site');
+                }
+            } else {
+                // Are they allowed to edit the current site?
+                if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
+                    $site = Craft::$app->getSites()->currentSite;
+                } else {
+                    // Just use the first site they are allowed to edit
+                    $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
+                }
             }
         } else {
-            // Are they allowed to edit the current site?
-            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
-                $site = Craft::$app->getSites()->currentSite;
-            } else {
-                // Just use the first site they are allowed to edit
-                $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
-            }
+            $site = Craft::$app->getSites()->getPrimarySite();
         }
 
         // Get the global sets the user is allowed to edit, in the requested site

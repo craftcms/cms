@@ -78,7 +78,7 @@ use yii\validators\Validator;
  * @property Element|null          $nextSibling           The element’s next sibling
  * @property bool                  $hasDescendants        Whether the element has descendants
  * @property int                   $totalDescendants      The total number of descendants that the element has
- * @property string                $title                 The element’s title
+ * @property string|null           $title                 The element’s title
  * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
  * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
  * @property string                $contentTable          The name of the table this element’s content is stored in
@@ -717,7 +717,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __toString()
     {
-        return $this->title;
+        return $this->title ?: ((string)$this->id ?: static::class);
     }
 
     /**

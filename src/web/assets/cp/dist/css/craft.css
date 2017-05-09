@@ -2120,7 +2120,7 @@ body.rtl #nav li a .icon { margin-left: 10px; }
 #nav li a .badge { display: block; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 
 /* notifications */
-#notifications-wrapper { position: fixed; z-index: 101; width: 100%; }
+#notifications-wrapper { position: fixed; z-index: 101; width: 100%; pointer-events: none; }
 body.ltr #notifications-wrapper { left: 0; }
 body.rtl #notifications-wrapper { right: 0; }
 
@@ -2128,7 +2128,7 @@ body.rtl #notifications-wrapper { right: 0; }
 
 #notifications { text-align: center; }
 
-#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
+#notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); box-shadow: 0 0 5px rgba(0, 0, 0, 0.25); }
 
 #notifications .notification.notice { background: #5286d9; }
 
@@ -2374,7 +2374,7 @@ body.rtl #upgrademodal-checkout .spinner#coupon-spinner { left: -24px; }
 #upgrademodal-success .message p { margin-bottom: 24px; font-size: 15px; line-height: 1.4; }
 
 /* field layout forms */
-.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; font-family: 'Coming Soon', sans-serif; font-style: italic; text-transform: uppercase; }
+.fieldlayoutform, .fld-tab, .fld-field { color: #2f1fb5; font-style: italic; text-transform: uppercase; }
 
 .fieldlayoutform { padding: 24px; background-image: url(../images/fieldlayoutform-bg.png); }
 body.ltr .fieldlayoutform { background-position: 25px 24px; }
