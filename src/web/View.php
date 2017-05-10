@@ -510,7 +510,7 @@ class View extends \yii\web\View
     public function resolveTemplate(string $name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', strtolower(StringHelper::convertToUtf8($name)))), '/');
 
         $key = $this->_templatesPath.':'.$name;
 
@@ -546,9 +546,6 @@ class View extends \yii\web\View
         // Only attempt to match against a plugin's templates if this is a CP or action request.
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
-            // Sanitize
-            $name = StringHelper::convertToUtf8($name);
-
             $parts = array_filter(explode('/', $name));
             $pluginId = StringHelper::toLowerCase(array_shift($parts));
 
