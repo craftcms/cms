@@ -342,8 +342,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         _createFocalPoint: function() {
             var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
 
-            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
-            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio;
+            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
+            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
 
             focalX += this.image.left;
             focalY += this.image.top;
@@ -779,9 +779,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
-
-                            // Let me just cheat a little and fix my incorrectly positioned focal point.
-                            this.straighten(this.straighteningInput);
+                            this.straighten(this.straighteningInput)
                             this.canvas.add(this.focalPoint);
                         }
                     }.bind(this)
@@ -1802,30 +1800,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     left: this.focalPoint.left + deltaX,
                     top: this.focalPoint.top + deltaY
                 });
-
-                this._adaptFocalColor();
             }
-        },
-
-        _adaptFocalColor: function () {
-            // todo Seems that touching canvas at this points just makes it render black while dragging focal. Investigate.
-            /*var red = 0;
-            var green = 0;
-            var blue = 0;
-            var colors = this.canvas.getContext().getImageData(Math.round(this.focalPoint.left-5), Math.round(this.focalPoint.top-5), 1, 1).data;
-            for (var pixel = 0; pixel < colors.length; pixel += 4) {
-                red += colors[pixel];
-                green += colors[pixel+1];
-                blue += colors[pixel+2];
-            }
-
-            red = Math.round(red / (colors.length / 4));
-            green = Math.round(green / (colors.length / 4));
-            blue = Math.round(blue / (colors.length / 4));
-            var color = 'rgba('+red+','+green+','+blue+',0.8)';
-            this.focalPoint.forEachObject(function (obj) {
-                obj.set({stroke: color});
-            });*/
         },
 
         /**
