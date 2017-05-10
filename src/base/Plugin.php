@@ -10,9 +10,12 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
+use craft\web\View;
+use yii\base\Event;
 use yii\base\Module;
 
 /**
@@ -69,6 +72,13 @@ class Plugin extends Module implements PluginInterface
                 'allowOverrides' => true,
             ];
         }
+
+        // Base template directory
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {
+            $baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates';
+            $e->roots[$this->id] = $baseDir;
+            $e->roots[$this->handle] = $baseDir;
+        });
 
         // Set this as the global instance of this plugin class
         static::setInstance($this);

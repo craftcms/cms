@@ -5,6 +5,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
+- Added the `registerCpTemplateRoots` event to `craft\web\View`, making it possible for non-plugins to register CP template root paths/directories.
+- Added `craft\events\RegisterTemplateRootsEvent`.
+- Added `craft\web\View::getCpTemplateRoots()`.
 
 ### Changed
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
