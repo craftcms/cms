@@ -42,7 +42,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         // Editor state attributes
         animationInProgress: false,
-        currentView: 'rotate',
+        currentView: '',
         assetId: null,
         cacheBust: null,
         draggingCropper: false,
@@ -578,6 +578,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param view
          */
         showView: function(view) {
+            if (this.currentView === view) {
+                return;
+            }
+
             this.$views.addClass('hidden');
             var $view = this.$views.filter('[data-view="' + view + '"]');
             $view.removeClass('hidden');
@@ -1804,7 +1808,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         _adaptFocalColor: function () {
-            // Seems that touching canvas at this points just makes it render black while dragging focal. Investigate.
+            // todo Seems that touching canvas at this points just makes it render black while dragging focal. Investigate.
             /*var red = 0;
             var green = 0;
             var blue = 0;
