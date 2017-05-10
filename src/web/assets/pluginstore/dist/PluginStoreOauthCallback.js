@@ -7,14 +7,13 @@
             errorDetails: null,
             data: null,
 
-            init: function(data) {
+            init: function() {
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
 
                 setTimeout($.proxy(function() {
                     this.postActionRequest();
                 }, this), 500);
-
             },
 
             postActionRequest: function() {
@@ -33,9 +32,9 @@
                             this.$graphic.addClass('success');
 
                             // Redirect to the Dashboard in half a second
-                            setTimeout(function() {
-                                window.location = Craft.getCpUrl('plugin-store/account');
-                            }, 500);
+                            setTimeout($.proxy(function() {
+                                window.location = Craft.getCpUrl('myaccount');
+                            }, this), 500);
                         }
                     } else {
                         this.showFatalError(jqXHR);
@@ -78,7 +77,7 @@
 
                 $cancelBtn = $('<a/>', {
                     'class': 'btn big',
-                    'href': Craft.getCpUrl('plugin-store/account'),
+                    'href': Craft.getCpUrl('myaccount'),
                     text: "Cancel",
                 }).appendTo($buttonContainer);
 
