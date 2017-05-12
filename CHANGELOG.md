@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added the new Craft Support widget.
+
 ### Changed
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
 - The entry revision dropdown on the edit entry page now shows the who edited the “Current” version along with the time. ([#1650](https://github.com/craftcms/cms/issues/1650))
