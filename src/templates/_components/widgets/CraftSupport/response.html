@@ -4,5 +4,5 @@
         success: {{ success == true ? 1 : 0 }},
         errors: {{ errors|json_encode|raw }}
     };
-    widget.parseResponse(response);
+    widget.currentScreen.parseSupportResponse(response);
 </script>

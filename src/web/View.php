@@ -158,7 +158,7 @@ class View extends \yii\web\View
 
         // Set the initial template mode based on whether this is a CP or Site request
         $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
+        if ($request->getIsConsoleRequest() || $request->getIsCpRequest() || $request->isActionRequest()) {
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);

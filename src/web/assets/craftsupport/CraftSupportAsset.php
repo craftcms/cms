@@ -26,6 +26,10 @@ class CraftSupportAsset extends AssetBundle
             CpAsset::class,
         ];
 
+        $this->css = [
+            'CraftSupportWidget.css',
+        ];
+
         $this->js = [
             'CraftSupportWidget'.$this->dotJs(),
         ];
