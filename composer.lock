@@ -376,16 +376,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.19",
+            "version": "v2.8.20",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2"
+                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/88b65f0ac25355090e524aba4ceb066025df8bd2",
-                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/7fc8e2b4118ff316550596357325dfd92a51f531",
+                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531",
                 "shasum": ""
             },
             "require": {
@@ -432,7 +432,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-03 20:37:06"
+            "time": "2017-04-26 16:56:54"
         },
         {
             "name": "twig/twig",
@@ -504,12 +504,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/yii.git",
-                "reference": "6a58fda0256743ce7c1645c41d7889fbb3d49ab6"
+                "reference": "481fed5d49c927cb246815335e92fdcf70c0e0a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/6a58fda0256743ce7c1645c41d7889fbb3d49ab6",
-                "reference": "6a58fda0256743ce7c1645c41d7889fbb3d49ab6",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/481fed5d49c927cb246815335e92fdcf70c0e0a3",
+                "reference": "481fed5d49c927cb246815335e92fdcf70c0e0a3",
                 "shasum": ""
             },
             "require": {
@@ -592,7 +592,7 @@
                 "irc": "irc://irc.freenode.net/yii",
                 "source": "https://github.com/yiisoft/yii"
             },
-            "time": "2017-04-21 00:59:22"
+            "time": "2017-05-10 17:20:13"
         }
     ],
     "packages-dev": [
@@ -1719,16 +1719,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.2.7",
+            "version": "v3.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "62b4cdb99d52cb1ff253c465eb1532a80cebb621"
+                "reference": "acec26fcf7f3031e094e910b94b002fa53d4e4d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/62b4cdb99d52cb1ff253c465eb1532a80cebb621",
-                "reference": "62b4cdb99d52cb1ff253c465eb1532a80cebb621",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/acec26fcf7f3031e094e910b94b002fa53d4e4d6",
+                "reference": "acec26fcf7f3031e094e910b94b002fa53d4e4d6",
                 "shasum": ""
             },
             "require": {
@@ -1770,7 +1770,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-20 09:45:15"
+            "time": "2017-05-01 14:55:58"
         },
         {
             "name": "webmozart/assert",
