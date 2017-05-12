@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2979 - 2017-05-12
 
 ### Added
 - Added the new Craft Support widget.
