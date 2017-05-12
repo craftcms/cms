@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.15 - 2017-05-12
 
 ### Added
 - Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
