@@ -1,10 +1,19 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2979 - 2017-05-12
+
+### Added
+- Added the new Craft Support widget.
+
+### Changed
+- The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
+- The entry revision dropdown on the edit entry page now shows the who edited the “Current” version along with the time. ([#1650](https://github.com/craftcms/cms/issues/1650))
+
 ## 2.6.2978 - 2017-05-02
 
 ### Fixed
-- Fixed a bug where Title fields on new elements could display the class name of the element by default.
+- Fixed a bug where Title fields on new elements could display the class name of the element by default. ([#1685](https://github.com/craftcms/cms/issues/1685))
 
 ## 2.6.2977 - 2017-05-02
 

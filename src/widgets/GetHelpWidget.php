@@ -33,17 +33,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Craft::t('Get Help');
-	}
-
-	/**
-	 * @inheritDoc IWidget::getTitle()
-	 *
-	 * @return string
-	 */
-	public function getTitle()
-	{
-		return Craft::t('Send a message to Craft CMS Support');
+		return Craft::t('Craft Support');
 	}
 
 	/**
@@ -53,7 +43,7 @@ class GetHelpWidget extends BaseWidget
 	 */
 	public function getIconPath()
 	{
-		return craft()->path->getResourcesPath().'images/widgets/get-help.svg';
+		return craft()->path->getResourcesPath().'images/widgets/buoey.svg';
 	}
 
 	/**
@@ -70,13 +60,39 @@ class GetHelpWidget extends BaseWidget
 		}
 
 		$id = $this->model->id;
-		$js = "new Craft.GetHelpWidget({$id});";
+
+		$plugins = '';
+		foreach (craft()->plugins->getPlugins() as $plugin)
+		{
+			$plugins .= "\n    - ".$plugin->getName().' '.$plugin->getVersion();
+		}
+
+		$envInfoJs = JsonHelper::encode(array(
+			'Craft version' => craft()->getVersion().' ('.craft()->getEditionName().')',
+			'PHP version' => phpversion(),
+			'Database driver & version' => 'MySQL '.craft()->db->getServerVersion(),
+			'Plugins & versions' => $plugins,
+		));
+
+		$js = "new Craft.CraftSupportWidget({$id}, {$envInfoJs});";
 		craft()->templates->includeJs($js);
 
-		craft()->templates->includeJsResource('js/GetHelpWidget.js');
-		craft()->templates->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
+		craft()->templates->includeCssResource('css/CraftSupportWidget.css');
+		craft()->templates->includeJsResource('js/CraftSupportWidget.js');
+		craft()->templates->includeTranslations(
+			'Message sent successfully.',
+			'Couldn’t send support request.'
+		);
 
-		return craft()->templates->render('_components/widgets/GetHelp/body');
+		$iconsDir = craft()->path->getResourcesPath().'images/widgets';
+
+		return craft()->templates->render('_components/widgets/CraftSupport/body', array(
+			'widgetId' => $id,
+			'buoeyIcon' => file_get_contents($iconsDir.'/buoey.svg'),
+			'bullhornIcon' => file_get_contents($iconsDir.'/bullhorn.svg'),
+			'seIcon' => file_get_contents($iconsDir.'/craft-stack-exchange.svg'),
+			'ghIcon' => file_get_contents($iconsDir.'/github.svg'),
+		));
 	}
 
 	/**
