@@ -3,9 +3,9 @@
 return [
     'dateTimeFormats' => [
         'short' => [
-            'date' => 'dd.MM.yyyy',
+            'date' => 'd.M.yyyy',
             'time' => 'H:mm',
-            'datetime' => 'dd.MM.yyyy H:mm',
+            'datetime' => 'd.M.yyyy H:mm',
         ],
         'medium' => [
             'date' => 'd. M. y',
@@ -291,6 +291,8 @@ return [
         'as-IN' => 'ásámština (Indie)',
         'asa' => 'asu',
         'asa-TZ' => 'asu (Tanzanie)',
+        'ast' => 'asturština',
+        'ast-ES' => 'asturština (Španělsko)',
         'az' => 'ázerbájdžánština',
         'az-Cyrl' => 'ázerbájdžánština (cyrilice)',
         'az-Cyrl-AZ' => 'ázerbájdžánština (cyrilice, Ázerbájdžán)',
@@ -928,6 +930,8 @@ return [
         'yo' => 'jorubština',
         'yo-BJ' => 'jorubština (Benin)',
         'yo-NG' => 'jorubština (Nigérie)',
+        'yue' => 'kantonština',
+        'yue-HK' => 'kantonština (Hongkong – ZAO Číny)',
         'zgh' => 'tamazight (standardní marocký)',
         'zgh-MA' => 'tamazight (standardní marocký) (Maroko)',
         'zh' => 'čínština',

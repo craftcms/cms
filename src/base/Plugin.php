@@ -10,9 +10,12 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
+use craft\web\View;
+use yii\base\Event;
 use yii\base\Module;
 
 /**
@@ -65,10 +68,17 @@ class Plugin extends Module implements PluginInterface
             $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath().'/translations',
+                'basePath' => $this->getBasePath().DIRECTORY_SEPARATOR.'translations',
                 'allowOverrides' => true,
             ];
         }
+
+        // Base template directory
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {
+            $baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates';
+            $e->roots[$this->id] = $baseDir;
+            $e->roots[$this->handle] = $baseDir;
+        });
 
         // Set this as the global instance of this plugin class
         static::setInstance($this);
@@ -171,12 +181,18 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
+        $view = Craft::$app->getView();
+        $namespace = $view->getNamespace();
+        $view->setNamespace('settings');
+        $settingsHtml = $this->settingsHtml();
+        $view->setNamespace($namespace);
+
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings', [
             'plugin' => $this,
-            'settingsHtml' => $this->settingsHtml()
+            'settingsHtml' => $settingsHtml
         ]);
     }
 

@@ -20,6 +20,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\GetAssetUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
@@ -60,6 +61,11 @@ class Assets extends Component
      * @event AssetEvent The event that is triggered after an asset is replaced.
      */
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
+
+    /**
+     * @event AssetGenerateTransformEvent The event that is triggered when a transform is being generated for an Asset.
+     */
+    const EVENT_GET_ASSET_URL = 'getAssetUrl';
 
     // Properties
     // =========================================================================
@@ -545,6 +551,19 @@ class Assets extends Component
      */
     public function getUrlForAsset(Asset $asset, $transform = null): string
     {
+        // Maybe a plugin wants to do something here
+        $event = new GetAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $asset,
+        ]);
+
+        $this->trigger(self::EVENT_GET_ASSET_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         if ($transform === null || !Image::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 

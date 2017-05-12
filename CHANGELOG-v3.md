@@ -1,6 +1,27 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.15 - 2017-05-12
+
+### Added
+- Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
+- Added the `registerCpTemplateRoots` event to `craft\web\View`, making it possible for non-plugins to register CP template root paths/directories.
+- Added `craft\events\RegisterTemplateRootsEvent`.
+- Added `craft\web\View::getCpTemplateRoots()`.
+
+### Changed
+- The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
+- Updated Stringy to 3.0.
+- Improved focal point tracking in Image editor when dealing with scaled images.
+
+### Fixed
+- Fixed a PHP error that occurred when creating a new user.
+- Fixed a 403 error that occurred when a non-Admin attempted to edit a Global Set on a single-site install. ([#1687](https://github.com/craftcms/cms/issues/1687))
+- Fixed a bug where JS scripts registered from plugin settings pages weren’t getting properly namespaced, so generally didn’t work. ([#1691](https://github.com/craftcms/cms/issues/1691))
+- Fixed a bug where some locales were always showing two-digit day/month numbers in formatted dates (e.g. `01/05`).
+- Fixed a bug where form-submitted date/time values were always being treated as US-formatted dates/times, if the Intl extension wasn’t enabled. ([#1495](https://github.com/craftcms/cms/issues/1495))
+- Fixed a bug where it was possible to break UI in Image editor with triggering crop mode twice.
+
 ## 3.0.0-beta.14 - 2017-05-02
 
 ### Added

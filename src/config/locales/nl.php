@@ -3,9 +3,9 @@
 return [
     'dateTimeFormats' => [
         'short' => [
-            'date' => 'dd-MM-yyyy',
+            'date' => 'd-M-yyyy',
             'time' => 'HH:mm',
-            'datetime' => 'dd-MM-yyyy HH:mm',
+            'datetime' => 'd-M-yyyy HH:mm',
         ],
         'medium' => [
             'date' => 'd MMM y',
@@ -291,6 +291,8 @@ return [
         'as-IN' => 'Assamees (India)',
         'asa' => 'Asu',
         'asa-TZ' => 'Asu (Tanzania)',
+        'ast' => 'Asturisch',
+        'ast-ES' => 'Asturisch (Spanje)',
         'az' => 'Azerbeidzjaans',
         'az-Cyrl' => 'Azerbeidzjaans (Cyrillisch)',
         'az-Cyrl-AZ' => 'Azerbeidzjaans (Cyrillisch, Azerbeidzjan)',
@@ -418,7 +420,7 @@ return [
         'en-KE' => 'Engels (Kenia)',
         'en-KI' => 'Engels (Kiribati)',
         'en-KN' => 'Engels (Saint Kitts en Nevis)',
-        'en-KY' => 'Engels (Caymaneilanden)',
+        'en-KY' => 'Engels (Kaaimaneilanden)',
         'en-LC' => 'Engels (Saint Lucia)',
         'en-LR' => 'Engels (Liberia)',
         'en-LS' => 'Engels (Lesotho)',
@@ -928,6 +930,8 @@ return [
         'yo' => 'Yoruba',
         'yo-BJ' => 'Yoruba (Benin)',
         'yo-NG' => 'Yoruba (Nigeria)',
+        'yue' => 'Kantonees',
+        'yue-HK' => 'Kantonees (Hongkong SAR van China)',
         'zgh' => 'Standaard Marokkaanse Tamazight',
         'zgh-MA' => 'Standaard Marokkaanse Tamazight (Marokko)',
         'zh' => 'Chinees',

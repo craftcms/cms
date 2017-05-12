@@ -42,7 +42,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         // Editor state attributes
         animationInProgress: false,
-        currentView: 'rotate',
+        currentView: '',
         assetId: null,
         cacheBust: null,
         draggingCropper: false,
@@ -286,7 +286,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // If we're cropping now, we have to reposition the cropper correctly in case
             // the area for image changes, forcing the image size to change as well.
-            if (this.currentView == 'crop') {
+            if (this.currentView === 'crop') {
                 this.zoomRatio = this.getZoomToFitRatio(this.getScaledImageDimensions());
                 var previouslyOccupiedArea = this._getBoundingRectangle(this.imageVerticeCoords);
                 this._setFittedImageVerticeCoordinates();
@@ -342,8 +342,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         _createFocalPoint: function() {
             var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
 
-            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio;
-            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio;
+            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
+            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
 
             focalX += this.image.left;
             focalY += this.image.top;
@@ -351,7 +351,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Focal point uses image center as a reference point. That means that if there is no focal
             // point yet and we try to create one, it's created in the middle of the image. Which presents
             // us a problem if the image is not visible in the viewport.
-            if (this.currentView != 'crop' && this.viewport && !this._isCenterInside(this.image, this.viewport)) {
+            if (this.currentView !== 'crop' && this.viewport && !this._isCenterInside(this.image, this.viewport)) {
                 // In which case we adapt.
                 var deltaX = this.viewport.left - this.image.left;
                 var deltaY = this.viewport.top - this.image.top;
@@ -403,7 +403,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 // If we're cropping, nothing exciting happens for the viewport
-                if (this.currentView == 'crop') {
+                if (this.currentView === 'crop') {
                     dimensions.width = this.editorWidth;
                     dimensions.height = this.editorHeight;
                 } else {
@@ -460,7 +460,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Return true if the image orientation has changed
          */
         hasOrientationChanged: function() {
-            return this.viewportRotation % 180 != 0;
+            return this.viewportRotation % 180 !== 0;
         },
 
         /**
@@ -536,12 +536,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Cropper scale modifier key
             this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                if (ev.keyCode == Garnish.SHIFT_KEY) {
+                if (ev.keyCode === Garnish.SHIFT_KEY) {
                     this.shiftKeyHeld = true;
                 }
             }.bind(this));
             this.addListener(Garnish.$doc, 'keyup', function(ev) {
-                if (ev.keyCode == Garnish.SHIFT_KEY) {
+                if (ev.keyCode === Garnish.SHIFT_KEY) {
                     this.shiftKeyHeld = false;
                 }
             }.bind(this));
@@ -578,11 +578,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param view
          */
         showView: function(view) {
+            if (this.currentView === view) {
+                return;
+            }
+
             this.$views.addClass('hidden');
             var $view = this.$views.filter('[data-view="' + view + '"]');
             $view.removeClass('hidden');
 
-            if (view == 'rotate') {
+            if (view === 'rotate') {
                 this.enableSlider();
             } else {
                 this.disableSlider();
@@ -592,9 +596,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.updateSizeAndPosition();
 
             // See if we have to enable or disable crop mode as we transition between tabs
-            if (this.currentView == 'crop' && view != 'crop') {
+            if (this.currentView === 'crop' && view !== 'crop') {
                 this.disableCropMode();
-            } else if (this.currentView != 'crop' && view == 'crop') {
+            } else if (this.currentView !== 'crop' && view === 'crop') {
                 this.enableCropMode();
             }
 
@@ -667,7 +671,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             if (!this.animationInProgress) {
 
                 // We're not that kind of an establishment, sir.
-                if (degrees != 90 && degrees != -90) {
+                if (degrees !== 90 && degrees !== -90) {
                     return false;
                 }
 
@@ -694,7 +698,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 }
 
                 var viewportProperties = {
-                    angle: degrees == 90 ? '+=90' : '-=90'
+                    angle: degrees === 90 ? '+=90' : '-=90'
                 };
 
                 var imageProperties = {
@@ -775,9 +779,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
-
-                            // Let me just cheat a little and fix my incorrectly positioned focal point.
-                            this.straighten(this.straighteningInput);
+                            this.straighten(this.straighteningInput)
                             this.canvas.add(this.focalPoint);
                         }
                     }.bind(this)
@@ -795,7 +797,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.animationInProgress = true;
 
                 if (this.hasOrientationChanged()) {
-                    axis = axis == 'y' ? 'x' : 'y';
+                    axis = axis === 'y' ? 'x' : 'y';
                 }
 
                 if (this.focalPoint) {
@@ -813,7 +815,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var deltaY, deltaX;
                 var state = this.cropperState;
 
-                if (axis == 'y') {
+                if (axis === 'y') {
                     properties.scaleY = this.image.scaleY * -1;
                     this.flipData.y = 1 - this.flipData.y;
 
@@ -889,7 +891,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 var previousAngle = this.image.angle;
 
-                this.imageStraightenAngle = (this.settings.allowDegreeFractions ? parseFloat(slider.value) : Math.round(slider.value)) % 360;
+                this.imageStraightenAngle = (this.settings.allowDegreeFractions ? parseFloat(slider.value) : Math.round(parseFloat(slider.value))) % 360;
 
                 // Straighten the image
                 this.image.set({
@@ -958,7 +960,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 currentZoomRatio = currentZoomRatio * adjustmentRatio;
 
                 // If we had to make adjustments, do the calculations again
-            } while (adjustmentRatio != 1);
+            } while (adjustmentRatio !== 1);
 
             // Reposition the image correctly
             this.image.set({
@@ -1507,7 +1509,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             // Calculate the cropping rectangle size
             var imageDimensions = this.getScaledImageDimensions();
-            var rectangleRatio = this.imageStraightenAngle == 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2;
+            var rectangleRatio = this.imageStraightenAngle === 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2;
             var rectWidth = imageDimensions.width / rectangleRatio;
             var rectHeight = imageDimensions.height / rectangleRatio;
 
@@ -1725,7 +1727,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param ev
          */
-        _handleMouseUp: function() {
+        _handleMouseUp: function(ev) {
             this.draggingCropper = false;
             this.scalingCropper = false;
             this.draggingFocal = false;
@@ -1740,7 +1742,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var deltaX = ev.pageX - this.previousMouseX;
             var deltaY = ev.pageY - this.previousMouseY;
 
-            if (deltaX == 0 && deltaY == 0) {
+            if (deltaX === 0 && deltaY === 0) {
                 return;
             }
 
@@ -1775,7 +1777,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var deltaX = ev.pageX - this.previousMouseX;
                 var deltaY = ev.pageY - this.previousMouseY;
 
-                if (deltaX == 0 && deltaY == 0) {
+                if (deltaX === 0 && deltaY === 0) {
                     return;
                 }
 
@@ -1783,7 +1785,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 var newY = this.focalPoint.top + deltaY;
 
                 // Just make sure that the focal point stays inside the image
-                if (this.currentView == 'crop') {
+                if (this.currentView === 'crop') {
                     if (!this.arePointsInsideRectangle([{x: newX, y: newY}], this.imageVerticeCoords)) {
                         return;
                     }
@@ -1798,30 +1800,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     left: this.focalPoint.left + deltaX,
                     top: this.focalPoint.top + deltaY
                 });
-
-                this._adaptFocalColor();
             }
-        },
-
-        _adaptFocalColor: function () {
-            // Seems that touching canvas at this points just makes it render black while dragging focal. Investigate.
-            /*var red = 0;
-            var green = 0;
-            var blue = 0;
-            var colors = this.canvas.getContext().getImageData(Math.round(this.focalPoint.left-5), Math.round(this.focalPoint.top-5), 1, 1).data;
-            for (var pixel = 0; pixel < colors.length; pixel += 4) {
-                red += colors[pixel];
-                green += colors[pixel+1];
-                blue += colors[pixel+2];
-            }
-
-            red = Math.round(red / (colors.length / 4));
-            green = Math.round(green / (colors.length / 4));
-            blue = Math.round(blue / (colors.length / 4));
-            var color = 'rgba('+red+','+green+','+blue+',0.8)';
-            this.focalPoint.forEachObject(function (obj) {
-                obj.set({stroke: color});
-            });*/
         },
 
         /**
@@ -1934,15 +1913,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var topDelta = 0;
             var leftDelta = 0;
 
-            if (this.scalingCropper == 'b' || this.scalingCropper == 't') {
+            if (this.scalingCropper === 'b' || this.scalingCropper === 't') {
                 deltaX = 0;
             }
 
-            if (this.scalingCropper == 'l' || this.scalingCropper == 'r') {
+            if (this.scalingCropper === 'l' || this.scalingCropper === 'r') {
                 deltaY = 0;
             }
 
-            if (deltaX == 0 && deltaY == 0) {
+            if (deltaX === 0 && deltaY === 0) {
                 return;
             }
 
@@ -2022,18 +2001,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 // Lock the aspect ratio
                 if (this.shiftKeyHeld &&
-                    (this.scalingCropper == 'tl' || this.scalingCropper == 'tr' ||
-                    this.scalingCropper == 'bl' || this.scalingCropper == 'br')
+                    (this.scalingCropper === 'tl' || this.scalingCropper === 'tr' ||
+                    this.scalingCropper === 'bl' || this.scalingCropper === 'br')
                 ) {
                     var ratio;
                     if (Math.abs(deltaX) > Math.abs(deltaY)) {
                         ratio = this.clipper.width / this.clipper.height;
                         deltaY = deltaX / ratio;
-                        deltaY *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+                        deltaY *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
                     } else {
                         ratio = this.clipper.width / this.clipper.height;
                         deltaX = deltaY * ratio;
-                        deltaX *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+                        deltaX *= (this.scalingCropper === 'tr' || this.scalingCropper === 'bl') ? -1 : 1;
                     }
                 }
 
@@ -2087,13 +2066,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
                 cursor = 'pointer';
             } else if (handle) {
-                if (handle == 't' || handle == 'b') {
+                if (handle === 't' || handle === 'b') {
                     cursor = 'ns-resize';
-                } else if (handle == 'l' || handle == 'r') {
+                } else if (handle === 'l' || handle === 'r') {
                     cursor = 'ew-resize';
-                } else if (handle == 'tl' || handle == 'br') {
+                } else if (handle === 'tl' || handle === 'br') {
                     cursor = 'nwse-resize';
-                } else if (handle == 'bl' || handle == 'tr') {
+                } else if (handle === 'bl' || handle === 'tr') {
                     cursor = 'nesw-resize';
                 }
             } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
@@ -2188,10 +2167,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param [offsetY]
          */
         _getRectangleVertices: function(rectangle, offsetX, offsetY) {
-            if (typeof offsetX == typeof undefined) {
+            if (typeof offsetX === typeof undefined) {
                 offsetX = 0;
             }
-            if (typeof offsetY == typeof undefined) {
+            if (typeof offsetY === typeof undefined) {
                 offsetY = 0;
             }
 
@@ -2227,9 +2206,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             var ratio;
 
-            if (typeof zoomMode == "number") {
+            if (typeof zoomMode === "number") {
                 ratio = zoomMode;
-            } else if (zoomMode == "cover") {
+            } else if (zoomMode === "cover") {
                 ratio = this.getZoomToCoverRatio(imageDimensions);
             } else {
                 ratio = this.getZoomToFitRatio(imageDimensions);
@@ -2239,7 +2218,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var scaledHeight = imageDimensions.height * ratio;
             var scaledWidth = imageDimensions.width * ratio;
 
-            // TODO pretty sure that left is confused with right here in variable names
             // Calculate the segments of the containing box for the image.
             // When referring to top/bottom or right/left segments, these are on the
             // right-side and bottom projection of the containing box for the zoomed out image.

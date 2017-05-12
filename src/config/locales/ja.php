@@ -3,14 +3,14 @@
 return [
     'dateTimeFormats' => [
         'short' => [
-            'date' => 'y/MM/dd',
+            'date' => 'y/M/d',
             'time' => 'H:mm',
-            'datetime' => 'y/MM/dd H:mm',
+            'datetime' => 'y/M/d H:mm',
         ],
         'medium' => [
-            'date' => 'y/MM/dd',
+            'date' => 'y/M/d',
             'time' => 'H:mm:ss',
-            'datetime' => 'y/MM/dd H:mm:ss',
+            'datetime' => 'y/M/d H:mm:ss',
         ],
         'long' => [
             'date' => 'y年M月d日',
@@ -291,6 +291,8 @@ return [
         'as-IN' => 'アッサム語 (インド)',
         'asa' => 'アス語',
         'asa-TZ' => 'アス語 (タンザニア)',
+        'ast' => 'アストゥリアス語',
+        'ast-ES' => 'アストゥリアス語 (スペイン)',
         'az' => 'アゼルバイジャン語',
         'az-Cyrl' => 'アゼルバイジャン語 (キリル文字)',
         'az-Cyrl-AZ' => 'アゼルバイジャン語 (キリル文字、アゼルバイジャン)',
@@ -928,6 +930,8 @@ return [
         'yo' => 'ヨルバ語',
         'yo-BJ' => 'ヨルバ語 (ベナン)',
         'yo-NG' => 'ヨルバ語 (ナイジェリア)',
+        'yue' => '広東語',
+        'yue-HK' => '広東語 (中華人民共和国香港特別行政区)',
         'zgh' => 'タマージク語(モロッコ公用語)',
         'zgh-MA' => 'タマージク語(モロッコ公用語) (モロッコ)',
         'zh' => '中国語',
