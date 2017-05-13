@@ -155,28 +155,31 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = Json::decodeIfJson($value);
         }
 
-        $selectedValues = ArrayHelper::toArray($value);
-
         if ($this->multi) {
-            if (is_array($value)) {
-                // Convert all the values to OptionData objects
-                foreach ($value as &$val) {
-                    $label = $this->optionLabel($val);
-                    $val = new OptionData($label, $val, true);
-                }
-                unset($val);
-            } else {
-                $value = [];
+            // In case the field used to be a single-option field
+            $value = (array)$value;
+
+            // Convert all the values to OptionData objects
+            foreach ($value as &$val) {
+                $label = $this->optionLabel($val);
+                $val = new OptionData($label, $val, true);
             }
+            unset($val);
 
             $value = new MultiOptionsFieldData($value);
         } else {
+            // In case the field used to be a multi-option field
+            if (is_array($value)) {
+                $value = reset($value) ?: null;
+            }
+
             // Convert the value to a SingleOptionFieldData object
             $label = $this->optionLabel($value);
             $value = new SingleOptionFieldData($label, $value, true);
         }
 
         $options = [];
+        $selectedValues = (array)$value;
 
         foreach ($this->options as $option) {
             $selected = in_array($option['value'], $selectedValues, true);
