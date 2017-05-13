@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2980 - 2017-05-13
+
+### Fixed
+- Fixed a bug where action requests on the front-end were getting treated like CP requests in the TemplatesService, breaking Live Preview, and possibly other things.
+
 ## 2.6.2979 - 2017-05-12
 
 ### Added
