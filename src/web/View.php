@@ -521,7 +521,7 @@ class View extends \yii\web\View
     public function resolveTemplate(string $name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', strtolower(StringHelper::convertToUtf8($name)))), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
 
         $key = $this->_templatesPath.':'.$name;
 
@@ -559,7 +559,7 @@ class View extends \yii\web\View
             foreach ($this->getCpTemplateRoots() as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncmp($templateRoot.'/', $name, $templateRootLen+1) === 0) {
+                if (strncasecmp($templateRoot.'/', $name, $templateRootLen+1) === 0) {
                     $subName = substr($name, $templateRootLen+1);
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
