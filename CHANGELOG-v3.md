@@ -1,6 +1,12 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.16 - 2017-05-13
+
+### Fixed
+- Fixed a PHP error that occurred when editing elements if a Checkboxes/Multi-select field was converted to a Dropdown/Radio Buttons field. ([#1701](https://github.com/craftcms/cms/issues/1701))
+- Fixed a bug where entry URIs weren’t getting updated after re-saving a section with a new Entry URI Format. ([#1705](https://github.com/craftcms/cms/issues/1705))
+
 ## 3.0.0-beta.15 - 2017-05-12
 
 ### Added
