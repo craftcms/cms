@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a bug that broke template loading for template paths with uppercase letters on case-sensitive file systems. ([#1706](https://github.com/craftcms/cms/issues/1706))
+- Fixed a deprecation error caused by the Craft Support widget. ([#1708](https://github.com/craftcms/cms/issues/1708))
 
 ## 3.0.0-beta.16 - 2017-05-13
 
