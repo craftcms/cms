@@ -531,7 +531,7 @@ body.rtl .fld-tab .icon, body.rtl .fld-field .icon { margin-right: 5px; }
 
 .fld-tab .tabs { position: relative; z-index: 1; padding: 0 10px; }
 
-.fld-tab .tabs .tab { margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: #f4f3fb; color: #2f1fb5; white-space: normal; }
+.fld-tab .tabs .tab { margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: #f4f3fb; color: #2f1fb5; white-space: normal; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 body.ltr .fld-tab .tabs .tab { float: left; }
 body.rtl .fld-tab .tabs .tab { float: right; }
 
