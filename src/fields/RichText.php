@@ -75,7 +75,7 @@ class RichText extends Field
      */
     public static function registerRedactorPlugin(string $plugin)
     {
-        if (isset(static::$_registeredPlugins[$plugin])) {
+        if (isset(self::$_registeredPlugins[$plugin])) {
             return;
         }
 
@@ -102,7 +102,7 @@ class RichText extends Field
         }
 
         // Don't do this twice
-        static::$_registeredPlugins[$plugin] = true;
+        self::$_registeredPlugins[$plugin] = true;
     }
 
     // Properties
