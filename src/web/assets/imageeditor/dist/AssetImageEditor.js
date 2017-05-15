@@ -348,13 +348,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             focalX += this.image.left;
             focalY += this.image.top;
 
-            // Focal point uses image center as a reference point. That means that if there is no focal
-            // point yet and we try to create one, it's created in the middle of the image. Which presents
-            // us a problem if the image is not visible in the viewport.
-            if (this.currentView !== 'crop' && this.viewport && !this._isCenterInside(this.image, this.viewport)) {
-                // In which case we adapt.
-                var deltaX = this.viewport.left - this.image.left;
-                var deltaY = this.viewport.top - this.image.top;
+            var deltaX = 0;
+            var deltaY = 0;
+
+            // When creating a fresh focal point, drop it dead in the center of the viewport, not the image.
+            if (this.viewport && this.focalPointState.offsetX === 0 && this.focalPointState.offsetY === 0) {
+                if (this.currentView !== 'crop') {
+                    deltaX = this.viewport.left - this.image.left;
+                    deltaY = this.viewport.top - this.image.top;
+
+                } else {
+                    // Unless we have a cropper showing, in which case drop it in the middle of the cropper
+                    deltaX = this.clipper.left - this.image.left;
+                    deltaY = this.clipper.top - this.image.top;
+                }
 
                 // Bump focal to middle of viewport
                 focalX += deltaX;
@@ -781,6 +788,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                             this._adjustFocalPointByAngle(degrees);
                             this.straighten(this.straighteningInput)
                             this.canvas.add(this.focalPoint);
+                        } else {
+                            this._resetFocalPointPosition();
                         }
                     }.bind(this)
                 });
@@ -802,6 +811,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 if (this.focalPoint) {
                     this.canvas.remove(this.focalPoint);
+                } else {
+                    this._resetFocalPointPosition();
                 }
 
                 // TODO So many nested if's. Make it cleaner.
@@ -836,6 +847,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         if (state) {
                             state.offsetY = -state.offsetY;
                         }
+
                         this.focalPointState.offsetY = -this.focalPointState.offsetY;
                     }
                 } else {
@@ -920,8 +932,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param {integer} previousAngle integer the previous image angle before straightening
          */
         _adjustEditorElementsOnStraighten: function(previousAngle) {
-            // This is some complicated stuff, you've been warned!
-
             var scaledImageDimensions = this.getScaledImageDimensions();
             var angleDelta = this.image.angle - previousAngle;
             var state = this.cropperState;
@@ -981,11 +991,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             if (this.focalPoint) {
                 this._adjustFocalPointByAngle(angleDelta);
+
                 if (!this._isCenterInside(this.focalPoint, this.viewport)) {
                     this.focalPoint.set({opacity: 0});
                 } else {
                     this.focalPoint.set({opacity: 1});
                 }
+            } else if (angleDelta !== 0) {
+                this._resetFocalPointPosition();
             }
 
             this._zoomImage();
@@ -1003,6 +1016,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.storeFocalPointState(state);
                 this.toggleFocalPoint();
             }
+        },
+
+        _resetFocalPointPosition: function () {
+            var state = this.focalPointState;
+            state.offsetX = 0;
+            state.offsetY = 0;
+            this.storeFocalPointState(state);
         },
 
         /**
@@ -1384,13 +1404,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             viewportProperties.height = this.clipper.height * inverseZoomFactor;
             viewportProperties.width = this.clipper.width * inverseZoomFactor;
 
-            if (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper)) {
-                this.focalPoint.set({opacity: 1});
-                var state = this.focalPointState;
-                state.offsetX = 0;
-                state.offsetY = 0;
-                this.storeFocalPointState(state);
-                this.toggleFocalPoint();
+            if (!this.focalPoint || (this.focalPoint && !this._isCenterInside(this.focalPoint, this.clipper))) {
+                if (this.focalPoint) {
+                    this.toggleFocalPoint();
+                }
+
+                this._resetFocalPointPosition();
             }
 
             var callback = function() {
