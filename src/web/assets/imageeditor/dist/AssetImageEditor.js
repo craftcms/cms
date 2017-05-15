@@ -345,6 +345,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
             var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
 
+            // Adjust by image margins
             focalX += this.image.left;
             focalY += this.image.top;
 
@@ -368,8 +369,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 focalY += deltaY;
 
                 // Reflect changes in saved state
-                this.focalPointState.offsetX += deltaX;
-                this.focalPointState.offsetY += deltaY;
+                this.focalPointState.offsetX += deltaX / (sizeFactor * this.zoomRatio * this.scaleFactor);
+                this.focalPointState.offsetY += deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
             }
 
             this.focalPoint = new fabric.Group([
