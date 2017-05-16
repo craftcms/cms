@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft was not removing leading/trailing/double slashes when parsing element URI formats. ([#1707](https://github.com/craftcms/cms/issues/1707))
 - Fixed a bug where focal point would sometimes change it's location when toggled multiple times in succession.
 - Fixed a bug where cropping an image and setting the focal point would cause the focal point to be saved incorrectly.
+- Fixed a bug where emails sent from the “Test” button on Settings → Email were not including the settings values being tested.
 
 ## 3.0.0-beta.17 - 2017-05-13
 

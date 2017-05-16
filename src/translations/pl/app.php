@@ -780,9 +780,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile.
 
 Zostały użyte poniższe ustawienia:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Podczas testowania ustawień e-mail:',
     'test_email_subject' => 'To jest testowy e-mail od Craft',
     'Text' => 'Tekst',

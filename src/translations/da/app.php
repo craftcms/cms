@@ -778,9 +778,7 @@ Tillykke! Craft var succesfuldt i stamd til at sende en email.
 
 Her er indstillingerne du har brugt:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Når du tester dine e-mail indstillinger:',
     'test_email_subject' => 'Dette er en test email fra Craft',
     'Text' => 'Tekst',

@@ -778,9 +778,7 @@ return [
 
 다음은 당신이 사용한 설정입니다:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => '이메일 설정을 테스트하시려면:',
     'test_email_subject' => 'Craft가 전송한 테스트 메일입니다',
     'Text' => '텍스트',

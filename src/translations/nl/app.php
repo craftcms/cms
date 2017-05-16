@@ -780,9 +780,7 @@ Gefeliciteerd! Craft heeft succesvol een email verstuurd.
 
 Hier zijn de gebruikte instellingen:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Als u uw emailinstellingen aan het controleren bent :',
     'test_email_subject' => 'Dit is een test-email van Craft',
     'Text' => 'Tekst',

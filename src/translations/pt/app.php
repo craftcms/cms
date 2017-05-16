@@ -778,9 +778,7 @@ Parabéns! Craft conseguiu enviar um e-mail com sucesso.
 
 Aqui estão as configurações que você usou:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Quando você está testando suas configurações de e-mail:',
     'test_email_subject' => 'Este é um e-mail de teste a partir de Craft',
     'Text' => 'Texto',
