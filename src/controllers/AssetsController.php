@@ -718,7 +718,7 @@ class AssetsController extends Controller
                 $fx = $imageCenterX + ($focalPoint['offsetX'] * $zoom * $adjustmentRatio) - $x;
                 $fy = $imageCenterY + ($focalPoint['offsetY'] * $zoom * $adjustmentRatio) - $y;
 
-                $focal = number_format($fx / $originalImageWidth, 4).';'.number_format($fy / $originalImageHeight, 4);
+                $focal = number_format($fx / $width, 4).';'.number_format($fy / $height, 4);
             }
 
             if ($imageCropped) {
