@@ -110,21 +110,22 @@ class ElementHelper
                     // Let's try this again.
                     $i--;
                     continue;
-                } else {
-                    // We're screwed, blow things up.
-                    throw new OperationAbortedException('Could not find a unique URI for this element');
                 }
+
+                // We're screwed, blow things up.
+                throw new OperationAbortedException('Could not find a unique URI for this element');
             }
 
-            if (self::_isUniqueUri($testUri, $element)) {
+            if (!self::_isUniqueUri($testUri, $element)) {
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
 
                 return;
-            } else {
-                $element->slug = $originalSlug;
             }
+
+            // Try again...
+            $element->slug = $originalSlug;
         }
 
         throw new OperationAbortedException('Could not find a unique URI for this element');
