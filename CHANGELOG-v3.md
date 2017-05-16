@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Changed
-- Improved focal point behaviour when modifying the image geometry.
+- Improved focal point behavior when modifying the image geometry.
 
 ### Fixed
 - Fixed a bug where Craft was not removing leading/trailing/double slashes when parsing element URI formats. ([#1707](https://github.com/craftcms/cms/issues/1707))
@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where cropping an image and setting the focal point would cause the focal point to be saved incorrectly.
 - Fixed a bug where emails sent from the “Test” button on Settings → Email were not including the settings values being tested.
 - Fixed a PHP error that occurred when saving plugin settings without any post data.
+- Fixed a regression where the `testToEmailAddress` config setting did not work with an array of email addresses. ([#1711](https://github.com/craftcms/cms/pull/1711)
 
 ## 3.0.0-beta.17 - 2017-05-13
 
