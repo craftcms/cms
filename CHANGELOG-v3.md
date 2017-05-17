@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when saving plugin settings without any post data.
 - Fixed a regression where the `testToEmailAddress` config setting did not work with an array of email addresses. ([#1711](https://github.com/craftcms/cms/pull/1711)
 - Fixed PHP errors that occurred if `craft\fields\Matrix::normalizeValue()` or `craft\fields\BaseRelationField::normalizeValu()` were ever called without passing an element.
+- Fixed a bug where the Quick Post widget was not calling fields’ `normalizeValue()` methods.
 
 ## 3.0.0-beta.17 - 2017-05-13
 
