@@ -6,6 +6,9 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Improved focal point behavior when modifying the image geometry.
 
+### Removed
+- Removed `craft\helpers\App::isPhpDevServer()`.
+
 ### Fixed
 - Fixed a bug where Craft was not removing leading/trailing/double slashes when parsing element URI formats. ([#1707](https://github.com/craftcms/cms/issues/1707))
 - Fixed a bug where focal point would sometimes change it's location when toggled multiple times in succession.
