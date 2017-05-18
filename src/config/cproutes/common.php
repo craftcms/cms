@@ -18,6 +18,10 @@ return [
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
+    'myaccount' => [
+        'route' => 'users/edit-user',
+        'defaults' => ['userId' => 'current']
+    ],
     'updates' => 'update/index',
     'updates/go/<handle:[^/]*>' => 'update/go',
     'settings/assets' => 'volumes/volume-index',
@@ -37,22 +41,6 @@ return [
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
     'settings/plugins/<pluginId>' => 'plugins/edit-plugin-settings',
-    'settings/sections' => 'sections/index',
-    'settings/sections/new' => 'sections/edit-section',
-    'settings/sections/<sectionId:\d+>' => 'sections/edit-section',
-    'settings/sections/<sectionId:\d+>/entrytypes' => 'sections/entry-types-index',
-    'settings/sections/<sectionId:\d+>/entrytypes/new' => 'sections/edit-entry-type',
-    'settings/sections/<sectionId:\d+>/entrytypes/<entryTypeId:\d+>' => 'sections/edit-entry-type',
-    'settings/sites' => 'sites/settings-index',
-    'settings/sites/new' => 'sites/edit-site',
-    'settings/sites/<siteId:\d+>' => 'sites/edit-site',
-    'settings/tags' => 'tags/index',
-    'settings/tags/new' => 'tags/edit-tag-group',
-    'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
-    'myaccount' => [
-        'route' => 'users/edit-user',
-        'defaults' => ['userId' => 'current']
-    ],
     'settings/routes' => [
         'template' => 'settings/routes',
         'variables' => [
@@ -68,6 +56,18 @@ return [
             ]
         ]
     ],
+    'settings/sections' => 'sections/index',
+    'settings/sections/new' => 'sections/edit-section',
+    'settings/sections/<sectionId:\d+>' => 'sections/edit-section',
+    'settings/sections/<sectionId:\d+>/entrytypes' => 'sections/entry-types-index',
+    'settings/sections/<sectionId:\d+>/entrytypes/new' => 'sections/edit-entry-type',
+    'settings/sections/<sectionId:\d+>/entrytypes/<entryTypeId:\d+>' => 'sections/edit-entry-type',
+    'settings/sites' => 'sites/settings-index',
+    'settings/sites/new' => 'sites/edit-site',
+    'settings/sites/<siteId:\d+>' => 'sites/edit-site',
+    'settings/tags' => 'tags/index',
+    'settings/tags/new' => 'tags/edit-tag-group',
+    'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
 ];
