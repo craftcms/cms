@@ -6,6 +6,8 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Image editor now shows a loading spinner when it's loading an image.
 - Added retina display support for image editor.
+- Added `craft\elements\db\ElementQuery::getCriteria()`.
+- Added `craft\elements\db\ElementQuery::criteriaAttributes()`.
 
 ### Changed
 - Improved focal point behavior when modifying the image geometry.
@@ -22,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a regression where the `testToEmailAddress` config setting did not work with an array of email addresses. ([#1711](https://github.com/craftcms/cms/pull/1711)
 - Fixed PHP errors that occurred if `craft\fields\Matrix::normalizeValue()` or `craft\fields\BaseRelationField::normalizeValu()` were ever called without passing an element.
 - Fixed a bug where the Quick Post widget was not calling fields’ `normalizeValue()` methods.
+- Fixed a bug where Matrix blocks were not returning the posted field values in Live Preview if they were accessed as an array. ([#1710](https://github.com/craftcms/cms/issues/1710))
 
 ## 3.0.0-beta.17 - 2017-05-13
 

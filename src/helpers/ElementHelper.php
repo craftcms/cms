@@ -116,7 +116,7 @@ class ElementHelper
                 throw new OperationAbortedException('Could not find a unique URI for this element');
             }
 
-            if (!self::_isUniqueUri($testUri, $element)) {
+            if (self::_isUniqueUri($testUri, $element)) {
                 // OMG!
                 $element->slug = $testSlug;
                 $element->uri = $testUri;
