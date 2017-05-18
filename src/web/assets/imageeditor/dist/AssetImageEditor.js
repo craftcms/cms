@@ -18,6 +18,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         $editorContainer: null,
         $straighten: null,
         $croppingCanvas: null,
+        $spinnerCanvas: null,
 
         // FabricJS objects
         canvas: null,
@@ -58,6 +59,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         flipData: {},
         focalPointState: false,
         croppingConstraint: false,
+        spinnerInterval: null,
 
         // Rendering proxy functions
         renderImage: null,
@@ -104,6 +106,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
             this.maxImageSize = Math.max(browserViewportHeight, browserViewportWidth);
+            console.log(this.maxImageSize);
         },
 
         /**
@@ -126,6 +129,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.editorHeight = this.$editorContainer.innerHeight();
             this.editorWidth = this.$editorContainer.innerWidth();
 
+            this._showSpinner();
+
             this.updateSizeAndPosition();
 
             // Load the canvas on which we'll host our image and set up the proxy render function
@@ -135,13 +140,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
             this.$croppingCanvas.width(this.editorWidth);
             this.$croppingCanvas.height(this.editorHeight);
-
+            
             // TODO Load 2X for retina
             this.canvas.enableRetinaScaling = true;
             this.renderImage = function() {
                 Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
             }.bind(this);
-
 
             // TODO add loading spinner
 
@@ -215,6 +219,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this._handleMouseMove(ev);
                 }.bind(this));
 
+                this._hideSpinner();
+
                 // Render it, finally
                 this.renderImage();
 
@@ -256,6 +262,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
             else {
                 this.$container.removeClass('vertical');
+            }
+
+            if (this.$spinnerCanvas) {
+                this.$spinnerCanvas.css({
+                    left: ((this.$spinnerCanvas.parent().width()/2)-(this.$spinnerCanvas.width()/2))+'px',
+                    top: ((this.$spinnerCanvas.parent().height()/2)-(this.$spinnerCanvas.height()/2))+'px'
+                })
+
             }
 
             // If image is already loaded, make sure it looks pretty.
@@ -600,6 +614,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             } else {
                 this.disableSlider();
             }
+
 
             // Now that most likely our editor dimensions have changed, time to reposition stuff
             this.updateSizeAndPosition();
@@ -1438,6 +1453,42 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     duration: this.settings.animationDuration
                 });
             }
+        },
+
+        _showSpinner: function() {
+            this.$spinnerCanvas = $('<canvas id="spinner-canvas"></canvas>').appendTo($('.image', this.$container));
+            var canvas = document.getElementById('spinner-canvas');
+            var context = canvas.getContext('2d');
+            var start = new Date();
+            var lines = 16,
+                cW = context.canvas.width,
+                cH = context.canvas.height;
+
+            var draw = function() {
+                var rotation = parseInt(((new Date() - start) / 1000) * lines) / lines;
+                context.save();
+                context.clearRect(0, 0, cW, cH);
+                context.translate(cW / 2, cH / 2);
+                context.rotate(Math.PI * 2 * rotation);
+                for (var i = 0; i < lines; i++) {
+
+                    context.beginPath();
+                    context.rotate(Math.PI * 2 / lines);
+                    context.moveTo(cW / 10, 0);
+                    context.lineTo(cW / 4, 0);
+                    context.lineWidth = cW / 30;
+                    context.strokeStyle = "rgba(255,255,255," + i / lines + ")";
+                    context.stroke();
+                }
+                context.restore();
+            };
+            this.spinnerInterval = window.setInterval(draw, 1000 / 30);
+        },
+
+        _hideSpinner: function () {
+            window.clearInterval(this.spinnerInterval);
+            this.$spinnerCanvas.remove();
+            this.$spinnerCanvas = null;
         },
 
         /**
