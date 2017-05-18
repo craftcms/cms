@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Image editor now shows a loading spinner when it's loading an image.
+- Added retina display support for image editor.
 
 ### Changed
 - Improved focal point behavior when modifying the image geometry.

@@ -106,6 +106,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
             this.maxImageSize = Math.max(browserViewportHeight, browserViewportWidth);
+            if (window.devicePixelRatio > 1) {
+                this.maxImageSize *= 2;
+            }
+
             console.log(this.maxImageSize);
         },
 
@@ -141,7 +145,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.$croppingCanvas.width(this.editorWidth);
             this.$croppingCanvas.height(this.editorHeight);
             
-            // TODO Load 2X for retina
             this.canvas.enableRetinaScaling = true;
             this.renderImage = function() {
                 Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
