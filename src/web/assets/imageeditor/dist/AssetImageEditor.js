@@ -144,7 +144,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 
             // TODO add loading spinner
-            // TODO make sure small images are not scaled up
 
             // Load the image from URL
             var imageUrl = Craft.getActionUrl('assets/edit-image', {
@@ -340,10 +339,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Create the focal point.
          */
         _createFocalPoint: function() {
-            var sizeFactor = this.getScaledImageDimensions().width / this.focalPointState.imageDimensions.width;
+            var focalPointState = this.focalPointState;
+            var sizeFactor = this.getScaledImageDimensions().width / focalPointState.imageDimensions.width;
 
-            var focalX = this.focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
-            var focalY = this.focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
+            var focalX = focalPointState.offsetX * sizeFactor * this.zoomRatio * this.scaleFactor;
+            var focalY = focalPointState.offsetY * sizeFactor * this.zoomRatio * this.scaleFactor;
 
             // Adjust by image margins
             focalX += this.image.left;
@@ -353,7 +353,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var deltaY = 0;
 
             // When creating a fresh focal point, drop it dead in the center of the viewport, not the image.
-            if (this.viewport && this.focalPointState.offsetX === 0 && this.focalPointState.offsetY === 0) {
+            if (this.viewport && focalPointState.offsetX === 0 && focalPointState.offsetY === 0) {
                 if (this.currentView !== 'crop') {
                     deltaX = this.viewport.left - this.image.left;
                     deltaY = this.viewport.top - this.image.top;
@@ -369,8 +369,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 focalY += deltaY;
 
                 // Reflect changes in saved state
-                this.focalPointState.offsetX += deltaX / (sizeFactor * this.zoomRatio * this.scaleFactor);
-                this.focalPointState.offsetY += deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
+                focalPointState.offsetX += deltaX / (sizeFactor * this.zoomRatio * this.scaleFactor);
+                focalPointState.offsetY += deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
             }
 
             this.focalPoint = new fabric.Group([
@@ -383,6 +383,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 top: focalY
             });
 
+            this.storeFocalPointState(focalPointState);
             this.canvas.add(this.focalPoint);
         },
 
@@ -652,9 +653,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * Store focal point coordinates in a manner that is not tied to zoom ratio and rotation.
          */
         storeFocalPointState: function(state) {
-            // TODO not really comfortable with imageDimensions being doubled in both cropper and focal State
-            // as they could be forced to have the same value and remove the need for duplicity
-
             // If we're asked to store a specific state.
             if (state) {
                 this.focalPointState = state;
@@ -674,8 +672,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param degrees
          */
         rotateImage: function(degrees) {
-
-            // TODO Maybe move the animation progress check when clicking the button to keep the functions clean
             if (!this.animationInProgress) {
 
                 // We're not that kind of an establishment, sir.
@@ -816,7 +812,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     this._resetFocalPointPosition();
                 }
 
-                // TODO So many nested if's. Make it cleaner.
                 var editorCenter = {x: this.editorWidth / 2, y: this.editorHeight / 2};
                 this.straighteningInput.setValue(-this.imageStraightenAngle);
                 this.imageStraightenAngle = -this.imageStraightenAngle;
@@ -825,59 +820,33 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 var deltaY, deltaX;
-                var state = this.cropperState;
+                var cropperState = this.cropperState;
+                var focalPointState = this.focalPointState;
+
+                // Reposition the image, viewport, and stored cropper and focal point states.
+                if ((axis === 'y' && this.hasOrientationChanged()) || (axis !== 'y' && !this.hasOrientationChanged())) {
+                    cropperState.offsetX = -cropperState.offsetX;
+                    focalPointState.offsetX = -focalPointState.offsetX;
+                    deltaX = this.image.left - editorCenter.x;
+                    properties.left = editorCenter.x - deltaX;
+                } else {
+                    cropperState.offsetY = -cropperState.offsetY;
+                    focalPointState.offsetY = -focalPointState.offsetY;
+                    deltaY = this.image.top - editorCenter.y;
+                    properties.top = editorCenter.y - deltaY;
+                }
 
                 if (axis === 'y') {
                     properties.scaleY = this.image.scaleY * -1;
                     this.flipData.y = 1 - this.flipData.y;
-
-                    // That awkward moment when you flip by one axis and re-position by the other
-                    if (this.hasOrientationChanged()) {
-                        deltaX = this.image.left - editorCenter.x;
-                        properties.left = editorCenter.x - deltaX;
-
-                        if (state) {
-                            state.offsetX = -state.offsetX;
-                        }
-
-                        this.focalPointState.offsetX = -this.focalPointState.offsetX;
-                    } else {
-                        deltaY = this.image.top - editorCenter.y;
-                        properties.top = editorCenter.y - deltaY;
-
-                        if (state) {
-                            state.offsetY = -state.offsetY;
-                        }
-
-                        this.focalPointState.offsetY = -this.focalPointState.offsetY;
-                    }
                 } else {
                     properties.scaleX = this.image.scaleX * -1;
                     this.flipData.x = 1 - this.flipData.x;
-
-                    // That awkward moment when you flip by one axis and re-position by the other
-                    if (this.hasOrientationChanged()) {
-                        deltaY = this.image.top - editorCenter.y;
-                        properties.top = editorCenter.y - deltaY;
-
-                        if (state) {
-                            state.offsetY = -state.offsetY;
-                        }
-                        this.focalPointState.offsetY = -this.focalPointState.offsetY;
-                    } else {
-                        deltaX = this.image.left - editorCenter.x;
-                        properties.left = editorCenter.x - deltaX;
-
-                        if (state) {
-                            state.offsetX = -state.offsetX;
-                        }
-                        this.focalPointState.offsetX = -this.focalPointState.offsetX;
-                    }
                 }
 
-                if (state) {
-                    this.storeCropperState(state);
-                }
+                this.storeCropperState(cropperState);
+                this.storeFocalPointState(focalPointState);
+
                 this.image.animate(properties, {
                     onChange: this.canvas.renderAll.bind(this.canvas),
                     duration: this.settings.animationDuration,
@@ -1019,6 +988,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             }
         },
 
+        /**
+         * Reset focal point to the middle of image.
+         */
         _resetFocalPointPosition: function () {
             var state = this.focalPointState;
             state.offsetX = 0;
@@ -1042,6 +1014,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             );
         },
 
+        /**
+         * Adjust the focal point by an angle in degrees.
+         * @param angle
+         */
         _adjustFocalPointByAngle: function(angle) {
             var angleInRadians = angle * (Math.PI / 180);
             var state = this.focalPointState;
@@ -1049,8 +1025,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             var focalX = state.offsetX;
             var focalY = state.offsetY;
 
-            // Calculate how the cropper would need to move in a circle to maintain
-            // the focus on the same region if the image was rotated with zoom intact.
+            // Calculate how the focal point would need to move in a circle to keep on the same spot
+            // on the image if it was rotated with zoom intact.
             var newFocalX = focalX * Math.cos(angleInRadians) - focalY * Math.sin(angleInRadians);
             var newFocalY = focalX * Math.sin(angleInRadians) + focalY * Math.cos(angleInRadians);
             var sizeFactor = this.getScaledImageDimensions().width / state.imageDimensions.width;
@@ -1080,14 +1056,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             // Check if any of the viewport vertices end up out of bounds
             for (var verticeIndex = 0; verticeIndex < rectangleVertices.length; verticeIndex++) {
                 vertex = rectangleVertices[verticeIndex];
+
                 if (!this.arePointsInsideRectangle([vertex], containingVertices)) {
                     break;
                 }
+
                 vertex = false;
             }
 
             // If there's no vertex set after loop, it means that all of them are inside the image rectangle
             var adjustmentRatio;
+
             if (!vertex) {
                 adjustmentRatio = 1;
             } else {
@@ -2059,8 +2038,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 return;
             }
 
-            // TODO sometimes after a straighten operation you'll get cropper stuck on edges
-            // so maybe be a little more lenient about this is resizing cropper inwards?
             if (!this.arePointsInsideRectangle(this._getRectangleVertices(rectangle), this.imageVerticeCoords)) {
                 return;
             }
