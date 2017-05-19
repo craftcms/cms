@@ -1557,13 +1557,13 @@ class UsersController extends Controller
                 'success' => true,
                 'returnUrl' => $returnUrl
             ]);
-        } else {
-            if ($setNotice) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
-            }
-
-            return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
         }
+
+        if ($setNotice) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
+        }
+
+        return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
     }
 
     /**
