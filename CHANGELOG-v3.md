@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.18 - 2017-05-19
 
 ### Added
 - It’s now possible to assign custom fields to users on Craft Personal and Client editions.
