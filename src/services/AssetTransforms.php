@@ -434,6 +434,10 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%assettransformindex}}', ['id' => $entry['id']])
                 ->execute();
+
+            // And the file.
+            $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($entry));
+            $asset->getVolume()->deleteFile($transformUri);
         }
 
         // Create a new record
