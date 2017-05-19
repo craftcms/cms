@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Changed
+- Improved the readability of field instructions.
+
 ## 2.6.2980 - 2017-05-13
 
 ### Fixed
