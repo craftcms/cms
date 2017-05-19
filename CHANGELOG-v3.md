@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Image editor now shows a loading spinner when it's loading an image.
 - Added retina display support for image editor.
+- It’s now possible to assign custom fields to users on Craft Personal and Client editions.
 - Added `craft\elements\db\ElementQuery::getCriteria()`.
 - Added `craft\elements\db\ElementQuery::criteriaAttributes()`.
 
@@ -25,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed PHP errors that occurred if `craft\fields\Matrix::normalizeValue()` or `craft\fields\BaseRelationField::normalizeValu()` were ever called without passing an element.
 - Fixed a bug where the Quick Post widget was not calling fields’ `normalizeValue()` methods.
 - Fixed a bug where Matrix blocks were not returning the posted field values in Live Preview if they were accessed as an array. ([#1710](https://github.com/craftcms/cms/issues/1710))
+- Fixed a bug where it was not possible to set the User Photo Volume on Craft Personal and Client editions. ([#1717](https://github.com/craftcms/cms/issues/1717))
 
 ## 3.0.0-beta.17 - 2017-05-13
 

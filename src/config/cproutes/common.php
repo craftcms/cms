@@ -68,6 +68,7 @@ return [
     'settings/tags' => 'tags/index',
     'settings/tags/new' => 'tags/edit-tag-group',
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
+    'settings/users' => ['template' => 'settings/users/fields'],
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
 ];
