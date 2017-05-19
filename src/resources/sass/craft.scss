@@ -1333,11 +1333,12 @@ textarea.text.fullwidth { display: block; }
 .chars-left.negative-chars-left { color: $errorcolor; }
 
 .field { position: relative; margin: 24px 0; }
-.field > .heading { margin-bottom: 4px; }
+.field > .heading { margin-bottom: 5px; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
-.field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: $mediumtextcolor; }
-.field > .warning { margin: 4px 0 0; font-size: 11px; }
+.field > .heading > .instructions,
+.checkboxfield.has-instructions .instructions { margin-top: 2px; color: $mediumtextcolor; }
+.field > .warning { margin: 2px 0 0; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 .field > .input:after { @include clearafter; }
 
@@ -1388,6 +1389,7 @@ input.checkbox:indeterminate:focus + label:before,
 :focus div.checkbox.indeterminate:before { background: hsla(205, 100%, 60%, 0.5); }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
+.checkboxfield.has-instructions .instructions { @include padding-left(20px); }
 
 .text:not(.selectize-text),
 .textline,
