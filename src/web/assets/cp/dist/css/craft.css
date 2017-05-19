@@ -1434,7 +1434,7 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 
 .field { position: relative; margin: 24px 0; }
 
-.field > .heading { margin-bottom: 4px; }
+.field > .heading { margin-bottom: 5px; }
 
 .field > .heading > label { position: relative; font-weight: bold; color: #576575; }
 
@@ -1442,9 +1442,9 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 body.ltr .field > .heading > label > .site { margin-left: 7px; }
 body.rtl .field > .heading > label > .site { margin-right: 7px; }
 
-.field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: #8f98a3; }
+.field > .heading > .instructions, .checkboxfield.has-instructions .instructions { margin-top: 2px; color: #8f98a3; }
 
-.field > .warning { margin: 4px 0 0; font-size: 11px; }
+.field > .warning { margin: 2px 0 0; }
 
 .field > .warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'alert'; }
 body.ltr .field > .warning:before { margin: -2px 2px 0 0 ; }
@@ -1493,6 +1493,9 @@ input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none;
 input.checkbox:checked:focus + label:before, input.checkbox:indeterminate:focus + label:before, :focus div.checkbox.checked:before, .sel:focus div.checkbox:before, :focus div.checkbox.indeterminate:before { background: rgba(51, 170, 255, 0.5); }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
+
+body.ltr .checkboxfield.has-instructions .instructions { padding-left: 20px; }
+body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 
 .text:not(.selectize-text), .textline, .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 
@@ -2394,16 +2397,17 @@ body.rtl .fieldlayoutform .unusedfields { margin: 30px -30px -30px 0 ; }
 
 .fieldlayoutform .fld-tabs:after, .fieldlayoutform .unusedfields:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
-body.ltr .fieldlayoutform .newtabbtn-container { margin: 0 0 58px 0 ; }
-body.rtl .fieldlayoutform .newtabbtn-container { margin: 0 0 58px 0 ; }
+.fieldlayoutform .newtabbtn-container { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; }
+body.ltr .fieldlayoutform .newtabbtn-container { margin: 0 0 61px 0 ; }
+body.rtl .fieldlayoutform .newtabbtn-container { margin: 0 0 61px 0 ; }
 
-.fieldlayoutform .newtabbtn-container .btn.add { border: 1px solid #2f1fb5; padding: 2px 10px 0; line-height: 27px; color: #2f1fb5; background: transparent; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
-body.ltr .fieldlayoutform .newtabbtn-container .btn.add { margin-right: 15px; }
-body.rtl .fieldlayoutform .newtabbtn-container .btn.add { margin-left: 15px; }
+.fieldlayoutform .newtabbtn-container .btn.add { border: 1px solid #2f1fb5; padding: 6px 10px 5px; color: #2f1fb5; background: transparent; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 
 .fieldlayoutform .newtabbtn-container .btn.add:before { margin-top: -2px; }
 
-.fieldlayoutform .newtabbtn-container h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; }
+.fieldlayoutform .newtabbtn-container h3 { flex-grow: 1; -ms-flex: 1; line-height: 30px; }
+body.ltr .fieldlayoutform .newtabbtn-container h3 { margin: 0 0 0 30px ; }
+body.rtl .fieldlayoutform .newtabbtn-container h3 { margin: 0 30px 0 0 ; }
 
 .fld-tab { width: 211px; }
 body.ltr .fld-tab { float: left; }
@@ -2426,7 +2430,7 @@ body.rtl .fld-tab .icon, body.rtl .fld-field .icon { margin-right: 5px; }
 
 .fld-tab .tabs { position: relative; z-index: 1; padding: 0 10px; }
 
-.fld-tab .tabs .tab { margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: #f4f3fb; color: #2f1fb5; white-space: normal; }
+.fld-tab .tabs .tab { margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: #f4f3fb; color: #2f1fb5; white-space: normal; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 body.ltr .fld-tab .tabs .tab { float: left; }
 body.rtl .fld-tab .tabs .tab { float: right; }
 
@@ -2436,7 +2440,7 @@ body.rtl .fld-tab .tabs .tab { float: right; }
 
 .fld-tab-caboose { min-height: 31px; }
 
-.fld-field { padding: 8px 8px 3px; cursor: move; }
+.fld-field { padding: 7px 8px 4px; cursor: move; }
 
 .fld-field + .fld-field { margin-top: 7px; }
 

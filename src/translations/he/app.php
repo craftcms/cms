@@ -778,9 +778,7 @@ return [
 
 להלן ההגדרות בהן השתמשת:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'כאשר את בודק את הגדרות האיימיל שלך:',
     'test_email_subject' => 'זהו מייל בדיקה מ-Craft',
     'Text' => 'טקסט',

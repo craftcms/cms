@@ -778,9 +778,7 @@ Gratulálok! A Craft sikeresen elküldött egy e-mailt.
 
 Itt láthatók a használt beállítások:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Amikor teszteled az email beállításokat:',
     'test_email_subject' => 'Ez egy teszt e-mail a Crafttól.',
     'Text' => 'Szöveg',

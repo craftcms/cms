@@ -1,10 +1,40 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.18 - 2017-05-19
+
+### Added
+- It’s now possible to assign custom fields to users on Craft Personal and Client editions.
+- Added `craft\elements\db\ElementQuery::getCriteria()`.
+- Added `craft\elements\db\ElementQuery::criteriaAttributes()`.
+
+### Changed
+- The image editor now matches the screen resolution when displaying images.
+- The image editor now shows a loading spinner when loading images.
+- Improved focal point positioning reliability in the image editor.
+- It’s now possible to specify recipient names in the `testToEmailAddress` setting value. ([#1711](https://github.com/craftcms/cms/pull/1711)
+
+### Removed
+- Removed `craft\helpers\App::isPhpDevServer()`.
+
+### Fixed
+- Fixed a bug where Craft was not removing leading/trailing/double slashes when parsing element URI formats. ([#1707](https://github.com/craftcms/cms/issues/1707))
+- Fixed a bug where emails sent from the “Test” button on Settings → Email were not including the settings values being tested.
+- Fixed a PHP error that occurred when saving plugin settings without any post data.
+- Fixed a regression where the `testToEmailAddress` config setting did not work with an array of email addresses. ([#1711](https://github.com/craftcms/cms/pull/1711)
+- Fixed PHP errors that occurred if `craft\fields\Matrix::normalizeValue()` or `craft\fields\BaseRelationField::normalizeValue()` were ever called without passing an element.
+- Fixed a bug where the Quick Post widget was not calling fields’ `normalizeValue()` methods.
+- Fixed a bug where Matrix blocks were not returning the posted field values in Live Preview if they were accessed as an array. ([#1710](https://github.com/craftcms/cms/issues/1710))
+- Fixed a bug where it was not possible to set the User Photo Volume on Craft Personal and Client editions. ([#1717](https://github.com/craftcms/cms/issues/1717))
+- Fixed a bug where changing a named image transform’s dimensions was not invalidating existing transformed images.
+- Fixed an error that occurred when applying an image transform without a weight. ([#1713](https://github.com/craftcms/cms/issues/1713))
+- Really fixed a bug where Panes’ sidebar could get a wrong height when scrolling down. ([#1364](https://github.com/craftcms/cms/issues/1364))
+
 ## 3.0.0-beta.17 - 2017-05-13
 
 ### Fixed
 - Fixed a bug that broke template loading for template paths with uppercase letters on case-sensitive file systems. ([#1706](https://github.com/craftcms/cms/issues/1706))
+- Fixed a deprecation error caused by the Craft Support widget. ([#1708](https://github.com/craftcms/cms/issues/1708))
 
 ## 3.0.0-beta.16 - 2017-05-13
 

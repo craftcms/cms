@@ -191,14 +191,10 @@ class Cp extends Component
             'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/routes.svg')),
             'label' => Craft::t('app', 'Routes')
         ];
-
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            $settings[$label]['users'] = [
-                'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
-                'label' => Craft::t('app', 'Users')
-            ];
-        }
-
+        $settings[$label]['users'] = [
+            'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/users.svg')),
+            'label' => Craft::t('app', 'Users')
+        ];
         $settings[$label]['email'] = [
             'iconSvg' => file_get_contents(Craft::getAlias('@app/icons/envelope.svg')),
             'label' => Craft::t('app', 'Email')

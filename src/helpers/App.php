@@ -29,11 +29,6 @@ class App
     /**
      * @var bool
      */
-    private static $_isPhpDevServer;
-
-    /**
-     * @var bool
-     */
     private static $_iconv;
 
     // Public Methods
@@ -53,24 +48,6 @@ class App
         // If this was installed via a craftcms.com zip, there will be an index.php file
         // at the root of the vendor directory.
         return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
-    }
-
-    /**
-     * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
-     *
-     * @return bool Whether Craft is running on the PHP Dev Server.
-     */
-    public static function isPhpDevServer(): bool
-    {
-        if (self::$_isPhpDevServer !== null) {
-            return self::$_isPhpDevServer;
-        }
-
-        if (isset($_SERVER['SERVER_SOFTWARE'])) {
-            return self::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
-        }
-
-        return self::$_isPhpDevServer = false;
     }
 
     /**

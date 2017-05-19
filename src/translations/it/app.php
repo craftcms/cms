@@ -778,9 +778,7 @@ Se non aspettavi questa email, ignorala semplicemente. ',
 
  Ecco le impostazioni da te usate:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Quando si stanno testando le impostazioni email:',
     'test_email_subject' => 'Questa è una email di prova da Craft',
     'Text' => 'Testo',

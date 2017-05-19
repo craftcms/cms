@@ -778,9 +778,7 @@ Gratulujeme, Craftu se podařilo odeslat email.
 
 Byla pro to použita následující nastavení:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Když testujete nastavení emailu',
     'test_email_subject' => 'Toto je testovací email z Craft CMS',
     'Text' => 'Text',

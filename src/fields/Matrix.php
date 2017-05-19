@@ -266,11 +266,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $value;
         }
 
-        /** @var Element $element */
+        /** @var Element|null $element */
         $query = MatrixBlock::find();
 
         // Existing element?
-        if ($element->id) {
+        if ($element && $element->id) {
             $query->ownerId($element->id);
         } else {
             $query->id(false);
@@ -278,7 +278,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId);
+            ->siteId($element->siteId ?? null);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.

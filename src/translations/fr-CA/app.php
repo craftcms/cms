@@ -778,9 +778,7 @@ Félicitations! Craft est parvenu à envoyer un courriel.
 
 Voici les paramètres que vous avez utilisés:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Lorsque vous testez vos paramètres de messagerie:',
     'test_email_subject' => 'Ceci est un courriel de test de Craft',
     'Text' => 'Texte',

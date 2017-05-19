@@ -987,9 +987,7 @@ class UsersController extends Controller
         }
 
         // If this is Craft Pro, grab any profile content from post
-        if ($edition === Craft::Pro) {
-            $user->setFieldValuesFromRequest('fields');
-        }
+        $user->setFieldValuesFromRequest('fields');
 
         // Validate and save!
         // ---------------------------------------------------------------------
@@ -1559,13 +1557,13 @@ class UsersController extends Controller
                 'success' => true,
                 'returnUrl' => $returnUrl
             ]);
-        } else {
-            if ($setNotice) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
-            }
-
-            return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
         }
+
+        if ($setNotice) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Logged in.'));
+        }
+
+        return $this->redirectToPostedUrl($userService->getIdentity(), $returnUrl);
     }
 
     /**

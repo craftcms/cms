@@ -241,7 +241,6 @@ class ElementIndexes extends Component
      */
     public function getTableAttributes(string $elementType, string $sourceKey): array
     {
-        /** @var string|ElementInterface $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);

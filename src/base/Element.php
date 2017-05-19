@@ -1795,7 +1795,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function validateCustomFields(): bool
     {
-        if (!static::hasContent()) {
+        if (!static::hasContent() || !Craft::$app->getIsInstalled()) {
             return false;
         }
 

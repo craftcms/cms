@@ -779,9 +779,7 @@ return [
 
 Вот настройки, которые были использованы:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Когда вы тестируете настройки своей почты:',
     'test_email_subject' => 'Тестовое письмо от Craft',
     'Text' => 'Текст',

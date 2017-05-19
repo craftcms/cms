@@ -244,8 +244,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        return parent::normalizeValue($value,
-            $element);
+        return parent::normalizeValue($value, $element);
     }
 
 

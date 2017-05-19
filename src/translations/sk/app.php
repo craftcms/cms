@@ -778,9 +778,7 @@ Gratulujem! Craft úspešne odoslal email.
 
 Tu sú použité nastavenia:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Keď testuješ svoje nastavenia emailu:',
     'test_email_subject' => 'Toto je testovací email od Craft',
     'Text' => 'Text',
