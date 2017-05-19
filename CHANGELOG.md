@@ -5,6 +5,10 @@ Craft CMS Changelog
 
 ### Changed
 - Improved the readability of field instructions.
+- Updated jQuery Timepicker to 1.11.11.
+
+### Fixed
+- Fixed a bug where clicking Enter/Return on a time field with a manually-entered time would change the value to the closest rounded time value. ([#1720](https://github.com/craftcms/cms/issues/1720))
 
 ## 2.6.2980 - 2017-05-13
 
