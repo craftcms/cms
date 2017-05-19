@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to set the User Photo Volume on Craft Personal and Client editions. ([#1717](https://github.com/craftcms/cms/issues/1717))
 - Fixed a bug where changing a named transform’s dimensions would not cause already generated transforms to become invalidated.
 - Fixed a bug where omitting weight in transforms would result in an error when trying to use the transform. ([#1713](https://github.com/craftcms/cms/issues/1713))
+- Another fix to the Panes’ sidebar which could get a wrong height when scrolling down. ([#1364](https://github.com/craftcms/cms/issues/1364))
 
 ## 3.0.0-beta.17 - 2017-05-13
 

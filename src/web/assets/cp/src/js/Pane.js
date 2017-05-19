@@ -148,7 +148,6 @@ Craft.Pane = Garnish.Base.extend(
         },
 
         updateSidebarStyles: function() {
-
             var $pageHeader = $('#page-header');
 
             this.updateSidebarStyles._styles = {};
@@ -157,7 +156,6 @@ Craft.Pane = Garnish.Base.extend(
             this.updateSidebarStyles._pageHeaderHeight = $pageHeader.outerHeight();
             this.updateSidebarStyles._paneOffset = this.$pane.offset().top + (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0) - this.updateSidebarStyles._pageHeaderHeight;
             this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - (this.$tabsContainer.height() ? this.$tabsContainer.height() : 0);
-
             this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
             // Have we scrolled passed the top of the pane?
@@ -165,8 +163,7 @@ Craft.Pane = Garnish.Base.extend(
                 // Set the top position to the difference
                 this.updateSidebarStyles._styles.position = 'fixed';
                 this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight) + 'px';
-            }
-            else {
+            } else {
                 this.updateSidebarStyles._styles.position = 'absolute';
 
                 if (Garnish.$win.width() > 768) {
@@ -179,14 +176,13 @@ Craft.Pane = Garnish.Base.extend(
 
             // Now figure out how tall the sidebar can be
             this.updateSidebarStyles._styles.maxHeight = Math.min(
-                (this.updateSidebarStyles._paneHeight - (this.updateSidebarStyles._scrollTop + this.updateSidebarStyles._paneOffset)),
-                (this.updateSidebarStyles._windowHeight - this.updateSidebarStyles._pageHeaderHeight)
+                this.updateSidebarStyles._paneHeight - (this.updateSidebarStyles._scrollTop - this.updateSidebarStyles._paneOffset),
+                this.updateSidebarStyles._windowHeight
             );
 
-            if (this.updateSidebarStyles._paneHeight > (this.updateSidebarStyles._windowHeight - this.updateSidebarStyles._pageHeaderHeight)) {
+            if(this.updateSidebarStyles._paneHeight > this.updateSidebarStyles._windowHeight) {
                 this.updateSidebarStyles._styles.height = this.updateSidebarStyles._styles.maxHeight;
-            }
-            else {
+            } else {
                 this.updateSidebarStyles._styles.height = this.updateSidebarStyles._paneHeight;
             }
 
