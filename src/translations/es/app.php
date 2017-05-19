@@ -778,9 +778,7 @@ Si no estabas esperando este correo electrónico, ignóralo.',
 ¡Enhorabuena! Craft te ha enviado un correo electrónico.
 Estas son las configuraciones que has utilizado:
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => 'Cuando pruebas la configuarción de tu correo electrónico.',
     'test_email_subject' => 'Este es un correo electrónico de prueba de Craft',
     'Text' => 'Texto',

@@ -612,7 +612,7 @@ class GeneralConfig extends Object
      */
     public $suppressTemplateErrors = false;
     /**
-     * @var string|null Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
+     * @var string|array|null Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
     public $testToEmailAddress;

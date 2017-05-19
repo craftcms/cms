@@ -8,8 +8,11 @@
 namespace craft\widgets;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\Widget;
+use craft\helpers\Json;
 use craft\web\assets\craftsupport\CraftSupportAsset;
+use PDO;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
@@ -52,19 +55,11 @@ class CraftSupport extends Widget
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/chat-bubbles.svg');
+        return Craft::getAlias('@app/icons/buoey.svg');
     }
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function getTitle(): string
-    {
-        return Craft::t('app', 'Send a message to Craft Support');
-    }
 
     /**
      * @inheritdoc
@@ -78,19 +73,45 @@ class CraftSupport extends Widget
 
         $view = Craft::$app->getView();
 
-        $js = "new Craft.CraftSupportWidget({$this->id});";
+        $plugins = '';
+        foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
+            $plugins .= "\n    - ".$plugin->name.' '.$plugin->version;
+        }
+
+        $db = Craft::$app->getDb();
+        if ($db->getIsMysql()) {
+            $driver = 'MySQL';
+        } else {
+            $driver = 'PostgreSQL';
+        }
+
+        $envInfoJs = Json::encode([
+            'Craft version' => Craft::$app->version.' ('.Craft::$app->getEditionName().')',
+            'PHP version' => PHP_VERSION,
+            'Database driver & version' => $driver.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION),
+            'Plugins & versions' => $plugins,
+        ]);
+
+        $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
         $view->registerJs($js);
 
         $view->registerAssetBundle(CraftSupportAsset::class);
         $view->registerTranslations('app', [
             'Message sent successfully.',
-            'Couldn’t send support request.',
         ]);
+
+        $iconsDir = Craft::getAlias('@app/icons');
 
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body', [
+            'widget' => $this,
+            'buoeyIcon' => file_get_contents($iconsDir.'/buoey.svg'),
+            'bullhornIcon' => file_get_contents($iconsDir.'/bullhorn.svg'),
+            'seIcon' => file_get_contents($iconsDir.'/craft-stack-exchange.svg'),
+            'ghIcon' => file_get_contents($iconsDir.'/github.svg'),
             'showBackupOption' => $showBackupOption
         ]);
     }

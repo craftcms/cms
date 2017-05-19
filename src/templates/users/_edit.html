@@ -179,14 +179,12 @@
 
                         {% endif %}
 
-                        {% if CraftEdition == CraftPro %}
-                            {% include "_includes/fields" with {
-                                fields: craft.app.fields.getLayoutByType('craft\\elements\\User').getFields(),
-                                element: account
-                            } only %}
+                        {% include "_includes/fields" with {
+                            fields: craft.app.fields.getLayoutByType('craft\\elements\\User').getFields(),
+                            element: account
+                        } only %}
 
-                            {{ saveUserButtons }}
-                        {% endif %}
+                        {{ saveUserButtons }}
                     </div>
                 {% endif %}
 

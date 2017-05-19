@@ -4,7 +4,26 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
+- Improved the readability of field instructions.
+- Updated jQuery Timepicker to 1.11.11.
+
+### Fixed
+- Fixed a bug where clicking Enter/Return on a time field with a manually-entered time would change the value to the closest rounded time value. ([#1720](https://github.com/craftcms/cms/issues/1720))
+
+## 2.6.2980 - 2017-05-13
+
+### Fixed
+- Fixed a bug where action requests on the front-end were getting treated like CP requests in the TemplatesService, breaking Live Preview, and possibly other things.
+
+## 2.6.2979 - 2017-05-12
+
+### Added
+- Added the new Craft Support widget.
+
+### Changed
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
+- The entry revision dropdown on the edit entry page now shows the who edited the “Current” version along with the time. ([#1650](https://github.com/craftcms/cms/issues/1650))
+- Craft now checks the template mode when it tries to resolve a template for a plugin.
 
 ## 2.6.2978 - 2017-05-02
 

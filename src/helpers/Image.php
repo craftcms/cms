@@ -32,10 +32,10 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  int $targetWidth
-     * @param  int $targetHeight
-     * @param  int $sourceWidth
-     * @param  int $sourceHeight
+     * @param  int|float|null $targetWidth
+     * @param  int|float|null $targetHeight
+     * @param  int|float      $sourceWidth
+     * @param  int|float      $sourceHeight
      *
      * @return int[] Array of the width and height.
      */

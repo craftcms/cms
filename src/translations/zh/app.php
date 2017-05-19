@@ -777,9 +777,7 @@ return [
 
 这是您使用的设置：
 
-{% for key, setting in settings %}{{ key }}: {{ setting }}
-
-{% endfor %}',
+{{ settings }}',
     'test_email_heading' => '测试电子邮件设置时：',
     'test_email_subject' => '这是来自 Craft 的测试邮件',
     'Text' => '文本',

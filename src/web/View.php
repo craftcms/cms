@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\Plugin;
+use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
@@ -35,6 +36,11 @@ class View extends \yii\web\View
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering field types.
+     */
+    const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -78,6 +84,11 @@ class View extends \yii\web\View
      * @var string|null
      */
     private $_templateMode;
+
+    /**
+     * @var array|null
+     */
+    private $_cpTemplateRoots;
 
     /**
      * @var string|null The root path to look for templates in
@@ -510,7 +521,7 @@ class View extends \yii\web\View
     public function resolveTemplate(string $name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
 
         $key = $this->_templatesPath.':'.$name;
 
@@ -541,36 +552,52 @@ class View extends \yii\web\View
             }
         }
 
-        // Otherwise maybe it's a plugin template?
-
-        // Only attempt to match against a plugin's templates if this is a CP or action request.
+        unset($basePaths);
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
-            // Sanitize
-            $name = StringHelper::convertToUtf8($name);
-
-            $parts = array_filter(explode('/', $name));
-            $pluginId = StringHelper::toLowerCase(array_shift($parts));
-
-            if ($pluginId && (
-                    ($plugin = Craft::$app->getPlugins()->getPlugin($pluginId)) !== null ||
-                    ($plugin = Craft::$app->getPlugins()->getPluginByModuleId($pluginId)) !== null
-                )
-            ) {
-                // Get the template path for the plugin.
-                /** @var Plugin $plugin */
-                $basePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'templates';
-
-                // Get the new template name to look for within the plugin's templates folder
-                $tempName = implode('/', $parts);
-
-                if (($path = $this->_resolveTemplate($basePath, $tempName)) !== null) {
-                    return $this->_templatePaths[$key] = $path;
+            // Check any registered CP template roots
+            foreach ($this->getCpTemplateRoots() as $templateRoot => $basePaths) {
+                /** @var string[] $basePaths */
+                $templateRootLen = strlen($templateRoot);
+                if (strncasecmp($templateRoot.'/', $name, $templateRootLen+1) === 0) {
+                    $subName = substr($name, $templateRootLen+1);
+                    foreach ($basePaths as $basePath) {
+                        if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
+                            return $this->_templatePaths[$key] = $path;
+                        }
+                    }
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Returns any registered CP template roots.
+     *
+     * @return array
+     */
+    public function getCpTemplateRoots(): array
+    {
+        if ($this->_cpTemplateRoots !== null) {
+            return $this->_cpTemplateRoots;
+        }
+
+        $event = new RegisterTemplateRootsEvent();
+        $this->trigger(self::EVENT_REGISTER_CP_TEMPLATE_ROOTS, $event);
+
+        $this->_cpTemplateRoots = [];
+
+        foreach ($event->roots as $templatePath => $dir) {
+            $templatePath = strtolower(trim($templatePath, '/'));
+            $this->_cpTemplateRoots[$templatePath][] = $dir;
+        }
+
+        // Longest (most specific) first
+        krsort($this->_cpTemplateRoots, SORT_STRING);
+
+        return $this->_cpTemplateRoots;
     }
 
     /**

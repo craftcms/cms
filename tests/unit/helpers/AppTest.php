@@ -41,11 +41,6 @@ class AppTest extends \Codeception\TestCase\Test
         $this->assertTrue(App::isComposerInstall());
     }
 
-    public function testIsPhpDevServer()
-    {
-        $this->assertFalse(App::isPhpDevServer());
-    }
-
     public function testIsValidEdition()
     {
         $this->assertTrue(App::isValidEdition('1'));

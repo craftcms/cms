@@ -242,7 +242,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             return $value;
         }
 
-        /** @var Element $element */
+        /** @var Element|null $element */
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
@@ -254,7 +254,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $query
                 ->id(array_values(array_filter($value)))
                 ->fixedOrder();
-        } else if ($value !== '' && $element->id) {
+        } else if ($value !== '' && $element && $element->id) {
             $query->innerJoin(
                 '{{%relations}} relations',
                 [

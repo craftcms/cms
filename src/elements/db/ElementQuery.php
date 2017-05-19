@@ -39,8 +39,6 @@ use yii\db\Expression;
  * @since  3.0
  *
  * @property string|Site $site The site or site handle that the elements should be returned in
- *
- * @method ElementInterface|array nth(int $n, Connection $db = null)
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -1034,6 +1032,26 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Executes the query and returns a single row of result at a given offset.
+     *
+     * @param int             $n  The offset of the row to return. If [[offset]] is set, $offset will be added to it.
+     * @param Connection|null $db The database connection used to generate the SQL statement.
+     *                            If this parameter is not given, the `db` application component will be used.
+     *
+     * @return ElementInterface|array|bool The element or row of the query result. False is returned if the query
+     * results in nothing.
+     */
+    public function nth(int $n, Connection $db = null)
+    {
+        // Cached?
+        if (($cachedResult = $this->getCachedResult()) !== null) {
+            return $cachedResult[$n] ?? false;
+        }
+
+        return parent::nth($n, $db);
+    }
+
+    /**
      * @inheritdoc
      */
     public function ids($db = null): array
@@ -1066,7 +1084,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Make sure the criteria hasn't changed
-        if ($this->_resultCriteria !== $this->toArray([], [], false)) {
+        if ($this->_resultCriteria !== $this->getCriteria()) {
             $this->_result = null;
 
             return null;
@@ -1088,7 +1106,43 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function setCachedResult(array $elements)
     {
         $this->_result = $elements;
-        $this->_resultCriteria = $this->toArray([], [], false);
+        $this->_resultCriteria = $this->getCriteria();
+    }
+
+    /**
+     * Returns an array of the current criteria attribute values.
+     *
+     * @return array
+     */
+    public function getCriteria(): array
+    {
+        return $this->toArray($this->criteriaAttributes(), [], false);
+    }
+
+    /**
+     * Returns the query's criteria attributes.
+     *
+     * @return string[]
+     */
+    public function criteriaAttributes(): array
+    {
+        // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
+        $class = new \ReflectionClass($this);
+        $names = [];
+
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $dec = $property->getDeclaringClass();
+                if (
+                    ($dec->getName() === self::class || $dec->isSubclassOf(self::class)) &&
+                    !in_array($property->getName(), ['elementType', 'query', 'subQuery', 'contentTable', 'customFields', 'asArray'], true)
+                ) {
+                    $names[] = $property->getName();
+                }
+            }
+        }
+
+        return $names;
     }
 
     // Arrayable methods

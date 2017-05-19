@@ -4,11 +4,57 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Image editor now shows a loading spinner when it's loading an image.
+- Added retina display support for image editor.
+- It’s now possible to assign custom fields to users on Craft Personal and Client editions.
+- Added `craft\elements\db\ElementQuery::getCriteria()`.
+- Added `craft\elements\db\ElementQuery::criteriaAttributes()`.
+
+### Changed
+- Improved focal point behavior when modifying the image geometry.
+
+### Removed
+- Removed `craft\helpers\App::isPhpDevServer()`.
+
+### Fixed
+- Fixed a bug where Craft was not removing leading/trailing/double slashes when parsing element URI formats. ([#1707](https://github.com/craftcms/cms/issues/1707))
+- Fixed a bug where focal point would sometimes change it's location when toggled multiple times in succession.
+- Fixed a bug where cropping an image and setting the focal point would cause the focal point to be saved incorrectly.
+- Fixed a bug where emails sent from the “Test” button on Settings → Email were not including the settings values being tested.
+- Fixed a PHP error that occurred when saving plugin settings without any post data.
+- Fixed a regression where the `testToEmailAddress` config setting did not work with an array of email addresses. ([#1711](https://github.com/craftcms/cms/pull/1711)
+- Fixed PHP errors that occurred if `craft\fields\Matrix::normalizeValue()` or `craft\fields\BaseRelationField::normalizeValu()` were ever called without passing an element.
+- Fixed a bug where the Quick Post widget was not calling fields’ `normalizeValue()` methods.
+- Fixed a bug where Matrix blocks were not returning the posted field values in Live Preview if they were accessed as an array. ([#1710](https://github.com/craftcms/cms/issues/1710))
+- Fixed a bug where it was not possible to set the User Photo Volume on Craft Personal and Client editions. ([#1717](https://github.com/craftcms/cms/issues/1717))
+- Fixed a bug where changing a named transform’s dimensions would not cause already generated transforms to become invalidated.
+- Fixed a bug where omitting weight in transforms would result in an error when trying to use the transform. ([#1713](https://github.com/craftcms/cms/issues/1713))
+- Another fix to the Panes’ sidebar which could get a wrong height when scrolling down. ([#1364](https://github.com/craftcms/cms/issues/1364))
+
+## 3.0.0-beta.17 - 2017-05-13
+
+### Fixed
+- Fixed a bug that broke template loading for template paths with uppercase letters on case-sensitive file systems. ([#1706](https://github.com/craftcms/cms/issues/1706))
+- Fixed a deprecation error caused by the Craft Support widget. ([#1708](https://github.com/craftcms/cms/issues/1708))
+
+## 3.0.0-beta.16 - 2017-05-13
+
+### Fixed
+- Fixed a PHP error that occurred when editing elements if a Checkboxes/Multi-select field was converted to a Dropdown/Radio Buttons field. ([#1701](https://github.com/craftcms/cms/issues/1701))
+- Fixed a bug where entry URIs weren’t getting updated after re-saving a section with a new Entry URI Format. ([#1705](https://github.com/craftcms/cms/issues/1705))
+
+## 3.0.0-beta.15 - 2017-05-12
+
+### Added
 - Added `craft\events\getAssetUrlEvent` which plugins can use to modify the URL of an Asset being fetched.
+- Added the `registerCpTemplateRoots` event to `craft\web\View`, making it possible for non-plugins to register CP template root paths/directories.
+- Added `craft\events\RegisterTemplateRootsEvent`.
+- Added `craft\web\View::getCpTemplateRoots()`.
 
 ### Changed
 - The Field Layout Designer is now using the default font instead of the Coming Soon font. ([#1537](https://github.com/craftcms/cms/issues/1537))
 - Updated Stringy to 3.0.
+- Improved focal point tracking in Image editor when dealing with scaled images.
 
 ### Fixed
 - Fixed a PHP error that occurred when creating a new user.
@@ -16,6 +62,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where JS scripts registered from plugin settings pages weren’t getting properly namespaced, so generally didn’t work. ([#1691](https://github.com/craftcms/cms/issues/1691))
 - Fixed a bug where some locales were always showing two-digit day/month numbers in formatted dates (e.g. `01/05`).
 - Fixed a bug where form-submitted date/time values were always being treated as US-formatted dates/times, if the Intl extension wasn’t enabled. ([#1495](https://github.com/craftcms/cms/issues/1495))
+- Fixed a bug where it was possible to break UI in Image editor with triggering crop mode twice.
 
 ## 3.0.0-beta.14 - 2017-05-02
 

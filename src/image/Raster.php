@@ -227,7 +227,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -337,7 +337,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
