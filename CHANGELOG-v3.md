@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Added
+- Image editor now loads a higher-resolution image when it's size is increased significantly.
+
 ## 3.0.0-beta.18 - 2017-05-19
 
 ### Added
