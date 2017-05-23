@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - The image editor now loads a higher-resolution image when the image viewport size has increased significantly.
+- `craft\db\Migration::addPrimaryKey()`, `addForeignKey()`, and `createIndex` now automatically generate the key/index name if `$name` is `null`.
 
 ## 3.0.0-beta.18 - 2017-05-19
 
