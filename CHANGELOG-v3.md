@@ -7,6 +7,9 @@ Craft CMS 3.0 Working Changelog
 - The image editor now loads a higher-resolution image when the image viewport size has increased significantly.
 - `craft\db\Migration::addPrimaryKey()`, `addForeignKey()`, and `createIndex` now automatically generate the key/index name if `$name` is `null`.
 
+### Fixed
+- Fixed a bug where entries and categories created from element selection modals weren’t getting a field layout ID assigned to them. ([#1725](https://github.com/craftcms/cms/issues/1725))
+
 ## 3.0.0-beta.18 - 2017-05-19
 
 ### Added

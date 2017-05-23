@@ -11,9 +11,9 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 
 /**
- * m170405_132309_element_field_layout_ids migration.
+ * m170523_190652_element_field_layout_ids migration.
  */
-class m170405_132309_element_field_layout_ids extends Migration
+class m170523_190652_element_field_layout_ids extends Migration
 {
     // Properties
     // -------------------------------------------------------------------------
@@ -56,7 +56,7 @@ class m170405_132309_element_field_layout_ids extends Migration
      */
     public function safeDown()
     {
-        echo "m170322_204706_element_field_layout_ids cannot be reverted.\n";
+        echo "m170523_190652_element_field_layout_ids cannot be reverted.\n";
 
         return false;
     }

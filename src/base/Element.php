@@ -1683,6 +1683,8 @@ abstract class Element extends Component implements ElementInterface
             }
 
             Craft::$app->getView()->setNamespace($originalNamespace);
+
+            $html .= '<input type="hidden" name="fieldLayoutId" value="'.$fieldLayout->id.'">';
         }
 
         return $html;

@@ -845,12 +845,18 @@ EOD;
             }
         }
 
-        if ($this->getType()->hasTitleField) {
+        // Get the entry type
+        $entryType = $this->getType();
+
+        // Show the Title field?
+        if ($entryType->hasTitleField) {
             $html .= $view->renderTemplate('entries/_titlefield', [
                 'entry' => $this
             ]);
         }
 
+        // Set the field layout ID and render the custom fields
+        $this->fieldLayoutId = $entryType->fieldLayoutId;
         $html .= parent::getEditorHtml();
 
         return $html;

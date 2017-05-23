@@ -374,6 +374,8 @@ class Category extends Element
             ]
         ]);
 
+        // Set the field layout ID and render the custom fields
+        $this->fieldLayoutId = $this->getGroup()->fieldLayoutId;
         $html .= parent::getEditorHtml();
 
         return $html;
