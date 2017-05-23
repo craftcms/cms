@@ -52,8 +52,8 @@ class m161029_124145_email_message_languages extends Migration
 
         // Make the languages column NOT NULL and add indexes to it
         $this->alterColumn('{{%emailmessages}}', 'language', $this->string()->notNull());
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
+        $this->createIndex(null, '{{%emailmessages}}', 'key,language', true);
+        $this->createIndex(null, '{{%emailmessages}}', 'language', false);
 
         // Drop the siteId column
         MigrationHelper::dropForeignKeyIfExists('{{%emailmessages}}', ['siteId'], $this);

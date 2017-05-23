@@ -36,8 +36,8 @@ class m170405_132309_element_field_layout_ids extends Migration
         // Add the elements.fieldLayoutId column + FK
         if (!$this->db->columnExists('{{%elements}}', 'fieldLayoutId')) {
             $this->addColumn('{{%elements}}', 'fieldLayoutId', $this->integer());
-            $this->createIndex($this->db->getIndexName('{{%elements}}', 'fieldLayoutId', false, true), '{{%elements}}', 'fieldLayoutId', false);
-            $this->addForeignKey($this->db->getForeignKeyName('{{%elements}}', 'fieldLayoutId'), '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+            $this->createIndex(null, '{{%elements}}', 'fieldLayoutId', false);
+            $this->addForeignKey(null, '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         }
 
         // Update the elements
