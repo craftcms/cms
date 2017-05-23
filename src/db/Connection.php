@@ -292,6 +292,25 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Returns a primary key name based on the table and column names.
+     *
+     * @param string       $table
+     * @param string|array $columns
+     *
+     * @return string
+     */
+    public function getPrimaryKeyName(string $table, $columns): string
+    {
+        $table = $this->_getTableNameWithoutPrefix($table);
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+        }
+        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
+
+        return $this->trimObjectName($name);
+    }
+
+    /**
      * Returns a foreign key name based on the table and column names.
      *
      * @param string       $table
@@ -302,7 +321,9 @@ class Connection extends \yii\db\Connection
     public function getForeignKeyName(string $table, $columns): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
-        $columns = ArrayHelper::toArray($columns);
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+        }
         $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
 
         return $this->trimObjectName($name);
@@ -322,25 +343,10 @@ class Connection extends \yii\db\Connection
     public function getIndexName(string $table, $columns, bool $unique = false, bool $foreignKey = false): string
     {
         $table = $this->_getTableNameWithoutPrefix($table);
-        $columns = ArrayHelper::toArray($columns);
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+        }
         $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
-
-        return $this->trimObjectName($name);
-    }
-
-    /**
-     * Returns a primary key name based on the table and column names.
-     *
-     * @param string       $table
-     * @param string|array $columns
-     *
-     * @return string
-     */
-    public function getPrimaryKeyName(string $table, $columns): string
-    {
-        $table = $this->_getTableNameWithoutPrefix($table);
-        $columns = ArrayHelper::toArray($columns);
-        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 
         return $this->trimObjectName($name);
     }
