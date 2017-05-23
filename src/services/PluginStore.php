@@ -38,7 +38,7 @@ class PluginStore extends Component
     public function getClient()
     {
         $options = [
-            'base_uri' => 'https://craftcms.dev/api/',
+            'base_uri' => 'https://craftid.dev/api/',
         ];
 
         $token = $this->getToken();
