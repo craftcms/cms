@@ -1665,20 +1665,21 @@ abstract class Element extends Component implements ElementInterface
         $html = '';
 
         $fieldLayout = $this->getFieldLayout();
+        $view = Craft::$app->getView();
 
         if ($fieldLayout) {
-            $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
-            Craft::$app->getView()->setNamespace($namespace);
+            $originalNamespace = $view->getNamespace();
+            $namespace = $view->namespaceInputName('fields', $originalNamespace);
+            $view->setNamespace($namespace);
 
             foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
+                $fieldHtml = $view->renderTemplate('_includes/field', [
                     'element' => $this,
                     'field' => $field,
                     'required' => $field->required
                 ]);
 
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
+                $html .= $view->namespaceInputs($fieldHtml, 'fields');
             }
 
             Craft::$app->getView()->setNamespace($originalNamespace);
