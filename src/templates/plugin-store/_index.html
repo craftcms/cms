@@ -7,8 +7,79 @@
 		<a href="{{ url('myaccount') }}" class="btn">Your Account</a>
 	</div>
 {% endset %}
+{% do view.registerAssetBundle('craft\\vue\\Asset') %}
 
 {% set content %}
+
+	<script src="https://cdn.jsdelivr.net/vue.resource/1.3.1/vue-resource.min.js"></script>
+
+	{% verbatim %}
+		<div id="plugins" v-cloak>
+			<input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" placeholder="Search plugins" v-model="searchQuery">
+			<br />
+			<br />
+			<table class="data fullwidth">
+				<thead>
+				<tr>
+					<th>Name</th>
+					<th>Developer</th>
+				</tr>
+				</thead>
+				<tr v-for="plugin in pluginsToRender">
+					<td>${ plugin.name }</td>
+					<td><a v-bind:href="plugin.developerUrl">${ plugin.developer }</a></td>
+				</tr>
+			</table>
+
+			<div v-show="showSpinner">
+				Loading…
+			</div>
+		</div>
+	{% endverbatim %}
+
+	{% js %}
+
+        Vue.use(VueResource);
+
+        new Vue({
+            el: '#plugins',
+            delimiters: ['${', '}'],
+            data: {
+                searchQuery: '',
+                plugins: [],
+                showSpinner: 1,
+            },
+            computed: {
+                pluginsToRender() {
+                    var searchQuery = this.searchQuery;
+                    return this.plugins.filter(function(plugin) {
+                        var searchQueryRegExp = new RegExp(searchQuery, 'gi');
+
+                        if(plugin.name.match(searchQueryRegExp)) {
+                            return true;
+                        }
+
+                        if(plugin.developer.match(searchQueryRegExp)) {
+                            return true;
+                        }
+
+                        if(plugin.developerUrl.match(searchQueryRegExp)) {
+                            return true;
+                        }
+                    });
+                },
+            },
+            created: function() {
+				var url = Craft.getActionUrl('plugin-store/plugins');
+                this.$http.get(url).then(function(data) {
+                    this.plugins = this.plugins.concat(data.body.data);
+                    this.showSpinner = 0;
+                });
+            }
+        });
+
+	{% endjs %}
+{#
 
 	{% if not error %}
 
@@ -49,5 +120,6 @@
 	{% else %}
 		<p class="error">{{ error|raw }}</p>
 	{% endif %}
+#}
 
 {% endset %}

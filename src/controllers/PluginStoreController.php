@@ -69,6 +69,22 @@ class PluginStoreController extends Controller
     }
 
     /**
+     * Returns the plugins.
+     *
+     * @return Response
+     */
+    public function actionPlugins()
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        $response = $client->request('GET', 'plugins');
+
+        $data = json_decode($response->getBody(), true);
+
+        return $this->asJson($data);
+    }
+
+    /**
      * Account
      *
      * @return string
