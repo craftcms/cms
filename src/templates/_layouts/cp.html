@@ -160,8 +160,8 @@
         <nav>
             <ul id="nav">
                 {% for item in craft.cp.nav() %}
-                    {% set hasSubnav = (subnav is defined and subnav) %}
-                    <li id="{{ item.id }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
+                    {% set hasSubnav = (item.subnav is defined and item.subnav) %}
+                    <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
                         <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
                             <span class="icon">
                                 {%- if item.icon is defined -%}
@@ -181,9 +181,9 @@
                                 <span class="badge">{{ item.badgeCount }}</span>
                             {%- endif -%}
                         </a>
-                        {% if item.sel and hasSubnav  %}
+                        {% if item.sel and hasSubnav %}
                             <ul class="subnav">
-                                {% for itemId, item in subnav %}
+                                {% for itemId, item in item.subnav %}
                                     {% set itemIsSelected = (
                                         (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
                                         (selectedSubnavItem is not defined and loop.first)
