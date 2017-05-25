@@ -41,7 +41,8 @@
     "bower-asset/selectize": "~0.12.4",
     "bower-asset/timepicker": "~1.11.11",
     "bower-asset/velocity": "~1.5.0",
-    "craftcms/vue-asset": "^1.0"
+    "craftcms/vue-asset": "^1.0",
+    "npm-asset/vue-resource": "~1.1.2"
   },
   "require-dev": {
     "codeception/codeception": "~2.2.9",
