@@ -62,6 +62,8 @@ class PluginStoreController extends Controller
             $error = $e->getMessage();
         }
 
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+
         return $this->renderTemplate('plugin-store/_index', [
             'plugins' => (isset($plugins) ? $plugins : null),
             'error' => (isset($error) ? $error : null)

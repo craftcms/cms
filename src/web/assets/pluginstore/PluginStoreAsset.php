@@ -7,8 +7,10 @@
 
 namespace craft\web\assets\pluginstore;
 
+use craft\vue\Asset;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\assets\vueresource\VueResourceAsset;
 
 /**
  * Asset bundle for the Plugin Store page
@@ -24,6 +26,8 @@ class PluginStoreAsset extends AssetBundle
 
         $this->depends = [
             CpAsset::class,
+            Asset::class,
+            VueResourceAsset::class,
         ];
 
         $this->js = [
@@ -33,6 +37,7 @@ class PluginStoreAsset extends AssetBundle
 
         $this->css = [
             'pluginstore.css',
+            'pluginstore-oauth-callback.css',
         ];
 
         parent::init();
