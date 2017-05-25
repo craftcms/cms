@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\vue\Asset as VueAsset;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\helpers\UrlHelper;
@@ -63,6 +64,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
 
         return $this->renderTemplate('plugin-store/_index', [
             'plugins' => (isset($plugins) ? $plugins : null),
