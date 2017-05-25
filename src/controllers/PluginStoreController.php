@@ -104,9 +104,6 @@ class PluginStoreController extends Controller
             $pluginsResponse = $client->request('GET', 'plugins');
             $plugins = json_decode($pluginsResponse->getBody(), true);
 
-            $pingResponse = $client->request('GET', 'ping');
-            $ping = json_decode($pingResponse->getBody(), true);
-
             if($token)
             {
                 $accountResponse = $client->request('GET', 'account');
@@ -127,7 +124,6 @@ class PluginStoreController extends Controller
 
         return $this->renderTemplate('plugin-store/account/_index', [
             'token' => $token,
-            'ping' => (isset($ping) ? $ping : null),
             'plugins' => (isset($plugins) ? $plugins : null),
             'account' => (isset($account) ? $account : null),
             'error' => (isset($error) ? $error : null)
