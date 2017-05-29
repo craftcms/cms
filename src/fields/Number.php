@@ -132,7 +132,7 @@ class Number extends Field implements PreviewableFieldInterface
         // Is this a post request?
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsPost() && $this->required) {
+        if (!$request->getIsConsoleRequest() && $request->getIsPost()) {
             // Normalize the number and make it look like this is what was posted
             if ($value !== '') {
                 $value = Localization::normalizeNumber($value);
