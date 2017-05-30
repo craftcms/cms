@@ -12,7 +12,6 @@ use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreapp\PluginStoreAppAsset;
 use craft\web\Controller;
 use craft\helpers\UrlHelper;
-use craft\helpers\Json;
 use craftcms\oauth2\client\provider\CraftId;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
