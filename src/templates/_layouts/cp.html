@@ -163,6 +163,8 @@
                 <div id="account-menu-anchor"></div>
             </a>
 
+			{% set craftIdAccount = craft.cp.craftIdAccount() %}
+
             <div class="menu" data-align="left">
                 <ul>
                     <li>
@@ -174,7 +176,13 @@
                                 <div class="username">
 									{{ currentUser.name }}
 									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
-                                    <div class="light">Not connected to Craft ID</div>
+
+									{% if craftIdAccount %}
+                                        <div class="light">{{ craftIdAccount.data[0].username }}</div>
+                                    {% else %}
+                                        <div class="light">Not connected to Craft ID</div>
+									{% endif %}
+
                                 </div>
                             </div>
                         </a>
@@ -186,8 +194,6 @@
                         <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
 					{% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-
-                    {% set craftIdAccount = craft.cp.craftIdAccount() %}
 
 					{% if craftIdAccount %}
                         <li>
