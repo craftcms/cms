@@ -9,91 +9,9 @@
 {% endset %}
 
 {% set content %}
-
-	{% verbatim %}
-		<div id="plugins" v-cloak>
-			<input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" placeholder="Search plugins" v-model="searchQuery">
-			<br />
-			<br />
-			<table class="data fullwidth">
-				<thead>
-				<tr>
-					<th></th>
-					<th>Name</th>
-					<th>Developer</th>
-				</tr>
-				</thead>
-				<tr v-for="plugin in pluginsToRender">
-					<td class="thin">
-						<div class="plugin-icon">
-							<img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-						</div>
-					</td>
-					<td>
-						<strong><a v-bind:href="pluginUrl(plugin)">{{ plugin.name }}</a></strong>
-						<div>{{ plugin.description }}</div>
-					</td>
-					<td><a v-bind:href="plugin.developerUrl">{{ plugin.developerName }}</a></td>
-				</tr>
-			</table>
-
-			<div v-show="showSpinner">
-				Loading…
-			</div>
-		</div>
-	{% endverbatim %}
-
-	{% js %}
-
-        Vue.use(VueResource);
-
-        new Vue({
-            el: '#plugins',
-            data: {
-                searchQuery: '',
-                plugins: [],
-                showSpinner: 1,
-            },
-            methods: {
-                pluginUrl(plugin) {
-                    return Craft.getCpUrl('plugin-store/'+plugin.slug);
-                }
-            },
-            computed: {
-                pluginsToRender() {
-                    var searchQuery = this.searchQuery;
-                    return this.plugins.filter(function(plugin) {
-                        var searchQueryRegExp = new RegExp(searchQuery, 'gi');
-
-                        if(plugin.name.match(searchQueryRegExp)) {
-                            return true;
-                        }
-
-                        if(plugin.description.match(searchQueryRegExp)) {
-                            return true;
-                        }
-
-                        if(plugin.developerName.match(searchQueryRegExp)) {
-                            return true;
-                        }
-
-                        if(plugin.developerUrl.match(searchQueryRegExp)) {
-                            return true;
-                        }
-                    });
-                },
-            },
-            created: function() {
-				var url = Craft.getActionUrl('plugin-store/api-plugins');
-                this.$http.get(url).then(function(data) {
-                    this.plugins = this.plugins.concat(data.body.data);
-                    this.showSpinner = 0;
-                });
-            }
-        });
-
-	{% endjs %}
-{#
+    <div id="app">
+        <Plugins></Plugins>
+    </div>
 
 	{% if not error %}
 
@@ -117,9 +35,9 @@
 									<td>{{ plugin.name }}</td>
 									<td>
 										{% if plugin.developerUrl %}
-											<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developer }}</a>
+											<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developerName }}</a>
 										{% else %}
-											{{ plugin.developer }}
+											{{ plugin.developerName }}
 										{% endif %}
 									</td>
 								</tr>
@@ -134,6 +52,5 @@
 	{% else %}
 		<p class="error">{{ error|raw }}</p>
 	{% endif %}
-#}
 
 {% endset %}

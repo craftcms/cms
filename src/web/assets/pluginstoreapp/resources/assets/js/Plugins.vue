@@ -22,7 +22,14 @@
                     <strong><router-link to="/plugins-details">{{ plugin.name }}</router-link></strong>
                     <div>{{ plugin.description }}</div>
                 </td>
-                <td><a v-bind:href="plugin.developerUrl">{{ plugin.developerName }}</a></td>
+                <td>
+                    <div v-if="plugin.developerUrl">
+                        <a v-bind:href="plugin.developerUrl">{{ plugin.developerName }}</a>
+                    </div>
+                    <div v-else>
+                        {{ plugin.developerName }}
+                    </div>
+                </td>
             </tr>
             </tbody>
         </table>

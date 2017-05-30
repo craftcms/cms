@@ -64,7 +64,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-        // Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 
         return $this->renderTemplate('plugin-store/_index', [
             'plugins' => (isset($plugins) ? $plugins : null),
@@ -93,7 +93,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-        // Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 
         return $this->renderTemplate('plugin-store/_plugin', [
             'slug' => $slug,
@@ -106,7 +106,7 @@ class PluginStoreController extends Controller
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 
-        return $this->renderTemplate('plugin-store/_vue2');
+        return $this->renderTemplate('plugin-store/_vue');
     }
 
     public function actionApiPlugin()

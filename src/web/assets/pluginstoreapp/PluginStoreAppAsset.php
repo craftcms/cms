@@ -27,7 +27,7 @@ class PluginStoreAppAsset extends AssetBundle
         ];
 
         $this->js = [
-            'js/app'.$this->dotJs(),
+            'js/main'.$this->dotJs(),
         ];
 
         parent::init();
