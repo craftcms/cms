@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\vue\Asset as VueAsset;
 use craft\web\assets\pluginstore\PluginStoreAsset;
+use craft\web\assets\pluginstoreapp\PluginStoreAppAsset;
 use craft\web\Controller;
 use craft\helpers\UrlHelper;
 use craft\helpers\Json;
@@ -72,12 +73,80 @@ class PluginStoreController extends Controller
         ]);
     }
 
+    public function actionPlugin($slug)
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        try {
+
+            $pluginJson = $client->request('GET', 'plugins/'.$slug);
+            $pluginResponse = json_decode($pluginJson->getBody(), true);
+
+            if(!isset($pluginResponse['error'])) {
+                $plugin = $pluginResponse;
+            } else {
+                $error = $pluginResponse['error'];
+            }
+        }
+        catch(\Exception $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+
+        return $this->renderTemplate('plugin-store/_plugin', [
+            'slug' => $slug,
+            'plugin' => (isset($plugin) ? $plugin : null),
+            'error' => (isset($error) ? $error : null)
+        ]);
+    }
+
+    public function actionVue()
+    {
+        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/manifest.js');
+        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/vendor.js');
+        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/app.js');
+        Craft::$app->getView()->registerCssFile('/vue/dist/static/css/app.css');
+
+        return $this->renderTemplate('plugin-store/_vue');
+    }
+
+
+    public function actionVue2()
+    {
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
+
+        return $this->renderTemplate('plugin-store/_vue2');
+    }
+
+    public function actionApiPlugin()
+    {
+        $slug = Craft::$app->getRequest()->getParam('slug');
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        $pluginJson = $client->request('GET', 'plugins/'.$slug);
+        $pluginResponse = json_decode($pluginJson->getBody(), true);
+
+        if(isset($pluginResponse['error'])) {
+            $error = $pluginResponse['error'];
+
+            return $this->asErrorJson($error);
+        }
+
+        $data = $pluginResponse;
+
+        return $this->asJson($data);
+    }
+
     /**
      * Returns the plugins.
      *
      * @return Response
      */
-    public function actionPlugins()
+    public function actionApiPlugins()
     {
         $client = Craft::$app->getPluginStore()->getClient();
 

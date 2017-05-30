@@ -72,6 +72,9 @@ return [
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
+    'plugin-store/vue' => 'plugin-store/vue',
+    'plugin-store/vue2' => 'plugin-store/vue2',
+    'plugin-store/<slug:([^\/]+)?>' => 'plugin-store/plugin',
     'plugin-store/account' => 'plugin-store/account',
     'plugin-store/callback' => 'plugin-store/callback',
 ];

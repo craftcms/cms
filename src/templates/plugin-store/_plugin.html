@@ -1,0 +1,50 @@
+{% extends "plugin-store/_layouts/cp" %}
+
+{% set crumbs = [
+	{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
+{% set title = plugin.name %}
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons">
+		<a href="{{ url('myaccount') }}" class="btn">Your Account</a>
+	</div>
+{% endset %}
+
+{% set content %}
+
+	{% verbatim %}
+		<div id="plugin">
+			<img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="150" />
+
+			<h2>{{plugin.name}}</h2>
+			<p>{{plugin.description}}</p>
+		</div>
+	{% endverbatim %}
+
+	{% js %}
+
+        Vue.use(VueResource);
+
+        new Vue({
+            el: '#plugin',
+            data: {
+                pluginSlug: '{{ slug }}',
+				plugin: {
+					name: null,
+				},
+            },
+            created: function() {
+				var url = Craft.getActionUrl('plugin-store/api-plugin', { slug: this.pluginSlug });
+                this.$http.get(url).then(function(data) {
+					this.plugin = data.body;
+                    // this.plugin = this.plugin.concat(data.body.data);
+                    this.showSpinner = 0;
+                });
+            }
+        });
+
+	{% endjs %}
+
+{% endset %}
