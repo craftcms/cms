@@ -155,6 +155,39 @@
 
                 <h2>{{ systemName }}</h2>
             </a>
+
+            <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
+                <div id="user-photo-icon" class="photo-container">
+                    <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
+                </div>
+                <div id="account-menu-anchor"></div>
+            </a>
+
+            <div class="menu" data-align="left">
+                <ul>
+                    <li>
+                        <a href="{{ url('myaccount') }}">
+                            <div id="account-info-preview">
+                                <div id="user-photo" class="photo-container">
+                                    <img width="50" sizes="50px" srcset="{{ currentUser.getThumbUrl(50) }} 50w, {{ currentUser.getThumbUrl(100) }} 100w" alt="{{ currentUser.getName() }}">
+                                </div>
+                                <div class="username">
+									{{ currentUser.name }}
+									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
+                                    <div class="light">Not connected to Craft ID</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+                <hr>
+                <ul>
+					{% if CraftEdition == CraftClient and currentUser.admin %}
+                        <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
+					{% endif %}
+                    <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                </ul>
+            </div>
         </div>
 
         <nav>
@@ -201,7 +234,7 @@
             </ul>
         </nav>
 
-        <div class="bottombar">
+{#        <div class="bottombar">
             <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
                 <div id="user-photo" class="photo-container">
                     <img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
@@ -221,7 +254,7 @@
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                 </ul>
             </div>
-        </div>
+        </div>#}
 
     </header>
 
