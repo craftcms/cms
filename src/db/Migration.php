@@ -226,4 +226,61 @@ abstract class Migration extends \yii\db\Migration
             ->execute();
         echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
+
+    /**
+     * Builds and executes a SQL statement for creating a primary key.
+     * The method will properly quote the table and column names.
+     *
+     * @param string|null $name the name of the primary key constraint. If null, a name will be automatically generated.
+     * @param string $table the table that the primary key constraint will be added to.
+     * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
+     */
+    public function addPrimaryKey($name, $table, $columns)
+    {
+        if ($name === null) {
+            $name = $this->db->getPrimaryKeyName($table, $columns);
+        }
+
+        return parent::addPrimaryKey($name, $table, $columns);
+    }
+
+    /**
+     * Builds a SQL statement for adding a foreign key constraint to an existing table.
+     * The method will properly quote the table and column names.
+     *
+     * @param string|null $name the name of the foreign key constraint. If null, a name will be automatically generated.
+     * @param string $table the table that the foreign key constraint will be added to.
+     * @param string|array $columns the name of the column to that the constraint will be added on. If there are multiple columns, separate them with commas or use an array.
+     * @param string $refTable the table that the foreign key references to.
+     * @param string|array $refColumns the name of the column that the foreign key references to. If there are multiple columns, separate them with commas or use an array.
+     * @param string $delete the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     * @param string $update the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     */
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
+    {
+        if ($name === null) {
+            $name = $this->db->getForeignKeyName($table, $columns);
+        }
+
+        return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+    }
+
+    /**
+     * Builds and executes a SQL statement for creating a new index.
+     *
+     * @param string|null $name the name of the index. The name will be properly quoted by the method. If null, a name will be automatically generated.
+     * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
+     * @param string|array $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
+     * by commas or use an array. Each column name will be properly quoted by the method. Quoting will be skipped for column names that
+     * include a left parenthesis "(".
+     * @param bool $unique whether to add UNIQUE constraint on the created index.
+     */
+    public function createIndex($name, $table, $columns, $unique = false)
+    {
+        if ($name === null) {
+            $name = $this->db->getIndexName($table, $columns, $unique);
+        }
+
+        return parent::createIndex($name, $table, $columns, $unique);
+    }
 }

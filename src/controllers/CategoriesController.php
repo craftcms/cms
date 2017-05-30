@@ -617,7 +617,12 @@ class CategoriesController extends Controller
         // Get the site
         // ---------------------------------------------------------------------
 
-        $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        if (Craft::$app->getIsMultiSite()) {
+            // Only use the sites that the user has access to
+            $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        } else {
+            $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
+        }
 
         if (!$variables['siteIds']) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');

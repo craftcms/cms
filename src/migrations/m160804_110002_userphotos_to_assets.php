@@ -53,7 +53,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         echo "    > Updating Users table to drop the photo column and add photoId column.\n";
         $this->dropColumn('{{%users}}', 'photo');
         $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
-        $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
+        $this->addForeignKey(null, '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
         echo "    > Setting the photoId value\n";
         $this->_setPhotoIdValues($affectedUsers);

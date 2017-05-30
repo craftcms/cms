@@ -21,7 +21,7 @@ class m161109_000000_index_shuffle extends Migration
         MigrationHelper::dropIndexIfExists('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate', false, $this);
 
         echo "    > Creating `siteId,cacheKey,path,expiryDate` index on the templatecaches table.\n";
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate'), '{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate');
+        $this->createIndex(null, '{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate');
     }
 
     /**

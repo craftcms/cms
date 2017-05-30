@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-05-19 */
+/*! Craft 3.0.0 - 2017-05-23 */
 (function($){
 
 /** global: Craft */
@@ -1735,7 +1735,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 this.$spinner.addClass('hidden');
 
                 if (textStatus == 'success') {
-                    if (textStatus == 'success' && response.success) {
+                    if (response.success) {
                         if (this.$element && this.siteId == this.$element.data('site-id')) {
                             // Update the label
                             var $title = this.$element.find('.title'),

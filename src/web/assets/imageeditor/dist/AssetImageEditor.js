@@ -60,6 +60,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         focalPointState: false,
         croppingConstraint: false,
         spinnerInterval: null,
+        maxImageSize: null,
+        lastLoadedDimensions: null,
+        imageIsLoading: false,
 
         // Rendering proxy functions
         renderImage: null,
@@ -93,24 +96,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
             this.removeListener(this.$shade, 'click');
 
-            this.setMaxImageSize();
+            this.maxImageSize = this.getMaxImageSize();
 
             Craft.postActionRequest('assets/image-editor', {assetId: assetId}, $.proxy(this, 'loadEditor'));
         },
 
         /**
-         * Set the max image size that is viewable in the editor currently
+         * Get the max image size that is viewable in the editor currently
          */
-        setMaxImageSize: function() {
+        getMaxImageSize: function() {
             var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth;
             var browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
 
-            this.maxImageSize = Math.max(browserViewportHeight, browserViewportWidth);
-            if (window.devicePixelRatio > 1) {
-                this.maxImageSize *= 2;
-            }
-
-            console.log(this.maxImageSize);
+            return  Math.max(browserViewportHeight, browserViewportWidth) * (window.devicePixelRatio > 1 ? 2 : 1);
         },
 
         /**
@@ -150,8 +148,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
             }.bind(this);
 
-            // TODO add loading spinner
-
             // Load the image from URL
             var imageUrl = Craft.getActionUrl('assets/edit-image', {
                 assetId: this.assetId,
@@ -174,6 +170,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.originalHeight = this.image.getHeight();
                 this.originalWidth = this.image.getWidth();
                 this.zoomRatio = 1;
+
+                this.lastLoadedDimensions = this.getScaledImageDimensions();
 
                 // Set up the image bounding box, viewport and position everything
                 this._setFittedImageVerticeCoordinates();
@@ -233,11 +231,38 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         /**
+         * Reload the image to better fit the current available image editor viewport.
+         */
+        _reloadImage: function () {
+
+            if (this.imageIsLoading) {
+                return;
+            }
+
+            this.imageIsLoading = true;
+            this.maxImageSize = this.getMaxImageSize();
+
+            // Load the image from URL
+            var imageUrl = Craft.getActionUrl('assets/edit-image', {
+                assetId: this.assetId,
+                size: this.maxImageSize,
+                cacheBust: this.cacheBust
+            });
+
+            this.image.setSrc(imageUrl, function(imageObject) {
+                this.originalHeight = imageObject.getHeight();
+                this.originalWidth = imageObject.getWidth();
+                this.lastLoadedDimensions = {width: this.originalHeight, height: this.originalWidth};
+                this.updateSizeAndPosition();
+                this.renderImage();
+                this.imageIsLoading = false;
+            }.bind(this));
+        },
+
+        /**
          * Update the modal size and position on browser resize
          */
         updateSizeAndPosition: function() {
-            // TODO if sizing up significantly from starting size, load a higher-res image if available
-
             if (!this.$container) {
                 return;
             }
@@ -300,6 +325,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 height: this.editorHeight
             });
 
+            var currentScaledDimensions = this.getScaledImageDimensions();
+
             // If we're cropping now, we have to reposition the cropper correctly in case
             // the area for image changes, forcing the image size to change as well.
             if (this.currentView === 'crop') {
@@ -319,6 +346,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this._zoomImage();
 
             this.renderImage();
+
+            if (currentScaledDimensions.width / this.lastLoadedDimensions.width > 1.5 || currentScaledDimensions.height / this.lastLoadedDimensions.height > 1.5) {
+                this._reloadImage();
+            }
         },
 
         /**

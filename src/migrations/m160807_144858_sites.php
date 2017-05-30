@@ -75,8 +75,8 @@ class m160807_144858_sites extends Migration
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex($this->db->getIndexName('{{%sites}}', 'handle', true), '{{%sites}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%sites}}', 'sortOrder', false), '{{%sites}}', 'sortOrder', false);
+        $this->createIndex(null, '{{%sites}}', 'handle', true);
+        $this->createIndex(null, '{{%sites}}', 'sortOrder', false);
 
         // Populate based on existing locales
         // ---------------------------------------------------------------------
@@ -149,40 +149,40 @@ class m160807_144858_sites extends Migration
         // Create the new indexes
         // ---------------------------------------------------------------------
 
-        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'groupId,siteId', true), '{{%categorygroups_i18n}}', 'groupId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'siteId', false), '{{%categorygroups_i18n}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'elementId,siteId', true), '{{%content}}', 'elementId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'siteId', false), '{{%content}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'elementId,siteId', true), '{{%elements_i18n}}', 'elementId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,siteId', true), '{{%elements_i18n}}', 'uri,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,siteId', false), '{{%entrydrafts}}', 'entryId,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false), '{{%entrydrafts}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,siteId', false), '{{%entryversions}}', 'entryId,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'siteId', false), '{{%entryversions}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerSiteId', false), '{{%matrixblocks}}', 'ownerSiteId', false);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false), '{{%relations}}', 'sourceSiteId', false);
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false), '{{%routes}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'sectionId,siteId', true), '{{%sections_i18n}}', 'sectionId,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'siteId', false), '{{%sections_i18n}}', 'siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false), '{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId', false), '{{%templatecaches}}', 'siteId', false);
+        $this->createIndex(null, '{{%categorygroups_i18n}}', 'groupId,siteId', true);
+        $this->createIndex(null, '{{%categorygroups_i18n}}', 'siteId', false);
+        $this->createIndex(null, '{{%content}}', 'elementId,siteId', true);
+        $this->createIndex(null, '{{%content}}', 'siteId', false);
+        $this->createIndex(null, '{{%elements_i18n}}', 'elementId,siteId', true);
+        $this->createIndex(null, '{{%elements_i18n}}', 'uri,siteId', true);
+        $this->createIndex(null, '{{%elements_i18n}}', 'siteId', false);
+        $this->createIndex(null, '{{%elements_i18n}}', 'slug,siteId', false);
+        $this->createIndex(null, '{{%entrydrafts}}', 'entryId,siteId', false);
+        $this->createIndex(null, '{{%entrydrafts}}', 'siteId', false);
+        $this->createIndex(null, '{{%entryversions}}', 'entryId,siteId', false);
+        $this->createIndex(null, '{{%entryversions}}', 'siteId', false);
+        $this->createIndex(null, '{{%matrixblocks}}', 'ownerSiteId', false);
+        $this->createIndex(null, '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
+        $this->createIndex(null, '{{%relations}}', 'sourceSiteId', false);
+        $this->createIndex(null, '{{%routes}}', 'siteId', false);
+        $this->createIndex(null, '{{%sections_i18n}}', 'sectionId,siteId', true);
+        $this->createIndex(null, '{{%sections_i18n}}', 'siteId', false);
+        $this->createIndex(null, '{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false);
+        $this->createIndex(null, '{{%templatecaches}}', 'siteId', false);
 
         // Create the new FKs
         // ---------------------------------------------------------------------
 
-        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'siteId'), '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'siteId'), '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'siteId'), '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerSiteId'), '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceSiteId'), '{{%relations}}', 'sourceSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%routes}}', 'siteId'), '{{%routes}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'siteId'), '{{%sections_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecaches}}', 'siteId'), '{{%templatecaches}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%relations}}', 'sourceSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%routes}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%sections_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%templatecaches}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
 
         // Update the searchindex PK
         // ---------------------------------------------------------------------
@@ -289,8 +289,8 @@ class m160807_144858_sites extends Migration
             if (StringHelper::startsWith($tableName, $matrixTablePrefix)) {
                 // Add the new siteId column + index
                 $this->addSiteColumn($tableName, 'siteId', true, 'locale');
-                $this->createIndex($this->db->getIndexName($tableName, 'elementId,siteId'), $tableName, 'elementId,siteId', true);
-                $this->addForeignKey($this->db->getForeignKeyName($tableName, 'siteId'), $tableName, 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+                $this->createIndex(null, $tableName, 'elementId,siteId', true);
+                $this->addForeignKey(null, $tableName, 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
 
                 // Delete the old FK, indexes, and column
                 MigrationHelper::dropForeignKeyIfExists($tableName, ['locale'], $this);
@@ -327,7 +327,7 @@ class m160807_144858_sites extends Migration
                     $newColumn = $refColumn.'__siteId';
                     $isNotNull = !$originalRefTable->getColumn($refColumn)->allowNull;
                     $this->addSiteColumn($refTable, $newColumn, $isNotNull, $refColumn);
-                    $this->addForeignKey($this->db->getForeignKeyName($refTable, $newColumn), $refTable, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+                    $this->addForeignKey(null, $refTable, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
             }
         }

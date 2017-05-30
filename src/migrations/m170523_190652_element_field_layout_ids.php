@@ -11,9 +11,9 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 
 /**
- * m170405_132309_element_field_layout_ids migration.
+ * m170523_190652_element_field_layout_ids migration.
  */
-class m170405_132309_element_field_layout_ids extends Migration
+class m170523_190652_element_field_layout_ids extends Migration
 {
     // Properties
     // -------------------------------------------------------------------------
@@ -36,8 +36,8 @@ class m170405_132309_element_field_layout_ids extends Migration
         // Add the elements.fieldLayoutId column + FK
         if (!$this->db->columnExists('{{%elements}}', 'fieldLayoutId')) {
             $this->addColumn('{{%elements}}', 'fieldLayoutId', $this->integer());
-            $this->createIndex($this->db->getIndexName('{{%elements}}', 'fieldLayoutId', false, true), '{{%elements}}', 'fieldLayoutId', false);
-            $this->addForeignKey($this->db->getForeignKeyName('{{%elements}}', 'fieldLayoutId'), '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+            $this->createIndex(null, '{{%elements}}', 'fieldLayoutId', false);
+            $this->addForeignKey(null, '{{%elements}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         }
 
         // Update the elements
@@ -56,7 +56,7 @@ class m170405_132309_element_field_layout_ids extends Migration
      */
     public function safeDown()
     {
-        echo "m170322_204706_element_field_layout_ids cannot be reverted.\n";
+        echo "m170523_190652_element_field_layout_ids cannot be reverted.\n";
 
         return false;
     }
