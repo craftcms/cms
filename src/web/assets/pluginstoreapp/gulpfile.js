@@ -16,5 +16,5 @@ require('laravel-elixir-vue-2');
 require('laravel-elixir-webpack-official');
 
 elixir(function(mix) {
-    mix.webpack('app.js'); // resources/assets/js/app.js
+    mix.webpack('main.js'); // resources/assets/js/app.js
 })

@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import Home from './Home';
+import App from './App';
 import router from './router'
 import VueResource from 'vue-resource';
 
@@ -10,6 +10,6 @@ Vue.use(VueResource);
 const app = new Vue({
   el: '#app',
   router,
-  template: '<Home/>',
-  components: { Home }
+  template: '<App/>',
+  components: { App }
 });

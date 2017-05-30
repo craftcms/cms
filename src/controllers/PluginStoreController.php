@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\vue\Asset as VueAsset;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreapp\PluginStoreAppAsset;
 use craft\web\Controller;
@@ -65,7 +64,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+        // Craft::$app->getView()->registerAssetBundle(VueAsset::class);
 
         return $this->renderTemplate('plugin-store/_index', [
             'plugins' => (isset($plugins) ? $plugins : null),
@@ -94,7 +93,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
+        // Craft::$app->getView()->registerAssetBundle(VueAsset::class);
 
         return $this->renderTemplate('plugin-store/_plugin', [
             'slug' => $slug,
@@ -104,18 +103,6 @@ class PluginStoreController extends Controller
     }
 
     public function actionVue()
-    {
-        Craft::$app->getView()->registerAssetBundle(VueAsset::class);
-        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/manifest.js');
-        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/vendor.js');
-        Craft::$app->getView()->registerJsFile('/vue/dist/static/js/app.js');
-        Craft::$app->getView()->registerCssFile('/vue/dist/static/css/app.css');
-
-        return $this->renderTemplate('plugin-store/_vue');
-    }
-
-
-    public function actionVue2()
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 

@@ -7,10 +7,8 @@
 
 namespace craft\web\assets\pluginstore;
 
-use craft\vue\Asset;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
-use craft\web\assets\vueresource\VueResourceAsset;
 
 /**
  * Asset bundle for the Plugin Store page
@@ -25,9 +23,7 @@ class PluginStoreAsset extends AssetBundle
         $this->sourcePath = __DIR__.'/dist';
 
         $this->depends = [
-            CpAsset::class,
-            Asset::class,
-            VueResourceAsset::class,
+            CpAsset::class
         ];
 
         $this->js = [
