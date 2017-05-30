@@ -6,8 +6,11 @@
             $status: null,
             errorDetails: null,
             data: null,
+            settings: null,
 
-            init: function() {
+            init: function(settings) {
+                this.setSettings(settings);
+                
                 this.$graphic = $('#graphic');
                 this.$status = $('#status');
 
@@ -33,7 +36,11 @@
 
                             // Redirect to the Dashboard in half a second
                             setTimeout($.proxy(function() {
-                                window.location = Craft.getCpUrl('myaccount');
+                                if(typeof(this.settings.referrer) != 'undefined') {
+                                    window.location = this.settings.referrer;
+                                } else {
+                                    window.location = Craft.getCpUrl('myaccount');
+                                }
                             }, this), 500);
                         }
                     } else {

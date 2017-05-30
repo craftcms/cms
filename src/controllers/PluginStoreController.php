@@ -11,6 +11,7 @@ use Craft;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstoreapp\PluginStoreAppAsset;
 use craft\web\Controller;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craftcms\oauth2\client\provider\CraftId;
 use yii\web\BadRequestHttpException;
@@ -199,6 +200,10 @@ class PluginStoreController extends Controller
             'redirectUri'  => UrlHelper::cpUrl('plugin-store/callback'),
         ]);
 
+        $referrer = Craft::$app->getRequest()->getReferrer();
+
+        Craft::$app->getSession()->set('pluginStoreConnectReferrer', $referrer);
+
         $authorizationUrl = $provider->getAuthorizationUrl([
             'scope' => [
                 'purchasePlugins',
@@ -249,7 +254,13 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        $this->getView()->registerJs('new Craft.PluginStoreOauthCallback();');
+        $referrer = Craft::$app->getSession()->get('pluginStoreConnectReferrer');
+
+        $options = [
+            'referrer' => $referrer
+        ];
+
+        $this->getView()->registerJs('new Craft.PluginStoreOauthCallback('.Json::encode($options).');');
 
         return $this->renderTemplate('plugin-store/_special/oauth/callback');
     }

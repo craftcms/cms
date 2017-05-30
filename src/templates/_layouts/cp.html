@@ -186,6 +186,30 @@
                         <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
 					{% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+
+                    {% set craftIdAccount = craft.cp.craftIdAccount() %}
+
+					{% if craftIdAccount %}
+                        <li>
+                            {#<a href="#">Disconnect from Craft ID</a>#}
+                            <form method="post" id="disconnect">
+								{{ csrfInput() }}
+                                <input type="hidden" name="action" value="plugin-store/disconnect">
+                                <a onclick="document.getElementById('disconnect').submit();">Disconnect from Craft ID</a>
+                            </form>
+                        </li>
+
+                    {% else %}
+                        <li>
+                            {#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
+
+                            <form method="post" id="connect">
+                                {{ csrfInput() }}
+                                <input type="hidden" name="action" value="plugin-store/connect">
+                                <a onclick="document.getElementById('connect').submit();">Connect to Craft ID</a>
+                            </form>
+                        </li>
+					{% endif %}
                 </ul>
             </div>
         </div>
