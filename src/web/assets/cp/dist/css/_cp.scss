@@ -68,6 +68,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar .topbar a.system-name h2 { padding: 0; margin: 0; word-break: normal; word-wrap: break-word; min-width: 0; flex-basis: 100%; }
 #global-sidebar .topbar .settings { @include padding-right(0); }
 #global-sidebar .topbar .settingsmenu { @include padding-left(0); }
+#global-sidebar .topbar a:hover { background-color: transparent; }
 
 #global-sidebar #taskicon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
 #global-sidebar #taskicon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
@@ -79,9 +80,15 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar #taskicon:hover .progressbar { border-color: #fff; }
 #global-sidebar #taskicon:hover .progressbar-inner { background: #fff; }
 
+#global-sidebar #account-info.menubtn:after { display: none !important; }
+#global-sidebar a#account-info:focus { outline: none; }
 
 #account-info-preview { @include display-flex; @include flex-direction(row); }
 #account-info-preview .photo-container { @include margin-right(14px); }
+#account-info-preview:after { @include icon; margin-top: 20px; font-size: 13px; color: $mediumtextcolor;
+  body.ltr & { content: 'rightangle'; }
+  body.rtl & { content: 'leftangle'; }
+}
 
 /* container */
 
