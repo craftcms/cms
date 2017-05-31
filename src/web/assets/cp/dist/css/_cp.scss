@@ -84,12 +84,13 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar a#account-info:focus { outline: none; }
 
 #account-info-preview { @include display-flex; @include flex-direction(row); }
-#account-info-preview .photo-container { @include margin-right(14px); }
-#account-info-preview .photo-container img { border-radius: 100%; }
 #account-info-preview:after { @include icon; margin-top: 21px; margin-left: 14px; font-size: 13px; color: $mediumtextcolor;
   body.ltr & { content: 'rightangle'; }
   body.rtl & { content: 'leftangle'; }
 }
+#account-info-preview .photo-container { @include margin-right(14px); }
+#account-info-preview .photo-container img { border-radius: 100%; }
+#account-info-preview .craftid svg { position: relative; top:3px; }
 
 /* container */
 

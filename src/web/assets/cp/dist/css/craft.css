@@ -2019,14 +2019,16 @@ body.rtl #global-sidebar .topbar .settingsmenu { padding-right: 0; }
 
 #account-info-preview { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -webkit-box-orient: horizontal; -ms-flex-direction: row; flex-direction: row; }
 
+#account-info-preview:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; margin-top: 21px; margin-left: 14px; font-size: 13px; color: #8f98a3; }
+body.ltr #account-info-preview:after { content: 'rightangle'; }
+body.rtl #account-info-preview:after { content: 'leftangle'; }
+
 body.ltr #account-info-preview .photo-container { margin-right: 14px; }
 body.rtl #account-info-preview .photo-container { margin-left: 14px; }
 
 #account-info-preview .photo-container img { border-radius: 100%; }
 
-#account-info-preview:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; margin-top: 21px; margin-left: 14px; font-size: 13px; color: #8f98a3; }
-body.ltr #account-info-preview:after { content: 'rightangle'; }
-body.rtl #account-info-preview:after { content: 'leftangle'; }
+#account-info-preview .craftid svg { position: relative; top: 3px; }
 
 /* container */
 #container { overflow: auto; display: block; -webkit-box-orient: vertical; -ms-flex-direction: column; flex-direction: column; position: relative; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }

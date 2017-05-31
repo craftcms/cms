@@ -177,12 +177,15 @@
 									{{ currentUser.name }}
 									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
 
-									{% if craftIdAccount %}
-                                        <div class="light">Craft ID: {{ craftIdAccount.data[0].username }}</div>
-                                    {% else %}
-                                        <div class="light">Not connected to your Craft ID</div>
-									{% endif %}
+                                    <div class="craftid light">
+										{% include "_includes/craftidicon.svg" %}
 
+										{% if craftIdAccount %}
+                                            {{ craftIdAccount.data[0].username }}
+										{% else %}
+                                            Not connected to your Craft ID
+										{% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </a>
