@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2981 - 2017-05-31
+
 ### Changed
 - Improved the readability of field instructions.
 - Updated jQuery Timepicker to 1.11.11.
