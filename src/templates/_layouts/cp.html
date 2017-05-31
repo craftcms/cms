@@ -178,9 +178,9 @@
 									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
 
 									{% if craftIdAccount %}
-                                        <div class="light">{{ craftIdAccount.data[0].username }}</div>
+                                        <div class="light">Craft ID: {{ craftIdAccount.data[0].username }}</div>
                                     {% else %}
-                                        <div class="light">Not connected to Craft ID</div>
+                                        <div class="light">Not connected to your Craft ID</div>
 									{% endif %}
 
                                 </div>
@@ -201,7 +201,7 @@
                             <form method="post" id="disconnect">
 								{{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/disconnect">
-                                <a onclick="document.getElementById('disconnect').submit();">Disconnect from Craft ID</a>
+                                <a onclick="document.getElementById('disconnect').submit();">Disconnect your Craft ID</a>
                             </form>
                         </li>
 
@@ -212,7 +212,7 @@
                             <form method="post" id="connect">
                                 {{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/connect">
-                                <a onclick="document.getElementById('connect').submit();">Connect to Craft ID</a>
+                                <a onclick="document.getElementById('connect').submit();">Connect to your Craft ID</a>
                             </form>
                         </li>
 					{% endif %}
