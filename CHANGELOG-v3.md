@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.19 - 2017-05-31
 
 ### Added
 - Added the `beforeHandleException` event to `craft\web\ErrorHandler`. ([#1738](https://github.com/craftcms/cms/issues/1738))
