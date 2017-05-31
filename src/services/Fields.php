@@ -1099,6 +1099,11 @@ class Fields extends Component
 
         $isNewLayout = !$layout->id;
 
+        // Make sure the tabs/fields are memoized on the layout
+        foreach ($layout->getTabs() as $tab) {
+            $tab->getFields();
+        }
+
         // Fire a 'beforeSaveFieldLayout' event
         $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
             'layout' => $layout,

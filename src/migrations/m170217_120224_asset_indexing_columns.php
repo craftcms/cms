@@ -27,7 +27,7 @@ class m170217_120224_asset_indexing_columns extends Migration
 
         $this->dropColumn('{{%assetindexdata}}', 'offset');
 
-        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', ['sessionId', 'volumeId']), '{{%assetindexdata}}', ['sessionId', 'volumeId']);
+        $this->createIndex(null, '{{%assetindexdata}}', ['sessionId', 'volumeId']);
 
         return true;
     }

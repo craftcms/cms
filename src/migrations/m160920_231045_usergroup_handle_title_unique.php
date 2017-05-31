@@ -20,11 +20,11 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         $this->_handleDupes('name');
 
         if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'handle', true)) {
-            $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'handle', true), '{{%usergroups}}', 'handle', true);
+            $this->createIndex(null, '{{%usergroups}}', 'handle', true);
         }
 
         if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'name', true)) {
-            $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'name', true), '{{%usergroups}}', 'name', true);
+            $this->createIndex(null, '{{%usergroups}}', 'name', true);
         }
     }
 

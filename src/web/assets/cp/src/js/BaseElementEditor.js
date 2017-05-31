@@ -219,7 +219,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 this.$spinner.addClass('hidden');
 
                 if (textStatus == 'success') {
-                    if (textStatus == 'success' && response.success) {
+                    if (response.success) {
                         if (this.$element && this.siteId == this.$element.data('site-id')) {
                             // Update the label
                             var $title = this.$element.find('.title'),

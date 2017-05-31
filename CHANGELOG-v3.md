@@ -1,6 +1,24 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.19 - 2017-05-31
+
+### Added
+- Added the `beforeHandleException` event to `craft\web\ErrorHandler`. ([#1738](https://github.com/craftcms/cms/issues/1738))
+
+### Changed
+- The image editor now loads a higher-resolution image when the image viewport size has increased significantly.
+- `craft\db\Migration::addPrimaryKey()`, `addForeignKey()`, and `createIndex` now automatically generate the key/index name if `$name` is `null`.
+- Removed the deprecated global `user` template variable. ([#1744](https://github.com/craftcms/cms/issues/1744))
+
+### Fixed
+- Fixed a bug where entries and categories created from element selection modals weren’t getting a field layout ID assigned to them. ([#1725](https://github.com/craftcms/cms/issues/1725))
+- Fixed a 403 error that occurred when a non-Admin attempted to edit a Category on a single-site install. ([#1729](https://github.com/craftcms/cms/issues/1729))
+- Fixed a bug where plugin index templates weren’t getting resolved without appending an `/index` to the end of the template path.
+- Fixed a PHP error that occurred when saving an element with a Number field, if using a locale with a non-US number format. ([#1739](https://github.com/craftcms/cms/issues/1739))
+- Fixed a bug where `craft\web\View::head()`, `beginBody()`, and `endBody()` were getting called for non-“page” templates that contained `<head>` and/or `<body>` tags. ([#1742](https://github.com/craftcms/cms/issues/1742))
+- Fixed a bug where singles were forgetting their field layouts when their section settings were re-saved. ([#1743](https://github.com/craftcms/cms/issues/1743))
+
 ## 3.0.0-beta.18 - 2017-05-19
 
 ### Added

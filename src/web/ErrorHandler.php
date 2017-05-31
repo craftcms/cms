@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\events\ExceptionEvent;
 use yii\base\Exception;
 use yii\base\UserException;
 use yii\log\FileTarget;
@@ -21,6 +22,14 @@ use yii\web\HttpException;
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ExceptionEvent The event that is triggered before handling an exception.
+     */
+    const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
+
     // Properties
     // =========================================================================
 
@@ -37,6 +46,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function handleException($exception)
     {
+        // Fire a 'beforeHandleException' event
+        $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
+            'exception' => $exception
+        ]));
+
         // If this is a Twig Runtime exception, use the previous one instead
         if ($exception instanceof \Twig_Error_Runtime && ($previousException = $exception->getPrevious()) !== null) {
             $exception = $previousException;

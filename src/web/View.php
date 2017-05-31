@@ -559,8 +559,8 @@ class View extends \yii\web\View
             foreach ($this->getCpTemplateRoots() as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot.'/', $name, $templateRootLen+1) === 0) {
-                    $subName = substr($name, $templateRootLen+1);
+                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen+1) === 0) {
+                    $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen+1);
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
                             return $this->_templatePaths[$key] = $path;
