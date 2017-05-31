@@ -264,28 +264,6 @@
             </ul>
         </nav>
 
-{#        <div class="bottombar">
-            <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
-                <div id="user-photo" class="photo-container">
-                    <img width="32" sizes="32px" srcset="{{ currentUser.getThumbUrl(32) }} 32w, {{ currentUser.getThumbUrl(64) }} 64w" alt="{{ currentUser.getName() }}">
-                </div>
-                <div class="username">
-                    {{ currentUser.name }}
-                    {% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
-                </div>
-                <div id="account-menu-anchor"></div>
-            </a>
-            <div class="menu" data-align="left">
-                <ul>
-                    <li><a href="{{ url('myaccount') }}">{{ "My Account"|t('app') }}</a></li>
-                    {% if CraftEdition == CraftClient and currentUser.admin %}
-                        <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
-                    {% endif %}
-                    <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
-                </ul>
-            </div>
-        </div>#}
-
     </header>
 
     {% if fullPageForm %}
