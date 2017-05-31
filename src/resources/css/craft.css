@@ -1421,7 +1421,7 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 
 .field { position: relative; margin: 24px 0; }
 
-.field > .heading { margin-bottom: 4px; }
+.field > .heading { margin-bottom: 5px; }
 
 .field > .heading > label { position: relative; font-weight: bold; color: #576575; }
 
@@ -1429,9 +1429,9 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 body.ltr .field > .heading > label > .locale { margin-left: 7px; }
 body.rtl .field > .heading > label > .locale { margin-right: 7px; }
 
-.field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: #8f98a3; }
+.field > .heading > .instructions, .checkboxfield.has-instructions .instructions { margin-top: 2px; color: #8f98a3; }
 
-.field > .warning { margin: 4px 0 0; font-size: 11px; }
+.field > .warning { margin: 2px 0 0; }
 
 .field > .warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'alert'; }
 body.ltr .field > .warning:before { margin: -2px 2px 0 0 ; }
@@ -1480,6 +1480,9 @@ input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none;
 input.checkbox:checked:focus + label:before, input.checkbox:indeterminate:focus + label:before, :focus div.checkbox.checked:before, .sel:focus div.checkbox:before, :focus div.checkbox.indeterminate:before { background: rgba(51, 170, 255, 0.5); }
 
 .checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
+
+body.ltr .checkboxfield.has-instructions .instructions { padding-left: 20px; }
+body.rtl .checkboxfield.has-instructions .instructions { padding-right: 20px; }
 
 .text:not(.selectize-text), .textline, .selectize-text > .selectize-control > .selectize-input { padding: 5px 7px; }
 

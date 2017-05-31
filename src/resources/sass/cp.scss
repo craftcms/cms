@@ -351,12 +351,12 @@ $fldGuideColor: #f4f3fb;
 .fieldlayoutform .fld-tabs:after,
 .fieldlayoutform .unusedfields:after { @include clearafter; }
 
-.fieldlayoutform .newtabbtn-container { @include margin(0, 0, 58px, 0); }
-.fieldlayoutform .newtabbtn-container .btn.add { @include margin-right(15px); border: 1px solid $fldChalkColor; padding: 2px 10px 0; line-height: 27px; color: $fldChalkColor; background: transparent;
+.fieldlayoutform .newtabbtn-container { @include margin(0, 0, 61px, 0); @include display-flex; }
+.fieldlayoutform .newtabbtn-container .btn.add { border: 1px solid $fldChalkColor; padding: 6px 10px 5px; color: $fldChalkColor; background: transparent;
 	@include box-shadow(none);
 }
 .fieldlayoutform .newtabbtn-container .btn.add:before { margin-top: -2px; }
-.fieldlayoutform .newtabbtn-container h3 { margin: 0; display: inline-block; padding: 9px 6px; line-height: 15px; }
+.fieldlayoutform .newtabbtn-container h3 { @include flex-grow(1); @include margin(0, 0, 0, 30px); line-height: 30px; }
 
 .fld-tab { @include floatleft; @include margin(0, -1px, 30px, 30px); width: 211px; }
 
@@ -379,12 +379,12 @@ $fldGuideColor: #f4f3fb;
 .fld-field .menubtn:after { display: none; }
 
 .fld-tab .tabs { position: relative; z-index: 1; padding: 0 10px; }
-.fld-tab .tabs .tab { @include floatleft; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; white-space: normal; }
+.fld-tab .tabs .tab { @include floatleft; margin: -1px; border-radius: 3px 3px 0 0; padding: 8px 10px 3px; border-bottom-color: $fldGuideColor; color: $fldChalkColor; white-space: normal; background: none; @include box-shadow(none); }
 .fld-tab .tabs .tab.draggable { cursor: move; }
 .fld-tab .fld-tabcontent { padding: 13px; }
 .fld-tab-caboose { min-height: 31px; }
 
-.fld-field { padding: 8px 8px 3px; cursor: move; }
+.fld-field { padding: 7px 8px 4px; cursor: move; }
 .fld-field + .fld-field { margin-top: 7px; }
 .fld-field.fld-required span:after { @include icon; @include margin(-2px, 0, 0, 5px); color: $fldChalkColor; content: '*'; font-size: 8px; }
 .fld-field .icon { @include floatright; }

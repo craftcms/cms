@@ -86,7 +86,23 @@ class ResaveElementsTask extends BaseTask
 		{
 			$element = craft()->elements->getElementById($this->_elementIds[$step], $this->_elementType, $this->_localeId);
 
-			if (!$element || craft()->elements->saveElement($element, false))
+			if (!$element)
+			{
+				return true;
+			}
+
+			// (╯°□°）╯︵ ┻━┻
+			if ($element instanceof EntryModel)
+			{
+				$entryType = $element->getType();
+
+				if (!$entryType->hasTitleField)
+				{
+					$element->getContent()->title = craft()->templates->renderObjectTemplate($entryType->titleFormat, $element);
+				}
+			}
+
+			if (craft()->elements->saveElement($element, false))
 			{
 				return true;
 			}

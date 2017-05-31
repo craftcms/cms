@@ -80,8 +80,7 @@ class GetHelpWidget extends BaseWidget
 		craft()->templates->includeCssResource('css/CraftSupportWidget.css');
 		craft()->templates->includeJsResource('js/CraftSupportWidget.js');
 		craft()->templates->includeTranslations(
-			'Message sent successfully.',
-			'Couldn’t send support request.'
+			'Message sent successfully.'
 		);
 
 		$iconsDir = craft()->path->getResourcesPath().'images/widgets';

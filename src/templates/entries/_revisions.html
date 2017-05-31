@@ -5,10 +5,12 @@
 
 <div class="menu">
 	<ul class="padded">
-		{% set editTime = currentRevisionEditTime is defined ? currentRevisionEditTime : entry.dateUpdated %}
-		{% set editUser = currentRevisionEditor is defined ? currentRevisionEditor : entry.author %}
+		{% set currentVersionEditTime = currentVersionEditTime ?? entry.dateUpdated %}
 		<li><a{% if entry.getClassHandle() == 'Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t }}
-			<span class="light">{{ editTime.uiTimestamp() }}, {{ editUser }}</span>
+			<span class="light">
+				{{ currentVersionEditTime.uiTimestamp() }}
+				{%- if currentVersionCreator is defined %}, {{ currentVersionCreator }}{% endif %}
+			</span>
 		</a></li>
 	</ul>
 

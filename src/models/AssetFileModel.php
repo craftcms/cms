@@ -164,23 +164,26 @@ class AssetFileModel extends BaseElementModel
 			{
 				$fieldId = $matches[1];
 				$field = craft()->fields->getFieldById($fieldId);
-				$settings = $field->settings;
 
-				if ($settings['useSingleFolder'])
-				{
-					$sourceId = $settings['singleUploadLocationSource'];
-				}
-				else
-				{
-					$sourceId = $settings['defaultUploadLocationSource'];
-				}
+				if ($field) {
+                    $settings = $field->settings;
 
-				$source = craft()->assetSources->getSourceById($sourceId);
+                    if ($settings['useSingleFolder'])
+                    {
+                        $sourceId = $settings['singleUploadLocationSource'];
+                    }
+                    else
+                    {
+                        $sourceId = $settings['defaultUploadLocationSource'];
+                    }
 
-				if ($source)
-				{
-					return $source->getFieldLayout();
-				}
+                    $source = craft()->assetSources->getSourceById($sourceId);
+
+                    if ($source)
+                    {
+                        return $source->getFieldLayout();
+                    }
+                }
 			}
 		}
 

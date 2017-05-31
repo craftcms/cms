@@ -33,7 +33,6 @@
                 {{ forms.textField({
                     first: true,
                     label: "Your Email"|t,
-                    placeholder: "Your Email"|t,
                     name: 'fromEmail',
                     value: email
                 }) }}
@@ -68,9 +67,6 @@
 
                 <input type="submit" class="btn submit fullwidth disabled" value="{{ 'Send'|t }}">
                 <div class="spinner hidden"></div>
-                <p class="cs-support-error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t({
-                        email: '<a href="mailto:support@craftcms.com">support@craftcms.com</a>'
-                    })|raw }}</p>
             </form>
         </div>
         <iframe id="{{ idPrefix }}-iframe" name="{{ idPrefix }}-iframe" class="hidden"></iframe>

@@ -309,12 +309,6 @@
 								<h5 class="heading">{{ "Date Updated"|t }}</h5>
 								<div class="value">{{ entry.dateUpdated.localeDate() }} {{ entry.dateUpdated.localeTime() }}</div>
 							</div>
-							{% if currentRevisionEditor is defined %}
-								<div class="data">
-									<h5 class="heading">{{ "Version Creator"|t }}</h5>
-									<div class="value">{{ currentRevisionEditor }}</div>
-								</div>
-							{% endif %}
 							{% if entry.revisionNotes %}
 								<div class="data">
 									<h5 class="heading">{{ "Version Notes"|t }}</h5>

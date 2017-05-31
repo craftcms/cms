@@ -395,7 +395,7 @@ class DashboardController extends BaseController
 						$zipFile = $this->_createZip();
 					}
 
-					if (IOHelper::folderExists(craft()->path->getLogPath()))
+					if (IOHelper::folderExists(craft()->path->getSiteTemplatesPath()))
 					{
 						// Grab it all.
 						$templateFolderContents = IOHelper::getFolderContents(craft()->path->getSiteTemplatesPath());

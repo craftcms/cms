@@ -749,8 +749,6 @@ class EntriesController extends BaseEntriesController
 
 		if (empty($variables['entry']))
 		{
-			$entry = false;
-
 			if (!empty($variables['entryId']))
 			{
 				if (!empty($variables['draftId']))
@@ -764,20 +762,6 @@ class EntriesController extends BaseEntriesController
 				else
 				{
 					$variables['entry'] = craft()->entries->getEntryById($variables['entryId'], $variables['localeId']);
-					$entry = true;
-				}
-
-				$versions = craft()->entryRevisions->getVersionsByEntryId($variables['entry']->id, $variables['localeId'], 1, true);
-
-				if (isset($versions[0]))
-				{
-					if ($entry)
-					{
-						$variables['entry']->revisionNotes = $versions[0]->revisionNotes;
-					}
-
-					$variables['currentRevisionEditor'] = $versions[0]->creator;
-					$variables['currentRevisionEditTime'] = $versions[0]->dateUpdated;
 				}
 
 				if (!$variables['entry'])
@@ -820,6 +804,24 @@ class EntriesController extends BaseEntriesController
 						}
 						break;
 					}
+				}
+			}
+		}
+
+		if ($variables['entry']->id)
+		{
+			$versions = craft()->entryRevisions->getVersionsByEntryId($variables['entry']->id, $variables['localeId'], 1, true);
+			$currentVersion = reset($versions);
+
+			if ($currentVersion !== false)
+			{
+				$variables['currentVersionCreator'] = $currentVersion->creator;
+				$variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
+
+				// Are we editing the "current" version?
+				if ($variables['entry']->getClassHandle() === 'Entry')
+				{
+					$variables['entry']->revisionNotes = $currentVersion->revisionNotes;
 				}
 			}
 		}
