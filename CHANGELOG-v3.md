@@ -17,6 +17,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where plugin index templates weren’t getting resolved without appending an `/index` to the end of the template path.
 - Fixed a PHP error that occurred when saving an element with a Number field, if using a locale with a non-US number format. ([#1739](https://github.com/craftcms/cms/issues/1739))
 - Fixed a bug where `craft\web\View::head()`, `beginBody()`, and `endBody()` were getting called for non-“page” templates that contained `<head>` and/or `<body>` tags. ([#1742](https://github.com/craftcms/cms/issues/1742))
+- Fixed a bug where singles were forgetting their field layouts when their section settings were re-saved. ([#1743](https://github.com/craftcms/cms/issues/1743))
 
 ## 3.0.0-beta.18 - 2017-05-19
 
