@@ -743,11 +743,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['craft'] = $globals['blx'] = new CraftVariable();
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
-            // Keep 'user' around so long as it's not hurting anyone.
-            // Technically deprecated, though.
-            $globals['currentUser'] = $globals['user'] = Craft::$app->getUser()->getIdentity();
+            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
-            $globals['currentUser'] = $globals['user'] = null;
+            $globals['currentUser'] = null;
         }
 
         // CP-only variables
