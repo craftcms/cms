@@ -770,7 +770,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if ($variables['entry']->id) {
-            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $site->id, 1, true);
+            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entry']->id, $site->id, 1, true);
             /** @var EntryVersion $currentVersion */
             $currentVersion = reset($versions);
 
