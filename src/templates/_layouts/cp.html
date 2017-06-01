@@ -159,6 +159,13 @@
             <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
                 <div id="user-photo-icon" class="photo-container">
                     <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
+					<div class="craftid">
+						{% if craftIdAccount %}
+							{% include "_includes/craftidicon.svg" %}
+						{% else %}
+							{% include "_includes/craftidicon.svg" with {color: '#aaa'} %}
+						{% endif %}
+                    </div>
                 </div>
                 <div id="account-menu-anchor"></div>
             </a>
@@ -178,11 +185,11 @@
 									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
 
                                     <div class="craftid light">
-										{% include "_includes/craftidicon.svg" %}
-
 										{% if craftIdAccount %}
+											{% include "_includes/craftidicon.svg" %}
                                             {{ craftIdAccount.data[0].username }}
 										{% else %}
+											{% include "_includes/craftidicon.svg" with {color: '#aaa'} %}
                                             {{ "Not connected to your Craft ID"|t('app') }}
 										{% endif %}
                                     </div>

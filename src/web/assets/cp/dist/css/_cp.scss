@@ -82,6 +82,9 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 
 #global-sidebar #account-info.menubtn:after { display: none !important; }
 #global-sidebar a#account-info:focus { outline: none; }
+#global-sidebar #account-info .photo-container { position: relative; }
+#global-sidebar #account-info .photo-container .craftid { position: absolute; bottom: -3px; right: -3px; border: 2px solid $headerBgColor; border-radius: 100%; }
+#global-sidebar #account-info .photo-container .craftid svg { display: block; }
 
 #account-info-preview { @include display-flex; @include flex-direction(row); }
 #account-info-preview:after { @include icon; margin-top: 21px; margin-left: 14px; font-size: 13px; color: $mediumtextcolor;
