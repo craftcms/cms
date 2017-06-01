@@ -13,7 +13,6 @@ Craft CMS Changelog
 - Fixed a bug where clicking Enter/Return on a time field with a manually-entered time would change the value to the closest rounded time value. ([#1720](https://github.com/craftcms/cms/issues/1720))
 - Fixed a bug where resaving Elements task would fail in some cases.
 - Fixed a bug where entries’ titles weren’t getting updated automatically after saving a Section, for Entry Types with dynamic titles. ([#1728](https://github.com/craftcms/cms/issues/1728))
-- Fixed a bug where a plugin’s control panel nav item was not having it’s `subnav` rendered within the control panel navigation. 
 - Fixed a bug where the Get Help widget would check for the existence of the log file path when trying to zip up site templates, if that option was selected.
 - Fixed a bug where the Edit Entry page wouldn’t show the current revision notes for the current entry if it was displaying any validation errors. ([#1747](https://github.com/craftcms/cms/issues/1747))
 - Fixed a bug where the revision dropdown on the Edit Entry page would attribute the current version to the entry author, if version history wasn’t known for the entry. ([#1746](https://github.com/craftcms/cms/issues/1746))
