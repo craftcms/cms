@@ -206,6 +206,7 @@
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
 
 					{% if craftIdAccount %}
+                        <li><a href="https://craftid.dev/account" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
                         <li>
                             {#<a href="#">Disconnect from Craft ID</a>#}
                             <form method="post" id="disconnect">
