@@ -183,7 +183,7 @@
 										{% if craftIdAccount %}
                                             {{ craftIdAccount.data[0].username }}
 										{% else %}
-                                            Not connected to your Craft ID
+                                            {{ "Not connected to your Craft ID"|t('app') }}
 										{% endif %}
                                     </div>
                                 </div>
@@ -204,7 +204,7 @@
                             <form method="post" id="disconnect">
 								{{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/disconnect">
-                                <a onclick="document.getElementById('disconnect').submit();">Disconnect your Craft ID</a>
+                                <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
                             </form>
                         </li>
 
@@ -215,7 +215,7 @@
                             <form method="post" id="connect">
                                 {{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/connect">
-                                <a onclick="document.getElementById('connect').submit();">Connect to your Craft ID</a>
+                                <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
                             </form>
                         </li>
 					{% endif %}
