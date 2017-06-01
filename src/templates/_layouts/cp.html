@@ -156,6 +156,8 @@
                 <h2>{{ systemName }}</h2>
             </a>
 
+			{% set craftIdAccount = craft.cp.craftIdAccount() %}
+
             <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
                 <div id="user-photo-icon" class="photo-container">
                     <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
@@ -169,8 +171,6 @@
                 </div>
                 <div id="account-menu-anchor"></div>
             </a>
-
-			{% set craftIdAccount = craft.cp.craftIdAccount() %}
 
             <div class="menu" data-align="left">
                 <ul>
