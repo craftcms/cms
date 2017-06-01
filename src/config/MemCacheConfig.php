@@ -8,6 +8,7 @@
 namespace craft\config;
 
 use yii\base\Object;
+use yii\caching\MemCache;
 
 /**
  * MemCache Config class
@@ -22,6 +23,7 @@ class MemCacheConfig extends Object
 
     /**
      * @var array An array of memcached servers to use.
+     * @see MemCache::setServers()
      */
     public $servers = [
         [
@@ -39,6 +41,6 @@ class MemCacheConfig extends Object
             'timeout' => 15,
             // Probability of using this server among all servers.
             'weight' => 1,
-        ]
+        ],
     ];
 }
