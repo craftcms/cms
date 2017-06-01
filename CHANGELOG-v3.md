@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed an exception that occurred when attempting to change an entry’s type from the Edit Entry page. ([#1748](https://github.com/craftcms/cms/pull/1748))
+- Fixed a deprecation error on the Edit Entry page. ([#1749](https://github.com/craftcms/cms/issues/1749))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
