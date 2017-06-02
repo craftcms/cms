@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - Updated Redactor II to 2.6.
 
+### Fixed
+- Fixed a potential user enumeration attack vector when authenticating a user.
+
 ## 2.6.2981 - 2017-05-31
 
 ### Changed
