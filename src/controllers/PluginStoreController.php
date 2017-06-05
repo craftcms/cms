@@ -101,6 +101,33 @@ class PluginStoreController extends Controller
         ]);
     }
 
+    public function actionCart()
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        try {
+            $pluginsJson = $client->request('GET', 'plugins');
+            $pluginsResponse = json_decode($pluginsJson->getBody(), true);
+
+            if(!isset($pluginsResponse['error'])) {
+                $plugins = $pluginsResponse['data'];
+            } else {
+                $error = $pluginsResponse['error'];
+            }
+        }
+        catch(\Exception $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+
+        return $this->renderTemplate('plugin-store/_cart', [
+            'plugins' => (isset($plugins) ? $plugins : null),
+            'error' => (isset($error) ? $error : null)
+        ]);
+    }
+
     public function actionVue()
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
