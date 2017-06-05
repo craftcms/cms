@@ -44,7 +44,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionIndex()
+    public function actionIndex(array $results = null)
     {
         $client = Craft::$app->getPluginStore()->getClient();
 
@@ -63,9 +63,14 @@ class PluginStoreController extends Controller
             $error = $e->getMessage();
         }
 
+        if($results) {
+            $plugins = $results;
+        }
+
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index', [
+            'results' => $results,
             'plugins' => (isset($plugins) ? $plugins : null),
             'error' => (isset($error) ? $error : null)
         ]);
@@ -125,6 +130,27 @@ class PluginStoreController extends Controller
         return $this->renderTemplate('plugin-store/_cart', [
             'plugins' => (isset($plugins) ? $plugins : null),
             'error' => (isset($error) ? $error : null)
+        ]);
+    }
+
+    public function actionSearch()
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        $results = [];
+
+        $q = Craft::$app->getRequest()->getParam('q');
+
+        $searchJsonResponse = $client->request('GET', 'plugins/search', ['query' => ['q' => $q]]);
+        $searchResponse = json_decode($searchJsonResponse->getBody(), true);
+
+        if(!isset($searchResponse['error'])) {
+            $results = $searchResponse['data'];
+        }
+
+        // Send the entry back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'results' => $results
         ]);
     }
 

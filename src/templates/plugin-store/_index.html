@@ -28,7 +28,9 @@
 								{{ csrfInput() }}
 
 								{{ forms.text({
-									placeholder: "Search plugins…"|t('app')
+									placeholder: "Search plugins…"|t('app'),
+									name: 'q',
+									value: craft.app.request.param('q')
 								}) }}
 							</form>
 						</div>
