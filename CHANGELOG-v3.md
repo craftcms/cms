@@ -18,6 +18,7 @@ Craft CMS 3.0 Working Changelog
 - The image editor now loads a higher-resolution image when the image viewport size has increased significantly.
 - `craft\db\Migration::addPrimaryKey()`, `addForeignKey()`, and `createIndex` now automatically generate the key/index name if `$name` is `null`.
 - Removed the deprecated global `user` template variable. ([#1744](https://github.com/craftcms/cms/issues/1744))
+- Updated Yii to 2.0.12.
 
 ### Fixed
 - Fixed a bug where entries and categories created from element selection modals weren’t getting a field layout ID assigned to them. ([#1725](https://github.com/craftcms/cms/issues/1725))
