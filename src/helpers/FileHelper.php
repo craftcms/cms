@@ -332,7 +332,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if (!isset($options['basePath'])) {
             $options['basePath'] = realpath($dir);
-            $options = self::_normalizeOptions($options);
+            $options = static::normalizeOptions($options);
         }
 
         while (($file = readdir($handle)) !== false) {
