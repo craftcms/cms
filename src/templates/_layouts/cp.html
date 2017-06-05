@@ -161,13 +161,12 @@
             <a id="account-info" class="menubtn" title="{{ 'My Account'|t('app') }}" role="button" data-menu-anchor="#account-menu-anchor">
                 <div id="user-photo-icon" class="photo-container">
                     <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
-					<div class="craftid">
-						{% if craftIdAccount %}
-							{% include "_includes/craftidicon.svg" %}
-						{% else %}
-							{% include "_includes/craftidicon.svg" with {color: '#aaa'} %}
-						{% endif %}
-                    </div>
+
+                    {% if craftIdAccount %}
+                        <div class="craftid">
+                            {% include "_includes/craftidicon.svg" %}
+                        </div>
+                    {% endif %}
                 </div>
                 <div id="account-menu-anchor"></div>
             </a>
