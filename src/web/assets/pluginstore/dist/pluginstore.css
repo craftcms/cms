@@ -13,4 +13,14 @@
 
 .cart-review table td { width: 100px; }
 
+.plugin-header { display: flex; }
+
+.plugin-header .description { flex-grow: 1; margin-left: 14px; }
+
+.plugin-header .description h2 { margin-bottom: 10px; }
+
+.plugin-header .description p { margin: 0.4em 0; }
+
+.plugin-header .buttons { margin-top: 0; }
+
 /*# sourceMappingURL=pluginstore.css.map */

@@ -1,5 +1,7 @@
 {% extends "plugin-store/_layouts/cp" %}
 
+{% import "_includes/forms" as forms %}
+
 {% set title = 'Plugin Store' %}
 
 {% set extraPageHeaderHtml %}
@@ -16,12 +18,52 @@
 			{{ plugins.error }}
 		{% else %}
 			{% if plugins|length > 0 %}
+
+				<div class="toolbar">
+					<div class="flex">
+
+						<div class="flex-grow">
+							<form method="post">
+								<input type="hidden" name="action" value="plugin-store/search">
+								{{ csrfInput() }}
+
+								{{ forms.text({
+									placeholder: "Search plugins…"|t('app')
+								}) }}
+							</form>
+						</div>
+
+						<div class="btn menubtn">{{ "All"|t('app') }}</div>
+						<div class="menu">
+							<ul>
+								<li><a>{{ "All"|t('app') }}</a></li>
+								<li><a>{{ "Free"|t('app') }}</a></li>
+								<li><a>{{ "Commercial"|t('app') }}</a></li>
+							</ul>
+						</div>
+						<div class="btn menubtn">{{ "Popularity"|t('app') }}</div>
+						<div class="menu">
+							<ul>
+								<li><a>{{ "Price"|t('app') }}</a></li>
+								<li><a>{{ "Popularity"|t('app') }}</a></li>
+							</ul>
+							<hr>
+							<ul>
+								<li><a>{{ "Ascending"|t('app') }}</a></li>
+								<li><a>{{ "Descending"|t('app') }}</a></li>
+							</ul>
+						</div>
+
+					</div>
+				</div>
+
+
 				<table class="data fullwidth">
 					<thead>
 						<tr>
 							<th class="thin"></th>
 							<th>Plugin Name</th>
-							<th>Developer</th>
+							<th class="thin"></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -38,13 +80,8 @@
 										</a>
 									</td>
 									<td><a href="{{ url('plugin-store/'~plugin.slug) }}">{{ plugin.name }}</a> <span class="light">— {{ plugin.description }}</span></td>
-									<td>
-										{% if plugin.developerUrl %}
-											<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developerName }}</a>
-										{% else %}
-											{{ plugin.developerName }}
-										{% endif %}
-									</td>
+									<td><a href="{{ url('plugin-store/cart') }}"
+										   class="btn submit">Buy $99.00</a></td>
 								</tr>
 							{% endif %}
 						{% endfor %}
