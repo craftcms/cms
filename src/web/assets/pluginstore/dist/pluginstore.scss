@@ -1,10 +1,19 @@
 @charset "UTF-8";
 @import "../../shared";
 
-.plugin-icon {
+.plugin-icon,
+.plugin-icon-large {
   background: #eee;
+  overflow: hidden;
+}
+.plugin-icon, .plugin-icon img {
   width: 32px;
   height: 32px;
   border-radius: 4px;
-  overflow: hidden;
+}
+
+.plugin-icon-large, .plugin-icon-large img {
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
 }

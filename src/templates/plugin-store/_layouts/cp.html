@@ -1,1 +1,8 @@
 {% extends "_layouts/cp" %}
+
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons secondary-buttons right">
+		<a href="{{ url('plugin-store/cart') }}" class="btn">Your Cart</a>
+	</div>
+{% endset %}

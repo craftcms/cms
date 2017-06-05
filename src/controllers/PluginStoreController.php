@@ -92,7 +92,7 @@ class PluginStoreController extends Controller
         }
 
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-        Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
+        // Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 
         return $this->renderTemplate('plugin-store/_plugin', [
             'slug' => $slug,

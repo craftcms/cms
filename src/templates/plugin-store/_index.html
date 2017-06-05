@@ -3,23 +3,17 @@
 {% set title = 'Plugin Store' %}
 
 {% set content %}
-	{#
-    <div id="app">
-        <Plugins></Plugins>
-    </div>
-	#}
 
 	{% if not error %}
 
 		{% if plugins.error is defined %}
 			{{ plugins.error }}
 		{% else %}
-			<h2>All plugins</h2>
-
 			{% if plugins|length > 0 %}
 				<table class="data fullwidth">
 					<thead>
 						<tr>
+							<th class="thin"></th>
 							<th>Plugin Name</th>
 							<th>Developer</th>
 						</tr>
@@ -28,7 +22,16 @@
 						{% for plugin in plugins %}
 							{% if plugin %}
 								<tr>
-									<td>{{ plugin.name }}</td>
+									<td class="thin">
+										<a href="{{ url('plugin-store/'~plugin.slug) }}">
+											<div class="plugin-icon">
+												{% if plugin.iconUrl %}
+													<img src="{{ plugin.iconUrl }}" width="32" />
+												{% endif %}
+											</div>
+										</a>
+									</td>
+									<td><a href="{{ url('plugin-store/'~plugin.slug) }}">{{ plugin.name }}</a> <span class="light">— {{ plugin.description }}</span></td>
 									<td>
 										{% if plugin.developerUrl %}
 											<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developerName }}</a>
