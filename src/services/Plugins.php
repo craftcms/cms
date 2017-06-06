@@ -471,6 +471,8 @@ class Plugins extends Component
             'plugin' => $plugin
         ]));
 
+        $this->_registerPlugin($plugin);
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $info = [
@@ -492,6 +494,7 @@ class Plugins extends Component
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
+                $this->_unregisterPlugin($plugin);
 
                 return false;
             }
@@ -499,12 +502,12 @@ class Plugins extends Component
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
+            $this->_unregisterPlugin($plugin);
 
             throw $e;
         }
 
         $this->_installedPluginInfo[$lcHandle] = $info;
-        $this->_registerPlugin($plugin);
 
         // Fire an 'afterInstallPlugin' event
         $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
