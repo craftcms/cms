@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - Updated Redactor II to 2.6.
+- Updated Imagine to 0.7.1.
 
 ### Fixed
 - Fixed a potential user enumeration attack vector when authenticating a user.
