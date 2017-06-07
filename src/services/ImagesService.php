@@ -183,42 +183,45 @@ class ImagesService extends BaseApplicationComponent
 		// Special case for SVG files.
 		if (IOHelper::getExtension($filePath) === 'svg')
 		{
+			if (!extension_loaded('dom'))
+			{
+				throw new Exception('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to upload SVG files.');
+			}
+
 			$sanitizer = new Sanitizer();
 			$svgContents = IOHelper::getFileContents($filePath);
 			$svgContents = $sanitizer->sanitize($svgContents);
 
-			if ($svgContents)
+			if (!$svgContents)
 			{
-				IOHelper::writeToFile($filePath, $svgContents);
-				return true;
+				throw new Exception('There was a problem sanitizing the SVG file contents. Likely due to not well-formed XML.');
 			}
 
-			Craft::log('Tried to sanitize SVG file ('.$filePath.') and could not. Probably from non-well-formed XML.', LogLevel::Error);
+			IOHelper::writeToFile($filePath, $svgContents);
+			return true;
 		}
-		else
+
+		try
 		{
-			try
+			if (craft()->config->get('rotateImagesOnUploadByExifData'))
 			{
-				if (craft()->config->get('rotateImagesOnUploadByExifData'))
-				{
-					$cleanedByRotation = $this->rotateImageByExifData($filePath);
-				}
-
-				$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-			}
-			catch (\Exception $e)
-			{
-				Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
+				$cleanedByRotation = $this->rotateImageByExifData($filePath);
 			}
 
-			// Image has already been cleaned if it had exif/orientation data
-			if ($cleanedByRotation || $cleanedByStripping)
-			{
-				return true;
-			}
-
-			return $this->loadImage($filePath)->saveAs($filePath, true);
+			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
 		}
+		catch (\Exception $e)
+		{
+			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
+		}
+
+		// Image has already been cleaned if it had exif/orientation data
+		if ($cleanedByRotation || $cleanedByStripping)
+		{
+			return true;
+		}
+
+		return $this->loadImage($filePath)->saveAs($filePath, true);
 	}
 
 	/**
