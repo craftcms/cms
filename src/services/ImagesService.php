@@ -1,6 +1,7 @@
 <?php
 namespace Craft;
 
+use enshrined\svgSanitize\Sanitizer;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTag;
 use lsolesen\pel\PelDataWindow;
@@ -172,12 +173,33 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return bool
+	 * @return bool|null
 	 */
 	public function cleanImage($filePath)
 	{
 		$cleanedByRotation = false;
 		$cleanedByStripping = false;
+
+		// Special case for SVG files.
+		if (IOHelper::getExtension($filePath) === 'svg')
+		{
+			if (!extension_loaded('dom'))
+			{
+				throw new Exception('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to upload SVG files.');
+			}
+
+			$sanitizer = new Sanitizer();
+			$svgContents = IOHelper::getFileContents($filePath);
+			$svgContents = $sanitizer->sanitize($svgContents);
+
+			if (!$svgContents)
+			{
+				throw new Exception('There was a problem sanitizing the SVG file contents. Likely due to not well-formed XML.');
+			}
+
+			IOHelper::writeToFile($filePath, $svgContents);
+			return true;
+		}
 
 		try
 		{
@@ -185,6 +207,7 @@ class ImagesService extends BaseApplicationComponent
 			{
 				$cleanedByRotation = $this->rotateImageByExifData($filePath);
 			}
+
 			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
 		}
 		catch (\Exception $e)

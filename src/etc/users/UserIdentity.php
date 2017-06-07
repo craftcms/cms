@@ -80,7 +80,7 @@ class UserIdentity extends \CUserIdentity
 			// Add a little randomness in the timing of the response.
 			$this->_slowRoll();
 
-			$this->errorCode = static::ERROR_USERNAME_INVALID;
+			$this->errorCode = static::ERROR_PASSWORD_INVALID;
 			return false;
 		}
 	}

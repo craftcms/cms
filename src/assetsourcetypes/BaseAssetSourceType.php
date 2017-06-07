@@ -207,7 +207,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 			// We hate Javascript and PHP in our image files.
 			if (IOHelper::getFileKind(IOHelper::getExtension($localFilePath)) == 'image'
 				&& ImageHelper::isImageManipulatable(IOHelper::getExtension($localFilePath))
-				&& IOHelper::getExtension($localFilePath) != 'svg' // Not an image in the classic sense here.
 			)
 			{
 				craft()->images->cleanImage($localFilePath);
@@ -242,7 +241,6 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 
 			if ($response->isSuccess())
 			{
-
 				$fileModel = new AssetFileModel();
 
 				$title = $fileModel->generateAttributeLabel(IOHelper::getFileName($filename, false));
