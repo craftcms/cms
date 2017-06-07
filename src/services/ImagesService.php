@@ -1,6 +1,7 @@
 <?php
 namespace Craft;
 
+use enshrined\svgSanitize\Sanitizer;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTag;
 use lsolesen\pel\PelDataWindow;
@@ -172,33 +173,52 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return bool
+	 * @return bool|null
 	 */
 	public function cleanImage($filePath)
 	{
 		$cleanedByRotation = false;
 		$cleanedByStripping = false;
 
-		try
+		// Special case for SVG files.
+		if (IOHelper::getExtension($filePath) === 'svg')
 		{
-			if (craft()->config->get('rotateImagesOnUploadByExifData'))
+			$sanitizer = new Sanitizer();
+			$svgContents = IOHelper::getFileContents($filePath);
+			$svgContents = $sanitizer->sanitize($svgContents);
+
+			if ($svgContents)
 			{
-				$cleanedByRotation = $this->rotateImageByExifData($filePath);
+				IOHelper::writeToFile($filePath, $svgContents);
+				return true;
 			}
-			$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-		}
-		catch (\Exception $e)
-		{
-			Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
-		}
 
-		// Image has already been cleaned if it had exif/orientation data
-		if ($cleanedByRotation || $cleanedByStripping)
-		{
-			return true;
+			Craft::log('Tried to sanitize SVG file ('.$filePath.') and could not. Probably from non-well-formed XML.', LogLevel::Error);
 		}
+		else
+		{
+			try
+			{
+				if (craft()->config->get('rotateImagesOnUploadByExifData'))
+				{
+					$cleanedByRotation = $this->rotateImageByExifData($filePath);
+				}
 
-		return $this->loadImage($filePath)->saveAs($filePath, true);
+				$cleanedByStripping = $this->stripOrientationFromExifData($filePath);
+			}
+			catch (\Exception $e)
+			{
+				Craft::log('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), LogLevel::Error);
+			}
+
+			// Image has already been cleaned if it had exif/orientation data
+			if ($cleanedByRotation || $cleanedByStripping)
+			{
+				return true;
+			}
+
+			return $this->loadImage($filePath)->saveAs($filePath, true);
+		}
 	}
 
 	/**
