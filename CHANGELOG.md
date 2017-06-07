@@ -6,11 +6,11 @@ Craft CMS Changelog
 ### Changed
 - Updated Redactor II to 2.6.
 - Updated Imagine to 0.7.1.
-- Craft will now sanitize uploaded SVG files to prevent a potential XSS attack vector.
 - Craft now requires the [PHP DOM extension](http://www.php.net/manual/en/book.dom.php) when uploading SVG files.
 
-### Fixed
+### Security
 - Fixed a potential user enumeration attack vector when authenticating a user.
+- Craft will now sanitize uploaded SVG files to prevent a potential XSS attack vector.
 
 ## 2.6.2981 - 2017-05-31
 
