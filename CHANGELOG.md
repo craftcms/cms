@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Changed
 - Updated Redactor II to 2.6.
 - Updated Imagine to 0.7.1.
+- Craft will now sanitize uploaded SVG files to prevent a potential XSS attack vector.
 
 ### Fixed
 - Fixed a potential user enumeration attack vector when authenticating a user.
