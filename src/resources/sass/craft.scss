@@ -1554,6 +1554,18 @@ body .selectize-dropdown .active { @include menu-option-active-styles; }
 .ui-datepicker-header { padding: 8px 8px 4px; }
 .ui-datepicker-prev { @include floatleft; }
 .ui-datepicker-next { @include floatright; }
+.ui-datepicker-prev span,
+.ui-datepicker-next span { display: none; }
+.ui-datepicker-prev:after,
+.ui-datepicker-next:after { @include icon; width: 20px; margin-top: -2px; line-height: 20px !important; text-align: center; }
+.ui-datepicker-prev:after {
+	body.ltr & { content: 'leftangle'; }
+	body.rtl & { content: 'rightangle'; }
+}
+.ui-datepicker-next:after {
+	body.ltr & { content: 'rightangle'; }
+	body.rtl & { content: 'leftangle'; }
+}
 .ui-datepicker-title { text-align: center; }
 .ui-datepicker-calendar th,
 .ui-datepicker-calendar td { padding: 2px; }

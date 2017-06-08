@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Changed
+- Changed date picker’s previous and next buttons to arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
+
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 
 ### Changed
