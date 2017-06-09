@@ -1694,6 +1694,16 @@ body.rtl .ui-datepicker-prev { float: right; }
 body.ltr .ui-datepicker-next { float: right; }
 body.rtl .ui-datepicker-next { float: left; }
 
+.ui-datepicker-prev span, .ui-datepicker-next span { display: none; }
+
+.ui-datepicker-prev:after, .ui-datepicker-next:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; width: 20px; margin-top: -2px; line-height: 20px !important; text-align: center; }
+
+body.ltr .ui-datepicker-prev:after { content: 'leftangle'; }
+body.rtl .ui-datepicker-prev:after { content: 'rightangle'; }
+
+body.ltr .ui-datepicker-next:after { content: 'rightangle'; }
+body.rtl .ui-datepicker-next:after { content: 'leftangle'; }
+
 .ui-datepicker-title { text-align: center; }
 
 .ui-datepicker-calendar th, .ui-datepicker-calendar td { padding: 2px; }

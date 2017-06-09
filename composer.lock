@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9efd1b98900c458c4e5fde3a1734847d",
-    "content-hash": "ee9b2010026bea1936d0a9ada7f29ca4",
+    "hash": "abcb23f6f58ae828803b984b9112e691",
+    "content-hash": "1458fe92286c999b92b46c65f513c21c",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
-            "version": "0.5.3",
+            "version": "0.5.3.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/darylldoyle/svg-sanitizer.git",
-                "reference": "1907fff05f8931e1bc0c8ba27e936b46d51e29b0"
+                "url": "https://github.com/pixelandtonic/svg-sanitizer.git",
+                "reference": "a392da2ace76ecb27263cb09e2163449514bcf81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/1907fff05f8931e1bc0c8ba27e936b46d51e29b0",
-                "reference": "1907fff05f8931e1bc0c8ba27e936b46d51e29b0",
+                "url": "https://api.github.com/repos/pixelandtonic/svg-sanitizer/zipball/a392da2ace76ecb27263cb09e2163449514bcf81",
+                "reference": "a392da2ace76ecb27263cb09e2163449514bcf81",
                 "shasum": ""
             },
             "require-dev": {
@@ -31,7 +31,6 @@
                     "enshrined\\svgSanitize\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0+"
             ],
@@ -42,7 +41,10 @@
                 }
             ],
             "description": "An SVG sanitizer for PHP",
-            "time": "2017-02-26 17:38:09"
+            "support": {
+                "source": "https://github.com/pixelandtonic/svg-sanitizer/tree/0.5.3.1"
+            },
+            "time": "2017-06-09 21:45:33"
         },
         {
             "name": "guzzle/guzzle",
@@ -414,16 +416,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.21",
+            "version": "v2.8.22",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531"
+                "reference": "1377400fd641d7d1935981546aaef780ecd5bf6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/7fc8e2b4118ff316550596357325dfd92a51f531",
-                "reference": "7fc8e2b4118ff316550596357325dfd92a51f531",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/1377400fd641d7d1935981546aaef780ecd5bf6d",
+                "reference": "1377400fd641d7d1935981546aaef780ecd5bf6d",
                 "shasum": ""
             },
             "require": {
@@ -470,7 +472,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-04-26 16:56:54"
+            "time": "2017-06-02 07:47:27"
         },
         {
             "name": "twig/twig",
@@ -538,16 +540,16 @@
         },
         {
             "name": "yiisoft/yii",
-            "version": "dev-master",
+            "version": "1.1.19.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/yii.git",
-                "reference": "481fed5d49c927cb246815335e92fdcf70c0e0a3"
+                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/481fed5d49c927cb246815335e92fdcf70c0e0a3",
-                "reference": "481fed5d49c927cb246815335e92fdcf70c0e0a3",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
+                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
                 "shasum": ""
             },
             "require": {
@@ -630,7 +632,7 @@
                 "irc": "irc://irc.freenode.net/yii",
                 "source": "https://github.com/yiisoft/yii"
             },
-            "time": "2017-05-10 17:20:13"
+            "time": "2017-06-09 20:46:36"
         }
     ],
     "packages-dev": [
@@ -1863,9 +1865,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "yiisoft/yii": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

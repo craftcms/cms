@@ -20,6 +20,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/yii"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/svg-sanitizer"
         }
     ],
     "require": {
@@ -30,8 +34,8 @@
         "pixelandtonic/imagine": "v0.7.1.1",
         "lsolesen/pel": "0.9.4.2",
         "pclzip/pclzip": "2.8.2",
-        "enshrined/svg-sanitize": "0.5.3",
-        "yiisoft/yii": "dev-master"
+        "yiisoft/yii": "1.1.19.1",
+        "enshrined/svg-sanitize": "0.5.3.1"
     },
     "require-dev": {
         "phpunit/phpunit": "4.8.16",
