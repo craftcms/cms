@@ -11,6 +11,7 @@ Craft CMS Changelog
 ### Changed
 - Updated Redactor II to 2.6.
 - Updated Imagine to 0.7.1.
+- Updated to Yii 1.1.19.
 - Craft now requires the [PHP DOM extension](http://www.php.net/manual/en/book.dom.php) when uploading SVG files.
 
 ### Security
