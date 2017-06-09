@@ -8,7 +8,7 @@ Craft CMS Changelog
 - Updated Yii to 1.1.19.
 
 ### Fixed
-- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload.
+- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload. ([#1767](https://github.com/craftcms/cms/issues/1767))
 
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 
