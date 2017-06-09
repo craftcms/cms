@@ -844,16 +844,18 @@ class View extends \yii\web\View
     {
         $session = Craft::$app->getSession();
 
-        foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-            if (!is_subclass_of($name, YiiAssetBundle::class)) {
-                throw new Exception("$name is not an asset bundle");
+        if ($session->getIsActive()) {
+            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+                if (!is_subclass_of($name, YiiAssetBundle::class)) {
+                    throw new Exception("$name is not an asset bundle");
+                }
+
+                $this->registerAssetBundle($name, $position);
             }
 
-            $this->registerAssetBundle($name, $position);
-        }
-
-        foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
-            $this->registerJs($js, $position, $key);
+            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+                $this->registerJs($js, $position, $key);
+            }
         }
     }
 

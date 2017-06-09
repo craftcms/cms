@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a deprecation error on the Edit Entry page. ([#1749](https://github.com/craftcms/cms/issues/1749))
 - Fixed a PHP error caused by the default Memcached config. ([#1751](https://github.com/craftcms/cms/issues/1751))
 - Fixed a SQL error caused by the default `DbCacheConfig->cacheTableName` setting.
+- Fixed a bug where a PHP session would be started on every template rendering request whether it was needed or not. ([#1765](https://github.com/craftcms/cms/issues/1765))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
