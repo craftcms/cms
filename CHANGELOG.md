@@ -5,13 +5,13 @@ Craft CMS Changelog
 
 ### Changed
 - Changed date picker’s previous and next buttons to arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
+- Updated to Yii 1.1.19.
 
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 
 ### Changed
 - Updated Redactor II to 2.6.
 - Updated Imagine to 0.7.1.
-- Updated to Yii 1.1.19.
 - Craft now requires the [PHP DOM extension](http://www.php.net/manual/en/book.dom.php) when uploading SVG files.
 
 ### Security
