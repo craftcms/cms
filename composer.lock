@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "bcac6dd7d69b57f259aaa0379bf4219f",
-    "content-hash": "d8967e16acebcb0054087263b1259304",
+    "hash": "abcb23f6f58ae828803b984b9112e691",
+    "content-hash": "1458fe92286c999b92b46c65f513c21c",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
-            "version": "0.5.3",
+            "version": "0.5.3.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/darylldoyle/svg-sanitizer.git",
-                "reference": "1907fff05f8931e1bc0c8ba27e936b46d51e29b0"
+                "url": "https://github.com/pixelandtonic/svg-sanitizer.git",
+                "reference": "a392da2ace76ecb27263cb09e2163449514bcf81"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/darylldoyle/svg-sanitizer/zipball/1907fff05f8931e1bc0c8ba27e936b46d51e29b0",
-                "reference": "1907fff05f8931e1bc0c8ba27e936b46d51e29b0",
+                "url": "https://api.github.com/repos/pixelandtonic/svg-sanitizer/zipball/a392da2ace76ecb27263cb09e2163449514bcf81",
+                "reference": "a392da2ace76ecb27263cb09e2163449514bcf81",
                 "shasum": ""
             },
             "require-dev": {
@@ -31,7 +31,6 @@
                     "enshrined\\svgSanitize\\": "src"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0+"
             ],
@@ -42,7 +41,10 @@
                 }
             ],
             "description": "An SVG sanitizer for PHP",
-            "time": "2017-02-26 17:38:09"
+            "support": {
+                "source": "https://github.com/pixelandtonic/svg-sanitizer/tree/0.5.3.1"
+            },
+            "time": "2017-06-09 21:45:33"
         },
         {
             "name": "guzzle/guzzle",
