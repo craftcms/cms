@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ee175cd38d69a91972c0a5a1c1d6e53f",
-    "content-hash": "ffa5b7c496269a67fbc1f4d4b9d50b0f",
+    "hash": "bcac6dd7d69b57f259aaa0379bf4219f",
+    "content-hash": "d8967e16acebcb0054087263b1259304",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
@@ -538,25 +538,20 @@
         },
         {
             "name": "yiisoft/yii",
-            "version": "1.1.19",
+            "version": "1.1.19.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/yiisoft/yii.git",
-                "reference": "5790cbff82cb4837d445f995932f5d069ab4ba4c"
+                "url": "https://github.com/pixelandtonic/yii.git",
+                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii/zipball/5790cbff82cb4837d445f995932f5d069ab4ba4c",
-                "reference": "5790cbff82cb4837d445f995932f5d069ab4ba4c",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
+                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.1.0"
-            },
-            "require-dev": {
-                "phing/phing": "2.*",
-                "phpunit/phpunit": "~3.7",
-                "phpunit/phpunit-selenium": "~1.4.0"
             },
             "bin": [
                 "framework/yiic"
@@ -568,7 +563,6 @@
                     "framework/yii.php"
                 ]
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -597,6 +591,17 @@
                     "role": "Core framework development"
                 },
                 {
+                    "name": "Timur Ruziev",
+                    "email": "resurtm@gmail.com",
+                    "homepage": "http://resurtm.com/",
+                    "role": "Core framework development"
+                },
+                {
+                    "name": "Paul Klimov",
+                    "email": "klimov.paul@gmail.com",
+                    "role": "Core framework development"
+                },
+                {
                     "name": "Wei Zhuo",
                     "email": "weizhuo@gmail.com",
                     "role": "Project site maintenance and development"
@@ -610,17 +615,6 @@
                     "name": "Jeffrey Winesett",
                     "email": "jefftulsa@gmail.com",
                     "role": "Documentation and marketing"
-                },
-                {
-                    "name": "Timur Ruziev",
-                    "email": "resurtm@gmail.com",
-                    "homepage": "http://resurtm.com/",
-                    "role": "Core framework development"
-                },
-                {
-                    "name": "Paul Klimov",
-                    "email": "klimov.paul@gmail.com",
-                    "role": "Core framework development"
                 }
             ],
             "description": "Yii Web Programming Framework",
@@ -629,7 +623,14 @@
                 "framework",
                 "yii"
             ],
-            "time": "2017-06-08 07:19:07"
+            "support": {
+                "issues": "https://github.com/yiisoft/yii/issues?state=open",
+                "forum": "http://www.yiiframework.com/forum/",
+                "wiki": "http://www.yiiframework.com/wiki/",
+                "irc": "irc://irc.freenode.net/yii",
+                "source": "https://github.com/yiisoft/yii"
+            },
+            "time": "2017-06-09 20:46:36"
         }
     ],
     "packages-dev": [
