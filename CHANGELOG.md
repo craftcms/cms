@@ -4,11 +4,11 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-- Changed date picker’s previous and next buttons to arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
-- Updated to Yii 1.1.19.
+- Date pickers’ “Previous” and “Next” buttons are now represented as arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
+- Updated Yii to 1.1.19.
 
 ### Fixed
-- Fixed a bug where uploaded SVG files were getting their XML header declarations stripped out.
+- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload.
 
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 
