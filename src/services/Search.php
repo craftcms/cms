@@ -22,7 +22,6 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use Exception;
 use yii\base\Component;
-use yii\db\Exception as DbException;
 use yii\db\Schema;
 
 /**
@@ -71,7 +70,7 @@ class Search extends Component
      *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
      *          is a hard limit to truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 19562;
+    public $maxPostgresKeywordLength = 6500;
 
     // Public Methods
     // =========================================================================
