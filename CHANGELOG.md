@@ -71,7 +71,7 @@ Craft CMS Changelog
 ## 2.6.2976 - 2017-04-27
 
 ### Changed
-- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+- The `_layouts/cp.html` Control Panel template now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.
