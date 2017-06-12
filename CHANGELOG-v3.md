@@ -6,6 +6,9 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 
+### Changed
+- The `maxUploadFileSize` config setting can now be set to a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes).
+
 ### Removed
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
 

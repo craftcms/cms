@@ -387,7 +387,9 @@ class GeneralConfig extends Object
      */
     public $maxSlugIncrement = 100;
     /**
-     * @var int|float The maximum upload file size allowed in bytes.
+     * @var int|string The maximum upload file size allowed.
+     *
+     * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
      */
     public $maxUploadFileSize = 16777216;
     /**
@@ -787,6 +789,9 @@ class GeneralConfig extends Object
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
+
+        // Normalize size settings
+        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
     }
 
     /**
