@@ -9,6 +9,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload. ([#1767](https://github.com/craftcms/cms/issues/1767))
+- Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
 
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 

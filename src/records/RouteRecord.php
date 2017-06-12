@@ -47,7 +47,7 @@ class RouteRecord extends BaseRecord
 	{
 		return array(
 			array('columns' => array('locale')),
-			array('columns' => array('urlPattern'), 'unique' => true),
+			array('columns' => array('urlPattern')),
 		);
 	}
 
