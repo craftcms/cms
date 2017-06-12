@@ -25,9 +25,9 @@ class Io
     /**
      * Return max upload size in bytes.
      *
-     * @return int
+     * @return int|float
      */
-    public function getMaxUploadSize(): int
+    public function getMaxUploadSize()
     {
         $maxUpload = AppHelper::phpConfigValueInBytes('upload_max_filesize');
         $maxPost = AppHelper::phpConfigValueInBytes('post_max_size');
@@ -39,7 +39,7 @@ class Io
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = (int)Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+        $configLimit = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);

@@ -387,7 +387,7 @@ class GeneralConfig extends Object
      */
     public $maxSlugIncrement = 100;
     /**
-     * @var int The maximum upload file size allowed in bytes.
+     * @var int|float The maximum upload file size allowed in bytes.
      */
     public $maxUploadFileSize = 16777216;
     /**

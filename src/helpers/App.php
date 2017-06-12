@@ -117,10 +117,10 @@ class App
      *
      * @param string $var The PHP config setting to retrieve.
      *
-     * @return int The size in bytes.
+     * @return int|float The size in bytes.
      * @see http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes
      */
-    public static function phpConfigValueInBytes(string $var): int
+    public static function phpConfigValueInBytes(string $var)
     {
         $value = ini_get($var);
 
