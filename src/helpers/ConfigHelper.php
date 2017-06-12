@@ -60,7 +60,7 @@ class ConfigHelper
      * Accepted formats;
      *
      * - integer (the size in bytes)
-     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes),`M` (Megabytes), or `G` (Gigabytes).
+     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
      *
      * @param int|string $value The size
      *
