@@ -739,8 +739,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 
-        // Keep the 'blx' variable around for now
-        $globals['craft'] = $globals['blx'] = new CraftVariable();
+        $globals['craft'] = new CraftVariable();
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
             $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
