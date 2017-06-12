@@ -38,6 +38,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Users as UsersField;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -401,7 +402,7 @@ class Fields extends Component
     /**
      * Returns all field types that have a column in the content table.
      *
-     * @return FieldInterface[] The field type classes
+     * @return string[] The field type classes
      */
     public function getFieldTypesWithContent(): array
     {
@@ -415,6 +416,44 @@ class Fields extends Component
         }
 
         return $fieldTypes;
+    }
+
+    /**
+     * Returns all field types whose column types are considered compatible with a given field.
+     *
+     * @param FieldInterface $field
+     *
+     * @return string[] The compatible field type classes
+     */
+    public function getCompatibleFieldTypes(FieldInterface $field): array
+    {
+        if (!$field::hasContentColumn()) {
+            return [get_class($field)];
+        }
+
+        $types = [];
+        $fieldColumnType = $field->getContentColumnType();
+
+        foreach ($this->getAllFieldTypes() as $class) {
+            if ($class === get_class($field)) {
+                $types[] = $class;
+                continue;
+            }
+
+            if (!$class::hasContentColumn()) {
+                continue;
+            }
+
+            /** @var FieldInterface $tempField */
+            $tempField = new $class();
+            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempField->getContentColumnType())) {
+                continue;
+            }
+
+            $types[] = $class;
+        }
+
+        return $types;
     }
 
     /**
