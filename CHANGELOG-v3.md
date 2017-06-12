@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Removed
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
+- Removed the `blx` global template variable.
 
 ### Fixed
 - Fixed an exception that occurred when attempting to change an entry’s type from the Edit Entry page. ([#1748](https://github.com/craftcms/cms/pull/1748))
