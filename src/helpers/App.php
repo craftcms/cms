@@ -113,41 +113,6 @@ class App
     }
 
     /**
-     * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     *
-     * @return int|float The size in bytes.
-     * @see http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes
-     */
-    public static function phpConfigValueInBytes(string $var)
-    {
-        $value = ini_get($var);
-
-        // See if we can recognize that.
-        if (!preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
-            return (int)$value;
-        }
-
-        $value = (int)$matches[1];
-
-        // Multiply!
-        switch (strtolower($matches[2])) {
-            case 'g':
-                $value *= 1024;
-            // no break
-            case 'm':
-                $value *= 1024;
-            // no break
-            case 'k':
-                $value *= 1024;
-            // no break
-        }
-
-        return $value;
-    }
-
-    /**
      * Normalizes a version number based on the same logic as PHP’s [version_compare](http://php.net/manual/en/function.version-compare.php) uses internally.
      *
      * @param string $version The version number

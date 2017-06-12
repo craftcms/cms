@@ -55,6 +55,43 @@ class ConfigHelper
     }
 
     /**
+     * Normalizes a file size value into the number of bytes it represents.
+     *
+     * Accepted formats;
+     *
+     * - integer (the size in bytes)
+     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes),`M` (Megabytes), or `G` (Gigabytes).
+     *
+     * @param string|int $value The size
+     *
+     * @return int|float The size in bytes
+     */
+    public static function sizeInBytes($value)
+    {
+        // See if we can recognize that.
+        if (is_numeric($value) || !preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
+            return (int)$value;
+        }
+
+        $value = (int)$matches[1];
+
+        // Multiply!
+        switch (strtolower($matches[2])) {
+            case 'g':
+                $value *= 1024;
+                // no break
+            case 'm':
+                $value *= 1024;
+                // no break
+            case 'k':
+                $value *= 1024;
+                // no break
+        }
+
+        return $value;
+    }
+
+    /**
      * Returns a localized config setting value.
      *
      * @param mixed       $value      The config setting value. This can be specified in one of the following forms:

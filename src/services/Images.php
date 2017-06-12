@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Image;
 use craft\helpers\App;
+use craft\helpers\ConfigHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
@@ -240,7 +241,7 @@ class Images extends Component
         $channels = $imageInfo['channels'] ?? 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
-        $memoryLimit = App::phpConfigValueInBytes('memory_limit');
+        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
 
         if ($memoryLimit == -1 || memory_get_usage() + $memoryNeeded < $memoryLimit) {
             return true;
