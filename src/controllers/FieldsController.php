@@ -145,10 +145,9 @@ class FieldsController extends Controller
         // Field types
         // ---------------------------------------------------------------------
 
+        // Get the allowed field types
         /** @var string[]|FieldInterface[] $allFieldTypes */
-
         if (!$field->id) {
-            // Can be anything
             $allFieldTypes = $fieldsService->getAllFieldTypes();
         } else {
             $allFieldTypes = $fieldsService->getCompatibleFieldTypes($field);
