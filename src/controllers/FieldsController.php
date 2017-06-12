@@ -150,12 +150,7 @@ class FieldsController extends Controller
         if (!$field->id) {
             $allFieldTypes = $fieldsService->getAllFieldTypes();
         } else {
-            $allFieldTypes = $fieldsService->getCompatibleFieldTypes($field);
-        }
-
-        // Make sure the selected field class is in there
-        if (!in_array(get_class($field), $allFieldTypes, true)) {
-            $allFieldTypes[] = get_class($field);
+            $allFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
         $fieldTypeOptions = [];

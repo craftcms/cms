@@ -421,14 +421,15 @@ class Fields extends Component
     /**
      * Returns all field types whose column types are considered compatible with a given field.
      *
-     * @param FieldInterface $field
+     * @param FieldInterface $field          The current field to base compatible fields on
+     * @param bool           $includeCurrent Whether $field's class should be included
      *
      * @return string[] The compatible field type classes
      */
-    public function getCompatibleFieldTypes(FieldInterface $field): array
+    public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
         if (!$field::hasContentColumn()) {
-            return [get_class($field)];
+            return $includeCurrent ? [get_class($field)] : [];
         }
 
         $types = [];
@@ -436,7 +437,9 @@ class Fields extends Component
 
         foreach ($this->getAllFieldTypes() as $class) {
             if ($class === get_class($field)) {
-                $types[] = $class;
+                if ($includeCurrent) {
+                    $types[] = $class;
+                }
                 continue;
             }
 
@@ -451,6 +454,11 @@ class Fields extends Component
             }
 
             $types[] = $class;
+        }
+
+        // Make sure the current field class is in there if it's supposed to be
+        if ($includeCurrent && !in_array(get_class($field), $types, true)) {
+            $types[] = get_class($field);
         }
 
         return $types;
