@@ -173,7 +173,7 @@ class ImagesService extends BaseApplicationComponent
 	 *
 	 * @param string $filePath
 	 *
-	 * @return bool|null
+	 * @return bool
 	 * @throws Exception
 	 */
 	public function cleanImage($filePath)
@@ -226,7 +226,9 @@ class ImagesService extends BaseApplicationComponent
 			return true;
 		}
 
-		return $this->loadImage($filePath)->saveAs($filePath, true);
+		$this->loadImage($filePath)->saveAs($filePath, true);
+
+		return true;
 	}
 
 	/**
