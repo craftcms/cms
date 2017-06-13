@@ -537,6 +537,12 @@ return array(
 	'runTasksAutomatically' => true,
 
 	/**
+	 * Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
+	 * Should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+	 */
+	'sanitizeSvgUploads' => true,
+
+	/**
 	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
 	 */
 	'sendPoweredByHeader' => true,

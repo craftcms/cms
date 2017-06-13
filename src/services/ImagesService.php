@@ -169,11 +169,12 @@ class ImagesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Cleans an image by it's path, clearing embedded JS and PHP code.
+	 * Cleans an image by it's path, clearing embedded potentially malicious embedded code.
 	 *
 	 * @param string $filePath
 	 *
 	 * @return bool|null
+	 * @throws Exception
 	 */
 	public function cleanImage($filePath)
 	{
@@ -183,21 +184,25 @@ class ImagesService extends BaseApplicationComponent
 		// Special case for SVG files.
 		if (IOHelper::getExtension($filePath) === 'svg')
 		{
-			if (!extension_loaded('dom'))
+			if (craft()->config->get('sanitizeSvgUploads'))
 			{
-				throw new Exception('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to upload SVG files.');
+				if (!extension_loaded('dom'))
+				{
+					throw new Exception('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to upload SVG files.');
+				}
+
+				$sanitizer = new Sanitizer();
+				$svgContents = IOHelper::getFileContents($filePath);
+				$svgContents = $sanitizer->sanitize($svgContents);
+
+				if (!$svgContents)
+				{
+					throw new Exception('There was a problem sanitizing the SVG file contents. Likely due to not well-formed XML.');
+				}
+
+				IOHelper::writeToFile($filePath, $svgContents);
 			}
 
-			$sanitizer = new Sanitizer();
-			$svgContents = IOHelper::getFileContents($filePath);
-			$svgContents = $sanitizer->sanitize($svgContents);
-
-			if (!$svgContents)
-			{
-				throw new Exception('There was a problem sanitizing the SVG file contents. Likely due to not well-formed XML.');
-			}
-
-			IOHelper::writeToFile($filePath, $svgContents);
 			return true;
 		}
 

@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting (defaults to `true`) to determine whether SVG files should be sanitized on uploads.
+
 ### Fixed
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
 - Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
