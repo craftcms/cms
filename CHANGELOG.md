@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
+- Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
 
 ## 2.6.2983 - 2017-06-09
 

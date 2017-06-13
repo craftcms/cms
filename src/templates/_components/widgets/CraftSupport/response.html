@@ -2,7 +2,7 @@
 	var widget = window.parent.Craft.CraftSupportWidget.widgets[{{ widgetId }}];
 	var response = {
 		success: {{ success == true ? 1 : 0 }},
-		errors: {{ errors|raw }}
+		errors: {{ errors ? errors|raw : 'null' }}
 	};
 	widget.currentScreen.parseSupportResponse(response);
 </script>
