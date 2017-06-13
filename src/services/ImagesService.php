@@ -197,7 +197,7 @@ class ImagesService extends BaseApplicationComponent
 
 				if (!$svgContents)
 				{
-					throw new Exception('There was a problem sanitizing the SVG file contents. Likely due to not well-formed XML.');
+					throw new Exception('There was a problem sanitizing the SVG file contents, likely due to malformed XML.');
 				}
 
 				IOHelper::writeToFile($filePath, $svgContents);
