@@ -492,7 +492,7 @@
                     this.$supportAttachment.val('');
                 }
 
-                this.$iframe.html('');
+                this.$supportIframe.html('');
             },
 
             getFormParams: function() {

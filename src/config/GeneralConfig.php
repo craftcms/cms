@@ -571,6 +571,12 @@ class GeneralConfig extends Object
      */
     public $runTasksAutomatically = true;
     /**
+     * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
+     *
+     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+     */
+    public $sanitizeSvgUploads = true;
+    /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
     public $sendPoweredByHeader = true;

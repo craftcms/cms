@@ -3,6 +3,33 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Added
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting (defaults to `true`) to determine whether SVG files should be sanitized on uploads.
+
+### Fixed
+- Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
+- Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
+
+## 2.6.2983 - 2017-06-09
+
+### Changed
+- Date pickers’ “Previous” and “Next” buttons are now represented as arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
+- Updated Yii to 1.1.19.
+
+### Fixed
+- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload. ([#1767](https://github.com/craftcms/cms/issues/1767))
+
+## 2.6.2982 - 2017-06-07 [CRITICAL]
+
+### Changed
+- Updated Redactor II to 2.6.
+- Updated Imagine to 0.7.1.
+- Craft now requires the [PHP DOM extension](http://www.php.net/manual/en/book.dom.php) when uploading SVG files.
+
+### Security
+- Fixed a potential user enumeration attack vector when authenticating a user.
+- Craft will now sanitize uploaded SVG files to prevent a potential XSS attack vector.
+
 ## 2.6.2981 - 2017-05-31
 
 ### Changed
@@ -53,7 +80,7 @@ Craft CMS Changelog
 ## 2.6.2976 - 2017-04-27
 
 ### Changed
-- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+- The `_layouts/cp.html` Control Panel template now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.

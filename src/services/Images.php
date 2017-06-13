@@ -15,6 +15,7 @@ use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
+use enshrined\svgSanitize\Sanitizer;
 use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
@@ -106,7 +107,7 @@ class Images extends Component
     public function getSupportedImageFormats(): array
     {
         if ($this->getIsImagick()) {
-            return array_map(array(StringHelper::class, 'toLowerCase'), Imagick::queryFormats());
+            return array_map([StringHelper::class, 'toLowerCase'], Imagick::queryFormats());
         }
 
         $output = [];
@@ -121,7 +122,6 @@ class Images extends Component
             if (imagetypes() & $key) {
                 $output = array_merge($output, $extensions);
             }
-
         }
 
         return $output;
@@ -256,16 +256,35 @@ class Images extends Component
     }
 
     /**
-     * Cleans an image by it's path, clearing embedded JS and PHP code.
+     * Cleans an image by it's path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
      *
-     * @return bool
+     * @return void
+     * @throws Exception if $filePath is a malformed SVG image
      */
-    public function cleanImage(string $filePath): bool
+    public function cleanImage(string $filePath)
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
+
+        // Special case for SVG files.
+        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+            if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
+                return;
+            }
+
+            $sanitizer = new Sanitizer();
+            $svgContents = file_get_contents($filePath);
+            $svgContents = $sanitizer->sanitize($svgContents);
+
+            if (!$svgContents) {
+                throw new Exception('There was a problem sanitizing the SVG file contents, likely due to malformed XML.');
+            }
+
+            file_put_contents($filePath, $svgContents);
+            return;
+        }
 
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
@@ -279,10 +298,10 @@ class Images extends Component
 
         // Image has already been cleaned if it had exif/orientation data
         if ($cleanedByRotation || $cleanedByStripping) {
-            return true;
+            return;
         }
 
-        return $this->loadImage($filePath)->saveAs($filePath, true);
+        $this->loadImage($filePath)->saveAs($filePath, true);
     }
 
     /**

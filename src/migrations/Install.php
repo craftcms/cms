@@ -801,7 +801,7 @@ class Install extends Migration
         $this->createIndex(null, '{{%relations}}', 'sourceId', false);
         $this->createIndex(null, '{{%relations}}', 'targetId', false);
         $this->createIndex(null, '{{%relations}}', 'sourceSiteId', false);
-        $this->createIndex(null, '{{%routes}}', 'uriPattern', true);
+        $this->createIndex(null, '{{%routes}}', 'uriPattern', false);
         $this->createIndex(null, '{{%routes}}', 'siteId', false);
         $this->createIndex(null, '{{%sections}}', 'handle', true);
         $this->createIndex(null, '{{%sections}}', 'name', true);

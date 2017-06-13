@@ -72,7 +72,6 @@ class User extends Element implements IdentityInterface
     const AUTH_NO_CP_ACCESS = 'no_cp_access';
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
-    const AUTH_USERNAME_INVALID = 'username_invalid';
 
     // Validation scenarios
     // -------------------------------------------------------------------------

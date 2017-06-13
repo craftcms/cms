@@ -114,7 +114,7 @@ class UsersController extends Controller
             // Delay again to match $user->authenticate()'s delay
             Craft::$app->getSecurity()->validatePassword($password, '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
 
-            return $this->_handleLoginFailure(User::AUTH_USERNAME_INVALID);
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
