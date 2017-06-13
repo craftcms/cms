@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## Unreleased [CRITICAL]
 
 ### Added
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
