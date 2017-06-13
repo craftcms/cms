@@ -70,7 +70,7 @@ class Search extends Component
      *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
      *          is a hard limit to truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 6500;
+    public $maxPostgresKeywordLength = 2450;
 
     // Public Methods
     // =========================================================================
@@ -747,7 +747,7 @@ class Search extends Component
      */
     private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize) : string
     {
-        $cleanKeywordsLength = strlen($cleanKeywords);
+        $cleanKeywordsLength = mb_strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
