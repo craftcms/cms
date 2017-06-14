@@ -15,11 +15,11 @@ class m170612_000000_route_index_shuffle extends Migration
      */
     public function safeUp()
     {
-        echo "    > Dropping `urlPattern` (unique) index on the routes table.\n";
-        MigrationHelper::dropIndexIfExists('{{%routes}}', ['urlPattern'], true, $this);
+        echo "    > Dropping `uriPattern` (unique) index on the routes table.\n";
+        MigrationHelper::dropIndexIfExists('{{%routes}}', ['uriPattern'], true, $this);
 
         echo "    > Creating `routes` index on the routes table.\n";
-        $this->createIndex(null, '{{%routes}}', 'urlPattern');
+        $this->createIndex(null, '{{%routes}}', 'uriPattern');
 
         return true;
     }
