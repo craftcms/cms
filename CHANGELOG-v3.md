@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - Matrix fields’ nested Field Type settings now take field compatibility into account, like the main Field Type setting. ([#1773](https://github.com/craftcms/cms/issues/1773))
 - The DOM PHP extension is now a mandatory requirement.
 - The `url` database config setting now supports `postgres://` and `postgresql://` schemes, in addition to `pgsql://`. ([#1774](https://github.com/craftcms/cms/pull/1774))
+- Craft’s plugin changelog parser now supports the use of dots as year/month/day separators in release headings (e.g. `2017.05.28`).
 
 ### Removed
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.

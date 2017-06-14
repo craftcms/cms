@@ -418,7 +418,7 @@ class Updates extends Component
                 }
 
                 // Is it an H2 version heading?
-                if (preg_match('/^## \[?v?(\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z-\.]+)?)\]?(?:\(.*?\)|\[.*?\])? - (\d{4}-\d\d?-\d\d?)( \[critical\])?/i', $line, $match)) {
+                if (preg_match('/^## \[?v?(\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z-\.]+)?)\]?(?:\(.*?\)|\[.*?\])? - (\d{4}[-\.]\d\d?[-\.]\d\d?)( \[critical\])?/i', $line, $match)) {
                     // Is it <= the current plugin version?
                     if (version_compare($match[1], $plugin->getVersion(), '<=')) {
                         break;
@@ -427,7 +427,7 @@ class Updates extends Component
                     // Prep the new release
                     $currentRelease = $releases[] = new UpdateRelease();
                     $currentRelease->version = $match[1];
-                    $releaseDate = DateTimeHelper::toDateTime($match[2], true);
+                    $releaseDate = DateTimeHelper::toDateTime(str_replace('.', '-', $match[2]), true);
 
                     if ($releaseDate === false) {
                         $releaseDate = null;
