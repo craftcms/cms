@@ -122,7 +122,7 @@ class DbConfig extends Object
             $url = parse_url($this->url);
             if (isset($url['scheme'])) {
                 $scheme = strtolower($url['scheme']);
-                if ($scheme === "pgsql" || strpos($scheme, "postgres") !== false) {
+                if (in_array($scheme, [self::DRIVER_PGSQL, 'postgres', 'postgresql'], true)) {
                     $this->driver = self::DRIVER_PGSQL;
                 } else {
                     $this->driver = self::DRIVER_MYSQL;
