@@ -418,7 +418,7 @@ class Updates extends Component
                 }
 
                 // Is it an H2 version heading?
-                if (preg_match('/^## \[?v?(\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z-\.]+)?)\]?(?:\(.*?\)|\[.*?\])? - (\d{4}[-\.]\d\d?[-\.]\d\d?)( \[critical\])?/i', $line, $match)) {
+                if (preg_match('/^## (?:.* )?\[?v?(\d+\.\d+\.\d+(?:\.\d+)?(?:-[0-9A-Za-z-\.]+)?)\]?(?:\(.*?\)|\[.*?\])? - (\d{4}[-\.]\d\d?[-\.]\d\d?)( \[critical\])?/i', $line, $match)) {
                     // Is it <= the current plugin version?
                     if (version_compare($match[1], $plugin->getVersion(), '<=')) {
                         break;
