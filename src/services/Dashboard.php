@@ -165,20 +165,12 @@ class Dashboard extends Component
      */
     public function getWidgetById(int $id)
     {
-        $widgetRecord = WidgetRecord::findOne([
-            'id' => $id,
-            'userId' => Craft::$app->getUser()->getIdentity()->id
-        ]);
+        $result = $this->_createWidgetsQuery()
+            ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
+            ->one();
 
-        if ($widgetRecord) {
-            return $this->createWidget($widgetRecord->toArray([
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'colspan',
-                'type',
-                'settings',
-            ]));
+        if ($result) {
+            return $this->createWidget($result);
         }
 
         return null;
@@ -456,16 +448,7 @@ class Dashboard extends Component
             throw new Exception('No logged-in user');
         }
 
-        $results = (new Query())
-            ->select([
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'colspan',
-                'type',
-                'settings',
-            ])
-            ->from(['{{%widgets}}'])
+        $results = $this->_createWidgetsQuery()
             ->where(['userId' => $userId, 'enabled' => '1'])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
@@ -476,5 +459,22 @@ class Dashboard extends Component
         }
 
         return $widgets;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createWidgetsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ])
+            ->from(['{{%widgets}}']);
     }
 }

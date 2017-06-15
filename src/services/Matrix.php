@@ -239,15 +239,11 @@ class Matrix extends Component
 
                 if (!$isNewBlockType) {
                     // Get the old block type fields
-                    $oldBlockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
-                    $oldBlockType = new MatrixBlockType($oldBlockTypeRecord->toArray([
-                        'id',
-                        'fieldId',
-                        'fieldLayoutId',
-                        'name',
-                        'handle',
-                        'sortOrder',
-                    ]));
+                    $result = $this->_createBlockTypeQuery()
+                        ->where(['id' => $blockType->id])
+                        ->one();
+
+                    $oldBlockType = new MatrixBlockType($result);
 
                     $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
                     $contentService->fieldColumnPrefix = 'field_'.$oldBlockType->handle.'_';

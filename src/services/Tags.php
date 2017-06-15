@@ -149,16 +149,15 @@ class Tags extends Component
             return null;
         }
 
-        if (($groupRecord = TagGroupRecord::findOne($groupId)) === null) {
+        $result = $this->_createTagGroupsQuery()
+            ->where(['id' => $groupId])
+            ->one();
+
+        if (!$result) {
             return $this->_tagGroupsById[$groupId] = null;
         }
 
-        return $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
-            'id',
-            'name',
-            'handle',
-            'fieldLayoutId',
-        ]));
+        return $this->_tagGroupsById[$groupId] = new TagGroup($result);
     }
 
     /**
@@ -170,17 +169,12 @@ class Tags extends Component
      */
     public function getTagGroupByHandle(string $groupHandle)
     {
-        $groupRecord = TagGroupRecord::findOne([
-            'handle' => $groupHandle
-        ]);
+        $result = $this->_createTagGroupsQuery()
+            ->where(['handle' => $groupHandle])
+            ->one();
 
-        if ($groupRecord) {
-            return new TagGroup($groupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-                'fieldLayoutId',
-            ]));
+        if ($result) {
+            return new TagGroup($result);
         }
 
         return null;
@@ -344,5 +338,20 @@ class Tags extends Component
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createTagGroupsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'name',
+                'handle',
+                'fieldLayoutId',
+            ])
+            ->from(['{{%taggroups}}']);
     }
 }

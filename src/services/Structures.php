@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -64,13 +65,17 @@ class Structures extends Component
      */
     public function getStructureById(int $structureId)
     {
-        $structureRecord = StructureRecord::findOne($structureId);
-
-        if ($structureRecord) {
-            return new Structure($structureRecord->toArray([
+        $result = (new Query())
+            ->select([
                 'id',
                 'maxLevels',
-            ]));
+            ])
+            ->from(['{{%structures}}'])
+            ->where(['id' => $structureId])
+            ->one();
+
+        if ($result) {
+            return new Structure($result);
         }
 
         return null;

@@ -89,27 +89,16 @@ class EntryRevisions extends Component
      */
     public function getDraftById(int $draftId)
     {
-        $draftRecord = EntryDraftRecord::findOne($draftId);
+        $result = $this->_getDraftsQuery()
+            ->where(['id' => $draftId])
+            ->one();
 
-        if ($draftRecord === null) {
+        if (!$result) {
             return null;
         }
 
-        $config = $draftRecord->toArray([
-            'id',
-            'entryId',
-            'sectionId',
-            'creatorId',
-            'siteId',
-            'name',
-            'notes',
-            'data',
-            'dateCreated',
-            'dateUpdated',
-            'uid',
-        ]);
-        $config['data'] = Json::decode($config['data']);
-        $draft = new EntryDraft($config);
+        $result['data'] = Json::decode($result['data']);
+        $draft = new EntryDraft($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
         $this->_configureRevisionWithEntryProperties($draft, $entry);
@@ -137,21 +126,7 @@ class EntryRevisions extends Component
 
         $drafts = [];
 
-        $results = (new Query())
-            ->select([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'name',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ])
-            ->from(['{{%entrydrafts}}'])
+        $results = $this->_getDraftsQuery()
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy(['name' => SORT_ASC])
             ->all();
@@ -331,27 +306,16 @@ class EntryRevisions extends Component
      */
     public function getVersionById(int $versionId)
     {
-        $versionRecord = EntryVersionRecord::findOne($versionId);
+        $result = $this->_getRevisionsQuery()
+            ->where(['id' => $versionId])
+            ->one();
 
-        if ($versionRecord === null) {
+        if (!$result) {
             return null;
         }
 
-        $config = $versionRecord->toArray([
-            'id',
-            'entryId',
-            'sectionId',
-            'creatorId',
-            'siteId',
-            'num',
-            'notes',
-            'data',
-            'dateCreated',
-            'dateUpdated',
-            'uid',
-        ]);
-        $config['data'] = Json::decode($config['data']);
-        $version = new EntryVersion($config);
+        $result['data'] = Json::decode($result['data']);
+        $version = new EntryVersion($result);
 
         $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->siteId);
         $this->_configureRevisionWithEntryProperties($version, $entry);
@@ -381,21 +345,7 @@ class EntryRevisions extends Component
 
         $versions = [];
 
-        $results = (new Query())
-            ->select([
-                'id',
-                'entryId',
-                'sectionId',
-                'creatorId',
-                'siteId',
-                'num',
-                'notes',
-                'data',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-            ])
-            ->from(['{{%entryversions}}'])
+        $results = $this->_getRevisionsQuery()
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy(['dateCreated' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
@@ -573,5 +523,49 @@ class EntryRevisions extends Component
 
         // Set the field layout ID based on the entry type
         $revision->fieldLayoutId = $revision->getType()->fieldLayoutId;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _getDraftsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'name',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
+            ->from(['{{%entrydrafts}}']);
+    }
+
+    /**
+     * @return Query
+     */
+    private function _getRevisionsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'num',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
+            ->from(['{{%entryversions}}']);
     }
 }

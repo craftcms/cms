@@ -268,30 +268,32 @@ class AssetIndexer extends Component
      */
     public function getNextIndexEntry(string $sessionId, int $volumeId)
     {
-        $record = AssetIndexDataRecord::findOne(
-            [
+        $result = (new Query())
+            ->select([
+                'id',
+                'volumeId',
+                'sessionId',
+                'uri',
+                'size',
+                'recordId',
+                'timestamp',
+                'completed',
+                'inProgress',
+            ])
+            ->from(['{{%assetindexdata}}'])
+            ->where([
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
                 'completed' => 0,
                 'inProgress' => 0
-            ]
-        );
+                ])
+            ->one();
 
-        if (!$record) {
+        if (!$result) {
             return null;
         }
 
-        return new AssetIndexData($record->toArray([
-            'id',
-            'volumeId',
-            'sessionId',
-            'uri',
-            'size',
-            'recordId',
-            'timestamp',
-            'completed',
-            'inProgress',
-        ]));
+        return new AssetIndexData($result);
     }
 
     /**

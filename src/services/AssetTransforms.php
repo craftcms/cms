@@ -325,21 +325,7 @@ class AssetTransforms extends Component
         }
 
         // Query for the indexes
-        $results = (new Query())
-            ->select([
-                'id',
-                'assetId',
-                'filename',
-                'format',
-                'location',
-                'volumeId',
-                'fileExists',
-                'inProgress',
-                'dateIndexed',
-                'dateCreated',
-                'dateUpdated',
-            ])
-            ->from(['{{%assettransformindex}}'])
+        $results = $this->_createTransformIndexQuery()
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],

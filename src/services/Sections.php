@@ -712,25 +712,16 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        $entryTypeRecords = EntryTypeRecord::find()
+        $results = $this->_createEntryTypeQuery()
             ->where(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
-            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
-                'id',
-                'sectionId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleLabel',
-                'titleFormat',
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
         }
 
-        return $entryTypeRecords;
+        return $results;
     }
 
     /**
@@ -750,20 +741,15 @@ class Sections extends Component
             return $this->_entryTypesById[$entryTypeId];
         }
 
-        if (($entryTypeRecord = EntryTypeRecord::findOne($entryTypeId)) === null) {
+        $result = $this->_createEntryTypeQuery()
+            ->where(['id' => $entryTypeId])
+            ->one();
+
+        if (!$result) {
             return $this->_entryTypesById[$entryTypeId] = null;
         }
 
-        return $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
-            'id',
-            'sectionId',
-            'fieldLayoutId',
-            'name',
-            'handle',
-            'hasTitleField',
-            'titleLabel',
-            'titleFormat',
-        ]));
+        return $this->_entryTypesById[$entryTypeId] = new EntryType($result);
     }
 
     /**
@@ -775,26 +761,15 @@ class Sections extends Component
      */
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
-        $entryTypes = [];
+        $results = $this->_createEntryTypeQuery()
+        ->where(['handle' => $entryTypeHandle])
+        ->all();
 
-        $entryTypeRecords = EntryTypeRecord::findAll([
-            'handle' => $entryTypeHandle
-        ]);
-
-        foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = new EntryType($record->toArray([
-                'id',
-                'sectionId',
-                'fieldLayoutId',
-                'name',
-                'handle',
-                'hasTitleField',
-                'titleLabel',
-                'titleFormat',
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new EntryType($result);
         }
 
-        return $entryTypes;
+        return $results;
     }
 
     /**
@@ -1174,5 +1149,24 @@ class Sections extends Component
                 Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
             }
         }
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createEntryTypeQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ])
+            ->from(['{{%entrytypes}}']);
     }
 }
