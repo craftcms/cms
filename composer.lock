@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7cbbbc91652daeca02fc655a5f319370",
-    "content-hash": "c4400c61e2aa5ca8f9ef58615a9b69c4",
+    "hash": "72047cb92ffd365ebc9b9f3a9ff92699",
+    "content-hash": "cd24d2b02c76fffa6074ddfa9eb1ac70",
     "packages": [
         {
             "name": "enshrined/svg-sanitize",
@@ -538,16 +538,16 @@
         },
         {
             "name": "yiisoft/yii",
-            "version": "1.1.19.1",
+            "version": "1.1.19.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/yii.git",
-                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a"
+                "reference": "2bbfc6a84a03fded2cb09daa3b9c013ecb88e485"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
-                "reference": "c7a034eba65dc7b6768f0c5aefaeb2693cef787a",
+                "url": "https://api.github.com/repos/pixelandtonic/yii/zipball/2bbfc6a84a03fded2cb09daa3b9c013ecb88e485",
+                "reference": "2bbfc6a84a03fded2cb09daa3b9c013ecb88e485",
                 "shasum": ""
             },
             "require": {
@@ -630,7 +630,7 @@
                 "irc": "irc://irc.freenode.net/yii",
                 "source": "https://github.com/yiisoft/yii"
             },
-            "time": "2017-06-09 20:46:36"
+            "time": "2017-06-15 17:40:26"
         }
     ],
     "packages-dev": [
