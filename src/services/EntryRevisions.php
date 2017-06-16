@@ -111,10 +111,11 @@ class EntryRevisions extends Component
      *
      * @param int      $entryId
      * @param int|null $siteId
+     * @param bool     $withContent Whether the field content should be included on the drafts
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId(int $entryId, int $siteId = null): array
+    public function getDraftsByEntryId(int $entryId, int $siteId = null, bool $withContent = false): array
     {
         if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -134,8 +135,9 @@ class EntryRevisions extends Component
         foreach ($results as $result) {
             $result['data'] = Json::decode($result['data']);
 
-            // Don't initialize the content
-            unset($result['data']['fields']);
+            if (!$withContent) {
+                unset($result['data']['fields']);
+            }
 
             $draft = new EntryDraft($result);
             $this->_configureRevisionWithEntryProperties($draft, $entry);
@@ -330,10 +332,11 @@ class EntryRevisions extends Component
      * @param int      $siteId         The site ID to search for.
      * @param int|null $limit          The limit on the number of versions to retrieve.
      * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
+     * @param bool     $withContent    Whether the field content should be included on the versions
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false): array
+    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
@@ -355,8 +358,9 @@ class EntryRevisions extends Component
         foreach ($results as $result) {
             $result['data'] = Json::decode($result['data']);
 
-            // Don't initialize the content
-            unset($result['data']['fields']);
+            if (!$withContent) {
+                unset($result['data']['fields']);
+            }
 
             $version = new EntryVersion($result);
             $this->_configureRevisionWithEntryProperties($version, $entry);
