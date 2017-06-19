@@ -67,18 +67,7 @@ class Path extends Component
      */
     public function getAppPath(): string
     {
-        if ($this->_appPath !== null) {
-            return $this->_appPath;
-        }
-
-        // app/ is only a thing for manual installs
-        if (App::isComposerInstall()) {
-            throw new Exception('There is no app/ directory when Craft is installed via Composer.');
-        }
-
-        $basePath = Craft::$app->getBasePath();
-
-        return $this->_appPath = dirname($basePath, 3);
+        throw new Exception('There is no app/ directory when Craft is installed via Composer.');
     }
 
     /**

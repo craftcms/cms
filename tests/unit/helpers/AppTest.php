@@ -36,11 +36,6 @@ class AppTest extends \Codeception\TestCase\Test
         $this->assertEquals('Pro', App::editionName(Craft::Pro));
     }
 
-    public function testIsComposerInstall()
-    {
-        $this->assertTrue(App::isComposerInstall());
-    }
-
     public function testIsValidEdition()
     {
         $this->assertTrue(App::isValidEdition('1'));

@@ -138,19 +138,17 @@ class Plugins extends Component
     {
         $this->_composerPluginInfo = [];
 
-        if (App::isComposerInstall()) {
-            // See if any plugins were installed via Composer, too
-            $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
+        // See if any plugins were installed via Composer, too
+        $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
 
-            if (file_exists($path)) {
-                /** @var array $plugins */
-                $plugins = require $path;
+        if (file_exists($path)) {
+            /** @var array $plugins */
+            $plugins = require $path;
 
-                foreach ($plugins as $packageName => $plugin) {
-                    $plugin['packageName'] = $packageName;
-                    $lcHandle = strtolower($plugin['handle']);
-                    $this->_composerPluginInfo[$lcHandle] = $plugin;
-                }
+            foreach ($plugins as $packageName => $plugin) {
+                $plugin['packageName'] = $packageName;
+                $lcHandle = strtolower($plugin['handle']);
+                $this->_composerPluginInfo[$lcHandle] = $plugin;
             }
         }
     }

@@ -138,7 +138,7 @@ EOD;
 
             // Include whether Craft was Composer-installed
             if (!empty($response['app'])) {
-                $response['app']['composer'] = App::isComposerInstall();
+                $response['app']['composer'] = true;
             }
 
             // Include plugin handles and whether they're Composer-installed

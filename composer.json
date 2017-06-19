@@ -19,7 +19,7 @@
   },
   "require": {
     "craftcms/plugin-installer": "~1.4.0",
-    "craftcms/server-check": "~1.0.15",
+    "craftcms/server-check": "~1.0.16",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "danielstjules/stringy": "~3.0.0",
     "enshrined/svg-sanitize": "~0.6.0",
