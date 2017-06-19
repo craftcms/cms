@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
 - Craft’s plugin changelog parser now supports the use of dots as year/month/day separators in release headings (e.g. `2017.05.28`).
 - Craft’s plugin changelog parser now allows additional text before the version number (e.g. the plugin name).
 - Added a `$withContent` argument to `craft\services\EntryRevisions::getDraftsByEntryId()` and `getVersionsByEntryId()` (defaults to `false`). ([#1755](https://github.com/craftcms/cms/issues/1755))
+- Craft now lists `craftcms/plugin-installer` as a dependency, so projects don’t need to explicitly require it.
 
 ### Removed
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
