@@ -420,17 +420,21 @@ class UsersController extends BaseController
 			$userToProcess = $info['userToProcess'];
 			$userIsPending = $userToProcess->status == UserStatus::Pending;
 
-			craft()->users->verifyEmailForUser($userToProcess);
-
-			if ($userIsPending)
+			if (craft()->users->verifyEmailForUser($userToProcess))
 			{
-				// They were just activated, so treat this as an activation request
-				$this->_onAfterActivateUser($userToProcess);
+
+				if ($userIsPending)
+				{
+					// They were just activated, so treat this as an activation request
+					$this->_onAfterActivateUser($userToProcess);
+				}
+
+				// Redirect to the site/CP root
+				$url = UrlHelper::getUrl('');
+				$this->redirect($url);
 			}
 
-			// Redirect to the site/CP root
-			$url = UrlHelper::getUrl('');
-			$this->redirect($url);
+			$this->renderTemplate('_special/emailtaken', array('email' => $userToProcess->unverifiedEmail));
 		}
 	}
 

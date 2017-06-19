@@ -774,6 +774,7 @@ class UsersService extends BaseApplicationComponent
 	 *
 	 * @param UserModel $user
 	 *
+	 * @return bool
 	 * @throws Exception
 	 */
 	public function verifyEmailForUser(UserModel $user)
@@ -799,7 +800,12 @@ class UsersService extends BaseApplicationComponent
 			}
 
 			$userRecord->unverifiedEmail = null;
-			$userRecord->save();
+
+			if (!$userRecord->save())
+			{
+				$user->addErrors($userRecord->getErrors());
+				return false;
+			}
 
 			// If the user status is pending, let's activate them.
 			if ($userRecord->pending == true)
@@ -807,6 +813,8 @@ class UsersService extends BaseApplicationComponent
 				$this->activateUser($user);
 			}
 		}
+
+		return true;
 	}
 
 	/**
