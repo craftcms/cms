@@ -437,7 +437,7 @@ class Sites extends Component
             // TODO: Move this code into element/category modules
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
-                ->select(['groupId', 'uriFormat'])
+                ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
                 ->from(['{{%categorygroups_i18n}}'])
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
@@ -450,13 +450,15 @@ class Sites extends Component
                         $siteSettings['groupId'],
                         $site->id,
                         $siteSettings['uriFormat'],
+                        $siteSettings['template'],
+                        $siteSettings['hasUrls']
                     ];
                 }
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
                         '{{%categorygroups_i18n}}',
-                        ['groupId', 'siteId', 'uriFormat'],
+                        ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
                         $newSiteSettings)
                     ->execute();
             }
