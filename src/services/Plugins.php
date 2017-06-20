@@ -172,6 +172,17 @@ class Plugins extends Component
             $plugin = $this->createPlugin($lcHandle, $row);
 
             if ($plugin !== null) {
+                // If we're not updating, check if the plugin's version number changed, but not its schema version.
+                if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
+                    // Update our record of the plugin's version number
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%plugins}}',
+                            ['version' => $plugin->getVersion()],
+                            ['id' => $row['id']])
+                        ->execute();
+                }
+
                 $this->_registerPlugin($plugin);
             }
         }
@@ -587,17 +598,6 @@ class Plugins extends Component
 
         if (isset($row['id'])) {
             $this->_setPluginMigrator($plugin, $row['id']);
-        }
-
-        // If we're not updating, check if the plugin's version number changed, but not its schema version.
-        if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
-            // Update our record of the plugin's version number
-            Craft::$app->getDb()->createCommand()
-                ->update(
-                    '{{%plugins}}',
-                    ['version' => $plugin->getVersion()],
-                    ['id' => $row['id']])
-                ->execute();
         }
 
         return $plugin;
