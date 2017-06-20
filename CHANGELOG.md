@@ -9,6 +9,7 @@ Craft CMS Changelog
 ### Changed
 - Updated HTML Purifier to 4.9.3.
 - Users will get a friendly error message if they try to change their email address to one that already exists instead of it silently failing.
+- `assets.onReplaceFile` is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
 
 ### Fixed
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
