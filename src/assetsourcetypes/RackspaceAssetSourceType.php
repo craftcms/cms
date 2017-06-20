@@ -798,7 +798,8 @@ class RackspaceAssetSourceType extends BaseAssetSourceType
 	 */
 	private static function _extractRequestResponse($response)
 	{
-		return rtrim(mb_substr($response, mb_strpos($response, "\r\n\r\n") + 4));
+	    $length = static::_extractHeader($response, 'Content-Length');
+		return mb_substr($response, mb_strpos($response, "\r\n\r\n") + 4, $length);
 	}
 
 	/**
