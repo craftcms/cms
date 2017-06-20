@@ -422,10 +422,6 @@ class Plugins extends Component
                 ->delete('{{%plugins}}', ['id' => $id])
                 ->execute();
 
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%migrations}}', ['pluginId' => $id])
-                ->execute();
-
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
