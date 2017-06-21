@@ -8,6 +8,7 @@ Craft CMS Changelog
 
 ### Changed
 - Updated HTML Purifier to 4.9.3.
+- Updated Redactor II to 2.7.
 - Users will get a friendly validation error message if they try to change their email address to one that already exists instead of it silently failing.
 - `assets.onReplaceFile` is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
 
