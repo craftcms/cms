@@ -656,22 +656,11 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
-        // Get all the plugin handles
-        $lcHandles = array_keys($this->_composerPluginInfo);
-
         // Get the info arrays
         $info = [];
         $names = [];
 
-        foreach ($lcHandles as $lcHandle) {
-            $lcHandle = strtolower($lcHandle);
-            $config = $this->getConfig($lcHandle);
-
-            // Skip if it doesn't have a valid config file
-            if ($config === null) {
-                continue;
-            }
-
+        foreach ($this->_composerPluginInfo as $lcHandle => $config) {
             /** @var Plugin|null $plugin */
             $plugin = $this->getPlugin($lcHandle);
 
