@@ -75,44 +75,6 @@ class PluginsController extends Controller
     }
 
     /**
-     * Enables a plugin.
-     *
-     * @return Response
-     */
-    public function actionEnablePlugin(): Response
-    {
-        $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
-
-        if (Craft::$app->getPlugins()->enablePlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin enabled.'));
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t enable plugin.'));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    /**
-     * Disables a plugin.
-     *
-     * @return Response
-     */
-    public function actionDisablePlugin(): Response
-    {
-        $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
-
-        if (Craft::$app->getPlugins()->disablePlugin($pluginHandle)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin disabled.'));
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t disable plugin.'));
-        }
-
-        return $this->redirectToPostedUrl();
-    }
-
-    /**
      * Edits a plugin’s settings.
      *
      * @param string               $pluginId The plugin’s module ID

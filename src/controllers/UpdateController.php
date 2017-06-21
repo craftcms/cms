@@ -148,7 +148,7 @@ EOD;
                     /** @var Plugin $plugin */
                     $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
                     $pluginInfo['handle'] = $plugin->handle;
-                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->handle);
+                    $pluginInfo['composer'] = true;
                 }
                 unset($pluginInfo);
             }
