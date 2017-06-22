@@ -184,7 +184,7 @@ class Config extends Component
      *
      * @return array
      */
-    public function getConfigFromFile(string $filename)
+    public function getConfigFromFile(string $filename): array
     {
         $path = $this->configDir.DIRECTORY_SEPARATOR.$filename.'.php';
 
