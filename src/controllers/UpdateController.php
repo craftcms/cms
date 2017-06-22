@@ -132,33 +132,33 @@ EOD;
             }
         }
 
-        if ($updates) {
-            $response = $updates->toArray();
-            ArrayHelper::rename($response, 'responseErrors', 'errors');
-
-            // Include whether Craft was Composer-installed
-            if (!empty($response['app'])) {
-                $response['app']['composer'] = true;
-            }
-
-            // Include plugin handles and whether they're Composer-installed
-            if (!empty($response['plugins'])) {
-                $pluginsService = Craft::$app->getPlugins();
-                foreach ($response['plugins'] as &$pluginInfo) {
-                    /** @var Plugin $plugin */
-                    $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
-                    $pluginInfo['handle'] = $plugin->id;
-                    $pluginInfo['composer'] = true;
-                }
-                unset($pluginInfo);
-            }
-
-            $response['allowAutoUpdates'] = $this->_allowAutoUpdates();
-
-            return $this->asJson($response);
+        if (!$updates) {
+            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
         }
 
-        return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
+        $response = $updates->toArray();
+        ArrayHelper::rename($response, 'responseErrors', 'errors');
+
+        // Include whether Craft was Composer-installed
+        if (!empty($response['app'])) {
+            $response['app']['composer'] = true;
+        }
+
+        // Include plugin handles and whether they're Composer-installed
+        if (!empty($response['plugins'])) {
+            $pluginsService = Craft::$app->getPlugins();
+            foreach ($response['plugins'] as &$pluginInfo) {
+                /** @var Plugin $plugin */
+                $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
+                $pluginInfo['handle'] = $plugin->id;
+                $pluginInfo['composer'] = true;
+            }
+            unset($pluginInfo);
+        }
+
+        $response['allowAutoUpdates'] = $this->_allowAutoUpdates();
+
+        return $this->asJson($response);
     }
 
     /**
@@ -222,11 +222,11 @@ EOD;
                     }
                 }
             }
-
-            return $this->asJson(['success' => true, 'updateInfo' => $return]);
         } catch (\Exception $e) {
             return $this->asErrorJson($e->getMessage());
         }
+
+        return $this->asJson(['success' => true, 'updateInfo' => $return]);
     }
 
     /**
