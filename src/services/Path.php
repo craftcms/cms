@@ -29,11 +29,6 @@ class Path extends Component
     /**
      * @var
      */
-    private $_appPath;
-
-    /**
-     * @var
-     */
     private $_configPath;
 
     /**
