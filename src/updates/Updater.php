@@ -200,7 +200,7 @@ class Updater
             $result = Craft::$app->getMigrator()->up();
         } else {
             /** @var Plugin $plugin */
-            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($plugin->handle);
+            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($plugin->id);
             $result = $plugin->update($pluginInfo['version']);
         }
 

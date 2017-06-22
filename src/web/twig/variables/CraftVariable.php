@@ -21,6 +21,7 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use yii\di\ServiceLocator;
+use yii\helpers\Inflector;
 
 /**
  * Craft defines the `craft` global template variable.
@@ -114,11 +115,12 @@ class CraftVariable extends ServiceLocator
 
         // Add plugin components
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
-            if (!isset($config['components'][$handle])) {
+            $id = Inflector::id2camel($handle);
+            if (!isset($config['components'][$id])) {
                 $component = $plugin->defineTemplateComponent();
 
                 if ($component !== null) {
-                    $config['components'][$handle] = $component;
+                    $config['components'][$id] = $component;
                 }
             }
         }

@@ -23,6 +23,13 @@ interface PluginInterface
     // =========================================================================
 
     /**
+     * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).
+     *
+     * @return string The plugin’s handle
+     */
+    public function getHandle(): string;
+
+    /**
      * Installs the plugin.
      *
      * @return void|false Return `false` to indicate the installation failed.
