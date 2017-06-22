@@ -231,7 +231,14 @@ class DbHelper
 
 		if (isset($config['default']) && (is_string($config['default']) || is_bool($config['default']) || is_numeric($config['default'])))
 		{
-			$def .= ' DEFAULT '.craft()->db->quoteValue($config['default']);
+			if (is_string($config['default']) && !is_numeric($config['default']))
+			{
+				$def .= ' DEFAULT '.craft()->db->quoteValue($config['default']);
+			}
+ 			else
+ 			{
+				$def .= ' DEFAULT '.(int)$config['default'];
+			}
 		}
 
 		if (!empty($config['primaryKey']))
