@@ -84,12 +84,4 @@ interface PluginInterface
      * @see Cp::nav()
      */
     public function getCpNavItem();
-
-    /**
-     * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
-     *
-     * @return mixed|null The component definition to be registered.
-     * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
-     */
-    public function defineTemplateComponent();
 }

@@ -233,14 +233,6 @@ class Plugin extends Module implements PluginInterface
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function defineTemplateComponent()
-    {
-        return null;
-    }
-
     // Protected Methods
     // =========================================================================
 

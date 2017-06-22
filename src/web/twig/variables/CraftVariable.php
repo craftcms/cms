@@ -20,6 +20,8 @@ use craft\elements\Entry;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineComponentsEvent;
 use yii\di\ServiceLocator;
 use yii\helpers\Inflector;
 
@@ -53,6 +55,21 @@ use yii\helpers\Inflector;
  */
 class CraftVariable extends ServiceLocator
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
+     * @see __construct()
+     */
+    const EVENT_DEFINE_COMPONENTS = 'defineComponents';
+
+    /**
+     * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
+     * @see behaviors()
+     */
+    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
     // Properties
     // =========================================================================
 
@@ -71,7 +88,7 @@ class CraftVariable extends ServiceLocator
     {
         // Set the core components
         /** @noinspection PhpDeprecationInspection */
-        $config['components'] = [
+        $components = [
             'cp' => Cp::class,
             'io' => Io::class,
             'routes' => Routes::class,
@@ -96,7 +113,7 @@ class CraftVariable extends ServiceLocator
         switch (Craft::$app->getEdition()) {
             case Craft::Pro:
                 /** @noinspection PhpDeprecationInspection */
-                $config['components'] = array_merge($config['components'], [
+                $components = array_merge($components, [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
@@ -104,7 +121,7 @@ class CraftVariable extends ServiceLocator
             case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
                 /** @noinspection SuspiciousAssignmentsInspection */
-                $config['components'] = array_merge($config['components'], [
+                $components = array_merge($components, [
                     'rebrand' => Rebrand::class,
 
                     // Deprecated
@@ -113,17 +130,13 @@ class CraftVariable extends ServiceLocator
                 ]);
         }
 
-        // Add plugin components
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
-            $id = Inflector::id2camel($handle);
-            if (!isset($config['components'][$id])) {
-                $component = $plugin->defineTemplateComponent();
+        // Let plugins add their own components
+        $event = new DefineComponentsEvent([
+            'components' => $components,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
 
-                if ($component !== null) {
-                    $config['components'][$id] = $component;
-                }
-            }
-        }
+        $config['components'] = $components;
 
         parent::__construct($config);
     }
@@ -151,6 +164,17 @@ class CraftVariable extends ServiceLocator
         }
 
         return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors()
+    {
+        // Give plugins a chance to add new properties/methods on here
+        $event = new DefineBehaviorsEvent();
+        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        return $event->behaviors;
     }
 
     // General info
