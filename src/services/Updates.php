@@ -475,7 +475,7 @@ class Updates extends Component
         $notes = Markdown::process($notes, 'gfm');
 
         // Notes/tips
-        $notes = preg_replace('/<blockquote><p>\{(note|tip)\}/', '<blockquote class="note $1"><p>', $notes);
+        $notes = preg_replace('/<blockquote><p>\{(note|tip|warn)\}/', '<blockquote class="note $1"><p>', $notes);
 
         // Set them on the release model
         $release->notes = $notes;

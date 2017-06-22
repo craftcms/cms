@@ -185,11 +185,13 @@ strong, b, i em { font-weight: bold; }
 .readable blockquote { margin: 16px 0; }
 .readable blockquote:not(.note) { padding: 0 16px; color: $mediumtextcolor; @include border-left(4px solid $hairlineColor); }
 .readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; @include padding-left(56px); border: 1px solid; color: $mediumtextcolor; }
-.readable blockquote.note:not(.tip) { border-color: $errorcolor; }
+.readable blockquote.note:not(.tip):not(.warn) { border-color: $errorcolor; }
 .readable blockquote.note.tip { border-color: $linkcolor; }
+.readable blockquote.note.warn { border-color: $warningcolor; }
 .readable blockquote.note:before { @include icon; position: absolute; top: 12px; @include left(16px); font-size: 30px; width: 24px; }
-.readable blockquote.note:not(.tip):before { content: 'alert'; color: $errorcolor; }
+.readable blockquote.note:not(.tip):not(.warn):before { content: 'alert'; color: $errorcolor; }
 .readable blockquote.note.tip:before { content: 'lightbulb'; color: $linkcolor; }
+.readable blockquote.note.warn:before { content: 'alert'; color: $warningcolor; }
 
 /* text styles */
 .leftalign { @include alignleft; }
