@@ -21,6 +21,7 @@ use yii\base\Module;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
+ * @property string           $handle   The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -53,8 +54,7 @@ class Plugin extends Module implements PluginInterface
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
-        $this->handle = ArrayHelper::remove($config, 'handle', $this->handle);
-        $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? strtolower($this->handle));
+        $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
         $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
 
         if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
@@ -75,15 +75,23 @@ class Plugin extends Module implements PluginInterface
 
         // Base template directory
         Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {
-            $baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates';
-            $e->roots[$this->id] = $baseDir;
-            $e->roots[$this->handle] = $baseDir;
+            if (is_dir($baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates')) {
+                $e->roots[$this->id] = $baseDir;
+            }
         });
 
         // Set this as the global instance of this plugin class
         static::setInstance($this);
 
         parent::__construct($id, $parent, $config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHandle(): string
+    {
+        return $this->id;
     }
 
     /**
@@ -223,14 +231,6 @@ class Plugin extends Module implements PluginInterface
             'url' => $this->id,
             'iconSvg' => $iconSvg
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function defineTemplateComponent()
-    {
-        return null;
     }
 
     // Protected Methods

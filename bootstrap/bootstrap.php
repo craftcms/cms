@@ -96,7 +96,6 @@ $basePath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPat
 // By default the remaining directories will be in the base directory
 $configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $basePath.'/config';
 $contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $basePath.'/migrations';
-$pluginsPath = $findConfigPath('CRAFT_PLUGINS_PATH', 'pluginsPath') ?: $basePath.'/plugins';
 $storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $basePath.'/storage';
 $templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $basePath.'/templates';
 $translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $basePath.'/translations';
@@ -189,7 +188,6 @@ Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-Craft::setAlias('@plugins', $pluginsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);

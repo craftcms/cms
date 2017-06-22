@@ -147,8 +147,8 @@ EOD;
                 foreach ($response['plugins'] as &$pluginInfo) {
                     /** @var Plugin $plugin */
                     $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
-                    $pluginInfo['handle'] = $plugin->handle;
-                    $pluginInfo['composer'] = $pluginsService->isComposerInstall($plugin->handle);
+                    $pluginInfo['handle'] = $plugin->id;
+                    $pluginInfo['composer'] = true;
                 }
                 unset($pluginInfo);
             }
@@ -674,10 +674,10 @@ EOD;
 
             // Run any plugin updates.
             foreach ($pluginsToUpdate as $plugin) {
-                $return = $updatesService->updateDatabase($plugin->handle);
+                $return = $updatesService->updateDatabase($plugin->id);
 
                 if (!$return['success']) {
-                    $this->_rollbackUpdate($plugin->handle, $return['message'], $dbBackupPath);
+                    $this->_rollbackUpdate($plugin->id, $return['message'], $dbBackupPath);
                 }
             }
 

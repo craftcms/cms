@@ -23,6 +23,13 @@ interface PluginInterface
     // =========================================================================
 
     /**
+     * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).
+     *
+     * @return string The plugin’s handle
+     */
+    public function getHandle(): string;
+
+    /**
      * Installs the plugin.
      *
      * @return void|false Return `false` to indicate the installation failed.
@@ -77,12 +84,4 @@ interface PluginInterface
      * @see Cp::nav()
      */
     public function getCpNavItem();
-
-    /**
-     * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
-     *
-     * @return mixed|null The component definition to be registered.
-     * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
-     */
-    public function defineTemplateComponent();
 }

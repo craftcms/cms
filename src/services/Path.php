@@ -39,11 +39,6 @@ class Path extends Component
     /**
      * @var
      */
-    private $_pluginsPath;
-
-    /**
-     * @var
-     */
     private $_storagePath;
 
     /**
@@ -99,17 +94,7 @@ class Path extends Component
      */
     public function getPluginsPath(): string
     {
-        if ($this->_pluginsPath !== null) {
-            return $this->_pluginsPath;
-        }
-
-        $pluginsPath = Craft::getAlias('@plugins');
-
-        if ($pluginsPath === false) {
-            throw new Exception('There was a problem getting the plugins path.');
-        }
-
-        return $this->_pluginsPath = FileHelper::normalizePath($pluginsPath);
+        throw new Exception('There was a problem getting the plugins path.');
     }
 
     /**

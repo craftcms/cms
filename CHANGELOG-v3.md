@@ -4,11 +4,18 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased [CRITICAL]
 
 ### Added
+- Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
+- Added the `defineComponents` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new services on the `craft` template variable.
+- Added `craft\events\DefineBehaviorsEvent`.
+- Added `craft\events\DefineComponentsEvent`.
+- Added `craft\base\Plugin::getHandle()`, as an alias for `Plugin::$id`.
 - Added `craft\helpers\ArrayHelper::getPairs()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
 
 ### Changed
+- Plugin handles must be `kebab-cased` now, rather than `camelCased`. **Plugin config files, translation files, translation categories, and template paths must be updated accordingly.** ([#1733](https://github.com/craftcms/cms/issues/1733))
+- Plugin module IDs are now set to the exact same value as their handles, as handles are already in the correct format now.
 - The `maxUploadFileSize` config setting can now be set to a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes).
 - Matrix fields’ nested Field Type settings now take field compatibility into account, like the main Field Type setting. ([#1773](https://github.com/craftcms/cms/issues/1773))
 - The DOM PHP extension is now a mandatory requirement.
@@ -19,9 +26,24 @@ Craft CMS 3.0 Working Changelog
 - Craft now lists `craftcms/plugin-installer` as a dependency, so projects don’t need to explicitly require it.
 
 ### Removed
-- Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
+- Removed support for manually-installed plugins in a `plugins/` folder. **All plugins must be Composer-installed now.** ([#1734](https://github.com/craftcms/cms/issues/1734))
+- Removed the `@plugins` Yii alias.
+- Removed the `plugins/disable-plugin` action.
+- Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
+- Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
 - Removed `craft\helpers\App::isComposerInstall()`.
+- Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
+- Removed `craft\services\Plugins::disablePlugin()`.
+- Removed `craft\services\Plugins::enablePlugin()`.
+- Removed `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN`.
+- Removed `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN`.
+- Removed `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN`.
+- Removed `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN`.
+- Removed `craft\services\Plugins::getConfig()`.
+- Removed `craft\services\Plugins::getPluginByModuleId()`.
+- Removed `craft\services\Plugins::isComposerInstall()`.
+- Removed `craft\services\Plugins::validateConfig()`.
 
 ### Fixed
 - Fixed an exception that occurred when attempting to change an entry’s type from the Edit Entry page. ([#1748](https://github.com/craftcms/cms/pull/1748))

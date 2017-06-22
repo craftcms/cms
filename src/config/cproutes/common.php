@@ -40,7 +40,7 @@ return [
     'settings/general' => 'system-settings/general-settings',
     'settings/globals/new' => 'system-settings/edit-global-set',
     'settings/globals/<globalSetId:\d+>' => 'system-settings/edit-global-set',
-    'settings/plugins/<pluginId>' => 'plugins/edit-plugin-settings',
+    'settings/plugins/<handle>' => 'plugins/edit-plugin-settings',
     'settings/routes' => [
         'template' => 'settings/routes',
         'variables' => [
