@@ -17,7 +17,7 @@ Craft CMS Changelog
 - Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
 - Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
 - Fixed a bug where if had a default value that had a quote in it in a Multi-Option field type, you would get a SQL error.
-- Fixed an XSS vulnerability in the Control Panel.
+- Fixed 2 XSS vulnerabilities in the Control Panel.
 
 ## 2.6.2983 - 2017-06-09
 

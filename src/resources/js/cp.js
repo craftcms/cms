@@ -1047,7 +1047,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 	setDescription: function(description)
 	{
 		this.$a.attr('title', description);
-		this.$label.html(description);
+		this.$label.text(description);
 	},
 
 	setProgress: function(progress, animate)
