@@ -23,7 +23,6 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineComponentsEvent;
 use yii\di\ServiceLocator;
-use yii\helpers\Inflector;
 
 /**
  * Craft defines the `craft` global template variable.
@@ -60,13 +59,13 @@ class CraftVariable extends ServiceLocator
 
     /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
-     * @see __construct()
+     * @see   __construct()
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
-     * @see behaviors()
+     * @see   behaviors()
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
