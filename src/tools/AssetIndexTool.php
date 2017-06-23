@@ -49,7 +49,7 @@ class AssetIndexTool extends BaseTool
 		foreach ($sources as $source)
 		{
 			$sourceOptions[] = array(
-				'label' => $source->name,
+				'label' => HtmlHelper::encode($source->name),
 				'value' => $source->id
 			);
 		}
