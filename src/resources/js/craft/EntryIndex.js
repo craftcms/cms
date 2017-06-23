@@ -132,7 +132,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 					{
 						var href = this._getSectionTriggerHref(section),
 							label = (this.settings.context == 'index' ? section.name : Craft.t('New {section} entry', {section: section.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+						menuHtml += '<li><a '+href+'">'+Craft.escapeHtml(label)+'</a></li>';
 					}
 				}
 

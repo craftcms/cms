@@ -1,4 +1,4 @@
-/*! Craft  - 2017-04-12 */
+/*! Craft  - 2017-06-22 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -10843,7 +10843,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 					{
 						var href = this._getSectionTriggerHref(section),
 							label = (this.settings.context == 'index' ? section.name : Craft.t('New {section} entry', {section: section.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+						menuHtml += '<li><a '+href+'">'+Craft.escapeHtml(label)+'</a></li>';
 					}
 				}
 
