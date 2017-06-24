@@ -72,7 +72,7 @@ class TagElementType extends BaseElementType
 			$key = 'taggroup:'.$tagGroup->id;
 
 			$sources[$key] = array(
-				'label'    => Craft::t($tagGroup->name),
+				'label'    => HtmlHelper::encode(Craft::t($tagGroup->name)),
 				'criteria' => array('groupId' => $tagGroup->id)
 			);
 		}
