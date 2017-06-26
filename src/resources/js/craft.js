@@ -1,4 +1,4 @@
-/*! Craft  - 2017-06-24 */
+/*! Craft  - 2017-06-26 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5780,6 +5780,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this._positionProgressBar();
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
+        this.promptHandler.resetPrompts();
 	},
 
 	/**
