@@ -49,13 +49,13 @@ class RichTextFieldType extends BaseFieldType
 		$sourceOptions = array();
 		foreach (craft()->assetSources->getPublicSources() as $source)
 		{
-			$sourceOptions[] = array('label' => $source->name, 'value' => $source->id);
+			$sourceOptions[] = array('label' => HtmlHelper::encode($source->name), 'value' => $source->id);
 		}
 
 		$transformOptions = array();
 		foreach (craft()->assetTransforms->getAllTransforms() as $transform)
 		{
-			$transformOptions[] = array('label' => $transform->name, 'value' => $transform->id );
+			$transformOptions[] = array('label' => HtmlHelper::encode($transform->name), 'value' => $transform->id );
 		}
 
 		return craft()->templates->render('_components/fieldtypes/RichText/settings', array(

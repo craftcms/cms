@@ -91,6 +91,33 @@ class UserRecord extends BaseRecord
 		$this->archived = false;
 	}
 
+	/**
+	 * @inheritDoc BaseRecord::rules()
+	 *
+	 * @return array
+	 */
+	public function rules()
+	{
+		$rules = parent::rules();
+		$rules[] = array('unverifiedEmail', 'validateUnverifiedEmail');
+
+		return $rules;
+	}
+
+	/**
+	 * @param $attribute
+	 */
+	public function validateUnverifiedEmail($attribute)
+	{
+		$value = $this->$attribute;
+		$user = craft()->users->getUserByEmail($value);
+
+		if ($user)
+		{
+			$this->addError('email', Craft::t('That email address is already in use. Please choose another.'));
+		}
+	}
+
 	// Protected Methods
 	// =========================================================================
 

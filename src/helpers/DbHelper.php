@@ -233,10 +233,10 @@ class DbHelper
 		{
 			if (is_string($config['default']) && !is_numeric($config['default']))
 			{
-				$def .= ' DEFAULT "'.$config['default'].'"';
+				$def .= ' DEFAULT '.craft()->db->quoteValue($config['default']);
 			}
-			else
-			{
+ 			else
+ 			{
 				$def .= ' DEFAULT '.(int)$config['default'];
 			}
 		}

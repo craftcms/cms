@@ -1,6 +1,28 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2984 - 2017-06-26
+
+### Added
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting, which determines whether SVG files should be sanitized on uploads (`true` by default).
+
+### Changed
+- The `assets.onReplaceFile` event is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
+- Updated HTML Purifier to 4.9.3.
+- Updated Redactor II to 2.7.
+
+### Fixed
+- Fixed a bug where changing a user acocunt’s email address to one that is already taken would silently fail.
+- Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
+- Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
+- Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
+- Fixed a SQL error that would occur when saving a Dropdown or Radio Buttons field if the default option’s value contained quotation marks.
+- Fixed a bug where asset upload prompts would not always reset between uploads.
+
+### Security
+- Fixed several XSS vulnerabilities in the Control Panel.
+
+
 ## 2.6.2983 - 2017-06-09
 
 ### Changed
@@ -8,7 +30,7 @@ Craft CMS Changelog
 - Updated Yii to 1.1.19.
 
 ### Fixed
-- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload.
+- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload. ([#1767](https://github.com/craftcms/cms/issues/1767))
 
 ## 2.6.2982 - 2017-06-07 [CRITICAL]
 
@@ -71,7 +93,7 @@ Craft CMS Changelog
 ## 2.6.2976 - 2017-04-27
 
 ### Changed
-- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+- The `_layouts/cp.html` Control Panel template now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.

@@ -1,4 +1,4 @@
-/*! Craft  - 2017-04-12 */
+/*! Craft  - 2017-06-26 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -4717,11 +4717,11 @@ Craft.AdminTable = Garnish.Base.extend(
 			this.updateUI();
 			this.onDeleteObject(id);
 
-			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: name }));
+			Craft.cp.displayNotice(Craft.t(this.settings.deleteSuccessMessage, { name: Craft.escapeHtml(name) }));
 		}
 		else
 		{
-			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: name }));
+			Craft.cp.displayError(Craft.t(this.settings.deleteFailMessage, { name: Craft.escapeHtml(name) }));
 		}
 	},
 
@@ -5780,6 +5780,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this._positionProgressBar();
 		this.progressBar.resetProgressBar();
 		this.progressBar.showProgressBar();
+        this.promptHandler.resetPrompts();
 	},
 
 	/**
@@ -7336,7 +7337,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 			{
 				var href = this._getGroupTriggerHref(selectedGroup),
 					label = (this.settings.context == 'index' ? Craft.t('New category') : Craft.t('New {group} category', {group: selectedGroup.name}));
-				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
+				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+Craft.escapeHtml(label)+'</a>').appendTo(this.$newCategoryBtnGroup);
 
 				if (this.settings.context != 'index')
 				{
@@ -7368,7 +7369,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 					{
 						var href = this._getGroupTriggerHref(group),
 							label = (this.settings.context == 'index' ? group.name : Craft.t('New {group} category', {group: group.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+						menuHtml += '<li><a '+href+'">'+Craft.escapeHtml(label)+'</a></li>';
 					}
 				}
 
@@ -10843,7 +10844,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 					{
 						var href = this._getSectionTriggerHref(section),
 							label = (this.settings.context == 'index' ? section.name : Craft.t('New {section} entry', {section: section.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+						menuHtml += '<li><a '+href+'">'+Craft.escapeHtml(label)+'</a></li>';
 					}
 				}
 

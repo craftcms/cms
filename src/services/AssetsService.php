@@ -1411,7 +1411,12 @@ class AssetsService extends BaseApplicationComponent
 
 				$source->replaceFile($targetFile, $theNewFile);
 				$fileId = $targetFile->id;
-			}
+
+                // Fire an 'onReplaceFile' event
+                craft()->assets->onReplaceFile(new Event($this, array(
+                    'asset' => $targetFile
+                )));
+            }
 			// Falling through to delete the file
 			case AssetConflictResolution::Cancel:
 			{
