@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2984 - 2017-06-26
 
 ### Added
 - Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting, which determines whether SVG files should be sanitized on uploads (`true` by default).
