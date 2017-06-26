@@ -4,21 +4,24 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Added
-- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting (defaults to `true`) to determine whether SVG files should be sanitized on uploads.
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting, which determines whether SVG files should be sanitized on uploads (`true` by default).
 
 ### Changed
+- The `assets.onReplaceFile` event is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
 - Updated HTML Purifier to 4.9.3.
 - Updated Redactor II to 2.7.
-- Users will get a friendly validation error message if they try to change their email address to one that already exists instead of it silently failing.
-- `assets.onReplaceFile` is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
 
 ### Fixed
+- Fixed a bug where changing a user acocunt’s email address to one that is already taken would silently fail.
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
-- Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
+- Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
 - Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
-- Fixed a bug where if had a default value that had a quote in it in a Multi-Option field type, you would get a SQL error.
+- Fixed a SQL error that would occur when saving a Dropdown or Radio Buttons field if the default option’s value contained quotation marks.
+- Fixed a bug where asset upload prompts would not always reset between uploads.
+
+### Security
 - Fixed several XSS vulnerabilities in the Control Panel.
-- Fixed a bug where prompts sometimes would not reset between uploads.
+
 
 ## 2.6.2983 - 2017-06-09
 
