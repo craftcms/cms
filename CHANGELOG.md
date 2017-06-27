@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2985 - 2017-06-27
 
 ### Changed
 - `DateTime::createFromString()` now supports dates formatted with `DateTime::ISO8601`, which is incorrectly missing the colon between the hours and minutes in the timezone offset declaration (e.g. `+0000` instead of `+00:00`).
