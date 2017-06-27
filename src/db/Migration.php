@@ -24,6 +24,72 @@ abstract class Migration extends \yii\db\Migration
     // Public Methods
     // =========================================================================
 
+    // Execution Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * This method contains the logic to be executed when applying this migration.
+     * Child classes may override this method to provide actual migration logic.
+     *
+     * @return bool|null
+     * @throws \Throwable
+     */
+    public function up()
+    {
+        // Copied from \yii\db\Migration::up(), but with added $e param
+        $transaction = $this->db->beginTransaction();
+        try {
+            if ($this->safeUp() === false) {
+                $transaction->rollBack();
+                return false;
+            }
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $this->_printException($e);
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        return null;
+    }
+
+    /**
+     * This method contains the logic to be executed when removing this migration.
+     * The default implementation throws an exception indicating the migration cannot be removed.
+     * Child classes may override this method if the corresponding migrations can be removed.
+     *
+     * @return bool|null
+     * @throws \Throwable
+     */
+    public function down()
+    {
+        // Copied from \yii\db\Migration::down(), but with added $e param
+        $transaction = $this->db->beginTransaction();
+        try {
+            if ($this->safeDown() === false) {
+                $transaction->rollBack();
+                return false;
+            }
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $this->_printException($e);
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param \Throwable|\Exception $e
+     */
+    private function _printException($e)
+    {
+        // Copied from \yii\db\Migration::printException(), only because it’s private
+        echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";
+        echo $e->getTraceAsString() . "\n";
+    }
+
     // Schema Builder Methods
     // -------------------------------------------------------------------------
 

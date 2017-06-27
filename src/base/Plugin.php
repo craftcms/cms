@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\errors\MigrationException;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
 use craft\i18n\PhpMessageSource;
@@ -106,10 +107,12 @@ class Plugin extends Module implements PluginInterface
         $migrator = $this->getMigrator();
 
         // Run the install migration, if there is one
-        $migration = $this->createInstallMigration();
-
-        if ($migration !== null && $migrator->migrateUp($migration) === false) {
-            return false;
+        if (($migration = $this->createInstallMigration()) !== null) {
+            try {
+                $migrator->migrateUp($migration);
+            } catch (MigrationException $e) {
+                return false;
+            }
         }
 
         // Mark all existing migrations as applied
@@ -131,7 +134,9 @@ class Plugin extends Module implements PluginInterface
             return false;
         }
 
-        if ($this->getMigrator()->up() === false) {
+        try {
+            $this->getMigrator()->up();
+        } catch (MigrationException $e) {
             return false;
         }
 
@@ -149,10 +154,12 @@ class Plugin extends Module implements PluginInterface
             return false;
         }
 
-        $migration = $this->createInstallMigration();
-
-        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
-            return false;
+        if (($migration = $this->createInstallMigration()) !== null) {
+            try {
+                $this->getMigrator()->migrateDown($migration);
+            } catch (MigrationException $e) {
+                return false;
+            }
         }
 
         $this->afterUninstall();
