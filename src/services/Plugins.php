@@ -137,7 +137,7 @@ class Plugins extends Component
      */
     public function loadPlugins()
     {
-        if ($this->_pluginsLoaded === true || $this->_loadingPlugins === true || Craft::$app->getIsInstalled() === false || Craft::$app->getIsUpdating() === true) {
+        if ($this->_pluginsLoaded === true || $this->_loadingPlugins === true || Craft::$app->getIsInstalled() === false) {
             return;
         }
 

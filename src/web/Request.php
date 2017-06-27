@@ -951,10 +951,12 @@ class Request extends \yii\web\Request
                     $loginPath = 'login';
                     $logoutPath = 'logout';
                     $setPasswordPath = 'setpassword';
+                    $updatePath = 'update';
                 } else {
                     $loginPath = trim($generalConfig->getLoginPath(), '/');
                     $logoutPath = trim($generalConfig->getLogoutPath(), '/');
                     $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                    $updatePath = null;
                 }
 
                 if (
@@ -964,6 +966,7 @@ class Request extends \yii\web\Request
                         $loginPath,
                         $logoutPath,
                         $setPasswordPath,
+                        $updatePath
                     ], true))
                 ) {
                     $this->_isActionRequest = true;
@@ -984,6 +987,8 @@ class Request extends \yii\web\Request
                             case $setPasswordPath:
                                 $this->_actionSegments = ['users', 'set-password'];
                                 break;
+                            case $updatePath:
+                                $this->_actionSegments = ['updater', 'index'];
                         }
                     }
                 }

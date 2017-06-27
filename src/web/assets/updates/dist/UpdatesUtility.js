@@ -7,12 +7,16 @@
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
             allowAutoUpdates: null,
+            showUpdateAllBtn: true,
+            updates: null,
 
             init: function() {
                 this.$body = Craft.cp.$content.children('.body');
 
                 var $graphic = $('#graphic'),
                     $status = $('#status');
+
+                this.updates = [];
 
                 Craft.postActionRequest('update/get-available-updates', $.proxy(function(response, textStatus) {
                     if (textStatus != 'success' || response.error || response.errors) {
@@ -58,6 +62,12 @@
                             }
 
                             $('#page-title h1').text(headingText);
+
+                            if (this.showUpdateAllBtn && this.updates.length > 1) {
+                                var $updateAllBtn = $('<div/>', {'class': 'btn submit', text: Craft.t('app', 'Update all')})
+                                    .appendTo($('<div/>', {id: 'extra-headers'}).appendTo(Craft.cp.$pageHeader));
+                                this.addListener($updateAllBtn, 'click', 'updateAll');
+                            }
                         } else {
                             $graphic.addClass('success');
                             $status.text(Craft.t('app', 'You’re all up-to-date!'));
@@ -73,7 +83,35 @@
 
                 this.totalAvailableUpdates++;
 
-                new Update(this, updateInfo, isPlugin);
+                this.updates.push(new Update(this, updateInfo, isPlugin));
+            },
+
+            updateAll: function()
+            {
+                this.redirectToUpdate(this.updates);
+            },
+
+            redirectToUpdate: function(updates)
+            {
+                window.location.href = this.buildUpdateUrl(updates);
+            },
+
+            buildUpdateUrl: function(updates)
+            {
+                return Craft.getUrl('update', {
+                    install: this.buildRequirements(updates)
+                });
+            },
+
+            buildRequirements: function(updates)
+            {
+                var requirements = [];
+
+                for (var i = 0; i < updates.length; i++) {
+                    requirements.push(updates[i].getHandle()+':'+updates[i].getLatestVersion());
+                }
+
+                return requirements.join(',');
             }
         }
     );
@@ -82,13 +120,12 @@
         {
             updateInfo: null,
             isPlugin: null,
-            displayName: null,
-            manualUpdateRequired: null,
 
             $container: null,
             $header: null,
-            $downloadBtn: null,
             $contents: null,
+            $ineligibleReleasesContainer: null,
+            $showIneligibleReleasesLink: null,
             $releaseContainer: null,
             $showAllLink: null,
 
@@ -100,112 +137,85 @@
                 this.updatesPage = updatesPage;
                 this.updateInfo = updateInfo;
                 this.isPlugin = isPlugin;
-                this.displayName = this.isPlugin ? this.updateInfo.displayName : 'Craft CMS';
-                this.manualUpdateRequired = (!this.updatesPage.allowAutoUpdates || this.updateInfo.manualUpdateRequired);
 
                 this.createPane();
                 this.createHeading();
-                this.createDownloadButton();
+                this.createUpdateButtons();
                 this.createReleaseList();
+
+                if (this.updateInfo.expired || this.updateInfo.licenseUpdated) {
+                    this.updatesPage.showUpdateAllBtn = false;
+                }
+            },
+
+            getDisplayName: function()
+            {
+                return this.isPlugin ? this.updateInfo.displayName : 'Craft CMS';
+            },
+
+            getHandle: function()
+            {
+                return this.isPlugin ? this.updateInfo.handle : 'craft';
+            },
+
+            getLatestVersion: function()
+            {
+                return this.updateInfo.releases[0].version;
             },
 
             createPane: function() {
                 this.$container = $('<div class="update"/>').appendTo(this.updatesPage.$body);
                 this.$header = $('<div class="update-header"/>').appendTo(this.$container);
                 this.$contents = $('<div class="readable"/>').appendTo(this.$container);
+
+                // Any ineligible releases?
+                if (this.updateInfo.breakpoint) {
+                    $('<blockquote class="note warn ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').appendTo(this.$contents);
+                } else if (this.updateInfo.expired) {
+                    $('<blockquote class="note ineligible"><p><strong>Your license has expired!</strong> Renew your Craft CMS license for another year of amazing updates.</p>').appendTo(this.$contents);
+                }
+
                 this.$releaseContainer = $('<div class="releases"/>').appendTo(this.$contents);
             },
 
             createHeading: function() {
                 $('<div class="readable left"/>').appendTo(this.$header).append(
-                    $('<h1/>', {text: this.displayName})
+                    $('<h1/>', {text: this.getDisplayName()})
                 );
             },
 
-            createDownloadButton: function() {
-                var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header),
-                    $updateBtn;
-
-                // Are auto updates disabled because this is a Composer install?
-                if (this.updateInfo.composer) {
+            createUpdateButtons: function() {
+                if (!this.updateInfo.releases || !this.updateInfo.releases.length) {
                     return;
                 }
 
-                // Is a manual update required?
-                if (this.manualUpdateRequired) {
-                    // Make sure it actually has a download URL
-                    if (!this.updateInfo.manualDownloadEndpoint) {
-                        return;
-                    }
+                var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$header);
 
-                    this.$downloadBtn = $('<div class="btn submit">' + Craft.t('app', 'Download') + '</div>').appendTo($buttonContainer);
-                }
-                else {
-                    var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer);
+                if (this.updateInfo.expired) {
+                    var $renewBtn = $('<div/>', {'class': 'btn submit', text: 'Renew for $59'}).appendTo($buttonContainer);
+                } else {
+                    var $updateBtn = $('<div class="btn submit">' + Craft.t('app', 'Update') + '</div>').appendTo($buttonContainer);
 
-                    $updateBtn = $('<div class="btn submit">' + Craft.t('app', 'Update') + '</div>').appendTo($btnGroup);
-
-                    var $menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
-                        $menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
-                        $menuUl = $('<ul/>').appendTo($menu),
-                        $downloadLi = $('<li/>').appendTo($menuUl);
-
-                    this.$downloadBtn = $('<a>' + Craft.t('app', 'Download') + '</a>').appendTo($downloadLi);
-
-                    new Garnish.MenuBtn($menuBtn);
-                }
-
-                // Has the license been updated?
-                if (this.updateInfo.licenseUpdated) {
-                    this.addListener(this.$downloadBtn, 'click', 'showLicenseForm');
-
-                    if (!this.manualUpdateRequired) {
+                    // Has the license been updated?
+                    if (this.updateInfo.licenseUpdated) {
                         this.addListener($updateBtn, 'click', 'showLicenseForm');
                     }
-                }
-                else {
-                    this.addListener(this.$downloadBtn, 'click', 'downloadThat');
-
-                    if (!this.manualUpdateRequired) {
-                        this.addListener($updateBtn, 'click', 'autoUpdateThat');
+                    else {
+                        this.addListener($updateBtn, 'click', function() {
+                            this.updatesPage.redirectToUpdate([this]);
+                        });
                     }
                 }
             },
 
             createReleaseList: function() {
+                if (!this.updateInfo.releases) {
+                    return;
+                }
+
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
                     new Release(this, this.updateInfo.releases[i]);
                 }
-
-                if (this.$releaseContainer.height() > Release.maxInitialUpdateHeight + 50) {
-                    this.$releaseContainer.addClass('fade-out');
-                    this.$showAllLink = $('<a/>', {'class': 'show-all-notes', text: Craft.t('app', 'Show all')}).appendTo(this.$contents);
-                    this.addListener(this.$showAllLink, 'click', 'showAll');
-                }
-            },
-
-            showAll: function() {
-                var collapsedHeight = this.$releaseContainer.height();
-                this.$releaseContainer.css('max-height', 'none');
-                var expandedHeight = this.$releaseContainer.height();
-                this.$releaseContainer
-                    .height(collapsedHeight)
-                    .velocity({height: expandedHeight}, {
-                        duration: 'fast',
-                        complete: $.proxy(function() {
-                            this.$releaseContainer
-                                .removeClass('fade-out')
-                                .css('max-height', '');
-                            this.$showAllLink.remove();
-                        }, this)
-                    });
-
-                this.$showAllLink.velocity({opacity: 0, 'margin-top': -18}, {
-                    duration: 'fast',
-                    complete: $.proxy(function() {
-                        this.$showAllLink.remove();
-                    })
-                });
             },
 
             showLicenseForm: function(originalEvent) {
@@ -236,22 +246,8 @@
                     this.licenseHud.show();
                 }
 
-                if (originalEvent.currentTarget == this.$downloadBtn[0]) {
-                    this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, download.'));
-                    this.licenseSubmitAction = this.downloadThat;
-                }
-                else {
-                    this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, update.'));
-                    this.licenseSubmitAction = this.autoUpdateThat;
-                }
-            },
-
-            downloadThat: function() {
-                window.location.href = this.updateInfo.manualDownloadEndpoint;
-            },
-
-            autoUpdateThat: function() {
-                window.location.href = Craft.getUrl('updates/go/' + (this.isPlugin ? this.updateInfo.handle.toLowerCase() : 'craft'));
+                this.$licenseSubmitBtn.attr('value', Craft.t('app', 'Seriously, update.'));
+                this.licenseSubmitAction = this.redirectToUpdate;
             }
         }
     );
@@ -260,36 +256,45 @@
         {
             update: null,
             releaseInfo: null,
+            notesId: null,
 
             $container: null,
-            $releaseNotes: null,
+            $toggle: null,
 
             init: function(update, releaseInfo) {
                 this.update = update;
                 this.releaseInfo = releaseInfo;
+                this.notesId = 'notes-'+Math.floor(Math.random() * 1000000);
 
                 this.createContainer();
                 this.createHeading();
                 this.createReleaseNotes();
+
+                new Craft.FieldToggle(this.$toggle);
+
             },
 
             createContainer: function() {
-                this.$container = $('<div class="release"/>').appendTo(this.update.$releaseContainer);
+                this.$container = $('<div class="pane release"/>').appendTo(this.update.$releaseContainer);
+
+                if (this.releaseInfo.critical) {
+                    this.$container.addClass('critical');
+                }
             },
 
             createHeading: function() {
-                var heading = this.releaseInfo.version +
-                    ' <span class="light">– ' + Craft.formatDate(this.releaseInfo.date) + '</span>';
-
+                this.$toggle = $('<a/>', {'class': 'fieldtoggle', 'data-target': this.notesId}).appendTo(this.$container);
+                $('<h2/>', {text: this.releaseInfo.version}).appendTo(this.$toggle);
                 if (this.releaseInfo.critical) {
-                    heading += ' <span class="critical">' + Craft.t('app', 'Critical') + '</span>';
+                    $('<strong/>', {'class': 'critical', text: Craft.t('app', 'Critical')}).appendTo(this.$toggle);
                 }
-
-                $('<h2/>', {html: heading}).appendTo(this.$container);
+                $('<span/>', {'class': 'date', text: Craft.formatDate(this.releaseInfo.date)}).appendTo(this.$toggle);
             },
 
             createReleaseNotes: function() {
-                this.$releaseNotes = $('<div class="release-notes"/>').appendTo(this.$container).html(this.releaseInfo.notes);
+                $('<div/>', {id: this.notesId, 'class': 'hidden'})
+                    .appendTo(this.$container)
+                    .append($('<div/>', {'class': 'release-notes'}).html(this.releaseInfo.notes));
             }
         },
         {

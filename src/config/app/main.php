@@ -23,6 +23,9 @@ return [
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
+        'composer' => [
+            'class' => \craft\services\Composer::class,
+        ],
         'content' => [
             'class' => craft\services\Content::class,
         ],

@@ -215,7 +215,7 @@ body.rtl .readable ul, body.rtl .readable ol { padding-right: 2em; }
 body.ltr .readable blockquote:not(.note) { border-left: 4px solid #e3e5e8; }
 body.rtl .readable blockquote:not(.note) { border-right: 4px solid #e3e5e8; }
 
-.readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; border: 1px solid; color: #8f98a3; }
+.readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; border: 1px solid; }
 body.ltr .readable blockquote.note { padding-left: 56px; }
 body.rtl .readable blockquote.note { padding-right: 56px; }
 
@@ -229,10 +229,13 @@ body.rtl .readable blockquote.note { padding-right: 56px; }
 body.ltr .readable blockquote.note:before { left: 16px; }
 body.rtl .readable blockquote.note:before { right: 16px; }
 
+.readable blockquote.note:not(.tip):not(.warn) { color: #bf503f; }
 .readable blockquote.note:not(.tip):not(.warn):before { content: 'alert'; color: #da5a47; }
 
+.readable blockquote.note.tip { color: #8f98a3; }
 .readable blockquote.note.tip:before { content: 'lightbulb'; color: #0d78f2; }
 
+.readable blockquote.note.warn { color: #cf783a; }
 .readable blockquote.note.warn:before { content: 'alert'; color: #e78640; }
 
 /* text styles */
@@ -1068,6 +1071,8 @@ body.rtl .elementselect .progress-shade { right: 0; }
 .pane { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; -moz-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; position: relative; margin: 14px 0; padding: 24px; border-radius: 4px; word-wrap: break-word; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
 .pane.lightpane { background-color: #f4f5f6; }
+
+.pane .pane { -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; background: #fafafa; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }

@@ -1,22 +1,23 @@
 {% extends "_layouts/message" %}
-{% set title = "Update Craft CMS"|t('app') %}
+{% set title = "Complete the Update"|t('app') %}
 
-{% set handle = 'craft' %}
-{% set name = 'Craft CMS' %}
+{% set names = [] %}
 
-{% if not craft.app.updates.getIsCraftDbMigrationNeeded() %}
-    {% set plugin = craft.app.updates.getPluginsThatNeedDbUpdate()|first %}
-
-    {% if plugin %}
-        {% set handle = plugin.handle %}
-        {% set name = plugin.name %}
-    {% endif %}
+{% if craft.app.updates.getIsCraftDbMigrationNeeded() %}
+    {% set names = names|merge(['Craft CMS']) %}
 {% endif %}
 
+{% for plugin in craft.app.updates.getPluginsThatNeedDbUpdate() %}
+    {% set names = names|merge([plugin.name]) %}
+{% endfor %}
 
 {% block message %}
-    <p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: name }) }}</p>
+    {% if names|length == 1 %}
+        <p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: names|first }) }}</p>
+    {% else %}
+        <p>{{ "To complete the {names} updates, some changes must be made to your database."|t('app', { names: names[0:-1]|join(', ') ~ ' ' ~ 'and'|t ~ ' ' ~ names|last }) }}</p>
+    {% endif %}
     <div class="buttons">
-        <a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t('app') }}</a>
+        <a class="btn submit" href="{{ url('update', { return: craft.app.request.getPathInfo() }) }}">{{ "Finish up"|t('app') }}</a>
     </div>
 {% endblock %}

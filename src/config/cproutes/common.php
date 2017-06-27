@@ -22,8 +22,7 @@ return [
         'route' => 'users/edit-user',
         'defaults' => ['userId' => 'current']
     ],
-    'updates' => 'update/index',
-    'updates/go/<handle:[^/]*>' => 'update/go',
+    'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
     'settings/assets/volumes/new' => 'volumes/edit-volume',
     'settings/assets/volumes/<volumeId:\d+>' => 'volumes/edit-volume',

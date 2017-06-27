@@ -40,6 +40,7 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
  * @property bool                            $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\services\Categories      $categories         The categories service
+ * @property \craft\services\Composer        $composer           The Composer service
  * @property \craft\services\Config          $config             The config service
  * @property \craft\services\Content         $content            The content service
  * @property \craft\db\MigrationManager      $contentMigrator    The content migration manager
@@ -276,35 +277,17 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether Craft is in the middle of updating itself.
+     * Returns whether Craft is in the middle of an update.
      *
      * @return bool
      */
     public function getIsUpdating(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return true;
-        }
-
-        $request = $this->getRequest();
-
-        if ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) {
-            return true;
-        }
-
-        if (!$request->getIsConsoleRequest()) {
-            $actionSegments = $request->getActionSegments();
-
-            if (
-                $actionSegments === ['update', 'cleanUp'] ||
-                $actionSegments === ['update', 'rollback']
-            ) {
-                return true;
-            }
-        }
-
-        return false;
+        return (
+            $this->getIsInMaintenanceMode() ||
+            $this->getUpdates()->getIsCraftDbMigrationNeeded()
+        );
     }
 
     /**
@@ -722,6 +705,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('categories');
+    }
+
+    /**
+     * Returns the Composer service.
+     *
+     * @return \craft\services\Composer The Composer service
+     */
+    public function getComposer()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('composer');
     }
 
     /**

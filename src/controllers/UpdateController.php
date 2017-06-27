@@ -74,11 +74,11 @@ class UpdateController extends Controller
     /**
      * Update kickoff
      *
-     * @param string $handle The update handle ("craft" or a plugin handle)
+     * @param string $update The thing(s) to update, in the format "craft:1.2.3,plugin-handle:1.2.3"
      *
      * @return Response
      */
-    public function actionGo(string $handle): Response
+    public function actionGo(string $update): Response
     {
         $view = $this->getView();
 
@@ -96,8 +96,9 @@ class UpdateController extends Controller
             'No files have been updated and the database has not been touched.',
         ]);
 
+        $security = Craft::$app->getSecurity();
         $dataJs = Json::encode([
-            'handle' => Craft::$app->getSecurity()->hashData($handle),
+            'update' => $security->hashData($update),
             'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) === 'manualupdate') ? 1 : 0
         ]);
         $js = <<<EOD
@@ -139,94 +140,27 @@ EOD;
         $response = $updates->toArray();
         ArrayHelper::rename($response, 'responseErrors', 'errors');
 
-        // Include whether Craft was Composer-installed
-        if (!empty($response['app'])) {
-            $response['app']['composer'] = true;
+        // todo: remove this once the new API stuff is in place
+        if (isset($updates['app'])) {
+            $response['app']['breakpoint'] = false;
+            $response['app']['expired'] = false;
         }
-
-        // Include plugin handles and whether they're Composer-installed
         if (!empty($response['plugins'])) {
             $pluginsService = Craft::$app->getPlugins();
             foreach ($response['plugins'] as &$pluginInfo) {
                 /** @var Plugin $plugin */
                 $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
                 $pluginInfo['handle'] = $plugin->id;
-                $pluginInfo['composer'] = true;
+                $pluginInfo['breakpoint'] = false;
+                $pluginInfo['expired'] = false;
             }
             unset($pluginInfo);
         }
 
+        // todo: this logic should be per-plugin as well
         $response['allowAutoUpdates'] = $this->_allowAutoUpdates();
 
         return $this->asJson($response);
-    }
-
-    /**
-     * Returns the update info JSON.
-     *
-     * @return Response
-     */
-    public function actionGetUpdates(): Response
-    {
-        $this->requirePermission('performUpdates');
-
-        $this->requireAcceptsJson();
-
-        $handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
-
-        $return = [];
-        $update = Craft::$app->getUpdates()->getUpdates();
-
-        if (!$update) {
-            return $this->asErrorJson(Craft::t('app', 'There was a problem getting the latest update information.'));
-        }
-
-        try {
-            // Updating Craft?
-            if ($handle === 'all' || $handle === 'craft') {
-                $return[] = [
-                    'handle' => 'craft',
-                    'name' => 'Craft',
-                    'version' => $update->app->latestVersion,
-                    'critical' => $update->app->criticalUpdateAvailable,
-                    'releaseDate' => $update->app->latestDate->getTimestamp()
-                ];
-            }
-
-            // Updating plugin(s)?
-            if ($handle !== 'craft') {
-                /** @var PluginUpdate[] $pluginUpdates */
-                if ($handle === 'all') {
-                    $pluginUpdates = $update->plugins;
-                } else {
-                    // Get the plugin's package name
-                    if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                        throw new InvalidPluginException($handle);
-                    }
-                    /** @var Plugin $plugin */
-                    if (!isset($update->plugins[$plugin->packageName])) {
-                        throw new Exception("No update info is known for the plugin \"{$handle}\".");
-                    }
-                    $pluginUpdates = [$update->plugins[$plugin->packageName]];
-                }
-
-                foreach ($pluginUpdates as $pluginUpdate) {
-                    if ($pluginUpdate->status === PluginUpdateStatus::UpdateAvailable && count($pluginUpdate->releases) > 0) {
-                        $return[] = [
-                            'handle' => $handle,
-                            'name' => $pluginUpdate->displayName,
-                            'version' => $pluginUpdate->latestVersion,
-                            'critical' => $pluginUpdate->criticalUpdateAvailable,
-                            'releaseDate' => $pluginUpdate->latestDate->getTimestamp()
-                        ];
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            return $this->asErrorJson($e->getMessage());
-        }
-
-        return $this->asJson(['success' => true, 'updateInfo' => $return]);
     }
 
     /**
@@ -240,7 +174,7 @@ EOD;
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $updates = $this->_getRequestedUpdates($data);
 
         $manual = false;
         if (!$this->_isManualUpdate($data)) {
@@ -302,7 +236,7 @@ EOD;
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         $md5 = Craft::$app->getSecurity()->validateData($data['md5']);
 
@@ -353,7 +287,7 @@ EOD;
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
@@ -399,7 +333,7 @@ EOD;
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
@@ -431,7 +365,7 @@ EOD;
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         if (true || $this->_shouldBackupDb()) {
             if ($handle !== 'craft') {
@@ -488,7 +422,7 @@ EOD;
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         $return = Craft::$app->getUpdates()->updateDatabase($handle);
 
@@ -532,7 +466,7 @@ EOD;
             }
         }
 
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         $oldVersion = false;
 
@@ -571,7 +505,7 @@ EOD;
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-        $handle = $this->_getFixedHandle($data);
+        $handle = $this->_getRequestedUpdates($data);
 
         if ($this->_isManualUpdate($data)) {
             $uid = false;
@@ -721,18 +655,30 @@ EOD;
     }
 
     /**
+     * Returns the requested updates as handle => version pairs.
+     *
      * @param array $data
      *
-     * @return string
+     * @return array
      * @throws UpdateValidationException
      */
-    private function _getFixedHandle(array $data): string
+    private function _getRequestedUpdates(array $data): array
     {
-        if (($handle = Craft::$app->getSecurity()->validateData($data['handle'])) !== false) {
-            return $handle;
+        $updates = Craft::$app->getSecurity()->validateData($data['update']);
+
+        if ($updates === false) {
+            throw new UpdateValidationException('Could not validate the requested updates.');
         }
 
-        throw new UpdateValidationException('Could not validate the update handle.');
+        $updates = explode(',', $updates);
+        $pairs = [];
+
+        foreach ($updates as $update) {
+            list($handle, $version) = explode(':', $update);
+            $pairs[$handle] = $version;
+        }
+
+        return $pairs;
     }
 
     /**
@@ -780,6 +726,8 @@ EOD;
      */
     private function _allowAutoUpdates(): bool
     {
+        return true;
+
         $update = Craft::$app->getUpdates()->getUpdates();
 
         if (!$update) {

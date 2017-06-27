@@ -18,6 +18,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
+    "composer/composer": "~1.4.2",
     "craftcms/plugin-installer": "~1.4.0",
     "craftcms/server-check": "~1.0.16",
     "creocoder/yii2-nested-sets": "~0.9.0",
