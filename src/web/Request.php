@@ -974,12 +974,16 @@ class Request extends \yii\web\Request
                     } else if (!empty($actionParam)) {
                         $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                     } else {
-                        if ($this->_path == $loginPath) {
-                            $this->_actionSegments = ['users', 'login'];
-                        } else if ($this->_path == $logoutPath) {
-                            $this->_actionSegments = ['users', 'logout'];
-                        } else {
-                            $this->_actionSegments = ['users', 'set-password'];
+                        switch ($this->_path) {
+                            case $loginPath:
+                                $this->_actionSegments = ['users', 'login'];
+                                break;
+                            case $logoutPath;
+                                $this->_actionSegments = ['users', 'logout'];
+                                break;
+                            case $setPasswordPath:
+                                $this->_actionSegments = ['users', 'set-password'];
+                                break;
                         }
                     }
                 }
