@@ -165,7 +165,7 @@ class MigrationManager extends Component
             try {
                 $this->migrateUp($migrationName);
             } catch (MigrationException $e) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
+                Craft::error('Migration failed. The rest of the migrations are cancelled.', __METHOD__);
                 throw $e;
             }
         }
@@ -207,7 +207,7 @@ class MigrationManager extends Component
             try {
                 $this->migrateDown($migrationName);
             } catch (MigrationException $e) {
-                Craft::error('Migration failed. The rest of the migrations are canceled.', __METHOD__);
+                Craft::error('Migration failed. The rest of the migrations are cancelled.', __METHOD__);
                 throw $e;
             }
         }
