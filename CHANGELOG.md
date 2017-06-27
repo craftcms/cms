@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - `DateTime::createFromString()` now supports dates formatted with `DateTime::ISO8601`, which is incorrectly missing the colon between the hours and minutes in the timezone offset declaration (e.g. `+0000` instead of `+00:00`).
 
+### Fixed
+- Fixed a bug where users would get an “Invalid Verification Code” error when clicking on the link in a verification email.
+
 ## 2.6.2984 - 2017-06-26
 
 ### Added

@@ -112,7 +112,8 @@ class UserRecord extends BaseRecord
 		$value = $this->$attribute;
 		$user = craft()->users->getUserByEmail($value);
 
-		if ($user)
+		// In the case of saving a new user, these will be the identical until they verify their address
+		if ($user && $user->email !== $value)
 		{
 			$this->addError('email', Craft::t('That email address is already in use. Please choose another.'));
 		}
