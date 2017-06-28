@@ -510,11 +510,14 @@ class Updates extends Component
     /**
      * Returns a list of things with updated schema versions.
      *
-     * Craft CMS will be represented as "craft"; plugins will be represented by their handles.
+     * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
+     *
+     * @param bool $includeContent Whether pending content migrations should be considered
      *
      * @return string[]
+     * @see runMigrations()
      */
-    public function getPendingMigrationHandles(): array
+    public function getPendingMigrationHandles($includeContent = false): array
     {
         $handles = [];
 
@@ -530,26 +533,35 @@ class Updates extends Component
             }
         }
 
+        if ($includeContent) {
+            $contentMigrator = Craft::$app->getContentMigrator();
+            if (!empty($contentMigrator->getNewMigrations())) {
+                $handles[] = 'content';
+            }
+        }
+
         return $handles;
     }
 
     /**
      * Runs the pending migrations for the given list of handles.
      *
-     * @param string[]|null $handles The list of handles to run migrations for. If null, it will default to [[getPendingMigrationHandles()]].
+     * @param string[] $handles The list of handles to run migrations for
      *
      * @return void
      * @throws MigrateException
+     * @see getPendingMigrationHandles()
      */
-    public function runMigrations(array $handles = null)
+    public function runMigrations(array $handles)
     {
-        if ($handles === null) {
-            $handles = $this->getPendingMigrationHandles();
-        }
-
         // Make sure Craft is first
         if (ArrayHelper::remove($handles, 'craft') !== null) {
             array_unshift($handles, 'craft');
+        }
+
+        // Make sure content is last
+        if (ArrayHelper::remove($handles, 'content') !== null) {
+            $handles[] = 'content';
         }
 
         // Set the name & handle early in case we need it in the catch
@@ -564,6 +576,9 @@ class Updates extends Component
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
                     $versionUpdated = Craft::$app->getUpdates()->updateCraftVersionInfo();
+                } else if ($handle === 'content') {
+                    Craft::$app->getContentMigrator()->up();
+                    $versionUpdated = true;
                 } else {
                     /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
