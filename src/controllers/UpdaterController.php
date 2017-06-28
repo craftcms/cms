@@ -10,8 +10,8 @@ namespace craft\controllers;
 use Composer\IO\BufferIO;
 use Craft;
 use craft\base\Plugin;
+use craft\errors\MigrateException;
 use craft\errors\MigrationException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
@@ -92,7 +92,7 @@ class UpdaterController extends Controller
             $this->_data['reverted'] = false;
         } else {
             // Figure out what needs to be updated, if any
-            $this->_data['migrate'] = $this->_findPendingUpdates();
+            $this->_data['migrate'] = Craft::$app->getUpdates()->getPendingMigrationHandles();
         }
 
         // Set the return URL, if any
@@ -292,34 +292,11 @@ class UpdaterController extends Controller
             $handles = array_merge($this->_data['migrate']);
         }
 
-        // Make sure Craft is first
-        if (ArrayHelper::remove($handles, 'craft') !== null) {
-            array_unshift($handles, 'craft');
-        }
-
-        // Set the name early in case we need it in the catch
-        $name = 'Craft CMS';
-
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
-
         try {
-            foreach ($handles as $handle) {
-                if ($handle === 'craft') {
-                    Craft::$app->getMigrator()->up();
-                    Craft::$app->getUpdates()->updateCraftVersionInfo();
-                } else {
-                    /** @var Plugin $plugin */
-                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
-                    $name = $plugin->name;
-                    $plugin->getMigrator()->up();
-                    Craft::$app->getUpdates()->setNewPluginInfo($plugin);
-                }
-            }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
+            Craft::$app->getUpdates()->runMigrations($handles);
+        } catch (MigrateException $e) {
+            $name = $e->ownerName;
+            $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
                 $previous = $e->getPrevious();
@@ -416,30 +393,6 @@ class UpdaterController extends Controller
         }
 
         return version_compare($toVersion, $fromVersion, '>');
-    }
-
-    /**
-     * Returns any pending update handles.
-     *
-     * @return string[]
-     */
-    private function _findPendingUpdates(): array
-    {
-        $migrate = [];
-        $pluginsService = Craft::$app->getPlugins();
-
-        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $migrate[] = 'craft';
-        }
-
-        foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
-            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
-                $migrate[] = $plugin->id;
-            }
-        }
-
-        return $migrate;
     }
 
     /**

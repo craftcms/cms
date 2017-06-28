@@ -13,8 +13,10 @@ use craft\base\PluginInterface;
 use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
 use craft\errors\InvalidPluginException;
+use craft\errors\MigrateException;
 use craft\events\UpdateEvent;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Update as UpdateHelper;
@@ -503,6 +505,83 @@ class Updates extends Component
         }
 
         return $errorPaths;
+    }
+
+    /**
+     * Returns a list of things with updated schema versions.
+     *
+     * Craft CMS will be represented as "craft"; plugins will be represented by their handles.
+     *
+     * @return string[]
+     */
+    public function getPendingMigrationHandles(): array
+    {
+        $handles = [];
+
+        if ($this->getIsCraftDbMigrationNeeded()) {
+            $handles[] = 'craft';
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
+            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                $handles[] = $plugin->id;
+            }
+        }
+
+        return $handles;
+    }
+
+    /**
+     * Runs the pending migrations for the given list of handles.
+     *
+     * @param string[]|null $handles The list of handles to run migrations for. If null, it will default to [[getPendingMigrationHandles()]].
+     *
+     * @return void
+     * @throws MigrateException
+     */
+    public function runMigrations(array $handles = null)
+    {
+        if ($handles === null) {
+            $handles = $this->getPendingMigrationHandles();
+        }
+
+        // Make sure Craft is first
+        if (ArrayHelper::remove($handles, 'craft') !== null) {
+            array_unshift($handles, 'craft');
+        }
+
+        // Set the name & handle early in case we need it in the catch
+        $name = 'Craft CMS';
+        $handle = 'craft';
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
+        try {
+            foreach ($handles as $handle) {
+                if ($handle === 'craft') {
+                    Craft::$app->getMigrator()->up();
+                    $versionUpdated = Craft::$app->getUpdates()->updateCraftVersionInfo();
+                } else {
+                    /** @var Plugin $plugin */
+                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+                    $name = $plugin->name;
+                    $plugin->getMigrator()->up();
+                    $versionUpdated = Craft::$app->getUpdates()->setNewPluginInfo($plugin);
+                }
+
+                if (!$versionUpdated) {
+                    throw new Exception("Couldn't set new version info for $name.");
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw new MigrateException($name, $handle, null, 0, $e);
+        }
     }
 
     /**
