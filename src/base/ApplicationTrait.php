@@ -58,7 +58,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Globals         $globals            The globals service
  * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
- * @property \craft\services\Imagses          $images             The images service
+ * @property \craft\services\Images          $images             The images service
  * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
