@@ -62,7 +62,6 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
- * @property bool                            $isUpdating         Whether Craft is in the middle of updating itself
  * @property bool                            $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\mail\Mailer              $mailer             The mailer component
@@ -228,7 +227,7 @@ trait ApplicationTrait
                 }
             }
 
-            if (!$this->getIsUpdating()) {
+            if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
                 // Use the primary site's language by default
                 return $this->getSites()->getPrimarySite()->language;
             }
@@ -274,17 +273,6 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         // If you say so!
         $this->_isInstalled = true;
-    }
-
-    /**
-     * Returns whether Craft is in the middle of an update.
-     *
-     * @return bool
-     */
-    public function getIsUpdating(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->getUpdates()->getIsCraftDbMigrationNeeded();
     }
 
     /**
