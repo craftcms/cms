@@ -114,25 +114,15 @@
             onFinish: function(returnUrl) {
                 this.$graphic.addClass('success');
 
-                var data = {
-                    data: this.data
-                };
-
-                Craft.postActionRequest('updater/finish', data, $.proxy(function(response, textStatus, jqXHR) {
-                    if (textStatus === 'success') {
-                        // Redirect in a moment
-                        setTimeout(function() {
-                            if (returnUrl) {
-                                window.location = Craft.getUrl(returnUrl);
-                            }
-                            else {
-                                window.location = Craft.getUrl('dashboard');
-                            }
-                        }, 500);
-                    } else {
-                        this.handleFatalError(jqXHR);
+                // Redirect in a moment
+                setTimeout(function() {
+                    if (returnUrl) {
+                        window.location = Craft.getUrl(returnUrl);
                     }
-                }));
+                    else {
+                        window.location = Craft.getUrl('dashboard');
+                    }
+                }, 750);
             },
 
             handleFatalError: function(jqXHR) {
@@ -141,7 +131,7 @@
 
                 this.setState({
                     error: Craft.t('app', 'A fatal error has occurred:'),
-                    details: details,
+                    errorDetails: details,
                     options: [
                         {
                             label: Craft.t('app', 'Send for help'),
@@ -150,6 +140,9 @@
                         }
                     ]
                 });
+
+                // Tell Craft to disable maintenance mode
+                Craft.postActionRequest('updater/finish', {data: this.data});
             }
         });
 })(jQuery);

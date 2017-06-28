@@ -58,8 +58,8 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Globals         $globals            The globals service
  * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
- * @property \craft\services\Images          $images             The images service
- * @property bool                            $sInMaintenanceMode Whether the system is in maintenance mode
+ * @property \craft\services\Imagses          $images             The images service
+ * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
  * @property bool                            $isUpdating         Whether Craft is in the middle of updating itself
@@ -284,10 +284,7 @@ trait ApplicationTrait
     public function getIsUpdating(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        return (
-            $this->getIsInMaintenanceMode() ||
-            $this->getUpdates()->getIsCraftDbMigrationNeeded()
-        );
+        return $this->getUpdates()->getIsCraftDbMigrationNeeded();
     }
 
     /**
@@ -487,9 +484,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the system is in maintenance mode.
+     * Returns whether someone is currently performing a system update.
      *
      * @return bool
+     * @see enableMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function getIsInMaintenanceMode(): bool
     {
@@ -501,6 +500,8 @@ trait ApplicationTrait
      * Enables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function enableMaintenanceMode(): bool
     {
@@ -512,6 +513,8 @@ trait ApplicationTrait
      * Disables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function disableMaintenanceMode(): bool
     {

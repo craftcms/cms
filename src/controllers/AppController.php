@@ -19,6 +19,7 @@ use craft\helpers\DateTimeHelper;
 use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use craft\web\Controller;
+use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -140,13 +141,22 @@ class AppController extends Controller
             return Craft::$app->getResponse();
         }
 
+        // Bail if Craft is already in maintenance mode
+        if (Craft::$app->getIsInMaintenanceMode()) {
+            throw new ServiceUnavailableHttpException('Craft is already being updated.');
+        }
+
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
+
         // Backup the DB?
         $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
             } catch (\Throwable $e) {
-                throw new ServerErrorHttpException('Error backing up the database', 0, $e);
+                Craft::$app->disableMaintenanceMode();
+                throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
 
@@ -176,9 +186,11 @@ class AppController extends Controller
                 $error .= ' The database has not been restored.';
             }
 
+            Craft::$app->disableMaintenanceMode();
             throw new ServerErrorHttpException($error, 0, $e);
         }
 
+        Craft::$app->disableMaintenanceMode();
         return Craft::$app->getResponse();
     }
 

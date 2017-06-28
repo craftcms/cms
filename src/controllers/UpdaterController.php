@@ -123,16 +123,27 @@ class UpdaterController extends Controller
         ]);
 
         // Is there anything to install/update?
-        if (!empty($this->_data['install']) || !empty($this->_data['migrate'])) {
-            // Enable Maintenance Mode
-            Craft::$app->enableMaintenanceMode();
-
-            $state = $this->_actionState(self::ACTION_INSTALL);
-            $state['data'] = $this->_getHashedData();
-        } else {
+        if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
             $state = $this->_finishedState([
                 'status' => Craft::t('app', 'Nothing to update.')
             ]);
+        } else if (Craft::$app->getIsInMaintenanceMode()) {
+            // Bail if Craft is already in maintenance mode
+            $state = [
+                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
+            ];
+        } else {
+            // Enable maintenance mode
+            Craft::$app->enableMaintenanceMode();
+
+            if (!empty($this->_data['install'])) {
+                $nextAction = self::ACTION_INSTALL;
+            } else {
+                $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+                $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+            }
+            $state = $this->_actionState($nextAction);
+            $state['data'] = $this->_getHashedData();
         }
 
         $this->getView()->registerJs('Craft.updater = (new Craft.Updater()).setState('.Json::encode($state).');');
@@ -379,9 +390,9 @@ class UpdaterController extends Controller
      *
      * @return Response
      */
-    public function actionFinish()
+    public function actionFinish(): Response
     {
-        // Enable Maintenance Mode
+        // Disable maintenance mode
         Craft::$app->disableMaintenanceMode();
 
         return $this->asJson(['success' => true]);
@@ -494,6 +505,9 @@ class UpdaterController extends Controller
      */
     private function _finished(array $state = []): Response
     {
+        // Disable maintenance mode
+        Craft::$app->disableMaintenanceMode();
+
         $state = $this->_finishedState($state);
         return $this->_send($state);
     }

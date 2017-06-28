@@ -121,12 +121,6 @@ class Application extends \yii\web\Application
             header_remove('X-Powered-By');
         }
 
-        // If the system in is maintenance mode and it's a site request, throw a 503.
-        if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
-            $this->_unregisterDebugModule();
-            throw new ServiceUnavailableHttpException();
-        }
-
         // Process install requests
         if (($response = $this->_processInstallRequest($request)) !== null) {
             return $response;
@@ -468,12 +462,18 @@ class Application extends \yii\web\Application
             $request->getIsCpRequest() &&
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
+            // Did we skip a breakpoint?
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
                 $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
                     'targetVersion' => Craft::$app->version,
                 ]));
+            }
+
+            // Bail if Craft is already in maintenance mode
+            if ($this->getIsInMaintenanceMode()) {
+                throw new ServiceUnavailableHttpException(Craft::t('app', 'It looks like someone is currently performing a system update.'));
             }
 
             // Clear the template caches in case they've been compiled since this release was cut.
