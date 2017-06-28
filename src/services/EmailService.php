@@ -438,6 +438,9 @@ class EmailService extends BaseApplicationComponent
 				}
 				else
 				{
+					// TODO: This won't be necessary in 3.0 thanks to Parsedown
+					$emailModel->body = preg_replace('/(?<=[a-zA-Z])_(?=[a-zA-Z])/', '\_', $emailModel->body);
+
 					// They didn't provide an htmlBody, so markdown the body.
 					$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
 					$email->msgHTML($renderedHtmlBody);

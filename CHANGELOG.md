@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email.
+
 ## 2.6.2985 - 2017-06-27
 
 ### Changed
@@ -20,7 +25,7 @@ Craft CMS Changelog
 - Updated Redactor II to 2.7.
 
 ### Fixed
-- Fixed a bug where changing a user acocunt’s email address to one that is already taken would silently fail.
+- Fixed a bug where changing a user account’s email address to one that is already taken would silently fail.
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
 - Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
 - Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
