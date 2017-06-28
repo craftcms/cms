@@ -77,6 +77,11 @@ class UpdaterController extends Controller
                 throw new BadRequestHttpException();
             }
 
+            // Only users with performUpdates permission can install new versions
+            if (!empty($data['install'])) {
+                $this->requirePermission('performUpdates');
+            }
+
             $this->_data = Json::decode($data);
         }
 
