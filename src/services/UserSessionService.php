@@ -1423,7 +1423,7 @@ class UserSessionService extends \CWebUser
 			}
 			else
 			{
-				Craft::log('Tried to restore session from a cookie, but it appears we the data in the cookie is invalid.', LogLevel::Warning);
+				Craft::log('Tried to restore session from a cookie, but it appears the data in the cookie is invalid.', LogLevel::Warning);
 				$this->logout(true);
 			}
 		}
