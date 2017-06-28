@@ -183,6 +183,10 @@ $srcPath = $cmsPath.'/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
+// Move Yii's autoloader to the end (Composer's is faster when optimized)
+spl_autoload_unregister(['Yii', 'autoload']);
+spl_autoload_register(['Yii', 'autoload'], true, false);
+
 // Set aliases
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
