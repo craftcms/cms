@@ -297,41 +297,55 @@ class UpdaterController extends Controller
             array_unshift($handles, 'craft');
         }
 
-        foreach ($handles as $handle) {
-            if ($handle === 'craft') {
-                $name = 'Craft CMS';
-                $migrator = Craft::$app->getMigrator();
-            } else {
-                /** @var Plugin $plugin */
-                $plugin = Craft::$app->getPlugins()->getPlugin($handle);
-                $name = $plugin->name;
-                $migrator = $plugin->getMigrator();
+        // Set the name early in case we need it in the catch
+        $name = 'Craft CMS';
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
+        try {
+            foreach ($handles as $handle) {
+                if ($handle === 'craft') {
+                    Craft::$app->getMigrator()->up();
+                    Craft::$app->getUpdates()->updateCraftVersionInfo();
+                } else {
+                    /** @var Plugin $plugin */
+                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+                    $name = $plugin->name;
+                    $plugin->getMigrator()->up();
+                    Craft::$app->getUpdates()->setNewPluginInfo($plugin);
+                }
             }
 
-            try {
-                $migrator->up();
-            } catch (MigrationException $e) {
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+
+            if ($e instanceof MigrationException) {
                 $previous = $e->getPrevious();
                 $error = get_class($e->migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
-                Craft::error($error, __METHOD__);
-
-                $options = [];
-                if (isset($this->_data['dbBackupPath'])) {
-                    $options[] = $this->_actionOption(Craft::t('app', 'Revert update'), self::ACTION_RESTORE_DB);
-                }
-                $options[] = [
-                    'label' => Craft::t('app', 'Send for help'),
-                    'submit' => true,
-                    'email' => 'support@craftcms.com',
-                    'subject' => $name.' update failure',
-                    'errorDetails' => $error,
-                ];
-
-                return $this->_send([
-                    'error' => Craft::t('app', 'One of {name}’s migrations failed to apply.', ['name' => $name]),
-                    'options' => $options,
-                ]);
+            } else {
+                $error = 'Migration failed: '.$e->getMessage();
             }
+
+            Craft::error($error, __METHOD__);
+
+            $options = [];
+            if (isset($this->_data['dbBackupPath'])) {
+                $options[] = $this->_actionOption(Craft::t('app', 'Revert update'), self::ACTION_RESTORE_DB);
+            }
+            $options[] = [
+                'label' => Craft::t('app', 'Send for help'),
+                'submit' => true,
+                'email' => 'support@craftcms.com',
+                'subject' => $name.' update failure',
+                'errorDetails' => $error,
+            ];
+
+            return $this->_send([
+                'error' => Craft::t('app', 'One of {name}’s migrations failed to apply.', ['name' => $name]),
+                'options' => $options,
+            ]);
         }
 
         return $this->_finished();
