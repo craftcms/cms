@@ -316,7 +316,8 @@ class UpdaterController extends Controller
             ]);
         }
 
-        $nextAction = $this->_shouldBackupDb() ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
         return $this->_next($nextAction);
     }
 
@@ -438,18 +439,6 @@ class UpdaterController extends Controller
         }
 
         return version_compare($toVersion, $fromVersion, '>');
-    }
-
-    /**
-     * Returns whether the DB should be backed up, per the config.
-     *
-     * @return bool
-     */
-    private function _shouldBackupDb(): bool
-    {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        return ($generalConfig->backupOnUpdate && $generalConfig->backupCommand !== false);
     }
 
     /**

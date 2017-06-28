@@ -914,4 +914,14 @@ class GeneralConfig extends Object
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
     }
+
+    /**
+     * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @return bool
+     */
+    public function getBackupOnUpdate(): bool
+    {
+        return ($this->backupOnUpdate && $this->backupCommand !== false);
+    }
 }
