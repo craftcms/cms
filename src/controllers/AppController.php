@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
+use craft\config\GeneralConfig;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\MigrationException;
 use craft\helpers\App;
@@ -92,11 +93,14 @@ class AppController extends Controller
 
             // Craft updates
             if ($updates->app !== null) {
-                $res['updates']['app'] = $updates->app->toArray();
+                $appUpdateInfo = $updates->app->toArray();
+                $this->_setReleaseAllowances($appUpdateInfo);
 
                 // todo: remove this once the new API stuff is in place
-                $res['updates']['app']['breakpoint'] = false;
-                $res['updates']['app']['expired'] = false;
+                $appUpdateInfo['breakpoint'] = false;
+                $appUpdateInfo['expired'] = false;
+
+                $res['updates']['app'] = $appUpdateInfo;
             }
 
             // Plugin updates
@@ -105,6 +109,7 @@ class AppController extends Controller
                 /** @var Plugin $plugin */
                 $plugin = $pluginsService->getPluginByPackageName($pluginUpdate->packageName);
                 $pluginUpdateInfo = $pluginUpdate->toArray();
+                $this->_setReleaseAllowances($pluginUpdateInfo);
 
                 // todo: remove this once the new API stuff is in place
                 $pluginUpdateInfo['handle'] = $plugin->id;
@@ -484,5 +489,35 @@ class AppController extends Controller
         }
 
         return $this->asJson(['success' => $success]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Sets an `allowed` key on the given update's releases, based on the `allowAutoUpdates` config setting.
+     *
+     * @param array &$update
+     *
+     * @return void
+     */
+    private function _setReleaseAllowances(array &$update)
+    {
+        $configVal = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+
+        foreach ($update['releases'] as &$release)
+        {
+            if (is_bool($configVal)) {
+                $release['allowed'] = $configVal;
+            } else if ($configVal === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
+                // Return true if the major and minor versions are still the same
+                $release['allowed'] = (App::majorMinorVersion($release['version']) === App::majorMinorVersion($update['localVersion']));
+            } else if ($configVal === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
+                // Return true if the major version is still the same
+                $release['allowed'] = (App::majorVersion($release['version']) === App::majorVersion($update['localVersion']));
+            } else {
+                $release['allowed'] = false;
+            }
+        }
     }
 }

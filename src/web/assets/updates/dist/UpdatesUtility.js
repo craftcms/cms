@@ -6,7 +6,6 @@
             $body: null,
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
-            allowAutoUpdates: null,
             showUpdateAllBtn: true,
             updates: null,
 
@@ -38,9 +37,6 @@
                         $status.text(error);
                     }
                     else {
-                        // todo: this should be defined per update
-                        this.allowAutoUpdates = true;
-
                         // Craft CMS update?
                         if (response.updates.app) {
                             this.processUpdate(response.updates.app, false);
@@ -114,7 +110,7 @@
                 var requirements = [];
 
                 for (var i = 0; i < updates.length; i++) {
-                    requirements.push(updates[i].getHandle()+':'+updates[i].getLatestVersion());
+                    requirements.push(updates[i].getHandle()+':'+updates[i].latestAllowedVersion);
                 }
 
                 return requirements.join(',');
@@ -126,6 +122,8 @@
         {
             updateInfo: null,
             isPlugin: null,
+            latestVersion: null,
+            latestAllowedVersion: null,
 
             $container: null,
             $header: null,
@@ -145,11 +143,18 @@
                 this.isPlugin = isPlugin;
 
                 this.createPane();
+                this.initReleases();
                 this.createHeading();
                 this.createUpdateButtons();
-                this.createReleaseList();
 
-                if (this.updateInfo.expired || this.updateInfo.licenseUpdated) {
+                // Any ineligible releases?
+                if (this.updateInfo.breakpoint) {
+                    $('<blockquote class="note warn ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').insertBefore(this.$releaseContainer);
+                } else if (this.updateInfo.expired) {
+                    $('<blockquote class="note ineligible"><p><strong>Your license has expired!</strong> Renew your Craft CMS license for another year of amazing updates.</p>').insertBefore(this.$releaseContainer);
+                }
+
+                if (this.updateInfo.expired || this.updateInfo.licenseUpdated || this.latestAllowedVersion === null) {
                     this.updatesPage.showUpdateAllBtn = false;
                 }
             },
@@ -164,23 +169,15 @@
                 return this.isPlugin ? this.updateInfo.handle : 'craft';
             },
 
-            getLatestVersion: function()
+            canUpdateToLatest: function()
             {
-                return this.updateInfo.releases[0].version;
+                return this.latestAllowedVersion === this.updateInfo.releases[0].version;
             },
 
             createPane: function() {
                 this.$container = $('<div class="update"/>').appendTo(this.updatesPage.$body);
                 this.$header = $('<div class="update-header"/>').appendTo(this.$container);
                 this.$contents = $('<div class="readable"/>').appendTo(this.$container);
-
-                // Any ineligible releases?
-                if (this.updateInfo.breakpoint) {
-                    $('<blockquote class="note warn ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').appendTo(this.$contents);
-                } else if (this.updateInfo.expired) {
-                    $('<blockquote class="note ineligible"><p><strong>Your license has expired!</strong> Renew your Craft CMS license for another year of amazing updates.</p>').appendTo(this.$contents);
-                }
-
                 this.$releaseContainer = $('<div class="releases"/>').appendTo(this.$contents);
             },
 
@@ -191,7 +188,7 @@
             },
 
             createUpdateButtons: function() {
-                if (!this.updateInfo.releases || !this.updateInfo.releases.length) {
+                if (this.latestAllowedVersion === null) {
                     return;
                 }
 
@@ -200,7 +197,8 @@
                 if (this.updateInfo.expired) {
                     var $renewBtn = $('<div/>', {'class': 'btn submit', text: 'Renew for $59'}).appendTo($buttonContainer);
                 } else {
-                    var $updateBtn = $('<div class="btn submit">' + Craft.t('app', 'Update') + '</div>').appendTo($buttonContainer);
+                    var label = this.canUpdateToLatest() ? Craft.t('app', 'Update') : Craft.t('app', 'Update to {version}', {version: this.latestAllowedVersion});
+                    var $updateBtn = $('<div class="btn submit">' + label + '</div>').appendTo($buttonContainer);
 
                     // Has the license been updated?
                     if (this.updateInfo.licenseUpdated) {
@@ -214,12 +212,16 @@
                 }
             },
 
-            createReleaseList: function() {
+            initReleases: function() {
                 if (!this.updateInfo.releases) {
                     return;
                 }
 
                 for (var i = 0; i < this.updateInfo.releases.length; i++) {
+                    if (this.latestAllowedVersion === null && this.updateInfo.releases[i].allowed) {
+                        this.latestAllowedVersion = this.updateInfo.releases[i].version;
+                    }
+
                     new Release(this, this.updateInfo.releases[i]);
                 }
             },
@@ -277,7 +279,6 @@
                 this.createReleaseNotes();
 
                 new Craft.FieldToggle(this.$toggle);
-
             },
 
             createContainer: function() {
