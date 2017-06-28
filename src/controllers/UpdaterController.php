@@ -127,8 +127,7 @@ class UpdaterController extends Controller
             // Enable Maintenance Mode
             Craft::$app->enableMaintenanceMode();
 
-            $nextAction = $this->_shouldBackupDb() ? self::ACTION_BACKUP : $this->_getPostBackupAction();
-            $state = $this->_actionState($nextAction);
+            $state = $this->_actionState(self::ACTION_INSTALL);
             $state['data'] = $this->_getHashedData();
         } else {
             $state = $this->_finishedState([
@@ -155,16 +154,44 @@ class UpdaterController extends Controller
             return $this->_send([
                 'error' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
                 'options' => [
-                    $this->_finishedState([
-                        'label' => Craft::t('app', 'Cancel the update'),
-                        'error' => Craft::t('app', 'Update aborted.')
-                    ]),
-                    $this->_actionOption(Craft::t('app', 'Continue anyway'), $this->_getPostBackupAction()),
+                    $this->_actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT),
+                    $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_BACKUP),
+                    $this->_actionOption(Craft::t('app', 'Continue anyway'), self::ACTION_MIGRATE),
                 ]
             ]);
         }
 
-        return $this->_next($this->_getPostBackupAction());
+        return $this->_next(self::ACTION_MIGRATE);
+    }
+
+    /**
+     * Restores the database.
+     *
+     * @return Response
+     */
+    public function actionRestoreDb(): Response
+    {
+        try {
+            Craft::$app->getDb()->restore($this->_data['dbBackupPath']);
+        } catch (\Exception $e) {
+            Craft::error('Error restoring up the database: '.$e->getMessage(), __METHOD__);
+            return $this->_send([
+                'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
+                'options' => [
+                    $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RESTORE_DB),
+                    $this->_actionOption(Craft::t('app', 'Continue anyway'), self::ACTION_MIGRATE),
+                ]
+            ]);
+        }
+
+        // Did we install new versions of things?
+        if (!empty($this->_data['install'])) {
+            return $this->_next(self::ACTION_REVERT);
+        }
+
+        return $this->_finished([
+            'status' => Craft::t('app', 'The database was restored successfully.'),
+        ]);
     }
 
     /**
@@ -251,7 +278,7 @@ class UpdaterController extends Controller
         // Was this after a revert?
         if ($this->_data['reverted']) {
             $this->_finished([
-                'status' => Craft::t('app', 'The updates have been reverted.'),
+                'status' => Craft::t('app', 'The update was reverted successfully.'),
             ]);
         }
 
@@ -289,7 +316,8 @@ class UpdaterController extends Controller
             ]);
         }
 
-        return $this->_next(self::ACTION_MIGRATE);
+        $nextAction = $this->_shouldBackupDb() ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+        return $this->_next($nextAction);
     }
 
     /**
@@ -321,9 +349,13 @@ class UpdaterController extends Controller
             Craft::error($error, __METHOD__);
 
             $options = [];
-            if (isset($this->_data['dbBackupPath'])) {
-                $options[] = $this->_actionOption(Craft::t('app', 'Revert update'), self::ACTION_RESTORE_DB);
+
+            // Do we have a database backup to restore?
+            if (!empty($this->_data['dbBackupPath'])) {
+                $restoreLabel = !empty($this->_data['install']) ? Craft::t('app', 'Revert update') : Craft::t('app', 'Restore database');
+                $options[] = $this->_actionOption($restoreLabel, self::ACTION_RESTORE_DB);
             }
+
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),
                 'submit' => true,
@@ -574,16 +606,6 @@ class UpdaterController extends Controller
         $state['returnUrl'] = $this->_getReturnUrl();
 
         return $state;
-    }
-
-    /**
-     * Get the action that should happen after the DB is backed up.
-     *
-     * @return string
-     */
-    private function _getPostBackupAction(): string
-    {
-        return !empty($this->_data['install']) ? self::ACTION_INSTALL : self::ACTION_MIGRATE;
     }
 
     /**
