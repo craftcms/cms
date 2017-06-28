@@ -8,9 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\models\UpgradeInfo;
@@ -43,13 +45,54 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('performUpdates');
 
-        $forceRefresh = (bool)Craft::$app->getRequest()->getBodyParam('forceRefresh');
-        Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        $request = Craft::$app->getRequest();
+        $forceRefresh = (bool)$request->getParam('forceRefresh');
+        $includeDetails = (bool)$request->getParam('includeDetails');
 
-        return $this->asJson([
+        try {
+            $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        } catch (\Throwable $e) {
+            $updates = false;
+        }
+
+        if (!$updates) {
+            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
+        }
+
+        $res = [
             'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
             'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
-        ]);
+        ];
+
+        if ($includeDetails) {
+            $res['updates'] = [];
+
+            // Craft updates
+            if ($updates->app !== null) {
+                $res['updates']['app'] = $updates->app->toArray();
+
+                // todo: remove this once the new API stuff is in place
+                $res['updates']['app']['breakpoint'] = false;
+                $res['updates']['app']['expired'] = false;
+            }
+
+            // Plugin updates
+            $pluginsService = Craft::$app->getPlugins();
+            foreach ($updates->plugins as $pluginUpdate) {
+                /** @var Plugin $plugin */
+                $plugin = $pluginsService->getPluginByPackageName($pluginUpdate->packageName);
+                $pluginUpdateInfo = $pluginUpdate->toArray();
+
+                // todo: remove this once the new API stuff is in place
+                $pluginUpdateInfo['handle'] = $plugin->id;
+                $pluginUpdateInfo['breakpoint'] = false;
+                $pluginUpdateInfo['expired'] = false;
+
+                $res['updates']['plugins'][] = $pluginUpdateInfo;
+            }
+        }
+
+        return $this->asJson($res);
     }
 
     /**

@@ -115,55 +115,6 @@ EOD;
     // -------------------------------------------------------------------------
 
     /**
-     * Returns the available updates.
-     *
-     * @return Response
-     */
-    public function actionGetAvailableUpdates(): Response
-    {
-        $this->requirePermission('performUpdates');
-
-        try {
-            $updates = Craft::$app->getUpdates()->getUpdates(true);
-        } catch (EtException $e) {
-            $updates = false;
-
-            if ($e->getCode() == 10001) {
-                return $this->asErrorJson($e->getMessage());
-            }
-        }
-
-        if (!$updates) {
-            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
-        }
-
-        $response = $updates->toArray();
-        ArrayHelper::rename($response, 'responseErrors', 'errors');
-
-        // todo: remove this once the new API stuff is in place
-        if (isset($updates['app'])) {
-            $response['app']['breakpoint'] = false;
-            $response['app']['expired'] = false;
-        }
-        if (!empty($response['plugins'])) {
-            $pluginsService = Craft::$app->getPlugins();
-            foreach ($response['plugins'] as &$pluginInfo) {
-                /** @var Plugin $plugin */
-                $plugin = $pluginsService->getPluginByPackageName($pluginInfo['packageName']);
-                $pluginInfo['handle'] = $plugin->id;
-                $pluginInfo['breakpoint'] = false;
-                $pluginInfo['expired'] = false;
-            }
-            unset($pluginInfo);
-        }
-
-        // todo: this logic should be per-plugin as well
-        $response['allowAutoUpdates'] = $this->_allowAutoUpdates();
-
-        return $this->asJson($response);
-    }
-
-    /**
      * Called during both a manual and auto-update.
      *
      * @return Response

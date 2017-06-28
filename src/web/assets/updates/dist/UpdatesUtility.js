@@ -18,8 +18,13 @@
 
                 this.updates = [];
 
-                Craft.postActionRequest('update/get-available-updates', $.proxy(function(response, textStatus) {
-                    if (textStatus != 'success' || response.error || response.errors) {
+                var data = {
+                    forceRefresh: true,
+                    includeDetails: true
+                };
+
+                Craft.postActionRequest('app/check-for-updates', data, $.proxy(function(response, textStatus) {
+                    if (textStatus !== 'success' || response.error) {
                         var error = Craft.t('app', 'An unknown error occurred.');
 
                         if (response.errors && response.errors.length) {
@@ -33,17 +38,18 @@
                         $status.text(error);
                     }
                     else {
-                        this.allowAutoUpdates = response.allowAutoUpdates;
+                        // todo: this should be defined per update
+                        this.allowAutoUpdates = true;
 
                         // Craft CMS update?
-                        if (response.app) {
-                            this.processUpdate(response.app, false);
+                        if (response.updates.app) {
+                            this.processUpdate(response.updates.app, false);
                         }
 
                         // Plugin updates?
-                        if (response.plugins && response.plugins.length) {
-                            for (var i = 0; i < response.plugins.length; i++) {
-                                this.processUpdate(response.plugins[i], true);
+                        if (response.updates.plugins && response.updates.plugins.length) {
+                            for (var i = 0; i < response.updates.plugins.length; i++) {
+                                this.processUpdate(response.updates.plugins[i], true);
                             }
                         }
 
@@ -54,7 +60,7 @@
                             // Add the page title
                             var headingText;
 
-                            if (this.totalAvailableUpdates == 1) {
+                            if (this.totalAvailableUpdates === 1) {
                                 headingText = Craft.t('app', '1 Available Update');
                             }
                             else {
