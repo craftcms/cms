@@ -553,10 +553,6 @@ class GeneralConfig extends Object
      */
     public $restoreCommand;
     /**
-     * @var bool Whether Craft should attempt to restore the backup in the event that there was an error.
-     */
-    public $restoreOnUpdateFailure = true;
-    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      */
     public $rotateImagesOnUploadByExifData = true;
