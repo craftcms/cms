@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email.
+- Fixed a bug where the author of a draft could not delete their own draft if they did not have “Publish Live Changes” permissions.
 
 ## 2.6.2985 - 2017-06-27
 
