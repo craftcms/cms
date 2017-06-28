@@ -402,6 +402,7 @@ class Application extends \yii\web\Application
         $segments = $request->getActionSegments();
 
         return (
+            $segments === ['app', 'migrate'] ||
             $segments === ['users', 'login'] ||
             $segments === ['users', 'logout'] ||
             $segments === ['users', 'set-password'] ||
@@ -433,7 +434,10 @@ class Application extends \yii\web\Application
             $request->getIsCpRequest() &&
             !(
                 $request->getIsActionRequest() &&
-                ArrayHelper::firstValue($request->getActionSegments()) === 'updater'
+                (
+                    ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                    $request->getActionSegments() === ['app', 'migrate']
+                )
             )
         )
         {
@@ -480,7 +484,13 @@ class Application extends \yii\web\Application
         }
 
         // We'll also let update actions go through
-        if ($request->getIsActionRequest() && ArrayHelper::firstValue($request->getActionSegments()) === 'updater') {
+        if (
+            $request->getIsActionRequest() &&
+            (
+                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                $request->getActionSegments() === ['app', 'migrate']
+            )
+        ) {
             $action = implode('/', $request->getActionSegments());
             return $this->runAction($action);
         }

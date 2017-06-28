@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -18,8 +19,10 @@ use craft\helpers\DateTimeHelper;
 use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use craft\web\Controller;
+use Http\Client\Common\Exception\ServerErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -32,8 +35,27 @@ use yii\web\Response;
  */
 class AppController extends Controller
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowAnonymous = [
+        'migrate'
+    ];
+
     // Public Methods
     // =========================================================================
+
+    public function beforeAction($action)
+    {
+        if ($action->id == 'migrate') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
 
     /**
      * Returns update info.
@@ -93,6 +115,71 @@ class AppController extends Controller
         }
 
         return $this->asJson($res);
+    }
+
+    /**
+     * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     *
+     * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
+     * to minimize site downtime after a deployment.
+     *
+     * @throws ServerErrorException if something went wrong
+     */
+    public function actionMigrate()
+    {
+        $this->requirePostRequest();
+
+        $updatesService = Craft::$app->getUpdates();
+        $db = Craft::$app->getDb();
+
+        // Get the handles in need of an update
+        $handles = $updatesService->getPendingMigrationHandles(true);
+
+        if (empty($handles)) {
+            // That was easy
+            return Craft::$app->getResponse();
+        }
+
+        // Backup the DB?
+        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        if ($backup) {
+            try {
+                $backupPath = $db->backup();
+            } catch (\Throwable $e) {
+                throw new ServerErrorHttpException('Error backing up the database', 0, $e);
+            }
+        }
+
+        // Run the migrations
+        try {
+            $updatesService->runMigrations($handles);
+        } catch (MigrationException $e) {
+            // Do we have a backup?
+            $restored = false;
+            if (!empty($backupPath)) {
+                // Attempt a restore
+                try {
+                    $db->restore($backupPath);
+                    $restored = true;
+                } catch (\Throwable $restoreException) {
+                    // Just log it
+                    Craft::$app->getErrorHandler()->logException($restoreException);
+                }
+            }
+
+            $error = 'An error occurred running nuw migrations.';
+            if ($restored) {
+                $error .= ' The database has been restored to its previous state.';
+            } else if (isset($restoreException)) {
+                $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+            } else {
+                $error .= ' The database has not been restored.';
+            }
+
+            throw new ServerErrorHttpException($error, 0, $e);
+        }
+
+        return Craft::$app->getResponse();
     }
 
     /**
