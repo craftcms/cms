@@ -240,6 +240,7 @@ class UpdaterController extends Controller
             Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             return $this->_send([
                 'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
+                'errorDetails' => $this->_composerErrorDetails($e, $io),
                 'options' => [
                     $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_OPTIMIZE),
                     $this->_actionOption(Craft::t('app', 'Continue'), self::ACTION_SERVER_CHECK),
@@ -489,8 +490,7 @@ class UpdaterController extends Controller
     private function _composerError(string $error, \Exception $e, BufferIO $io, array $state = []): Response
     {
         $state['error'] = $error;
-        $state['errorDetails'] = Craft::t('app', 'Error:').' '.$e->getMessage()."\n\n".
-            Craft::t('app', 'Output:').' '.strip_tags($io->getOutput());
+        $state['errorDetails'] = $this->_composerErrorDetails($e, $io);
 
         $state['options'] = [
             [
@@ -502,6 +502,20 @@ class UpdaterController extends Controller
         ];
 
         return $this->_send($state);
+    }
+
+    /**
+     * Returns the error details for a Composer error.
+     *
+     * @param \Exception $e     The exception that was thrown
+     * @param BufferIO   $io    The IO object that Composer was instantiated with
+     *
+     * @return string
+     */
+    private function _composerErrorDetails(\Exception $e, BufferIO $io): string
+    {
+        return Craft::t('app', 'Error:').' '.$e->getMessage()."\n\n".
+            Craft::t('app', 'Output:').' '.strip_tags($io->getOutput());
     }
 
     /**
