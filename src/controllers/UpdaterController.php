@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -57,10 +58,16 @@ class UpdaterController extends Controller
 
     /**
      * @inheritdoc
+     * @throws NotFoundHttpException if it's not a CP request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)
     {
+        // This controller is only available to the CP
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            throw new NotFoundHttpException();
+        }
+
         if (!parent::beforeAction($action)) {
             return false;
         }
