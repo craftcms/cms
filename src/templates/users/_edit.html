@@ -275,10 +275,10 @@
 						</div>
 					</div>
 
-					{% if account.status == 'locked' and craft.config.cooldownDuration %}
+					{% if account.status == 'locked' and craft.config.cooldownDuration and account.remainingCooldownTime %}
 						<div class="data">
 							<h5 class="heading">{{ "Cooldown Time Remaining"|t }}</h5>
-							<p class="value">{{ account.remainingCooldownTime.humanDuration }}</p>
+							<p class="value">{{ account.remainingCooldownTime.humanDuration() }}</p>
 						</div>
 					{% endif %}
 
