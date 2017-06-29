@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
+- The Control Panel `font-family` declaration now checks for `"Helvetica Neue"` in addition to `HelveticaNeue`. ([#1805](https://github.com/craftcms/cms/issues/1805))
 
 ### Fixed
 - Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))

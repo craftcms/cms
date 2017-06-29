@@ -39,7 +39,7 @@ body { font-size: 13px; line-height: 18px; color: #29323d; -webkit-font-smoothin
 
 body.rtl { direction: rtl; }
 
-body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
+body, input, select, textarea { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 
@@ -106,7 +106,7 @@ body.rtl .nav ul li a .badge { float: left; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: #da5a47; }
+h1 { margin-bottom: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: #da5a47; }
 
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 
