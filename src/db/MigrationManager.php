@@ -246,7 +246,11 @@ class MigrationManager extends Component
 
         $start = microtime(true);
         try {
-            $success = ($migration->up() !== false);
+            if ($migration instanceof Migration) {
+                $success = ($migration->up(true) !== false);
+            } else {
+                $success = ($migration->up() !== false);
+            }
         } catch (\Throwable $e) {
             $success = false;
         }
@@ -305,7 +309,11 @@ class MigrationManager extends Component
 
         $start = microtime(true);
         try {
-            $success = ($migration->down() !== false);
+            if ($migration instanceof Migration) {
+                $success = ($migration->down(true) !== false);
+            } else {
+                $success = ($migration->down() !== false);
+            }
         } catch (\Throwable $e) {
             $success = false;
         }

@@ -31,10 +31,12 @@ abstract class Migration extends \yii\db\Migration
      * This method contains the logic to be executed when applying this migration.
      * Child classes may override this method to provide actual migration logic.
      *
+     * @param bool $throwExceptions Whether exceptions should be thrown
+     *
      * @return bool|null
      * @throws \Throwable
      */
-    public function up()
+    public function up(bool $throwExceptions = false)
     {
         // Copied from \yii\db\Migration::up(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -47,7 +49,10 @@ abstract class Migration extends \yii\db\Migration
         } catch (\Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
-            throw $e;
+            if ($throwExceptions) {
+                throw $e;
+            }
+            return false;
         }
 
         return null;
@@ -58,10 +63,12 @@ abstract class Migration extends \yii\db\Migration
      * The default implementation throws an exception indicating the migration cannot be removed.
      * Child classes may override this method if the corresponding migrations can be removed.
      *
+     * @param bool $throwExceptions Whether exceptions should be thrown
+     *
      * @return bool|null
      * @throws \Throwable
      */
-    public function down()
+    public function down(bool $throwExceptions = false)
     {
         // Copied from \yii\db\Migration::down(), but with added $e param
         $transaction = $this->db->beginTransaction();
@@ -74,7 +81,10 @@ abstract class Migration extends \yii\db\Migration
         } catch (\Throwable $e) {
             $this->_printException($e);
             $transaction->rollBack();
-            throw $e;
+            if ($throwExceptions) {
+                throw $e;
+            }
+            return false;
         }
 
         return null;
