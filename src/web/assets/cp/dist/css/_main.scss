@@ -185,11 +185,11 @@ strong, b, i em { font-weight: bold; }
 .readable blockquote { margin: 16px 0; }
 .readable blockquote:not(.note) { padding: 0 16px; color: $mediumtextcolor; @include border-left(4px solid $hairlineColor); }
 .readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; @include padding-left(56px); border: 1px solid; }
-.readable blockquote.note:not(.tip):not(.warn) { border-color: $errorcolor; }
+.readable blockquote.note:not(.tip):not(.warning) { border-color: $errorcolor; }
 .readable blockquote.note.tip { border-color: $linkcolor; }
-.readable blockquote.note.warn { border-color: $warningcolor; }
+.readable blockquote.note.warning { border-color: $warningcolor; }
 .readable blockquote.note:before { @include icon; position: absolute; top: 12px; @include left(16px); font-size: 30px; width: 24px; }
-.readable blockquote.note:not(.tip):not(.warn) {
+.readable blockquote.note:not(.tip):not(.warning) {
     color: #bf503f;
     &:before { content: 'alert'; color: $errorcolor; }
 }
@@ -197,7 +197,7 @@ strong, b, i em { font-weight: bold; }
     color: $mediumtextcolor;
     &:before { content: 'lightbulb'; color: $linkcolor; }
 }
-.readable blockquote.note.warn {
+.readable blockquote.note.warning {
     color: #cf783a;
     &:before { content: 'alert'; color: $warningcolor; }
 }

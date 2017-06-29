@@ -149,7 +149,7 @@
 
                 // Any ineligible releases?
                 if (this.updateInfo.breakpoint) {
-                    $('<blockquote class="note warn ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').insertBefore(this.$releaseContainer);
+                    $('<blockquote class="note ineligible"><p><strong>You’ve reached a breakpoint!</strong> More updates will become available after you install Doxter 3.1.3.</p>').insertBefore(this.$releaseContainer);
                 } else if (this.updateInfo.expired) {
                     $('<blockquote class="note ineligible"><p><strong>Your license has expired!</strong> Renew your Craft CMS license for another year of amazing updates.</p>').insertBefore(this.$releaseContainer);
                 }
