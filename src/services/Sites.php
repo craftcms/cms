@@ -149,7 +149,7 @@ class Sites extends Component
                 }
 
                 $this->currentSite = $site;
-            } else if ($isInstalled && !Craft::$app->getIsUpdating()) {
+            } else if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
                 // Default to the primary site
                 $this->currentSite = $this->getPrimarySite();
             } else {
@@ -157,7 +157,7 @@ class Sites extends Component
             }
         }
 
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             // Is the config overriding the site URL?
             $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 

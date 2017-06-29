@@ -3,37 +3,71 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased [CRITICAL]
 
+> {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugin config files, translation files, translation categories, and template paths must be updated accordingly.
+
+> {note} Support for manual plugin installation within the `plugins/` folder has been removed. Plugins **must** be Composer-installed now.
+
+> {note} The `update/run-pending-migrations` action has been renamed to `app/migrate`. You’ll need to update your deployment service if you’re using it as a post-deploy webhook.
+
 ### Added
-- Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
-- Added the `defineComponents` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new services on the `craft` template variable.
+- Added some “Update” buttons to the Updates utility (for Craft _and_ plugins). If multiple updates are available, an “Update all” button even shows up.
+- The Updater has been rewritten to use Composer under the hood, and now requires significantly less (if any) site downtime.
+- Migration exceptions are now displayed in the Updater. ([#1197](https://github.com/craftcms/cms/issues/1197))
+- Added the `app/migrate` action (replacing `update/run-pending-migrations`), which runs any new Craft, plugin, and content migrations.
+- Added `craft\controllers\UpdaterController`.
+- Added `craft\errors\MigrateException`.
+- Added `craft\errors\MigrationException`.
 - Added `craft\events\DefineBehaviorsEvent`.
 - Added `craft\events\DefineComponentsEvent`.
+- Added `craft\services\Composer`, available via `Craft::$app->composer` or `Craft::$app->getComposer()`.
+- Added `craft\config\GeneralConfig::getBackupOnUpdates()`.
 - Added `craft\base\Plugin::getHandle()`, as an alias for `Plugin::$id`.
-- Added `craft\helpers\ArrayHelper::getPairs()`.
+- Added `craft\helpers\ArrayHelper::firstValue()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
+- Added `craft\services\Updates::getPendingMigrationHandles()`.
+- Added `craft\services\Updates::runMigrations()`.
+- Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
+- Added the `defineComponents` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new services on the `craft` template variable.
+- Added Composer as a dependency.
 
 ### Changed
-- Plugin handles must be `kebab-cased` now, rather than `camelCased`. **Plugin config files, translation files, translation categories, and template paths must be updated accordingly.** ([#1733](https://github.com/craftcms/cms/issues/1733))
+- Plugin handles must be `kebab-cased` now, rather than `camelCased`. ([#1733](https://github.com/craftcms/cms/issues/1733))
 - Plugin module IDs are now set to the exact same value as their handles, as handles are already in the correct format now.
 - The `maxUploadFileSize` config setting can now be set to a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes).
+- The `allowAutoUpdates` config setting applies to plugins too now.
 - Matrix fields’ nested Field Type settings now take field compatibility into account, like the main Field Type setting. ([#1773](https://github.com/craftcms/cms/issues/1773))
 - The DOM PHP extension is now a mandatory requirement.
 - The `url` database config setting now supports `postgres://` and `postgresql://` schemes, in addition to `pgsql://`. ([#1774](https://github.com/craftcms/cms/pull/1774))
-- Craft’s plugin changelog parser now supports the use of dots as year/month/day separators in release headings (e.g. `2017.05.28`).
-- Craft’s plugin changelog parser now allows additional text before the version number (e.g. the plugin name).
+- Plugin changelogs can now use dots in release date formats (e.g. `2017.05.28`).
+- Plugin changelogs can now have additional text before the version number in release headings (e.g. the plugin name).
+- Plugin changelogs can now contain warnings (e.g. `> {warning} Some warning!`).
 - Added a `$withContent` argument to `craft\services\EntryRevisions::getDraftsByEntryId()` and `getVersionsByEntryId()` (defaults to `false`). ([#1755](https://github.com/craftcms/cms/issues/1755))
 - Craft now lists `craftcms/plugin-installer` as a dependency, so projects don’t need to explicitly require it.
+- `craft\db\Migration::up()` and `down()` now have a `$throwExceptions` argument (defaults to `false`).
+- `craft\db\MigrationManager::up()`, `down()`, `migrateUp()`, and `migrateDown()` now throw a `craft\errors\MigrationException` if a migration fails rather than returning `true`/`false`.
+- The `app/check-for-updates` action now checks for a `includeDetails` param, which tells it to include the full update details in its response.
+- It’s no longer possible to run new migrations while Craft is in Maintenance Mode, preventing the possibility of two people running migrations at the same time.
+- Panes within panes in the Control Panel now have special styling.
+- Craft now prioritizes Composer’s autoloader over Yii’s for faster class loading.
 
 ### Removed
-- Removed support for manually-installed plugins in a `plugins/` folder. **All plugins must be Composer-installed now.** ([#1734](https://github.com/craftcms/cms/issues/1734))
+- Removed support for manually-installed plugins in a `plugins/` folder. ([#1734](https://github.com/craftcms/cms/issues/1734))
+- Removed the `restoreOnUpdateFailure` config setting.
 - Removed the `@plugins` Yii alias.
 - Removed the `plugins/disable-plugin` action.
 - Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
+- Removed `craft\controllers\UpdateController`.
+- Removed `craft\base\ApplicationTrait::getIsUpdating()`.
 - Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
+- Removed `craft\errors\UnpackPackageException`.
+- Removed `craft\errors\UpdateValidationException`.
+- Removed `craft\events\UpdateEvent`.
 - Removed `craft\helpers\App::isComposerInstall()`.
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
+- Removed `craft\services\Path::getAppPath()`.
+- Removed `craft\services\Path::getPluginsPath()`.
 - Removed `craft\services\Plugins::disablePlugin()`.
 - Removed `craft\services\Plugins::enablePlugin()`.
 - Removed `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN`.
@@ -44,6 +78,20 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Plugins::getPluginByModuleId()`.
 - Removed `craft\services\Plugins::isComposerInstall()`.
 - Removed `craft\services\Plugins::validateConfig()`.
+- Removed `craft\services\Updates::backupDatabase()`
+- Removed `craft\services\Updates::backupFiles()`
+- Removed `craft\services\Updates::getIsManualUpdateRequired()`
+- Removed `craft\services\Updates::getPluginsThatNeedDbUpdate()`
+- Removed `craft\services\Updates::getUnwritableFolders()`
+- Removed `craft\services\Updates::prepareUpdate()`
+- Removed `craft\services\Updates::processUpdateDownload()`
+- Removed `craft\services\Updates::rollbackUpdate()`
+- Removed `craft\services\Updates::updateCleanUp()`
+- Removed `craft\services\Updates::updateDatabase()`
+- Removed `craft\services\Updates::updateFiles()`
+- Removed `craft\helpers\Update`.
+- Removed `craft\updates\Updater`.
+- Removed the `beforeUpdate`, `afterUpdate`, and `updateFailure` events from `craft\services\Updates`.
 
 ### Fixed
 - Fixed an exception that occurred when attempting to change an entry’s type from the Edit Entry page. ([#1748](https://github.com/craftcms/cms/pull/1748))

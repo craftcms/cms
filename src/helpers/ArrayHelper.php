@@ -19,43 +19,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     // =========================================================================
 
     /**
-     * Returns key/value pairs for specified columns in an array.
-     * The input array should be multidimensional or an array of objects.
-     *
-     * For example,
-     *
-     * ```php
-     * $array = [
-     *     ['id' => '123', 'data' => 'abc'],
-     *     ['id' => '345', 'data' => 'def'],
-     * ];
-     * $result = ArrayHelper::getPairs($array, 'id', 'data');
-     * // the result is: ['123' => 'abc', '345' => 'def']
-     *
-     * // using anonymous function
-     * $result = ArrayHelper::getColumn($array, 'id', function($element) {
-     *     return $element['data'];
-     * });
-     * ```
-     *
-     * @param array $array
-     * @param string|\Closure $keyName
-     * @param string|\Closure $valueName
-     * @return array the list of key/value pairs
-     */
-    public static function getPairs($array, $keyName, $valueName): array
-    {
-        $result = [];
-        foreach ($array as $element) {
-            $key = static::getValue($element, $keyName);
-            $value = static::getValue($element, $valueName);
-            $result[$key] = $value;
-        }
-
-        return $result;
-    }
-
-    /**
      * @inheritdoc
      */
     public static function toArray($object, $properties = [], $recursive = true): array
@@ -162,6 +125,18 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns the first value in a given array.
+     *
+     * @param array $arr
+     *
+     * @return mixed The first value, or null if $arr isn’t an array, or is empty.
+     */
+    public static function firstValue(array $arr)
+    {
+        return !empty($arr) ? reset($arr) : null;
     }
 
     /**

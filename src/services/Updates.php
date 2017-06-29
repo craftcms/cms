@@ -12,22 +12,18 @@ use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
-use craft\errors\InvalidPluginException;
-use craft\events\UpdateEvent;
+use craft\errors\MigrateException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\FileHelper;
-use craft\helpers\Update as UpdateHelper;
 use craft\models\AppUpdate;
 use craft\models\AppUpdateRelease;
 use craft\models\PluginUpdate;
 use craft\models\Update;
 use craft\models\UpdateRelease;
-use craft\updates\Updater;
 use GuzzleHttp\Client;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\UserException;
 use yii\helpers\Markdown;
 
 /**
@@ -35,11 +31,9 @@ use yii\helpers\Markdown;
  *
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
- * @property bool $hasCraftBuildChanged      Whether a different Craft build has been uploaded
  * @property bool $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
  * @property bool $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
  * @property bool $isCriticalUpdateAvailable Whether a critical update is available
- * @property bool $isManualUpdateRequired    Whether a manual update is required
  * @property bool $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
  * @property bool $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
  * @property bool $isUpdateInfoCached        Whether the update info is cached
@@ -49,24 +43,6 @@ use yii\helpers\Markdown;
  */
 class Updates extends Component
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event UpdateEvent The event that is triggered before an update is installed.
-     */
-    const EVENT_BEFORE_UPDATE = 'beforeUpdate';
-
-    /**
-     * @event UpdateEvent The event that is triggered after an update is installed.
-     */
-    const EVENT_AFTER_UPDATE = 'afterUpdate';
-
-    /**
-     * @event UpdateEvent The event that is triggered after an update has failed to install.
-     */
-    const EVENT_UPDATE_FAILURE = 'updateFailure';
-
     // Properties
     // =========================================================================
 
@@ -184,16 +160,6 @@ class Updates extends Component
         }
 
         return false;
-    }
-
-    /**
-     * Returns whether a manual update is required.
-     *
-     * @return bool
-     */
-    public function getIsManualUpdateRequired(): bool
-    {
-        return (!empty($this->_updateModel->app->manualUpdateRequired));
     }
 
     /**
@@ -475,304 +441,101 @@ class Updates extends Component
         $notes = Markdown::process($notes, 'gfm');
 
         // Notes/tips
-        $notes = preg_replace('/<blockquote><p>\{(note|tip)\}/', '<blockquote class="note $1"><p>', $notes);
+        $notes = preg_replace('/<blockquote><p>\{(note|tip|warning)\}/', '<blockquote class="note $1"><p>', $notes);
 
         // Set them on the release model
         $release->notes = $notes;
     }
 
     /**
-     * Checks to see if Craft can write to a defined set of folders/files that are
-     * needed for auto-update to work.
+     * Returns a list of things with updated schema versions.
      *
-     * @return array
+     * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
+     *
+     * @param bool $includeContent Whether pending content migrations should be considered
+     *
+     * @return string[]
+     * @see runMigrations()
      */
-    public function getUnwritableFolders(): array
+    public function getPendingMigrationHandles($includeContent = false): array
     {
-        $checkPaths = [
-            Craft::$app->getPath()->getAppPath(),
-            Craft::$app->getPath()->getPluginsPath(),
-        ];
+        $handles = [];
 
-        $errorPaths = [];
+        if ($this->getIsCraftDbMigrationNeeded()) {
+            $handles[] = 'craft';
+        }
 
-        foreach ($checkPaths as $writablePath) {
-            if (!FileHelper::isWritable($writablePath)) {
-                $errorPaths[] = $writablePath;
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
+            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                $handles[] = $plugin->id;
             }
         }
 
-        return $errorPaths;
-    }
-
-    /**
-     * @param bool   $manual
-     * @param string $handle
-     *
-     * @return array
-     */
-    public function prepareUpdate(bool $manual, string $handle): array
-    {
-        Craft::info('Preparing to update '.$handle.'.', __METHOD__);
-
-        // Fire a 'beforeUpdate' event
-        $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
-            'type' => $manual ? 'manual' : 'auto',
-            'handle' => $handle,
-        ]));
-
-        try {
-            // Make sure we still meet the existing requirements. This will throw an exception if the server doesn't meet Craft's current requirements.
-            Craft::$app->runAction('templates/requirements-check');
-
-            // No need to get the latest update info if this is a manual update.
-            if (!$manual) {
-                $update = $this->getUpdates();
-
-                if ($handle === 'craft') {
-                    Craft::info('Updating from '.$update->app->localVersion.' to '.$update->app->latestVersion.'.', __METHOD__);
-                } else {
-                    if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                        throw new InvalidPluginException($handle);
-                    }
-
-                    /** @var Plugin $plugin */
-                    if (!isset($update->plugins[$plugin->packageName])) {
-                        throw new Exception("No update info is known for the plugin \"{$handle}\".");
-                    }
-
-                    $pluginUpdate = $update->plugins[$plugin->packageName];
-                    Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.", __METHOD__);
-                }
-
-                $result = (new Updater())->getUpdateFileInfo($handle);
+        if ($includeContent) {
+            $contentMigrator = Craft::$app->getContentMigrator();
+            if (!empty($contentMigrator->getNewMigrations())) {
+                $handles[] = 'content';
             }
-
-            $result['success'] = true;
-
-            Craft::info('Finished preparing to update '.$handle.'.', __METHOD__);
-
-            return $result;
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
         }
+
+        return $handles;
     }
 
     /**
-     * @param string $md5
-     * @param string $handle
+     * Runs the pending migrations for the given list of handles.
      *
-     * @return array
-     */
-    public function processUpdateDownload(string $md5, string $handle): array
-    {
-        Craft::info('Starting to process the update download.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-            $result = $updater->processDownload($md5, $handle);
-            $result['success'] = true;
-
-            Craft::info('Finished processing the update download.', __METHOD__);
-
-            return $result;
-        } catch (UserException $e) {
-            Craft::error('Error processing the update download: '.$e->getMessage(), __METHOD__);
-
-            return ['success' => false, 'message' => $e->getMessage()];
-        } catch (\Exception $e) {
-            Craft::error('Error processing the update download: '.$e->getMessage(), __METHOD__);
-
-            return [
-                'success' => false,
-                'message' => Craft::t('app', 'There was a problem during the update.')
-            ];
-        }
-    }
-
-    /**
-     * @param string $uid
-     * @param string $handle
-     *
-     * @return array
-     */
-    public function backupFiles(string $uid, string $handle): array
-    {
-        Craft::info('Starting to backup files that need to be updated.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-            $updater->backupFiles($uid, $handle);
-
-            Craft::info('Finished backing up files.', __METHOD__);
-
-            return ['success' => true];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @param string $uid
-     * @param string $handle
-     *
-     * @return array
-     */
-    public function updateFiles(string $uid, string $handle): array
-    {
-        Craft::info('Starting to update files.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-            $updater->updateFiles($uid, $handle);
-
-            Craft::info('Finished updating files.', __METHOD__);
-
-            return ['success' => true];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @return array
-     */
-    public function backupDatabase(): array
-    {
-        Craft::info('Starting to backup database.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-            $result = $updater->backupDatabase();
-
-            if (!$result) {
-                Craft::info('Did not backup database because there were no migrations to run.', __METHOD__);
-
-                return ['success' => true];
-            }
-
-            Craft::info('Finished backing up database.', __METHOD__);
-
-            return ['success' => true, 'dbBackupPath' => $result];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @param string $handle
-     *
-     * @throws Exception
-     * @return array
-     */
-    public function updateDatabase(string $handle): array
-    {
-        Craft::info('Starting to update the database.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-
-            if ($handle === 'craft') {
-                Craft::info('Craft wants to update the database.', __METHOD__);
-                $updater->updateDatabase();
-                Craft::info('Craft is done updating the database.', __METHOD__);
-            } else {
-                // Make sure plugins are loaded.
-                Craft::$app->getPlugins()->loadPlugins();
-
-                $plugin = Craft::$app->getPlugins()->getPlugin($handle);
-
-                if ($plugin) {
-                    /** @var Plugin $plugin */
-                    Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
-                    $updater->updateDatabase($plugin);
-                    Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
-                } else {
-                    Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', __METHOD__);
-                    throw new Exception("Cannot find an enabled plugin with the handle '{$handle}'");
-                }
-            }
-
-            return ['success' => true];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    /**
-     * @param string|false $uid
-     * @param string       $handle
+     * @param string[] $handles The list of handles to run migrations for
      *
      * @return void
+     * @throws MigrateException
+     * @see getPendingMigrationHandles()
      */
-    public function updateCleanUp($uid, string $handle)
+    public function runMigrations(array $handles)
     {
-        Craft::info('Starting to clean up after the update.', __METHOD__);
-
-        try {
-            $updater = new Updater();
-            $updater->cleanUp($uid, $handle);
-
-            // Take the site out of maintenance mode.
-            Craft::info('Taking the site out of maintenance mode.', __METHOD__);
-            Craft::$app->disableMaintenanceMode();
-
-            Craft::info('Finished cleaning up after the update.', __METHOD__);
-        } catch (\Exception $e) {
-            Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);
+        // Make sure Craft is first
+        if (ArrayHelper::remove($handles, 'craft') !== null) {
+            array_unshift($handles, 'craft');
         }
 
-        // Fire an 'afterUpdate' event
-        $this->trigger(self::EVENT_AFTER_UPDATE, new UpdateEvent([
-            'handle' => $handle,
-        ]));
-    }
+        // Make sure content is last
+        if (ArrayHelper::remove($handles, 'content') !== null) {
+            $handles[] = 'content';
+        }
 
-    /**
-     * @param string|false $uid
-     * @param string       $handle
-     * @param string|bool  $dbBackupPath
-     *
-     * @return array
-     */
-    public function rollbackUpdate($uid, string $handle, $dbBackupPath = false): array
-    {
+        // Set the name & handle early in case we need it in the catch
+        $name = 'Craft CMS';
+        $handle = 'craft';
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
         try {
-            // Fire an 'updateFailure' event
-            $this->trigger(self::EVENT_UPDATE_FAILURE, new UpdateEvent([
-                'handle' => $handle,
-            ]));
-
-            $configService = Craft::$app->getConfig();
-            $generalConfig = $configService->getGeneral();
-            App::maxPowerCaptain();
-
-            if ($dbBackupPath !== false && $generalConfig->backupOnUpdate && $generalConfig->restoreOnUpdateFailure && $generalConfig->restoreCommand !== false) {
-                Craft::info('Rolling back any database changes.', __METHOD__);
-                UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
-                Craft::info('Done rolling back any database changes.', __METHOD__);
-            }
-
-            // If uid !== false, it's an auto-update.
-            if ($uid !== false) {
-                Craft::info('Rolling back any file changes.', __METHOD__);
-                $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
-
-                if (!empty($manifestData)) {
-                    UpdateHelper::rollBackFileChanges($manifestData, $handle);
+            foreach ($handles as $handle) {
+                if ($handle === 'craft') {
+                    Craft::$app->getMigrator()->up();
+                    $versionUpdated = Craft::$app->getUpdates()->updateCraftVersionInfo();
+                } else if ($handle === 'content') {
+                    Craft::$app->getContentMigrator()->up();
+                    $versionUpdated = true;
+                } else {
+                    /** @var Plugin $plugin */
+                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+                    $name = $plugin->name;
+                    $plugin->getMigrator()->up();
+                    $versionUpdated = Craft::$app->getUpdates()->setNewPluginInfo($plugin);
                 }
 
-                Craft::info('Done rolling back any file changes.', __METHOD__);
+                if (!$versionUpdated) {
+                    throw new Exception("Couldn't set new version info for $name.");
+                }
             }
 
-            Craft::info('Finished rolling back changes.', __METHOD__);
-
-            Craft::info('Taking the site out of maintenance mode.', __METHOD__);
-            Craft::$app->disableMaintenanceMode();
-
-            return ['success' => true];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => $e->getMessage()];
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw new MigrateException($name, $handle, null, 0, $e);
         }
     }
 
@@ -855,25 +618,5 @@ class Updates extends Component
         $info->schemaVersion = Craft::$app->schemaVersion;
 
         return Craft::$app->saveInfo($info);
-    }
-
-    /**
-     * Returns a list of plugins that are in need of a database update.
-     *
-     * @return PluginInterface[]|null
-     */
-    public function getPluginsThatNeedDbUpdate()
-    {
-        $pluginsThatNeedDbUpdate = [];
-
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
-
-        foreach ($plugins as $plugin) {
-            if (Craft::$app->getPlugins()->doesPluginRequireDatabaseUpdate($plugin)) {
-                $pluginsThatNeedDbUpdate[] = $plugin;
-            }
-        }
-
-        return $pluginsThatNeedDbUpdate;
     }
 }

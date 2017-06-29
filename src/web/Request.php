@@ -951,10 +951,12 @@ class Request extends \yii\web\Request
                     $loginPath = 'login';
                     $logoutPath = 'logout';
                     $setPasswordPath = 'setpassword';
+                    $updatePath = 'update';
                 } else {
                     $loginPath = trim($generalConfig->getLoginPath(), '/');
                     $logoutPath = trim($generalConfig->getLogoutPath(), '/');
                     $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                    $updatePath = null;
                 }
 
                 if (
@@ -964,6 +966,7 @@ class Request extends \yii\web\Request
                         $loginPath,
                         $logoutPath,
                         $setPasswordPath,
+                        $updatePath
                     ], true))
                 ) {
                     $this->_isActionRequest = true;
@@ -974,12 +977,18 @@ class Request extends \yii\web\Request
                     } else if (!empty($actionParam)) {
                         $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                     } else {
-                        if ($this->_path == $loginPath) {
-                            $this->_actionSegments = ['users', 'login'];
-                        } else if ($this->_path == $logoutPath) {
-                            $this->_actionSegments = ['users', 'logout'];
-                        } else {
-                            $this->_actionSegments = ['users', 'set-password'];
+                        switch ($this->_path) {
+                            case $loginPath:
+                                $this->_actionSegments = ['users', 'login'];
+                                break;
+                            case $logoutPath;
+                                $this->_actionSegments = ['users', 'logout'];
+                                break;
+                            case $setPasswordPath:
+                                $this->_actionSegments = ['users', 'set-password'];
+                                break;
+                            case $updatePath:
+                                $this->_actionSegments = ['updater', 'index'];
                         }
                     }
                 }

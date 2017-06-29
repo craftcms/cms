@@ -185,6 +185,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     Craft.omitScriptNameInUrls = true;
     Craft.usePathInfo = false;
 
-    assert.equal(Craft.getActionUrl('update/prepare'), 'http://craft.dev/index.php?p=admin/actions/update/prepare');
+    assert.equal(Craft.getActionUrl('foo/bar'), 'http://craft.dev/index.php?p=admin/actions/foo/bar');
 
 });

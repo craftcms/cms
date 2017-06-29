@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ApplicationTrait;
 use craft\base\Plugin;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use yii\base\InvalidRouteException;
@@ -120,12 +121,6 @@ class Application extends \yii\web\Application
             header_remove('X-Powered-By');
         }
 
-        // If the system in is maintenance mode and it's a site request, throw a 503.
-        if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
-            $this->_unregisterDebugModule();
-            throw new ServiceUnavailableHttpException();
-        }
-
         // Process install requests
         if (($response = $this->_processInstallRequest($request)) !== null) {
             return $response;
@@ -156,7 +151,7 @@ class Application extends \yii\web\Application
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
-        if ($this->getIsUpdating()) {
+        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
@@ -401,6 +396,7 @@ class Application extends \yii\web\Application
         $segments = $request->getActionSegments();
 
         return (
+            $segments === ['app', 'migrate'] ||
             $segments === ['users', 'login'] ||
             $segments === ['users', 'logout'] ||
             $segments === ['users', 'set-password'] ||
@@ -409,7 +405,7 @@ class Application extends \yii\web\Application
             $segments === ['users', 'send-password-reset-email'] ||
             $segments === ['users', 'save-user'] ||
             $segments === ['users', 'get-remaining-session-time'] ||
-            $segments[0] === 'update'
+            $segments[0] === 'updater'
         );
     }
 
@@ -427,16 +423,18 @@ class Application extends \yii\web\Application
         // See if we're in the middle of an update.
         $update = false;
 
-        if ($request->getSegment(1) === 'updates' && $request->getSegment(2) === 'go') {
-            $update = true;
-        }
-
-        if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle'])) {
-            $update = true;
-        }
-
         // Only run for CP requests and if we're not in the middle of an update.
-        if ($request->getIsCpRequest() && !$update) {
+        if (
+            $request->getIsCpRequest() &&
+            !(
+                $request->getIsActionRequest() &&
+                (
+                    ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                    $request->getActionSegments() === ['app', 'migrate']
+                )
+            )
+        )
+        {
             $cachedBasePath = $this->getCache()->get('basePath');
 
             if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
@@ -462,43 +460,39 @@ class Application extends \yii\web\Application
         // Let all non-action CP requests through.
         if (
             $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == [
-                    'users',
-                    'login'
-                ])
+            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
-            // If this is a request to actually manually update Craft, do it
-            if ($request->getSegment(1) === 'manualupdate') {
-                return $this->runAction('update/go', [
-                    'handle' => Craft::$app->getRequest()->getSegment(2)
-                ]);
-            }
-
+            // Did we skip a breakpoint?
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
                 $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
                     'targetVersion' => Craft::$app->version,
                 ]));
-            } else {
-                if (!$request->getIsAjax()) {
-                    if ($request->getPathInfo() !== '') {
-                        $this->getUser()->setReturnUrl($request->getPathInfo());
-                    }
-                }
-
-                // Clear the template caches in case they've been compiled since this release was cut.
-                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
-
-                // Show the manual update notification template
-                return $this->runAction('templates/manual-update-notification');
             }
-        } // We'll also let action requests to UpdateController through as well.
-        else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] === 'update') {
-            $controller = $actionSegs[0];
-            $action = $actionSegs[1] ?? 'index';
 
-            return $this->runAction($controller.'/'.$action);
+            // Bail if Craft is already in maintenance mode
+            if ($this->getIsInMaintenanceMode()) {
+                throw new ServiceUnavailableHttpException(Craft::t('app', 'It looks like someone is currently performing a system update.'));
+            }
+
+            // Clear the template caches in case they've been compiled since this release was cut.
+            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
+
+            // Show the manual update notification template
+            return $this->runAction('templates/manual-update-notification');
+        }
+
+        // We'll also let update actions go through
+        if (
+            $request->getIsActionRequest() &&
+            (
+                ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                $request->getActionSegments() === ['app', 'migrate']
+            )
+        ) {
+            $action = implode('/', $request->getActionSegments());
+            return $this->runAction($action);
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

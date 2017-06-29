@@ -741,7 +741,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         $globals['craft'] = new CraftVariable();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
             $globals['currentUser'] = null;
@@ -756,7 +756,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;

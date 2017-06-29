@@ -8,16 +8,23 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\UtilityInterface;
+use craft\config\GeneralConfig;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\MigrationException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use craft\web\Controller;
+use craft\web\ServiceUnavailableHttpException;
+use Http\Client\Common\Exception\ServerErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -30,8 +37,27 @@ use yii\web\Response;
  */
 class AppController extends Controller
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public $allowAnonymous = [
+        'migrate'
+    ];
+
     // Public Methods
     // =========================================================================
+
+    public function beforeAction($action)
+    {
+        if ($action->id == 'migrate') {
+            $this->enableCsrfValidation = false;
+        }
+
+        return parent::beforeAction($action);
+    }
 
     /**
      * Returns update info.
@@ -43,13 +69,134 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('performUpdates');
 
-        $forceRefresh = (bool)Craft::$app->getRequest()->getBodyParam('forceRefresh');
-        Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        $request = Craft::$app->getRequest();
+        $forceRefresh = (bool)$request->getParam('forceRefresh');
+        $includeDetails = (bool)$request->getParam('includeDetails');
 
-        return $this->asJson([
+        try {
+            $updates = Craft::$app->getUpdates()->getUpdates($forceRefresh);
+        } catch (\Throwable $e) {
+            $updates = false;
+        }
+
+        if (!$updates) {
+            return $this->asErrorJson(Craft::t('app', 'Could not fetch available updates at this time.'));
+        }
+
+        $res = [
             'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
             'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
-        ]);
+        ];
+
+        if ($includeDetails) {
+            $res['updates'] = [];
+
+            // Craft updates
+            if ($updates->app !== null) {
+                $appUpdateInfo = $updates->app->toArray();
+                $this->_setReleaseAllowances($appUpdateInfo);
+
+                // todo: remove this once the new API stuff is in place
+                $appUpdateInfo['breakpoint'] = false;
+                $appUpdateInfo['expired'] = false;
+
+                $res['updates']['app'] = $appUpdateInfo;
+            }
+
+            // Plugin updates
+            $pluginsService = Craft::$app->getPlugins();
+            foreach ($updates->plugins as $pluginUpdate) {
+                /** @var Plugin $plugin */
+                $plugin = $pluginsService->getPluginByPackageName($pluginUpdate->packageName);
+                $pluginUpdateInfo = $pluginUpdate->toArray();
+                $this->_setReleaseAllowances($pluginUpdateInfo);
+
+                // todo: remove this once the new API stuff is in place
+                $pluginUpdateInfo['handle'] = $plugin->id;
+                $pluginUpdateInfo['breakpoint'] = false;
+                $pluginUpdateInfo['expired'] = false;
+
+                $res['updates']['plugins'][] = $pluginUpdateInfo;
+            }
+        }
+
+        return $this->asJson($res);
+    }
+
+    /**
+     * Creates a DB backup (if configured to do so) and runs any pending Craft, plugin, & content migrations in one go.
+     *
+     * This action can be used as a post-deploy webhook with site deployment services (like [DeployBot](https://deploybot.com/))
+     * to minimize site downtime after a deployment.
+     *
+     * @throws ServerErrorException if something went wrong
+     */
+    public function actionMigrate()
+    {
+        $this->requirePostRequest();
+
+        $updatesService = Craft::$app->getUpdates();
+        $db = Craft::$app->getDb();
+
+        // Get the handles in need of an update
+        $handles = $updatesService->getPendingMigrationHandles(true);
+
+        if (empty($handles)) {
+            // That was easy
+            return Craft::$app->getResponse();
+        }
+
+        // Bail if Craft is already in maintenance mode
+        if (Craft::$app->getIsInMaintenanceMode()) {
+            throw new ServiceUnavailableHttpException('Craft is already being updated.');
+        }
+
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
+
+        // Backup the DB?
+        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        if ($backup) {
+            try {
+                $backupPath = $db->backup();
+            } catch (\Throwable $e) {
+                Craft::$app->disableMaintenanceMode();
+                throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
+            }
+        }
+
+        // Run the migrations
+        try {
+            $updatesService->runMigrations($handles);
+        } catch (MigrationException $e) {
+            // Do we have a backup?
+            $restored = false;
+            if (!empty($backupPath)) {
+                // Attempt a restore
+                try {
+                    $db->restore($backupPath);
+                    $restored = true;
+                } catch (\Throwable $restoreException) {
+                    // Just log it
+                    Craft::$app->getErrorHandler()->logException($restoreException);
+                }
+            }
+
+            $error = 'An error occurred running nuw migrations.';
+            if ($restored) {
+                $error .= ' The database has been restored to its previous state.';
+            } else if (isset($restoreException)) {
+                $error .= ' The database could not be restored due to a separate error: '.$restoreException->getMessage();
+            } else {
+                $error .= ' The database has not been restored.';
+            }
+
+            Craft::$app->disableMaintenanceMode();
+            throw new ServerErrorHttpException($error, 0, $e);
+        }
+
+        Craft::$app->disableMaintenanceMode();
+        return Craft::$app->getResponse();
     }
 
     /**
@@ -342,5 +489,35 @@ class AppController extends Controller
         }
 
         return $this->asJson(['success' => $success]);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Sets an `allowed` key on the given update's releases, based on the `allowAutoUpdates` config setting.
+     *
+     * @param array &$update
+     *
+     * @return void
+     */
+    private function _setReleaseAllowances(array &$update)
+    {
+        $configVal = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+
+        foreach ($update['releases'] as &$release)
+        {
+            if (is_bool($configVal)) {
+                $release['allowed'] = $configVal;
+            } else if ($configVal === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
+                // Return true if the major and minor versions are still the same
+                $release['allowed'] = (App::majorMinorVersion($release['version']) === App::majorMinorVersion($update['localVersion']));
+            } else if ($configVal === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
+                // Return true if the major version is still the same
+                $release['allowed'] = (App::majorVersion($release['version']) === App::majorVersion($update['localVersion']));
+            } else {
+                $release['allowed'] = false;
+            }
+        }
     }
 }

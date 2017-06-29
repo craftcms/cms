@@ -23,6 +23,9 @@ return [
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
+        'composer' => [
+            'class' => \craft\services\Composer::class,
+        ],
         'content' => [
             'class' => craft\services\Content::class,
         ],
@@ -329,7 +332,7 @@ return [
                 $target['logFile'] = '@storage/logs/web.log';
 
                 // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
+                if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
                     $target['levels'] = yii\log\Logger::LEVEL_ERROR | yii\log\Logger::LEVEL_WARNING;
                 }
             }

@@ -91,8 +91,8 @@ class GeneralConfig extends Object
      */
     public $autoLoginAfterAccountActivation = false;
     /**
-     * @var bool Whether Craft should run the backup logic when updating. This applies to
-     * both auto and manual updates.
+     * @var bool Whether Craft should create a database backup before running new migrations.
+     * @see backupCommand
      */
     public $backupOnUpdate = true;
     /**
@@ -553,10 +553,6 @@ class GeneralConfig extends Object
      */
     public $restoreCommand;
     /**
-     * @var bool Whether Craft should attempt to restore the backup in the event that there was an error.
-     */
-    public $restoreOnUpdateFailure = true;
-    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      */
     public $rotateImagesOnUploadByExifData = true;
@@ -913,5 +909,15 @@ class GeneralConfig extends Object
     public function getSetPasswordSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @return bool
+     */
+    public function getBackupOnUpdate(): bool
+    {
+        return ($this->backupOnUpdate && $this->backupCommand !== false);
     }
 }
