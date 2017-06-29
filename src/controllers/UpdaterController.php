@@ -15,6 +15,7 @@ use craft\errors\MigrationException;
 use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
+use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -348,12 +349,13 @@ class UpdaterController extends Controller
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
         } catch (MigrateException $e) {
-            $name = $e->ownerName;
+            $ownerName = $e->ownerName;
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
                 $previous = $e->getPrevious();
                 $error = get_class($e->migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
+                $e = $previous ?? $e;
             } else {
                 $error = 'Migration failed: '.$e->getMessage();
             }
@@ -372,12 +374,15 @@ class UpdaterController extends Controller
                 'label' => Craft::t('app', 'Send for help'),
                 'submit' => true,
                 'email' => 'support@craftcms.com',
-                'subject' => $name.' update failure',
+                'subject' => $ownerName.' update failure',
                 'errorDetails' => $error,
             ];
 
+            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
+
             return $this->_send([
-                'error' => Craft::t('app', 'One of {name}’s migrations failed to apply.', ['name' => $name]),
+                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
+                'errorDetails' => $eName.': '.$e->getMessage(),
                 'options' => $options,
             ]);
         }
