@@ -61,7 +61,7 @@ trait PluginTrait
      * Version headers must follow the general format:
      *
      * ```
-     * ## X.Y.Z - YYYY-DD-MM
+     * ## X.Y.Z - YYYY-MM-DD
      * ```
      *
      * with the following possible deviations:
