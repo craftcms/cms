@@ -40,7 +40,7 @@ class ComposerController extends Controller
     {
         // Normalize the requirements as name => version pairs
         $parsedPackages = (new VersionParser)->parseNameVersionPairs(explode(',', $packages));
-        $requirements = ArrayHelper::getPairs($parsedPackages, 'name', 'version');
+        $requirements = ArrayHelper::map($parsedPackages, 'name', 'version');
 
         $io = new BufferIO();
 
