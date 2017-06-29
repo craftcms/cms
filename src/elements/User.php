@@ -632,7 +632,6 @@ class User extends Element implements IdentityInterface
         return Craft::$app->getFields()->getLayoutByType(static::class);
     }
 
-
     /**
      * @inheritdoc
      */
@@ -1204,6 +1203,17 @@ class User extends Element implements IdentityInterface
 
     // Events
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = Craft::$app->getFields()->getLayoutByType(static::class)->id;
+
+        return parent::beforeSave($isNew);
+    }
 
     /**
      * @inheritdoc

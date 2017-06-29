@@ -48,6 +48,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\MigrationManager::up()`, `down()`, `migrateUp()`, and `migrateDown()` now throw a `craft\errors\MigrationException` if a migration fails rather than returning `true`/`false`.
 - The `app/check-for-updates` action now checks for a `includeDetails` param, which tells it to include the full update details in its response.
 - It’s no longer possible to run new migrations while Craft is in Maintenance Mode, preventing the possibility of two people running migrations at the same time.
+- It’s no longer needed to set the `$fieldLayoutId` property on users, tags, Matrix blocks, entries, or categories when creating them programmatically. ([#1797](https://github.com/craftcms/cms/issues/1797))
 - Panes within panes in the Control Panel now have special styling.
 - Craft now prioritizes Composer’s autoloader over Yii’s for faster class loading.
 

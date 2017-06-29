@@ -906,6 +906,9 @@ EOD;
             $this->postDate = DateTimeHelper::currentUTCDateTime();
         }
 
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = $this->getType()->fieldLayoutId;
+
         return parent::beforeSave($isNew);
     }
 

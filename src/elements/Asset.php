@@ -990,6 +990,7 @@ class Asset extends Element
         // Set the field layout early.
         $folder = $assetsService->getFolderById($folderId);
 
+        // Make sure the field layout is set correctly
         /** @var Volume $volume */
         $volume = $folder->getVolume();
         $this->fieldLayoutId = $volume->fieldLayoutId;
