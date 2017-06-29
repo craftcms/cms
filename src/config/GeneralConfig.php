@@ -91,8 +91,8 @@ class GeneralConfig extends Object
      */
     public $autoLoginAfterAccountActivation = false;
     /**
-     * @var bool Whether Craft should run the backup logic when updating. This applies to
-     * both auto and manual updates.
+     * @var bool Whether Craft should create a database backup before running new migrations.
+     * @see backupCommand
      */
     public $backupOnUpdate = true;
     /**

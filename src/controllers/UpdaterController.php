@@ -328,9 +328,16 @@ class UpdaterController extends Controller
             ]);
         }
 
-        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-        $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
-        return $this->_next($nextAction);
+        // Are there any migrations to run?
+        $installedHandles = array_keys($this->_data['install']);
+        $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+        if (!empty(array_intersect($pendingHandles, $installedHandles))) {
+            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            return $this->_next($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
+        }
+
+        // Nope - we're done!
+        return $this->_finished();
     }
 
     /**
