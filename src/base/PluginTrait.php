@@ -66,10 +66,12 @@ trait PluginTrait
      *
      * with the following possible deviations:
      *
+     * - other text can come before the version number, like the plugin’s name
      * - a 4th version number is allowed (e.g. `1.2.3.4`)
      * - pre-release versions are allowed (e.g. `1.0.0-alpha.1`)
      * - the version can start with `v` (e.g. `v1.2.3`)
      * - the version can be hyperlinked (e.g. `[1.2.3]`)
+     * - dates can use dots as separators, rather than hyphens (e.g. `YYYY.MM.DD`)
      * - a `[CRITICAL]` flag can be appended after the date to indicate a critical release
      *
      * More notes:
@@ -77,6 +79,7 @@ trait PluginTrait
      * - Releases should be listed in descending order (newest on top). Craft will stop parsing the changelog as soon as it hits a version that is older than or equal to the installed version.
      * - Any content that does not follow a version header line will be ignored.
      * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
+     * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
      *
      * @var string|null The plugin’s changelog URL
      */
