@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
+
 ### Fixed
 - Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))
 - Fixed a bug where the author of a draft could not delete their own draft if they did not have “Publish Live Changes” permissions.
