@@ -14,7 +14,6 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
