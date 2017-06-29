@@ -113,7 +113,7 @@ class AppController extends Controller
 
                 // todo: remove this once the new API stuff is in place
                 $pluginUpdateInfo['handle'] = $plugin->id;
-                $pluginUpdateInfo['breakpoint'] = true;
+                $pluginUpdateInfo['breakpoint'] = false;
                 $pluginUpdateInfo['expired'] = false;
 
                 $res['updates']['plugins'][] = $pluginUpdateInfo;
