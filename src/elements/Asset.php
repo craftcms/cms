@@ -724,17 +724,14 @@ class Asset extends Element
     /**
      * Get image height.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return bool|float|mixed
+     * @return int|float|null
      */
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
+        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
             $transform = null;
         }
 
@@ -744,16 +741,13 @@ class Asset extends Element
     /**
      * Get image width.
      *
-     * @param string|null $transform The optional transform handle for which to get thumbnail.
+     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
      *
-     * @return bool|float|mixed
+     * @return int|float|null
      */
-    public function getWidth(string $transform = null)
+    public function getWidth($transform = null)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
+        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
             $transform = null;
         }
 
@@ -1165,7 +1159,7 @@ class Asset extends Element
      * @param string                           $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
      *
-     * @return null|float|mixed
+     * @return int|float|null
      */
     private function _getDimension(string $dimension, $transform)
     {
