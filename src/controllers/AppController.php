@@ -23,6 +23,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
@@ -63,11 +64,18 @@ class AppController extends Controller
      * Returns update info.
      *
      * @return Response
+     * @throws BadRequestHttpException if the request doesn't accept a JSON response
+     * @throws ForbiddenHttpException if the user doesn't have permission to perform updates or use the Updates utility
      */
     public function actionCheckForUpdates(): Response
     {
         $this->requireAcceptsJson();
-        $this->requirePermission('performUpdates');
+
+        // Require either the 'performUpdates' or 'utility:updates' permission
+        $user = Craft::$app->getUser();
+        if (!$user->checkPermission('performUpdates') && !$user->checkPermission('utility:updates')) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
+        }
 
         $request = Craft::$app->getRequest();
         $forceRefresh = (bool)$request->getParam('forceRefresh');
@@ -503,16 +511,19 @@ class AppController extends Controller
      */
     private function _setReleaseAllowances(array &$update)
     {
-        $configVal = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
+        $canPerformUpdates = Craft::$app->getUser()->checkPermission('performUpdates');
+        $allowAutoUpdates = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
 
         foreach ($update['releases'] as &$release)
         {
-            if (is_bool($configVal)) {
-                $release['allowed'] = $configVal;
-            } else if ($configVal === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
+            if (!$canPerformUpdates) {
+                $release['allowed'] = false;
+            } else if (is_bool($allowAutoUpdates)) {
+                $release['allowed'] = $allowAutoUpdates;
+            } else if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_PATCH_ONLY) {
                 // Return true if the major and minor versions are still the same
                 $release['allowed'] = (App::majorMinorVersion($release['version']) === App::majorMinorVersion($update['localVersion']));
-            } else if ($configVal === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
+            } else if ($allowAutoUpdates === GeneralConfig::AUTO_UPDATE_MINOR_ONLY) {
                 // Return true if the major version is still the same
                 $release['allowed'] = (App::majorVersion($release['version']) === App::majorVersion($update['localVersion']));
             } else {

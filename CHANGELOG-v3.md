@@ -105,6 +105,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when PHP’s `memory_limit` setting was set to something greater than `PHP_INT_MAX` when represented in bytes. ([#1771](https://github.com/craftcms/cms/issues/1771))
 - Fixed a bug where adding a new site did not update any existing category groups with the new site’s category uri format and template settings.
 - Fixed a PHP error that occurred when calling `craft\elements\Asset::getWidth()` if the `$transform` argument was anything other than a string. ([#1796](https://github.com/craftcms/cms/issues/1796))
+- Fixed a bug where the Updates utility would spin indefinitely for users that didn’t have permission to perform updates. ([#1719](https://github.com/craftcms/cms/issues/1719))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
