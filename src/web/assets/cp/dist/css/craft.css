@@ -679,7 +679,7 @@ body.rtl table thead th.ordered.loading { background-position: 0 4px; }
 
 table thead th.orderable:hover { background-color: #f9f9f9; }
 
-th.thin, td.thin { width: 0.01% !important; vertical-align: middle; }
+th.thin, td.thin { width: 0.01% !important; }
 
 /* data */
 body.ltr table.data th:not(:first-child), body.ltr table.data td:not(:first-child) { padding-left: 14px; }

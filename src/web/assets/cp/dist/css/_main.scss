@@ -641,7 +641,7 @@ table thead th.ordered.loading { background-image: url(../images/spinner_tablehe
 table thead th.orderable:hover { background-color: #f9f9f9; }
 
 th.thin,
-td.thin { width: 0.01% !important; vertical-align: middle; }
+td.thin { width: 0.01% !important; }
 
 /* data */
 table.data th:not(:first-child),
