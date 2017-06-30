@@ -168,7 +168,11 @@ class Plugins extends Component
             $row['settings'] = Json::decode($row['settings']);
             $row['installDate'] = DateTimeHelper::toDateTime($row['installDate']);
 
-            $plugin = $this->createPlugin($handle, $row);
+            try {
+                $plugin = $this->createPlugin($handle, $row);
+            } catch (InvalidPluginException $e) {
+                $plugin = null;
+            }
 
             if ($plugin !== null) {
                 // If we're not updating, check if the plugin's version number changed, but not its schema version.
@@ -303,10 +307,6 @@ class Plugins extends Component
 
         /** @var Plugin $plugin */
         $plugin = $this->createPlugin($handle);
-
-        if ($plugin === null) {
-            throw new InvalidPluginException($handle);
-        }
 
         // Fire a 'beforeInstallPlugin' event
         $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
@@ -524,7 +524,7 @@ class Plugins extends Component
      * @param string     $handle The plugin’s handle
      * @param array|null $row    The plugin’s row in the plugins table, if any
      *
-     * @return PluginInterface|null
+     * @return PluginInterface
      * @throws InvalidPluginException if $handle is invalid
      */
     public function createPlugin(string $handle, array $row = null)
@@ -535,7 +535,6 @@ class Plugins extends Component
 
         $config = $this->_composerPluginInfo[$handle];
 
-
         if (isset($config['aliases'])) {
             foreach ($config['aliases'] as $alias => $path) {
                 Craft::setAlias($alias, $path);
@@ -543,11 +542,6 @@ class Plugins extends Component
 
             // Unset them so we don't end up calling Module::setAliases()
             unset($config['aliases']);
-        }
-
-        // Make sure it was a valid config
-        if ($config === null) {
-            return null;
         }
 
         $class = $config['class'];
