@@ -100,7 +100,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 			{
 				var href = this._getSectionTriggerHref(selectedSection),
 					label = (this.settings.context == 'index' ? Craft.t('New entry') : Craft.t('New {section} entry', {section: selectedSection.name}));
-				this.$newEntryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newEntryBtnGroup);
+				this.$newEntryBtn = $('<a class="btn submit add icon" '+href+'>'+Craft.escapeHtml(label)+'</a>').appendTo(this.$newEntryBtnGroup);
 
 				if (this.settings.context != 'index')
 				{
