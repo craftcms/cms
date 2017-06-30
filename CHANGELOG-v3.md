@@ -61,22 +61,20 @@ Craft CMS 3.0 Working Changelog
 - Removed the `plugins/disable-plugin` action.
 - Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
-- Removed `craft\controllers\UpdateController`.
 - Removed `craft\base\ApplicationTrait::getIsUpdating()`.
 - Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
+- Removed `craft\controllers\UpdateController`.
 - Removed `craft\errors\UnpackPackageException`.
 - Removed `craft\errors\UpdateValidationException`.
 - Removed `craft\events\UpdateEvent`.
 - Removed `craft\helpers\App::isComposerInstall()`.
 - Removed `craft\helpers\App::phpConfigValueInBytes()`. Use `craft\helpers\ConfigHelper::sizeInBytes()` instead.
+- Removed `craft\helpers\Update`.
+- Removed `craft\updates\Updater`.
 - Removed `craft\services\Path::getAppPath()`.
 - Removed `craft\services\Path::getPluginsPath()`.
 - Removed `craft\services\Plugins::disablePlugin()`.
 - Removed `craft\services\Plugins::enablePlugin()`.
-- Removed `craft\services\Plugins::EVENT_AFTER_DISABLE_PLUGIN`.
-- Removed `craft\services\Plugins::EVENT_AFTER_ENABLE_PLUGIN`.
-- Removed `craft\services\Plugins::EVENT_BEFORE_DISABLE_PLUGIN`.
-- Removed `craft\services\Plugins::EVENT_BEFORE_ENABLE_PLUGIN`.
 - Removed `craft\services\Plugins::getConfig()`.
 - Removed `craft\services\Plugins::getPluginByModuleId()`.
 - Removed `craft\services\Plugins::isComposerInstall()`.
@@ -93,8 +91,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::updateDatabase()`
 - Removed `craft\services\Updates::updateFiles()`
 - Removed `craft\services\View::getRenderingTemplate()`.
-- Removed `craft\helpers\Update`.
-- Removed `craft\updates\Updater`.
+- Removed the `beforeDisablePlugin`, `afterDisablePlugin`, `beforeEnablePlugin`, and `afterEnablePlugin` events from `craft\services\Plugins`.
 - Removed the `beforeUpdate`, `afterUpdate`, and `updateFailure` events from `craft\services\Updates`.
 
 ### Fixed
