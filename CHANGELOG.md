@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2986 - 2017-06-30
 
 ### Changed
 - Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
