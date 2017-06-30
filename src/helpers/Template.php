@@ -260,7 +260,12 @@ class Template
             }
         }
 
-        $key = "DateTime::{$item}()";
+        if ($item === 'uiTimestamp') {
+            $key = timestamp('short');
+        } else {
+            $key = "DateTime::{$item}()";
+        }
+        
         /** @noinspection PhpUndefinedVariableInspection */
         $message = "DateTime::{$item}".($type === \Twig_Template::METHOD_CALL ? '()' : '')." is deprecated. Use the |{$filter} filter instead.";
 
