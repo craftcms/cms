@@ -565,6 +565,7 @@ class Users extends Component
      * If 'unverifiedEmail' is set on the User, then this method will transfer it to the official email property
      * and clear the unverified one.
      *
+     * @return bool
      * @param User $user
      */
     public function verifyEmailForUser(User $user)
@@ -578,13 +579,19 @@ class Users extends Component
             }
 
             $userRecord->unverifiedEmail = null;
-            $userRecord->save();
+
+            if (!$userRecord->save()) {
+                $user->addErrors($userRecord->getErrors());
+                return false;
+            }
 
             // If the user status is pending, let's activate them.
             if ($userRecord->pending == true) {
                 $this->activateUser($user);
             }
         }
+
+        return true;
     }
 
     /**

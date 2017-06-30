@@ -101,7 +101,7 @@ body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
 
 /* headings */
 @mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
+h1 { margin-bottom: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }

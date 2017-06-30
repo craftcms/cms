@@ -84,7 +84,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 if (selectedSection) {
                     var href = this._getSectionTriggerHref(selectedSection),
                         label = (this.settings.context == 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
-                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + label + '</a>').appendTo(this.$newEntryBtnGroup);
+                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
                     if (this.settings.context != 'index') {
                         this.addListener(this.$newEntryBtn, 'click', function(ev) {
@@ -109,7 +109,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                         if (this.settings.context == 'index' || section != selectedSection) {
                             var href = this._getSectionTriggerHref(section),
                                 label = (this.settings.context == 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
-                            menuHtml += '<li><a ' + href + '">' + label + '</a></li>';
+                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 

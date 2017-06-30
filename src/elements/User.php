@@ -32,6 +32,7 @@ use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -589,6 +590,8 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class
             ];
+
+            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
 
         if ($this->id !== null && $this->passwordResetRequired) {
@@ -610,6 +613,28 @@ class User extends Element implements IdentityInterface
         ];
 
         return $rules;
+    }
+
+    /**
+     * Validates the unverifiedEmail value is unique.
+     *
+     * @param string          $attribute
+     * @param array|null      $params
+     * @param InlineValidator $validator
+     */
+    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
+    {
+        $query = User::find()
+            ->where(['email' => $this->unverifiedEmail])
+            ->status(null);
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'), $params);
+        }
     }
 
     /**

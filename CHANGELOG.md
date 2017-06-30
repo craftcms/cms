@@ -1,14 +1,47 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2986 - 2017-06-30
 
-### Added
-- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting (defaults to `true`) to determine whether SVG files should be sanitized on uploads.
+### Changed
+- Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
+- The Control Panel `font-family` declaration now checks for `"Helvetica Neue"` in addition to `HelveticaNeue`. ([#1805](https://github.com/craftcms/cms/issues/1805))
 
 ### Fixed
+- Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))
+- Fixed a bug where the author of a draft could not delete their own draft if they did not have the “Publish Live Changes” permission.
+- Fixed a Twig error that could occur when editing a locked user account.
+- Fixed a bug where element source labels could get double-encoded.
+
+## 2.6.2985 - 2017-06-27
+
+### Changed
+- `DateTime::createFromString()` now supports dates formatted with `DateTime::ISO8601`, which is incorrectly missing the colon between the hours and minutes in the timezone offset declaration (e.g. `+0000` instead of `+00:00`).
+
+### Fixed
+- Fixed a bug where users would get an “Invalid Verification Code” error when clicking on the link in a verification email.
+
+## 2.6.2984 - 2017-06-26
+
+### Added
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting, which determines whether SVG files should be sanitized on uploads (`true` by default).
+
+### Changed
+- The `assets.onReplaceFile` event is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
+- Updated HTML Purifier to 4.9.3.
+- Updated Redactor II to 2.7.
+
+### Fixed
+- Fixed a bug where changing a user account’s email address to one that is already taken would silently fail.
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
-- Fixed a JavaScript error that occurred after sending in a support request from the Craft Support widget.
+- Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
+- Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
+- Fixed a SQL error that would occur when saving a Dropdown or Radio Buttons field if the default option’s value contained quotation marks.
+- Fixed a bug where asset upload prompts would not always reset between uploads.
+
+### Security
+- Fixed several XSS vulnerabilities in the Control Panel.
+
 
 ## 2.6.2983 - 2017-06-09
 

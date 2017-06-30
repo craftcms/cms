@@ -427,24 +427,27 @@ class UsersController extends Controller
         $userToProcess = $info['userToProcess'];
         $userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
-        Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
-
-        // If they're logged in, give them a success notice
-        if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
-        }
-
-        if ($userIsPending) {
-            // They were just activated, so treat this as an activation request
-            if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
-                return $response;
+        if (Craft::$app->getUsers()->verifyEmailForUser($userToProcess)) {
+            // If they're logged in, give them a success notice
+            if (!Craft::$app->getUser()->getIsGuest()) {
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
             }
+
+            if ($userIsPending) {
+                // They were just activated, so treat this as an activation request
+                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                    return $response;
+                }
+            }
+
+            // Redirect to the site/CP root
+            $url = UrlHelper::url('');
+            return $this->redirect($url);
         }
 
-        // Redirect to the site/CP root
-        $url = UrlHelper::url('');
-
-        return $this->redirect($url);
+        return $this->renderTemplate('_special/emailtaken', [
+            'email' => $userToProcess->unverifiedEmail
+        ]);
     }
 
     /**
@@ -914,7 +917,7 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Does that email need to be verified?
-                if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
+                if ($requireEmailVerification && (true || !$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;

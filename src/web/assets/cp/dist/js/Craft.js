@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-06-23 */
+/*! Craft 3.0.0 - 2017-06-30 */
 (function($){
 
 /** global: Craft */
@@ -4719,10 +4719,10 @@ Craft.AdminTable = Garnish.Base.extend(
                 this.updateUI();
                 this.onDeleteItem(id);
 
-                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
+                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: Craft.escapeHtml(name)}));
             }
             else {
-                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
+                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: Craft.escapeHtml(name)}));
             }
         },
 
@@ -7061,7 +7061,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 if (selectedGroup) {
                     var href = this._getGroupTriggerHref(selectedGroup),
                         label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
-                    this.$newCategoryBtn = $('<a class="btn submit add icon" ' + href + '>' + label + '</a>').appendTo(this.$newCategoryBtnGroup);
+                    this.$newCategoryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newCategoryBtnGroup);
 
                     if (this.settings.context != 'index') {
                         this.addListener(this.$newCategoryBtn, 'click', function(ev) {
@@ -7086,7 +7086,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                         if (this.settings.context == 'index' || group != selectedGroup) {
                             var href = this._getGroupTriggerHref(group),
                                 label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
-                            menuHtml += '<li><a ' + href + '">' + label + '</a></li>';
+                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
@@ -8994,7 +8994,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
         setDescription: function(description) {
             this.$a.attr('title', description);
-            this.$label.html(description);
+            this.$label.text(description);
         },
 
         setProgress: function(progress, animate) {
@@ -10827,7 +10827,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 if (selectedSection) {
                     var href = this._getSectionTriggerHref(selectedSection),
                         label = (this.settings.context == 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
-                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + label + '</a>').appendTo(this.$newEntryBtnGroup);
+                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
                     if (this.settings.context != 'index') {
                         this.addListener(this.$newEntryBtn, 'click', function(ev) {
@@ -10852,7 +10852,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                         if (this.settings.context == 'index' || section != selectedSection) {
                             var href = this._getSectionTriggerHref(section),
                                 label = (this.settings.context == 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
-                            menuHtml += '<li><a ' + href + '">' + label + '</a></li>';
+                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 

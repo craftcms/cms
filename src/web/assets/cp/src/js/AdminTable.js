@@ -135,10 +135,10 @@ Craft.AdminTable = Garnish.Base.extend(
                 this.updateUI();
                 this.onDeleteItem(id);
 
-                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
+                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: Craft.escapeHtml(name)}));
             }
             else {
-                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
+                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: Craft.escapeHtml(name)}));
             }
         },
 

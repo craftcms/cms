@@ -39,7 +39,7 @@ body { font-size: 13px; line-height: 18px; color: #29323d; -webkit-font-smoothin
 
 body.rtl { direction: rtl; }
 
-body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
+body, input, select, textarea { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
 .first, h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, blockquote:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 
@@ -108,7 +108,7 @@ body.rtl .nav ul li a .badge { float: left; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: #da5a47; }
+h1 { margin-bottom: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: #da5a47; }
 
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 
@@ -973,17 +973,17 @@ table.editable tbody textarea { display: block; width: 100%; border: none; paddi
 
 table.editable tbody textarea:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
 
-table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
-table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
-table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
-table.editable tbody tr td.code textarea:-moz-placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textarea:-moz-placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
-table.editable tbody tr td.code textarea::-moz-placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textarea::-moz-placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
-table.editable tbody tr td.code textarea::placeholder { font-family: HelveticaNeue, sans-serif; }
+table.editable tbody tr td.code textarea::placeholder { font-family: "Helvetica Neue", HelveticaNeue, sans-serif; }
 
 table.editable + .btn.add { display: block; border-radius: 0 0 3px 3px; border: 1px dashed rgba(0, 0, 0, 0.2); border-top: none; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 
