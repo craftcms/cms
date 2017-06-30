@@ -41,11 +41,9 @@
 				(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 			) %}
 
-			{# Are they allowed to publish this draft? #}
+			{# Are they allowed to delete this draft? #}
 			{% set canDeleteDraft = (
-				canPublish and
-				(isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
-				(entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
+				entry.creatorId == currentUser.id or currentUser.can('deletePeerEntryDrafts'~permissionSuffix)
 			) %}
 
 			{% if canPublishDraft or canDeleteDraft %}

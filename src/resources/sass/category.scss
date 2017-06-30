@@ -4,8 +4,8 @@
 #locales { @include padding(0, 0, 0, 24px); }
 #locales li { position: relative; @include padding(7px, 45px, 7px, 0); }
 #locales li + li { border-top: 1px solid $hairlineColor; }
-#locales li.sel { color: $mediumtextcolor; cursor: default; }
-#locales li.sel:before { @include floatleft; @include margin(3px, 0, 0, -16px); font-size: 11px; color: $mediumtextcolor !important; @include icon; content: 'check'; }
+#locales li.sel { cursor: default; }
+#locales li.sel:before { @include floatleft; @include margin(3px, 0, 0, -16px); font-size: 11px; @include icon; content: 'check'; }
 #locales li a { color: $textcolor; }
 #locales li a:hover { color: $linkcolor; cursor: pointer; }
 

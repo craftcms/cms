@@ -152,7 +152,7 @@ class EntryElementType extends BaseElementType
 					$key = 'section:'.$section->id;
 
 					$sources[$key] = array(
-						'label'    => HtmlHelper::encode(Craft::t($section->name)),
+						'label'    => Craft::t($section->name),
 						'data'     => array('type' => $type, 'handle' => $section->handle),
 						'criteria' => array('sectionId' => $section->id, 'editable' => $editable)
 					);

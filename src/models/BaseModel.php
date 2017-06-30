@@ -547,7 +547,7 @@ abstract class BaseModel extends \CModel
 
 	/**
 	 * Generates a user friendly attribute label.
-	 * This is done by replacing underscores or dashes with blanks andchanging the first letter of each word to upper case.
+	 * This is done by replacing underscores or dashes with blanks and changing the first letter of each word to upper case.
 	 * For example, 'department_name' or 'DepartmentName' becomes 'Department Name'.
 	 *
 	 * Overriding CModel's implementation to be UTF-8 friendly since they don't consider this a bug:

@@ -1,6 +1,18 @@
 Craft CMS Changelog
 ===================
 
+## 2.6.2986 - 2017-06-30
+
+### Changed
+- Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
+- The Control Panel `font-family` declaration now checks for `"Helvetica Neue"` in addition to `HelveticaNeue`. ([#1805](https://github.com/craftcms/cms/issues/1805))
+
+### Fixed
+- Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))
+- Fixed a bug where the author of a draft could not delete their own draft if they did not have the “Publish Live Changes” permission.
+- Fixed a Twig error that could occur when editing a locked user account.
+- Fixed a bug where element source labels could get double-encoded.
+
 ## 2.6.2985 - 2017-06-27
 
 ### Changed
@@ -20,7 +32,7 @@ Craft CMS Changelog
 - Updated Redactor II to 2.7.
 
 ### Fixed
-- Fixed a bug where changing a user acocunt’s email address to one that is already taken would silently fail.
+- Fixed a bug where changing a user account’s email address to one that is already taken would silently fail.
 - Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
 - Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
 - Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
