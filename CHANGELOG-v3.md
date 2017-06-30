@@ -92,6 +92,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::updateCleanUp()`
 - Removed `craft\services\Updates::updateDatabase()`
 - Removed `craft\services\Updates::updateFiles()`
+- Removed `craft\services\View::getRenderingTemplate()`.
 - Removed `craft\helpers\Update`.
 - Removed `craft\updates\Updater`.
 - Removed the `beforeUpdate`, `afterUpdate`, and `updateFailure` events from `craft\services\Updates`.

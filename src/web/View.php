@@ -207,35 +207,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the template path that is currently being rendered, or the full template if [[renderString()]] or
-     * [[renderObjectTemplate()]] was called.
-     *
-     * @return mixed The template that is being rendered.
-     */
-    public function getRenderingTemplate()
-    {
-        if ($this->getIsRenderingTemplate()) {
-            if (strpos($this->_renderingTemplate, 'string:') === 0) {
-                $template = $this->_renderingTemplate;
-            } else {
-                $template = $this->resolveTemplate($this->_renderingTemplate);
-
-                if ($template === false) {
-                    $template = $this->_templatesPath.DIRECTORY_SEPARATOR.$this->_renderingTemplate;
-                }
-            }
-
-            return $template;
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns whether a page template is currently being rendered
-     */
-
-    /**
      * Renders a Twig template.
      *
      * @param mixed $template  The name of the template to load
