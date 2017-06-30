@@ -134,6 +134,7 @@ class CraftVariable extends ServiceLocator
             'components' => $components,
         ]);
         $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
+        $components = $event->components;
 
         $config['components'] = $components;
 

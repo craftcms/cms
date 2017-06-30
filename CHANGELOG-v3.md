@@ -52,6 +52,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the accuracy of deprecation errors.
 - Panes within panes in the Control Panel now have special styling.
 - Craft now prioritizes Composer’s autoloader over Yii’s for faster class loading.
+- Updated [php-shellcommand](https://github.com/mikehaertl/php-shellcommand) to 1.2.5. ([#1788](https://github.com/craftcms/cms/issues/1788)).
 
 ### Removed
 - Removed support for manually-installed plugins in a `plugins/` folder. ([#1734](https://github.com/craftcms/cms/issues/1734))
