@@ -1,0 +1,18 @@
+{% extends "plugin-store/_layouts/cp" %}
+
+{% set crumbs = [
+	{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
+{% set tabs = {
+	details: {
+		label: "Details",
+		url: url('plugin-store/'~plugin.slug)
+	},
+	license: {
+		label: "License",
+		url: url('plugin-store/'~plugin.slug~'/license')
+	}
+} %}
+
+{% set title = plugin.name %}

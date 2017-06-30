@@ -1,0 +1,70 @@
+{% extends "plugin-store/_plugin/layout" %}
+
+{% set content %}
+	<div class="plugin-header">
+
+		<div class="plugin-icon-large">
+			{% if plugin.iconUrl %}
+				<img src="{{ plugin.iconUrl }}" width="128" />
+			{% endif %}
+		</div>
+
+		<div class="description">
+			<h2>{{ plugin.name }}</h2>
+
+			<p>{{ plugin.shortDescription }}</p>
+
+			<p class="light"> Developed by
+				{% if plugin.developerUrl %}
+					<a target="_blank" href="{{ plugin.developerUrl }}">{{ plugin.developerName }}</a>
+				{% else %}
+					{{ plugin.developerName }}
+				{% endif %}
+			</p>
+		</div>
+
+		<div class="buttons">
+			<a href="#" class="btn">Try</a>
+
+			{% if plugin.licensePrice != '00.00' %}
+				<a href="{{ url('plugin-store/cart') }}" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
+			{% else %}
+				<a href="#" class="btn submit">Install</a>
+			{% endif %}
+		</div>
+	</div>
+
+	<hr>
+
+	<div class="plugin-content">
+		<div class="plugin-description">
+			<h2>Description</h2>
+
+			{% if plugin.description %}
+				{{ plugin.description|md }}
+			{% else %}
+				<p class="light">No description</p>
+			{% endif %}
+
+			<h2>Screenshots</h2>
+
+			{% for screenshot in plugin.screenshots %}
+				<img src="{{ screenshot }}" height="150" />
+			{% endfor %}
+		</div>
+
+		<div class="plugin-sidebar">
+			<div class="plugin-meta">
+				<ul>
+					<li><span>Version</span> <strong>3.4.2</strong></li>
+					<li><span>Last update</span> <strong>One week ago</strong></li>
+					<li><span>Active installs</span> <strong>3+ million</strong></li>
+					<li><span>Compatibility</span> <strong>Craft 3</strong></li>
+					<li><span>Categories</span> <strong>Analytics</strong></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+
+
+{% endset %}

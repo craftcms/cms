@@ -9,7 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\web\assets\pluginstore\PluginStoreAsset;
-use craft\web\assets\pluginstoreapp\PluginStoreAppAsset;
+use craft\web\assets\pluginstorevue\PluginStoreVueAsset;
+use craft\web\assets\pluginstorevuerouting\PluginStoreVueRoutingAsset;
 use craft\web\Controller;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -99,7 +100,67 @@ class PluginStoreController extends Controller
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
         // Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
 
-        return $this->renderTemplate('plugin-store/_plugin', [
+        return $this->renderTemplate('plugin-store/_plugin/details', [
+            'slug' => $slug,
+            'plugin' => (isset($plugin) ? $plugin : null),
+            'error' => (isset($error) ? $error : null)
+        ]);
+    }
+
+    public function actionVuePlugin($slug)
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        try {
+
+            $pluginJson = $client->request('GET', 'plugins/'.$slug);
+            $pluginResponse = json_decode($pluginJson->getBody(), true);
+
+            if(!isset($pluginResponse['error'])) {
+                $plugin = $pluginResponse;
+            } else {
+                $error = $pluginResponse['error'];
+            }
+        }
+        catch(\Exception $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
+
+        return $this->renderTemplate('plugin-store/vue/_plugin', [
+            'slug' => $slug,
+            'plugin' => (isset($plugin) ? $plugin : null),
+            'error' => (isset($error) ? $error : null)
+        ]);
+    }
+
+    public function actionPluginLicense($slug)
+    {
+        $client = Craft::$app->getPluginStore()->getClient();
+
+        try {
+
+            $pluginJson = $client->request('GET', 'plugins/'.$slug);
+            $pluginResponse = json_decode($pluginJson->getBody(), true);
+
+            if(!isset($pluginResponse['error'])) {
+                $plugin = $pluginResponse;
+            } else {
+                $error = $pluginResponse['error'];
+            }
+        }
+        catch(\Exception $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
+        // Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
+
+        return $this->renderTemplate('plugin-store/_plugin/license', [
             'slug' => $slug,
             'plugin' => (isset($plugin) ? $plugin : null),
             'error' => (isset($error) ? $error : null)
@@ -156,9 +217,16 @@ class PluginStoreController extends Controller
 
     public function actionVue()
     {
-        Craft::$app->getView()->registerAssetBundle(PluginStoreAppAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
 
-        return $this->renderTemplate('plugin-store/_vue');
+        return $this->renderTemplate('plugin-store/vue/_index');
+    }
+
+    public function actionVueRouting()
+    {
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueRoutingAsset::class);
+
+        return $this->renderTemplate('plugin-store/vue-routing/_index');
     }
 
     public function actionApiPlugin()

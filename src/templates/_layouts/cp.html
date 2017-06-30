@@ -182,32 +182,24 @@
                                 <div class="username">
 									{{ currentUser.name }}
 									{% if currentUser.admin %}<div class="light">{{ 'admin'|t('app') }}</div>{% endif %}
-
-                                    <div class="craftid light">
-										{% if craftIdAccount %}
-											{% include "_includes/craftidicon.svg" %}
-                                            {{ craftIdAccount.data[0].username }}
-										{% else %}
-											{% include "_includes/craftidicon.svg" with {color: '#aaa'} %}
-                                            {{ "Not connected to your Craft ID"|t('app') }}
-										{% endif %}
-                                    </div>
                                 </div>
                             </div>
                         </a>
                     </li>
-                </ul>
-                <hr>
-                <ul>
+
 					{% if CraftEdition == CraftClient and currentUser.admin %}
                         <li><a href="{{ url('clientaccount') }}">{{ "Client’s Account"|t('app') }}</a></li>
 					{% endif %}
                     <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
+                </ul>
 
+                <hr>
+
+                <ul>
 					{% if craftIdAccount %}
                         <li><a href="https://craftid.dev/account" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
                         <li>
-                            {#<a href="#">Disconnect from Craft ID</a>#}
+							{#<a href="#">Disconnect from Craft ID</a>#}
                             <form method="post" id="disconnect">
 								{{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/disconnect">
@@ -215,12 +207,12 @@
                             </form>
                         </li>
 
-                    {% else %}
+					{% else %}
                         <li>
-                            {#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
+							{#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
 
                             <form method="post" id="connect">
-                                {{ csrfInput() }}
+								{{ csrfInput() }}
                                 <input type="hidden" name="action" value="plugin-store/connect">
                                 <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
                             </form>

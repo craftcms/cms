@@ -74,7 +74,10 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/cart' => 'plugin-store/cart',
     'plugin-store/vue' => 'plugin-store/vue',
+    'plugin-store/vue/<slug:([^\/]+)?>' => 'plugin-store/vue-plugin',
+    'plugin-store/vue-routing' => 'plugin-store/vue-routing',
     'plugin-store/account' => 'plugin-store/account',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<slug:([^\/]+)?>' => 'plugin-store/plugin',
+    'plugin-store/<slug:([^\/]+)?>/license' => 'plugin-store/plugin-license',
 ];

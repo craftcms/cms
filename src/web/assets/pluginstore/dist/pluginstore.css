@@ -1,11 +1,11 @@
 /* Flexbox stuff */
 /* Other */
 /* RTL stuff */
-.plugin-icon, .plugin-icon-large { background: #eee; overflow: hidden; }
-
 .plugin-icon, .plugin-icon img { width: 32px; height: 32px; border-radius: 4px; }
 
 .plugin-icon-large, .plugin-icon-large img { width: 72px; height: 72px; border-radius: 6px; }
+
+.plugin-icon .default-icon { display: inline-block; background: #eee; overflow: hidden; width: 32px; height: 32px; border-radius: 4px; }
 
 .cart-review { padding: 24px; border: 1px solid #eee; margin-top: 24px; text-align: right; }
 
@@ -22,5 +22,21 @@
 .plugin-header .description p { margin: 0.4em 0; }
 
 .plugin-header .buttons { margin-top: 0; }
+
+.plugin-content { display: flex; }
+
+.plugin-content .plugin-description { flex-grow: 1; }
+
+.plugin-content .plugin-sidebar { width: 300px; flex-shrink: 0; margin-left: 24px; }
+
+.plugin-content .plugin-sidebar .plugin-meta { border: 1px solid #eee; border-radius: 4px; padding: 24px; }
+
+.plugin-content .plugin-sidebar .plugin-meta ul li { display: flex; border-bottom: 1px solid #eee; padding: 7px 0; }
+
+.plugin-content .plugin-sidebar .plugin-meta ul li:last-child { border-bottom: 0; }
+
+.plugin-content .plugin-sidebar .plugin-meta ul li span, .plugin-content .plugin-sidebar .plugin-meta ul li strong { flex-grow: 1; }
+
+.plugin-content .plugin-sidebar .plugin-meta ul li strong { text-align: right; }
 
 /*# sourceMappingURL=pluginstore.css.map */

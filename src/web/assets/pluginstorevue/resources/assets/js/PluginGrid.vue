@@ -1,0 +1,67 @@
+<template>
+
+    <div class="plugin-grid" v-if="plugins.length > 0">
+        <div class="plugin" v-for="plugin in plugins">
+            <plugin-card :plugin="plugin" @click="openModal(plugin)"></plugin-card>
+        </div>
+
+        <modal :show.sync="showModal" :on-close="closeModal">
+            <div slot="body">
+                <plugin-details :plugin="selectedPlugin"></plugin-details>
+            </div>
+        </modal>
+
+    </div>
+
+</template>
+
+
+<script>
+
+    import PluginCard from './PluginCard';
+    import PluginDetails from './PluginDetails';
+    import Modal from './Modal.vue'
+
+    export default {
+        name: 'pluginGrid',
+        props: ['plugins'],
+        components: {
+            PluginCard,
+            PluginDetails,
+            Modal,
+        },
+        data () {
+            return {
+                showModal: false,
+                selectedPlugin: null,
+            }
+        },
+        methods: {
+            openModal: function(plugin) {
+                this.selectedPlugin = plugin;
+                this.showModal = true;
+            },
+            closeModal: function() {
+                this.selectedPlugin = null;
+                this.showModal = false;
+            }
+        },
+    }
+</script>
+
+<style>
+
+    .plugin-grid {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0 -7px;
+    }
+
+    .plugin {
+        box-sizing: border-box;
+        flex: 0 0 auto;
+        width: 33.33%;
+    }
+
+</style>

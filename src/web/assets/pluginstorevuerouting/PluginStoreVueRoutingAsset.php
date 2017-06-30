@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\web\assets\pluginstoreapp;
+namespace craft\web\assets\pluginstorevuerouting;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
@@ -13,7 +13,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  * Asset bundle for the Plugin Store page
  */
-class PluginStoreAppAsset extends AssetBundle
+class PluginStoreVueRoutingAsset extends AssetBundle
 {
     /**
      * @inheritdoc

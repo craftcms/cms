@@ -20,7 +20,7 @@
                 </td>
                 <td>
                     <strong><router-link to="/plugins-details">{{ plugin.name }}</router-link></strong>
-                    <div>{{ plugin.description }}</div>
+                    <div>{{ plugin.shortDescription }}</div>
                 </td>
                 <td>
                     <div v-if="plugin.developerUrl">
@@ -53,6 +53,7 @@
         computed: {
             pluginsToRender() {
                 var searchQuery = this.searchQuery;
+
                 return this.plugins.filter(function(plugin) {
                     var searchQueryRegExp = new RegExp(searchQuery, 'gi');
 

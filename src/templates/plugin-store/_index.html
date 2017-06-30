@@ -77,13 +77,21 @@
 											<div class="plugin-icon">
 												{% if plugin.iconUrl %}
 													<img src="{{ plugin.iconUrl }}" width="32" />
+												{% else %}
+													<div class="default-icon"></div>
 												{% endif %}
 											</div>
 										</a>
 									</td>
-									<td><a href="{{ url('plugin-store/'~plugin.slug) }}">{{ plugin.name }}</a> <span class="light">— {{ plugin.description }}</span></td>
-									<td><a href="{{ url('plugin-store/cart') }}"
-										   class="btn submit">Buy $99.00</a></td>
+									<td><a href="{{ url('plugin-store/'~plugin.slug) }}">{{ plugin.name }}</a> <span class="light">— {{ plugin.shortDescription }}</span></td>
+									<td>
+										{% if plugin.licensePrice != '00.00' %}
+											<a href="{{ url('plugin-store/cart') }}" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
+										{% else %}
+											<a href="#" class="btn submit">Install</a>
+										{% endif %}
+
+									</td>
 								</tr>
 							{% endif %}
 						{% endfor %}

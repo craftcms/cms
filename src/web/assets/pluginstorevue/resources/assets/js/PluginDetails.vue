@@ -1,0 +1,106 @@
+<template>
+    <div>
+        <div class="plugin-details-header">
+            <div class="plugin-icon-large">
+                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
+            </div>
+
+            <div class="description">
+                <h2>{{ plugin.name }}</h2>
+
+                <p>{{ plugin.shortDescription }}</p>
+            </div>
+
+            <div class="buttons">
+
+                <div v-if="plugin.licensePrice != '0.00'">
+                    <a href="#" class="btn">Try</a>
+
+                    <a href="#" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
+                </div>
+                <div v-else>
+                    <a href="#" class="btn submit">Install</a>
+                </div>
+
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="plugin-details-body">
+            <div class="plugin-description">
+                <h2>Description</h2>
+                <div v-html="description"></div>
+
+                <h2>Screenshots</h2>
+
+                <div v-for="screenshot in plugin.screenshots">
+                    <img :src="screenshot" height="150" />
+                </div>
+
+            </div>
+
+            <div class="plugin-sidebar">
+                <div class="plugin-meta">
+                    <ul>
+                        <li><span>Version</span> <strong>3.4.2</strong></li>
+                        <li><span>Last update</span> <strong>One week ago</strong></li>
+                        <li><span>Active installs</span> <strong>3+ million</strong></li>
+                        <li><span>Compatibility</span> <strong>Craft 3</strong></li>
+                        <li><span>Categories</span> <strong>Analytics</strong></li>
+                        <li>
+                            <span>Developer</span>
+                            <strong v-if="plugin.developerUrl">
+                                <a v-bind:href="plugin.developerUrl" target="_blank">{{ plugin.developerName }}</a>
+                            </strong>
+                            <strong v-else>
+                                {{ plugin.developerName }}
+                            </strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+    var marked = require('marked');
+
+    export default {
+        name: 'pluginDetails',
+        props: ['plugin'],
+        computed: {
+            description() {
+                return marked(this.plugin.description, { sanitize: true });
+            }
+        }
+    }
+</script>
+
+<style scoped>
+    .plugin-details-header {
+        display: flex;
+    }
+    .plugin-details-header .plugin-icon-large {
+        margin-right: 14px;
+    }
+
+
+    .plugin-details-header { display: flex; }
+    .plugin-details-header .description { flex-grow:1; margin-left: 14px; }
+    .plugin-details-header .description h2 { margin-bottom: 10px; }
+    .plugin-details-header .description p { margin: 0.4em 0; }
+    .plugin-details-header .buttons { margin-top:0; }
+
+    .plugin-details-body { display: flex;  height: 500px; overflow: auto; }
+    .plugin-details-body .plugin-description { flex-grow: 1; }
+    .plugin-details-body .plugin-sidebar { width: 300px; flex-shrink:0; margin-left: 24px; }
+    .plugin-details-body .plugin-sidebar .plugin-meta { border: 1px solid #eee; border-radius: 4px; padding: 24px; }
+    .plugin-details-body .plugin-sidebar .plugin-meta ul li { display: flex; border-bottom: 1px solid #eee; padding: 7px 0; }
+    .plugin-details-body .plugin-sidebar .plugin-meta ul li:last-child { border-bottom:0; }
+    .plugin-details-body .plugin-sidebar .plugin-meta ul li span,
+    .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { flex-grow:1; }
+    .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { text-align: right; }
+
+</style>
