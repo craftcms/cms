@@ -51,6 +51,7 @@ Craft CMS 3.0 Working Changelog
 - It’s no longer needed to set the `$fieldLayoutId` property on users, tags, Matrix blocks, entries, or categories when creating them programmatically. ([#1797](https://github.com/craftcms/cms/issues/1797))
 - Panes within panes in the Control Panel now have special styling.
 - Craft now prioritizes Composer’s autoloader over Yii’s for faster class loading.
+- Updated [php-shellcommand](https://github.com/mikehaertl/php-shellcommand) to 1.2.5. ([#1788](https://github.com/craftcms/cms/issues/1788)).
 
 ### Removed
 - Removed support for manually-installed plugins in a `plugins/` folder. ([#1734](https://github.com/craftcms/cms/issues/1734))
