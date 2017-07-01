@@ -26,6 +26,9 @@ class PluginStoreVueAsset extends AssetBundle
             CpAsset::class,
         ];
 
+        $this->css = [
+            'css/main.css',
+        ];
         $this->js = [
             'js/main'.$this->dotJs(),
         ];

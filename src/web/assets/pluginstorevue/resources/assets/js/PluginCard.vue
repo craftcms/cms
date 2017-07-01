@@ -30,7 +30,7 @@
         border-radius: 4px;
         padding: 24px;
         margin: 7px;
-        height: 80px;
+        height: 100px;
         display: flex;
     }
 

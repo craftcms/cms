@@ -1,8 +1,10 @@
 <template>
 
-    <div class="plugin-grid" v-if="plugins.length > 0">
-        <div class="plugin" v-for="plugin in plugins">
-            <plugin-card :plugin="plugin" @click="openModal(plugin)"></plugin-card>
+    <div>
+        <div class="row plugin-grid" v-if="plugins.length > 0">
+            <div class="col-xs-12 col-sm-6 col-lg-6 plugin" v-for="plugin in plugins">
+                <plugin-card :plugin="plugin" @click="openModal(plugin)"></plugin-card>
+            </div>
         </div>
 
         <modal :show.sync="showModal" :on-close="closeModal">
@@ -10,7 +12,6 @@
                 <plugin-details :plugin="selectedPlugin"></plugin-details>
             </div>
         </modal>
-
     </div>
 
 </template>
@@ -51,7 +52,7 @@
 
 <style>
 
-    .plugin-grid {
+/*    .plugin-grid {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
@@ -62,6 +63,6 @@
         box-sizing: border-box;
         flex: 0 0 auto;
         width: 33.33%;
-    }
+    }*/
 
 </style>
