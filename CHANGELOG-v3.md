@@ -106,6 +106,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where adding a new site did not update any existing category groups with the new site’s category uri format and template settings.
 - Fixed a PHP error that occurred when calling `craft\elements\Asset::getWidth()` if the `$transform` argument was anything other than a string. ([#1796](https://github.com/craftcms/cms/issues/1796))
 - Fixed a bug where the Updates utility would spin indefinitely for users that didn’t have permission to perform updates. ([#1719](https://github.com/craftcms/cms/issues/1719))
+- Fixed a SQL error that occurred when editing a non-admin user.
 
 ## 3.0.0-beta.19 - 2017-05-31
 
