@@ -107,6 +107,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when calling `craft\elements\Asset::getWidth()` if the `$transform` argument was anything other than a string. ([#1796](https://github.com/craftcms/cms/issues/1796))
 - Fixed a bug where the Updates utility would spin indefinitely for users that didn’t have permission to perform updates. ([#1719](https://github.com/craftcms/cms/issues/1719))
 - Fixed a SQL error that occurred when editing a non-admin user.
+- Fixed a bug where attempting to log in with a user account that doesn’t have a password yet would fail silently.
 
 ## 3.0.0-beta.19 - 2017-05-31
 

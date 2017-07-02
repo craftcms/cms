@@ -110,7 +110,7 @@ class UsersController extends Controller
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
 
-        if (!$user) {
+        if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
             Craft::$app->getSecurity()->validatePassword($password, '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
 
