@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - The Updater has been rewritten to use Composer under the hood, and now requires significantly less (if any) site downtime.
 - Migration exceptions are now displayed in the Updater. ([#1197](https://github.com/craftcms/cms/issues/1197))
 - Added the `app/migrate` action (replacing `update/run-pending-migrations`), which runs any new Craft, plugin, and content migrations.
+- Added the `|duration` Twig filter, which converts a `DateInterval` object into a human-readable duration.
 - Added `craft\controllers\UpdaterController`.
 - Added `craft\errors\MigrateException`.
 - Added `craft\errors\MigrationException`.
@@ -108,6 +109,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Updates utility would spin indefinitely for users that didn’t have permission to perform updates. ([#1719](https://github.com/craftcms/cms/issues/1719))
 - Fixed a SQL error that occurred when editing a non-admin user.
 - Fixed a bug where attempting to log in with a user account that doesn’t have a password yet would fail silently.
+- Fixed a Twig error that occurred when editing a suspended user.
 
 ## 3.0.0-beta.19 - 2017-05-31
 
