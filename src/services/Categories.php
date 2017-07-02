@@ -293,24 +293,21 @@ class Categories extends Component
         ]));
 
         if (!$isNewCategoryGroup) {
-
-            $result = (new Query())
-                ->select([
-                    'id',
-                    'structureId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                ])
-                ->from(['{{%categorygroups}}'])
+            $groupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $group->id])
                 ->one();
 
-            if (!$result) {
+            if (!$groupRecord) {
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            $oldCategoryGroup = new CategoryGroup($result);
+            $oldCategoryGroup = new CategoryGroup($groupRecord->toArray([
+                'id',
+                'structureId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+            ]));
         } else {
             $groupRecord = new CategoryGroupRecord();
         }

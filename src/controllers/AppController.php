@@ -53,7 +53,7 @@ class AppController extends Controller
 
     public function beforeAction($action)
     {
-        if ($action->id == 'migrate') {
+        if ($action->id === 'migrate') {
             $this->enableCsrfValidation = false;
         }
 

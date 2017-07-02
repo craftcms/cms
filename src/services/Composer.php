@@ -184,6 +184,7 @@ class Composer extends Component
             $generator->setClassMapAuthoritative($authoritative);
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', true);
         } catch (\Exception $exception) {
+            // Swallow exception.
         }
 
         // Change the working directory back
