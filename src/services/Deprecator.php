@@ -238,9 +238,12 @@ class Deprecator extends Component
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
             $templateAttributeCall = 3;
-        } else if (isset($traces[4]['class'], $traces[4]['function']) && $traces[4]['class'] === \craft\helpers\Template::class && $traces[4]['function'] === 'attribute') {
+        } else if ($this->_isTemplateAttributeCall($traces, 4)) {
             // came through Template::attribute()
             $templateAttributeCall = 4;
+        } else if ($this->_isTemplateAttributeCall($traces, 2)) {
+            // special case for "deprecated" date functions the Template helper pretends still exist
+            $templateAttributeCall = 2;
         }
 
         if (isset($templateAttributeCall)) {
@@ -266,6 +269,27 @@ class Deprecator extends Component
         $line = $traces[$t]['line'] ?? null;
 
         return [$file, $line];
+    }
+
+    /**
+     * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
+     *
+     * @param array $traces debug_backtrace() results leading up to [[log()]]
+     * @param int   $index  The trace index to check
+     *
+     * @return bool
+     */
+    private function _isTemplateAttributeCall(array $traces, int $index): bool
+    {
+        if (!isset($traces[$index])) {
+            return false;
+        }
+        $t = $traces[$index];
+        return (
+            isset($t['class'], $t['function']) &&
+            $t['class'] === \craft\helpers\Template::class &&
+            $t['function'] === 'attribute'
+        );
     }
 
     /**
@@ -297,7 +321,7 @@ class Deprecator extends Component
      * Returns the Twig template that should be associated with the deprecation error, if any.
      *
      * @param \Twig_Template $template
-     * @param int|null $actualCodeLine
+     * @param int|null       $actualCodeLine
      *
      * @return int|null
      */
