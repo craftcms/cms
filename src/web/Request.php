@@ -981,7 +981,7 @@ class Request extends \yii\web\Request
                             case $loginPath:
                                 $this->_actionSegments = ['users', 'login'];
                                 break;
-                            case $logoutPath;
+                            case $logoutPath:
                                 $this->_actionSegments = ['users', 'logout'];
                                 break;
                             case $setPasswordPath:

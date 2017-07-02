@@ -420,9 +420,6 @@ class Application extends \yii\web\Application
      */
     private function _processRequirementsCheck(Request $request)
     {
-        // See if we're in the middle of an update.
-        $update = false;
-
         // Only run for CP requests and if we're not in the middle of an update.
         if (
             $request->getIsCpRequest() &&
