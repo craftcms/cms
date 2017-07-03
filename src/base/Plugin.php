@@ -128,26 +128,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function update(string $fromVersion)
-    {
-        if ($this->beforeUpdate($fromVersion) === false) {
-            return false;
-        }
-
-        try {
-            $this->getMigrator()->up();
-        } catch (MigrationException $e) {
-            return false;
-        }
-
-        $this->afterUpdate($fromVersion);
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function uninstall()
     {
         if ($this->beforeUninstall() === false) {
@@ -212,9 +192,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Returns the plugin’s migration manager
-     *
-     * @return MigrationManager The plugin’s migration manager
+     * @inheritdoc
      */
     public function getMigrator(): MigrationManager
     {
@@ -278,27 +256,6 @@ class Plugin extends Module implements PluginInterface
      * Performs actions after the plugin is installed.
      */
     protected function afterInstall()
-    {
-    }
-
-    /**
-     * Performs actions before the plugin is updated.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     *
-     * @return bool Whether the plugin should be updated
-     */
-    protected function beforeUpdate(string $fromVersion): bool
-    {
-        return true;
-    }
-
-    /**
-     * Performs actions after the plugin is updated.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     */
-    protected function afterUpdate(string $fromVersion)
     {
     }
 

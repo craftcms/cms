@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Composer`, available via `Craft::$app->composer` or `Craft::$app->getComposer()`.
 - Added `craft\config\GeneralConfig::getBackupOnUpdates()`.
 - Added `craft\base\Plugin::getHandle()`, as an alias for `Plugin::$id`.
+- Added `craft\base\PluginInterface::getMigrator()` (previously already included in `craft\base\Plugin`).
 - Added `craft\helpers\ArrayHelper::firstValue()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
@@ -63,7 +64,10 @@ Craft CMS 3.0 Working Changelog
 - Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
 - Removed `craft\base\ApplicationTrait::getIsUpdating()`.
+- Removed `craft\base\Plugin::afterUpdate()`.
+- Removed `craft\base\Plugin::beforeUpdate()`.
 - Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
+- Removed `craft\base\Plugin::update()`.
 - Removed `craft\controllers\UpdateController`.
 - Removed `craft\errors\UnpackPackageException`.
 - Removed `craft\errors\UpdateValidationException`.

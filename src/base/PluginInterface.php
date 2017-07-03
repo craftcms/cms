@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use craft\db\MigrationManager;
 use craft\web\twig\variables\Cp;
 
 /**
@@ -38,22 +39,19 @@ interface PluginInterface
     public function install();
 
     /**
-     * Updates the plugin.
-     *
-     * @param string $fromVersion The previously installed version of the plugin.
-     *
-     * @return void|false Return `false` to indicate the update failed.
-     * All other return values mean the update was successful.
-     */
-    public function update(string $fromVersion);
-
-    /**
      * Uninstalls the plugin.
      *
      * @return void|false Return `false` to indicate the uninstallation failed.
      * All other return values mean the uninstallation was successful.
      */
     public function uninstall();
+
+    /**
+     * Returns the plugin’s migration manager
+     *
+     * @return MigrationManager The plugin’s migration manager
+     */
+    public function getMigrator(): MigrationManager;
 
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
