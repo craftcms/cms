@@ -357,9 +357,11 @@ class UpdaterController extends Controller
             Craft::$app->getUpdates()->runMigrations($handles);
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
+            /** @var \Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
+                /** @var \Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $error = get_class($e->migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
                 $e = $previous ?? $e;
