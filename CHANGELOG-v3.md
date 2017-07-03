@@ -359,7 +359,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed an issue where renaming the current folder in Assets manager would break the URLs for currently loaded elements. ([#1474](https://github.com/craftcms/cms/issues/1474))
 - Fixed an issue where focal point would not be tracked correctly under certain circumstances. ([#1305](https://github.com/craftcms/cms/issues/1305))
-- #1329, #1588: Fixed an issue where image operations were being performed when saving an edited image without anything warranting them.
+- Fixed an issue where image operations were being performed when saving an edited image without anything warranting them. ([#1329](https://github.com/craftcms/cms/issues/1329), [#1588](https://github.com/craftcms/cms/issues/1588))
 - Fixed a bug where it was not possible to install plugins manually. ([#1572](https://github.com/craftcms/cms/issues/1572))
 - Fixed a bug where tasks’ default descriptions were not showing up in the Control Panel, for tasks that weren’t created with a custom description.
 - Fixed a PostgreSQL error that could occur if you were saving a large amount of data into a field that needed to be search indexed. ([#1589](https://github.com/craftcms/cms/issues/1589))
@@ -635,22 +635,22 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\web\Controller::asJson()` and `asXml()`, because the base `yii\web\Controller` class now defines the exact same methods.
 
 ### Fixed
- - #1434: Fixed a bug where it was not possible to update a Asset transform index entry.
- - Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
- - Fixed a PHP error that could occur if `craft\web\AssetBundle` had been loaded before `craft\web\View`.
- - #1437: Fixed a bug where new Assets could not be indexed.
- - Fixed a bug where system email subjects and bodies were just getting the translation keys, e.g. `activate_account_subject` and `activate_account_body`.
- - #1444: Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset.
- - Fixed a couple bugs that broke new email verification.
- - Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
- - Fixed a SQL error that could occur when restoring a database backup after a failed update.
- - Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
- - #1438: Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settings would create a SQL error on PostgreSQL.
- - #1424: Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type.
- - #1440: Fixed a bug where element pagination would only think there was one page.
- - #1425: Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated.
- - #1446: Fixed a bug where Composer-installed plugins’ source translations weren’t getting loaded.
- - #1450: Fixed a SQL error that could occur when loading the elements on an element index page if there were any collapsed elements.
+- Fixed a bug where it was not possible to update a Asset transform index entry. ([#1434](https://github.com/craftcms/cms/issues/1434))
+- Fixed a bug where the Control Panel wouldn’t keep up with task progress after the user chose to rerun a task.
+- Fixed a PHP error that could occur if `craft\web\AssetBundle` had been loaded before `craft\web\View`.
+- Fixed a bug where new Assets could not be indexed. ([#1437](https://github.com/craftcms/cms/issues/1437))
+- Fixed a bug where system email subjects and bodies were just getting the translation keys, e.g. `activate_account_subject` and `activate_account_body`.
+- Fixed a bug where you would get a SQL error when saving an Assets field that had a selected asset. ([#1444](https://github.com/craftcms/cms/issues/1444))
+- Fixed a couple bugs that broke new email verification.
+- Fixed an InvalidParamException that was thrown when clicking a user email verification link with an invalid/expired token.
+- Fixed a SQL error that could occur when restoring a database backup after a failed update.
+- Fixed a bug where the `invalidUserTokenPath` config setting wasn’t being respected.
+- Fixed a bug where creating/editing an entry with a Rich Text field that had Asset Volumes attached in its settings would create a SQL error on PostgreSQL. ([#1438](https://github.com/craftcms/cms/issues/1438))
+- Fixed a bug where template requests were not getting a `Content-Type` header based on the template’s MIME type. ([#1424](https://github.com/craftcms/cms/issues/1424))
+- Fixed a bug where element pagination would only think there was one page. ([#1440](https://github.com/craftcms/cms/issues/1440))
+- Fixed a bug where the `offset` param would doubly reduce the number of elements that could be paginated. ([#1425](https://github.com/craftcms/cms/issues/1425))
+- Fixed a bug where Composer-installed plugins’ source translations weren’t getting loaded. ([#1446](https://github.com/craftcms/cms/issues/1446))
+- Fixed a SQL error that could occur when loading the elements on an element index page if there were any collapsed elements. ([#1450](https://github.com/craftcms/cms/issues/1450))
 
 ## 3.0.0-beta.5 - 2017-02-24
 
@@ -831,7 +831,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a bug where saving a disabled entry or draft without a post/expiry date would default to the currently-set date on the entry/draft, rather than clearing out the field.
 - Fixed some asterisk icons.
-- #1334 Fixed a bug where it was impossible to upload user photo, site logo or site icon.
+- Fixed a bug where it was impossible to upload user photo, site logo or site icon. ([#1334](https://github.com/craftcms/cms/issues/1334))
 - Fixed a bug where it was possible to select multiple default options for Dropdown and Radio Buttons fields. ([#8](https://github.com/craftcms/cms/issues/8))
 - Fixed a bug where the “Globals” Control Panel nav item would link to a 404 right after deleting the first global set in Settings → Globals.  ([#9](https://github.com/craftcms/cms/issues/9))
 - Fixed a bug that occurred when generating transforms for images with focal points/ ([#1341](https://github.com/craftcms/cms/issues/1341))
