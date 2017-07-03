@@ -116,6 +116,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where attempting to log in with a user account that doesn’t have a password yet would fail silently.
 - Fixed a Twig error that occurred when editing a suspended user.
 - Fixed a bug where Matrix blocks were being saved an excessive amount of times when saving the owner element, and potentially resulting in errors when enabling a section for a new site.
+- Fixed a bug where `craft\services\Updates::getIsCriticalUpdateAvailable()` wasn’t returning `true` if a plugin had a critical update available, according to its changelog.
 
 ## 3.0.0-beta.19 - 2017-05-31
 

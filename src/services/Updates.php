@@ -292,6 +292,14 @@ class Updates extends Component
                 $pluginUpdate->manualDownloadEndpoint = $plugin->downloadUrl;
                 $pluginUpdate->manualUpdateRequired = true;
                 $pluginUpdate->releases = $releaseModels;
+
+                // See if there's a critical update available
+                foreach ($releaseModels as $release) {
+                    if ($release->critical) {
+                        $pluginUpdate->criticalUpdateAvailable = true;
+                        break;
+                    }
+                }
             } else {
                 $pluginUpdate->status = PluginUpdateStatus::UpToDate;
             }
