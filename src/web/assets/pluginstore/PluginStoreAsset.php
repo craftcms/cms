@@ -32,7 +32,6 @@ class PluginStoreAsset extends AssetBundle
         ];
 
         $this->css = [
-            'pluginstore.css',
             'pluginstore-oauth-callback.css',
         ];
 

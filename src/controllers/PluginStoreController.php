@@ -45,36 +45,11 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionIndex(array $results = null)
+    public function actionIndex()
     {
-        $client = Craft::$app->getPluginStore()->getClient();
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
 
-        try {
-            $pluginsJson = $client->request('GET', 'plugins');
-            $pluginsResponse = json_decode($pluginsJson->getBody(), true);
-
-            if(!isset($pluginsResponse['error'])) {
-                $plugins = $pluginsResponse['data'];
-            } else {
-                $error = $pluginsResponse['error'];
-            }
-        }
-        catch(\Exception $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        if($results) {
-            $plugins = $results;
-        }
-
-        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
-
-        return $this->renderTemplate('plugin-store/_index', [
-            'results' => $results,
-            'plugins' => (isset($plugins) ? $plugins : null),
-            'error' => (isset($error) ? $error : null)
-        ]);
+        return $this->renderTemplate('plugin-store/_index');
     }
 
     public function actionPlugin($slug)
@@ -213,13 +188,6 @@ class PluginStoreController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'results' => $results
         ]);
-    }
-
-    public function actionVue()
-    {
-        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
-
-        return $this->renderTemplate('plugin-store/vue/_index');
     }
 
     public function actionVueRouting()
