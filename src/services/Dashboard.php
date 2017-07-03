@@ -183,7 +183,7 @@ class Dashboard extends Component
      * @param bool            $runValidation Whether the widget should be validated
      *
      * @return bool Whether the widget was saved successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
@@ -238,7 +238,7 @@ class Dashboard extends Component
             $widget->afterSave($isNewWidget);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -277,7 +277,7 @@ class Dashboard extends Component
      * @param WidgetInterface $widget The widget to be deleted
      *
      * @return bool Whether the widget was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
@@ -302,7 +302,7 @@ class Dashboard extends Component
             $widget->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -322,7 +322,7 @@ class Dashboard extends Component
      * @param int[] $widgetIds The widget IDs
      *
      * @return bool Whether the widgets were reordered successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function reorderWidgets(array $widgetIds): bool
     {
@@ -336,7 +336,7 @@ class Dashboard extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

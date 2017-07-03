@@ -256,7 +256,7 @@ class TemplateCaches extends Component
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return void
      */
     public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
@@ -360,7 +360,7 @@ class TemplateCaches extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

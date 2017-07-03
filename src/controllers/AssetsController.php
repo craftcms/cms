@@ -137,7 +137,7 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id
             ]);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
@@ -219,7 +219,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -361,7 +361,7 @@ class AssetsController extends Controller
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId,
                 $newName);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -610,7 +610,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
-     * @throws \Exception if something went wrong saving the Asset.
+     * @throws \Throwable if something went wrong saving the Asset.
      */
     public function actionSaveImage(): Response
     {
@@ -745,7 +745,7 @@ class AssetsController extends Controller
 
                 Craft::$app->getElements()->saveElement($newAsset);
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 

@@ -363,7 +363,7 @@ class Sites extends Component
      *
      * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
@@ -427,7 +427,7 @@ class Sites extends Component
             $this->_sitesByHandle[$site->handle] = $site;
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -488,7 +488,7 @@ class Sites extends Component
      * @param int[] $siteIds The site IDs in their new order
      *
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function reorderSites(array $siteIds): bool
     {
@@ -509,7 +509,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -537,7 +537,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
     {
@@ -557,7 +557,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
@@ -766,7 +766,7 @@ class Sites extends Component
             $transaction->commit();
 
             $success = (bool)$affectedRows;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

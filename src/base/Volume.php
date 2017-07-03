@@ -276,7 +276,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             return $this->filesystem()->deleteDir($path);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             // We catch all Exceptions because most of the times these will be 3rd party exceptions.
             return false;
         }

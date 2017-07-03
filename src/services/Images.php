@@ -292,7 +292,7 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
         }
 

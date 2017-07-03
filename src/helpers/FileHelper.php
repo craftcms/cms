@@ -413,7 +413,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 throw new Exception('Unable to release test lock.');
             }
             self::$_useFileLocks = true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
         }
 

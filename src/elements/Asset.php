@@ -463,7 +463,7 @@ class Asset extends Element
             }
 
             return parent::__toString();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }

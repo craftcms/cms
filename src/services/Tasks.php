@@ -90,7 +90,7 @@ class Tasks extends Component
      * @param TaskInterface|array|string $task         The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      * @param bool                       $maybeAutoRun Whether this request should maybe be turned into a task runner
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return TaskInterface The task
      */
     public function queueTask($task, $maybeAutoRun = true): TaskInterface
@@ -148,7 +148,7 @@ class Tasks extends Component
      * @param bool          $runValidation Whether the task should be validated
      *
      * @return bool Whether the task was saved successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
@@ -214,7 +214,7 @@ class Tasks extends Component
             $task->afterSave($isNewTask);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -364,7 +364,7 @@ class Tasks extends Component
                         break;
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $error = 'An exception was thrown: '.$e->getMessage();
             }
@@ -691,7 +691,7 @@ class Tasks extends Component
      * @param TaskInterface $task The task
      *
      * @return bool Whether the task was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteTask(TaskInterface $task): bool
     {
@@ -722,7 +722,7 @@ class Tasks extends Component
             $task->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

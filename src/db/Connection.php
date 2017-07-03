@@ -87,7 +87,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      *
      * @throws DbConnectException if there are any issues
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function open()
     {
@@ -114,7 +114,7 @@ class Connection extends \yii\db\Connection
 
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         }
@@ -462,7 +462,7 @@ class Connection extends \yii\db\Connection
                 ->select(['siteName'])
                 ->from(['{{%info}}'])
                 ->column()[0];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
         }
     }

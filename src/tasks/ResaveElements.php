@@ -105,7 +105,7 @@ class ResaveElements extends Task
             }
 
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $class = $this->elementType;
 

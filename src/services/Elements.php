@@ -346,7 +346,7 @@ class Elements extends Component
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
     {
@@ -508,7 +508,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -534,7 +534,7 @@ class Elements extends Component
      * @param array $newAttributes any attributes to apply to the duplicate
      *
      * @return ElementInterface the duplicated element
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
@@ -589,7 +589,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -734,7 +734,7 @@ class Elements extends Component
      * @param int $prevailingElementId The ID of the element that is sticking around.
      *
      * @return bool Whether the elements were merged successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
@@ -838,7 +838,7 @@ class Elements extends Component
             $transaction->commit();
 
             return $success;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -854,7 +854,7 @@ class Elements extends Component
      *                                  Defaults to the current site.
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
@@ -895,7 +895,7 @@ class Elements extends Component
      * @param ElementInterface $element The element to be deleted
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElement(ElementInterface $element): bool
     {
@@ -950,7 +950,7 @@ class Elements extends Component
             $element->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -1414,7 +1414,7 @@ class Elements extends Component
             }
 
             return $this->parseRefs((string)$value);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log it
             Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
 

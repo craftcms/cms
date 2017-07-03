@@ -195,7 +195,7 @@ trait ApplicationTrait
                         if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
                             return $preferredLanguage;
                         }
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 

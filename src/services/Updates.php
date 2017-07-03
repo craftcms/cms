@@ -345,7 +345,7 @@ class Updates extends Component
             }
 
             return (string)$response->getBody();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('There was a problem getting the changelog for “'.$plugin->name.'”, so it was skipped: '.$e->getMessage(), __METHOD__);
 
             return null;

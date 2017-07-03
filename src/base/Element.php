@@ -1989,7 +1989,7 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (\Exception $e) {
+                                } catch (\Throwable $e) {
                                     $value = $field->normalizeValue(null);
                                 }
                             }

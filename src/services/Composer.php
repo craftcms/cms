@@ -37,7 +37,7 @@ class Composer extends Component
      * @param IOInterface|null $io           The IO object that Composer should be instantiated with
      *
      * @return void
-     * @throws \Exception if something goes wrong
+     * @throws \Throwable if something goes wrong
      */
     public function install(array $requirements, IOInterface $io = null)
     {
@@ -70,7 +70,7 @@ class Composer extends Component
                 ->setUpdateWhitelist(array_keys($requirements));
 
             $status = $installer->run();
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             $status = 1;
         }
 
@@ -90,7 +90,7 @@ class Composer extends Component
      * @param IOInterface|null $io       The IO object that Composer should be instantiated with
      *
      * @return void
-     * @throws \Exception if something goes wrong
+     * @throws \Throwable if something goes wrong
      */
     public function uninstall(array $packages, IOInterface $io = null)
     {
@@ -138,7 +138,7 @@ class Composer extends Component
                 ->setUpdateWhitelist($packages);
 
             $status = $installer->run();
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             $status = 1;
         }
 
@@ -157,7 +157,7 @@ class Composer extends Component
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
      *
      * @return void
-     * @throws \Exception if something goes wrong
+     * @throws \Throwable if something goes wrong
      */
     public function optimize(IOInterface $io = null)
     {
@@ -183,7 +183,7 @@ class Composer extends Component
             $generator = $composer->getAutoloadGenerator();
             $generator->setClassMapAuthoritative($authoritative);
             $generator->dump($config, $localRepo, $package, $installationManager, 'composer', true);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             // Swallow exception.
         }
 

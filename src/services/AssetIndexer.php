@@ -114,7 +114,7 @@ class AssetIndexer extends Component
                 'missingFolders' => $missingFolders,
                 'skippedFiles' => $skippedItems
             ];
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return ['error' => $exception->getMessage()];
         }
     }

@@ -460,7 +460,7 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }

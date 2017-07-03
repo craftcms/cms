@@ -25,7 +25,6 @@ use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use craft\web\View;
-use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -1160,7 +1159,7 @@ class UsersController extends Controller
 
                 return $this->asJson(['html' => $html]);
             }
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
                 FileHelper::removeFile($fileLocation);

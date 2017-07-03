@@ -214,7 +214,7 @@ class EtTransport
             }
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.

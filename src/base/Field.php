@@ -17,7 +17,6 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
 
@@ -119,7 +118,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         try {
             return (string)Craft::t('site', $this->name);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }

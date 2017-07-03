@@ -530,7 +530,7 @@ class Assets extends BaseRelationField
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
                 $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new InvalidSubpathException($subpath);
             }
 

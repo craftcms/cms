@@ -359,7 +359,7 @@ class Structures extends Component
      * @param  string           $mode
      *
      * @return bool Whether it was done
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode): bool
     {
@@ -416,7 +416,7 @@ class Structures extends Component
             $element->afterMoveInStructure($structureId);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

@@ -188,7 +188,7 @@ class Tags extends Component
      *
      * @return bool Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
@@ -240,7 +240,7 @@ class Tags extends Component
             $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -261,7 +261,7 @@ class Tags extends Component
      * @param int $tagGroupId
      *
      * @return bool Whether the tag group was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteTagGroupById(int $tagGroupId): bool
     {
@@ -309,7 +309,7 @@ class Tags extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

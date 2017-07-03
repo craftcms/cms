@@ -161,7 +161,7 @@ class UpdaterController extends Controller
     {
         try {
             $this->_data['dbBackupPath'] = Craft::$app->getDb()->backup();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error backing up the database: '.$e->getMessage(), __METHOD__);
             return $this->_send([
                 'error' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
@@ -185,7 +185,7 @@ class UpdaterController extends Controller
     {
         try {
             Craft::$app->getDb()->restore($this->_data['dbBackupPath']);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error restoring up the database: '.$e->getMessage(), __METHOD__);
             return $this->_send([
                 'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
@@ -236,7 +236,7 @@ class UpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->install($requirements, $io);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             return $this->_composerError(Craft::t('app', 'Composer was unable to install the updates.'), $e, $io);
         }
@@ -256,7 +256,7 @@ class UpdaterController extends Controller
         try {
             Craft::$app->getComposer()->install($this->_data['current'], $io);
             $this->_data['reverted'] = true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             return $this->_composerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io);
         }
@@ -275,7 +275,7 @@ class UpdaterController extends Controller
 
         try {
             Craft::$app->getComposer()->optimize($io);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error optimizing the Composer autoloader: '.$e->getMessage()."\nOutput: ".$io->getOutput(), __METHOD__);
             return $this->_send([
                 'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),

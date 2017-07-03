@@ -274,7 +274,7 @@ class Categories extends Component
      *
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
@@ -471,7 +471,7 @@ class Categories extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -492,7 +492,7 @@ class Categories extends Component
      * @param int $groupId
      *
      * @return bool Whether the category group was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteGroupById(int $groupId): bool
     {
@@ -542,7 +542,7 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

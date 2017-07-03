@@ -300,7 +300,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin was installed successfully.
      * @throws InvalidPluginException if the plugin doesn’t exist
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function installPlugin(string $handle): bool
     {
@@ -344,7 +344,7 @@ class Plugins extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -368,7 +368,7 @@ class Plugins extends Component
      *
      * @return bool Whether the plugin was uninstalled successfully
      * @throws InvalidPluginException if the plugin doesn’t exist
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function uninstallPlugin(string $handle): bool
     {
@@ -407,7 +407,7 @@ class Plugins extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

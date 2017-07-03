@@ -712,7 +712,7 @@ class Fields extends Component
      * @param bool           $runValidation Whether the field should be validated
      *
      * @return bool Whether the field was saved successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
@@ -839,7 +839,7 @@ class Fields extends Component
             $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -878,7 +878,7 @@ class Fields extends Component
      * @param FieldInterface $field The field
      *
      * @return bool Whether the field was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteField(FieldInterface $field): bool
     {
@@ -917,7 +917,7 @@ class Fields extends Component
             $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

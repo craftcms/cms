@@ -320,7 +320,7 @@ class Volumes extends Component
      * @param bool            $runValidation Whether the volume should be validated
      *
      * @return bool Whether the field was saved successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
 
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
@@ -405,7 +405,7 @@ class Volumes extends Component
             $volume->afterSave($isNewVolume);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -433,7 +433,7 @@ class Volumes extends Component
      *
      * @param array $volumeIds
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function reorderVolumes(array $volumeIds): bool
@@ -448,7 +448,7 @@ class Volumes extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -541,7 +541,7 @@ class Volumes extends Component
      *
      * @param int $volumeId
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function deleteVolumeById(int $volumeId): bool
@@ -560,7 +560,7 @@ class Volumes extends Component
      *
      * @param VolumeInterface $volume The volume to delete
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return bool
      */
     public function deleteVolume(VolumeInterface $volume): bool
@@ -601,7 +601,7 @@ class Volumes extends Component
             $volume->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
