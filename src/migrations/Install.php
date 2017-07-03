@@ -426,9 +426,9 @@ class Install extends Migration
         ]);
         $this->createTable('{{%plugins}}', [
             'id' => $this->primaryKey(),
-            'handle' => $this->string(150)->notNull(),
-            'version' => $this->string(15)->notNull(),
-            'schemaVersion' => $this->string(15)->notNull(),
+            'handle' => $this->string()->notNull(),
+            'version' => $this->string()->notNull(),
+            'schemaVersion' => $this->string()->notNull(),
             'licenseKey' => $this->char(24),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
             'settings' => $this->text(),
