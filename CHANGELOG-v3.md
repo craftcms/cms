@@ -3,7 +3,7 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased [CRITICAL]
 
-> {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugin config files, translation files, translation categories, and template paths must be updated accordingly.
+> {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugins’ `Craft::t()` and `|t()` calls, translation files, and template paths must be updated accordingly, as well as any plugin config files in Craft 3 projects.
 
 > {note} Support for manual plugin installation within the `plugins/` folder has been removed. Plugins **must** be Composer-installed now.
 
