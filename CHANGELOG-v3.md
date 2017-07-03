@@ -87,6 +87,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Plugins::validateConfig()`.
 - Removed `craft\services\Updates::backupDatabase()`
 - Removed `craft\services\Updates::backupFiles()`.
+- Removed `craft\services\Updates::criticalCraftUpdateAvailable()`.
+- Removed `craft\services\Updates::criticalPluginUpdateAvailable()`.
 - Removed `craft\services\Updates::getIsManualUpdateRequired()`.
 - Removed `craft\services\Updates::getPluginsThatNeedDbUpdate()`.
 - Removed `craft\services\Updates::getUnwritableFolders()`.

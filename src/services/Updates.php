@@ -65,42 +65,6 @@ class Updates extends Component
     // =========================================================================
 
     /**
-     * @param AppUpdateRelease[] $craftReleases
-     *
-     * @return bool
-     */
-    public function criticalCraftUpdateAvailable(array $craftReleases): bool
-    {
-        foreach ($craftReleases as $craftRelease) {
-            if ($craftRelease->critical) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @param PluginUpdate[] $pluginUpdate
-     *
-     * @return bool
-     */
-    public function criticalPluginUpdateAvailable(array $pluginUpdate): bool
-    {
-        foreach ($pluginUpdate as $pluginRelease) {
-            if ($pluginRelease->status === PluginUpdateStatus::UpdateAvailable && count($pluginRelease->releases) > 0) {
-                foreach ($pluginRelease->releases as $release) {
-                    if ($release->critical) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns whether the update info is cached.
      *
      * @return bool
@@ -361,7 +325,7 @@ class Updates extends Component
     }
 
     /**
-     * Parses a plugin’s changelog and returns an array of PluginUpdateRelease models.
+     * Parses a plugin’s changelog and returns an array of UpdateRelease models.
      *
      * @param PluginInterface $plugin
      * @param string          $changelog
