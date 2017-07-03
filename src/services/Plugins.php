@@ -23,6 +23,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\Component;
+use yii\db\Exception;
 use yii\helpers\Inflector;
 
 /**
@@ -148,20 +149,25 @@ class Plugins extends Component
         $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
 
         // Find all of the installed plugins
-        $this->_installedPluginInfo = (new Query())
-            ->select([
-                'id',
-                'handle',
-                'version',
-                'schemaVersion',
-                'licenseKey',
-                'licenseKeyStatus',
-                'settings',
-                'installDate'
-            ])
-            ->from(['{{%plugins}}'])
-            ->indexBy('handle')
-            ->all();
+        // todo: remove try/catch after next breakpoint
+        try {
+            $this->_installedPluginInfo = (new Query())
+                ->select([
+                    'id',
+                    'handle',
+                    'version',
+                    'schemaVersion',
+                    'licenseKey',
+                    'licenseKeyStatus',
+                    'settings',
+                    'installDate'
+                ])
+                ->from(['{{%plugins}}'])
+                ->indexBy('handle')
+                ->all();
+        } catch (Exception $e) {
+            $this->_installedPluginInfo = [];
+        }
 
         foreach ($this->_installedPluginInfo as $handle => &$row) {
             // Clean up the row data
