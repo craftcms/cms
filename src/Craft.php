@@ -240,7 +240,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/'.Craft::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
             ],
         ];
 

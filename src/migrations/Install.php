@@ -986,7 +986,7 @@ class Install extends Migration
         // Populate the info table
         echo '    > populate the info table ...';
         Craft::$app->saveInfo(new Info([
-            'version' => Craft::$app->version,
+            'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
             'edition' => '0',
             'name' => $this->site->name,

@@ -63,7 +63,7 @@ class EtTransport
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
             'requestPort' => Craft::$app->getRequest()->getPort(),
-            'localVersion' => Craft::$app->version,
+            'localVersion' => Craft::$app->getVersion(),
             'localEdition' => Craft::$app->getEdition(),
             'userEmail' => $userEmail,
             'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,

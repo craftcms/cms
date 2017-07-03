@@ -225,7 +225,7 @@ class UpdaterController extends Controller
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                 $packageName = $plugin->packageName;
-                $current = $plugin->version;
+                $current = $plugin->getVersion();
             }
             $requirements[$packageName] = $version;
             $this->_data['current'] = $current;
@@ -458,7 +458,7 @@ class UpdaterController extends Controller
             if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
                 throw new BadRequestHttpException('Invalid update handle: '.$handle);
             }
-            $fromVersion = $plugin->version;
+            $fromVersion = $plugin->getVersion();
         }
 
         return version_compare($toVersion, $fromVersion, '>');

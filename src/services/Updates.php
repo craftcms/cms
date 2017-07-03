@@ -225,7 +225,7 @@ class Updates extends Component
         // Prep the update models
         $update = new Update();
         $update->app = new AppUpdate();
-        $update->app->localVersion = Craft::$app->version;
+        $update->app->localVersion = Craft::$app->getVersion();
 
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -325,7 +325,7 @@ class Updates extends Component
             // Fetch it
             $client = new Client([
                 'headers' => [
-                    'User-Agent' => 'Craft/'.Craft::$app->version,
+                    'User-Agent' => 'Craft/'.Craft::$app->getVersion(),
                 ],
                 'timeout' => 5,
                 'connect_timeout' => 2,
@@ -564,7 +564,7 @@ class Updates extends Component
      */
     public function getHasCraftVersionChanged(): bool
     {
-        return (Craft::$app->version != Craft::$app->getInfo()->version);
+        return (Craft::$app->getVersion() != Craft::$app->getInfo()->version);
     }
 
     /**
@@ -614,7 +614,7 @@ class Updates extends Component
     public function updateCraftVersionInfo(): bool
     {
         $info = Craft::$app->getInfo();
-        $info->version = Craft::$app->version;
+        $info->version = Craft::$app->getVersion();
         $info->schemaVersion = Craft::$app->schemaVersion;
 
         return Craft::$app->saveInfo($info);

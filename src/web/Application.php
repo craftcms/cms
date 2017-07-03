@@ -464,7 +464,7 @@ class Application extends \yii\web\Application
                 $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
-                    'targetVersion' => Craft::$app->version,
+                    'targetVersion' => Craft::$app->getVersion(),
                 ]));
             }
 

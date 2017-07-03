@@ -76,7 +76,7 @@ class CraftSupport extends Widget
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $plugins .= "\n    - ".$plugin->name.' '.$plugin->version;
+            $plugins .= "\n    - ".$plugin->name.' '.$plugin->getVersion();
         }
 
         $db = Craft::$app->getDb();
@@ -87,7 +87,7 @@ class CraftSupport extends Widget
         }
 
         $envInfoJs = Json::encode([
-            'Craft version' => Craft::$app->version.' ('.Craft::$app->getEditionName().')',
+            'Craft version' => Craft::$app->getVersion().' ('.Craft::$app->getEditionName().')',
             'PHP version' => PHP_VERSION,
             'Database driver & version' => $driver.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION),
             'Plugins & versions' => $plugins,

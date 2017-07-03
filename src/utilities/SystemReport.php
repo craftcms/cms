@@ -76,7 +76,7 @@ class SystemReport extends Utility
             'PHP version' => PHP_VERSION,
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
-            'Craft edition & version' => 'Craft '.App::editionName(Craft::$app->getEdition()).' '.Craft::$app->version,
+            'Craft edition & version' => 'Craft '.App::editionName(Craft::$app->getEdition()).' '.Craft::$app->getVersion(),
             'Yii version' => Yii::getVersion(),
             'Twig version' => Twig_Environment::VERSION,
             'Guzzle version' => Client::VERSION,
