@@ -86,16 +86,16 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Plugins::isComposerInstall()`.
 - Removed `craft\services\Plugins::validateConfig()`.
 - Removed `craft\services\Updates::backupDatabase()`
-- Removed `craft\services\Updates::backupFiles()`
-- Removed `craft\services\Updates::getIsManualUpdateRequired()`
-- Removed `craft\services\Updates::getPluginsThatNeedDbUpdate()`
-- Removed `craft\services\Updates::getUnwritableFolders()`
-- Removed `craft\services\Updates::prepareUpdate()`
-- Removed `craft\services\Updates::processUpdateDownload()`
-- Removed `craft\services\Updates::rollbackUpdate()`
-- Removed `craft\services\Updates::updateCleanUp()`
-- Removed `craft\services\Updates::updateDatabase()`
-- Removed `craft\services\Updates::updateFiles()`
+- Removed `craft\services\Updates::backupFiles()`.
+- Removed `craft\services\Updates::getIsManualUpdateRequired()`.
+- Removed `craft\services\Updates::getPluginsThatNeedDbUpdate()`.
+- Removed `craft\services\Updates::getUnwritableFolders()`.
+- Removed `craft\services\Updates::prepareUpdate()`.
+- Removed `craft\services\Updates::processUpdateDownload()`.
+- Removed `craft\services\Updates::rollbackUpdate()`.
+- Removed `craft\services\Updates::updateCleanUp()`.
+- Removed `craft\services\Updates::updateDatabase()`.
+- Removed `craft\services\Updates::updateFiles()`.
 - Removed `craft\services\View::getRenderingTemplate()`.
 - Removed the `beforeDisablePlugin`, `afterDisablePlugin`, `beforeEnablePlugin`, and `afterEnablePlugin` events from `craft\services\Plugins`.
 - Removed the `beforeUpdate`, `afterUpdate`, and `updateFailure` events from `craft\services\Updates`.
