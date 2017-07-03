@@ -49,6 +49,11 @@ trait PluginTrait
     public $developerUrl;
 
     /**
+     * @var string|null The plugin developer’s support email
+     */
+    public $developerEmail;
+
+    /**
      * @var string|null The plugin’s documentation URL
      */
     public $documentationUrl;

@@ -357,6 +357,7 @@ class UpdaterController extends Controller
             Craft::$app->getUpdates()->runMigrations($handles);
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
+            $ownerHandle = $e->ownerHandle;
             /** @var \Throwable $e */
             $e = $e->getPrevious();
 
@@ -379,10 +380,16 @@ class UpdaterController extends Controller
                 $options[] = $this->_actionOption($restoreLabel, self::ACTION_RESTORE_DB);
             }
 
+            if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
+                /** @var Plugin $plugin */
+                $email = $plugin->developerEmail;
+            }
+            $email = $email ?? 'support@craftcms.com';
+
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),
                 'submit' => true,
-                'email' => 'support@craftcms.com',
+                'email' => $email,
                 'subject' => $ownerName.' update failure',
                 'errorDetails' => $error,
             ];

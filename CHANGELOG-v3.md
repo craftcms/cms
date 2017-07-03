@@ -24,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\config\GeneralConfig::getBackupOnUpdates()`.
 - Added `craft\base\Plugin::getHandle()`, as an alias for `Plugin::$id`.
 - Added `craft\base\PluginInterface::getMigrator()` (previously already included in `craft\base\Plugin`).
+- Added `craft\base\PluginTrait::$developerEmail`. When a plugin’s migration fails, the “Send for help” button will link to this email, if set.
 - Added `craft\helpers\ArrayHelper::firstValue()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
