@@ -1353,6 +1353,7 @@ class Elements extends Component
 
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $siteElement->propagating = true;
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors

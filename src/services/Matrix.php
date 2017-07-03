@@ -684,11 +684,14 @@ class Matrix extends Component
                 $blockIds = [];
                 $collapsedBlockIds = [];
 
+                // Only propagate the blocks if the owner isn't being propagated
+                $propagate = !$owner->propagating;
+
                 foreach ($blocks as $block) {
                     $block->ownerId = $owner->id;
                     $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
 
-                    Craft::$app->getElements()->saveElement($block, false);
+                    Craft::$app->getElements()->saveElement($block, false, $propagate);
 
                     $blockIds[] = $block->id;
 
