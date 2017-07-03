@@ -134,7 +134,7 @@ class Application extends \yii\web\Application
         }
 
         // Makes sure that the uploaded files are compatible with the current database schema
-        if (!$this->getUpdates()->getIsSchemaVersionCompatible()) {
+        if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
@@ -460,7 +460,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Did we skip a breakpoint?
-            if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
+            if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
                 $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
                     'url' => "[{$this->minVersionRequired}]($minVersionUrl)",

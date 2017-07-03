@@ -45,6 +45,8 @@ Craft CMS 3.0 Working Changelog
 - Plugin changelogs can now use dots in release date formats (e.g. `2017.05.28`).
 - Plugin changelogs can now have additional text before the version number in release headings (e.g. the plugin name).
 - Plugin changelogs can now contain warnings (e.g. `> {warning} Some warning!`).
+- Renamed `craft\services\Updates::getIsBreakpointUpdateNeeded()` to `getWasCraftBreakpointSkipped()`.
+- Renamed `craft\services\Updates::getIsSchemaVersionCompatible()` to `getIsCraftSchemaVersionCompatible()`.
 - Added a `$withContent` argument to `craft\services\EntryRevisions::getDraftsByEntryId()` and `getVersionsByEntryId()` (defaults to `false`). ([#1755](https://github.com/craftcms/cms/issues/1755))
 - Craft now lists `craftcms/plugin-installer` as a dependency, so projects don’t need to explicitly require it.
 - `craft\db\Migration::up()` and `down()` now have a `$throwExceptions` argument (defaults to `false`).

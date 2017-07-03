@@ -17,7 +17,6 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\models\AppUpdate;
-use craft\models\AppUpdateRelease;
 use craft\models\PluginUpdate;
 use craft\models\Update;
 use craft\models\UpdateRelease;
@@ -31,12 +30,12 @@ use yii\helpers\Markdown;
  *
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
  *
- * @property bool $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
- * @property bool $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
- * @property bool $isCriticalUpdateAvailable Whether a critical update is available
- * @property bool $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
- * @property bool $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
- * @property bool $isUpdateInfoCached        Whether the update info is cached
+ * @property bool $isCraftDbMigrationNeeded       Whether Craft needs to run any database migrations
+ * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
+ * @property bool $isCriticalUpdateAvailable      Whether a critical update is available
+ * @property bool $isPluginDbUpdateNeeded         Whether a plugin needs to run a database update
+ * @property bool $isUpdateInfoCached             Whether the update info is cached
+ * @property bool $wasCraftBreakpointSkipped      Whether the build stored in craft_info is less than the minimum required build on the file system
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -546,7 +545,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsBreakpointUpdateNeeded(): bool
+    public function getWasCraftBreakpointSkipped(): bool
     {
         return version_compare(Craft::$app->minVersionRequired, Craft::$app->getInfo()->version, '>');
     }
@@ -556,7 +555,7 @@ class Updates extends Component
      *
      * @return bool
      */
-    public function getIsSchemaVersionCompatible(): bool
+    public function getIsCraftSchemaVersionCompatible(): bool
     {
         $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
 
