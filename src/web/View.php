@@ -209,7 +209,7 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param mixed $template  The name of the template to load
+     * @param string $template  The name of the template to load
      * @param array $variables The variables that should be available to the template
      *
      * @return string the rendering result
@@ -217,7 +217,7 @@ class View extends \yii\web\View
      * @throws Exception in case of failure
      * @throws \RuntimeException in case of failure
      */
-    public function renderTemplate($template, array $variables = []): string
+    public function renderTemplate(string $template, array $variables = []): string
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
