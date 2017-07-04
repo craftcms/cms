@@ -310,17 +310,17 @@ class Sections extends Component
     {
         $siteSettings = (new Query())
             ->select([
-                'sections_i18n.id',
-                'sections_i18n.sectionId',
-                'sections_i18n.siteId',
-                'sections_i18n.enabledByDefault',
-                'sections_i18n.hasUrls',
-                'sections_i18n.uriFormat',
-                'sections_i18n.template',
+                'sections_sites.id',
+                'sections_sites.sectionId',
+                'sections_sites.siteId',
+                'sections_sites.enabledByDefault',
+                'sections_sites.hasUrls',
+                'sections_sites.uriFormat',
+                'sections_sites.template',
             ])
-            ->from(['{{%sections_i18n}} sections_i18n'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
-            ->where(['sections_i18n.sectionId' => $sectionId])
+            ->from(['{{%sections_sites}} sections_sites'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->where(['sections_sites.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
 
@@ -1033,7 +1033,7 @@ class Sections extends Component
                     'typeId',
                     'siteId' => (new Query())
                         ->select('i18n.siteId')
-                        ->from('{{%elements_i18n}} i18n')
+                        ->from('{{%elements_sites}} i18n')
                         ->where('[[i18n.elementId]] = [[e.id]]')
                         ->limit(1)
                 ])

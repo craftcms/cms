@@ -30,16 +30,16 @@ class m160807_144858_sites extends Migration
      * @var array The site FK columns ([table, column, not null?, locale column])
      */
     protected static $siteColumns = [
-        ['{{%categorygroups_i18n}}', 'siteId', true, 'locale'],
+        ['{{%categorygroups_sites}}', 'siteId', true, 'locale'],
         ['{{%content}}', 'siteId', true, 'locale'],
-        ['{{%elements_i18n}}', 'siteId', true, 'locale'],
+        ['{{%elements_sites}}', 'siteId', true, 'locale'],
         ['{{%entrydrafts}}', 'siteId', true, 'locale'],
         ['{{%entryversions}}', 'siteId', true, 'locale'],
         ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerLocale'],
         ['{{%relations}}', 'sourceSiteId', false, 'sourceLocale'],
         ['{{%routes}}', 'siteId', false, 'locale'],
         ['{{%searchindex}}', 'siteId', true, 'locale'],
-        ['{{%sections_i18n}}', 'siteId', true, 'locale'],
+        ['{{%sections_sites}}', 'siteId', true, 'locale'],
         ['{{%templatecaches}}', 'siteId', true, 'locale'],
     ];
 
@@ -149,14 +149,14 @@ class m160807_144858_sites extends Migration
         // Create the new indexes
         // ---------------------------------------------------------------------
 
-        $this->createIndex(null, '{{%categorygroups_i18n}}', 'groupId,siteId', true);
-        $this->createIndex(null, '{{%categorygroups_i18n}}', 'siteId', false);
+        $this->createIndex(null, '{{%categorygroups_sites}}', 'groupId,siteId', true);
+        $this->createIndex(null, '{{%categorygroups_sites}}', 'siteId', false);
         $this->createIndex(null, '{{%content}}', 'elementId,siteId', true);
         $this->createIndex(null, '{{%content}}', 'siteId', false);
-        $this->createIndex(null, '{{%elements_i18n}}', 'elementId,siteId', true);
-        $this->createIndex(null, '{{%elements_i18n}}', 'uri,siteId', true);
-        $this->createIndex(null, '{{%elements_i18n}}', 'siteId', false);
-        $this->createIndex(null, '{{%elements_i18n}}', 'slug,siteId', false);
+        $this->createIndex(null, '{{%elements_sites}}', 'elementId,siteId', true);
+        $this->createIndex(null, '{{%elements_sites}}', 'uri,siteId', true);
+        $this->createIndex(null, '{{%elements_sites}}', 'siteId', false);
+        $this->createIndex(null, '{{%elements_sites}}', 'slug,siteId', false);
         $this->createIndex(null, '{{%entrydrafts}}', 'entryId,siteId', false);
         $this->createIndex(null, '{{%entrydrafts}}', 'siteId', false);
         $this->createIndex(null, '{{%entryversions}}', 'entryId,siteId', false);
@@ -165,23 +165,23 @@ class m160807_144858_sites extends Migration
         $this->createIndex(null, '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
         $this->createIndex(null, '{{%relations}}', 'sourceSiteId', false);
         $this->createIndex(null, '{{%routes}}', 'siteId', false);
-        $this->createIndex(null, '{{%sections_i18n}}', 'sectionId,siteId', true);
-        $this->createIndex(null, '{{%sections_i18n}}', 'siteId', false);
+        $this->createIndex(null, '{{%sections_sites}}', 'sectionId,siteId', true);
+        $this->createIndex(null, '{{%sections_sites}}', 'siteId', false);
         $this->createIndex(null, '{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false);
         $this->createIndex(null, '{{%templatecaches}}', 'siteId', false);
 
         // Create the new FKs
         // ---------------------------------------------------------------------
 
-        $this->addForeignKey(null, '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%categorygroups_sites}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%elements_sites}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%relations}}', 'sourceSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%routes}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, '{{%sections_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, '{{%sections_sites}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, '{{%templatecaches}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
 
         // Update the searchindex PK
@@ -193,40 +193,40 @@ class m160807_144858_sites extends Migration
         // Drop the old FKs
         // ---------------------------------------------------------------------
 
-        MigrationHelper::dropForeignKeyIfExists('{{%categorygroups_i18n}}', ['locale'], $this);
+        MigrationHelper::dropForeignKeyIfExists('{{%categorygroups_sites}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%content}}', ['locale'], $this);
-        MigrationHelper::dropForeignKeyIfExists('{{%elements_i18n}}', ['locale'], $this);
+        MigrationHelper::dropForeignKeyIfExists('{{%elements_sites}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entrydrafts}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entryversions}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%matrixblocks}}', ['ownerLocale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%relations}}', ['sourceLocale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%routes}}', ['locale'], $this);
-        MigrationHelper::dropForeignKeyIfExists('{{%sections_i18n}}', ['locale'], $this);
+        MigrationHelper::dropForeignKeyIfExists('{{%sections_sites}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%templatecaches}}', ['locale'], $this);
 
         // Drop the old indexes
         // ---------------------------------------------------------------------
 
-        MigrationHelper::dropIndexIfExists('{{%categorygroups_i18n}}', [
+        MigrationHelper::dropIndexIfExists('{{%categorygroups_sites}}', [
             'groupId',
             'locale'
         ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%categorygroups_i18n}}', ['locale'], false, $this);
+        MigrationHelper::dropIndexIfExists('{{%categorygroups_sites}}', ['locale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%content}}', [
             'elementId',
             'locale'
         ], true, $this);
         MigrationHelper::dropIndexIfExists('{{%content}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
+        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', [
             'elementId',
             'locale'
         ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
+        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', [
             'uri',
             'locale'
         ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%elements_i18n}}', [
+        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', ['locale'], false, $this);
+        MigrationHelper::dropIndexIfExists('{{%elements_sites}}', [
             'slug',
             'locale'
         ], false, $this);
@@ -249,11 +249,11 @@ class m160807_144858_sites extends Migration
         ], true, $this);
         MigrationHelper::dropIndexIfExists('{{%relations}}', ['sourceLocale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%routes}}', ['locale'], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%sections_i18n}}', [
+        MigrationHelper::dropIndexIfExists('{{%sections_sites}}', [
             'sectionId',
             'locale'
         ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%sections_i18n}}', ['locale'], false, $this);
+        MigrationHelper::dropIndexIfExists('{{%sections_sites}}', ['locale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%templatecaches}}', [
             'expiryDate',
             'cacheKey',
@@ -347,8 +347,8 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         $i18nTables = [
-            ['primary' => '{{%categorygroups}}', 'i18n' => '{{%categorygroups_i18n}}', 'fk' => 'groupId'],
-            ['primary' => '{{%sections}}', 'i18n' => '{{%sections_i18n}}', 'fk' => 'sectionId'],
+            ['primary' => '{{%categorygroups}}', 'i18n' => '{{%categorygroups_sites}}', 'fk' => 'groupId'],
+            ['primary' => '{{%sections}}', 'i18n' => '{{%sections_sites}}', 'fk' => 'sectionId'],
         ];
 
         foreach ($i18nTables as $tables) {

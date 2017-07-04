@@ -199,15 +199,15 @@ class Elements extends Component
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_i18n.uri' => $uri,
-                'elements_i18n.siteId' => $siteId
+                'elements_sites.uri' => $uri,
+                'elements_sites.siteId' => $siteId
             ]);
 
         if ($enabledOnly) {
             $query->andWhere([
-                'elements_i18n.enabled' => '1',
+                'elements_sites.enabled' => '1',
                 'elements.enabled' => '1',
                 'elements.archived' => '0',
             ]);
@@ -270,7 +270,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -287,7 +287,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -308,8 +308,8 @@ class Elements extends Component
      * - Assigning the element’s ID on the element’s content model, if there is one and it’s a new set of content
      * - Updating the search index with new keywords from the element’s content
      * - Setting a unique URI on the element, if it’s supposed to have one.
-     * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
-     * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
+     * - Saving the element’s row(s) in the `elements_sites` and `content` tables
+     * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
      * - Calling the field types’ [[Field::onAfterElementSave() onAfterElementSave()]] methods
      * - Cleaing any template caches that the element was involved in
      *
@@ -486,7 +486,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_i18n}}',
+                        '{{%elements_sites}}',
                         [
                             'and',
                             ['elementId' => $element->id],
@@ -630,7 +630,7 @@ class Elements extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_i18n}}',
+                '{{%elements_sites}}',
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -871,7 +871,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_i18n}}')
+                ->from('{{%elements_sites}}')
                 ->where(['elementId' => $elementId])
                 ->scalar();
 

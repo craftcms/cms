@@ -438,7 +438,7 @@ class Sites extends Component
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
                 ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
-                ->from(['{{%categorygroups_i18n}}'])
+                ->from(['{{%categorygroups_sites}}'])
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
@@ -457,7 +457,7 @@ class Sites extends Component
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        '{{%categorygroups_i18n}}',
+                        '{{%categorygroups_sites}}',
                         ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
                         $newSiteSettings)
                     ->execute();
@@ -578,7 +578,7 @@ class Sites extends Component
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
             ->select(['sectionId'])
-            ->from(['{{%sections_i18n}}'])
+            ->from(['{{%sections_sites}}'])
             ->where(['siteId' => $site->id])
             ->column();
 
@@ -599,7 +599,7 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 Craft::$app->getDb()->createCommand()
                     ->update(
-                        '{{%sections_i18n}}',
+                        '{{%sections_sites}}',
                         ['siteId' => $transferContentTo],
                         ['sectionId' => $soloSectionIds])
                     ->execute();
@@ -625,7 +625,7 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%elements_i18n}}',
+                            '{{%elements_sites}}',
                             ['siteId' => $transferContentTo],
                             ['elementId' => $entryIds])
                         ->execute();
@@ -676,7 +676,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->delete(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 [
                                     'elementId' => $blockIds,
                                     'siteId' => $transferContentTo
@@ -685,7 +685,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->update(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 ['siteId' => $transferContentTo],
                                 [
                                     'elementId' => $blockIds,
@@ -888,7 +888,7 @@ class Sites extends Component
                 $db = Craft::$app->getDb();
 
                 $db->createCommand()
-                    ->delete('{{%elements_i18n}}', $deleteCondition)
+                    ->delete('{{%elements_sites}}', $deleteCondition)
                     ->execute();
                 $db->createCommand()
                     ->delete('{{%content}}', $deleteCondition)
@@ -899,7 +899,7 @@ class Sites extends Component
                 $updateCondition = ['elementId' => $elementIds];
 
                 $db->createCommand()
-                    ->update('{{%elements_i18n}}', $updateColumns, $updateCondition)
+                    ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
                     ->execute();
                 $db->createCommand()
                     ->update('{{%content}}', $updateColumns, $updateCondition)

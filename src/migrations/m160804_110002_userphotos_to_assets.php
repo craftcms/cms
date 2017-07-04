@@ -292,7 +292,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                         'enabled' => 1
                     ];
                     $db->createCommand()
-                        ->insert('{{%elements_i18n}}', $elementI18nData)
+                        ->insert('{{%elements_sites}}', $elementI18nData)
                         ->execute();
 
                     $contentData = [

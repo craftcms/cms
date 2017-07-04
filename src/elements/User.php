@@ -1353,7 +1353,7 @@ class User extends Element implements IdentityInterface
                 ->addSelect([
                     'siteId' => (new Query())
                         ->select('i18n.siteId')
-                        ->from('{{%elements_i18n}} i18n')
+                        ->from('{{%elements_sites}} i18n')
                         ->where('[[i18n.elementId]] = [[e.id]]')
                         ->limit(1)
                 ])

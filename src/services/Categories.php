@@ -441,7 +441,7 @@ class Categories extends Component
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 ['uri' => null],
                                 [
                                     'elementId' => $categoryIds,
