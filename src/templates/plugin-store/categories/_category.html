@@ -11,5 +11,5 @@
 {% endset %}
 
 {% set content %}
-	<category :category="{{ category.slug }}" :categories="{{ categories|json_encode }}"></category>
+	<category :category="{{ category|json_encode }}" :categories="{{ categories|json_encode }}"></category>
 {% endset %}

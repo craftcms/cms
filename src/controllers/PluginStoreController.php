@@ -32,7 +32,7 @@ class PluginStoreController extends Controller
         ['name' => "Analytics", 'slug' => 'analytics'],
         ['name' => "Customer Support", 'slug' => 'customer-support'],
         ['name' => "Developer Tools", 'slug' => 'developer-tools'],
-        ['name' => "e-commerce", 'slug' => 'e-commerce'],
+        ['name' => "E-commerce", 'slug' => 'e-commerce'],
         ['name' => "File Management", 'slug' => 'file-management'],
         ['name' => "Sales", 'slug' => 'sales'],
         ['name' => "Marteking", 'slug' => 'marteking'],
@@ -67,8 +67,6 @@ class PluginStoreController extends Controller
     }
 
     /**
-     * Plugin Store index.
-     *
      * @return Response
      */
     public function actionCategory($slug)

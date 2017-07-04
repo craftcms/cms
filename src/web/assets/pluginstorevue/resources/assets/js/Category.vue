@@ -14,6 +14,8 @@
             PluginGrid,
         },
 
+        props: ['category', 'categories'],
+
         data () {
             return {
                 plugins: [],
