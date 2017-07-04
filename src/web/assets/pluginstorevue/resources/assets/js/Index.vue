@@ -12,8 +12,8 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
                 <ul>
-                    <li v-for="(category, handle) in categories">
-                        <a :href="'./plugin-store/categories/'+handle">{{ category }}</a>
+                    <li v-for="category in categories">
+                        <a :href="'./plugin-store/categories/'+category.slug">{{ category.name }}</a>
                     </li>
                 </ul>
             </div>
@@ -32,19 +32,9 @@
             PluginGrid,
             PluginSearch,
         },
+        props: ['categories'],
         data () {
             return {
-                categories: {
-                    'analytics': "Analytics",
-                    'customer-support': "Customer Support",
-                    'developer-tools': "Developer Tools",
-                    'e-commerce': "e-commerce",
-                    'file-management': "File Management",
-                    'sales': "Sales",
-                    'marteking': "Marteking",
-                    'security': "Security",
-                    'templates': "Templates",
-                },
                 showingSearchResults: false,
                 plugins: [],
                 activeTrials: [],

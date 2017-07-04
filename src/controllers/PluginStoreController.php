@@ -28,6 +28,18 @@ use yii\web\Response;
  */
 class PluginStoreController extends Controller
 {
+    private $categories = [
+        ['name' => "Analytics", 'slug' => 'analytics'],
+        ['name' => "Customer Support", 'slug' => 'customer-support'],
+        ['name' => "Developer Tools", 'slug' => 'developer-tools'],
+        ['name' => "e-commerce", 'slug' => 'e-commerce'],
+        ['name' => "File Management", 'slug' => 'file-management'],
+        ['name' => "Sales", 'slug' => 'sales'],
+        ['name' => "Marteking", 'slug' => 'marteking'],
+        ['name' => "Security", 'slug' => 'security'],
+        ['name' => "Templates", 'slug' => 'templates'],
+    ];
+
     // Public Methods
     // =========================================================================
 
@@ -49,7 +61,9 @@ class PluginStoreController extends Controller
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
 
-        return $this->renderTemplate('plugin-store/_index');
+        return $this->renderTemplate('plugin-store/_index', [
+            'categories' => $this->categories
+        ]);
     }
 
     /**
@@ -61,8 +75,17 @@ class PluginStoreController extends Controller
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
 
+        $category = null;
+
+        foreach($this->categories as $c) {
+            if($c['slug'] == $slug) {
+                $category = $c;
+            }
+        }
+
         return $this->renderTemplate('plugin-store/categories/_category', [
-            'category' => $slug
+            'category' => $category,
+            'categories' => $this->categories
         ]);
     }
 
