@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Updates::runMigrations()`.
 - Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
 - Added the `defineComponents` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new services on the `craft` template variable.
+- Added the `beforeRenderTemplate`, `afterRenderTemplate`, `beforeRenderPageTemplate`, and `afterRenderPageTemplate` events to `craft\web\View`.
 - Added Composer as a dependency.
 
 ### Changed
