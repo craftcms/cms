@@ -38,7 +38,7 @@ class View extends \yii\web\View
     // =========================================================================
 
     /**
-     * @event RegisterTemplateRootsEvent The event that is triggered when registering field types.
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering template roots
      */
     const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
 
