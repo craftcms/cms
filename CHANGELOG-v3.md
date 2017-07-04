@@ -11,7 +11,8 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added some “Update” buttons to the Updates utility (for Craft _and_ plugins). If multiple updates are available, an “Update all” button even shows up.
-- The Updater has been rewritten to use Composer under the hood, and now requires significantly less (if any) site downtime.
+- The Updater has been rewritten to use Composer under the hood, and now requires significantly less (if any) site downtime. ([#1790](https://github.com/craftcms/cms/issues/1790))
+- It’s now possible to apply both Craft and plugin migrations at the same time after a manual update. ([#1506](https://github.com/craftcms/cms/issues/1506))
 - Migration exceptions are now displayed in the Updater. ([#1197](https://github.com/craftcms/cms/issues/1197))
 - Added the `app/migrate` action (replacing `update/run-pending-migrations`), which runs any new Craft, plugin, and content migrations.
 - Added the `|duration` Twig filter, which converts a `DateInterval` object into a human-readable duration.
