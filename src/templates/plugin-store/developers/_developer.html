@@ -1,0 +1,15 @@
+{% extends "plugin-store/_layouts/cp" %}
+
+{% set crumbs = [
+{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
+{% set title = developerId %}
+
+{% set extraPageHeaderHtml %}
+	<cart-button></cart-button>
+{% endset %}
+
+{% set content %}
+	<developer :developer-id="{{ developerId }}"></developer>
+{% endset %}

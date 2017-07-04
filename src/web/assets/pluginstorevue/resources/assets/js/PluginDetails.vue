@@ -9,6 +9,10 @@
                 <h2>{{ plugin.name }}</h2>
 
                 <p>{{ plugin.shortDescription }}</p>
+
+                <p>
+                    <a :href="developerUrl">{{ plugin.developerName }}</a>
+                </p>
             </div>
 
             <div class="buttons">
@@ -73,6 +77,10 @@
         computed: {
             description() {
                 return marked(this.plugin.description, { sanitize: true });
+            },
+
+            developerUrl() {
+                return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             }
         }
     }
