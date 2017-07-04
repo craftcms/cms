@@ -1,0 +1,11 @@
+{% extends "plugin-store/_layouts/cp" %}
+
+{% set crumbs = [
+{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
+{% set title = category %}
+
+{% set content %}
+	<category></category>
+{% endset %}

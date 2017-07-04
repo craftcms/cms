@@ -52,6 +52,20 @@ class PluginStoreController extends Controller
         return $this->renderTemplate('plugin-store/_index');
     }
 
+    /**
+     * Plugin Store index.
+     *
+     * @return Response
+     */
+    public function actionCategory($slug)
+    {
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
+
+        return $this->renderTemplate('plugin-store/categories/_category', [
+            'category' => $slug
+        ]);
+    }
+
     public function actionPlugin($slug)
     {
         $client = Craft::$app->getPluginStore()->getClient();

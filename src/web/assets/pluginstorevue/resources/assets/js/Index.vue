@@ -12,15 +12,9 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
                 <ul>
-                    <li><a href="#">Analytics</a></li>
-                    <li><a href="#">Customer Support</a></li>
-                    <li><a href="#">Developer Tools</a></li>
-                    <li><a href="#">E-commerce</a></li>
-                    <li><a href="#">File Management</a></li>
-                    <li><a href="#">Sales</a></li>
-                    <li><a href="#">Marteking</a></li>
-                    <li><a href="#">Security</a></li>
-                    <li><a href="#">Templates</a></li>
+                    <li v-for="(category, handle) in categories">
+                        <a :href="'./plugin-store/categories/'+handle">{{ category }}</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -40,6 +34,17 @@
         },
         data () {
             return {
+                categories: {
+                    'analytics': "Analytics",
+                    'customer-support': "Customer Support",
+                    'developer-tools': "Developer Tools",
+                    'e-commerce': "e-commerce",
+                    'file-management': "File Management",
+                    'sales': "Sales",
+                    'marteking': "Marteking",
+                    'security': "Security",
+                    'templates': "Templates",
+                },
                 showingSearchResults: false,
                 plugins: [],
                 activeTrials: [],
