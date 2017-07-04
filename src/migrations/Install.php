@@ -8,7 +8,6 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\config\DbConfig;
 use craft\db\Migration;
 use craft\elements\User;
 use craft\helpers\StringHelper;
