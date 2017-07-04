@@ -1,7 +1,7 @@
 <template>
 
     <div>
-        <div class="row plugin-grid" v-if="plugins.length > 0">
+        <div class="row plugin-grid" v-if="plugins && plugins.length > 0">
             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 plugin" v-for="plugin in plugins">
                 <plugin-card :plugin="plugin" @click="openModal(plugin)"></plugin-card>
             </div>

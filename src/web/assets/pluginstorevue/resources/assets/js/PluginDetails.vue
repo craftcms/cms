@@ -76,7 +76,9 @@
         props: ['plugin'],
         computed: {
             description() {
-                return marked(this.plugin.description, { sanitize: true });
+                if(this.plugin.description && this.plugin.description.length > 0) {
+                    return marked(this.plugin.description, { sanitize: true });
+                }
             },
 
             developerUrl() {
