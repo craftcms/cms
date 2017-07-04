@@ -7,7 +7,7 @@
                 <h2>Staff Picks</h2>
                 <plugin-grid :plugins="plugins"></plugin-grid>
                 <h2>Active Trials</h2>
-                <plugin-grid :plugins="plugins"></plugin-grid>
+                <plugin-grid :plugins="activeTrials"></plugin-grid>
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
@@ -42,11 +42,14 @@
             return {
                 showingSearchResults: false,
                 plugins: [],
+                activeTrials: [],
             }
         },
         created: function() {
             this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                this.plugins = this.plugins.concat(data.body.data).slice(0,6);
+                var plugins = this.plugins.concat(data.body.data);
+                this.plugins = plugins.slice(0,6);
+                this.activeTrials = plugins.slice(6,9);
             });
         },
     }
