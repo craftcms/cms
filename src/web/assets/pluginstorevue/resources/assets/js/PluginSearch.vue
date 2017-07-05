@@ -1,14 +1,15 @@
 <template>
     <div>
-        <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" placeholder="Search plugins" v-model="searchQuery">
-        <br />
-        <br />
+        <div class="toolbar">
+            <div class="flex">
+                <div class="flex-grow">
+                    <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" placeholder="Search plugins" v-model="searchQuery">
+                </div>
+                <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
+            </div>
+        </div>
 
         <plugin-grid :plugins="pluginsToRender"></plugin-grid>
-
-        <div v-show="showSpinner">
-            Loading…
-        </div>
 
     </div>
 </template>
