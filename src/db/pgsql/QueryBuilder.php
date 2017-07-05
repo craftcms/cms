@@ -85,11 +85,9 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
             }
         }
 
-        $primaryKeys = (array)$schema->getTableSchema($table)->primaryKey;
-
         $sql = 'INSERT INTO '.$schema->quoteTableName($table).
             ' ('.implode(', ', $names).') VALUES ('.implode(', ', $placeholders).')'.
-            ' ON CONFLICT ("'.implode('", "', $primaryKeys).'") DO UPDATE SET ';
+            ' ON CONFLICT ("'.implode('", "', array_keys($keyColumns)).'") DO UPDATE SET ';
 
         foreach ($updates as $counter => $update) {
             if ($counter > 0) {
