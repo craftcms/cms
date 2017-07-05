@@ -13,7 +13,7 @@
                 <h2>Categories</h2>
                 <ul>
                     <li v-for="category in categories">
-                        <a :href="'./plugin-store/categories/'+category.slug">{{ category.name }}</a>
+                        <a :href="'./plugin-store/categories/'+category.id">{{ category.title }}</a>
                     </li>
                 </ul>
             </div>
@@ -32,9 +32,9 @@
             PluginGrid,
             PluginSearch,
         },
-        props: ['categories'],
         data () {
             return {
+                categories: [],
                 showingSearchResults: false,
                 plugins: [],
                 activeTrials: [],
@@ -45,6 +45,11 @@
                 var plugins = this.plugins.concat(data.body.data);
                 this.plugins = plugins.slice(0,6);
                 this.activeTrials = plugins.slice(6,9);
+            });
+
+            this.$http.get('https://craftid.dev/api/categories').then(function(data) {
+                console.log('data', data.body);
+                this.categories = this.categories.concat(data.body.data);
             });
         },
     }

@@ -4,12 +4,12 @@
 { label: "Plugin Store"|t('app'), url: url('plugin-store') }
 ] %}
 
-{% set title = category.name %}
+{% set title = categoryId %}
 
 {% set extraPageHeaderHtml %}
 	<cart-button></cart-button>
 {% endset %}
 
 {% set content %}
-	<category :category="{{ category|json_encode }}" :categories="{{ categories|json_encode }}"></category>
+	<category :category-id="{{ categoryId }}"></category>
 {% endset %}

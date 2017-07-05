@@ -72,7 +72,7 @@ return [
     'utilities' => 'utilities',
     'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
-    'plugin-store/categories/<slug:([^\/]+)?>' => 'plugin-store/category',
+    'plugin-store/categories/<categoryId:\d+>' => 'plugin-store/category',
     'plugin-store/developer/<developerId:\d+>' => 'plugin-store/developer',
     'plugin-store/cart' => 'plugin-store/cart',
     'plugin-store/vue' => 'plugin-store/vue',

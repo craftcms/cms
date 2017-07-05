@@ -69,21 +69,12 @@ class PluginStoreController extends Controller
     /**
      * @return Response
      */
-    public function actionCategory($slug)
+    public function actionCategory($categoryId)
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
 
-        $category = null;
-
-        foreach($this->categories as $c) {
-            if($c['slug'] == $slug) {
-                $category = $c;
-            }
-        }
-
         return $this->renderTemplate('plugin-store/categories/_category', [
-            'category' => $category,
-            'categories' => $this->categories
+            'categoryId' => $categoryId,
         ]);
     }
 

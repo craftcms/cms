@@ -1,6 +1,8 @@
 <template>
     <div>
-        <plugin-grid :plugins="plugins"></plugin-grid>
+        <h2>{{ category.title }}</h2>
+        <hr>
+        <plugin-grid :plugins="category.plugins"></plugin-grid>
     </div>
 
 </template>
@@ -14,18 +16,18 @@
             PluginGrid,
         },
 
-        props: ['category', 'categories'],
+        props: ['categoryId'],
 
         data () {
             return {
-                plugins: [],
+                category: [],
             }
         },
 
         created: function() {
-            this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                var plugins = this.plugins.concat(data.body.data);
-                this.plugins = plugins.slice(0,9);
+            this.$http.get('https://craftid.dev/api/categories/' + this.categoryId).then(function(data) {
+                this.category = data.body;
+                console.log('this.category', this.category);
             });
         },
     }
