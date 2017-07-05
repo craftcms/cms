@@ -14,5 +14,16 @@ Vue.use(VueLodash, lodash);
 
 const app = new Vue({
   el: '#container',
-  components: { Index, CartButton, Category, Developer }
+  components: { Index, CartButton, Category, Developer },
+    data() {
+      return {
+          pageTitle: null,
+      }
+    },
+
+    methods: {
+        updateTitle: function(newTitle) {
+            this.pageTitle = newTitle;
+        }
+    }
 });

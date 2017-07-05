@@ -6,10 +6,14 @@
 
 {% set title = categoryId %}
 
+{% block pageTitle %}
+	<h1>{{ '{{ pageTitle }}' }}</h1>
+{% endblock %}
+
 {% set extraPageHeaderHtml %}
 	<cart-button></cart-button>
 {% endset %}
 
 {% set content %}
-	<category :category-id="{{ categoryId }}"></category>
+	<category :category-id="{{ categoryId }}" @update-title="updateTitle"></category>
 {% endset %}
