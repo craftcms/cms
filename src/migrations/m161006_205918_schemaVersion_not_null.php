@@ -23,13 +23,12 @@ class m161006_205918_schemaVersion_not_null extends Migration
             [],
             false);
 
-        // Two statements here because of a Yii 2/PostgreSQL bug:
-        // https://github.com/yiisoft/yii2/issues/12077
-        if ($this->db->getIsMysql()) {
-            $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string(15)->notNull());
+        if ($this->db->getIsPgsql()) {
+            // Manually construct the SQL for Postgres
+            // (see https://github.com/yiisoft/yii2/issues/12077)
+            $this->execute('alter table {{%plugins}} alter column [[schemaVersion]] type varchar(15), alter column [[schemaVersion]] set not null');
         } else {
-            $pluginTable = $this->db->getSchema()->defaultSchema.'.'.$this->db->getSchema()->getRawTableName('plugins');
-            $this->db->createCommand()->setSql('ALTER TABLE '.$pluginTable.' ALTER COLUMN "schemaVersion" TYPE varchar(15), ALTER COLUMN "schemaVersion" SET NOT NULL')->execute();
+            $this->alterColumn('{{%plugins}}', 'schemaVersion', $this->string(15)->notNull());
         }
     }
 
