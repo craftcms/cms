@@ -9,7 +9,6 @@ namespace craft\db;
 
 use Craft;
 use craft\config\DbConfig;
-use craft\db\mysql\QueryBuilder;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
@@ -24,10 +23,10 @@ use yii\db\Exception as DbException;
 /**
  * @inheritdoc
  *
- * @property QueryBuilder              $queryBuilder The query builder for the current DB connection.
- * @property mysql\Schema|pgsql\Schema $schema       The schema information for the database opened by this connection.
+ * @property mysql\QueryBuilder|pgsql\QueryBuilder $queryBuilder The query builder for the current DB connection.
+ * @property mysql\Schema|pgsql\Schema             $schema       The schema information for the database opened by this connection.
  *
- * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method mysql\QueryBuilder|pgsql\QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
