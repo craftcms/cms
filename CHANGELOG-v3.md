@@ -125,6 +125,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Matrix blocks were being saved an excessive amount of times when saving the owner element, and potentially resulting in errors when enabling a section for a new site.
 - Fixed a bug where `craft\services\Updates::getIsCriticalUpdateAvailable()` wasn’t returning `true` if a plugin had a critical update available, according to its changelog.
 - Fixed a bug where the PostgreSQL `upsert` method would only take into account a table’s primary keys instead of the passed in keys when deciding whether to insert or update.
+- Fixed a SQL error that could occur when calling `count()` on an element query.
 
 ## 3.0.0-beta.19 - 2017-05-31
 

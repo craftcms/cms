@@ -392,7 +392,7 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        if (!$this->orderBy && !$this->structureId && !$this->fixedOrder) {
+        if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
             $this->orderBy = 'postDate desc';
         }
 

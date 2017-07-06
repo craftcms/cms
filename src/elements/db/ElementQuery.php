@@ -192,7 +192,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public $orderBy;
+    public $orderBy = '';
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -988,14 +988,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        // Explicitly clear any orderBy before counting.
-        $orderBy = $this->orderBy;
-        $this->orderBy = false;
-
-        $count = parent::count($q, $db);
-        $this->orderBy = $orderBy;
-
-        return $count;
+        return parent::count($q, $db);
     }
 
     /**
@@ -1775,11 +1768,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyOrderByParams(Connection $db)
     {
-        if ($this->orderBy === false) {
+        if ($this->orderBy === null) {
             return;
         }
 
-        if (!$this->orderBy) {
+        // Any other empty value means we should set it
+        if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
                 $ids = ArrayHelper::toArray($this->id);
 
