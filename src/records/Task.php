@@ -9,7 +9,6 @@ namespace craft\records;
 
 use Craft;
 use craft\db\ActiveRecord;
-use craft\db\NestedSetsTrait;
 use craft\db\TaskQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
 
@@ -27,6 +26,7 @@ use creocoder\nestedsets\NestedSetsBehavior;
  * @property string $type        Type
  * @property string $description Description
  * @property array  $settings    Settings
+ * @mixin NestedSetsBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -35,8 +35,6 @@ class Task extends ActiveRecord
 {
     // Traits
     // =========================================================================
-
-    use NestedSetsTrait;
 
     // Public Methods
     // =========================================================================
