@@ -9,7 +9,6 @@ namespace craft\records;
 
 use Craft;
 use craft\db\ActiveRecord;
-use craft\db\NestedSetsTrait;
 use craft\db\TaskQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
 
