@@ -30,13 +30,12 @@ use creocoder\nestedsets\NestedSetsBehavior;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ * @mixin  NestedSetsBehavior
  */
 class Task extends ActiveRecord
 {
     // Traits
     // =========================================================================
-
-    use NestedSetsTrait;
 
     // Public Methods
     // =========================================================================
