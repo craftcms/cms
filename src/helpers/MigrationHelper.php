@@ -179,7 +179,7 @@ class MigrationHelper
                 }
                 $transaction->commit();
             } catch (\Throwable $e) {
-                // Silently fail. Either we're using MySQL or the sequence didn't exist
+                // Silently fail. The sequence probably doesn't exist
                 $transaction->rollBack();
             }
         }
