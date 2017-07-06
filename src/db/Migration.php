@@ -304,6 +304,22 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
+     * Creates and executes a SQL statement for renaming a DB sequence.
+     *
+     * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
+     * @param string $newName the new sequence name. The name will be properly quoted by the method.
+     */
+    public function renameSequence(string $oldName, string $newName)
+    {
+        echo "    > rename sequence $oldName to $newName ...";
+        $time = microtime(true);
+        $this->db->createCommand()
+            ->renameSequence($oldName, $newName)
+            ->execute();
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
+    }
+
+    /**
      * Builds and executes a SQL statement for creating a primary key.
      * The method will properly quote the table and column names.
      *

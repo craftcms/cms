@@ -33,6 +33,19 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     }
 
     /**
+     * Builds a SQL statement for renaming a DB sequence.
+     *
+     * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
+     * @param string $newName the new sequence name. The name will be properly quoted by the method.
+     *
+     * @return string the SQL statement for renaming a DB table.
+     */
+    public function renameSequence(string $oldName, string $newName): string
+    {
+        return 'ALTER SEQUENCE ' . $this->db->quoteTableName($oldName) . ' RENAME TO ' . $this->db->quoteTableName($newName);
+    }
+
+    /**
      * Builds a SQL statement for inserting some given data into a table, or updating an existing row
      * in the event of a key constraint violation.
      *

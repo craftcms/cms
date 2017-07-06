@@ -126,6 +126,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where `craft\services\Updates::getIsCriticalUpdateAvailable()` wasn’t returning `true` if a plugin had a critical update available, according to its changelog.
 - Fixed a bug where the PostgreSQL `upsert` method would only take into account a table’s primary keys instead of the passed in keys when deciding whether to insert or update.
 - Fixed a SQL error that could occur when calling `count()` on an element query.
+- Fixed a SQL error that could occur when saving an element with a Matrix field on a site using PostgreSQL, if the Matrix field’s handle had been renamed. ([#1810](https://github.com/craftcms/cms/issues/1810))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
