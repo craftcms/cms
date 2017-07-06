@@ -27,7 +27,6 @@ class m170706_183216_rename_sequences extends Migration
             'elements_i18n' => 'elements_sites',
             'sections_i18n' => 'sections_sites',
         ];
-        $schema = $this->db->getSchema()->defaultSchema;
 
         foreach ($sequences as $oldName => $newName) {
             $oldName = $this->db->tablePrefix.$oldName.'_id_seq';
@@ -38,7 +37,7 @@ class m170706_183216_rename_sequences extends Migration
                 $this->renameSequence($oldName, $newName);
                 $transaction->commit();
             } catch (\Throwable $e) {
-                // Silently fail. Either we're using MySQL or the sequence didn't exist
+                // Silently fail. The sequence probably doesn't exist
                 $transaction->rollBack();
             }
         }
