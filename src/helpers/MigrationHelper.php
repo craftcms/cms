@@ -166,20 +166,22 @@ class MigrationHelper
                 ->execute();
         }
 
-        // Rename the sequence (required for PostgreSQL - see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net)
-        $transaction = $db->beginTransaction();
-        try {
-            if ($migration !== null) {
-                $migration->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq');
-            } else {
-                $db->createCommand()
-                    ->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq')
-                    ->execute();
+        if ($db->getIsPgsql()) {
+            // Rename the sequence (required for PostgreSQL - see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net)
+            $transaction = $db->beginTransaction();
+            try {
+                if ($migration !== null) {
+                    $migration->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq');
+                } else {
+                    $db->createCommand()
+                        ->renameSequence($rawOldName.'_id_seq', $rawNewName.'_id_seq')
+                        ->execute();
+                }
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                // Silently fail. Either we're using MySQL or the sequence didn't exist
+                $transaction->rollBack();
             }
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            // Silently fail. Either we're using MySQL or the sequence didn't exist
-            $transaction->rollBack();
         }
 
         // First pass, update any source tables that might use the old table name.
