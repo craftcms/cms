@@ -152,7 +152,7 @@ class MigrationHelper
 
         // Rename the table
         if ($migration !== null) {
-            $migration->renameTable($oldName, $rawNewName);
+            $migration->renameTable($rawOldName, $rawNewName);
         } else {
             Craft::$app->getDb()->createCommand()
                 ->renameTable($rawOldName, $rawNewName)
