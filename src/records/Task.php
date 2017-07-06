@@ -27,10 +27,10 @@ use creocoder\nestedsets\NestedSetsBehavior;
  * @property string $type        Type
  * @property string $description Description
  * @property array  $settings    Settings
+ * @mixin NestedSetsBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- * @mixin  NestedSetsBehavior
  */
 class Task extends ActiveRecord
 {
