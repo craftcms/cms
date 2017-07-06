@@ -878,12 +878,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[subquery.elementsId]]')
-            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.id]] = [[subquery.elementsI18nId]]');
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
 
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
-                'elementsI18nId' => 'elements_sites.id',
+                'elementsSitesId' => 'elements_sites.id',
             ])
             ->from(['elements' => '{{%elements}}'])
             ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
