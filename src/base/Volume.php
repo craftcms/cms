@@ -10,7 +10,6 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\VolumeObjectExistsException;
@@ -25,7 +24,9 @@ use League\Flysystem\FileNotFoundException;
 use League\Flysystem\Filesystem;
 
 /**
- * Class Volume
+ * Volume is the base class for classes representing volumes in terms of objects.
+ *
+ * @mixin FieldLayoutBehavior
  */
 abstract class Volume extends SavableComponent implements VolumeInterface
 {
@@ -33,7 +34,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     // =========================================================================
 
     use VolumeTrait;
-    use FieldLayoutTrait;
 
     // Properties
     // =========================================================================

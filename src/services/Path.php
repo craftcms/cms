@@ -360,6 +360,19 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `storage/runtime/compiled_classes/` directory.
+     *
+     * @return string
+     */
+    public function getCompiledClassesPath(): string
+    {
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+        FileHelper::createDirectory($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the `storage/runtime/compiled_templates/` directory.
      *
      * @return string

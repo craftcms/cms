@@ -14,7 +14,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ElementQueryBehavior;
-use craft\behaviors\ElementQueryTrait;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -35,10 +34,11 @@ use yii\db\Expression;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
+ * @property string|Site $site The site or site handle that the elements should be returned in
+ * @mixin ElementQueryBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
- * @property string|Site $site The site or site handle that the elements should be returned in
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -46,7 +46,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     use ArrayableTrait;
-    use ElementQueryTrait;
 
     // Constants
     // =========================================================================

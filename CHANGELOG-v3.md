@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\ArrayHelper::firstValue()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
+- Added `craft\services\Path::getCompiledClassesPath()`.
 - Added `craft\services\Updates::getPendingMigrationHandles()`.
 - Added `craft\services\Updates::runMigrations()`.
 - Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
@@ -69,12 +70,16 @@ Craft CMS 3.0 Working Changelog
 - Removed the `plugins/disable-plugin` action.
 - Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
+- Removed the dynamically-compiled `craft\behaviors\ContentTrait` and `craft\behaviors\ElementQueryTrait` traits.
 - Removed `craft\base\ApplicationTrait::getIsUpdating()`.
 - Removed `craft\base\Plugin::afterUpdate()`.
 - Removed `craft\base\Plugin::beforeUpdate()`.
 - Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
 - Removed `craft\base\Plugin::update()`.
+- Removed `craft\behaviors\FieldLayoutTrait`.
 - Removed `craft\controllers\UpdateController`.
+- Removed `craft\db\NestedSetsQueryTrait`.
+- Removed `craft\db\NestedSetsTrait`.
 - Removed `craft\errors\UnpackPackageException`.
 - Removed `craft\errors\UpdateValidationException`.
 - Removed `craft\events\UpdateEvent`.
