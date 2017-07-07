@@ -134,6 +134,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a SQL error that could occur when saving an element with a Matrix field on a site using PostgreSQL, if the Matrix field’s handle had been renamed. ([#1810](https://github.com/craftcms/cms/issues/1810))
 - Fixed a bug where assets with a transform applied via `setTransform()` were still returning their original dimensions via their `width` and `height` properties. ([#1817](https://github.com/craftcms/cms/issues/1817))
 - Fixed a SQL error that occurred when updating to Craft 3 if there was a `CRAFT_LOCALE` constant defined in `index.php`. ([#1798](https://github.com/craftcms/cms/issues/1798))
+- Fixed a bug where querying for Matrix blocks by block type handles that didn’t exist would still return results. ([#1819](https://github.com/craftcms/cms/issues/1819))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
