@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\config\DbConfig;
 use craft\helpers\App;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;

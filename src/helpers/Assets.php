@@ -117,7 +117,7 @@ class Assets
      *                                            and clean the filename separately.
      * @param bool   $preventPluginModifications  if set to true, will prevent plugins from modify
      *
-     * @return mixed
+     * @return string
      */
     public static function prepareAssetName(string $name, bool $isFilename = true, bool $preventPluginModifications = false)
     {
@@ -217,7 +217,7 @@ class Assets
                 'assetId' => $asset->id,
                 'folderId' => $newFolderId,
                 'force' => true
-            ];;
+            ];
         }
 
         return $fileTransferList;

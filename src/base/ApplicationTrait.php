@@ -623,7 +623,7 @@ trait ApplicationTrait
     /**
      * Returns the Yii framework version.
      *
-     * @return mixed
+     * @return string
      */
     public function getYiiVersion()
     {

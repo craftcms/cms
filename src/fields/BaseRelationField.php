@@ -560,7 +560,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     'checked' => $showTargetSite,
                     'toggle' => 'target-site-container'
                 ]
-            ]) .
+            ]).
             '<div id="target-site-container"'.(!$showTargetSite ? ' class="hidden"' : '').'>';
 
         $siteOptions = [];

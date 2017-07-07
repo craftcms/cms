@@ -915,7 +915,7 @@ class AssetTransforms extends Component
     /**
      * Deletes an image local source if required by config.
      *
-     * @param $imageSource
+     * @param string $imageSource
      *
      * @return void
      */
