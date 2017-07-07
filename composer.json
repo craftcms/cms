@@ -30,7 +30,7 @@
     "pixelandtonic/imagine": "0.7.1.1",
     "twig/twig": "~2.3.0",
     "yiisoft/yii2": "~2.0.12.0",
-    "yiisoft/yii2-debug": "2.0.8",
+    "yiisoft/yii2-debug": "~2.0.8",
     "yiisoft/yii2-swiftmailer": "~2.0.6",
     "zendframework/zend-feed": "~2.8.0",
     "bower-asset/d3": "~4.8.0",
