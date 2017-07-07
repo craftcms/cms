@@ -426,12 +426,12 @@ class Asset extends Element
     public $keepFileOnDelete = false;
 
     /**
-     * @var int|null Width
+     * @var int|float|null Width
      */
     private $_width;
 
     /**
-     * @var int|null Height
+     * @var int|float|null Height
      */
     private $_height;
 

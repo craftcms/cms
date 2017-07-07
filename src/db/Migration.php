@@ -33,7 +33,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param bool $throwExceptions Whether exceptions should be thrown
      *
-     * @return bool|null
+     * @return false|null
      * @throws \Throwable
      */
     public function up(bool $throwExceptions = false)
@@ -65,7 +65,7 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param bool $throwExceptions Whether exceptions should be thrown
      *
-     * @return bool|null
+     * @return false|null
      * @throws \Throwable
      */
     public function down(bool $throwExceptions = false)
