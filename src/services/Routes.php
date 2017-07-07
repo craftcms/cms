@@ -159,8 +159,7 @@ class Routes extends Component
 
         foreach ($uriParts as $part) {
             if (is_string($part)) {
-                // Escape any special regex characters
-                $uriPattern .= $this->_escapeRegexChars($part);
+                $uriPattern .= preg_quote($part, '/');
             } else if (is_array($part)) {
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
@@ -263,22 +262,5 @@ class Routes extends Component
                     ['id' => $routeId])
                 ->execute();
         }
-    }
-
-    /**
-     * @param string $string
-     *
-     * @return mixed
-     */
-    private function _escapeRegexChars(string $string)
-    {
-        $charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
-        $escapedChars = [];
-
-        foreach ($charsToEscape as $char) {
-            $escapedChars[] = "\\".$char;
-        }
-
-        return str_replace($charsToEscape, $escapedChars, $string);
     }
 }
