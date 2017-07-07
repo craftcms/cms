@@ -256,26 +256,19 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
-        if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
-            $this->addMigrationHistory($migrationName);
-        } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)', __METHOD__);
-        }
-
+        $log = ($success ? 'Applied ' : 'Failed to apply ').$migrationName.' (time: '.sprintf('%.3f', $time).'s).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
-
-            if ($success) {
-                Craft::info($output, __METHOD__);
-            } else {
-                Craft::error($output, __METHOD__);
-            }
+            $log .= " Output:\n".$output;
         }
 
         if (!$success) {
-            throw new MigrationException($migration, null, 0, $e ?? null);
+            Craft::error($log, __METHOD__);
+            throw new MigrationException($migration, $output ?? null, null, 0, $e ?? null);
         }
+
+        Craft::info($log, __METHOD__);
+        $this->addMigrationHistory($migrationName);
     }
 
     /**
