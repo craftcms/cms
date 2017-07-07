@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a PHP error that would occur if a migration failed to be reverted.
+- Fixed a PHP error that would occur if the Yii Debug extension was installed at v2.0.9. ([#1823](https://github.com/craftcms/cms/issues/1823))
 
 ## 3.0.0-beta.20 - 2017-07-07 [CRITICAL]
 
