@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased [CRITICAL]
+## 3.0.0-beta.20 - 2017-07-07 [CRITICAL]
 
 > {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugins’ `Craft::t()` and `|t()` calls, translation files, and template paths must be updated accordingly, as well as any plugin config files in Craft 3 projects.
 
