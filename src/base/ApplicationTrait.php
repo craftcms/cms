@@ -196,7 +196,7 @@ trait ApplicationTrait
                             return $preferredLanguage;
                         }
                     } catch (\Throwable $e) {
-                        Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
+                        Craft::warning('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
                     // Is there a default CP language?
