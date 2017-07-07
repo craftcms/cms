@@ -138,6 +138,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Matrix fields were showing disabled blocks on the front end. ([#1786](https://github.com/craftcms/cms/issues/1786))
 - Fixed a PHP error that occurred when using an earlier version of PHP than 7.0.10. ([#1750](https://github.com/craftcms/cms/issues/1750))
 - Fixed a bug where routes created in the Control Panel which included tokens weren’t working. ([#1741](https://github.com/craftcms/cms/issues/1741))
+- Fixed a bug where only admin users were allowed to perform some asset actions. ([#1821](https://github.com/craftcms/cms/issues/1821))
 
 ## 3.0.0-beta.19 - 2017-05-31
 
