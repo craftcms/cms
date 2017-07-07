@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.21 - 2017-07-07
 
 ### Fixed
 - Fixed a PHP error that would occur if a migration failed to be reverted.
