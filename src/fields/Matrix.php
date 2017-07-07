@@ -219,16 +219,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'What this block type will be called in the CP.',
         ]);
 
+        $fieldsService = Craft::$app->getFields();
         $fieldTypeOptions = [];
 
-        foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
+        foreach ($fieldsService->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
             /** @var Field|string $class */
             if ($class !== self::class) {
-                $fieldTypeOptions[] = [
+                $fieldTypeOptions['new'] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
+            }
+        }
+
+        if ($this->id) {
+            foreach ($this->getBlockTypes() as $blockType) {
+                foreach ($blockType->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($field->id) {
+                        $fieldTypeOptions[$field->id] = [];
+                        foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
+                            // No Matrix-Inception, sorry buddy.
+                            /** @var Field|string $class */
+                            if ($class !== self::class) {
+                                $fieldTypeOptions[$field->id][] = [
+                                    'value' => $class,
+                                    'label' => $class::displayName()
+                                ];
+                            }
+                        }
+                    }
+                }
             }
         }
 

@@ -161,7 +161,7 @@ class RichText extends Field
         foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
             if ($volume->hasUrls) {
                 $volumeOptions[] = [
-                    'label' => $volume->name,
+                    'label' => Html::encode($volume->name),
                     'value' => $volume->id
                 ];
             }
@@ -170,7 +170,7 @@ class RichText extends Field
         $transformOptions = [];
         foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
             $transformOptions[] = [
-                'label' => $transform->name,
+                'label' => Html::encode($transform->name),
                 'value' => $transform->id
             ];
         }

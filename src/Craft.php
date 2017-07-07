@@ -6,9 +6,7 @@
  */
 
 use craft\behaviors\ContentBehavior;
-use craft\behaviors\ContentTrait;
 use craft\behaviors\ElementQueryBehavior;
-use craft\behaviors\ElementQueryTrait;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
@@ -123,38 +121,22 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        if (
-            $className === ContentBehavior::class ||
-            $className === ContentTrait::class ||
-            $className === ElementQueryBehavior::class ||
-            $className === ElementQueryTrait::class
-        ) {
+        if ($className === ContentBehavior::class || $className === ElementQueryBehavior::class) {
             $storedFieldVersion = static::$app->getInfo()->fieldVersion;
-            $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+            $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
 
             $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
-            $contentTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentTrait.php';
             $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
-            $elementQueryTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryTrait.php';
 
             $isContentBehaviorFileValid = self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion);
-            $isContentTraitFileValid = self::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion);
             $isElementQueryBehaviorFileValid = self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion);
-            $isElementQueryTraitFileValid = self::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion);
 
-            if (
-                $isContentBehaviorFileValid &&
-                $isContentTraitFileValid &&
-                $isElementQueryBehaviorFileValid &&
-                $isElementQueryTraitFileValid
-            ) {
+            if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
                 return;
             }
 
             $properties = [];
             $methods = [];
-            $propertyDocs = [];
-            $methodDocs = [];
 
             if (Craft::$app->getIsInstalled()) {
                 // Get the field handles
@@ -184,9 +166,6 @@ EOD;
         return \$this->owner;
     }
 EOD;
-
-                    $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
-                    $methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
                 }
             }
 
@@ -199,30 +178,12 @@ EOD;
                 );
             }
 
-            if (!$isContentTraitFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentTrait.php.template',
-                    ['{VERSION}', '{PROPERTIES}'],
-                    [$storedFieldVersion, implode("\n", $propertyDocs)],
-                    $contentTraitFile
-                );
-            }
-
             if (!$isElementQueryBehaviorFileValid) {
                 self::_writeFieldAttributesFile(
                     static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
                     ['{VERSION}', '/* METHODS */'],
                     [$storedFieldVersion, implode("\n\n", $methods)],
                     $elementQueryBehaviorFile
-                );
-            }
-
-            if (!$isElementQueryTraitFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryTrait.php.template',
-                    ['{VERSION}', '{METHODS}'],
-                    [$storedFieldVersion, implode("\n", $methodDocs)],
-                    $elementQueryTraitFile
                 );
             }
         }
@@ -240,7 +201,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/'.Craft::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
             ],
         ];
 

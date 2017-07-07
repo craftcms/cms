@@ -15,7 +15,6 @@ $craftPath = __DIR__.'/_craft';
 
 $configPath = realpath($craftPath.'/config');
 $contentMigrationsPath = realpath($craftPath.'/migrations');
-$pluginsPath = realpath($craftPath.'/plugins');
 $storagePath = realpath($craftPath.'/storage');
 $templatesPath = realpath($craftPath.'/templates');
 $translationsPath = realpath($craftPath.'/translations');
@@ -42,7 +41,6 @@ require $srcPath.'/Craft.php';
 // Set aliases
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
-Craft::setAlias('@plugins', $pluginsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);

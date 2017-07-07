@@ -511,7 +511,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @return bool Whether the user was activated successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function activateUser(User $user): bool
     {
@@ -545,7 +545,7 @@ class Users extends Component
             // Commit the transaction regardless of whether we activated the user, in case something changed
             // in onBeforeActivateUser
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -565,6 +565,8 @@ class Users extends Component
      * If 'unverifiedEmail' is set on the User, then this method will transfer it to the official email property
      * and clear the unverified one.
      *
+     * @return bool
+     *
      * @param User $user
      */
     public function verifyEmailForUser(User $user)
@@ -578,13 +580,19 @@ class Users extends Component
             }
 
             $userRecord->unverifiedEmail = null;
-            $userRecord->save();
+
+            if (!$userRecord->save()) {
+                $user->addErrors($userRecord->getErrors());
+                return false;
+            }
 
             // If the user status is pending, let's activate them.
             if ($userRecord->pending == true) {
                 $this->activateUser($user);
             }
         }
+
+        return true;
     }
 
     /**
@@ -593,7 +601,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @return bool Whether the user was unlocked successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function unlockUser(User $user): bool
     {
@@ -627,7 +635,7 @@ class Users extends Component
             // Commit the transaction regardless of whether we unlocked the user, in case something changed
             // in onBeforeUnlockUser
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -649,7 +657,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @return bool Whether the user was suspended successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function suspendUser(User $user): bool
     {
@@ -679,7 +687,7 @@ class Users extends Component
             // Commit the transaction regardless of whether we saved the user, in case something changed
             // in onBeforeSuspendUser
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -701,7 +709,7 @@ class Users extends Component
      * @param User $user The user.
      *
      * @return bool Whether the user was unsuspended successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function unsuspendUser(User $user): bool
     {
@@ -731,7 +739,7 @@ class Users extends Component
             // Commit the transaction regardless of whether we unsuspended the user, in case something changed
             // in onBeforeUnsuspendUser
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

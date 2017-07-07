@@ -10,7 +10,6 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Tag;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
@@ -19,16 +18,13 @@ use craft\validators\UniqueValidator;
 /**
  * TagGroup model.
  *
+ * @mixin FieldLayoutBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class TagGroup extends Model
 {
-    // Traits
-    // =========================================================================
-
-    use FieldLayoutTrait;
-
     // Properties
     // =========================================================================
 

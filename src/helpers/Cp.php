@@ -46,10 +46,12 @@ class Cp
             return $alerts;
         }
 
-        if (Craft::$app->getUpdates()->getIsUpdateInfoCached() || $fetch) {
+        $updatesService = Craft::$app->getUpdates();
+
+        if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
             // relying on cached Elliott info
-            $update = Craft::$app->getUpdates()->getUpdates();
+            $updatesService->getUpdates();
 
             // Get the license key status
             $licenseKeyStatus = Craft::$app->getEt()->getLicenseKeyStatus();
@@ -66,13 +68,12 @@ class Cp
             }
 
             if (
-                $path !== 'updates' &&
-                $user->can('performUpdates') &&
-                !empty($update->app->releases) &&
-                Craft::$app->getUpdates()->criticalCraftUpdateAvailable($update->app->releases)
+                $path !== 'utilities/updates' &&
+                $user->can('utility:updates') &&
+                $updatesService->getIsCriticalUpdateAvailable()
             ) {
-                $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                    ' <a class="go nowrap" href="'.UrlHelper::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                $alerts[] = Craft::t('app', 'A critical update is available.').
+                    ' <a class="go nowrap" href="'.UrlHelper::url('utilities/updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
             }
 
             // Domain mismatch?

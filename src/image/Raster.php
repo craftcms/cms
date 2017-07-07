@@ -162,7 +162,7 @@ class Raster extends Image
 
         try {
             $this->_image = $this->_instance->open($path);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
         }
 

@@ -8,7 +8,7 @@
         {% set currentVersionEditTime = currentVersionEditTime ?? entry.dateUpdated %}
         <li><a{% if className(entry) == 'craft\\elements\\Entry' %} class="sel"{% endif %} href="{{ entry.getCpEditUrl() }}">{{ "Current"|t('app') }}
             <span class="light">
-                {{ currentVersionEditTime.uiTimestamp() }}
+                {{ currentVersionEditTime|timestamp('short') }}
                 {%- if currentVersionCreator is defined %}, {{ currentVersionCreator }}{% endif %}
             </span>
         </a></li>

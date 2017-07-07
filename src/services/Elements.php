@@ -199,15 +199,15 @@ class Elements extends Component
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_i18n.uri' => $uri,
-                'elements_i18n.siteId' => $siteId
+                'elements_sites.uri' => $uri,
+                'elements_sites.siteId' => $siteId
             ]);
 
         if ($enabledOnly) {
             $query->andWhere([
-                'elements_i18n.enabled' => '1',
+                'elements_sites.enabled' => '1',
                 'elements.enabled' => '1',
                 'elements.archived' => '0',
             ]);
@@ -270,7 +270,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -287,7 +287,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -308,8 +308,8 @@ class Elements extends Component
      * - Assigning the element’s ID on the element’s content model, if there is one and it’s a new set of content
      * - Updating the search index with new keywords from the element’s content
      * - Setting a unique URI on the element, if it’s supposed to have one.
-     * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
-     * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
+     * - Saving the element’s row(s) in the `elements_sites` and `content` tables
+     * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
      * - Calling the field types’ [[Field::onAfterElementSave() onAfterElementSave()]] methods
      * - Cleaing any template caches that the element was involved in
      *
@@ -346,7 +346,7 @@ class Elements extends Component
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
     {
@@ -486,7 +486,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_i18n}}',
+                        '{{%elements_sites}}',
                         [
                             'and',
                             ['elementId' => $element->id],
@@ -508,7 +508,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -530,11 +530,11 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
-     * @param array $newAttributes any attributes to apply to the duplicate
+     * @param ElementInterface $element       the element to duplicate
+     * @param array            $newAttributes any attributes to apply to the duplicate
      *
      * @return ElementInterface the duplicated element
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
@@ -589,7 +589,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -630,7 +630,7 @@ class Elements extends Component
 
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_i18n}}',
+                '{{%elements_sites}}',
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -734,7 +734,7 @@ class Elements extends Component
      * @param int $prevailingElementId The ID of the element that is sticking around.
      *
      * @return bool Whether the elements were merged successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
@@ -838,7 +838,7 @@ class Elements extends Component
             $transaction->commit();
 
             return $success;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -854,7 +854,7 @@ class Elements extends Component
      *                                  Defaults to the current site.
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
@@ -871,7 +871,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_i18n}}')
+                ->from('{{%elements_sites}}')
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
@@ -895,7 +895,7 @@ class Elements extends Component
      * @param ElementInterface $element The element to be deleted
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElement(ElementInterface $element): bool
     {
@@ -950,7 +950,7 @@ class Elements extends Component
             $element->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -1353,6 +1353,7 @@ class Elements extends Component
 
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $siteElement->propagating = true;
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
@@ -1389,12 +1390,13 @@ class Elements extends Component
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array $matches
+     * @param array                 $matches
      *
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string {
+    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string
+    {
         if ($element === null) {
             // Put the ref tag back
             return $matches[0];
@@ -1413,7 +1415,7 @@ class Elements extends Component
             }
 
             return $this->parseRefs((string)$value);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log it
             Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
 

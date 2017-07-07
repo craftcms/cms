@@ -460,7 +460,7 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -770,7 +770,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if ($variables['entry']->id) {
-            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $site->id, 1, true);
+            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entry']->id, $site->id, 1, true);
             /** @var EntryVersion $currentVersion */
             $currentVersion = reset($versions);
 

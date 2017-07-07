@@ -133,31 +133,29 @@ class Sites extends Component
         // Fetch all the sites
         $this->_loadAllSites();
 
-        $isInstalled = Craft::$app->getIsInstalled();
+        try {
+            // Set $this->currentSite to an actual Site model if it's not already
+            if (!($this->currentSite instanceof Site)) {
+                if ($this->currentSite !== null) {
+                    if (is_numeric($this->currentSite)) {
+                        $site = $this->getSiteById($this->currentSite);
+                    } else {
+                        $site = $this->getSiteByHandle($this->currentSite);
+                    }
 
-        // Set $this->currentSite to an actual Site model if it's not already
-        if ($isInstalled && !($this->currentSite instanceof Site)) {
-            if ($this->currentSite !== null) {
-                if (is_numeric($this->currentSite)) {
-                    $site = $this->getSiteById($this->currentSite);
+                    if (!$site) {
+                        throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
+                    }
+
+                    $this->currentSite = $site;
+                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                    // Default to the primary site
+                    $this->currentSite = $this->getPrimarySite();
                 } else {
-                    $site = $this->getSiteByHandle($this->currentSite);
+                    $this->currentSite = null;
                 }
-
-                if (!$site) {
-                    throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
-                }
-
-                $this->currentSite = $site;
-            } else if ($isInstalled && !Craft::$app->getIsUpdating()) {
-                // Default to the primary site
-                $this->currentSite = $this->getPrimarySite();
-            } else {
-                $this->currentSite = null;
             }
-        }
 
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
             // Is the config overriding the site URL?
             $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 
@@ -177,6 +175,13 @@ class Sites extends Component
                         Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
                     }
                 }
+            }
+        } catch (\Throwable $e) {
+            // Fail silently if Craft isn't installed or is in the middle of updating
+            if (!Craft::$app->getIsInstalled() || Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                $this->currentSite = null;
+            } else {
+                throw $e;
             }
         }
     }
@@ -363,7 +368,7 @@ class Sites extends Component
      *
      * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
@@ -427,7 +432,7 @@ class Sites extends Component
             $this->_sitesByHandle[$site->handle] = $site;
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -437,8 +442,8 @@ class Sites extends Component
             // TODO: Move this code into element/category modules
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
-                ->select(['groupId', 'uriFormat'])
-                ->from(['{{%categorygroups_i18n}}'])
+                ->select(['groupId', 'uriFormat', 'template', 'hasUrls'])
+                ->from(['{{%categorygroups_sites}}'])
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
@@ -450,13 +455,15 @@ class Sites extends Component
                         $siteSettings['groupId'],
                         $site->id,
                         $siteSettings['uriFormat'],
+                        $siteSettings['template'],
+                        $siteSettings['hasUrls']
                     ];
                 }
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        '{{%categorygroups_i18n}}',
-                        ['groupId', 'siteId', 'uriFormat'],
+                        '{{%categorygroups_sites}}',
+                        ['groupId', 'siteId', 'uriFormat', 'template', 'hasUrls'],
                         $newSiteSettings)
                     ->execute();
             }
@@ -486,7 +493,7 @@ class Sites extends Component
      * @param int[] $siteIds The site IDs in their new order
      *
      * @return bool Whether the sites were reordered successfthe sites are reorderedy
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function reorderSites(array $siteIds): bool
     {
@@ -507,7 +514,7 @@ class Sites extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -535,7 +542,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSiteById(int $siteId, int $transferContentTo = null): bool
     {
@@ -555,7 +562,7 @@ class Sites extends Component
      * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
      *
      * @return bool Whether the site was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteSite(Site $site, int $transferContentTo = null): bool
     {
@@ -576,7 +583,7 @@ class Sites extends Component
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
             ->select(['sectionId'])
-            ->from(['{{%sections_i18n}}'])
+            ->from(['{{%sections_sites}}'])
             ->where(['siteId' => $site->id])
             ->column();
 
@@ -597,7 +604,7 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 Craft::$app->getDb()->createCommand()
                     ->update(
-                        '{{%sections_i18n}}',
+                        '{{%sections_sites}}',
                         ['siteId' => $transferContentTo],
                         ['sectionId' => $soloSectionIds])
                     ->execute();
@@ -623,7 +630,7 @@ class Sites extends Component
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
-                            '{{%elements_i18n}}',
+                            '{{%elements_sites}}',
                             ['siteId' => $transferContentTo],
                             ['elementId' => $entryIds])
                         ->execute();
@@ -674,7 +681,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->delete(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 [
                                     'elementId' => $blockIds,
                                     'siteId' => $transferContentTo
@@ -683,7 +690,7 @@ class Sites extends Component
 
                         Craft::$app->getDb()->createCommand()
                             ->update(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 ['siteId' => $transferContentTo],
                                 [
                                     'elementId' => $blockIds,
@@ -764,7 +771,7 @@ class Sites extends Component
             $transaction->commit();
 
             $success = (bool)$affectedRows;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -886,7 +893,7 @@ class Sites extends Component
                 $db = Craft::$app->getDb();
 
                 $db->createCommand()
-                    ->delete('{{%elements_i18n}}', $deleteCondition)
+                    ->delete('{{%elements_sites}}', $deleteCondition)
                     ->execute();
                 $db->createCommand()
                     ->delete('{{%content}}', $deleteCondition)
@@ -897,7 +904,7 @@ class Sites extends Component
                 $updateCondition = ['elementId' => $elementIds];
 
                 $db->createCommand()
-                    ->update('{{%elements_i18n}}', $updateColumns, $updateCondition)
+                    ->update('{{%elements_sites}}', $updateColumns, $updateCondition)
                     ->execute();
                 $db->createCommand()
                     ->update('{{%content}}', $updateColumns, $updateCondition)

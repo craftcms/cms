@@ -341,7 +341,7 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: ".$e->getMessage(), __METHOD__);
                 }
             } else if (isset($cacheOption['params'])) {
@@ -371,7 +371,7 @@ class UtilitiesController extends Controller
 
         try {
             $backupPath = Craft::$app->getDb()->backup();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new Exception('Could not create backup: '.$e->getMessage());
         }
 

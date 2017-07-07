@@ -38,6 +38,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Users as UsersField;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -401,7 +402,7 @@ class Fields extends Component
     /**
      * Returns all field types that have a column in the content table.
      *
-     * @return FieldInterface[] The field type classes
+     * @return string[] The field type classes
      */
     public function getFieldTypesWithContent(): array
     {
@@ -415,6 +416,52 @@ class Fields extends Component
         }
 
         return $fieldTypes;
+    }
+
+    /**
+     * Returns all field types whose column types are considered compatible with a given field.
+     *
+     * @param FieldInterface $field          The current field to base compatible fields on
+     * @param bool           $includeCurrent Whether $field's class should be included
+     *
+     * @return string[] The compatible field type classes
+     */
+    public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
+    {
+        if (!$field::hasContentColumn()) {
+            return $includeCurrent ? [get_class($field)] : [];
+        }
+
+        $types = [];
+        $fieldColumnType = $field->getContentColumnType();
+
+        foreach ($this->getAllFieldTypes() as $class) {
+            if ($class === get_class($field)) {
+                if ($includeCurrent) {
+                    $types[] = $class;
+                }
+                continue;
+            }
+
+            if (!$class::hasContentColumn()) {
+                continue;
+            }
+
+            /** @var FieldInterface $tempField */
+            $tempField = new $class();
+            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempField->getContentColumnType())) {
+                continue;
+            }
+
+            $types[] = $class;
+        }
+
+        // Make sure the current field class is in there if it's supposed to be
+        if ($includeCurrent && !in_array(get_class($field), $types, true)) {
+            $types[] = get_class($field);
+        }
+
+        return $types;
     }
 
     /**
@@ -665,7 +712,7 @@ class Fields extends Component
      * @param bool           $runValidation Whether the field should be validated
      *
      * @return bool Whether the field was saved successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
@@ -792,7 +839,7 @@ class Fields extends Component
             $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -831,7 +878,7 @@ class Fields extends Component
      * @param FieldInterface $field The field
      *
      * @return bool Whether the field was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteField(FieldInterface $field): bool
     {
@@ -870,7 +917,7 @@ class Fields extends Component
             $this->updateFieldVersionAfterRequest();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

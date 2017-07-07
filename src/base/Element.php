@@ -9,7 +9,6 @@ namespace craft\base;
 
 use Craft;
 use craft\behaviors\ContentBehavior;
-use craft\behaviors\ContentTrait;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -84,6 +83,7 @@ use yii\validators\Validator;
  * @property string                $contentTable          The name of the table this element’s content is stored in
  * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
  * @property string                $fieldContext          The field context this element’s content uses
+ * @mixin ContentBehavior
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -94,7 +94,6 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     use ElementTrait;
-    use ContentTrait;
 
     // Constants
     // =========================================================================
@@ -1989,7 +1988,7 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (\Exception $e) {
+                                } catch (\Throwable $e) {
                                     $value = $field->normalizeValue(null);
                                 }
                             }

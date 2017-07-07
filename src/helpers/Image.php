@@ -167,11 +167,6 @@ class Image
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
-        if ($extension === 'svg') {
-            // No cleanup in the classic sense.
-            return;
-        }
-
         if (static::canManipulateAsImage($extension)) {
             Craft::$app->getImages()->cleanImage($imagePath);
         }

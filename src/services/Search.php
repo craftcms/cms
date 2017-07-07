@@ -20,9 +20,7 @@ use craft\helpers\StringHelper;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
-use Exception;
 use yii\base\Component;
-use yii\db\Exception as DbException;
 use yii\db\Schema;
 
 /**
@@ -71,7 +69,7 @@ class Search extends Component
      *          you can get an "index row size exceeds maximum for index" error with a lot of data. This value
      *          is a hard limit to truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 19562;
+    public $maxPostgresKeywordLength = 2450;
 
     // Public Methods
     // =========================================================================
@@ -435,7 +433,7 @@ class Search extends Component
      * @param int|null $siteId
      *
      * @return string|false
-     * @throws \Exception
+     * @throws \Throwable
      */
     private function _processTokens(array $tokens = [], bool $inclusive = true, int $siteId = null)
     {
@@ -495,7 +493,7 @@ class Search extends Component
      * @param int|null        $siteId
      *
      * @return array
-     * @throws Exception
+     * @throws \Throwable
      */
     private function _getSqlFromTerm(SearchQueryTerm $term, int $siteId = null): array
     {
@@ -654,7 +652,7 @@ class Search extends Component
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      *
      * @return string
-     * @throws Exception
+     * @throws \Throwable
      */
     private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
     {
@@ -746,9 +744,9 @@ class Search extends Component
      *
      * @return string The (possibly) truncated keyword string.
      */
-    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize) : string
+    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
     {
-        $cleanKeywordsLength = strlen($cleanKeywords);
+        $cleanKeywordsLength = mb_strlen($cleanKeywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */

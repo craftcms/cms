@@ -210,12 +210,12 @@ class CategoryQuery extends ElementQuery
 
             if (!empty($parts)) {
                 if (count($parts) == 1) {
-                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
+                    $condition[] = Db::parseParam('elements_sites.slug', $parts[0]);
                 } else {
                     $condition[] = [
                         'and',
                         Db::parseParam('categorygroups.handle', $parts[0]),
-                        Db::parseParam('elements_i18n.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1])
                     ];
                     $joinCategoryGroups = true;
                 }

@@ -239,7 +239,7 @@ class Globals extends Component
      *
      * @return bool
      * @throws GlobalSetNotFoundException if $globalSet->id is invalid
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSet(GlobalSet $globalSet, bool $runValidation = true): bool
     {
@@ -293,7 +293,7 @@ class Globals extends Component
             $globalSetRecord->save(false);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

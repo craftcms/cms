@@ -399,15 +399,7 @@ class Assets extends Component
             $criteria = new FolderCriteria($criteria);
         }
 
-        $query = (new Query())
-            ->select([
-                'id',
-                'parentId',
-                'volumeId',
-                'name',
-                'path',
-            ])
-            ->from(['{{%volumefolders}}']);
+        $query = $this->_createFolderQuery();
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -446,15 +438,7 @@ class Assets extends Component
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
-        $query = (new Query())
-            ->select([
-                'id',
-                'parentId',
-                'volumeId',
-                'name',
-                'path',
-            ])
-            ->from(['{{%volumefolders}}'])
+        $query = $this->_createFolderQuery()
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path.'%', false],

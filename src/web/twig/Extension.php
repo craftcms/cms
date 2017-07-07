@@ -148,6 +148,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
+            new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
@@ -739,10 +740,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 
-        // Keep the 'blx' variable around for now
-        $globals['craft'] = $globals['blx'] = new CraftVariable();
+        $globals['craft'] = new CraftVariable();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
             $globals['currentUser'] = null;
@@ -757,7 +757,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;

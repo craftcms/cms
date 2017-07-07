@@ -417,7 +417,7 @@
 
             swapForms: function($out, $in, animate) {
                 if (animate) {
-                    this.$formContainer.height(this.$formContainer.height())
+                    this.$formContainer.height(this.$formContainer.height());
                     var width = this.$formContainer.width();
 
                     $out
@@ -454,7 +454,7 @@
                                     this.$formContainer.css({height: 'auto'});
                                 }, this)
                             }
-                        )
+                        );
                 } else {
                     $out.addClass('hidden');
                     $in.removeClass('hidden');
@@ -492,7 +492,7 @@
                     this.$supportAttachment.val('');
                 }
 
-                this.$iframe.html('');
+                this.$supportIframe.html('');
             },
 
             getFormParams: function() {
@@ -564,7 +564,7 @@
             },
 
             getSearchUrl: function(query) {
-                return 'https://api.github.com/search/issues?q=type:issue+repo:craftcms/cms+' + encodeURIComponent(query)
+                return 'https://api.github.com/search/issues?q=type:issue+repo:craftcms/cms+' + encodeURIComponent(query);
             },
 
             getSearchResults: function(response) {

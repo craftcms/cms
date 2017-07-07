@@ -9,8 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Plugin;
 use craft\events\RegisterTemplateRootsEvent;
+use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
@@ -38,9 +38,29 @@ class View extends \yii\web\View
     // =========================================================================
 
     /**
-     * @event RegisterTemplateRootsEvent The event that is triggered when registering field types.
+     * @event RegisterTemplateRootsEvent The event that is triggered when registering template roots
      */
     const EVENT_REGISTER_CP_TEMPLATE_ROOTS = 'registerCpTemplateRoots';
+
+    /**
+     * @event TemplateEvent The event that is triggered before a template gets rendered
+     */
+    const EVENT_BEFORE_RENDER_TEMPLATE = 'beforeRenderTemplate';
+
+    /**
+     * @event TemplateEvent The event that is triggered after a template gets rendered
+     */
+    const EVENT_AFTER_RENDER_TEMPLATE = 'afterRenderTemplate';
+
+    /**
+     * @event TemplateEvent The event that is triggered before a page template gets rendered
+     */
+    const EVENT_BEFORE_RENDER_PAGE_TEMPLATE = 'beforeRenderPageTemplate';
+
+    /**
+     * @event TemplateEvent The event that is triggered after a page template gets rendered
+     */
+    const EVENT_AFTER_RENDER_PAGE_TEMPLATE = 'afterRenderPageTemplate';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -207,47 +227,22 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the template path that is currently being rendered, or the full template if [[renderString()]] or
-     * [[renderObjectTemplate()]] was called.
-     *
-     * @return mixed The template that is being rendered.
-     */
-    public function getRenderingTemplate()
-    {
-        if ($this->getIsRenderingTemplate()) {
-            if (strpos($this->_renderingTemplate, 'string:') === 0) {
-                $template = $this->_renderingTemplate;
-            } else {
-                $template = $this->resolveTemplate($this->_renderingTemplate);
-
-                if ($template === false) {
-                    $template = $this->_templatesPath.DIRECTORY_SEPARATOR.$this->_renderingTemplate;
-                }
-            }
-
-            return $template;
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns whether a page template is currently being rendered
-     */
-
-    /**
      * Renders a Twig template.
      *
-     * @param mixed $template  The name of the template to load
-     * @param array $variables The variables that should be available to the template
+     * @param string $template  The name of the template to load
+     * @param array  $variables The variables that should be available to the template
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      * @throws Exception in case of failure
      * @throws \RuntimeException in case of failure
      */
-    public function renderTemplate($template, array $variables = []): string
+    public function renderTemplate(string $template, array $variables = []): string
     {
+        if (!$this->beforeRenderTemplate($template, $variables)) {
+            return '';
+        }
+
         Craft::trace("Rendering template: $template", __METHOD__);
 
         // Render and return
@@ -267,6 +262,8 @@ class View extends \yii\web\View
 
         Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
+
+        $this->afterRenderTemplate($template, $variables, $output);
 
         return $output;
     }
@@ -291,6 +288,10 @@ class View extends \yii\web\View
      */
     public function renderPageTemplate(string $template, array $variables = []): string
     {
+        if (!$this->beforeRenderPageTemplate($template, $variables)) {
+            return '';
+        }
+
         ob_start();
         ob_implicit_flush(false);
 
@@ -303,7 +304,11 @@ class View extends \yii\web\View
 
         $this->_isRenderingPageTemplate = $isRenderingPageTemplate;
 
-        return ob_get_clean();
+        $output = ob_get_clean();
+
+        $this->afterRenderPageTemplate($template, $variables, $output);
+
+        return $output;
     }
 
     /**
@@ -559,8 +564,8 @@ class View extends \yii\web\View
             foreach ($this->getCpTemplateRoots() as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen+1) === 0) {
-                    $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen+1);
+                if (strncasecmp($templateRoot.'/', $name.'/', $templateRootLen + 1) === 0) {
+                    $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
                             return $this->_templatePaths[$key] = $path;
@@ -844,16 +849,18 @@ class View extends \yii\web\View
     {
         $session = Craft::$app->getSession();
 
-        foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
-            if (!is_subclass_of($name, YiiAssetBundle::class)) {
-                throw new Exception("$name is not an asset bundle");
+        if ($session->getIsActive()) {
+            foreach ($session->getAssetBundleFlashes(true) as $name => $position) {
+                if (!is_subclass_of($name, YiiAssetBundle::class)) {
+                    throw new Exception("$name is not an asset bundle");
+                }
+
+                $this->registerAssetBundle($name, $position);
             }
 
-            $this->registerAssetBundle($name, $position);
-        }
-
-        foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
-            $this->registerJs($js, $position, $key);
+            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+                $this->registerJs($js, $position, $key);
+            }
         }
     }
 
@@ -1212,6 +1219,89 @@ class View extends \yii\web\View
         }
 
         return $return;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before a template is rendered.
+     *
+     * @param mixed $template  The name of the template to render
+     * @param array $variables The variables that should be available to the template
+     *
+     * @return bool Whether the template should be rendered
+     */
+    public function beforeRenderTemplate(string $template, array $variables): bool
+    {
+        $event = new TemplateEvent([
+            'template' => $template,
+            'variables' => $variables,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_RENDER_TEMPLATE, $event);
+        return $event->isValid;
+    }
+
+    /**
+     * Performs actions after a template is rendered.
+     *
+     * @param mixed  $template  The name of the template that was rendered
+     * @param array  $variables The variables that were available to the template
+     * @param string $output    The template’s rendering result
+     *
+     * @return void
+     */
+    public function afterRenderTemplate(string $template, array $variables, string &$output)
+    {
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_TEMPLATE)) {
+            $event = new TemplateEvent([
+                'template' => $template,
+                'variables' => $variables,
+                'output' => $output,
+            ]);
+            $this->trigger(self::EVENT_AFTER_RENDER_TEMPLATE, $event);
+            $output = $event->output;
+        }
+    }
+
+    /**
+     * Performs actions before a page template is rendered.
+     *
+     * @param mixed $template  The name of the template to render
+     * @param array $variables The variables that should be available to the template
+     *
+     * @return bool Whether the template should be rendered
+     */
+    public function beforeRenderPageTemplate(string $template, array $variables): bool
+    {
+        $event = new TemplateEvent([
+            'template' => $template,
+            'variables' => $variables,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_RENDER_PAGE_TEMPLATE, $event);
+        return $event->isValid;
+    }
+
+    /**
+     * Performs actions after a page template is rendered.
+     *
+     * @param mixed  $template  The name of the template that was rendered
+     * @param array  $variables The variables that were available to the template
+     * @param string $output    The template’s rendering result
+     *
+     * @return void
+     */
+    public function afterRenderPageTemplate(string $template, array $variables, string &$output)
+    {
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE)) {
+            $event = new TemplateEvent([
+                'template' => $template,
+                'variables' => $variables,
+                'output' => $output,
+            ]);
+            $this->trigger(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE, $event);
+            $output = $event->output;
+        }
     }
 
     // Private Methods

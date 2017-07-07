@@ -84,14 +84,12 @@ class UserGroups extends Component
      */
     public function getGroupById(int $groupId): UserGroup
     {
-        $groupRecord = UserGroupRecord::findOne($groupId);
+        $result = $this->_createUserGroupsQuery()
+            ->where(['id' => $groupId])
+            ->one();
 
-        if ($groupRecord) {
-            return new UserGroup($groupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-            ]));
+        if ($result) {
+            return new UserGroup($result);
         }
 
         return null;
@@ -106,16 +104,12 @@ class UserGroups extends Component
      */
     public function getGroupByHandle(int $groupHandle): UserGroup
     {
-        $groupRecord = UserGroupRecord::findOne([
-            'handle' => $groupHandle
-        ]);
+        $result = $this->_createUserGroupsQuery()
+            ->where(['handle' => $groupHandle])
+            ->one();
 
-        if ($groupRecord) {
-            return new UserGroup($groupRecord->toArray([
-                'id',
-                'name',
-                'handle',
-            ]));
+        if ($result) {
+            return new UserGroup($result);
         }
 
         return null;
@@ -261,5 +255,19 @@ class UserGroups extends Component
     private function _noGroupExists(int $groupId)
     {
         throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createUserGroupsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'name',
+                'handle',
+            ])
+            ->from(['{{%usergroups}}']);
     }
 }

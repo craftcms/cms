@@ -63,7 +63,7 @@ class EtTransport
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
             'requestPort' => Craft::$app->getRequest()->getPort(),
-            'localVersion' => Craft::$app->version,
+            'localVersion' => Craft::$app->getVersion(),
             'localEdition' => Craft::$app->getEdition(),
             'userEmail' => $userEmail,
             'showBeta' => Craft::$app->getConfig()->getGeneral()->showBetaUpdates,
@@ -177,7 +177,7 @@ class EtTransport
                                 foreach ($etModel->pluginLicenseKeyStatuses as $packageName => $licenseKeyStatus) {
                                     if ($plugin = $pluginsService->getPluginByPackageName($packageName)) {
                                         /** @var Plugin $plugin */
-                                        $pluginsService->setPluginLicenseKeyStatus($plugin->handle, $licenseKeyStatus);
+                                        $pluginsService->setPluginLicenseKeyStatus($plugin->id, $licenseKeyStatus);
                                     }
                                 }
                             }
@@ -214,7 +214,7 @@ class EtTransport
             }
 
             throw $e;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.
@@ -257,7 +257,7 @@ class EtTransport
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
-            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->handle);
+            $pluginLicenseKeys[$plugin->packageName] = $pluginsService->getPluginLicenseKey($plugin->id);
         }
 
         return $pluginLicenseKeys;

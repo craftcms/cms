@@ -104,7 +104,7 @@
                                         warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
                                         id: 'type',
                                         name: 'type',
-                                        options: fieldTypes,
+                                        options: field.id ? fieldTypes[field.id] : fieldTypes.new,
                                         value: className(field),
                                         errors: field.getErrors('type') ?? null
                                     }) }}

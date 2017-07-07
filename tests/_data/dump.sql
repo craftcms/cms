@@ -172,9 +172,9 @@ CREATE TABLE `craft_categorygroups` (
 # Dump of table craft_categorygroups_i18n
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `craft_categorygroups_i18n`;
+DROP TABLE IF EXISTS `craft_categorygroups_sites`;
 
-CREATE TABLE `craft_categorygroups_i18n` (
+CREATE TABLE `craft_categorygroups_sites` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupId` int(11) NOT NULL,
   `siteId` int(11) NOT NULL,
@@ -303,9 +303,9 @@ UNLOCK TABLES;
 # Dump of table craft_elements_i18n
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `craft_elements_i18n`;
+DROP TABLE IF EXISTS `craft_elements_sites`;
 
-CREATE TABLE `craft_elements_i18n` (
+CREATE TABLE `craft_elements_sites` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `elementId` int(11) NOT NULL,
   `siteId` int(11) NOT NULL,
@@ -325,14 +325,14 @@ CREATE TABLE `craft_elements_i18n` (
   CONSTRAINT `craft_elements_i18n_siteId_fk` FOREIGN KEY (`siteId`) REFERENCES `craft_sites` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-LOCK TABLES `craft_elements_i18n` WRITE;
-/*!40000 ALTER TABLE `craft_elements_i18n` DISABLE KEYS */;
+LOCK TABLES `craft_elements_sites` WRITE;
+/*!40000 ALTER TABLE `craft_elements_sites` DISABLE KEYS */;
 
-INSERT INTO `craft_elements_i18n` (`id`, `elementId`, `siteId`, `slug`, `uri`, `enabled`, `dateCreated`, `dateUpdated`, `uid`)
+INSERT INTO `craft_elements_sites` (`id`, `elementId`, `siteId`, `slug`, `uri`, `enabled`, `dateCreated`, `dateUpdated`, `uid`)
 VALUES
 	(1,1,1,'',NULL,1,'2016-11-02 22:03:41','2016-11-02 22:03:41','87e9e57c-5586-4fc6-8ffe-fa5dc453fd55');
 
-/*!40000 ALTER TABLE `craft_elements_i18n` ENABLE KEYS */;
+/*!40000 ALTER TABLE `craft_elements_sites` ENABLE KEYS */;
 UNLOCK TABLES;
 
 
@@ -920,9 +920,9 @@ CREATE TABLE `craft_sections` (
 # Dump of table craft_sections_i18n
 # ------------------------------------------------------------
 
-DROP TABLE IF EXISTS `craft_sections_i18n`;
+DROP TABLE IF EXISTS `craft_sections_sites`;
 
-CREATE TABLE `craft_sections_i18n` (
+CREATE TABLE `craft_sections_sites` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sectionId` int(11) NOT NULL,
   `siteId` int(11) NOT NULL,

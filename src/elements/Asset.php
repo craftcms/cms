@@ -47,7 +47,9 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property bool $hasThumb Whether the file has a thumbnail
+ * @property bool           $hasThumb Whether the file has a thumbnail
+ * @property int|float|null $height   the image height
+ * @property int|float|null $width    the image width
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -363,16 +365,6 @@ class Asset extends Element
     public $kind;
 
     /**
-     * @var int|null Width
-     */
-    public $width;
-
-    /**
-     * @var int|null Height
-     */
-    public $height;
-
-    /**
      * @var int|null Size
      */
     public $size;
@@ -434,7 +426,17 @@ class Asset extends Element
     public $keepFileOnDelete = false;
 
     /**
-     * @var
+     * @var int|null Width
+     */
+    private $_width;
+
+    /**
+     * @var int|null Height
+     */
+    private $_height;
+
+    /**
+     * @var AssetTransform|null
      */
     private $_transform;
 
@@ -463,7 +465,7 @@ class Asset extends Element
             }
 
             return parent::__toString();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -722,42 +724,48 @@ class Asset extends Element
     }
 
     /**
-     * Get image height.
+     * Returns the image height.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return bool|float|mixed
+     * @return int|float|null
      */
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
-            $transform = null;
-        }
-
         return $this->_getDimension('height', $transform);
     }
 
     /**
-     * Get image width.
+     * Sets the image height.
      *
-     * @param string|null $transform The optional transform handle for which to get thumbnail.
-     *
-     * @return bool|float|mixed
+     * @param int|float|null $height the image height
      */
-    public function getWidth(string $transform = null)
+    public function setHeight($height)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
-            $transform = null;
-        }
+        $this->_height = $height;
+    }
 
+    /**
+     * Returns the image width.
+     *
+     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
+     *
+     * @return int|float|null
+     */
+    public function getWidth($transform = null)
+    {
         return $this->_getDimension('width', $transform);
+    }
+
+    /**
+     * Sets the image width.
+     *
+     * @param int|float|null $width the image width
+     */
+    public function setWidth($width)
+    {
+        $this->_width = $width;
     }
 
     /**
@@ -996,6 +1004,7 @@ class Asset extends Element
         // Set the field layout early.
         $folder = $assetsService->getFolderById($folderId);
 
+        // Make sure the field layout is set correctly
         /** @var Volume $volume */
         $volume = $folder->getVolume();
         $this->fieldLayoutId = $volume->fieldLayoutId;
@@ -1068,10 +1077,10 @@ class Asset extends Element
                 $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
                 if ($this->kind === 'image') {
-                    list ($this->width, $this->height) = Image::imageSize($tempPath);
+                    list ($this->_width, $this->_height) = Image::imageSize($tempPath);
                 } else {
-                    $this->width = null;
-                    $this->height = null;
+                    $this->_width = null;
+                    $this->_height = null;
                 }
 
                 $this->size = filesize($tempPath);
@@ -1114,8 +1123,8 @@ class Asset extends Element
         $record->kind = $this->kind;
         $record->size = $this->size;
         $record->focalPoint = $this->focalPoint;
-        $record->width = $this->width;
-        $record->height = $this->height;
+        $record->width = $this->getWidth();
+        $record->height = $this->getHeight();
         $record->dateModified = $this->dateModified;
         $record->save(false);
 
@@ -1165,7 +1174,7 @@ class Asset extends Element
      * @param string                           $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
      *
-     * @return null|float|mixed
+     * @return int|float|null
      */
     private function _getDimension(string $dimension, $transform)
     {
@@ -1173,12 +1182,14 @@ class Asset extends Element
             return null;
         }
 
-        if ($transform === null && $this->_transform !== null) {
-            $transform = $this->_transform;
+        $transform = $transform ?? $this->_transform;
+
+        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
+            $transform = null;
         }
 
-        if (!$transform) {
-            return $this->$dimension;
+        if ($transform === null) {
+            return $this->{'_'.$dimension};
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
@@ -1190,16 +1201,16 @@ class Asset extends Element
 
         if (!$transform->width || !$transform->height) {
             // Fill in the blank
-            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->width, $this->height);
+            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_width, $this->_height);
             $dimensions['width'] = (int)$dimensionArray[0];
             $dimensions['height'] = (int)$dimensionArray[1];
         }
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
-            $factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
-            $dimensions['width'] = (int)round($this->width / $factor);
-            $dimensions['height'] = (int)round($this->height / $factor);
+            $factor = max($this->_width / $dimensions['width'], $this->_height / $dimensions['height']);
+            $dimensions['width'] = (int)round($this->_width / $factor);
+            $dimensions['height'] = (int)round($this->_height / $factor);
         }
 
         return $dimensions[$dimension];

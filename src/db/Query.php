@@ -175,7 +175,7 @@ class Query extends \yii\db\Query
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      *                               If this parameter is not given, the `db` application component will be used.
      *
-     * @return array|bool The row (in terms of an array) of the query result. False is returned if the query
+     * @return ElementInterface|array|bool The row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
     public function nth(int $n, YiiConnection $db = null)
@@ -192,7 +192,7 @@ class Query extends \yii\db\Query
      * Shortcut for `createCommand()->getRawSql()`.
      *
      * @param YiiConnection|null $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
+     *                               If this parameter is not given, the `db` application component will be used.
      *
      * @return string
      * @see createCommand()

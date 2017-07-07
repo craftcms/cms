@@ -291,7 +291,12 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId));
         }
 
-        if ($this->typeId) {
+        if ($this->typeId !== null) {
+            // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
+            if (empty($this->typeId)) {
+                return false;
+            }
+
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
         }
 

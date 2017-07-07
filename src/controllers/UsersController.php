@@ -25,7 +25,6 @@ use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use craft\web\View;
-use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -110,11 +109,11 @@ class UsersController extends Controller
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));
 
-        if (!$user) {
+        if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
             Craft::$app->getSecurity()->validatePassword($password, '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
 
-            return $this->_handleLoginFailure(User::AUTH_USERNAME_INVALID);
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
@@ -427,24 +426,27 @@ class UsersController extends Controller
         $userToProcess = $info['userToProcess'];
         $userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
-        Craft::$app->getUsers()->verifyEmailForUser($userToProcess);
-
-        // If they're logged in, give them a success notice
-        if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
-        }
-
-        if ($userIsPending) {
-            // They were just activated, so treat this as an activation request
-            if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
-                return $response;
+        if (Craft::$app->getUsers()->verifyEmailForUser($userToProcess)) {
+            // If they're logged in, give them a success notice
+            if (!Craft::$app->getUser()->getIsGuest()) {
+                Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
             }
+
+            if ($userIsPending) {
+                // They were just activated, so treat this as an activation request
+                if (($response = $this->_onAfterActivateUser($userToProcess)) !== null) {
+                    return $response;
+                }
+            }
+
+            // Redirect to the site/CP root
+            $url = UrlHelper::url('');
+            return $this->redirect($url);
         }
 
-        // Redirect to the site/CP root
-        $url = UrlHelper::url('');
-
-        return $this->redirect($url);
+        return $this->renderTemplate('_special/emailtaken', [
+            'email' => $userToProcess->unverifiedEmail
+        ]);
     }
 
     /**
@@ -914,7 +916,7 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Does that email need to be verified?
-                if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
+                if ($requireEmailVerification && (true || !$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -1157,7 +1159,7 @@ class UsersController extends Controller
 
                 return $this->asJson(['html' => $html]);
             }
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
                 FileHelper::removeFile($fileLocation);

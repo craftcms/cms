@@ -274,7 +274,7 @@ class Categories extends Component
      *
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
@@ -293,7 +293,9 @@ class Categories extends Component
         ]));
 
         if (!$isNewCategoryGroup) {
-            $groupRecord = CategoryGroupRecord::findOne($group->id);
+            $groupRecord = CategoryGroupRecord::find()
+                ->where(['id' => $group->id])
+                ->one();
 
             if (!$groupRecord) {
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
@@ -439,7 +441,7 @@ class Categories extends Component
                     if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
-                                '{{%elements_i18n}}',
+                                '{{%elements_sites}}',
                                 ['uri' => null],
                                 [
                                     'elementId' => $categoryIds,
@@ -469,7 +471,7 @@ class Categories extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -490,7 +492,7 @@ class Categories extends Component
      * @param int $groupId
      *
      * @return bool Whether the category group was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteGroupById(int $groupId): bool
     {
@@ -540,7 +542,7 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;

@@ -332,7 +332,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if (!isset($options['basePath'])) {
             $options['basePath'] = realpath($dir);
-            $options = self::_normalizeOptions($options);
+            $options = static::normalizeOptions($options);
         }
 
         while (($file = readdir($handle)) !== false) {
@@ -413,7 +413,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 throw new Exception('Unable to release test lock.');
             }
             self::$_useFileLocks = true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage(), __METHOD__);
         }
 
@@ -422,98 +422,5 @@ class FileHelper extends \yii\helpers\FileHelper
         $cacheService->set('useFileLocks', $cachedValue, 5184000);
 
         return self::$_useFileLocks;
-    }
-
-    /**
-     * @param array $options raw options
-     * @return array normalized options
-     * @todo Remove when Yii 2.0.12 is released
-     */
-    private static function _normalizeOptions(array $options)
-    {
-        if (!array_key_exists('caseSensitive', $options)) {
-            $options['caseSensitive'] = true;
-        }
-        if (isset($options['except'])) {
-            foreach ($options['except'] as $key => $value) {
-                if (is_string($value)) {
-                    $options['except'][$key] = self::_parseExcludePattern($value, $options['caseSensitive']);
-                }
-            }
-        }
-        if (isset($options['only'])) {
-            foreach ($options['only'] as $key => $value) {
-                if (is_string($value)) {
-                    $options['only'][$key] = self::_parseExcludePattern($value, $options['caseSensitive']);
-                }
-            }
-        }
-        return $options;
-    }
-
-    /**
-     * Processes the pattern, stripping special characters like / and ! from the beginning and settings flags instead.
-     * @param string $pattern
-     * @param bool $caseSensitive
-     * @throws \yii\base\InvalidParamException
-     * @return array with keys: (string) pattern, (int) flags, (int|bool) firstWildcard
-     * @todo Remove when Yii 2.0.12 is released
-     */
-    private static function _parseExcludePattern($pattern, $caseSensitive)
-    {
-        if (!is_string($pattern)) {
-            throw new InvalidParamException('Exclude/include pattern must be a string.');
-        }
-
-        $result = [
-            'pattern' => $pattern,
-            'flags' => 0,
-            'firstWildcard' => false,
-        ];
-
-        if (!$caseSensitive) {
-            $result['flags'] |= self::PATTERN_CASE_INSENSITIVE;
-        }
-
-        if (!isset($pattern[0])) {
-            return $result;
-        }
-
-        if ($pattern[0] === '!') {
-            $result['flags'] |= self::PATTERN_NEGATIVE;
-            $pattern = StringHelper::byteSubstr($pattern, 1, StringHelper::byteLength($pattern));
-        }
-        if (StringHelper::byteLength($pattern) && StringHelper::byteSubstr($pattern, -1, 1) === '/') {
-            $pattern = StringHelper::byteSubstr($pattern, 0, -1);
-            $result['flags'] |= self::PATTERN_MUSTBEDIR;
-        }
-        if (strpos($pattern, '/') === false) {
-            $result['flags'] |= self::PATTERN_NODIR;
-        }
-        $result['firstWildcard'] = self::_firstWildcardInPattern($pattern);
-        if ($pattern[0] === '*' && self::_firstWildcardInPattern(StringHelper::byteSubstr($pattern, 1, StringHelper::byteLength($pattern))) === false) {
-            $result['flags'] |= self::PATTERN_ENDSWITH;
-        }
-        $result['pattern'] = $pattern;
-
-        return $result;
-    }
-
-    /**
-     * Searches for the first wildcard character in the pattern.
-     * @param string $pattern the pattern to search in
-     * @return int|bool position of first wildcard character or false if not found
-     * @todo Remove when Yii 2.0.12 is released
-     */
-    private static function _firstWildcardInPattern($pattern)
-    {
-        $wildcards = ['*', '?', '[', '\\'];
-        $wildcardSearch = function ($r, $c) use ($pattern) {
-            $p = strpos($pattern, $c);
-
-            return $r === false ? $p : ($p === false ? $r : min($r, $p));
-        };
-
-        return array_reduce($wildcards, $wildcardSearch, false);
     }
 }

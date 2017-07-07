@@ -491,8 +491,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @inheritdoc
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
-
-        /** @var ElementQuery $value */    {
+        /** @var ElementQuery $value */
+    {
         $value = $element->getFieldValue($this->handle);
 
         // $id will be set if we're saving new relations
@@ -553,14 +553,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
-            [
                 [
-                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
-                    'name' => 'useTargetSite',
-                    'checked' => $showTargetSite,
-                    'toggle' => 'target-site-container'
-                ]
-            ]) .
+                    [
+                        'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
+                        'name' => 'useTargetSite',
+                        'checked' => $showTargetSite,
+                        'toggle' => 'target-site-container'
+                    ]
+                ]).
             '<div id="target-site-container"'.(!$showTargetSite ? ' class="hidden"' : '').'>';
 
         $siteOptions = [];

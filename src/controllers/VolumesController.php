@@ -16,7 +16,6 @@ use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
-use Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -277,7 +276,7 @@ class VolumesController extends Controller
                 $params);
 
             return $this->asJson($result);
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }

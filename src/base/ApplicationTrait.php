@@ -40,6 +40,7 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
  * @property bool                            $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
  * @property \craft\services\Categories      $categories         The categories service
+ * @property \craft\services\Composer        $composer           The Composer service
  * @property \craft\services\Config          $config             The config service
  * @property \craft\services\Content         $content            The content service
  * @property \craft\db\MigrationManager      $contentMigrator    The content migration manager
@@ -58,10 +59,9 @@ use yii\web\ServerErrorHttpException;
  * @property bool                            $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
  * @property \craft\services\Images          $images             The images service
- * @property bool                            $sInMaintenanceMode Whether the system is in maintenance mode
+ * @property bool                            $sInMaintenanceMode Whether someone is currently performing a system update
  * @property bool                            $isInstalled        Whether Craft is installed
  * @property bool                            $sMultiSite         Whether this site has multiple sites
- * @property bool                            $isUpdating         Whether Craft is in the middle of updating itself
  * @property bool                            $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\mail\Mailer              $mailer             The mailer component
@@ -195,8 +195,8 @@ trait ApplicationTrait
                         if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
                             return $preferredLanguage;
                         }
-                    } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
+                    } catch (\Throwable $e) {
+                        Craft::warning('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
                     // Is there a default CP language?
@@ -227,7 +227,7 @@ trait ApplicationTrait
                 }
             }
 
-            if (!$this->getIsUpdating()) {
+            if (!$this->getUpdates()->getIsCraftDbMigrationNeeded()) {
                 // Use the primary site's language by default
                 return $this->getSites()->getPrimarySite()->language;
             }
@@ -273,38 +273,6 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         // If you say so!
         $this->_isInstalled = true;
-    }
-
-    /**
-     * Returns whether Craft is in the middle of updating itself.
-     *
-     * @return bool
-     */
-    public function getIsUpdating(): bool
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return true;
-        }
-
-        $request = $this->getRequest();
-
-        if ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) {
-            return true;
-        }
-
-        if (!$request->getIsConsoleRequest()) {
-            $actionSegments = $request->getActionSegments();
-
-            if (
-                $actionSegments === ['update', 'cleanUp'] ||
-                $actionSegments === ['update', 'rollback']
-            ) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -504,9 +472,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether the system is in maintenance mode.
+     * Returns whether someone is currently performing a system update.
      *
      * @return bool
+     * @see enableMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function getIsInMaintenanceMode(): bool
     {
@@ -518,6 +488,8 @@ trait ApplicationTrait
      * Enables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function enableMaintenanceMode(): bool
     {
@@ -529,6 +501,8 @@ trait ApplicationTrait
      * Disables Maintenance Mode.
      *
      * @return bool
+     * @see getIsInMaintenanceMode()
+     * @see disableMaintenanceMode()
      */
     public function disableMaintenanceMode(): bool
     {
@@ -649,7 +623,7 @@ trait ApplicationTrait
     /**
      * Returns the Yii framework version.
      *
-     * @return mixed
+     * @return string
      */
     public function getYiiVersion()
     {
@@ -722,6 +696,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('categories');
+    }
+
+    /**
+     * Returns the Composer service.
+     *
+     * @return \craft\services\Composer The Composer service
+     */
+    public function getComposer()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('composer');
     }
 
     /**

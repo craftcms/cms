@@ -184,10 +184,11 @@ class Formatter extends \yii\i18n\Formatter
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
-        list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+        /** @var bool $hasDateInfo */
+        list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
 
-        // If it's today, just return the local time.
-        if (DateTimeHelper::isToday($timestamp)) {
+        // If it's today or missing date info, just return the local time.
+        if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
             return $hasTimeInfo ? $this->asTime($timestamp, $format) : Craft::t('app', 'Today');
         }
 

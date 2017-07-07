@@ -14,7 +14,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\behaviors\ElementQueryBehavior;
-use craft\behaviors\ElementQueryTrait;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -35,10 +34,11 @@ use yii\db\Expression;
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
+ * @property string|Site $site The site or site handle that the elements should be returned in
+ * @mixin ElementQueryBehavior
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
- *
- * @property string|Site $site The site or site handle that the elements should be returned in
  */
 class ElementQuery extends Query implements ElementQueryInterface
 {
@@ -46,7 +46,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     // =========================================================================
 
     use ArrayableTrait;
-    use ElementQueryTrait;
 
     // Constants
     // =========================================================================
@@ -192,7 +191,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public $orderBy;
+    public $orderBy = '';
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -878,16 +877,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[subquery.elementsId]]')
-            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.id]] = [[subquery.elementsI18nId]]');
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
 
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
-                'elementsI18nId' => 'elements_i18n.id',
+                'elementsSitesId' => 'elements_sites.id',
             ])
             ->from(['elements' => '{{%elements}}'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
-            ->andWhere(['elements_i18n.siteId' => $this->siteId])
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
+            ->andWhere(['elements_sites.siteId' => $this->siteId])
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
@@ -928,15 +927,15 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->slug) {
-            $this->subQuery->andWhere(Db::parseParam('elements_i18n.slug', $this->slug));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.slug', $this->slug));
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri));
+            $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri));
         }
 
         if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_i18n.enabled' => '1']);
+            $this->subQuery->andWhere(['elements_sites.enabled' => '1']);
         }
 
         $this->_applyRelatedToParam();
@@ -988,14 +987,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        // Explicitly clear any orderBy before counting.
-        $orderBy = $this->orderBy;
-        $this->orderBy = false;
-
-        $count = parent::count($q, $db);
-        $this->orderBy = $orderBy;
-
-        return $count;
+        return parent::count($q, $db);
     }
 
     /**
@@ -1775,11 +1767,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyOrderByParams(Connection $db)
     {
-        if ($this->orderBy === false) {
+        if ($this->orderBy === null) {
             return;
         }
 
-        if (!$this->orderBy) {
+        // Any other empty value means we should set it
+        if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
                 $ids = ArrayHelper::toArray($this->id);
 
@@ -1861,9 +1854,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.archived',
                 'elements.dateCreated',
                 'elements.dateUpdated',
-                'elements_i18n.slug',
-                'elements_i18n.uri',
-                'enabledForSite' => 'elements_i18n.enabled',
+                'elements_sites.slug',
+                'elements_sites.uri',
+                'enabledForSite' => 'elements_sites.enabled',
             ]);
 
             // If the query already specifies any columns, merge those in too
