@@ -176,7 +176,7 @@ class Routes extends Component
                     }
 
                     // Add the var as a named subpattern
-                    $uriPattern .= '(?P<'.preg_quote($subpatternName, '/').'>'.$part[1].')';
+                    $uriPattern .= '<'.preg_quote($subpatternName, '/').':'.$part[1].'>';
                 } else {
                     // Just match it
                     $uriPattern .= '('.$part[1].')';
