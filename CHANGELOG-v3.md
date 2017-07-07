@@ -1,6 +1,12 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.21 - 2017-07-07
+
+### Fixed
+- Fixed a PHP error that would occur if a migration failed to be reverted.
+- Fixed a PHP error that would occur if the Yii Debug extension was installed at v2.0.9. ([#1823](https://github.com/craftcms/cms/issues/1823))
+
 ## 3.0.0-beta.20 - 2017-07-07 [CRITICAL]
 
 > {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugins’ `Craft::t()` and `|t()` calls, translation files, and template paths must be updated accordingly, as well as any plugin config files in Craft 3 projects.
