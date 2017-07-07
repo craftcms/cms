@@ -563,8 +563,8 @@ class UpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Exception $e     The exception that was thrown
-     * @param BufferIO   $io    The IO object that Composer was instantiated with
+     * @param \Exception $e  The exception that was thrown
+     * @param BufferIO   $io The IO object that Composer was instantiated with
      *
      * @return string
      */

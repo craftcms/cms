@@ -57,7 +57,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function renameSequence(string $oldName, string $newName): string
     {
-        throw new NotSupportedException($this->db->getDriverName() . ' does not support renaming sequences.');
+        throw new NotSupportedException($this->db->getDriverName().' does not support renaming sequences.');
     }
 
     /**

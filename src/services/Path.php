@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;

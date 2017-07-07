@@ -123,7 +123,7 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param int             $limit The number of new migrations to be applied. If 0, it means
+     * @param int $limit             The number of new migrations to be applied. If 0, it means
      *                               applying all available new migrations.
      *
      * @return void

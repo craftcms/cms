@@ -430,8 +430,7 @@ class Application extends \yii\web\Application
                     $request->getActionSegments() === ['app', 'migrate']
                 )
             )
-        )
-        {
+        ) {
             $cachedBasePath = $this->getCache()->get('basePath');
 
             if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {

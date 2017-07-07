@@ -14,7 +14,6 @@ use craft\config\GeneralConfig;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\MigrationException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\models\UpgradeInfo;
@@ -514,8 +513,7 @@ class AppController extends Controller
         $canPerformUpdates = Craft::$app->getUser()->checkPermission('performUpdates');
         $allowAutoUpdates = Craft::$app->getConfig()->getGeneral()->allowAutoUpdates;
 
-        foreach ($update['releases'] as &$release)
-        {
+        foreach ($update['releases'] as &$release) {
             if (!$canPerformUpdates) {
                 $release['allowed'] = false;
             } else if (is_bool($allowAutoUpdates)) {

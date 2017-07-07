@@ -8,7 +8,6 @@
 namespace craft\errors;
 
 use yii\base\Exception;
-use yii\db\Migration;
 
 /**
  * MigrateException represents an error that occurred while migrating Craft or a plugin.

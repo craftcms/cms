@@ -762,8 +762,8 @@ class Sections extends Component
     public function getEntryTypesByHandle(string $entryTypeHandle): array
     {
         $results = $this->_createEntryTypeQuery()
-        ->where(['handle' => $entryTypeHandle])
-        ->all();
+            ->where(['handle' => $entryTypeHandle])
+            ->all();
 
         foreach ($results as $key => $result) {
             $results[$key] = new EntryType($result);

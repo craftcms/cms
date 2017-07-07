@@ -530,8 +530,8 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
-     * @param array $newAttributes any attributes to apply to the duplicate
+     * @param ElementInterface $element       the element to duplicate
+     * @param array            $newAttributes any attributes to apply to the duplicate
      *
      * @return ElementInterface the duplicated element
      * @throws \Throwable if reasons
@@ -1390,12 +1390,13 @@ class Elements extends Component
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array $matches
+     * @param array                 $matches
      *
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string {
+    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string
+    {
         if ($element === null) {
             // Put the ref tag back
             return $matches[0];

@@ -566,6 +566,7 @@ class Users extends Component
      * and clear the unverified one.
      *
      * @return bool
+     *
      * @param User $user
      */
     public function verifyEmailForUser(User $user)

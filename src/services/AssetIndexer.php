@@ -286,7 +286,7 @@ class AssetIndexer extends Component
                 'sessionId' => $sessionId,
                 'completed' => 0,
                 'inProgress' => 0
-                ])
+            ])
             ->one();
 
         if (!$result) {
