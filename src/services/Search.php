@@ -744,7 +744,7 @@ class Search extends Component
      *
      * @return string The (possibly) truncated keyword string.
      */
-    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize) : string
+    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
     {
         $cleanKeywordsLength = mb_strlen($cleanKeywords);
 

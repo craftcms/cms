@@ -192,7 +192,7 @@ class Query extends \yii\db\Query
      * Shortcut for `createCommand()->getRawSql()`.
      *
      * @param YiiConnection|null $db the database connection used to generate the SQL statement.
-     * If this parameter is not given, the `db` application component will be used.
+     *                               If this parameter is not given, the `db` application component will be used.
      *
      * @return string
      * @see createCommand()

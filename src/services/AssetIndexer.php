@@ -286,7 +286,7 @@ class AssetIndexer extends Component
                 'sessionId' => $sessionId,
                 'completed' => 0,
                 'inProgress' => 0
-                ])
+            ])
             ->one();
 
         if (!$result) {
@@ -525,7 +525,9 @@ class AssetIndexer extends Component
                     $dimensions = Image::imageSize($targetPath);
                 }
 
-                list ($asset->width, $asset->height) = $dimensions;
+                list ($w, $h) = $dimensions;
+                $asset->setWidth($w);
+                $asset->setHeight($h);
             }
         }
 

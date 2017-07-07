@@ -24,16 +24,23 @@ class MigrationException extends Exception
     public $migration;
 
     /**
+     * @var string|null The migration output
+     */
+    public $output;
+
+    /**
      * Constructor.
      *
      * @param Migration       $migration The migration being executed
+     * @param string|null     $output    The migration output
      * @param string|null     $message   The error message
      * @param int             $code      The error code
      * @param \Throwable|null $previous  The previous exception
      */
-    public function __construct(Migration $migration, string $message = null, int $code = 0, \Throwable $previous = null)
+    public function __construct(Migration $migration, string $output = null, string $message = null, int $code = 0, \Throwable $previous = null)
     {
         $this->migration = $migration;
+        $this->output = $output;
 
         if ($message === null) {
             $message = 'An error occurred while executing the "'.get_class($migration).' migration'.($previous ? ': '.$previous->getMessage() : '.');

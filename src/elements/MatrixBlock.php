@@ -67,6 +67,14 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
+     */
+    public static function hasStatuses(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
      *
      * @return MatrixBlockQuery The newly created [[MatrixBlockQuery]] instance.
      */

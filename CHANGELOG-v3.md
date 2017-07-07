@@ -29,6 +29,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\ArrayHelper::firstValue()`.
 - Added `craft\helpers\ConfigHelper::sizeInBytes()`.
 - Added `craft\services\Fields::getCompatibleFieldTypes()`.
+- Added `craft\services\Path::getCompiledClassesPath()`.
 - Added `craft\services\Updates::getPendingMigrationHandles()`.
 - Added `craft\services\Updates::runMigrations()`.
 - Added the `defineBehaviors` event to `craft\web\twig\variables\CraftVariable`, which can be used to register new behaviors on the `craft` template variable.
@@ -55,7 +56,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\MigrationManager::up()`, `down()`, `migrateUp()`, and `migrateDown()` now throw a `craft\errors\MigrationException` if a migration fails rather than returning `true`/`false`.
 - The `app/check-for-updates` action now checks for a `includeDetails` param, which tells it to include the full update details in its response.
 - It’s no longer possible to run new migrations while Craft is in Maintenance Mode, preventing the possibility of two people running migrations at the same time.
-- It’s no longer needed to set the `$fieldLayoutId` property on users, tags, Matrix blocks, entries, or categories when creating them programmatically. ([#1797](https://github.com/craftcms/cms/issues/1797))
+- It’s no longer needed to set the `$fieldLayoutId` property on users, tags, Matrix blocks, entries, or categories when creating them programmatically. ([#1756](https://github.com/craftcms/cms/issues/1756))
 - Improved the accuracy of deprecation errors.
 - Panes within panes in the Control Panel now have special styling.
 - Craft now prioritizes Composer’s autoloader over Yii’s for faster class loading.
@@ -69,12 +70,16 @@ Craft CMS 3.0 Working Changelog
 - Removed the `plugins/disable-plugin` action.
 - Removed the `plugins/enable-plugin` action.
 - Removed the `blx` global template variable.
+- Removed the dynamically-compiled `craft\behaviors\ContentTrait` and `craft\behaviors\ElementQueryTrait` traits.
 - Removed `craft\base\ApplicationTrait::getIsUpdating()`.
 - Removed `craft\base\Plugin::afterUpdate()`.
 - Removed `craft\base\Plugin::beforeUpdate()`.
 - Removed `craft\base\Plugin::defineTemplateComponent()`. Plugins should use the new `defineComponents` or `defineBehaviors` events on `craft\web\twig\variables\CraftVariable` instead. ([#1733](https://github.com/craftcms/cms/issues/1733))
 - Removed `craft\base\Plugin::update()`.
+- Removed `craft\behaviors\FieldLayoutTrait`.
 - Removed `craft\controllers\UpdateController`.
+- Removed `craft\db\NestedSetsQueryTrait`.
+- Removed `craft\db\NestedSetsTrait`.
 - Removed `craft\errors\UnpackPackageException`.
 - Removed `craft\errors\UpdateValidationException`.
 - Removed `craft\events\UpdateEvent`.
@@ -127,6 +132,13 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the PostgreSQL `upsert` method would only take into account a table’s primary keys instead of the passed in keys when deciding whether to insert or update. ([#1814](https://github.com/craftcms/cms/issues/1814))
 - Fixed a SQL error that could occur when calling `count()` on an element query.
 - Fixed a SQL error that could occur when saving an element with a Matrix field on a site using PostgreSQL, if the Matrix field’s handle had been renamed. ([#1810](https://github.com/craftcms/cms/issues/1810))
+- Fixed a bug where assets with a transform applied via `setTransform()` were still returning their original dimensions via their `width` and `height` properties. ([#1817](https://github.com/craftcms/cms/issues/1817))
+- Fixed a SQL error that occurred when updating to Craft 3 if there was a `CRAFT_LOCALE` constant defined in `index.php`. ([#1798](https://github.com/craftcms/cms/issues/1798))
+- Fixed a bug where querying for Matrix blocks by block type handles that didn’t exist would still return results. ([#1819](https://github.com/craftcms/cms/issues/1819))
+- Fixed a bug where Matrix fields were showing disabled blocks on the front end. ([#1786](https://github.com/craftcms/cms/issues/1786))
+- Fixed a PHP error that occurred when using an earlier version of PHP than 7.0.10. ([#1750](https://github.com/craftcms/cms/issues/1750))
+- Fixed a bug where routes created in the Control Panel which included tokens weren’t working. ([#1741](https://github.com/craftcms/cms/issues/1741))
+- Fixed a bug where only admin users were allowed to perform some asset actions. ([#1821](https://github.com/craftcms/cms/issues/1821))
 
 ## 3.0.0-beta.19 - 2017-05-31
 

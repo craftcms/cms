@@ -230,7 +230,7 @@ class View extends \yii\web\View
      * Renders a Twig template.
      *
      * @param string $template  The name of the template to load
-     * @param array $variables The variables that should be available to the template
+     * @param array  $variables The variables that should be available to the template
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
@@ -1245,9 +1245,9 @@ class View extends \yii\web\View
     /**
      * Performs actions after a template is rendered.
      *
-     * @param mixed $template  The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $output The template’s rendering result
+     * @param mixed  $template  The name of the template that was rendered
+     * @param array  $variables The variables that were available to the template
+     * @param string $output    The template’s rendering result
      *
      * @return void
      */
@@ -1285,9 +1285,9 @@ class View extends \yii\web\View
     /**
      * Performs actions after a page template is rendered.
      *
-     * @param mixed $template  The name of the template that was rendered
-     * @param array $variables The variables that were available to the template
-     * @param string $output The template’s rendering result
+     * @param mixed  $template  The name of the template that was rendered
+     * @param array  $variables The variables that were available to the template
+     * @param string $output    The template’s rendering result
      *
      * @return void
      */

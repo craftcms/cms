@@ -115,8 +115,12 @@ class Images extends Component
             IMG_JPG => ['jpg', 'jpeg'],
             IMG_GIF => ['gif'],
             IMG_PNG => ['png'],
-            IMG_WEBP => ['webp']
         ];
+
+        // IMG_WEBP was added in PHP 7.0.10
+        if (defined('IMG_WEBP')) {
+            $map[IMG_WEBP] = ['webp'];
+        }
 
         foreach ($map as $key => $extensions) {
             if (imagetypes() & $key) {

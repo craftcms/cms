@@ -42,7 +42,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      */
     public function renameSequence(string $oldName, string $newName): string
     {
-        return 'ALTER SEQUENCE ' . $this->db->quoteTableName($oldName) . ' RENAME TO ' . $this->db->quoteTableName($newName);
+        return 'ALTER SEQUENCE '.$this->db->quoteTableName($oldName).' RENAME TO '.$this->db->quoteTableName($newName);
     }
 
     /**

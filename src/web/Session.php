@@ -7,7 +7,6 @@
 
 namespace craft\web;
 
-use Craft;
 use yii\base\Exception;
 use yii\web\AssetBundle;
 

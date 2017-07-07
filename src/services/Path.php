@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
@@ -357,6 +356,19 @@ class Path extends Component
         }
 
         return FileHelper::normalizePath($siteTemplatesPath);
+    }
+
+    /**
+     * Returns the path to the `storage/runtime/compiled_classes/` directory.
+     *
+     * @return string
+     */
+    public function getCompiledClassesPath(): string
+    {
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+        FileHelper::createDirectory($path);
+
+        return $path;
     }
 
     /**

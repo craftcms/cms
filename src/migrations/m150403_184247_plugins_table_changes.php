@@ -5,7 +5,6 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\MigrationHelper;
-use yii\db\Expression;
 use yii\helpers\Inflector;
 
 /**

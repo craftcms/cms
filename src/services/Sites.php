@@ -133,31 +133,29 @@ class Sites extends Component
         // Fetch all the sites
         $this->_loadAllSites();
 
-        $isInstalled = Craft::$app->getIsInstalled();
+        try {
+            // Set $this->currentSite to an actual Site model if it's not already
+            if (!($this->currentSite instanceof Site)) {
+                if ($this->currentSite !== null) {
+                    if (is_numeric($this->currentSite)) {
+                        $site = $this->getSiteById($this->currentSite);
+                    } else {
+                        $site = $this->getSiteByHandle($this->currentSite);
+                    }
 
-        // Set $this->currentSite to an actual Site model if it's not already
-        if ($isInstalled && !($this->currentSite instanceof Site)) {
-            if ($this->currentSite !== null) {
-                if (is_numeric($this->currentSite)) {
-                    $site = $this->getSiteById($this->currentSite);
+                    if (!$site) {
+                        throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
+                    }
+
+                    $this->currentSite = $site;
+                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                    // Default to the primary site
+                    $this->currentSite = $this->getPrimarySite();
                 } else {
-                    $site = $this->getSiteByHandle($this->currentSite);
+                    $this->currentSite = null;
                 }
-
-                if (!$site) {
-                    throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
-                }
-
-                $this->currentSite = $site;
-            } else if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                // Default to the primary site
-                $this->currentSite = $this->getPrimarySite();
-            } else {
-                $this->currentSite = null;
             }
-        }
 
-        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             // Is the config overriding the site URL?
             $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
 
@@ -177,6 +175,13 @@ class Sites extends Component
                         Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
                     }
                 }
+            }
+        } catch (\Throwable $e) {
+            // Fail silently if Craft isn't installed or is in the middle of updating
+            if (!Craft::$app->getIsInstalled() || Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                $this->currentSite = null;
+            } else {
+                throw $e;
             }
         }
     }

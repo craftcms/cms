@@ -384,7 +384,7 @@
                             // Is this a new route?
                             if (!this.route) {
                                 var routeHtml =
-                                    '<div class="pane route" data-id="' + response.routeId + '"' + (response.siteId ? ' data-site-id="' + response.siteId + '"' : '') + '>' +
+                                    '<div class="route" data-id="' + response.routeId + '"' + (response.siteId ? ' data-site-id="' + response.siteId + '"' : '') + '>' +
                                     '<div class="uri-container">';
 
                                 if (Craft.isMultiSite) {

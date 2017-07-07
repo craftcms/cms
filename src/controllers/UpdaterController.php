@@ -364,9 +364,12 @@ class UpdaterController extends Controller
             if ($e instanceof MigrationException) {
                 /** @var \Throwable|null $previous */
                 $previous = $e->getPrevious();
-                $error = get_class($e->migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
+                $migration = $e->migration;
+                $output = $e->output;
+                $error = get_class($migration).' migration failed'.($previous ? ': '.$previous->getMessage() : '.');
                 $e = $previous ?? $e;
             } else {
+                $migration = $output = null;
                 $error = 'Migration failed: '.$e->getMessage();
             }
 
@@ -391,14 +394,15 @@ class UpdaterController extends Controller
                 'submit' => true,
                 'email' => $email,
                 'subject' => $ownerName.' update failure',
-                'errorDetails' => $error,
             ];
 
             $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
 
             return $this->_send([
                 'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
-                'errorDetails' => $eName.': '.$e->getMessage(),
+                'errorDetails' => $eName.': '.$e->getMessage().
+                    ($migration ? "\n\nMigration: ".get_class($migration) : '').
+                    ($output ? "\n\nOutput:\n\n".$output : ''),
                 'options' => $options,
             ]);
         }
@@ -563,8 +567,8 @@ class UpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Exception $e     The exception that was thrown
-     * @param BufferIO   $io    The IO object that Composer was instantiated with
+     * @param \Exception $e  The exception that was thrown
+     * @param BufferIO   $io The IO object that Composer was instantiated with
      *
      * @return string
      */

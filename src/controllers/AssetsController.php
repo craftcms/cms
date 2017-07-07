@@ -355,8 +355,8 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects and create folders in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFolders', $folder);
-        $this->_requirePermissionByFolder('createFolders', $folder);
+        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
+        $this->_requirePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId,
@@ -403,7 +403,7 @@ class AssetsController extends Controller
         $filename = $request->getBodyParam('filename', $asset->filename);
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
-        $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
         $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
         if ($request->getBodyParam('force')) {
@@ -470,12 +470,9 @@ class AssetsController extends Controller
 
         // Check if it's possible to delete objects in source Volume, create folders
         // in target Volume and save Assets in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFolders',
-            $folderToMove);
-        $this->_requirePermissionByFolder('createFoldersInVolume',
-            $destinationFolder);
-        $this->_requirePermissionByFolder('saveAssetInVolume',
-            $destinationFolder);
+        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folderToMove);
+        $this->_requirePermissionByFolder('createFoldersInVolume', $destinationFolder);
+        $this->_requirePermissionByFolder('saveAssetInVolume', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
@@ -648,7 +645,7 @@ class AssetsController extends Controller
 
             // If replacing, check for permissions to replace existing Asset files.
             if ($replace) {
-                $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+                $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
             }
 
             // Verify parameter adequacy
