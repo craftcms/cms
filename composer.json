@@ -46,7 +46,7 @@
     "bower-asset/velocity": "~1.5.0"
   },
   "require-dev": {
-    "codeception/codeception": "~2.2.9",
+    "codeception/codeception": "~2.3.3",
     "codeception/mockery-module": "~0.2.2",
     "codeception/specify": "~0.4.6",
     "codeception/verify": "~0.3.3"
