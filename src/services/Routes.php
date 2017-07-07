@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\errors\RouteNotFoundException;
 use craft\events\RouteEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\records\Route as RouteRecord;
 use yii\base\Component;
@@ -60,31 +61,33 @@ class Routes extends Component
     {
         $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
-        if (file_exists($path)) {
-            $routes = require $path;
-
-            if (is_array($routes)) {
-                // Check for any site-specific routes
-                $siteHandle = Craft::$app->getSites()->currentSite->handle;
-
-                if (
-                    isset($routes[$siteHandle]) &&
-                    is_array($routes[$siteHandle]) &&
-                    !isset($routes[$siteHandle]['route']) &&
-                    !isset($routes[$siteHandle]['template'])
-                ) {
-                    $localizedRoutes = $routes[$siteHandle];
-                    unset($routes[$siteHandle]);
-
-                    // Merge them so that the localized routes come first
-                    $routes = array_merge($localizedRoutes, $routes);
-                }
-
-                return $routes;
-            }
+        if (!file_exists($path)) {
+            return [];
         }
 
-        return [];
+        $routes = require $path;
+
+        if (!is_array($routes)) {
+            return [];
+        }
+
+        // Check for any site-specific routes
+        $siteHandle = Craft::$app->getSites()->currentSite->handle;
+
+        if (
+            isset($routes[$siteHandle]) &&
+            is_array($routes[$siteHandle]) &&
+            !isset($routes[$siteHandle]['route']) &&
+            !isset($routes[$siteHandle]['template'])
+        ) {
+            $localizedRoutes = $routes[$siteHandle];
+            unset($routes[$siteHandle]);
+
+            // Merge them so that the localized routes come first
+            $routes = array_merge($localizedRoutes, $routes);
+        }
+
+        return $routes;
     }
 
     /**
@@ -105,17 +108,9 @@ class Routes extends Component
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        if (empty($results)) {
-            return [];
-        }
-
-        $routes = [];
-
-        foreach ($results as $result) {
-            $routes[$result['uriPattern']] = ['template' => $result['template']];
-        }
-
-        return $routes;
+        return ArrayHelper::map($results, 'uriPattern', function($result) {
+            return ['template' => $result['template']];
+        });
     }
 
     /**
