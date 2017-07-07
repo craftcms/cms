@@ -625,7 +625,7 @@ trait ApplicationTrait
      *
      * @return string
      */
-    public function getYiiVersion()
+    public function getYiiVersion(): string
     {
         return \Yii::getVersion();
     }
