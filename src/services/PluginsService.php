@@ -103,8 +103,6 @@ class PluginsService extends BaseApplicationComponent
 					->where('enabled=1')
 					->queryAll();
 
-				$names = array();
-
 				foreach ($rows as $row)
 				{
 					$plugin = $this->_getPlugin($row['class']);
@@ -122,7 +120,6 @@ class PluginsService extends BaseApplicationComponent
 						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 						$this->_plugins[$lcPluginHandle] = $plugin;
 						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-						$names[] = $plugin->getName();
 
 						$plugin->setSettings($row['settings']);
 
@@ -143,9 +140,6 @@ class PluginsService extends BaseApplicationComponent
 					}
 				}
 
-				// Sort plugins by name
-				$this->_sortPlugins($names, $this->_enabledPlugins);
-
 				// Now that all of the components have been imported, initialize all the plugins
 				foreach ($this->_enabledPlugins as $plugin)
 				{
@@ -156,6 +150,9 @@ class PluginsService extends BaseApplicationComponent
 			}
 
 			$this->_pluginsLoaded = true;
+
+			// Sort plugins by name
+			$this->_sortPlugins($this->_enabledPlugins);
 
 			// Fire an 'onLoadPlugins' event
 			$this->onLoadPlugins(new Event($this));
@@ -262,18 +259,14 @@ class PluginsService extends BaseApplicationComponent
 									if ($plugin)
 									{
 										$this->_allPlugins[$lcHandle] = $plugin;
-										$names[] = $plugin->getName();
 									}
 								}
 							}
 						}
 					}
 
-					if (!empty($names))
-					{
-						// Sort plugins by name
-						$this->_sortPlugins($names, $this->_allPlugins);
-					}
+					// Sort plugins by name
+					$this->_sortPlugins($this->_allPlugins);
 				}
 			}
 
@@ -1191,23 +1184,30 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $names
-	 * @param $secondaryArray
+	 * @param BasePlugin[] $plugins
 	 *
 	 * @return null
 	 */
-	private function _sortPlugins(&$names, &$secondaryArray)
+	private function _sortPlugins(&$plugins)
 	{
+		$names = array();
+
+		foreach ($plugins as $plugin) {
+			$names[] = $plugin->getName();
+		}
+
 		// TODO: Remove this check for Craft 3.
 		if (PHP_VERSION_ID < 50400)
 		{
 			// Sort plugins by name
-			array_multisort($names, $secondaryArray);
+			array_multisort($names, $plugins);
 		}
 		else
 		{
 			// Sort plugins by name
-			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $secondaryArray);
+			array_multisort($names, SORT_NATURAL | SORT_FLAG_CASE, $plugins);
 		}
+
+		return null;
 	}
 }
