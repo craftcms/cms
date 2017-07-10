@@ -9,3 +9,9 @@ export const addToCart = ({ commit }, plugin) => {
     })
 }
 
+export const removeFromCart = ({ commit }, plugin) => {
+    commit(types.REMOVE_FROM_CART, {
+        id: plugin.id
+    })
+}
+

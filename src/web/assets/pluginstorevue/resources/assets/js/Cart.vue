@@ -123,13 +123,13 @@
         },
 
         methods: {
+            ...mapActions([
+                'removeFromCart'
+            ]),
             addToCart (index) {
                 console.log('add to cart !', index);
             },
-            removeFromCart (index) {
-                console.log('remove from cart !', index);
-            }
-        }
+        },
     }
 </script>
 

@@ -33,6 +33,13 @@ const mutations = {
             record.quantity++
         }
     },
+    [types.REMOVE_FROM_CART] (state, { id }) {
+        const record = state.added.find(p => p.id === id)
+
+        const index = state.added.indexOf(record);
+
+        state.added.splice(index, 1);
+    },
 }
 
 export default {
