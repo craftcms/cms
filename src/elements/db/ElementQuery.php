@@ -456,10 +456,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
-        } else {
-            /** @noinspection ImplicitMagicMethodCallInspection */
-            $this->__set($name, $value);
         }
+
+        /** @noinspection ImplicitMagicMethodCallInspection */
+        $this->__set($name, $value);
     }
 
     /**
