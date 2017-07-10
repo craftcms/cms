@@ -18,12 +18,12 @@
             <div class="buttons">
 
                 <div v-if="plugin.licensePrice != '0.00'">
-                    <a href="#" class="btn">Try</a>
+                    <a :href="installUrl" class="btn">Try</a>
 
                     <a @click="addToCart(plugin)" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
                 </div>
                 <div v-else>
-                    <a href="./plugin-store/install" class="btn submit">Install</a>
+                    <a :href="installUrl" class="btn submit">Install</a>
                 </div>
 
             </div>
@@ -77,6 +77,10 @@
 
             developerUrl() {
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
+            },
+
+            installUrl() {
+                return Craft.getCpUrl('plugin-store/install');
             }
         },
         methods: mapActions([
