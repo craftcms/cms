@@ -1,35 +1,40 @@
 <template>
     <div>
-        <h2>Items in your cart</h2>
+        <h2>Items</h2>
 
         <table class="data fullwidth">
             <thead>
-                <tr>
-                    <th class="thin"></th>
-                    <th>Plugin Name</th>
-                </tr>
+            <tr>
+                <th class="thin"></th>
+                <th>Plugin Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+            </tr>
             </thead>
             <tbody>
-                <tr v-for="plugin in plugins">
-                    <td class="thin">
-                        <a href="#">
-                            <div class="plugin-icon">
-                                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                                <div class="default-icon" v-else></div>
-                            </div>
-                        </a>
-                    </td>
-                    <td>
-                        <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
-                    </td>
-                    <td>
-                        <strong>$99.00</strong>
-                        <div class="light">$19.00 per year for updates</div>
-                    </td>
-                    <td class="thin">
-                        <a href="#" class="btn">Remove</a>
-                    </td>
-                </tr>
+            <tr v-for="(plugin, index) in products">
+                <td class="thin">
+                    <a href="#">
+                        <div class="plugin-icon">
+                            <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                            <div class="default-icon" v-else></div>
+                        </div>
+                    </a>
+                </td>
+                <td>
+                    <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                </td>
+                <td>
+                    {{ plugin.quantity }}
+                </td>
+                <td>
+                    <strong>${{ plugin.licensePrice }}</strong>
+                    <div class="light">$XX.00 per year for updates</div>
+                </td>
+                <td class="thin">
+                    <a class="btn" @click="removeFromCart(index)">Remove</a>
+                </td>
+            </tr>
             </tbody>
         </table>
 
@@ -39,15 +44,15 @@
             <table class="fullwidth">
                 <tr>
                     <th>Subtotal</th>
-                    <td>$198.00</td>
+                    <td>$XX.00</td>
                 </tr>
                 <tr>
                     <th>Pro Rate Discount</th>
-                    <td>$20.00</td>
+                    <td>$XX.00</td>
                 </tr>
                 <tr>
                     <th><strong>Total</strong></th>
-                    <td><strong>$178.00</strong></td>
+                    <td><strong>${{total}}</strong></td>
                 </tr>
             </table>
 
@@ -64,7 +69,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="plugin in activeTrials">
+            <tr v-for="(plugin, index) in activeTrials">
                 <td class="thin">
                     <a href="#">
                         <div class="plugin-icon">
@@ -77,11 +82,11 @@
                     <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
                 </td>
                 <td>
-                    <strong>$99.00</strong>
-                    <div class="light">$19.00 per year for updates</div>
+                    <strong>$XX.00</strong>
+                    <div class="light">$XX.00 per year for updates</div>
                 </td>
                 <td class="thin">
-                    <a href="#" class="btn">Add to cart</a>
+                    <a class="btn" @click="addToCart(index)">Add to cart</a>
                 </td>
             </tr>
             </tbody>
@@ -90,6 +95,8 @@
 </template>
 
 <script>
+    import { mapGetters } from 'vuex'
+
     export default {
         name: 'cart',
 
@@ -100,13 +107,29 @@
             }
         },
 
-        created: function() {
-            this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                var plugins = this.plugins.concat(data.body.data);
-                this.plugins = plugins.slice(0,3);
-                this.activeTrials = plugins.slice(3,5);
-            });
+        computed: {
+            ...mapGetters({
+                products: 'cartProducts',
+            }),
+            total () {
+                return this.products.reduce((total, p) => {
+                    return total + p.licensePrice * p.quantity
+                }, 0)
+            }
         },
+
+        created: function() {
+
+        },
+
+        methods: {
+            addToCart (index) {
+                console.log('add to cart !', index);
+            },
+            removeFromCart (index) {
+                console.log('remove from cart !', index);
+            }
+        }
     }
 </script>
 

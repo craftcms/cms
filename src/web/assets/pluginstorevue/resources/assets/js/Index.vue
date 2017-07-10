@@ -5,7 +5,8 @@
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
                 <h2>Staff Picks</h2>
-                <plugin-grid :plugins="plugins"></plugin-grid>
+                <plugin-grid :plugins="staffPicks"></plugin-grid>
+
                 <h2>Active Trials</h2>
                 <plugin-grid :plugins="activeTrials"></plugin-grid>
             </div>
@@ -25,6 +26,7 @@
 <script>
     import PluginGrid from './PluginGrid';
     import PluginSearch from './PluginSearch';
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
         name: 'index',
@@ -36,21 +38,25 @@
             return {
                 categories: [],
                 showingSearchResults: false,
-                plugins: [],
-                activeTrials: [],
             }
         },
+
+        computed: mapGetters({
+            plugins: 'allProducts',
+            staffPicks: 'staffPicks',
+            activeTrials: 'activeTrials',
+        }),
+
         created: function() {
-            this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                var plugins = this.plugins.concat(data.body.data);
-                this.plugins = plugins.slice(0,6);
-                this.activeTrials = plugins.slice(6,9);
-            });
+            this.$store.dispatch('getStaffPicks')
+            this.$store.dispatch('getAllProducts')
 
             this.$http.get('https://craftid.dev/api/categories').then(function(data) {
                 console.log('data', data.body);
                 this.categories = this.categories.concat(data.body.data);
             });
+
+
         },
     }
 </script>

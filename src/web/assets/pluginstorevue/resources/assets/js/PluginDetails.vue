@@ -20,7 +20,7 @@
                 <div v-if="plugin.licensePrice != '0.00'">
                     <a href="#" class="btn">Try</a>
 
-                    <a href="#" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
+                    <a @click="addToCart(plugin)" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
                 </div>
                 <div v-else>
                     <a href="#" class="btn submit">Install</a>
@@ -69,6 +69,9 @@
 </template>
 
 <script>
+
+    import { mapGetters, mapActions } from 'vuex'
+
     var marked = require('marked');
 
     export default {
@@ -84,7 +87,10 @@
             developerUrl() {
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             }
-        }
+        },
+        methods: mapActions([
+            'addToCart'
+        ]),
     }
 </script>
 

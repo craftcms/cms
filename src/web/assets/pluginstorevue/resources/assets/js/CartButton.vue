@@ -1,6 +1,6 @@
 <template>
     <div>
-        <a @click="openModal()">Cart</a>
+        <a @click="openModal()">Cart ({{ totalQuantity }})</a>
 
         <modal :show.sync="showModal" :on-close="closeModal">
             <div slot="body">
@@ -14,6 +14,7 @@
 <script>
     import Cart from './Cart.vue'
     import Modal from './Modal.vue'
+    import { mapGetters } from 'vuex'
 
     export default {
         name: 'cartButton',
@@ -29,6 +30,17 @@
             }
         },
 
+        computed: {
+            ...mapGetters({
+                products: 'cartProducts',
+            }),
+            totalQuantity() {
+                return this.products.reduce((totalQuantity, p) => {
+                    return totalQuantity + p.quantity
+                }, 0)
+            }
+        },
+
         methods: {
             openModal: function() {
                 this.showModal = true;
@@ -37,5 +49,9 @@
                 this.showModal = false;
             }
         },
+
+        created () {
+            this.$store.dispatch('getAllProducts')
+        }
     }
 </script>
