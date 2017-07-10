@@ -36,7 +36,6 @@
         },
         data () {
             return {
-                categories: [],
                 showingSearchResults: false,
             }
         },
@@ -45,18 +44,13 @@
             plugins: 'allProducts',
             staffPicks: 'staffPicks',
             activeTrials: 'activeTrials',
+            categories: 'allCategories',
         }),
 
         created: function() {
             this.$store.dispatch('getStaffPicks')
             this.$store.dispatch('getAllProducts')
-
-            this.$http.get('https://craftid.dev/api/categories').then(function(data) {
-                console.log('data', data.body);
-                this.categories = this.categories.concat(data.body.data);
-            });
-
-
+            this.$store.dispatch('getAllCategories')
         },
     }
 </script>

@@ -22,4 +22,11 @@ export default {
             return cb(plugins);
         });
     },
+    getCategories (cb) {
+        Vue.http.get('https://craftid.dev/api/categories').then(function(data) {
+            let categories = data.body.data;
+
+            return cb(categories);
+        });
+    },
 }
