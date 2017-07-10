@@ -6,10 +6,14 @@
 
 {% set title = developerId %}
 
+{% block pageTitle %}
+	<h1>{{ '{{ pageTitle }}' }}</h1>
+{% endblock %}
+
 {% set extraPageHeaderHtml %}
 	<cart-button></cart-button>
 {% endset %}
 
 {% set content %}
-	<developer :developer-id="{{ developerId }}"></developer>
+	<developer :developer-id="{{ developerId }}" @update-title="updateTitle"></developer>
 {% endset %}

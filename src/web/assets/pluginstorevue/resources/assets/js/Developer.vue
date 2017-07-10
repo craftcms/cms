@@ -38,6 +38,8 @@
 
             this.$http.get('https://craftid.dev/api/developer/' + this.developerId).then(function(data) {
                 this.developer = data.body.data[0];
+
+                this.$emit('update-title', this.developer.fullName);
             });
         },
     }

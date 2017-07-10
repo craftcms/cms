@@ -25,7 +25,7 @@ const app = new Vue({
     },
 
     methods: {
-        updateTitle: function(newTitle) {
+        updateTitle(newTitle) {
             this.pageTitle = newTitle;
         }
     },
