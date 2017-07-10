@@ -28,11 +28,11 @@
                     {{ plugin.quantity }}
                 </td>
                 <td>
-                    <strong>${{ plugin.licensePrice }}</strong>
-                    <div class="light">$XX.00 per year for updates</div>
+                    <strong>${{ plugin.price }}</strong>
+                    <div class="light">${{ plugin.updatePrice }} per year for updates</div>
                 </td>
                 <td class="thin">
-                    <a class="btn" @click="removeFromCart(index)">Remove</a>
+                    <a class="btn" @click="removeFromCart(plugin)">Remove</a>
                 </td>
             </tr>
             </tbody>
@@ -95,7 +95,7 @@
 </template>
 
 <script>
-    import { mapGetters } from 'vuex'
+    import { mapGetters, mapActions } from 'vuex'
 
     export default {
         name: 'cart',
@@ -103,23 +103,19 @@
         data () {
             return {
                 plugins: [],
-                activeTrials: [],
             }
         },
 
         computed: {
             ...mapGetters({
                 products: 'cartProducts',
+                activeTrials: 'activeTrials',
             }),
             total () {
                 return this.products.reduce((total, p) => {
-                    return total + p.licensePrice * p.quantity
+                    return total + p.price * p.quantity
                 }, 0)
             }
-        },
-
-        created: function() {
-
         },
 
         methods: {
@@ -129,6 +125,10 @@
             addToCart (index) {
                 console.log('add to cart !', index);
             },
+        },
+
+        created: function() {
+            this.$store.dispatch('getAllProducts')
         },
     }
 </script>

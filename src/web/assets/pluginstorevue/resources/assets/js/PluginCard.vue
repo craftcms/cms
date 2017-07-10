@@ -9,7 +9,7 @@
             <strong>{{ plugin.name }}</strong>
             <div>{{ plugin.shortDescription }}</div>
 
-            <p v-if="plugin.licensePrice != '0.00'" class="light">${{ plugin.licensePrice }}</p>
+            <p v-if="plugin.price != '0.00'" class="light">${{ plugin.price }}</p>
             <p class="light" v-else>Free</p>
 
         </div>

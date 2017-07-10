@@ -26,13 +26,15 @@
 <script>
     import PluginGrid from './PluginGrid';
     import PluginSearch from './PluginSearch';
-    import { mapGetters, mapActions } from 'vuex'
+    import CartButton from './CartButton';
+    import { mapGetters } from 'vuex'
 
     export default {
         name: 'index',
         components: {
             PluginGrid,
             PluginSearch,
+            CartButton,
         },
         data () {
             return {
@@ -52,5 +54,9 @@
             this.$store.dispatch('getAllProducts')
             this.$store.dispatch('getAllCategories')
         },
+
+        mounted: function() {
+            // this.$refs.cartb.openModal();
+        }
     }
 </script>

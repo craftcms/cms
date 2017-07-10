@@ -9,7 +9,7 @@
 
         <modal :show.sync="showModal" :on-close="closeModal">
             <div slot="body">
-                <plugin-details :plugin="selectedPlugin"></plugin-details>
+                <plugin-details :plugin="selectedPlugin" @buy="onBuy"></plugin-details>
             </div>
         </modal>
     </div>
@@ -45,6 +45,11 @@
             closeModal: function() {
                 this.selectedPlugin = null;
                 this.showModal = false;
+            },
+            onBuy() {
+               console.log('onBuy');
+
+               this.closeModal();
             }
         },
     }
