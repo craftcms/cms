@@ -19,9 +19,6 @@ const actions = {
 // mutations
 const mutations = {
     [types.ADD_TO_CART] (state, { id }) {
-
-        console.log('mutation – ADD_TO_CART');
-
         const record = state.added.find(p => p.id === id)
 
         if (!record) {
