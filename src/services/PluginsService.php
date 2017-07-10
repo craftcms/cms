@@ -110,18 +110,17 @@ class PluginsService extends BaseApplicationComponent
 					if ($plugin)
 					{
 						$this->_autoloadPluginClasses($plugin);
+						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 
 						// Clean it up a bit
 						$row['settings'] = JsonHelper::decode($row['settings']);
 						$row['installDate'] = DateTime::createFromString($row['installDate']);
+						$row['lcHandle'] = $lcPluginHandle;
 
 						$this->_enabledPluginInfo[$row['class']] = $row;
 
-						$lcPluginHandle = mb_strtolower($plugin->getClassHandle());
 						$this->_plugins[$lcPluginHandle] = $plugin;
 						$this->_enabledPlugins[$lcPluginHandle] = $plugin;
-
-						$plugin->setSettings($row['settings']);
 
 						$plugin->isInstalled = true;
 						$plugin->isEnabled = true;
@@ -140,7 +139,12 @@ class PluginsService extends BaseApplicationComponent
 					}
 				}
 
-				// Now that all of the components have been imported, initialize all the plugins
+				// Now that all of the components have been imported, set the plugins settings, then initialize them
+				foreach ($this->_enabledPluginInfo as $class => $row)
+				{
+					$this->_enabledPlugins[$row['lcHandle']]->setSettings($row['settings']);
+				}
+
 				foreach ($this->_enabledPlugins as $plugin)
 				{
 					$plugin->init();

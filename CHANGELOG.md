@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Plugin settings now get set once all plugin classes have been loaded.
+
 ### Fixed
 - Fixed an XSS bug in the Control Panel.
 - Fixed an issue with Rich Text Fields and outdated Asset Sources.
