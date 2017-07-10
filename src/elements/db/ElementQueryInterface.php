@@ -317,7 +317,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *                       If this parameter is not given, the `db` application
      *                       component will be used.
      *
-     * @return ElementInterface|null The resulting element.
+     * @return ElementInterface|bool The resulting element. False is returned if the query results in nothing.
      */
     public function one($db = null);
 

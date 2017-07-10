@@ -171,7 +171,7 @@ class Users extends Component
             ])
             ->addSelect(['users.password', 'users.passwordResetRequired'])
             ->status(null)
-            ->one();
+            ->one() ?: null;
     }
 
     /**
@@ -191,7 +191,7 @@ class Users extends Component
             ->uid($uid)
             ->status(null)
             ->enabledForSite(false)
-            ->one();
+            ->one() ?: null;
     }
 
     /**

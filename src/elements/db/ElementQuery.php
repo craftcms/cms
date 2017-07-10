@@ -435,8 +435,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function offsetGet($name)
     {
-        if (is_numeric($name)) {
-            return $this->nth($name);
+        if (is_numeric($name) && ($element = $this->nth($name)) !== false) {
+            return $element;
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
@@ -1016,11 +1016,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $row = parent::one($db);
 
-        if ($row !== false) {
-            return $this->_createElement($row) ?: null;
+        if ($row === false) {
+            return false;
         }
 
-        return null;
+        return $this->_createElement($row) ?: null;
     }
 
     /**
@@ -1238,7 +1238,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
         $this->_setAttributes($attributes);
 
-        return $this->one();
+        return $this->one() ?: null;
     }
 
     /**
@@ -1259,7 +1259,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $result = $this->nth($count - 1);
         $this->offset = $offset;
 
-        return $result;
+        return $result ?: null;
     }
 
     /**
