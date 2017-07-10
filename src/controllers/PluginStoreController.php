@@ -100,6 +100,19 @@ class PluginStoreController extends Controller
         ]);
     }
 
+
+    /**
+     * @return Response
+     */
+    public function actionInstall()
+    {
+        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
+
+        return $this->renderTemplate('plugin-store/_install');
+    }
+
+
+
     public function actionPlugin($slug)
     {
         $client = Craft::$app->getPluginStore()->getClient();

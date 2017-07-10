@@ -23,7 +23,7 @@
                     <a @click="addToCart(plugin)" class="btn submit">Buy ${{ plugin.licensePrice }}</a>
                 </div>
                 <div v-else>
-                    <a href="#" class="btn submit">Install</a>
+                    <a href="./plugin-store/install" class="btn submit">Install</a>
                 </div>
 
             </div>
