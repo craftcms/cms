@@ -47,20 +47,11 @@
             <div class="plugin-sidebar">
                 <div class="plugin-meta">
                     <ul>
-                        <li><span>Version</span> <strong>3.4.2</strong></li>
-                        <li><span>Last update</span> <strong>One week ago</strong></li>
-                        <li><span>Active installs</span> <strong>3+ million</strong></li>
-                        <li><span>Compatibility</span> <strong>Craft 3</strong></li>
-                        <li><span>Categories</span> <strong>Analytics</strong></li>
-                        <li>
-                            <span>Developer</span>
-                            <strong v-if="plugin.developerUrl">
-                                <a v-bind:href="plugin.developerUrl" target="_blank">{{ plugin.developerName }}</a>
-                            </strong>
-                            <strong v-else>
-                                {{ plugin.developerName }}
-                            </strong>
-                        </li>
+                        <li><span>Version</span> <strong>X.X.X</strong></li>
+                        <li><span>Last update</span> <strong>—</strong></li>
+                        <li><span>Active installs</span> <strong>XXX,XXX</strong></li>
+                        <li><span>Compatibility</span> <strong>Craft X</strong></li>
+                        <li><span>Categories</span> <strong>—</strong></li>
                     </ul>
                 </div>
             </div>
