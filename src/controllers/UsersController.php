@@ -1740,7 +1740,7 @@ class UsersController extends Controller
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
-        /** @var User|bool $userToProcess */
+        /** @var User|false $userToProcess */
         $userToProcess = User::find()
             ->uid($uid)
             ->status(null)
@@ -1777,7 +1777,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User|bool $user
+     * @param User|false $user
      *
      * @return Response
      * @throws HttpException if the verification code is invalid
