@@ -59,38 +59,41 @@
             <p><a href="#" class="btn submit">Process My Order</a></p>
         </div>
 
-        <h2>Active Trials</h2>
+        <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
-        <table class="data fullwidth">
-            <thead>
-            <tr>
-                <th class="thin"></th>
-                <th>Plugin Name</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(plugin, index) in activeTrials">
-                <td class="thin">
-                    <a href="#">
-                        <div class="plugin-icon">
-                            <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                            <div class="default-icon" v-else></div>
-                        </div>
-                    </a>
-                </td>
-                <td>
-                    <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
-                </td>
-                <td>
-                    <strong>$XX.00</strong>
-                    <div class="light">$XX.00 per year for updates</div>
-                </td>
-                <td class="thin">
-                    <a class="btn" @click="addToCart(index)">Add to cart</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+            <h2>Active Trials</h2>
+
+            <table class="data fullwidth">
+                <thead>
+                <tr>
+                    <th class="thin"></th>
+                    <th>Plugin Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(plugin, index) in pendingActiveTrials">
+                    <td class="thin">
+                        <a href="#">
+                            <div class="plugin-icon">
+                                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                <div class="default-icon" v-else></div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                    </td>
+                    <td>
+                        <strong>${{ plugin.price }}</strong>
+                        <div class="light">${{ plugin.updatePrice }} per year for updates</div>
+                    </td>
+                    <td class="thin">
+                        <a class="btn" @click="addToCart(plugin)">Add to cart</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </template>
 
@@ -115,16 +118,32 @@
                 return this.products.reduce((total, p) => {
                     return total + p.price * p.quantity
                 }, 0)
+            },
+            pendingActiveTrials() {
+                let pendingActiveTrials = []
+                let cartProducts = this.$store.getters.cartProducts
+                this.$store.getters.activeTrials.find(p => {
+                    var found = false
+                    cartProducts.find(cartP => {
+                        if(p.id == cartP.id) {
+                            found = true
+                        }
+                    })
+
+                    if(!found) {
+                        pendingActiveTrials.push(p)
+                    }
+                })
+
+                return pendingActiveTrials;
             }
         },
 
         methods: {
             ...mapActions([
+                'addToCart',
                 'removeFromCart'
             ]),
-            addToCart (index) {
-                console.log('add to cart !', index);
-            },
         },
 
         created: function() {
