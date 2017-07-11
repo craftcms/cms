@@ -346,24 +346,25 @@ class UsersController extends Controller
                 return $info;
             }
 
-            $userToProcess = $info['userToProcess'];
-            $id = $info['id'];
-            $code = $info['code'];
+            /** @var User $userToProcess */
+            /** @var string $uid */
+            /** @var string $code */
+            list($userToProcess, $uid, $code) = $info;
 
             Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
             // Send them to the set password template.
             return $this->_renderSetPasswordTemplate($userToProcess, [
                 'code' => $code,
-                'id' => $id,
+                'id' => $uid,
                 'newUser' => $userToProcess->password ? false : true,
             ]);
         }
 
         // POST request. They've just set the password.
         $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
-        $id = Craft::$app->getRequest()->getRequiredParam('id');
-        $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
+        $uid = Craft::$app->getRequest()->getRequiredParam('id');
+        $userToProcess = Craft::$app->getUsers()->getUserByUid($uid);
 
         // See if we still have a valid token.
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
@@ -407,7 +408,7 @@ class UsersController extends Controller
         return $this->_renderSetPasswordTemplate($userToProcess, [
             'errors' => $errors,
             'code' => $code,
-            'id' => $id,
+            'id' => $uid,
             'newUser' => $userToProcess->password ? false : true,
         ]);
     }
@@ -423,7 +424,8 @@ class UsersController extends Controller
             return $info;
         }
 
-        $userToProcess = $info['userToProcess'];
+        /** @var User $userToProcess */
+        list($userToProcess) = $info;
         $userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
         if (Craft::$app->getUsers()->verifyEmailForUser($userToProcess)) {
@@ -1734,13 +1736,13 @@ class UsersController extends Controller
      */
     private function _processTokenRequest()
     {
-        $id = Craft::$app->getRequest()->getRequiredParam('id');
+        $uid = Craft::$app->getRequest()->getRequiredParam('id');
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
         /** @var User|bool $userToProcess */
         $userToProcess = User::find()
-            ->uid($id)
+            ->uid($uid)
             ->status(null)
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
@@ -1771,11 +1773,7 @@ class UsersController extends Controller
                 'user' => $userToProcess
             ]));
 
-        return [
-            'code' => $code,
-            'id' => $id,
-            'userToProcess' => $userToProcess
-        ];
+        return [$userToProcess, $uid, $code];
     }
 
     /**
