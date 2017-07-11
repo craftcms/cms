@@ -175,7 +175,7 @@ class Tasks extends Component
                 return false;
             }
 
-            if ($task->getIsNew()) {
+            if ($isNewTask) {
                 $taskRecord = new TaskRecord();
             } else {
                 $taskRecord = $this->_getTaskRecordById($task->id);
@@ -188,7 +188,7 @@ class Tasks extends Component
             $taskRecord->currentStep = $task->currentStep;
             $taskRecord->settings = $task->getSettings();
 
-            if (!$task->getIsNew()) {
+            if (!$isNewTask) {
                 $taskRecord->save(false);
             } else if (!$task->parentId) {
                 $taskRecord->makeRoot(false);
@@ -202,7 +202,7 @@ class Tasks extends Component
                 $taskRecord->appendTo($parentTaskRecord, false);
             }
 
-            if ($task->getIsNew()) {
+            if ($isNewTask) {
                 $task->id = $taskRecord->id;
 
                 if ($task->parentId) {
