@@ -1738,6 +1738,7 @@ class UsersController extends Controller
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
+        /** @var User|bool $userToProcess */
         $userToProcess = User::find()
             ->uid($id)
             ->status(null)
@@ -1746,7 +1747,7 @@ class UsersController extends Controller
 
         // If someone is logged in and it's not this person, log them out
         $userService = Craft::$app->getUser();
-        if (($identity = $userService->getIdentity()) !== null && $identity->id != $userToProcess->id) {
+        if (($identity = $userService->getIdentity()) !== null && $userToProcess && $identity->id != $userToProcess->id) {
             $userService->logout();
         }
 
