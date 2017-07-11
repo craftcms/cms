@@ -37,7 +37,7 @@
                                     {% include "_includes/forms/select" with {
                                         class:    'small',
                                         name:     cellName,
-                                        options:  col.options,
+                                        options:  cell.options ?? col.options,
                                         value:    value,
                                         disabled: static
                                     } only %}
