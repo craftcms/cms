@@ -2049,30 +2049,34 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _getRelativeElement($criteria, int $dir)
     {
-        if ($this->id !== null) {
-            if ($criteria instanceof ElementQueryInterface) {
-                $query = $criteria;
-            } else {
-                $query = static::find()
-                    ->siteId($this->siteId);
+        if ($this->id === null) {
+            return null;
+        }
 
-                if ($criteria) {
-                    Craft::configure($query, $criteria);
-                }
-            }
+        if ($criteria instanceof ElementQueryInterface) {
+            $query = $criteria;
+        } else {
+            $query = static::find()
+                ->siteId($this->siteId);
 
-            /** @var ElementQuery $query */
-            $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds, false);
-
-            if ($key !== false && isset($elementIds[$key + $dir])) {
-                return static::find()
-                    ->id($elementIds[$key + $dir])
-                    ->siteId($query->siteId)
-                    ->one() ?: null;
+            if ($criteria) {
+                Craft::configure($query, $criteria);
             }
         }
 
-        return null;
+        /** @var ElementQuery $query */
+        $elementIds = $query->ids();
+        $key = array_search($this->id, $elementIds, false);
+
+        if ($key === false || !isset($elementIds[$key + $dir])) {
+            return null;
+        }
+
+        $element = static::find()
+            ->id($elementIds[$key + $dir])
+            ->siteId($query->siteId)
+            ->one();
+
+        return $element !== false ? $element : null;
     }
 }
