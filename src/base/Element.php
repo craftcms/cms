@@ -2072,6 +2072,7 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
+        /** @var Element|false $element */
         $element = static::find()
             ->id($elementIds[$key + $dir])
             ->siteId($query->siteId)
