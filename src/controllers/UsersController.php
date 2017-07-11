@@ -1779,12 +1779,12 @@ class UsersController extends Controller
     }
 
     /**
-     * @param User $user
+     * @param User|bool $user
      *
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user): Response
+    private function _processInvalidToken($user): Response
     {
         // If they're already logged-in, just send them to the post-login URL
         $userService = Craft::$app->getUser();
