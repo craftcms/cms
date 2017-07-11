@@ -1020,7 +1020,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return false;
         }
 
-        return $this->_createElement($row) ?: null;
+        return $this->_createElement($row);
     }
 
     /**
@@ -1921,12 +1921,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } else {
             foreach ($rows as $row) {
-
                 $element = $this->_createElement($row);
-
-                if ($element === false) {
-                    continue;
-                }
 
                 // Add it to the elements array
                 if ($this->indexBy === null) {
@@ -1958,14 +1953,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param array $row
      *
-     * @return ElementInterface|bool
+     * @return ElementInterface
      */
     private function _createElement(array $row)
     {
         // Do we have a placeholder for this element?
-        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId);
-
-        if ($element !== null) {
+        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId)) !== null) {
             return $element;
         }
 
@@ -2004,11 +1997,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         /** @var Element $element */
         $element = new $class($row);
-
-        // Verify that an element was returned
-        if (!$element || !($element instanceof ElementInterface)) {
-            return false;
-        }
 
         // Set the custom field values
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */

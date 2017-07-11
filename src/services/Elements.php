@@ -1147,11 +1147,7 @@ class Elements extends Component
      */
     public function getPlaceholderElement(int $id, int $siteId)
     {
-        if (isset($this->_placeholderElements[$id][$siteId])) {
-            return $this->_placeholderElements[$id][$siteId];
-        }
-
-        return null;
+        return $this->_placeholderElements[$id][$siteId] ?? null;
     }
 
     /**
