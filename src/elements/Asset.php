@@ -1123,8 +1123,8 @@ class Asset extends Element
         $record->kind = $this->kind;
         $record->size = $this->size;
         $record->focalPoint = $this->focalPoint;
-        $record->width = $this->getWidth();
-        $record->height = $this->getHeight();
+        $record->width = $this->_width;
+        $record->height = $this->_height;
         $record->dateModified = $this->dateModified;
         $record->save(false);
 
