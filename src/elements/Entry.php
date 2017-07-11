@@ -556,7 +556,6 @@ class Entry extends Element
             $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
 
-
         return parent::beforeValidate();
     }
 
