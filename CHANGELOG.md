@@ -21,14 +21,9 @@ Craft CMS Changelog
 
 ### Fixed
 - Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))
-<<<<<<< ad1d567590ee117dd5c9ee02f883cd9bd423e7da
 - Fixed a bug where the author of a draft could not delete their own draft if they did not have the “Publish Live Changes” permission.
 - Fixed a Twig error that could occur when editing a locked user account.
 - Fixed a bug where element source labels could get double-encoded.
-=======
-- Fixed a bug where the author of a draft could not delete their own draft if they did not have “Publish Live Changes” permissions.
-- Fixed a bug where the edit user page could give a Twig error when viewing a locked user account under certain circumstances.
-- Fixed a bug where element sources labels would be double HTML encoded.
 
 ## 2.6.2985 - 2017-06-27
 
