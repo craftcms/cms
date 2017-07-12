@@ -381,6 +381,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Set the field context if it's not set
+        if (!$this->context) {
+            $this->context = Craft::$app->getContent()->fieldContext;
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeElementSave(ElementInterface $element, bool $isNew): bool
     {
         // Trigger a 'beforeElementSave' event

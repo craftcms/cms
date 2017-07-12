@@ -153,12 +153,6 @@ class Tasks extends Component
     public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
         /** @var Task $task */
-        if ($runValidation && !$task->validate()) {
-            Craft::info('Task not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTask = $task->getIsNew();
 
         // Fire a 'beforeSaveTask' event
@@ -167,14 +161,18 @@ class Tasks extends Component
             'isNew' => $isNewTask,
         ]));
 
+        if (!$task->beforeSave($isNewTask)) {
+            return false;
+        }
+
+        if ($runValidation && !$task->validate()) {
+            Craft::info('Task not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeSave($isNewTask)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             if ($isNewTask) {
                 $taskRecord = new TaskRecord();
             } else {
@@ -708,14 +706,12 @@ class Tasks extends Component
             'task' => $task,
         ]));
 
+        if (!$task->beforeDelete()) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $taskRecord->deleteWithChildren();
             unset($this->_taskRecordsById[$task->id]);
 

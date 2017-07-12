@@ -188,12 +188,6 @@ class Dashboard extends Component
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
         /** @var Widget $widget */
-        if ($runValidation && !$widget->validate()) {
-            Craft::info('Widget not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewWidget = $widget->getIsNew();
 
         // Fire a 'beforeSaveWidget' event
@@ -202,14 +196,18 @@ class Dashboard extends Component
             'isNew' => $isNewWidget,
         ]));
 
+        if (!$widget->beforeSave($isNewWidget)) {
+            return false;
+        }
+
+        if ($runValidation && !$widget->validate()) {
+            Craft::info('Widget not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeSave($isNewWidget)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
             $widgetRecord->type = get_class($widget);
@@ -287,14 +285,12 @@ class Dashboard extends Component
             'widget' => $widget,
         ]));
 
+        if (!$widget->beforeDelete()) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
             $widgetRecord->enabled = false;
             $widgetRecord->save();

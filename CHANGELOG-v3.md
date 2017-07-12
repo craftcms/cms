@@ -7,10 +7,21 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\elements\ElementQuery::one()` and `nth()` now consistently return `false` rather than `null` when no matching element is found.
 - Editable table fields in the Control Panel can now specify unique `select` column options on a per-cell basis, by setting the cell’s value to an object with `options` and `value` keys.
 - Header cells within editable table fields in the Control Panel can now specify their `<th>` class names.
+- `craft\services\Dashboard::deleteWidget()` now triggers the `beforeDeleteWidget` event and calls `beforeDelete()` on the widget at the top of the function.
+- `craft\services\Dashboard::saveWidget()` now triggers the `beforeSaveWidget` event and calls `beforeSave()` on the widget at the top of the function.
+- `craft\services\Elements::deleteElement()` now triggers the `beforeDeleteElement` event and calls `beforeDelete()` on the element at the top of the function.
+- `craft\services\Elements::saveElement()` now triggers the `beforeSaveElement` event and calls `beforeSave()` on the element at the top of the function.
+- `craft\services\Elements::deleteFields()` now triggers the `beforeDeleteField` event and calls `beforeDelete()` on the field at the top of the function.
+- `craft\services\Elements::saveFields()` now triggers the `beforeSaveField` event and calls `beforeSave()` on the field at the top of the function.
+- `craft\services\Elements::deleteTasks()` now triggers the `beforeDeleteTask` event and calls `beforeDelete()` on the task at the top of the function.
+- `craft\services\Elements::saveTasks()` now triggers the `beforeSaveTask` event and calls `beforeSave()` on the task at the top of the function.
+- `craft\services\Elements::deleteVolumes()` now triggers the `beforeDeleteVolume` event and calls `beforeDelete()` on the volume at the top of the function.
+- `craft\services\Elements::saveVolumes()` now triggers the `beforeSaveVolume` event and calls `beforeSave()` on the volume at the top of the function.
 
 ### Fixed
 - Fixed an issue where non-admins were not able to download assets using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
 - Fixed a bug where Assets fields were only enforcing their “Restrict allowed file types?” settings when uploading brand new files.
+- Fixed a bug where elements’ custom fields were not getting validated on save if the `fieldLayoutId` had not been set beforehand.
 
 ## 3.0.0-beta.21 - 2017-07-07
 

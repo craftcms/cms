@@ -392,15 +392,13 @@ class Structures extends Component
             ]));
         }
 
+        // Tell the element about it
+        if (!$element->beforeMoveInStructure($structureId)) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Tell the element about it
-            if (!$element->beforeMoveInStructure($structureId)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             if (!$elementRecord->$action($targetElementRecord)) {
                 $transaction->rollBack();
 

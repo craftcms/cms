@@ -717,17 +717,6 @@ class Fields extends Component
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
         /** @var Field $field */
-        // Set the field context if it's not set
-        if (!$field->context) {
-            $field->context = Craft::$app->getContent()->fieldContext;
-        }
-
-        if ($runValidation && !$field->validate()) {
-            Craft::info('Field not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event
@@ -736,14 +725,18 @@ class Fields extends Component
             'isNew' => $isNewField,
         ]));
 
+        if (!$field->beforeSave($isNewField)) {
+            return false;
+        }
+
+        if ($runValidation && !$field->validate()) {
+            Craft::info('Field not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$field->beforeSave($isNewField)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $fieldRecord = $this->_getFieldRecord($field);
 
             // Create/alter the content table column
@@ -888,14 +881,12 @@ class Fields extends Component
             'field' => $field,
         ]));
 
+        if (!$field->beforeDelete()) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$field->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // De we need to delete the content column?
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;

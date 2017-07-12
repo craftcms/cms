@@ -954,69 +954,70 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @return bool
      */
-    public function beforeValidate()
+    public function beforeSave(bool $isNew): bool
     {
-        if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
+        // newFolderId/newFilename => newLocation.
+        if ($this->newFolderId !== null || $this->newFilename !== null) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?: $this->filename;
             $this->newLocation = "{folder:{$folderId}}{$filename}";
+            $this->newFolderId = $this->newFilename = null;
         }
 
-        if ($this->newLocation || $this->tempFilePath) {
+        // Get the (new?) folder ID
+        if ($this->newLocation !== null) {
+            list($folderId) = AssetsHelper::parseFileLocation($this->newLocation);
+        } else {
+            $folderId = $this->folderId;
+        }
+
+        // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
+        if ($this->newLocation !== null || $this->tempFilePath !== null) {
             $event = new AssetEvent(['asset' => $this, 'isNew' => !$this->id]);
             $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, $event);
         }
 
         // Set the kind based on filename, if not set already
-        if (empty($this->kind) && !empty($this->filename)) {
+        if ($this->kind === null && $this->filename !== null) {
             $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
         }
 
+        // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
-            // Give it a default title based on the file name
             $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
-        return parent::beforeValidate();
+        // Set the field layout
+        /** @var Volume $volume */
+        $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
+        $this->fieldLayoutId = $volume->fieldLayoutId;
+
+        return parent::beforeSave($isNew);
     }
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws FileException if the file is being moved but cannot be read
+     * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
      */
-    public function beforeSave(bool $isNew): bool
+    public function afterSave(bool $isNew)
     {
-        $assetsService = Craft::$app->getAssets();
+        // Relocate the file?
+        if ($this->newLocation !== null || $this->tempFilePath !== null) {
+            $assetsService = Craft::$app->getAssets();
 
-        // See if we need to perform any file operations
-        if ($this->newLocation) {
-            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            // Get the (new?) folder ID & filename
+            if ($this->newLocation !== null) {
+                list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            } else {
+                $folderId = $this->folderId;
+                $filename = $this->filename;
+            }
+
             $hasNewFolder = $folderId != $this->folderId;
-            $hasNewFilename = $filename != $this->filename;
-        } else {
-            $folderId = $this->folderId;
-            $filename = $this->filename;
-            $hasNewFolder = $hasNewFilename = false;
-        }
 
-        // Set the field layout early.
-        $folder = $assetsService->getFolderById($folderId);
-
-        // Make sure the field layout is set correctly
-        /** @var Volume $volume */
-        $volume = $folder->getVolume();
-        $this->fieldLayoutId = $volume->fieldLayoutId;
-
-        if (!parent::beforeSave($isNew)) {
-            return false;
-        }
-
-        $tempPath = null;
-
-        // Yes/no?
-        if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
+            $tempPath = null;
 
             $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
             $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
@@ -1028,11 +1029,11 @@ class Asset extends Element
             $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
 
             // Is this just a simple move/rename within the same volume?
-            if (!$this->tempFilePath && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+            if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
                 $oldVolume->renameFile($oldPath, $newPath);
             } else {
                 // Get the temp path
-                if ($this->tempFilePath) {
+                if ($this->tempFilePath !== null) {
                     $tempPath = $this->tempFilePath;
                 } else {
                     $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
@@ -1046,7 +1047,6 @@ class Asset extends Element
                     throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
                 }
 
-                // Delete the old path first.
                 if ($this->folderId) {
                     // Delete the old file
                     $oldVolume->deleteFile($oldPath);
@@ -1090,21 +1090,11 @@ class Asset extends Element
                 FileHelper::removeFile($tempPath);
             }
 
-            $this->newFolderId = null;
-            $this->newFilename = null;
+            // Clear out the temp location properties
             $this->newLocation = null;
             $this->tempFilePath = null;
         }
 
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave(bool $isNew)
-    {
         // Get the asset record
         if (!$isNew) {
             $record = AssetRecord::findOne($this->id);

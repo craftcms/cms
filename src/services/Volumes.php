@@ -326,12 +326,6 @@ class Volumes extends Component
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
         /** @var Volume $volume */
-        if ($runValidation && !$volume->validate()) {
-            Craft::info('Volume not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
@@ -340,14 +334,18 @@ class Volumes extends Component
             'isNew' => $isNewVolume
         ]));
 
+        if (!$volume->beforeSave($isNewVolume)) {
+            return false;
+        }
+
+        if ($runValidation && !$volume->validate()) {
+            Craft::info('Volume not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$volume->beforeSave($isNewVolume)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $volumeRecord = $this->_getVolumeRecordById($volume->id);
 
             $volumeRecord->name = $volume->name;
@@ -571,16 +569,14 @@ class Volumes extends Component
             'volume' => $volume
         ]));
 
+        if (!$volume->beforeDelete()) {
+            return false;
+        }
+
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
 
         try {
-            if (!$volume->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // Delete the assets
             $assets = Asset::find()
                 ->status(null)

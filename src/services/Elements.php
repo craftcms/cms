@@ -353,6 +353,16 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
+        // Fire a 'beforeSaveElement' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
+            'element' => $element,
+            'isNew' => $isNewElement
+        ]));
+
+        if (!$element->beforeSave($isNewElement)) {
+            return false;
+        }
+
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
             throw new Exception('All elements must have at least one site associated with them.');
@@ -381,20 +391,8 @@ class Elements extends Component
             return false;
         }
 
-        // Fire a 'beforeSaveElement' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$element->beforeSave($isNewElement)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // Get the element record
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne($element->id);
@@ -905,15 +903,13 @@ class Elements extends Component
             'element' => $element,
         ]));
 
+        if (!$element->beforeDelete()) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            if (!$element->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
             $records = StructureElementRecord::findAll([
