@@ -8,6 +8,9 @@ Craft CMS 3.0 Working Changelog
 - Editable table fields in the Control Panel can now specify unique `select` column options on a per-cell basis, by setting the cell’s value to an object with `options` and `value` keys.
 - Header cells within editable table fields in the Control Panel can now specify their `<th>` class names.
 
+### Fixed
+- Fixed an issue where non-admins were not able to downloads using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
+
 ## 3.0.0-beta.21 - 2017-07-07
 
 ### Fixed
