@@ -19,11 +19,7 @@ Craft CMS 3.0 Working Changelog
 
 ## 3.0.0-beta.20 - 2017-07-07 [CRITICAL]
 
-> {note} Plugin handles are `kebab-cased` now rather than `camelCased`. Plugins’ `Craft::t()` and `|t()` calls, translation files, and template paths must be updated accordingly, as well as any plugin config files in Craft 3 projects.
-
-> {note} Support for manual plugin installation within the `plugins/` folder has been removed. Plugins **must** be Composer-installed now.
-
-> {note} The `update/run-pending-migrations` action has been renamed to `app/migrate`. You’ll need to update your deployment service if you’re using it as a post-deploy webhook.
+> {note} There are a few breaking changes in this release. See the [Beta 20 Update Guide](https://github.com/craftcms/cms/wiki/Beta-20--Update-Guide) for update instructions.
 
 ### Added
 - Added some “Update” buttons to the Updates utility (for Craft _and_ plugins). If multiple updates are available, an “Update all” button even shows up.
