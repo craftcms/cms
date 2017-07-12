@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed an issue where non-admins were not able to download assets using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
+- Fixed a bug where Assets fields were only enforcing their “Restrict allowed file types?” settings when uploading brand new files.
 
 ## 3.0.0-beta.21 - 2017-07-07
 

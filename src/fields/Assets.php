@@ -198,14 +198,13 @@ class Assets extends BaseRelationField
         $value = $element->getFieldValue($this->handle);
 
         // Check if this field restricts files and if files are passed at all.
-        if ($this->restrictFiles && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
+        if ($this->restrictFiles) {
             $allowedExtensions = $this->_getAllowedExtensions();
 
-            foreach ($value as $assetId) {
-                $file = Craft::$app->getAssets()->getAssetById($assetId);
-
-                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                    $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
+            foreach ($value as $asset) {
+                /** @var Asset $asset */
+                if ($asset && !in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+                    $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $asset->filename]));
                 }
             }
         }
