@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Plugins from '../Plugins'
 import PluginDetails from '../PluginDetails'
+import Modal from '../Modal'
 
 Vue.use(Router)
 
@@ -9,7 +10,7 @@ export default new Router({
     routes: [
         {
             path: '/',
-            name: 'Plugins',
+            name: 'Home',
             component: Plugins
         },
         {
@@ -20,7 +21,10 @@ export default new Router({
         {
             path: '/plugins-details',
             name: 'PluginDetails',
-            component: PluginDetails
+            component: PluginDetails,
+            children: [
+                { path: 'mod', component: Modal, name: 'mod' }
+            ]
         }
     ]
 })
