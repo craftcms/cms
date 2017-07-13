@@ -94,8 +94,6 @@ class Query extends \yii\db\Query
         try {
             $rows = $this->createCommand($db)->queryAll();
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return [];
         }
 
@@ -120,8 +118,6 @@ class Query extends \yii\db\Query
         try {
             return parent::all($db);
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return [];
         }
     }
@@ -134,8 +130,6 @@ class Query extends \yii\db\Query
         try {
             return parent::one($db);
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return false;
         }
     }
@@ -148,8 +142,6 @@ class Query extends \yii\db\Query
         try {
             return parent::scalar($db);
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return false;
         }
     }
@@ -162,8 +154,6 @@ class Query extends \yii\db\Query
         try {
             return parent::column($db);
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return [];
         }
     }
@@ -211,8 +201,6 @@ class Query extends \yii\db\Query
         try {
             return parent::queryScalar($selectExpression, $db);
         } catch (QueryAbortedException $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
             return false;
         }
     }

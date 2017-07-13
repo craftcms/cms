@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\services\Elements::saveTasks()` now triggers the `beforeSaveTask` event and calls `beforeSave()` on the task at the top of the function.
 - `craft\services\Elements::deleteVolumes()` now triggers the `beforeDeleteVolume` event and calls `beforeDelete()` on the volume at the top of the function.
 - `craft\services\Elements::saveVolumes()` now triggers the `beforeSaveVolume` event and calls `beforeSave()` on the volume at the top of the function.
+- Craft no longer logs caught `craft\db\QueryAbortedException` exceptions. ([#1827](https://github.com/craftcms/cms/issues/1827))
 
 ### Fixed
 - Fixed an issue where non-admins were not able to download assets using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
