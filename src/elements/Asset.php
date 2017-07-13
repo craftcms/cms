@@ -22,6 +22,7 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -484,7 +485,10 @@ class Asset extends Element
      */
     public function __isset($name): bool
     {
-        return parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name);
+        return (
+            parent::__isset($name) ||
+            Craft::$app->getAssetTransforms()->getTransformByHandle($name)
+        );
     }
 
     /**
@@ -642,6 +646,7 @@ class Asset extends Element
      * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return Asset
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function setTransform($transform): Asset
     {

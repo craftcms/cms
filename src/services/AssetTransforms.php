@@ -619,8 +619,8 @@ class AssetTransforms extends Component
      *
      * @param AssetTransform|string|array|null $transform
      *
-     * @throws AssetTransformException if the transform cannot be found by the handle
      * @return AssetTransform|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function normalizeTransform($transform)
     {

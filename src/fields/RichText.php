@@ -530,7 +530,7 @@ class RichText extends Field
     /**
      * Get available transforms.
      *
-     * @return \stdClass[]
+     * @return array
      */
     private function _getTransforms(): array
     {
@@ -543,7 +543,7 @@ class RichText extends Field
 
         foreach ($allTransforms as $transform) {
             if (!is_array($this->availableTransforms) || in_array($transform->id, $this->availableTransforms, false)) {
-                $transformList[] = (object)[
+                $transformList[] = [
                     'handle' => Html::encode($transform->handle),
                     'name' => Html::encode($transform->name)
                 ];
