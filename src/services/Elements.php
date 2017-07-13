@@ -84,6 +84,16 @@ class Elements extends Component
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
     /**
+     * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
+
+    /**
      * @event ElementActionEvent The event that is triggered before an element action is performed.
      *
      * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
@@ -624,6 +634,11 @@ class Elements extends Component
             ElementHelper::setUniqueUri($element);
         }
 
+        // Fire a 'beforeUpdateSlugAndUri' event
+        $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
+            'element' => $element
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%elements_sites}}',
@@ -636,6 +651,11 @@ class Elements extends Component
                     'siteId' => $element->siteId
                 ])
             ->execute();
+
+        // Fire a 'afterUpdateSlugAndUri' event
+        $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
+            'element' => $element
+        ]));
 
         // Delete any caches involving this element
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);

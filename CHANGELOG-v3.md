@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added support for asset reference tags that explicitly target an image transform (e.g. `{asset:123:transform:thumbnail}`).
 - Added `craft\elements\Asset::copyWithTransform()`.
+- Added the `beforeUpdateSlugAndUri` and `afterUpdateSlugAndUri` events to `craft\services\Elements::updateElementSlugAndUri()`. ([#1828](https://github.com/craftcms/cms/issues/1828))
 
 ### Changed
 - HTMLPurifier no longer removes the following HTML5 elements by default: `<address>`, `<hgroup>`, `<figure>`, `<figcaption>`, `<s>`, `<var>`, `<sub>`, `<sup>`, `<mark>`, `<wbr>`, `<ins>`, `<del>`.
