@@ -1052,7 +1052,7 @@ class Elements extends Component
         // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
         // and replace them with placeholder tokens
         $allRefTagTokens = [];
-        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
+        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
             // Does it already have a full element type class name?
             if (is_subclass_of($matches[1], ElementInterface::class)) {
                 $elementType = $matches[1];

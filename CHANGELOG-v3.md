@@ -3,6 +3,10 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added support for asset reference tags that explicitly target an image transform (e.g. `{asset:123:transform:thumbnail}`).
+- Added `craft\elements\Asset::copyWithTransform()`.
+
 ### Changed
 - HTMLPurifier no longer removes the following HTML5 elements by default: `<address>`, `<hgroup>`, `<figure>`, `<figcaption>`, `<s>`, `<var>`, `<sub>`, `<sup>`, `<mark>`, `<wbr>`, `<ins>`, `<del>`.
 - HTMLPurifier no longer sets missing `alt` attributes to the image filename by default.
@@ -24,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed an issue where non-admins were not able to download assets using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
 - Fixed a bug where Assets fields were only enforcing their “Restrict allowed file types?” settings when uploading brand new files.
 - Fixed a bug where elements’ custom fields were not getting validated on save if the `fieldLayoutId` had not been set beforehand.
+- Fixed a bug where transformed images within Rich Text fields would break if the transform handle was identical to a custom field handle. ([#1804](https://github.com/craftcms/cms/issues/1804))
 
 ## 3.0.0-beta.21 - 2017-07-07
 

@@ -487,6 +487,7 @@ class Asset extends Element
     {
         return (
             parent::__isset($name) ||
+            strncmp($name, 'transform:', 10) === 0 ||
             Craft::$app->getAssetTransforms()->getTransformByHandle($name)
         );
     }
@@ -507,25 +508,16 @@ class Asset extends Element
      */
     public function __get($name)
     {
+        if (strncmp($name, 'transform:', 10) === 0) {
+            return $this->copyWithTransform(substr($name, 10));
+        }
+
         try {
             return parent::__get($name);
         } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
-            $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name);
-
-            if ($transform) {
-                // Duplicate this model and set it to that transform
-                $model = new Asset();
-
-                // Can't just use attributes() here because we'll get thrown into an infinite loop.
-                foreach ($this->attributes() as $attributeName) {
-                    $model->$attributeName = $this->$attributeName;
-                }
-
-                $model->setFieldValues($this->getFieldValues());
-                $model->setTransform($transform);
-
-                return $model;
+            if (($transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name)) !== null) {
+                return $this->copyWithTransform($transform);
             }
 
             throw $e;
@@ -952,6 +944,30 @@ class Asset extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    /**
+     * Returns a copy of the asset with the given transform applied to it.
+     *
+     * @param AssetTransform|string|array|null $transform
+     *
+     * @return Asset
+     * @throws AssetTransformException if $transform is an invalid transform handle
+     */
+    public function copyWithTransform($transform): Asset
+    {
+        // Duplicate this model and set it to that transform
+        $model = new Asset();
+
+        // Can't just use attributes() here because we'll get thrown into an infinite loop.
+        foreach ($this->attributes() as $attributeName) {
+            $model->$attributeName = $this->$attributeName;
+        }
+
+        $model->setFieldValues($this->getFieldValues());
+        $model->setTransform($transform);
+
+        return $model;
     }
 
     // Events

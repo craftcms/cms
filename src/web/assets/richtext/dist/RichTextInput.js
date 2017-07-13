@@ -223,7 +223,7 @@
                                         url = asset.url + '#asset:' + asset.id;
 
                                     if (transform) {
-                                        url += ':' + transform;
+                                        url += ':transform:' + transform;
                                     }
 
                                     this.redactor.insert.node($('<figure><img src="' + url + '" /></figure>')[0]);

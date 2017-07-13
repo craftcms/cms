@@ -247,7 +247,7 @@ class RichText extends Field
             // Parse ref tags in URLs, while preserving the original tag values in the URL fragments
             // e.g. {entry:id:url} => [entry-url]#entry:id:url
             // Leave any other ref tags alone for the input, since they were probably manually added
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
+            $value = preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:(?:transform\:)?'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
                 list (, $attr, $q, $refTag, $ref) = $matches;
                 $fragment = $matches[5] ?? '';
 
@@ -339,7 +339,7 @@ class RichText extends Field
 
         // Find any element URLs and swap them with ref tags
         $value = preg_replace_callback(
-            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)([\w\\\\]+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
+            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)([\w\\\\]+)\:(\d+)(\:(?:transform\:)?'.HandleValidator::$handlePattern.')?\2/',
             function($matches) {
                 // Create the ref tag, and make sure :url is in there
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
