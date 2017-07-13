@@ -4,6 +4,8 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Changed
+- HTMLPurifier no longer removes the following HTML5 elements by default: `<address>`, `<hgroup>`, `<figure>`, `<figcaption>`, `<s>`, `<var>`, `<sub>`, `<sup>`, `<mark>`, `<wbr>`, `<ins>`, `<del>`.
+- HTMLPurifier no longer sets missing `alt` attributes to the image filename by default.
 - `craft\db\elements\ElementQuery::one()` and `nth()` now consistently return `false` rather than `null` when no matching element is found.
 - Editable table fields in the Control Panel can now specify unique `select` column options on a per-cell basis, by setting the cell’s value to an object with `options` and `value` keys.
 - Header cells within editable table fields in the Control Panel can now specify their `<th>` class names.
