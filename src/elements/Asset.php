@@ -1019,101 +1019,13 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @throws FileException if the file is being moved but cannot be read
      * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
      */
     public function afterSave(bool $isNew)
     {
         // Relocate the file?
         if ($this->newLocation !== null || $this->tempFilePath !== null) {
-            $assetsService = Craft::$app->getAssets();
-
-            // Get the (new?) folder ID & filename
-            if ($this->newLocation !== null) {
-                list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
-            } else {
-                $folderId = $this->folderId;
-                $filename = $this->filename;
-            }
-
-            $hasNewFolder = $folderId != $this->folderId;
-
-            $tempPath = null;
-
-            $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
-            $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
-
-            $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
-            $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
-
-            $oldPath = $this->folderId ? $this->getUri() : null;
-            $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
-
-            // Is this just a simple move/rename within the same volume?
-            if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-                $oldVolume->renameFile($oldPath, $newPath);
-            } else {
-                // Get the temp path
-                if ($this->tempFilePath !== null) {
-                    $tempPath = $this->tempFilePath;
-                } else {
-                    $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
-                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-                    $oldVolume->saveFileLocally($oldPath, $tempPath);
-                }
-
-                // Try to open a file stream
-                if (($stream = fopen($tempPath, 'rb')) === false) {
-                    FileHelper::removeFile($tempPath);
-                    throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
-                }
-
-                if ($this->folderId) {
-                    // Delete the old file
-                    $oldVolume->deleteFile($oldPath);
-                }
-
-                // Upload the file to the new location
-                $newVolume->createFileByStream($newPath, $stream, []);
-
-                // Rackspace will disconnect the stream automatically
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            }
-
-            if ($this->folderId) {
-                // Nuke the transforms
-                Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
-            }
-
-            // Update file properties
-            $this->volumeId = $newFolder->volumeId;
-            $this->folderId = $folderId;
-            $this->folderPath = $newFolder->path;
-            $this->filename = $filename;
-
-            // If there was a new file involved, update file data.
-            if ($tempPath) {
-                $this->kind = AssetsHelper::getFileKindByExtension($filename);
-
-                if ($this->kind === 'image') {
-                    list ($this->_width, $this->_height) = Image::imageSize($tempPath);
-                } else {
-                    $this->_width = null;
-                    $this->_height = null;
-                }
-
-                $this->size = filesize($tempPath);
-                $this->dateModified = new DateTime('@'.filemtime($tempPath));
-
-                // Delete the temp file
-                FileHelper::removeFile($tempPath);
-            }
-
-            // Clear out the temp location properties
-            $this->newLocation = null;
-            $this->tempFilePath = null;
+            $this->_relocateFile();
         }
 
         // Get the asset record
@@ -1225,5 +1137,103 @@ class Asset extends Element
         }
 
         return $dimensions[$dimension];
+    }
+
+    /**
+     * Relocates the file after the element has been saved.
+     *
+     * @return void
+     * @throws FileException if the file is being moved but cannot be read
+     */
+    private function _relocateFile()
+    {
+        $assetsService = Craft::$app->getAssets();
+
+        // Get the (new?) folder ID & filename
+        if ($this->newLocation !== null) {
+            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+        } else {
+            $folderId = $this->folderId;
+            $filename = $this->filename;
+        }
+
+        $hasNewFolder = $folderId != $this->folderId;
+
+        $tempPath = null;
+
+        $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
+        $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+
+        $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
+        $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
+
+        $oldPath = $this->folderId ? $this->getUri() : null;
+        $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
+
+        // Is this just a simple move/rename within the same volume?
+        if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+            $oldVolume->renameFile($oldPath, $newPath);
+        } else {
+            // Get the temp path
+            if ($this->tempFilePath !== null) {
+                $tempPath = $this->tempFilePath;
+            } else {
+                $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
+                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                $oldVolume->saveFileLocally($oldPath, $tempPath);
+            }
+
+            // Try to open a file stream
+            if (($stream = fopen($tempPath, 'rb')) === false) {
+                FileHelper::removeFile($tempPath);
+                throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
+            }
+
+            if ($this->folderId) {
+                // Delete the old file
+                $oldVolume->deleteFile($oldPath);
+            }
+
+            // Upload the file to the new location
+            $newVolume->createFileByStream($newPath, $stream, []);
+
+            // Rackspace will disconnect the stream automatically
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        if ($this->folderId) {
+            // Nuke the transforms
+            Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+        }
+
+        // Update file properties
+        $this->volumeId = $newFolder->volumeId;
+        $this->folderId = $folderId;
+        $this->folderPath = $newFolder->path;
+        $this->filename = $filename;
+
+        // If there was a new file involved, update file data.
+        if ($tempPath) {
+            $this->kind = AssetsHelper::getFileKindByExtension($filename);
+
+            if ($this->kind === 'image') {
+                list ($this->_width, $this->_height) = Image::imageSize($tempPath);
+            } else {
+                $this->_width = null;
+                $this->_height = null;
+            }
+
+            $this->size = filesize($tempPath);
+            $this->dateModified = new DateTime('@'.filemtime($tempPath));
+
+            // Delete the temp file
+            FileHelper::removeFile($tempPath);
+        }
+
+        // Clear out the temp location properties
+        $this->newLocation = null;
+        $this->tempFilePath = null;
     }
 }
