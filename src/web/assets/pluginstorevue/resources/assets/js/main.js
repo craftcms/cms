@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import App from './App';
 import Index from './Index';
 import AllPlugins from './AllPlugins';
 import CartButton from './CartButton';
@@ -9,15 +10,16 @@ import lodash from 'lodash'
 import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 import store from './store'
 
+import router from './router';
+
 Vue.use(VueResource);
 Vue.use(VueLodash, lodash);
 
-// Vue.component('plugins', require('./Plugins.vue'));
-
 const app = new Vue({
-  el: '#container',
-  store,
-  components: { Index, AllPlugins, CartButton, Category, Developer },
+    el: '#container',
+    router,
+    store,
+    components: { App, Index, AllPlugins, CartButton, Category, Developer },
     data() {
       return {
           pageTitle: null,
@@ -29,8 +31,4 @@ const app = new Vue({
             this.pageTitle = newTitle;
         }
     },
-
-    created() {
-      console.log('App created', this.$store);
-    }
 });

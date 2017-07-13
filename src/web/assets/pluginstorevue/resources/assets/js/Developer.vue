@@ -1,5 +1,7 @@
 <template>
     <div>
+        <router-view></router-view>
+
         <ul>
             <li><strong>{{ developer.fullName }}</strong></li>
             <li>{{ developer.username }}</li>
@@ -8,7 +10,7 @@
 
         <hr>
 
-        <plugin-grid :plugins="developer.plugins"></plugin-grid>
+        <plugin-grid :plugins="developer.plugins" :plugin-url-prefix="'/developer/' + developerId + '/'"></plugin-grid>
     </div>
 
 </template>
@@ -28,13 +30,12 @@
             return {
                 plugins: [],
                 developer: {},
+                developerId: null,
             }
         },
 
-        created: function() {
-/*            this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                this.plugins = this.plugins.concat(data.body.data).slice(0,9);
-            });*/
+        created () {
+            this.developerId = this.$route.params.id;
 
             this.$http.get('https://craftid.dev/api/developer/' + this.developerId).then(function(data) {
                 this.developer = data.body.data[0];

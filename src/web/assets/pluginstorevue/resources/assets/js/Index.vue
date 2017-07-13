@@ -1,20 +1,22 @@
 <template>
     <div>
+        <router-view></router-view>
+
         <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false"></plugin-search>
 
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
                 <h2>Staff Picks</h2>
-                <plugin-grid :plugins="staffPicks"></plugin-grid>
+                <plugin-grid :plugins="staffPicks" :plugin-url-prefix="'/plugins/'"></plugin-grid>
 
                 <h2>Active Trials</h2>
-                <plugin-grid :plugins="activeTrials"></plugin-grid>
+                <plugin-grid :plugins="activeTrials" :plugin-url-prefix="'/plugins/'"></plugin-grid>
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
                 <ul>
                     <li v-for="category in categories">
-                        <a :href="'./plugin-store/categories/'+category.id">{{ category.title }}</a>
+                        <router-link :to="'/categories/'+category.id">{{ category.title }}</router-link>
                     </li>
                 </ul>
             </div>

@@ -25,7 +25,7 @@
 
     export default {
         name: 'pluginGrid',
-        props: ['plugins'],
+        props: ['plugins', 'pluginUrlPrefix'],
         components: {
             PluginCard,
             PluginDetails,
@@ -39,8 +39,10 @@
         },
         methods: {
             openModal: function(plugin) {
-                this.selectedPlugin = plugin;
-                this.showModal = true;
+                this.$router.push({path: this.pluginUrlPrefix + plugin.id });
+
+                /*this.selectedPlugin = plugin;
+                this.showModal = true;*/
             },
             closeModal: function() {
                 this.selectedPlugin = null;

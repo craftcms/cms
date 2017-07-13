@@ -5,10 +5,12 @@
 
 
 {% set extraPageHeaderHtml %}
-	<cart-button ref="cartButton"></cart-button>
+	{#<cart-button ref="cartButton"></cart-button>#}
+	<router-link to="/">Index</router-link>
+	<router-link to="/cart">Cart</router-link>
 {% endset %}
 
 
 {% set content %}
-	<index></index>
+	<app></app>
 {% endset %}

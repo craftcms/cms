@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div v-if="plugin">
         <div class="plugin-details-header">
             <div class="plugin-icon-large">
                 <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
@@ -11,7 +11,7 @@
                 <p>{{ plugin.shortDescription }}</p>
 
                 <p>
-                    <a :href="developerUrl">{{ plugin.developerName }}</a>
+                    <router-link :to="'/developer/' + plugin.developerId">{{ plugin.developerName }}</router-link>
                 </p>
             </div>
 
@@ -67,8 +67,18 @@
 
     export default {
         name: 'pluginDetails',
-        props: ['plugin'],
+        props: ['pluginId'],
         computed: {
+            ...mapGetters({
+                plugins: 'allProducts',
+            }),
+            plugin() {
+                return this.plugins.find(plugin => {
+                    if(plugin.id == this.pluginId) {
+                        return plugin;
+                    }
+                })
+            },
             description() {
                 if(this.plugin.description && this.plugin.description.length > 0) {
                     return marked(this.plugin.description, { sanitize: true });
@@ -95,6 +105,10 @@
                 this.$root.$refs.cartButton.openModal();
             },
         },
+
+        created() {
+            this.$store.dispatch('getAllProducts')
+        }
     }
 </script>
 
