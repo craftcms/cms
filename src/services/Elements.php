@@ -75,8 +75,6 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
-     *
-     * You may set [[ElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 

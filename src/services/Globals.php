@@ -32,8 +32,6 @@ class Globals extends Component
 
     /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
 

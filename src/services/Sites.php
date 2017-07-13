@@ -54,8 +54,6 @@ class Sites extends Component
 
     /**
      * @event ReorderSitesEvent The event that is triggered before the sites are reordered.
-     *
-     * You may set [[SiteEvent::isValid]] to `false` to prevent the sites from getting reordered.
      */
     const EVENT_BEFORE_REORDER_SITES = 'beforeReorderSites';
 
