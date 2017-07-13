@@ -12,6 +12,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed an XSS bug in the Control Panel.
 - Fixed an issue with Rich Text Fields and outdated Asset Sources.
+- Fixed a PHP error that could occur when using HTML Purifier in a Rich Text field.
 
 ## 2.6.2986 - 2017-06-30
 
