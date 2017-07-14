@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2987 - 2017-07-14
+
 ### Changed
 - Added `.jp2` and `.jpx` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
 - Plugin settings now get set once all plugin classes have been loaded.
