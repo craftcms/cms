@@ -873,12 +873,12 @@ class Users extends Component
     /**
      * Assigns a user to a given list of user groups.
      *
-     * @param int        $userId   The user’s ID
-     * @param int[]|null $groupIds The groups’ IDs
+     * @param int   $userId   The user’s ID
+     * @param int[] $groupIds The groups’ IDs. Pass an empty array to remove a user from all groups.
      *
      * @return bool Whether the users were successfully assigned to the groups.
      */
-    public function assignUserToGroups(int $userId, array $groupIds = null): bool
+    public function assignUserToGroups(int $userId, array $groupIds): bool
     {
         // Fire a 'beforeAssignUserToGroups' event
         $event = new UserGroupsAssignEvent([
