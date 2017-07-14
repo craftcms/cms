@@ -142,28 +142,37 @@ class FieldsController extends Controller
             $field = $fieldsService->createField(PlainText::class);
         }
 
-        // Field types
+        // Supported translation methods
         // ---------------------------------------------------------------------
 
-        // Get the allowed field types
-        /** @var string[]|FieldInterface[] $allFieldTypes */
-        if (!$field->id) {
-            $allFieldTypes = $fieldsService->getAllFieldTypes();
-        } else {
-            $allFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
-        }
-
-        $fieldTypeOptions = [];
         $supportedTranslationMethods = [];
+        /** @var string[]|FieldInterface[] $allFieldTypes */
+        $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
+            if ($class === get_class($field) || $class::isSelectable()) {
+                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
+            }
+        }
+
+        // Allowed field types
+        // ---------------------------------------------------------------------
+
+        if (!$field->id) {
+            $allowedFieldTypes = $allFieldTypes;
+        } else {
+            $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+        }
+
+        /** @var string[]|FieldInterface[] $allowedFieldTypes */
+        $fieldTypeOptions = [];
+
+        foreach ($allowedFieldTypes as $class) {
             if ($class === get_class($field) || $class::isSelectable()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
-
-                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
 
@@ -224,7 +233,7 @@ class FieldsController extends Controller
             'field' => $field,
             'fieldTypeOptions' => $fieldTypeOptions,
             'supportedTranslationMethods' => $supportedTranslationMethods,
-            'allFieldTypes' => $allFieldTypes,
+            'allowedFieldTypes' => $allowedFieldTypes,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,

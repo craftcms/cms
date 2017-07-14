@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where transformed images within Rich Text fields would break if the transform handle was identical to a custom field handle. ([#1804](https://github.com/craftcms/cms/issues/1804))
 - Fixed a bug where some SVG file dimensions could not be detected.
 - Fixed a bug where some field type data could become corrupted in various ways when propagating field values to different sites. ([#1833](https://github.com/craftcms/cms/issues/1833))
+- Fixed a bug where the settings for new fields being created within an existing Matrix field would not show the Translation Method setting when they should. ([#1834](https://github.com/craftcms/cms/issues/1834))
 
 ## 3.0.0-beta.21 - 2017-07-07
 
