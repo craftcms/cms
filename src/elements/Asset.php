@@ -994,9 +994,14 @@ class Asset extends Element
         }
 
         // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
-        if ($this->newLocation !== null || $this->tempFilePath !== null) {
-            $event = new AssetEvent(['asset' => $this, 'isNew' => !$this->id]);
-            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, $event);
+        if (
+            ($this->newLocation !== null || $this->tempFilePath !== null) &&
+            $this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_FILE)
+        ) {
+            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
+                'asset' => $this,
+                'isNew' => !$this->id
+            ]));
         }
 
         // Set the kind based on filename, if not set already

@@ -136,13 +136,14 @@ class Assets extends Component
             Image::cleanImageByPath($pathOnServer);
         }
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'replaceWith' => $pathOnServer,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+        // Fire a 'beforeReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'replaceWith' => $pathOnServer,
+                'filename' => $filename
+            ]));
+        }
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
@@ -151,12 +152,13 @@ class Assets extends Component
 
         Craft::$app->getElements()->saveElement($asset);
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
+        // Fire an 'afterReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'filename' => $filename
+            ]));
+        }
     }
 
     /**
@@ -540,7 +542,6 @@ class Assets extends Component
             'transform' => $transform,
             'asset' => $asset,
         ]);
-
         $this->trigger(self::EVENT_GET_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
