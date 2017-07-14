@@ -262,12 +262,6 @@ class Fields extends Component
      */
     public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Field group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveFieldLayout' event
@@ -276,6 +270,11 @@ class Fields extends Component
                 'group' => $group,
                 'isNew' => $isNewGroup,
             ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Field group not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         $groupRecord = $this->_getGroupRecord($group);
@@ -741,7 +740,6 @@ class Fields extends Component
 
         if ($runValidation && !$field->validate()) {
             Craft::info('Field not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
@@ -1145,12 +1143,6 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if ($runValidation && !$layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewLayout = !$layout->id;
 
         // Make sure the tabs/fields are memoized on the layout
@@ -1164,6 +1156,11 @@ class Fields extends Component
                 'layout' => $layout,
                 'isNew' => $isNewLayout,
             ]));
+        }
+
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if (!$isNewLayout) {

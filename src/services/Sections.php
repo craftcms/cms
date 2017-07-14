@@ -343,13 +343,22 @@ class Sections extends Component
      */
     public function saveSection(Section $section, bool $runValidation = true): bool
     {
+        $isNewSection = !$section->id;
+
+        // Fire a 'beforeSaveSection' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
+                'section' => $section,
+                'isNew' => $isNewSection
+            ]));
+        }
+
         if ($runValidation && !$section->validate()) {
             Craft::info('Section not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
-        if ($section->id) {
+        if (!$isNewSection) {
             $sectionRecord = SectionRecord::find()
                 ->where(['id' => $section->id])
                 ->with('structure')
@@ -367,10 +376,8 @@ class Sections extends Component
                 'type',
                 'enableVersioning',
             ]));
-            $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
-            $isNewSection = true;
         }
 
         // Main section settings
@@ -385,14 +392,6 @@ class Sections extends Component
 
         if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
-        }
-
-        // Fire a 'beforeSaveSection' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
-                'section' => $section,
-                'isNew' => $isNewSection
-            ]));
         }
 
         $db = Craft::$app->getDb();
@@ -792,12 +791,6 @@ class Sections extends Component
      */
     public function saveEntryType(EntryType $entryType, bool $runValidation = true): bool
     {
-        if ($runValidation && !$entryType->validate()) {
-            Craft::info('Entry type not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewEntryType = !$entryType->id;
 
         // Fire a 'beforeSaveEntryType' event
@@ -806,6 +799,11 @@ class Sections extends Component
                 'entryType' => $entryType,
                 'isNew' => $isNewEntryType,
             ]));
+        }
+
+        if ($runValidation && !$entryType->validate()) {
+            Craft::info('Entry type not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if ($entryType->id) {

@@ -104,8 +104,8 @@ class AssetsController extends Controller
             $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
-            $asset = new Asset();
 
+            $asset = new Asset();
             $asset->tempFilePath = $tempPath;
             $asset->filename = $filename;
             $asset->newFolderId = $folder->id;

@@ -370,13 +370,22 @@ class Sites extends Component
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
+        $isNewSite = !$site->id;
+
+        // Fire a 'beforeSaveSite' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
+                'site' => $site,
+                'isNew' => $isNewSite,
+            ]));
+        }
+
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
-        if ($site->id) {
+        if (!$isNewSite) {
             $siteRecord = SiteRecord::find()
                 ->where(['id' => $site->id])
                 ->one();
@@ -384,11 +393,8 @@ class Sites extends Component
             if (!$siteRecord) {
                 throw new SiteNotFoundException("No site exists with the ID '{$site->id}'");
             }
-
-            $isNewSite = false;
         } else {
             $siteRecord = new SiteRecord();
-            $isNewSite = true;
             $maxSortOrder = false;
 
             if (Craft::$app->getIsInstalled()) {
@@ -408,16 +414,7 @@ class Sites extends Component
         $siteRecord->hasUrls = $site->hasUrls;
         $siteRecord->baseUrl = $site->baseUrl;
 
-        // Fire a 'beforeSaveSite' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
-                'site' => $site,
-                'isNew' => $isNewSite,
-            ]));
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
             // Is the event giving us the go-ahead?
             $siteRecord->save(false);

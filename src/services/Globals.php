@@ -241,13 +241,6 @@ class Globals extends Component
      */
     public function saveSet(GlobalSet $globalSet, bool $runValidation = true): bool
     {
-        $globalSet->validateCustomFields = false;
-        if ($runValidation && !$globalSet->validate()) {
-            Craft::info('Global set not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewSet = !$globalSet->id;
 
         // Fire a 'beforeSaveGlobalSet' event
@@ -256,6 +249,12 @@ class Globals extends Component
                 'globalSet' => $globalSet,
                 'isNew' => $isNewSet,
             ]));
+        }
+
+        $globalSet->validateCustomFields = false;
+        if ($runValidation && !$globalSet->validate()) {
+            Craft::info('Global set not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if (!$isNewSet) {

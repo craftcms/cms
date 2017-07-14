@@ -192,12 +192,6 @@ class Tags extends Component
      */
     public function saveTagGroup(TagGroup $tagGroup, bool $runValidation = true): bool
     {
-        if ($runValidation && !$tagGroup->validate()) {
-            Craft::info('Tag group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTagGroup = !$tagGroup->id;
 
         // Fire a 'beforeSaveGroup' event
@@ -206,6 +200,11 @@ class Tags extends Component
                 'tagGroup' => $tagGroup,
                 'isNew' => $isNewTagGroup
             ]));
+        }
+
+        if ($runValidation && !$tagGroup->validate()) {
+            Craft::info('Tag group not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if (!$isNewTagGroup) {
