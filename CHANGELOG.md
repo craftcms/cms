@@ -3,16 +3,16 @@ Craft CMS Changelog
 
 ## Unreleased
 
-### Added
-- Added `.jp2` and `.jpx` to the default list of the [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting.
-
 ### Changed
+- Added `.jp2` and `.jpx` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
 - Plugin settings now get set once all plugin classes have been loaded.
 
 ### Fixed
-- Fixed an XSS bug in the Control Panel.
-- Fixed an issue with Rich Text Fields and outdated Asset Sources.
+- Fixed a PHP error that would occur when a Rich Text field’s settings referenced an asset source that no longer existed.
 - Fixed a PHP error that could occur when using HTML Purifier in a Rich Text field.
+
+### Security
+- Fixed an XSS bug in the Control Panel.
 
 ## 2.6.2986 - 2017-06-30
 
@@ -54,7 +54,6 @@ Craft CMS Changelog
 
 ### Security
 - Fixed several XSS vulnerabilities in the Control Panel.
-
 
 ## 2.6.2983 - 2017-06-09
 
