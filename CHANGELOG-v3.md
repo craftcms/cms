@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.22 - 2017-07-14
 
 ### Added
 - Added support for asset reference tags that explicitly target an image transform (e.g. `{asset:123:transform:thumbnail}`).
