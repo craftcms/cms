@@ -287,10 +287,12 @@ class Categories extends Component
         $isNewCategoryGroup = !$group->id;
 
         // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
 
         if (!$isNewCategoryGroup) {
             $groupRecord = CategoryGroupRecord::find()
@@ -478,10 +480,12 @@ class Categories extends Component
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]));
+        }
 
         return true;
     }
@@ -507,9 +511,11 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -549,9 +555,11 @@ class Categories extends Component
         }
 
         // Fire an 'afterDeleteGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+                'categoryGroup' => $group
+            ]));
+        }
 
         return true;
     }

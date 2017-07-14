@@ -75,8 +75,6 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
-     *
-     * You may set [[ElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
@@ -84,6 +82,16 @@ class Elements extends Component
      * @event ElementEvent The event that is triggered after an element is saved.
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
 
     /**
      * @event ElementActionEvent The event that is triggered before an element action is performed.
@@ -171,7 +179,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one();
+        return $query->one() ?: null;
     }
 
     /**
@@ -353,6 +361,18 @@ class Elements extends Component
         /** @var Element $element */
         $isNewElement = !$element->id;
 
+        // Fire a 'beforeSaveElement' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement
+            ]));
+        }
+
+        if (!$element->beforeSave($isNewElement)) {
+            return false;
+        }
+
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
             throw new Exception('All elements must have at least one site associated with them.');
@@ -381,20 +401,8 @@ class Elements extends Component
             return false;
         }
 
-        // Fire a 'beforeSaveElement' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$element->beforeSave($isNewElement)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // Get the element record
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne($element->id);
@@ -519,10 +527,12 @@ class Elements extends Component
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
         // Fire an 'afterSaveElement' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement,
+            ]));
+        }
 
         return true;
     }
@@ -628,6 +638,13 @@ class Elements extends Component
             ElementHelper::setUniqueUri($element);
         }
 
+        // Fire a 'beforeUpdateSlugAndUri' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%elements_sites}}',
@@ -640,6 +657,13 @@ class Elements extends Component
                     'siteId' => $element->siteId
                 ])
             ->execute();
+
+        // Fire a 'afterUpdateSlugAndUri' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
 
         // Delete any caches involving this element
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
@@ -826,11 +850,12 @@ class Elements extends Component
             }
 
             // Fire an 'afterMergeElements' event
-            $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS,
-                new MergeElementsEvent([
+            if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
+                $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                     'mergedElementId' => $mergedElementId,
                     'prevailingElementId' => $prevailingElementId
                 ]));
+            }
 
             // Now delete the merged element
             $success = $this->deleteElementById($mergedElementId);
@@ -901,19 +926,19 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        if (!$element->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            if (!$element->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
             $records = StructureElementRecord::findAll([
@@ -958,9 +983,11 @@ class Elements extends Component
 
 
         // Fire an 'afterDeleteElement' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
 
         return true;
     }
@@ -1056,7 +1083,7 @@ class Elements extends Component
         // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
         // and replace them with placeholder tokens
         $allRefTagTokens = [];
-        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
+        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
             // Does it already have a full element type class name?
             if (is_subclass_of($matches[1], ElementInterface::class)) {
                 $elementType = $matches[1];
@@ -1147,11 +1174,7 @@ class Elements extends Component
      */
     public function getPlaceholderElement(int $id, int $siteId)
     {
-        if (isset($this->_placeholderElements[$id][$siteId])) {
-            return $this->_placeholderElements[$id][$siteId];
-        }
-
-        return null;
+        return $this->_placeholderElements[$id][$siteId] ?? null;
     }
 
     /**

@@ -161,10 +161,12 @@ class UserGroups extends Component
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         $groupRecord = $this->_getGroupRecordById($group->id);
 
@@ -179,10 +181,12 @@ class UserGroups extends Component
         }
 
         // Fire an 'afterSaveUserGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         return true;
     }
@@ -203,18 +207,22 @@ class UserGroups extends Component
         }
 
         // Fire a 'beforeDeleteUserGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group,
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%usergroups}}', ['id' => $groupId])
             ->execute();
 
         // Fire an 'afterDeleteUserGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
-            'userGroup' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group
+            ]));
+        }
 
         return true;
     }

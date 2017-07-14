@@ -1234,6 +1234,7 @@ class View extends \yii\web\View
      */
     public function beforeRenderTemplate(string $template, array $variables): bool
     {
+        // Fire a 'beforeRenderTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
             'variables' => $variables,
@@ -1253,6 +1254,7 @@ class View extends \yii\web\View
      */
     public function afterRenderTemplate(string $template, array $variables, string &$output)
     {
+        // Fire an 'afterRenderTemplate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,
@@ -1274,6 +1276,7 @@ class View extends \yii\web\View
      */
     public function beforeRenderPageTemplate(string $template, array $variables): bool
     {
+        // Fire a 'beforeRenderPageTemplate' event
         $event = new TemplateEvent([
             'template' => $template,
             'variables' => $variables,
@@ -1293,6 +1296,7 @@ class View extends \yii\web\View
      */
     public function afterRenderPageTemplate(string $template, array $variables, string &$output)
     {
+        // Fire an 'afterRenderPageTemplate' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_RENDER_PAGE_TEMPLATE)) {
             $event = new TemplateEvent([
                 'template' => $template,

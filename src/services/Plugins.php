@@ -315,9 +315,11 @@ class Plugins extends Component
         $plugin = $this->createPlugin($handle);
 
         // Fire a 'beforeInstallPlugin' event
-        $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_INSTALL_PLUGIN)) {
+            $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -354,9 +356,11 @@ class Plugins extends Component
         $this->_registerPlugin($plugin);
 
         // Fire an 'afterInstallPlugin' event
-        $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_INSTALL_PLUGIN)) {
+            $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         return true;
     }
@@ -386,9 +390,11 @@ class Plugins extends Component
         }
 
         // Fire a 'beforeUninstallPlugin' event
-        $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UNINSTALL_PLUGIN)) {
+            $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -417,9 +423,11 @@ class Plugins extends Component
         unset($this->_installedPluginInfo[$handle]);
 
         // Fire an 'afterUninstallPlugin' event
-        $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UNINSTALL_PLUGIN)) {
+            $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         return true;
     }
@@ -444,9 +452,11 @@ class Plugins extends Component
         }
 
         // Fire a 'beforeSavePluginSettings' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
@@ -456,9 +466,11 @@ class Plugins extends Component
             ->execute();
 
         // Fire an 'afterSavePluginSettings' event
-        $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-            'plugin' => $plugin
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+                'plugin' => $plugin
+            ]));
+        }
 
         return (bool)$affectedRows;
     }

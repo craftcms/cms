@@ -547,22 +547,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
-    {
-        // If validating the slug, make sure the title is in place first
-        $entryType = $this->getType();
-
-        if (!$entryType->hasTitleField) {
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
-        }
-
-
-        return parent::beforeValidate();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSupportedSites(): array
     {
         $sites = [];
@@ -872,6 +856,13 @@ EOD;
     public function beforeSave(bool $isNew): bool
     {
         $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+        }
 
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
@@ -888,17 +879,13 @@ EOD;
             $this->setParent($parentEntry);
         }
 
-        // Verify that the section supports this site
-        $sectionSiteSettings = $section->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
-        }
-
+        // Section type-specific stuff
         if ($section->type == Section::TYPE_SINGLE) {
-            // Single entries don't have
             $this->authorId = null;
             $this->expiryDate = null;
+        } else if (!$entryType->hasTitleField) {
+            // Set the dynamic title
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         }
 
         if ($this->enabled && !$this->postDate) {
@@ -907,7 +894,7 @@ EOD;
         }
 
         // Make sure the field layout is set correctly
-        $this->fieldLayoutId = $this->getType()->fieldLayoutId;
+        $this->fieldLayoutId = $entryType->fieldLayoutId;
 
         return parent::beforeSave($isNew);
     }
@@ -953,12 +940,12 @@ EOD;
             Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
         }
 
+        parent::afterSave($isNew);
+
         // Save a new version
         if ($section->enableVersioning) {
             Craft::$app->getEntryRevisions()->saveVersion($this);
         }
-
-        parent::afterSave($isNew);
     }
 
     /**

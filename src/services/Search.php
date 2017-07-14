@@ -145,11 +145,13 @@ class Search extends Component
         }
 
         // Fire a 'beforeSearch' event
-        $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
-            'elementIds' => $elementIds,
-            'query' => $query,
-            'siteId' => $siteId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
+            $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
+                'elementIds' => $elementIds,
+                'query' => $query,
+                'siteId' => $siteId,
+            ]));
+        }
 
         // Get tokens for query
         $this->_tokens = $query->getTokens();
@@ -227,11 +229,13 @@ class Search extends Component
         $elementIds = array_unique($elementIds);
 
         // Fire a 'beforeSearch' event
-        $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
-            'elementIds' => $elementIds,
-            'query' => $query,
-            'siteId' => $siteId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+            $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
+                'elementIds' => $elementIds,
+                'query' => $query,
+                'siteId' => $siteId,
+            ]));
+        }
 
         return $elementIds;
     }

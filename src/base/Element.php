@@ -1724,9 +1724,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -1782,9 +1784,11 @@ abstract class Element extends Component implements ElementInterface
     public function afterMoveInStructure(int $structureId)
     {
         // Trigger an 'afterMoveInStructure' event
-        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
-            'structureId' => $structureId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+                'structureId' => $structureId,
+            ]));
+        }
     }
 
     // Protected Methods
@@ -2049,30 +2053,35 @@ abstract class Element extends Component implements ElementInterface
      */
     private function _getRelativeElement($criteria, int $dir)
     {
-        if ($this->id !== null) {
-            if ($criteria instanceof ElementQueryInterface) {
-                $query = $criteria;
-            } else {
-                $query = static::find()
-                    ->siteId($this->siteId);
+        if ($this->id === null) {
+            return null;
+        }
 
-                if ($criteria) {
-                    Craft::configure($query, $criteria);
-                }
-            }
+        if ($criteria instanceof ElementQueryInterface) {
+            $query = $criteria;
+        } else {
+            $query = static::find()
+                ->siteId($this->siteId);
 
-            /** @var ElementQuery $query */
-            $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds, false);
-
-            if ($key !== false && isset($elementIds[$key + $dir])) {
-                return static::find()
-                    ->id($elementIds[$key + $dir])
-                    ->siteId($query->siteId)
-                    ->one();
+            if ($criteria) {
+                Craft::configure($query, $criteria);
             }
         }
 
-        return null;
+        /** @var ElementQuery $query */
+        $elementIds = $query->ids();
+        $key = array_search($this->id, $elementIds, false);
+
+        if ($key === false || !isset($elementIds[$key + $dir])) {
+            return null;
+        }
+
+        /** @var Element|false $element */
+        $element = static::find()
+            ->id($elementIds[$key + $dir])
+            ->siteId($query->siteId)
+            ->one();
+
+        return $element !== false ? $element : null;
     }
 }

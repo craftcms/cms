@@ -170,9 +170,11 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($backupCommand, $file);
 
         // Fire a 'beforeCreateBackup' event
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-            'file' => $file
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
+                'file' => $file
+            ]));
+        }
 
         $success = $command->execute();
 
@@ -184,9 +186,11 @@ class Connection extends \yii\db\Connection
         }
 
         // Fire an 'afterCreateBackup' event
-        $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-            'file' => $file
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
+            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
+                'file' => $file
+            ]));
+        }
     }
 
     /**
@@ -216,9 +220,11 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($restoreCommand, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
-        $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-            'file' => $filePath
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $filePath
+            ]));
+        }
 
         $success = $command->execute();
 
@@ -230,9 +236,11 @@ class Connection extends \yii\db\Connection
         }
 
         // Fire an 'afterRestoreBackup' event
-        $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
-            'file' => $filePath
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
+                'file' => $filePath
+            ]));
+        }
     }
 
     /**

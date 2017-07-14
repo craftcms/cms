@@ -199,10 +199,12 @@ class AssetTransforms extends Component
         $isNewTransform = !$transform->id;
 
         // Fire a 'beforeSaveAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $isNewTransform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $isNewTransform,
+            ]));
+        }
 
         if ($isNewTransform) {
             $transformRecord = new AssetTransformRecord();
@@ -242,10 +244,12 @@ class AssetTransforms extends Component
         }
 
         // Fire an 'afterSaveAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $transform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $transform,
+            ]));
+        }
 
         return true;
     }
@@ -262,9 +266,11 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -273,9 +279,11 @@ class AssetTransforms extends Component
             ->execute();
 
         // Fire an 'afterDeleteAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         return true;
     }
@@ -619,8 +627,8 @@ class AssetTransforms extends Component
      *
      * @param AssetTransform|string|array|null $transform
      *
-     * @throws AssetTransformException if the transform cannot be found by the handle
      * @return AssetTransform|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function normalizeTransform($transform)
     {

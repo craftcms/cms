@@ -188,28 +188,28 @@ class Dashboard extends Component
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
         /** @var Widget $widget */
+        $isNewWidget = $widget->getIsNew();
+
+        // Fire a 'beforeSaveWidget' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+                'isNew' => $isNewWidget,
+            ]));
+        }
+
+        if (!$widget->beforeSave($isNewWidget)) {
+            return false;
+        }
+
         if ($runValidation && !$widget->validate()) {
             Craft::info('Widget not saved due to validation error.', __METHOD__);
 
             return false;
         }
 
-        $isNewWidget = $widget->getIsNew();
-
-        // Fire a 'beforeSaveWidget' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-            'isNew' => $isNewWidget,
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeSave($isNewWidget)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
             $widgetRecord->type = get_class($widget);
@@ -283,18 +283,18 @@ class Dashboard extends Component
     {
         /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
+
+        if (!$widget->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
             $widgetRecord->enabled = false;
             $widgetRecord->save();
@@ -309,9 +309,11 @@ class Dashboard extends Component
         }
 
         // Fire an 'afterDeleteWidget' event
-        $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
 
         return true;
     }

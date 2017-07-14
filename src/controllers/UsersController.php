@@ -346,24 +346,25 @@ class UsersController extends Controller
                 return $info;
             }
 
-            $userToProcess = $info['userToProcess'];
-            $id = $info['id'];
-            $code = $info['code'];
+            /** @var User $userToProcess */
+            /** @var string $uid */
+            /** @var string $code */
+            list($userToProcess, $uid, $code) = $info;
 
             Craft::$app->getUser()->sendUsernameCookie($userToProcess);
 
             // Send them to the set password template.
             return $this->_renderSetPasswordTemplate($userToProcess, [
                 'code' => $code,
-                'id' => $id,
+                'id' => $uid,
                 'newUser' => $userToProcess->password ? false : true,
             ]);
         }
 
         // POST request. They've just set the password.
         $code = Craft::$app->getRequest()->getRequiredBodyParam('code');
-        $id = Craft::$app->getRequest()->getRequiredParam('id');
-        $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
+        $uid = Craft::$app->getRequest()->getRequiredParam('id');
+        $userToProcess = Craft::$app->getUsers()->getUserByUid($uid);
 
         // See if we still have a valid token.
         $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
@@ -407,7 +408,7 @@ class UsersController extends Controller
         return $this->_renderSetPasswordTemplate($userToProcess, [
             'errors' => $errors,
             'code' => $code,
-            'id' => $id,
+            'id' => $uid,
             'newUser' => $userToProcess->password ? false : true,
         ]);
     }
@@ -423,7 +424,8 @@ class UsersController extends Controller
             return $info;
         }
 
-        $userToProcess = $info['userToProcess'];
+        /** @var User $userToProcess */
+        list($userToProcess) = $info;
         $userIsPending = $userToProcess->status == User::STATUS_PENDING;
 
         if (Craft::$app->getUsers()->verifyEmailForUser($userToProcess)) {
@@ -1468,10 +1470,12 @@ class UsersController extends Controller
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
         // Fire a 'loginFailure' event
-        $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
-            'authError' => $authError,
-            'user' => $user,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
+            $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
+                'authError' => $authError,
+                'user' => $user,
+            ]));
+        }
 
         switch ($authError) {
             case User::AUTH_PENDING_VERIFICATION:
@@ -1678,20 +1682,20 @@ class UsersController extends Controller
                 $groupIds = $request->getBodyParam('groups');
 
                 if ($groupIds !== null) {
-                    if (is_array($groupIds)) {
-                        // See if there are any new groups in here
-                        $oldGroupIds = [];
+                    $groupIds = (array)$groupIds;
 
-                        foreach ($user->getGroups() as $group) {
-                            $oldGroupIds[] = $group->id;
-                        }
+                    // See if there are any new groups in here
+                    $oldGroupIds = [];
 
-                        foreach ($groupIds as $groupId) {
-                            if (!in_array($groupId, $oldGroupIds, false)) {
-                                // Yep. This will require an elevated session
-                                $this->requireElevatedSession();
-                                break;
-                            }
+                    foreach ($user->getGroups() as $group) {
+                        $oldGroupIds[] = $group->id;
+                    }
+
+                    foreach ($groupIds as $groupId) {
+                        if (!in_array($groupId, $oldGroupIds, false)) {
+                            // Yep. This will require an elevated session
+                            $this->requireElevatedSession();
+                            break;
                         }
                     }
 
@@ -1734,19 +1738,20 @@ class UsersController extends Controller
      */
     private function _processTokenRequest()
     {
-        $id = Craft::$app->getRequest()->getRequiredParam('id');
+        $uid = Craft::$app->getRequest()->getRequiredParam('id');
         $code = Craft::$app->getRequest()->getRequiredParam('code');
         $isCodeValid = false;
 
+        /** @var User|false $userToProcess */
         $userToProcess = User::find()
-            ->uid($id)
+            ->uid($uid)
             ->status(null)
             ->addSelect(['users.password', 'users.unverifiedEmail'])
             ->one();
 
         // If someone is logged in and it's not this person, log them out
         $userService = Craft::$app->getUser();
-        if (($identity = $userService->getIdentity()) !== null && $identity->id != $userToProcess->id) {
+        if (($identity = $userService->getIdentity()) !== null && $userToProcess && $identity->id != $userToProcess->id) {
             $userService->logout();
         }
 
@@ -1770,20 +1775,16 @@ class UsersController extends Controller
                 'user' => $userToProcess
             ]));
 
-        return [
-            'code' => $code,
-            'id' => $id,
-            'userToProcess' => $userToProcess
-        ];
+        return [$userToProcess, $uid, $code];
     }
 
     /**
-     * @param User $user
+     * @param User|false $user
      *
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(User $user): Response
+    private function _processInvalidToken($user): Response
     {
         // If they're already logged-in, just send them to the post-login URL
         $userService = Craft::$app->getUser();

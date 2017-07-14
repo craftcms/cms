@@ -32,8 +32,6 @@ class Globals extends Component
 
     /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_SET = 'beforeSaveGlobalSet';
 
@@ -253,10 +251,12 @@ class Globals extends Component
         $isNewSet = !$globalSet->id;
 
         // Fire a 'beforeSaveGlobalSet' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, new GlobalSetEvent([
-            'globalSet' => $globalSet,
-            'isNew' => $isNewSet,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $globalSet,
+                'isNew' => $isNewSet,
+            ]));
+        }
 
         if (!$isNewSet) {
             $globalSetRecord = GlobalSetRecord::findOne($globalSet->id);
@@ -300,10 +300,12 @@ class Globals extends Component
         }
 
         // Fire an 'afterSaveGlobalSet' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
-            'globalSet' => $globalSet,
-            'isNew' => $isNewSet
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $globalSet,
+                'isNew' => $isNewSet
+            ]));
+        }
 
         return true;
     }

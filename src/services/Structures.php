@@ -384,7 +384,7 @@ class Structures extends Component
             $mode = 'insert';
         }
 
-        if ($mode === 'update') {
+        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_BEFORE_MOVE_ELEMENT)) {
             // Fire a 'beforeMoveElement' event
             $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
@@ -392,15 +392,13 @@ class Structures extends Component
             ]));
         }
 
+        // Tell the element about it
+        if (!$element->beforeMoveInStructure($structureId)) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Tell the element about it
-            if (!$element->beforeMoveInStructure($structureId)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             if (!$elementRecord->$action($targetElementRecord)) {
                 $transaction->rollBack();
 
@@ -422,7 +420,7 @@ class Structures extends Component
             throw $e;
         }
 
-        if ($mode === 'update') {
+        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event
             $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,

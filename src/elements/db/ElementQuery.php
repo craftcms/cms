@@ -435,8 +435,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function offsetGet($name)
     {
-        if (is_numeric($name)) {
-            return $this->nth($name);
+        if (is_numeric($name) && ($element = $this->nth($name)) !== false) {
+            return $element;
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
@@ -456,10 +456,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
-        } else {
-            /** @noinspection ImplicitMagicMethodCallInspection */
-            $this->__set($name, $value);
         }
+
+        /** @noinspection ImplicitMagicMethodCallInspection */
+        $this->__set($name, $value);
     }
 
     /**
@@ -1016,11 +1016,11 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $row = parent::one($db);
 
-        if ($row !== false) {
-            return $this->_createElement($row) ?: null;
+        if ($row === false) {
+            return false;
         }
 
-        return null;
+        return $this->_createElement($row);
     }
 
     /**
@@ -1238,7 +1238,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
         $this->_setAttributes($attributes);
 
-        return $this->one();
+        return $this->one() ?: null;
     }
 
     /**
@@ -1259,7 +1259,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $result = $this->nth($count - 1);
         $this->offset = $offset;
 
-        return $result;
+        return $result ?: null;
     }
 
     /**
@@ -1921,12 +1921,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } else {
             foreach ($rows as $row) {
-
                 $element = $this->_createElement($row);
-
-                if ($element === false) {
-                    continue;
-                }
 
                 // Add it to the elements array
                 if ($this->indexBy === null) {
@@ -1958,14 +1953,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param array $row
      *
-     * @return ElementInterface|bool
+     * @return ElementInterface
      */
     private function _createElement(array $row)
     {
         // Do we have a placeholder for this element?
-        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId);
-
-        if ($element !== null) {
+        if (($element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId)) !== null) {
             return $element;
         }
 
@@ -2005,11 +1998,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var Element $element */
         $element = new $class($row);
 
-        // Verify that an element was returned
-        if (!$element || !($element instanceof ElementInterface)) {
-            return false;
-        }
-
         // Set the custom field values
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($fieldValues)) {
@@ -2017,10 +2005,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Fire an 'afterPopulateElement' event
-        $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
-            'element' => $element,
-            'row' => $row
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+                'element' => $element,
+                'row' => $row
+            ]));
+        }
 
         return $element;
     }

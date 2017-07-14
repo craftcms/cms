@@ -466,7 +466,7 @@ class AssetIndexer extends Component
             ->one();
 
         // Create an Asset if there is none.
-        if ($asset === null) {
+        if (!$asset) {
             $asset = new Asset();
             $asset->volumeId = $volume->id;
             $asset->fieldLayoutId = $volume->fieldLayoutId;

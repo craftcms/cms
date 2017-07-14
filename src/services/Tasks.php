@@ -153,29 +153,29 @@ class Tasks extends Component
     public function saveTask(TaskInterface $task, bool $runValidation = true): bool
     {
         /** @var Task $task */
+        $isNewTask = $task->getIsNew();
+
+        // Fire a 'beforeSaveTask' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_TASK)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
+                'task' => $task,
+                'isNew' => $isNewTask,
+            ]));
+        }
+
+        if (!$task->beforeSave($isNewTask)) {
+            return false;
+        }
+
         if ($runValidation && !$task->validate()) {
             Craft::info('Task not saved due to validation error.', __METHOD__);
 
             return false;
         }
 
-        $isNewTask = $task->getIsNew();
-
-        // Fire a 'beforeSaveTask' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
-            'task' => $task,
-            'isNew' => $isNewTask,
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeSave($isNewTask)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
-            if ($task->getIsNew()) {
+            if ($isNewTask) {
                 $taskRecord = new TaskRecord();
             } else {
                 $taskRecord = $this->_getTaskRecordById($task->id);
@@ -188,7 +188,7 @@ class Tasks extends Component
             $taskRecord->currentStep = $task->currentStep;
             $taskRecord->settings = $task->getSettings();
 
-            if (!$task->getIsNew()) {
+            if (!$isNewTask) {
                 $taskRecord->save(false);
             } else if (!$task->parentId) {
                 $taskRecord->makeRoot(false);
@@ -202,7 +202,7 @@ class Tasks extends Component
                 $taskRecord->appendTo($parentTaskRecord, false);
             }
 
-            if ($task->getIsNew()) {
+            if ($isNewTask) {
                 $task->id = $taskRecord->id;
 
                 if ($task->parentId) {
@@ -221,10 +221,12 @@ class Tasks extends Component
         }
 
         // Fire an 'afterSaveTask' event
-        $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
-            'task' => $task,
-            'isNew' => $isNewTask,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_TASK)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
+                'task' => $task,
+                'isNew' => $isNewTask,
+            ]));
+        }
 
         return true;
     }
@@ -704,18 +706,18 @@ class Tasks extends Component
         }
 
         // Fire a 'beforeDeleteTask' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
-            'task' => $task,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TASK)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
+                'task' => $task,
+            ]));
+        }
+
+        if (!$task->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $taskRecord->deleteWithChildren();
             unset($this->_taskRecordsById[$task->id]);
 
@@ -729,9 +731,11 @@ class Tasks extends Component
         }
 
         // Fire an 'afterDeleteTask' event
-        $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
-            'task' => $task,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TASK)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
+                'task' => $task,
+            ]));
+        }
 
         return true;
     }

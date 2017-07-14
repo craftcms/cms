@@ -388,10 +388,12 @@ class Sections extends Component
         }
 
         // Fire a 'beforeSaveSection' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
-            'section' => $section,
-            'isNew' => $isNewSection
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
+                'section' => $section,
+                'isNew' => $isNewSection
+            ]));
+        }
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -563,10 +565,12 @@ class Sections extends Component
         }
 
         // Fire an 'afterSaveSection' event
-        $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-            'section' => $section,
-            'isNew' => $isNewSection
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+                'section' => $section,
+                'isNew' => $isNewSection
+            ]));
+        }
 
         return true;
     }
@@ -601,9 +605,11 @@ class Sections extends Component
     public function deleteSection(Section $section): bool
     {
         // Fire a 'beforeDeleteSection' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
-            'section' => $section
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SECTION)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
+                'section' => $section
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -661,9 +667,11 @@ class Sections extends Component
         }
 
         // Fire an 'afterDeleteSection' event
-        $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
-            'section' => $section
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SECTION)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+                'section' => $section
+            ]));
+        }
 
         return true;
     }
@@ -793,10 +801,12 @@ class Sections extends Component
         $isNewEntryType = !$entryType->id;
 
         // Fire a 'beforeSaveEntryType' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-            'isNew' => $isNewEntryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+                'isNew' => $isNewEntryType,
+            ]));
+        }
 
         if ($entryType->id) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
@@ -851,10 +861,12 @@ class Sections extends Component
         }
 
         // Fire an 'afterSaveEntryType' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-            'isNew' => $isNewEntryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+                'isNew' => $isNewEntryType,
+            ]));
+        }
 
         if (!$isNewEntryType) {
             // Re-save the entries of this type
@@ -937,9 +949,11 @@ class Sections extends Component
     public function deleteEntryType(EntryType $entryType): bool
     {
         // Fire a 'beforeSaveEntryType' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -978,9 +992,11 @@ class Sections extends Component
         }
 
         // Fire an 'afterDeleteEntryType' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
-            'entryType' => $entryType,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ENTRY_TYPE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+                'entryType' => $entryType,
+            ]));
+        }
 
         return true;
     }
