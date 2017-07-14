@@ -152,6 +152,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
+        if ($value instanceof MultiOptionsFieldData || $value instanceof SingleOptionFieldData) {
+            return $value;
+        }
+
         if (is_string($value)) {
             $value = Json::decodeIfJson($value);
         }

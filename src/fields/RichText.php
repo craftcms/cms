@@ -198,13 +198,12 @@ class RichText extends Field
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        /** @var string|null $value */
-        if ($value !== null) {
-            // Prevent everyone from having to use the |raw filter when outputting RTE content
-            return new RichTextData($value);
+        if ($value === null || $value instanceof RichTextData) {
+            return $value;
         }
 
-        return null;
+        // Prevent everyone from having to use the |raw filter when outputting RTE content
+        return new RichTextData($value);
     }
 
     /**
@@ -243,20 +242,13 @@ class RichText extends Field
             $value = $value->getRawContent();
         }
 
-        if ($value !== null && StringHelper::contains($value, '{')) {
-            // Parse ref tags in URLs, while preserving the original tag values in the URL fragments
-            // e.g. {entry:id:url} => [entry-url]#entry:id:url
-            // Leave any other ref tags alone for the input, since they were probably manually added
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:(?:transform\:)?'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
-                list (, $attr, $q, $refTag, $ref) = $matches;
-                $fragment = $matches[5] ?? '';
+        if ($value !== null) {
+            // Parse reference tags
+            $value = $this->_parseRefs($value);
 
-                return $attr.$q.Craft::$app->getElements()->parseRefs($refTag).$fragment.'#'.$ref.$q;
-            }, $value);
+            // Swap any <!--pagebreak-->'s with <hr>'s
+            $value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
         }
-
-        // Swap any <!--pagebreak-->'s with <hr>'s
-        $value = str_replace('<!--pagebreak-->', '<hr class="redactor_pagebreak" style="display:none" unselectable="on" contenteditable="false" />', $value);
 
         return '<textarea id="'.$id.'" name="'.$this->handle.'" style="display: none">'.htmlentities($value, ENT_NOQUOTES, 'UTF-8').'</textarea>';
     }
@@ -321,6 +313,9 @@ class RichText extends Field
             $value = preg_replace('/<hr class="redactor_pagebreak".*?>/', '<!--pagebreak-->', $value);
 
             if ($this->purifyHtml) {
+                // Parse reference tags so HTMLPurifier doesn't encode the curly braces
+                $value = $this->_parseRefs($value);
+
                 $value = HtmlPurifier::process($value, $this->_getPurifierConfig());
             }
 
@@ -369,6 +364,28 @@ class RichText extends Field
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Parse ref tags in URLs, while preserving the original tag values in the URL fragments
+     * (e.g. `href="{entry:id:url}"` => `href="[entry-url]#entry:id:url"`)
+     *
+     * @param string $value
+     *
+     * @return string
+     */
+    private function _parseRefs(string $value = null): string
+    {
+        if (!StringHelper::contains($value, '{')) {
+            return $value;
+        }
+
+        return preg_replace_callback('/(href=|src=)([\'"])(\{([\w\\\\]+\:\d+\:(?:transform\:)?'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/', function($matches) {
+            list (, $attr, $q, $refTag, $ref) = $matches;
+            $fragment = $matches[5] ?? '';
+
+            return $attr.$q.Craft::$app->getElements()->parseRefs($refTag).$fragment.'#'.$ref.$q;
+        }, $value);
+    }
 
     /**
      * Returns the link options available to the field.

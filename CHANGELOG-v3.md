@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\db\elements\ElementQuery::one()` and `nth()` now consistently return `false` rather than `null` when no matching element is found.
 - Editable table fields in the Control Panel can now specify unique `select` column options on a per-cell basis, by setting the cell’s value to an object with `options` and `value` keys.
 - Header cells within editable table fields in the Control Panel can now specify their `<th>` class names.
+- `craft\helpers\Localization::normalizeNumber()` now has an optional `$localeId` argument.
 - `craft\services\Dashboard::deleteWidget()` now triggers the `beforeDeleteWidget` event and calls `beforeDelete()` on the widget at the top of the function.
 - `craft\services\Dashboard::saveWidget()` now triggers the `beforeSaveWidget` event and calls `beforeSave()` on the widget at the top of the function.
 - `craft\services\Elements::deleteElement()` now triggers the `beforeDeleteElement` event and calls `beforeDelete()` on the element at the top of the function.
@@ -33,6 +34,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where elements’ custom fields were not getting validated on save if the `fieldLayoutId` had not been set beforehand.
 - Fixed a bug where transformed images within Rich Text fields would break if the transform handle was identical to a custom field handle. ([#1804](https://github.com/craftcms/cms/issues/1804))
 - Fixed a bug where some SVG file dimensions could not be detected.
+- Fixed a bug where some field type data could become corrupted in various ways when propagating field values to different sites. ([#1833](https://github.com/craftcms/cms/issues/1833))
 
 ## 3.0.0-beta.21 - 2017-07-07
 
