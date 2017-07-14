@@ -431,7 +431,9 @@ class RichTextFieldType extends BaseFieldType
 		}
 
 		foreach ($assetSourceIds as $assetSourceId) {
-		    $sources[] = 'folder:'.$list[$assetSourceId];
+		    if (isset($list[$assetSourceId])) {
+                $sources[] = 'folder:'.$list[$assetSourceId];
+            }
         }
 
 		return $sources;
