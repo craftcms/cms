@@ -1724,9 +1724,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -1782,9 +1784,11 @@ abstract class Element extends Component implements ElementInterface
     public function afterMoveInStructure(int $structureId)
     {
         // Trigger an 'afterMoveInStructure' event
-        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
-            'structureId' => $structureId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_IN_STRUCTURE)) {
+            $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+                'structureId' => $structureId,
+            ]));
+        }
     }
 
     // Protected Methods

@@ -329,10 +329,12 @@ class Volumes extends Component
         $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
-            'volume' => $volume,
-            'isNew' => $isNewVolume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_VOLUME)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
+                'volume' => $volume,
+                'isNew' => $isNewVolume
+            ]));
+        }
 
         if (!$volume->beforeSave($isNewVolume)) {
             return false;
@@ -418,10 +420,12 @@ class Volumes extends Component
         }
 
         // Fire an 'afterSaveVolume' event
-        $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
-            'volume' => $volume,
-            'isNew' => $isNewVolume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
+                'volume' => $volume,
+                'isNew' => $isNewVolume
+            ]));
+        }
 
         return true;
     }
@@ -565,9 +569,11 @@ class Volumes extends Component
     {
         /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
-            'volume' => $volume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
+                'volume' => $volume
+            ]));
+        }
 
         if (!$volume->beforeDelete()) {
             return false;
@@ -604,9 +610,11 @@ class Volumes extends Component
         }
 
         // Fire an 'afterDeleteVolume' event
-        $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-            'volume' => $volume
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_VOLUME)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
+                'volume' => $volume
+            ]));
+        }
 
         return true;
     }

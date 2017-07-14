@@ -203,10 +203,12 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforeSaveDraft' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
-            'draft' => $draft,
-            'isNew' => $isNewDraft,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
+            ]));
+        }
 
         $draftRecord = $this->_getDraftRecord($draft);
         $draftRecord->name = $draft->name;
@@ -220,10 +222,12 @@ class EntryRevisions extends Component
         }
 
         // Fire an 'afterSaveDraft' event
-        $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-            'draft' => $draft,
-            'isNew' => $isNewDraft,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
+            ]));
+        }
 
         return true;
     }
@@ -256,9 +260,11 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforePublishDraft' event
-        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_PUBLISH_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         // Save the entry without re-running validation on it
         Craft::$app->getElements()->saveElement($draft, false);
@@ -267,9 +273,11 @@ class EntryRevisions extends Component
         $this->deleteDraft($draft);
 
         // Fire an 'afterPublishDraft' event
-        $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PUBLISH_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         return true;
     }
@@ -284,17 +292,21 @@ class EntryRevisions extends Component
     public function deleteDraft(EntryDraft $draft): bool
     {
         // Fire a 'beforeDeleteDraft' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_DRAFT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         // Delete it
         $this->_getDraftRecord($draft)->delete();
 
         // Fire an 'afterDeleteDraft' event
-        $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
-            'draft' => $draft
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_DRAFT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+                'draft' => $draft
+            ]));
+        }
 
         return true;
     }
@@ -423,17 +435,21 @@ class EntryRevisions extends Component
             ['num' => $version->num]);
 
         // Fire a 'beforeRevertEntryToVersion' event
-        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
-            'version' => $version,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION)) {
+            $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+                'version' => $version,
+            ]));
+        }
 
         // Revert the entry without re-running validation on it
         Craft::$app->getElements()->saveElement($version, false);
 
         // Fire an 'afterRevertEntryToVersion' event
-        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
-            'version' => $version,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION)) {
+            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+                'version' => $version,
+            ]));
+        }
 
         return true;
     }

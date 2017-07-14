@@ -178,7 +178,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         }
 
         // Either an exception was thrown or parent::send() returned false.
-        if ($isSuccessful === false) {
+        if ($isSuccessful === false && $this->hasEventHandlers(self::EVENT_SEND_MAIL_FAILURE)) {
             // Fire a 'sendMailFailure' event
             $this->trigger(self::EVENT_SEND_MAIL_FAILURE, new MailFailureEvent([
                 'user' => $message->getTo(),

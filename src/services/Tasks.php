@@ -156,10 +156,12 @@ class Tasks extends Component
         $isNewTask = $task->getIsNew();
 
         // Fire a 'beforeSaveTask' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
-            'task' => $task,
-            'isNew' => $isNewTask,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_TASK)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
+                'task' => $task,
+                'isNew' => $isNewTask,
+            ]));
+        }
 
         if (!$task->beforeSave($isNewTask)) {
             return false;
@@ -219,10 +221,12 @@ class Tasks extends Component
         }
 
         // Fire an 'afterSaveTask' event
-        $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
-            'task' => $task,
-            'isNew' => $isNewTask,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_TASK)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
+                'task' => $task,
+                'isNew' => $isNewTask,
+            ]));
+        }
 
         return true;
     }
@@ -702,9 +706,11 @@ class Tasks extends Component
         }
 
         // Fire a 'beforeDeleteTask' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
-            'task' => $task,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_TASK)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
+                'task' => $task,
+            ]));
+        }
 
         if (!$task->beforeDelete()) {
             return false;
@@ -725,9 +731,11 @@ class Tasks extends Component
         }
 
         // Fire an 'afterDeleteTask' event
-        $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
-            'task' => $task,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_TASK)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
+                'task' => $task,
+            ]));
+        }
 
         return true;
     }

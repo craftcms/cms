@@ -378,7 +378,7 @@ trait ApplicationTrait
         }
 
         // Fire an 'afterEditionChange' event
-        if (!$this->getRequest()->getIsConsoleRequest()) {
+        if (!$this->getRequest()->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
                 'oldEdition' => $oldEdition,
                 'newEdition' => $edition

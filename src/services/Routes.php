@@ -128,12 +128,14 @@ class Routes extends Component
     public function saveRoute(array $uriParts, string $template, int $siteId = null, int $routeId = null): RouteRecord
     {
         // Fire a 'beforeSaveRoute' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
-            'uriParts' => $uriParts,
-            'template' => $template,
-            'siteId' => $siteId,
-            'routeId' => $routeId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ROUTE)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
+                'uriParts' => $uriParts,
+                'template' => $template,
+                'siteId' => $siteId,
+                'routeId' => $routeId,
+            ]));
+        }
 
         if ($routeId !== null) {
             $routeRecord = RouteRecord::findOne($routeId);
@@ -191,12 +193,14 @@ class Routes extends Component
         $routeRecord->save();
 
         // Fire an 'afterSaveRoute' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ROUTE, new RouteEvent([
-            'uriParts' => $uriParts,
-            'template' => $template,
-            'siteId' => $siteId,
-            'routeId' => $routeRecord->id,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ROUTE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ROUTE, new RouteEvent([
+                'uriParts' => $uriParts,
+                'template' => $template,
+                'siteId' => $siteId,
+                'routeId' => $routeRecord->id,
+            ]));
+        }
 
         return $routeRecord;
     }
@@ -219,12 +223,14 @@ class Routes extends Component
         $uriParts = Json::decodeIfJson($routeRecord->uriParts);
 
         // Fire a 'beforeDeleteRoute' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ROUTE, new RouteEvent([
-            'uriParts' => $uriParts,
-            'template' => $routeRecord->template,
-            'siteId' => $routeRecord->siteId,
-            'routeId' => $routeId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ROUTE)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ROUTE, new RouteEvent([
+                'uriParts' => $uriParts,
+                'template' => $routeRecord->template,
+                'siteId' => $routeRecord->siteId,
+                'routeId' => $routeId,
+            ]));
+        }
 
         $routeRecord->delete();
 
@@ -233,12 +239,14 @@ class Routes extends Component
             ->execute();
 
         // Fire an 'afterDeleteRoute' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ROUTE, new RouteEvent([
-            'uriParts' => $uriParts,
-            'template' => $routeRecord->template,
-            'siteId' => $routeRecord->siteId,
-            'routeId' => $routeId,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ROUTE, new RouteEvent([
+                'uriParts' => $uriParts,
+                'template' => $routeRecord->template,
+                'siteId' => $routeRecord->siteId,
+                'routeId' => $routeId,
+            ]));
+        }
 
         return true;
     }

@@ -362,10 +362,12 @@ class Elements extends Component
         $isNewElement = !$element->id;
 
         // Fire a 'beforeSaveElement' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement
+            ]));
+        }
 
         if (!$element->beforeSave($isNewElement)) {
             return false;
@@ -525,10 +527,12 @@ class Elements extends Component
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
         // Fire an 'afterSaveElement' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement,
+            ]));
+        }
 
         return true;
     }
@@ -635,9 +639,11 @@ class Elements extends Component
         }
 
         // Fire a 'beforeUpdateSlugAndUri' event
-        $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->update(
@@ -653,9 +659,11 @@ class Elements extends Component
             ->execute();
 
         // Fire a 'afterUpdateSlugAndUri' event
-        $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
 
         // Delete any caches involving this element
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
@@ -842,11 +850,12 @@ class Elements extends Component
             }
 
             // Fire an 'afterMergeElements' event
-            $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS,
-                new MergeElementsEvent([
+            if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
+                $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                     'mergedElementId' => $mergedElementId,
                     'prevailingElementId' => $prevailingElementId
                 ]));
+            }
 
             // Now delete the merged element
             $success = $this->deleteElementById($mergedElementId);
@@ -917,9 +926,11 @@ class Elements extends Component
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
 
         if (!$element->beforeDelete()) {
             return false;
@@ -972,9 +983,11 @@ class Elements extends Component
 
 
         // Fire an 'afterDeleteElement' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
 
         return true;
     }

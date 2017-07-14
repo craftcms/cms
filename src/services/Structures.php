@@ -386,10 +386,12 @@ class Structures extends Component
 
         if ($mode === 'update') {
             // Fire a 'beforeMoveElement' event
-            $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
-                'structureId' => $structureId,
-                'element' => $element,
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_BEFORE_MOVE_ELEMENT)) {
+                $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
+                    'structureId' => $structureId,
+                    'element' => $element,
+                ]));
+            }
         }
 
         // Tell the element about it
@@ -422,10 +424,12 @@ class Structures extends Component
 
         if ($mode === 'update') {
             // Fire an 'afterMoveElement' event
-            $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
-                'structureId' => $structureId,
-                'element' => $element,
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
+                $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
+                    'structureId' => $structureId,
+                    'element' => $element,
+                ]));
+            }
         }
 
         return true;

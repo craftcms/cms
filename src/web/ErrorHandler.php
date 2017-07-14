@@ -47,9 +47,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function handleException($exception)
     {
         // Fire a 'beforeHandleException' event
-        $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
-            'exception' => $exception
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
+            $this->trigger(self::EVENT_BEFORE_HANDLE_EXCEPTION, new ExceptionEvent([
+                'exception' => $exception
+            ]));
+        }
 
         // If this is a Twig Runtime exception, use the previous one instead
         if ($exception instanceof \Twig_Error_Runtime && ($previousException = $exception->getPrevious()) !== null) {

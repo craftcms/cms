@@ -2005,10 +2005,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Fire an 'afterPopulateElement' event
-        $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
-            'element' => $element,
-            'row' => $row
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+                'element' => $element,
+                'row' => $row
+            ]));
+        }
 
         return $element;
     }

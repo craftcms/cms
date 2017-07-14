@@ -553,9 +553,11 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterActivateUser' event
-            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserActivateEvent([
-                'user' => $user
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER,)) {
+                $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserActivateEvent([
+                    'user' => $user
+                ]));
+            }
         }
 
         return $success;
@@ -643,9 +645,11 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnlockUser' event
-            $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserUnlockEvent([
-                'user' => $user
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_UNLOCK_USER,)) {
+                $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserUnlockEvent([
+                    'user' => $user
+                ]));
+            }
         }
 
         return $success;
@@ -695,9 +699,11 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSuspendUser' event
-            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserSuspendEvent([
-                'user' => $user
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER,)) {
+                $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserSuspendEvent([
+                    'user' => $user
+                ]));
+            }
         }
 
         return $success;
@@ -747,9 +753,11 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnsuspendUser' event
-            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserUnsuspendEvent([
-                'user' => $user
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_UNSUSPEND_USER,)) {
+                $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserUnsuspendEvent([
+                    'user' => $user
+                ]));
+            }
         }
 
         return $success;
@@ -933,10 +941,12 @@ class Users extends Component
             }
 
             // Fire an 'afterAssignUserToGroups' event
-            $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
-                'userId' => $userId,
-                'groupIds' => $groupIds
-            ]));
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS,)) {
+                $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
+                    'userId' => $userId,
+                    'groupIds' => $groupIds
+                ]));
+            }
 
             // Need to invalidate the User element's cached values.
             $user = $this->getUserById($userId);
@@ -985,10 +995,11 @@ class Users extends Component
 
                 if ($success) {
                     // Fire an 'afterAssignUserToDefaultGroup' event
-                    $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
-                        new UserAssignGroupEvent([
+                    if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP)) {
+                        $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP, new UserAssignGroupEvent([
                             'user' => $user
                         ]));
+                    }
 
                     return true;
                 }

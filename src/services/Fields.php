@@ -271,10 +271,12 @@ class Fields extends Component
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         $groupRecord = $this->_getGroupRecord($group);
         $groupRecord->name = $group->name;
@@ -286,10 +288,12 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveFieldLayout' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         return true;
     }
@@ -332,9 +336,11 @@ class Fields extends Component
         }
 
         // Fire a 'beforeDeleteFieldGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group
+            ]));
+        }
 
         // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
         // content columns
@@ -353,9 +359,11 @@ class Fields extends Component
         unset($this->_groupsById[$group->id]);
 
         // Fire an 'afterDeleteFieldGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group
+            ]));
+        }
 
         return true;
     }
@@ -720,10 +728,12 @@ class Fields extends Component
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
-            'field' => $field,
-            'isNew' => $isNewField,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
+                'field' => $field,
+                'isNew' => $isNewField,
+            ]));
+        }
 
         if (!$field->beforeSave($isNewField)) {
             return false;
@@ -839,10 +849,12 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveField' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
-            'field' => $field,
-            'isNew' => $isNewField,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
+                'field' => $field,
+                'isNew' => $isNewField,
+            ]));
+        }
 
         return true;
     }
@@ -877,9 +889,11 @@ class Fields extends Component
     {
         /** @var Field $field */
         // Fire a 'beforeDeleteField' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
-            'field' => $field,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
 
         if (!$field->beforeDelete()) {
             return false;
@@ -915,9 +929,11 @@ class Fields extends Component
         }
 
         // Fire an 'afterDeleteField' event
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
-            'field' => $field,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
 
         return true;
     }
@@ -1143,10 +1159,12 @@ class Fields extends Component
         }
 
         // Fire a 'beforeSaveFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout,
-            'isNew' => $isNewLayout,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout,
+                'isNew' => $isNewLayout,
+            ]));
+        }
 
         if (!$isNewLayout) {
             // Delete the old tabs/fields
@@ -1196,10 +1214,12 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveFieldLayout' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout,
-            'isNew' => $isNewLayout,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout,
+                'isNew' => $isNewLayout,
+            ]));
+        }
 
         return true;
     }
@@ -1238,17 +1258,21 @@ class Fields extends Component
     public function deleteLayout(FieldLayout $layout): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%fieldlayouts}}', ['id' => $layout->id])
             ->execute();
 
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout
+            ]));
+        }
 
         return true;
     }

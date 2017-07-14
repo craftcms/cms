@@ -1470,10 +1470,12 @@ class UsersController extends Controller
     private function _handleLoginFailure(string $authError = null, User $user = null)
     {
         // Fire a 'loginFailure' event
-        $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
-            'authError' => $authError,
-            'user' => $user,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
+            $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
+                'authError' => $authError,
+                'user' => $user,
+            ]));
+        }
 
         switch ($authError) {
             case User::AUTH_PENDING_VERIFICATION:

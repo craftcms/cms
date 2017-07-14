@@ -409,10 +409,12 @@ class Sites extends Component
         $siteRecord->baseUrl = $site->baseUrl;
 
         // Fire a 'beforeSaveSite' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
-            'site' => $site,
-            'isNew' => $isNewSite,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_SITE, new SiteEvent([
+                'site' => $site,
+                'isNew' => $isNewSite,
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -477,10 +479,12 @@ class Sites extends Component
         }
 
         // Fire an 'afterSaveSite' event
-        $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-            'site' => $site,
-            'isNew' => $isNewSite,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
+                'site' => $site,
+                'isNew' => $isNewSite,
+            ]));
+        }
 
         return true;
     }
@@ -496,9 +500,11 @@ class Sites extends Component
     public function reorderSites(array $siteIds): bool
     {
         // Fire a 'beforeSaveSite' event
-        $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
-            'siteIds' => $siteIds,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REORDER_SITES)) {
+            $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
+                'siteIds' => $siteIds,
+            ]));
+        }
 
         $this->_loadAllSites();
 
@@ -526,9 +532,11 @@ class Sites extends Component
             $this->_processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId);
         }
 
-        $this->trigger(self::EVENT_AFTER_REORDER_SITES, new ReorderSitesEvent([
-            'siteIds' => $siteIds,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REORDER_SITES)) {
+            $this->trigger(self::EVENT_AFTER_REORDER_SITES, new ReorderSitesEvent([
+                'siteIds' => $siteIds,
+            ]));
+        }
 
         return true;
     }
@@ -776,10 +784,12 @@ class Sites extends Component
         }
 
         // Fire an 'afterDeleteSite' event
-        $this->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
-            'site' => $site,
-            'transferContentTo' => $transferContentTo,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
+                'site' => $site,
+                'transferContentTo' => $transferContentTo,
+            ]));
+        }
 
         return $success;
     }
@@ -911,8 +921,10 @@ class Sites extends Component
         }
 
         // Fire an afterChangePrimarySite event
-        $this->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
-            'site' => $this->_primarySite,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
+            $this->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
+                'site' => $this->_primarySite,
+            ]));
+        }
     }
 }

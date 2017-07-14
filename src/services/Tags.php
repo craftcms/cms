@@ -201,10 +201,12 @@ class Tags extends Component
         $isNewTagGroup = !$tagGroup->id;
 
         // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup,
-            'isNew' => $isNewTagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup,
+                'isNew' => $isNewTagGroup
+            ]));
+        }
 
         if (!$isNewTagGroup) {
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
@@ -247,10 +249,12 @@ class Tags extends Component
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup,
-            'isNew' => $isNewTagGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup,
+                'isNew' => $isNewTagGroup,
+            ]));
+        }
 
         return true;
     }
@@ -276,9 +280,11 @@ class Tags extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup
+            ]));
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -316,9 +322,11 @@ class Tags extends Component
         }
 
         // Fire an 'afterSaveGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-            'tagGroup' => $tagGroup
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
+                'tagGroup' => $tagGroup
+            ]));
+        }
 
         return true;
     }

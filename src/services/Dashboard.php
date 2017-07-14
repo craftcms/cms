@@ -191,10 +191,12 @@ class Dashboard extends Component
         $isNewWidget = $widget->getIsNew();
 
         // Fire a 'beforeSaveWidget' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-            'isNew' => $isNewWidget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+                'isNew' => $isNewWidget,
+            ]));
+        }
 
         if (!$widget->beforeSave($isNewWidget)) {
             return false;
@@ -281,9 +283,11 @@ class Dashboard extends Component
     {
         /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
 
         if (!$widget->beforeDelete()) {
             return false;
@@ -305,9 +309,11 @@ class Dashboard extends Component
         }
 
         // Fire an 'afterDeleteWidget' event
-        $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
 
         return true;
     }

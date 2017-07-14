@@ -412,10 +412,12 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Trigger an 'afterElementSave' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_SAVE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+                'element' => $element,
+                'isNew' => $isNew,
+            ]));
+        }
     }
 
     /**
@@ -438,9 +440,11 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterElementDelete(ElementInterface $element)
     {
         // Trigger an 'afterElementDelete' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_ELEMENT_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+                'element' => $element,
+            ]));
+        }
     }
 
     // Protected Methods
