@@ -31,6 +31,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Assets fields were only enforcing their “Restrict allowed file types?” settings when uploading brand new files.
 - Fixed a bug where elements’ custom fields were not getting validated on save if the `fieldLayoutId` had not been set beforehand.
 - Fixed a bug where transformed images within Rich Text fields would break if the transform handle was identical to a custom field handle. ([#1804](https://github.com/craftcms/cms/issues/1804))
+- Fixed a bug where some SVG file dimensions could not be detected.
 
 ## 3.0.0-beta.21 - 2017-07-07
 
