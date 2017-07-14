@@ -1682,20 +1682,20 @@ class UsersController extends Controller
                 $groupIds = $request->getBodyParam('groups');
 
                 if ($groupIds !== null) {
-                    if (is_array($groupIds)) {
-                        // See if there are any new groups in here
-                        $oldGroupIds = [];
+                    $groupIds = (array)$groupIds;
 
-                        foreach ($user->getGroups() as $group) {
-                            $oldGroupIds[] = $group->id;
-                        }
+                    // See if there are any new groups in here
+                    $oldGroupIds = [];
 
-                        foreach ($groupIds as $groupId) {
-                            if (!in_array($groupId, $oldGroupIds, false)) {
-                                // Yep. This will require an elevated session
-                                $this->requireElevatedSession();
-                                break;
-                            }
+                    foreach ($user->getGroups() as $group) {
+                        $oldGroupIds[] = $group->id;
+                    }
+
+                    foreach ($groupIds as $groupId) {
+                        if (!in_array($groupId, $oldGroupIds, false)) {
+                            // Yep. This will require an elevated session
+                            $this->requireElevatedSession();
+                            break;
                         }
                     }
 
