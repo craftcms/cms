@@ -373,18 +373,19 @@ trait ApplicationTrait
         $oldEdition = $info->edition;
         $info->edition = $edition;
 
-        $success = $this->saveInfo($info);
-
-        if ($success === true && !$this->getRequest()->getIsConsoleRequest()) {
-            // Fire an 'afterEditionChange' event
-            $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE,
-                new EditionChangeEvent([
-                    'oldEdition' => $oldEdition,
-                    'newEdition' => $edition
-                ]));
+        if (!$this->saveInfo($info)) {
+            return false;
         }
 
-        return $success;
+        // Fire an 'afterEditionChange' event
+        if (!$this->getRequest()->getIsConsoleRequest()) {
+            $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
+                'oldEdition' => $oldEdition,
+                'newEdition' => $edition
+            ]));
+        }
+
+        return true;
     }
 
     /**
