@@ -553,7 +553,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterActivateUser' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER,)) {
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
                 $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserActivateEvent([
                     'user' => $user
                 ]));
@@ -645,7 +645,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnlockUser' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_UNLOCK_USER,)) {
+            if ($this->hasEventHandlers(self::EVENT_AFTER_UNLOCK_USER)) {
                 $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserUnlockEvent([
                     'user' => $user
                 ]));
@@ -699,7 +699,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSuspendUser' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER,)) {
+            if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {
                 $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserSuspendEvent([
                     'user' => $user
                 ]));
@@ -753,7 +753,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnsuspendUser' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_UNSUSPEND_USER,)) {
+            if ($this->hasEventHandlers(self::EVENT_AFTER_UNSUSPEND_USER)) {
                 $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserUnsuspendEvent([
                     'user' => $user
                 ]));
@@ -941,7 +941,7 @@ class Users extends Component
             }
 
             // Fire an 'afterAssignUserToGroups' event
-            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS,)) {
+            if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS)) {
                 $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
                     'userId' => $userId,
                     'groupIds' => $groupIds
