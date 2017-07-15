@@ -32,12 +32,13 @@
         },
 
         created () {
+            this.$root.showCrumbs = true;
+            
             this.developerId = this.$route.params.id;
 
             this.$http.get('https://craftid.dev/api/developer/' + this.developerId).then(function(data) {
                 this.developer = data.body.data[0];
-
-                this.$root.updateTitle(this.developer.fullName);
+                this.$root.updateTitle(this.developer.developerName);
             });
         },
     }
