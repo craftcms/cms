@@ -108,17 +108,17 @@
         computed: {
             ...mapGetters({
                 products: 'cartProducts',
-                activeTrials: 'activeTrials',
+                activeTrialProducts: 'activeTrialProducts',
             }),
             total () {
                 return this.products.reduce((total, p) => {
-                    return total + p.price
+                    return total + parseFloat(p.price)
                 }, 0)
             },
             pendingActiveTrials() {
                 let pendingActiveTrials = []
                 let cartProducts = this.$store.getters.cartProducts
-                this.$store.getters.activeTrials.find(p => {
+                this.$store.getters.activeTrialProducts.find(p => {
                     var found = false
                     cartProducts.find(cartP => {
                         if(p.id == cartP.id) {

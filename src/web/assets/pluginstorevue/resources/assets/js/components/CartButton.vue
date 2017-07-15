@@ -1,5 +1,6 @@
 <template>
     <div>
+        <a @click="openModal()">Active Trials ({{ activeTrialsTotal }})</a>
         <a @click="openModal()">Cart ({{ totalQuantity }})</a>
 
         <modal :show.sync="showModal" :on-close="closeModal">
@@ -33,11 +34,13 @@
         computed: {
             ...mapGetters({
                 cartProducts: 'cartProducts',
+                activeTrialProducts: 'activeTrialProducts',
             }),
+            activeTrialsTotal() {
+                return this.activeTrialProducts.length;
+            },
             totalQuantity() {
-                return this.cartProducts.reduce((totalQuantity, p) => {
-                    return totalQuantity + 1
-                }, 0)
+                return this.cartProducts.length;
             }
         },
 

@@ -34,6 +34,7 @@ const mutations = {
     [types.RECEIVE_PRODUCTS] (state, { products }) {
         state.all = products
 
+        /*
         const activeTrialIds = [143, 6];
         const activeTrials = [];
 
@@ -46,6 +47,7 @@ const mutations = {
         });
 
         state.activeTrials = activeTrials;
+        */
     },
     [types.RECEIVE_STAFF_PICKS] (state, { products }) {
         state.staffPicks = products
