@@ -20,7 +20,9 @@
                 <div v-if="plugin.price != '0.00'">
                     <a :href="installUrl" class="btn">Try</a>
 
-                    <a @click="buy(plugin)" class="btn submit">Buy ${{ plugin.price }}</a>
+
+                    <a v-if="isInCart()" class="btn submit disabled">Buy ${{ plugin.price }}</a>
+                    <a v-else @click="buy(plugin)" class="btn submit">Buy ${{ plugin.price }}</a>
                 </div>
                 <div v-else>
                     <a :href="installUrl" class="btn submit">Install</a>
@@ -71,6 +73,7 @@
         computed: {
             ...mapGetters({
                 plugins: 'allProducts',
+                cartProducts: 'cartProducts',
             }),
             description() {
                 if(this.plugin.description && this.plugin.description.length > 0) {
@@ -97,11 +100,20 @@
 
                 this.$root.$refs.cartButton.openModal();
             },
-        },
+            isInCart() {
+                let foundProduct = this.cartProducts.find(p => {
+                    if(p.id == this.plugin.id) {
+                        return true;
+                    }
+                })
 
-        created() {
-            this.$store.dispatch('getAllProducts')
-        }
+                if(foundProduct) {
+                    return true;
+                }
+
+                return false;
+            }
+        },
     }
 </script>
 
