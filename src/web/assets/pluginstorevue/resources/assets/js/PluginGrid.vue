@@ -39,10 +39,8 @@
         },
         methods: {
             openModal: function(plugin) {
-                this.$router.push({path: this.pluginUrlPrefix + plugin.id });
-
-                /*this.selectedPlugin = plugin;
-                this.showModal = true;*/
+                this.selectedPlugin = plugin;
+                this.showModal = true;
             },
             closeModal: function() {
                 this.selectedPlugin = null;

@@ -67,18 +67,11 @@
 
     export default {
         name: 'pluginDetails',
-        props: ['pluginId'],
+        props: ['plugin'],
         computed: {
             ...mapGetters({
                 plugins: 'allProducts',
             }),
-            plugin() {
-                return this.plugins.find(plugin => {
-                    if(plugin.id == this.pluginId) {
-                        return plugin;
-                    }
-                })
-            },
             description() {
                 if(this.plugin.description && this.plugin.description.length > 0) {
                     return marked(this.plugin.description, { sanitize: true });
