@@ -303,15 +303,17 @@
 
         <div class="topbar">
             {%- spaceless %}
-                {% if crumbs is defined and crumbs %}
-                    <nav id="crumbs">
-                        <ul>
-                            {% for crumb in crumbs %}
-                                <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
-                            {% endfor %}
-                        </ul>
-                    </nav>
-                {% endif %}
+                {% block topBar %}
+                    {% if crumbs is defined and crumbs %}
+                        <nav id="crumbs">
+                            <ul>
+                                {% for crumb in crumbs %}
+                                    <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% endblock %}
             {% endspaceless -%}
         </div>
 
