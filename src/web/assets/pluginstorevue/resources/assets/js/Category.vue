@@ -32,7 +32,7 @@
                 let category = this.$store.getters.getCategoryById(categoryId);
 
                 if(category) {
-                    this.$root.updateTitle(category.title);
+                    this.$root.pageTitle = category.title;
                 }
 
                 return category;

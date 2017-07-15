@@ -27,13 +27,6 @@ const app = new Vue({
       }
     },
 
-    methods: {
-        updateTitle(newTitle) {
-            console.log('updateTitle');
-            this.pageTitle = newTitle;
-        }
-    },
-
     created() {
         this.$store.dispatch('getAllProducts')
         this.$store.dispatch('getAllCategories')
