@@ -1,6 +1,6 @@
 <template>
     <div v-if="category">
-        <plugin-grid :plugins="plugins" :plugin-url-prefix="'/categories/' + categoryId + '/'"></plugin-grid>
+        <plugin-grid :plugins="categoryPlugins" :plugin-url-prefix="'/categories/' + categoryId + '/'"></plugin-grid>
     </div>
 
 </template>
@@ -25,14 +25,11 @@
         computed: {
             ...mapGetters({
                categories: 'allCategories',
+               categoryPlugins: 'categoryPlugins',
             }),
             category() {
-                let category = this.categories.find(c => {
-                    const categoryId = this.$route.params.id;
-                    if(c.id == categoryId) {
-                        return true;
-                    }
-                })
+                let categoryId = this.$route.params.id;
+                let category = this.$store.getters.getCategoryById(categoryId);
 
                 if(category) {
                     this.$root.updateTitle(category.title);
@@ -47,11 +44,7 @@
 
             this.categoryId = this.$route.params.id;
 
-            this.$http.get('https://craftid.dev/api/categories/' + this.$route.params.id).then(function(data) {
-                this.plugins = data.body.plugins;
-
-                this.$emit('categoryLoaded', this.category);
-            });
+            this.$store.dispatch('getCategoryPlugins', this.categoryId);
         },
     }
 </script>

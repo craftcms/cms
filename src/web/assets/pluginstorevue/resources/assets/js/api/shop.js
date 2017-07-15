@@ -29,4 +29,11 @@ export default {
             return cb(categories);
         });
     },
+    getCategoryPlugins(cb, categoryId) {
+        Vue.http.get('https://craftid.dev/api/categories/'+categoryId).then(function(data) {
+            let plugins = data.body.plugins;
+
+            return cb(plugins);
+        });
+    }
 }
