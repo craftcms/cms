@@ -32,10 +32,10 @@
 
         computed: {
             ...mapGetters({
-                products: 'cartProducts',
+                cartProducts: 'cartProducts',
             }),
             totalQuantity() {
-                return this.products.reduce((totalQuantity, p) => {
+                return this.cartProducts.reduce((totalQuantity, p) => {
                     return totalQuantity + 1
                 }, 0)
             }

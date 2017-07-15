@@ -15,7 +15,7 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
                 <ul>
-                    <li v-for="category in categories">
+                    <li v-for="category in allCategories">
                         <router-link :to="'/categories/'+category.id">{{ category.title }}</router-link>
                     </li>
                 </ul>
@@ -45,10 +45,9 @@
         },
 
         computed: mapGetters({
-            plugins: 'allProducts',
             staffPicks: 'staffPicks',
             activeTrials: 'activeTrials',
-            categories: 'allCategories',
+            allCategories: 'allCategories',
         }),
 
         created: function() {
