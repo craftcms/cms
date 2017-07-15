@@ -1,13 +1,14 @@
 <template>
-    <div>
-        <router-view></router-view>
-        <plugin-grid :plugins="category.plugins" :plugin-url-prefix="'/categories/' + categoryId + '/'"></plugin-grid>
+    <div v-if="category">
+        <plugin-grid :plugins="plugins" :plugin-url-prefix="'/categories/' + categoryId + '/'"></plugin-grid>
     </div>
 
 </template>
 
 <script>
     import PluginGrid from './PluginGrid';
+    import { mapGetters } from 'vuex'
+
     export default {
         name: 'category',
 
@@ -17,21 +18,39 @@
 
         data () {
             return {
-                category: [],
+                plugins: [],
                 categoryId: null,
+            }
+        },
+        computed: {
+            ...mapGetters({
+               categories: 'allCategories',
+            }),
+            category() {
+                let category = this.categories.find(c => {
+                    const categoryId = this.$route.params.id;
+                    if(c.id == categoryId) {
+                        return true;
+                    }
+                })
+
+                if(category) {
+                    this.$root.updateTitle(category.title);
+                }
+
+                return category;
             }
         },
 
         created: function() {
+            this.$root.showCrumbs = true;
+
             this.categoryId = this.$route.params.id;
 
-
             this.$http.get('https://craftid.dev/api/categories/' + this.$route.params.id).then(function(data) {
-                this.category = data.body;
+                this.plugins = data.body.plugins;
 
                 this.$emit('categoryLoaded', this.category);
-
-                this.$emit('update-title', this.category.title);
             });
         },
     }

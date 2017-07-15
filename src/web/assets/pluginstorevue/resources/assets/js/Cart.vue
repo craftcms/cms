@@ -147,7 +147,7 @@
         },
 
         created: function() {
-            this.$store.dispatch('getAllProducts')
+            // this.$store.dispatch('getAllProducts')
         },
     }
 </script>

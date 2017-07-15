@@ -2,9 +2,22 @@
 
 {% set title = 'Plugin Store' %}
 
+{% block topBar %}
+	<nav id="crumbs" v-if="showCrumbs">
+		<ul>
+			<li>
+				<router-link to="/">Plugin Store</router-link>
+			</li>
+		</ul>
+	</nav>
+{% endblock %}
+
+{% block pageTitle %}
+	<h1 v-text="pageTitle">Plugin Store</h1>
+{% endblock %}
+
 {% set extraPageHeaderHtml %}
 	<cart-button ref="cartButton"></cart-button>
-	<router-link to="/">Index</router-link>
 {% endset %}
 
 

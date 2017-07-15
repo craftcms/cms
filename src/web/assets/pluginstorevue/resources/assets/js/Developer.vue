@@ -1,7 +1,5 @@
 <template>
     <div>
-        <router-view></router-view>
-
         <ul>
             <li><strong>{{ developer.fullName }}</strong></li>
             <li>{{ developer.username }}</li>
@@ -24,8 +22,6 @@
             PluginGrid,
         },
 
-        props: ['developerId'],
-
         data () {
             return {
                 plugins: [],
@@ -40,7 +36,7 @@
             this.$http.get('https://craftid.dev/api/developer/' + this.developerId).then(function(data) {
                 this.developer = data.body.data[0];
 
-                this.$emit('update-title', this.developer.fullName);
+                this.$root.updateTitle(this.developer.fullName);
             });
         },
     }

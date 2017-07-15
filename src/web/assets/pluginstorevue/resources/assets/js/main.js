@@ -22,13 +22,20 @@ const app = new Vue({
     components: { App, Index, AllPlugins, CartButton, Category, Developer },
     data() {
       return {
+          showCrumbs: false,
           pageTitle: null,
       }
     },
 
     methods: {
         updateTitle(newTitle) {
+            console.log('updateTitle');
             this.pageTitle = newTitle;
         }
     },
+
+    created() {
+        this.$store.dispatch('getAllProducts')
+        this.$store.dispatch('getAllCategories')
+    }
 });

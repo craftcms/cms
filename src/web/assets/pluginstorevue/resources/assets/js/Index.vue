@@ -52,12 +52,18 @@
         }),
 
         created: function() {
+
+
             this.$store.dispatch('getStaffPicks')
-            this.$store.dispatch('getAllProducts')
-            this.$store.dispatch('getAllCategories')
+            // this.$store.dispatch('getAllProducts')
+            // this.$store.dispatch('getAllCategories')
+
+            this.$root.updateTitle('Plugin Store');
         },
 
         mounted: function() {
+            console.log('test');
+            this.$root.showCrumbs = false;
             // this.$refs.cartb.openModal();
         }
     }
