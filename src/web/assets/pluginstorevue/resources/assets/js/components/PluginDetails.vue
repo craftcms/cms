@@ -21,7 +21,7 @@
                     <a v-if="isInTrial()" class="btn disabled">Try</a>
                     <a v-else @click="tryPlugin(plugin)" class="btn">Try</a>
 
-                    <a v-if="isInCart()" @click="buyPlugin(plugin)" class="btn">Added to cart</a>
+                    <a v-if="isInCart()" @click="buyPlugin(plugin)" class="btn submit disabled">Added to cart</a>
                     <a v-else @click="buyPlugin(plugin)" class="btn submit">Buy ${{ plugin.price }}</a>
                 </div>
                 <div v-else>
