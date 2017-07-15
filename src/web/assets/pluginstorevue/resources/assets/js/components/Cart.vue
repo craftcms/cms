@@ -7,7 +7,6 @@
             <tr>
                 <th class="thin"></th>
                 <th>Plugin Name</th>
-                <th>Quantity</th>
                 <th>Price</th>
             </tr>
             </thead>
@@ -23,9 +22,6 @@
                 </td>
                 <td>
                     <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
-                </td>
-                <td>
-                    {{ plugin.quantity }}
                 </td>
                 <td>
                     <strong>${{ plugin.price }}</strong>
@@ -116,7 +112,7 @@
             }),
             total () {
                 return this.products.reduce((total, p) => {
-                    return total + p.price * p.quantity
+                    return total + p.price
                 }, 0)
             },
             pendingActiveTrials() {

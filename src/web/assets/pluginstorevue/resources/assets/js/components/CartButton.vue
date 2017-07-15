@@ -36,7 +36,7 @@
             }),
             totalQuantity() {
                 return this.products.reduce((totalQuantity, p) => {
-                    return totalQuantity + p.quantity
+                    return totalQuantity + 1
                 }, 0)
             }
         },

@@ -24,10 +24,7 @@ const mutations = {
         if (!record) {
             state.added.push({
                 id,
-                quantity: 1
             })
-        } else {
-            record.quantity++
         }
     },
     [types.REMOVE_FROM_CART] (state, { id }) {
