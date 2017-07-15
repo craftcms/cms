@@ -26,9 +26,9 @@
 
 
 <script>
-    import PluginGrid from './PluginGrid';
-    import PluginSearch from './PluginSearch';
-    import CartButton from './CartButton';
+    import PluginGrid from './components/PluginGrid';
+    import PluginSearch from './components/PluginSearch';
+    import CartButton from './components/CartButton';
     import { mapGetters } from 'vuex'
 
     export default {

@@ -1,16 +1,16 @@
 import Vue from 'vue';
-import App from './App';
-import Index from './Index';
-import AllPlugins from './AllPlugins';
-import CartButton from './CartButton';
-import Category from './Category';
-import Developer from './Developer';
 import VueResource from 'vue-resource';
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash/dist/vue-lodash.min'
-import store from './store'
 
+import App from './App';
+import Index from './Index';
+import Category from './Category';
+import Developer from './Developer';
+import AllPlugins from './components/AllPlugins';
+import CartButton from './components/CartButton';
 import router from './router';
+import store from './store'
 
 Vue.use(VueResource);
 Vue.use(VueLodash, lodash);

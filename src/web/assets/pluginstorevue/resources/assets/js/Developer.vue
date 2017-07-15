@@ -14,7 +14,8 @@
 </template>
 
 <script>
-    import PluginGrid from './PluginGrid';
+    import PluginGrid from './components/PluginGrid';
+
     export default {
         name: 'developer',
 

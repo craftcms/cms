@@ -6,7 +6,7 @@
 </template>
 
 <script>
-    import PluginGrid from './PluginGrid';
+    import PluginGrid from './components/PluginGrid';
     import { mapGetters } from 'vuex'
 
     export default {
