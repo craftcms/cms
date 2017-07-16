@@ -14,9 +14,12 @@ const getters = {
 // actions
 const actions = {
     getDeveloper({ commit }, developerId) {
-        shop.getDeveloper(developer => {
-            commit(types.RECEIVE_DEVELOPER, { developer });
-        }, developerId)
+        return new Promise((resolve, reject) => {
+            shop.getDeveloper(developer => {
+                commit(types.RECEIVE_DEVELOPER, { developer });
+                resolve(developer);
+            }, developerId)
+        })
     }
 }
 

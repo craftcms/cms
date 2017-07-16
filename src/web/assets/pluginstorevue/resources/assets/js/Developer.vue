@@ -15,6 +15,7 @@
 
 <script>
     import PluginGrid from './components/PluginGrid';
+    import { mapGetters } from 'vuex'
 
     export default {
         name: 'developer',
@@ -31,15 +32,9 @@
         },
 
         computed: {
-            developer() {
-                let developer = this.$store.getters.developer;
-
-                if(developer) {
-                    this.$root.pageTitle = developer.developerName;
-                }
-
-                return developer;
-            }
+            ...mapGetters({
+                developer: 'developer'
+            }),
         },
 
         created () {
@@ -47,7 +42,9 @@
             
             this.developerId = this.$route.params.id;
 
-            this.$store.dispatch('getDeveloper', this.developerId);
+            this.$store.dispatch('getDeveloper', this.developerId).then((developer) => {
+                this.$root.pageTitle = developer.developerName;
+            });
         },
     }
 </script>
