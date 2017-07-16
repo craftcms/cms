@@ -24,13 +24,6 @@
             PluginGrid,
         },
 
-        data () {
-            return {
-                plugins: [],
-                developerId: null,
-            }
-        },
-
         computed: {
             ...mapGetters({
                 developer: 'developer'
@@ -40,9 +33,9 @@
         created () {
             this.$root.showCrumbs = true;
             
-            this.developerId = this.$route.params.id;
+            let developerId = this.$route.params.id;
 
-            this.$store.dispatch('getDeveloper', this.developerId).then((developer) => {
+            this.$store.dispatch('getDeveloper', developerId).then((developer) => {
                 this.$root.pageTitle = developer.developerName;
             });
         },
