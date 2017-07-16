@@ -25,7 +25,7 @@
 
     export default {
         name: 'pluginGrid',
-        props: ['plugins', 'pluginUrlPrefix'],
+        props: ['plugins'],
         components: {
             PluginCard,
             PluginDetails,

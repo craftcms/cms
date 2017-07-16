@@ -13,6 +13,9 @@ const getters = {
 
 // actions
 const actions = {
+
+    // Inspired from: https://stackoverflow.com/a/40167499/1686828
+
     getDeveloper({ commit }, developerId) {
         return new Promise((resolve, reject) => {
             shop.getDeveloper(developer => {

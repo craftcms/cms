@@ -1,6 +1,6 @@
 <template>
     <div v-if="category">
-        <plugin-grid :plugins="categoryPlugins" :plugin-url-prefix="'/categories/' + categoryId + '/'"></plugin-grid>
+        <plugin-grid :plugins="categoryPlugins"></plugin-grid>
     </div>
 
 </template>

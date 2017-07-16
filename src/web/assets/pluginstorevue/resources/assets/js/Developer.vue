@@ -8,7 +8,7 @@
 
         <hr>
 
-        <plugin-grid :plugins="developer.plugins" :plugin-url-prefix="'/developer/' + developerId + '/'"></plugin-grid>
+        <plugin-grid :plugins="developer.plugins"></plugin-grid>
     </div>
 
 </template>
