@@ -33,21 +33,6 @@ const actions = {
 const mutations = {
     [types.RECEIVE_PRODUCTS] (state, { products }) {
         state.all = products
-
-        /*
-        const activeTrialIds = [143, 6];
-        const activeTrials = [];
-
-        products.find(p => {
-            activeTrialIds.find(id => {
-                if(parseInt(p.id) === id) {
-                    activeTrials.push(p);
-                }
-            });
-        });
-
-        state.activeTrials = activeTrials;
-        */
     },
     [types.RECEIVE_STAFF_PICKS] (state, { products }) {
         state.staffPicks = products
