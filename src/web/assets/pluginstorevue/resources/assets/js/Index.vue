@@ -10,7 +10,7 @@
                 <plugin-grid :plugins="staffPicks"></plugin-grid>
 
                 <h2>Active Trials</h2>
-                <plugin-grid :plugins="activeTrialProducts"></plugin-grid>
+                <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
@@ -44,7 +44,7 @@
 
         computed: mapGetters({
             staffPicks: 'staffPicks',
-            activeTrialProducts: 'activeTrialProducts',
+            activeTrialPlugins: 'activeTrialPlugins',
             allCategories: 'allCategories',
         }),
 

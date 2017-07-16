@@ -4,7 +4,7 @@ import * as actions from './actions'
 import * as getters from './getters'
 import activeTrials from './modules/activeTrials'
 import cart from './modules/cart'
-import products from './modules/products'
+import plugins from './modules/plugins'
 import categories from './modules/categories'
 import developers from './modules/developers'
 
@@ -17,7 +17,7 @@ export default new Vuex.Store({
     modules: {
         activeTrials,
         cart,
-        products,
+        plugins,
         categories,
         developers,
     },

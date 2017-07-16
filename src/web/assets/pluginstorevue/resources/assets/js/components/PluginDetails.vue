@@ -72,9 +72,9 @@
         props: ['plugin'],
         computed: {
             ...mapGetters({
-                plugins: 'allProducts',
-                cartProducts: 'cartProducts',
-                activeTrialProducts: 'activeTrialProducts',
+                plugins: 'allPlugins',
+                cartPlugins: 'cartPlugins',
+                activeTrialPlugins: 'activeTrialPlugins',
             }),
             description() {
                 if(this.plugin.description && this.plugin.description.length > 0) {
@@ -109,26 +109,26 @@
                 // this.$root.$refs.cartButton.openModal();
             },
             isInTrial() {
-                let foundProduct = this.activeTrialProducts.find(p => {
+                let foundPlugin = this.activeTrialPlugins.find(p => {
                     if(p.id == this.plugin.id) {
                         return true;
                     }
                 })
 
-                if(foundProduct) {
+                if(foundPlugin) {
                     return true;
                 }
 
                 return false;
             },
             isInCart() {
-                let foundProduct = this.cartProducts.find(p => {
+                let foundPlugin = this.cartPlugins.find(p => {
                     if(p.id == this.plugin.id) {
                         return true;
                     }
                 })
 
-                if(foundProduct) {
+                if(foundPlugin) {
                     return true;
                 }
 

@@ -32,10 +32,10 @@
 
         computed: {
             ...mapGetters({
-                cartProducts: 'cartProducts',
+                cartPlugins: 'cartPlugins',
             }),
             totalQuantity() {
-                return this.cartProducts.length;
+                return this.cartPlugins.length;
             }
         },
 
@@ -49,7 +49,7 @@
         },
 
         created () {
-            // this.$store.dispatch('getAllProducts')
+            // this.$store.dispatch('getAllPlugins')
         }
     }
 </script>

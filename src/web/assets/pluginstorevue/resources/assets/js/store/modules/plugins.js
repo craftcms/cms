@@ -10,32 +10,32 @@ const state = {
 
 // getters
 const getters = {
-    allProducts: state => state.all,
+    allPlugins: state => state.all,
     staffPicks: state => state.staffPicks,
     activeTrials: state => state.activeTrials,
 }
 
 // actions
 const actions = {
-    getAllProducts ({ commit }) {
-        shop.getProducts(products => {
-            commit(types.RECEIVE_PRODUCTS, { products })
+    getAllPlugins ({ commit }) {
+        shop.getPlugins(plugins => {
+            commit(types.RECEIVE_PRODUCTS, { plugins })
         })
     },
     getStaffPicks ({ commit }) {
-        shop.getStaffPicks(products => {
-            commit(types.RECEIVE_STAFF_PICKS, { products })
+        shop.getStaffPicks(plugins => {
+            commit(types.RECEIVE_STAFF_PICKS, { plugins })
         })
     }
 }
 
 // mutations
 const mutations = {
-    [types.RECEIVE_PRODUCTS] (state, { products }) {
-        state.all = products
+    [types.RECEIVE_PRODUCTS] (state, { plugins }) {
+        state.all = plugins
     },
-    [types.RECEIVE_STAFF_PICKS] (state, { products }) {
-        state.staffPicks = products
+    [types.RECEIVE_STAFF_PICKS] (state, { plugins }) {
+        state.staffPicks = plugins
     },
 }
 

@@ -24,7 +24,7 @@ const app = new Vue({
     },
 
     created() {
-        this.$store.dispatch('getAllProducts')
+        this.$store.dispatch('getAllPlugins')
         this.$store.dispatch('getAllCategories')
     }
 });

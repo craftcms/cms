@@ -5,7 +5,7 @@
         <plugin-grid :plugins="staffPicks"></plugin-grid>
 
         <h2>All plugins</h2>
-        <plugin-grid :plugins="products"></plugin-grid>
+        <plugin-grid :plugins="plugins"></plugin-grid>
 
     </div>
 </template>
@@ -23,7 +23,7 @@
         },
 
         computed: mapGetters({
-            products: 'allProducts',
+            plugins: 'allPlugins',
             staffPicks: 'staffPicks'
         }),
 
@@ -32,7 +32,7 @@
         ]),
 
         created: function() {
-            this.$store.dispatch('getAllProducts')
+            this.$store.dispatch('getAllPlugins')
         },
     }
 </script>

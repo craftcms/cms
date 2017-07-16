@@ -8,7 +8,7 @@ import Resource from 'vue-resource';
 Vue.use(Resource);
 
 export default {
-    getProducts (cb) {
+    getPlugins (cb) {
         Vue.http.get('https://craftid.dev/api/plugins').then(function(data) {
             let plugins = data.body.data;
 
