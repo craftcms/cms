@@ -1,7 +1,6 @@
 import * as types from '../mutation-types'
 
 // initial state
-// shape: [{ id, quantity }]
 const state = {
     added: [],
     checkoutStatus: null
