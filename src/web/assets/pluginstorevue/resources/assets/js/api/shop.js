@@ -35,5 +35,12 @@ export default {
 
             return cb(plugins);
         });
+    },
+    getDeveloper(cb, developerId) {
+        Vue.http.get('https://craftid.dev/api/developer/'+developerId).then(function(data) {
+            let developer = data.body;
+
+            return cb(developer);
+        });
     }
 }

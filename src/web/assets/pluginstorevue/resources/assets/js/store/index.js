@@ -6,6 +6,7 @@ import activeTrials from './modules/activeTrials'
 import cart from './modules/cart'
 import products from './modules/products'
 import categories from './modules/categories'
+import developers from './modules/developers'
 
 Vue.use(Vuex);
 
@@ -18,5 +19,6 @@ export default new Vuex.Store({
         cart,
         products,
         categories,
+        developers,
     },
 })

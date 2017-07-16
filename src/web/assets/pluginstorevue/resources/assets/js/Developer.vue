@@ -26,8 +26,19 @@
         data () {
             return {
                 plugins: [],
-                developer: {},
                 developerId: null,
+            }
+        },
+
+        computed: {
+            developer() {
+                let developer = this.$store.getters.developer;
+
+                if(developer) {
+                    this.$root.pageTitle = developer.developerName;
+                }
+
+                return developer;
             }
         },
 
@@ -36,10 +47,7 @@
             
             this.developerId = this.$route.params.id;
 
-            this.$http.get('https://craftid.dev/api/developer/' + this.developerId).then(function(data) {
-                this.developer = data.body.data[0];
-                this.$root.pageTitle = this.developer.developerName;
-            });
+            this.$store.dispatch('getDeveloper', this.developerId);
         },
     }
 </script>
