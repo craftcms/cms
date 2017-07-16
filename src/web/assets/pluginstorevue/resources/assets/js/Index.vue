@@ -28,7 +28,6 @@
 <script>
     import PluginGrid from './components/PluginGrid';
     import PluginSearch from './components/PluginSearch';
-    import CartButton from './components/CartButton';
     import { mapGetters } from 'vuex'
 
     export default {
@@ -36,7 +35,6 @@
         components: {
             PluginGrid,
             PluginSearch,
-            CartButton,
         },
         data () {
             return {
