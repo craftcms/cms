@@ -18,18 +18,16 @@
 
         data () {
             return {
-                plugins: [],
                 categoryId: null,
             }
         },
         computed: {
             ...mapGetters({
-               categories: 'allCategories',
-               categoryPlugins: 'categoryPlugins',
+                categories: 'allCategories',
+                categoryPlugins: 'categoryPlugins',
             }),
             category() {
-                let categoryId = this.$route.params.id;
-                let category = this.$store.getters.getCategoryById(categoryId);
+                let category = this.$store.getters.getCategoryById(this.categoryId);
 
                 if(category) {
                     this.$root.pageTitle = category.title;
