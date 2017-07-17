@@ -9,6 +9,16 @@ const state = {
 
 // getters
 const getters = {
+    isInTrial(state) {
+        return function(plugin) {
+            return state.activeTrials.find(p => p.id == plugin.id)
+        }
+    },
+    isInCart(state) {
+        return function(plugin) {
+            return state.items.find(p => p.id == plugin.id)
+        }
+    }
 }
 
 // actions
