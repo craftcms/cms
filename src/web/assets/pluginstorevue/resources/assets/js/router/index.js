@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '../Index'
 import Category from '../Category'
+import Craft from '../Craft'
 import Developer from '../Developer'
 import StaffPicks from '../StaffPicks'
 
@@ -15,19 +16,24 @@ export default new Router({
             component: Index,
         },
         {
-            path: '/staff-picks',
-            name: 'StaffPicks',
-            component: StaffPicks,
-        },
-        {
             path: '/categories/:id',
             name: 'Category',
             component: Category,
         },
         {
+            path: '/craft',
+            name: 'Craft',
+            component: Craft,
+        },
+        {
             path: '/developer/:id',
             name: 'Developer',
             component: Developer,
+        },
+        {
+            path: '/staff-picks',
+            name: 'StaffPicks',
+            component: StaffPicks,
         },
     ]
 })

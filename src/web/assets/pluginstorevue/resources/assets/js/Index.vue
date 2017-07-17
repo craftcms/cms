@@ -19,6 +19,7 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
                 <ul class="categories">
+                    <li><router-link to="/craft">Craft</router-link></li>
                     <li v-for="category in allCategories">
                         <router-link :to="'/categories/'+category.id">{{ category.title }}</router-link>
                     </li>
