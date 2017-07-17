@@ -47,9 +47,5 @@
                 this.showModal = false;
             }
         },
-
-        created () {
-            // this.$store.dispatch('getAllPlugins')
-        }
     }
 </script>

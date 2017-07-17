@@ -47,13 +47,9 @@
                 this.showModal = false;
             },
             onBuy() {
-               console.log('onBuy');
-
                this.closeModal();
             },
             onTry() {
-               console.log('onBuy');
-
                this.closeModal();
             }
         },

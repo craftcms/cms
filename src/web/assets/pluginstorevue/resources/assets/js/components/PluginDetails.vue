@@ -105,8 +105,6 @@
                 this.$store.dispatch('addToActiveTrials', plugin);
 
                 this.$emit('tryPlugin');
-
-                // this.$root.$refs.cartButton.openModal();
             },
             isInTrial() {
                 let foundPlugin = this.activeTrialPlugins.find(p => {
