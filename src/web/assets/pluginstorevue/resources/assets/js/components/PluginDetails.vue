@@ -96,41 +96,18 @@
             ]),
             buyPlugin(plugin) {
                 this.$store.dispatch('addToCart', plugin);
-
                 this.$emit('buyPlugin');
-
                 this.$root.$refs.cartButton.openModal();
             },
             tryPlugin(plugin) {
                 this.$store.dispatch('addToActiveTrials', plugin);
-
                 this.$emit('tryPlugin');
             },
             isInTrial() {
-                let foundPlugin = this.activeTrialPlugins.find(p => {
-                    if(p.id == this.plugin.id) {
-                        return true;
-                    }
-                })
-
-                if(foundPlugin) {
-                    return true;
-                }
-
-                return false;
+                return this.activeTrialPlugins.find(p => p.id == this.plugin.id)
             },
             isInCart() {
-                let foundPlugin = this.cartPlugins.find(p => {
-                    if(p.id == this.plugin.id) {
-                        return true;
-                    }
-                })
-
-                if(foundPlugin) {
-                    return true;
-                }
-
-                return false;
+                return this.cartPlugins.find(p => p.id == this.plugin.id)
             }
         },
     }
