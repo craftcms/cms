@@ -13,8 +13,10 @@
                 <h2>Staff Picks</h2>
                 <plugin-grid :plugins="staffPicks.slice(0,9)"></plugin-grid>
 
-                <h2>Active Trials</h2>
-                <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
+                <template v-if="activeTrialPlugins.length > 0">
+                    <h2>Active Trials</h2>
+                    <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
+                </template>
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
