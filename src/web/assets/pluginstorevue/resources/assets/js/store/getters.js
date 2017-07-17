@@ -1,5 +1,5 @@
 export const cartPlugins = state => {
-    return state.cart.added.map(({ id }) => {
+    return state.cart.items.map(({ id }) => {
         return state.plugins.all.find(p => p.id === id)
     })
 }
