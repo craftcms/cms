@@ -26,7 +26,6 @@
         data () {
             return {
                 searchQuery: '',
-                plugins: [],
                 showSpinner: 1,
             }
         },
@@ -68,9 +67,6 @@
                     }
                 });
             },
-        },
-        created: function() {
-
         },
     }
 </script>
