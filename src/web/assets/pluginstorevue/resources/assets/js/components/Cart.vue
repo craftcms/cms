@@ -57,7 +57,7 @@
 
         <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
-            <div class="right">
+            <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">Add all to cart</a>
             </div>
             <h2>Active Trials</h2>
