@@ -24,8 +24,8 @@
                     <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
                 </td>
                 <td>
-                    <strong>${{ plugin.price }}</strong>
-                    <div class="light">${{ plugin.updatePrice }} per year for updates</div>
+                    <strong>{{ plugin.price|currency }}</strong>
+                    <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
                 </td>
                 <td class="thin">
                     <a class="btn" @click="removeFromCart(plugin)">Remove</a>
@@ -48,7 +48,7 @@
                 </tr>
                 <tr>
                     <th><strong>Total</strong></th>
-                    <td><strong>${{total}}</strong></td>
+                    <td><strong>{{ total|currency }}</strong></td>
                 </tr>
             </table>
 
@@ -83,8 +83,8 @@
                         <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
                     </td>
                     <td>
-                        <strong>${{ plugin.price }}</strong>
-                        <div class="light">${{ plugin.updatePrice }} per year for updates</div>
+                        <strong>{{ plugin.price|currency }}</strong>
+                        <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
                     </td>
                     <td class="thin">
                         <a class="btn" @click="addToCart(plugin)">Add to cart</a>

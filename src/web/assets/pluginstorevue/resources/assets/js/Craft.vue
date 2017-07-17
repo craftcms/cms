@@ -10,7 +10,7 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Client</h2>
                 <p class="light">For sites built for clients with only one content manager.</p>
-                <p>${{ craftClient.price }}</p>
+                <p>{{ craftClient.price|currency }}</p>
                 
                 <div>
                     <a v-if="isInCart(craftClient)" class="btn submit disabled">Added to cart</a>
@@ -23,7 +23,7 @@
             <div class="col-xs-12 col-sm-4">
                 <h2>Pro</h2>
                 <p class="light">For everything else.</p>
-                <p>${{ craftPro.price }}</p>
+                <p>{{ craftPro.price|currency }}</p>
 
                 <div>
                     <a v-if="isInCart(craftPro)" class="btn submit disabled">Added to cart</a>

@@ -22,7 +22,7 @@
                     <a v-else @click="tryPlugin(plugin)" class="btn">Try</a>
 
                     <a v-if="isInCart(plugin)" @click="buyPlugin(plugin)" class="btn submit disabled">Added to cart</a>
-                    <a v-else @click="buyPlugin(plugin)" class="btn submit">Buy ${{ plugin.price }}</a>
+                    <a v-else @click="buyPlugin(plugin)" class="btn submit">Buy {{ plugin.price|currency }}</a>
                 </div>
                 <div v-else>
                     <a :href="installUrl" class="btn submit">Install</a>
