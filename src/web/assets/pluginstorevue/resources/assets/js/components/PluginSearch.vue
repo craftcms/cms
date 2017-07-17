@@ -16,6 +16,7 @@
 
 <script>
     import PluginGrid from './PluginGrid';
+    import { mapGetters } from 'vuex'
 
     export default {
         name: 'pluginSearch',
@@ -30,6 +31,9 @@
             }
         },
         computed: {
+            ...mapGetters({
+                allPlugins: 'allPlugins',
+            }),
             pluginsToRender() {
                 let self = this;
 
@@ -42,7 +46,7 @@
 
                 this.$emit('showResults');
 
-                return this._.filter(this.plugins, function(o) {
+                return this._.filter(this.allPlugins, function(o) {
                     if(o.name && self._.includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
@@ -66,10 +70,7 @@
             },
         },
         created: function() {
-            this.$http.get('https://craftid.dev/api/plugins').then(function(data) {
-                this.plugins = this.plugins.concat(data.body.data);
-                this.showSpinner = 0;
-            });
+
         },
     }
 </script>
