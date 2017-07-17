@@ -3,7 +3,7 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
     activeTrials: [],
-    added: [],
+    items: [],
     checkoutStatus: null
 }
 
@@ -19,20 +19,20 @@ const actions = {
 // mutations
 const mutations = {
     [types.ADD_TO_CART] (state, { id }) {
-        const record = state.added.find(p => p.id === id)
+        const record = state.items.find(p => p.id === id)
 
         if (!record) {
-            state.added.push({
+            state.items.push({
                 id,
             })
         }
     },
     [types.REMOVE_FROM_CART] (state, { id }) {
-        const record = state.added.find(p => p.id === id)
+        const record = state.items.find(p => p.id === id)
 
-        const index = state.added.indexOf(record);
+        const index = state.items.indexOf(record);
 
-        state.added.splice(index, 1);
+        state.items.splice(index, 1);
     },
     [types.ADD_TO_ACTIVE_TRIALS] (state, { id }) {
         const record = state.activeTrials.find(p => p.id === id)
