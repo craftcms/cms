@@ -4,7 +4,7 @@
 
         <modal :show.sync="showModal" :on-close="closeModal">
             <div slot="body">
-                <cart></cart>
+                <cart @continueShopping="closeModal"></cart>
             </div>
         </modal>
     </div>

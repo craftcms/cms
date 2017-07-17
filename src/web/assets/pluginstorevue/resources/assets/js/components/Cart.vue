@@ -1,59 +1,67 @@
 <template>
     <div>
-        <h2>Items</h2>
+        <h2>Items in your cart</h2>
 
-        <table class="data fullwidth">
-            <thead>
-            <tr>
-                <th class="thin"></th>
-                <th>Plugin Name</th>
-                <th>Price</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr v-for="(plugin, index) in cartPlugins">
-                <td class="thin">
-                    <a href="#">
-                        <div class="plugin-icon">
-                            <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
-                            <div class="default-icon" v-else></div>
-                        </div>
-                    </a>
-                </td>
-                <td>
-                    <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
-                </td>
-                <td>
-                    <strong>{{ plugin.price|currency }}</strong>
-                    <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
-                </td>
-                <td class="thin">
-                    <a class="btn" @click="removeFromCart(plugin)">Remove</a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-
-        <div class="cart-review">
-            <p>Renew for 3 years and save $XX.00</p>
-
-            <table class="fullwidth">
+        <div v-if="cartPlugins.length > 0">
+            <table class="data fullwidth">
+                <thead>
                 <tr>
-                    <th>Subtotal</th>
-                    <td>$XX.00</td>
+                    <th class="thin"></th>
+                    <th>Plugin Name</th>
+                    <th>Price</th>
                 </tr>
-                <tr>
-                    <th>Pro Rate Discount</th>
-                    <td>$XX.00</td>
+                </thead>
+                <tbody>
+                <tr v-for="(plugin, index) in cartPlugins">
+                    <td class="thin">
+                        <a href="#">
+                            <div class="plugin-icon">
+                                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
+                                <div class="default-icon" v-else></div>
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="#">{{ plugin.name }}</a> <div class="light">{{ plugin.shortDescription }}</div>
+                    </td>
+                    <td>
+                        <strong>{{ plugin.price|currency }}</strong>
+                        <div class="light">{{ plugin.updatePrice|currency }} per year for updates</div>
+                    </td>
+                    <td class="thin">
+                        <a class="btn" @click="removeFromCart(plugin)">Remove</a>
+                    </td>
                 </tr>
-                <tr>
-                    <th><strong>Total</strong></th>
-                    <td><strong>{{ total|currency }}</strong></td>
-                </tr>
+                </tbody>
             </table>
 
-            <p><a href="#" class="btn submit">Process My Order</a></p>
+            <div class="cart-review">
+                <p>Renew for 3 years and save $XX.00</p>
+
+                <table class="fullwidth">
+                    <tr>
+                        <th>Subtotal</th>
+                        <td>$XX.00</td>
+                    </tr>
+                    <tr>
+                        <th>Pro Rate Discount</th>
+                        <td>$XX.00</td>
+                    </tr>
+                    <tr>
+                        <th><strong>Total</strong></th>
+                        <td><strong>{{ total|currency }}</strong></td>
+                    </tr>
+                </table>
+
+                <p><a href="#" class="btn submit">Process My Order</a></p>
+            </div>
+
         </div>
+
+        <div v-else>
+            <p>Your cart is empty. <a @click="$emit('continueShopping')">Continue shopping</a></p>
+        </div>
+
 
         <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
