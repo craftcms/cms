@@ -55,7 +55,7 @@
             <p><a href="#" class="btn submit">Process My Order</a></p>
         </div>
 
-        <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
+        <template v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
             <div v-if="pendingActiveTrials.length > 1" class="right">
                 <a @click="addAllToCart()">Add all to cart</a>
@@ -92,7 +92,7 @@
                 </tr>
                 </tbody>
             </table>
-        </div>
+        </template>
     </div>
 </template>
 
