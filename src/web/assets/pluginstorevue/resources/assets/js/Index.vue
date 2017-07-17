@@ -18,7 +18,7 @@
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Categories</h2>
-                <ul>
+                <ul class="categories">
                     <li v-for="category in allCategories">
                         <router-link :to="'/categories/'+category.id">{{ category.title }}</router-link>
                     </li>
@@ -61,3 +61,18 @@
         }
     }
 </script>
+
+<style scoped>
+    ul.categories li:first-child a {
+        border-top: 1px solid #eee;
+    }
+    ul.categories li a {
+        display: block;
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    ul.categories li a:hover {
+        background-color: #fafafa;
+        text-decoration: none;
+    }
+</style>
