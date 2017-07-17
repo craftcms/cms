@@ -110,8 +110,8 @@
                 }, 0)
             },
             pendingActiveTrials() {
-                return this.$store.getters.activeTrialPlugins.filter(p => {
-                    return !this.$store.getters.cartPlugins.find(cartP => p.id == cartP.id)
+                return this.activeTrialPlugins.filter(p => {
+                    return !this.cartPlugins.find(cartP => p.id == cartP.id)
                 })
             }
         },
