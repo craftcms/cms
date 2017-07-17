@@ -1,4 +1,4 @@
-import shop from '../../api/shop'
+import api from '../../api'
 import * as types from '../mutation-types'
 
 // initial state
@@ -23,12 +23,12 @@ const getters = {
 // actions
 const actions = {
     getAllPlugins ({ commit }) {
-        shop.getPlugins(plugins => {
+        api.getPlugins(plugins => {
             commit(types.RECEIVE_PRODUCTS, { plugins })
         })
     },
     getStaffPicks ({ commit }) {
-        shop.getStaffPicks(plugins => {
+        api.getStaffPicks(plugins => {
             commit(types.RECEIVE_STAFF_PICKS, { plugins })
         })
     }

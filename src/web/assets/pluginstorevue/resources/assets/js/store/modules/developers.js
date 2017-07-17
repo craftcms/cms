@@ -1,4 +1,4 @@
-import shop from '../../api/shop'
+import api from '../../api'
 import * as types from '../mutation-types'
 
 // initial state
@@ -18,7 +18,7 @@ const actions = {
 
     getDeveloper({ commit }, developerId) {
         return new Promise((resolve, reject) => {
-            shop.getDeveloper(developer => {
+            api.getDeveloper(developer => {
                 commit(types.RECEIVE_DEVELOPER, { developer });
                 resolve(developer);
             }, developerId)
