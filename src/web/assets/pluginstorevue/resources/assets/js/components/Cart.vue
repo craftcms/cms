@@ -110,22 +110,13 @@
                 }, 0)
             },
             pendingActiveTrials() {
-                let pendingActiveTrials = []
-                let cartPlugins = this.$store.getters.cartPlugins
-                this.$store.getters.activeTrialPlugins.find(p => {
-                    let found = false
-                    cartPlugins.find(cartP => {
+                return this.$store.getters.activeTrialPlugins.filter(p => {
+                    return !this.$store.getters.cartPlugins.find(cartP => {
                         if(p.id == cartP.id) {
-                            found = true
+                            return true;
                         }
                     })
-
-                    if(!found) {
-                        pendingActiveTrials.push(p)
-                    }
                 })
-
-                return pendingActiveTrials;
             }
         },
 
