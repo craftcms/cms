@@ -13,17 +13,24 @@
                 <p>${{ craftClient.price }}</p>
                 
                 <div>
-                    <a @click="buyPlugin(craftClient)" class="btn submit">Buy now</a>
-                    <a @click="tryPlugin(craftClient)" class="btn">Try for free</a>
+                    <a v-if="isInCart(craftClient)" class="btn submit disabled">Added to cart</a>
+                    <a v-else  @click="buy(craftClient)" class="btn submit">Buy now</a>
+
+                    <a v-if="isInTrial(craftClient)" class="btn disabled">Try for free</a>
+                    <a v-else @click="addToActiveTrials(craftClient)" class="btn">Try for free</a>
                 </div>
             </div>
             <div class="col-xs-12 col-sm-4">
                 <h2>Pro</h2>
                 <p class="light">For everything else.</p>
                 <p>${{ craftPro.price }}</p>
+
                 <div>
-                    <a @click="buyPlugin(craftPro)" class="btn submit">Buy now</a>
-                    <a @click="tryPlugin(craftPro)" class="btn">Try for free</a>
+                    <a v-if="isInCart(craftPro)" class="btn submit disabled">Added to cart</a>
+                    <a v-else  @click="buy(craftPro)" class="btn submit">Buy now</a>
+
+                    <a v-if="isInTrial(craftPro)" class="btn disabled">Try for free</a>
+                    <a v-else @click="addToActiveTrials(craftPro)" class="btn">Try for free</a>
                 </div>
             </div>
         </div>
@@ -40,6 +47,10 @@
         name: 'craft',
 
         computed: {
+            ...mapGetters({
+                isInTrial: 'isInTrial',
+                isInCart: 'isInCart',
+            }),
             craftClient() {
                 return this.$store.getters.getPluginById(152);
             },
@@ -51,17 +62,13 @@
         methods: {
             ...mapActions([
                'addToCart',
-               'removeFromCart'
+               'removeFromCart',
+               'addToActiveTrials',
            ]),
-            buyPlugin(plugin) {
+            buy(plugin) {
                 this.$store.dispatch('addToCart', plugin);
 
                 this.$root.$refs.cartButton.openModal();
-            },
-            tryPlugin(plugin) {
-                this.$store.dispatch('addToActiveTrials', plugin);
-                /*
-                this.$emit('tryPlugin');*/
             },
         },
 
