@@ -57,6 +57,9 @@
 
         <div v-if="pendingActiveTrials && pendingActiveTrials.length > 0">
 
+            <div class="right">
+                <a @click="addAllToCart()">Add all to cart</a>
+            </div>
             <h2>Active Trials</h2>
 
             <table class="data fullwidth">
@@ -113,7 +116,7 @@
                 return this.activeTrialPlugins.filter(p => {
                     return !this.cartPlugins.find(cartP => p.id == cartP.id)
                 })
-            }
+            },
         },
 
         methods: {
@@ -121,6 +124,13 @@
                 'addToCart',
                 'removeFromCart'
             ]),
+            addAllToCart () {
+                let $store = this.$store;
+
+                this.pendingActiveTrials.forEach(function(activeTrial) {
+                    $store.dispatch('addToCart', activeTrial)
+                })
+            },
         },
     }
 </script>
