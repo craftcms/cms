@@ -6,8 +6,12 @@
 
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
+                <p class="right">
+                    <router-link to="/staff-picks/">See all</router-link>
+                </p>
+
                 <h2>Staff Picks</h2>
-                <plugin-grid :plugins="staffPicks"></plugin-grid>
+                <plugin-grid :plugins="staffPicks.slice(0,6)"></plugin-grid>
 
                 <h2>Active Trials</h2>
                 <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
@@ -50,8 +54,6 @@
 
         created: function() {
             this.$root.pageTitle = 'Plugin Store';
-
-            this.$store.dispatch('getStaffPicks')
         },
 
         mounted: function() {

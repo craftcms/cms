@@ -26,5 +26,6 @@ const app = new Vue({
     created() {
         this.$store.dispatch('getAllPlugins')
         this.$store.dispatch('getAllCategories')
+        this.$store.dispatch('getStaffPicks')
     }
 });
