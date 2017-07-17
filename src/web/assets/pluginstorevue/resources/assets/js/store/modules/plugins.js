@@ -13,6 +13,11 @@ const getters = {
     allPlugins: state => state.all,
     staffPicks: state => state.staffPicks,
     activeTrials: state => state.activeTrials,
+    getPluginById(state) {
+        return function(id) {
+            return state.all.find(p => p.id == id)
+        };
+    },
 }
 
 // actions
