@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-06-30 */
+/*! Craft 3.0.0 - 2017-07-17 */
 (function($){
 
 /** global: Craft */
@@ -9938,7 +9938,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             this.userSelect = new Craft.BaseElementSelectInput({
                 id: 'transferselect' + this.id,
                 name: 'transferContentTo',
-                elementType: 'User',
+                elementType: 'craft\\elements\\User',
                 criteria: {
                     id: idParam
                 },

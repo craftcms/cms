@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
+
 ## 3.0.0-beta.22 - 2017-07-14
 
 ### Added
