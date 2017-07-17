@@ -5,7 +5,7 @@ export const cartPlugins = state => {
 }
 
 export const activeTrialPlugins = state => {
-    return state.activeTrials.activeTrials.map(({ id }) => {
+    return state.cart.activeTrials.map(({ id }) => {
         return state.plugins.all.find(p => p.id === id)
     })
 }

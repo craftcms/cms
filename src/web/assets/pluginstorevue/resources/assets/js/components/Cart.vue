@@ -11,7 +11,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="(plugin, index) in plugins">
+            <tr v-for="(plugin, index) in cartPlugins">
                 <td class="thin">
                     <a href="#">
                         <div class="plugin-icon">
@@ -99,19 +99,13 @@
     export default {
         name: 'cart',
 
-        data () {
-            return {
-                plugins: [],
-            }
-        },
-
         computed: {
             ...mapGetters({
-                plugins: 'cartPlugins',
+                cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
             }),
             total () {
-                return this.plugins.reduce((total, p) => {
+                return this.cartPlugins.reduce((total, p) => {
                     return total + parseFloat(p.price)
                 }, 0)
             },
@@ -119,7 +113,7 @@
                 let pendingActiveTrials = []
                 let cartPlugins = this.$store.getters.cartPlugins
                 this.$store.getters.activeTrialPlugins.find(p => {
-                    var found = false
+                    let found = false
                     cartPlugins.find(cartP => {
                         if(p.id == cartP.id) {
                             found = true
@@ -140,10 +134,6 @@
                 'addToCart',
                 'removeFromCart'
             ]),
-        },
-
-        created: function() {
-            // this.$store.dispatch('getAllPlugins')
         },
     }
 </script>
