@@ -105,7 +105,7 @@
                 });
                 this.$currentScreen = this.$nextScreen;
                 this.$nextScreen = null;
-            },
+            }
         },
         {
             widgets: {},

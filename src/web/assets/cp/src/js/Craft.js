@@ -14,14 +14,14 @@ $.extend(Craft,
             'a': [
                 'à', 'á', 'ả', 'ã', 'ạ', 'ă', 'ắ', 'ằ', 'ẳ', 'ẵ', 'ặ', 'â', 'ấ', 'ầ', 'ẩ', 'ẫ', 'ậ',
                 'ä', 'ā', 'ą', 'å', 'α', 'ά', 'ἀ', 'ἁ', 'ἂ', 'ἃ', 'ἄ', 'ἅ', 'ἆ', 'ἇ', 'ᾀ', 'ᾁ', 'ᾂ',
-                'ᾃ', 'ᾄ', 'ᾅ', 'ᾆ', 'ᾇ', 'ὰ', 'ά', 'ᾰ', 'ᾱ', 'ᾲ', 'ᾳ', 'ᾴ', 'ᾶ', 'ᾷ', 'а', 'أ',
+                'ᾃ', 'ᾄ', 'ᾅ', 'ᾆ', 'ᾇ', 'ὰ', 'ά', 'ᾰ', 'ᾱ', 'ᾲ', 'ᾳ', 'ᾴ', 'ᾶ', 'ᾷ', 'а', 'أ'
             ],
             'b': ['б', 'β', 'Ъ', 'Ь', 'ب'],
             'c': ['ç', 'ć', 'č', 'ĉ', 'ċ'],
             'd': ['ď', 'ð', 'đ', 'ƌ', 'ȡ', 'ɖ', 'ɗ', 'ᵭ', 'ᶁ', 'ᶑ', 'д', 'δ', 'د', 'ض'],
             'e': [
                 'é', 'è', 'ẻ', 'ẽ', 'ẹ', 'ê', 'ế', 'ề', 'ể', 'ễ', 'ệ', 'ë', 'ē', 'ę', 'ě', 'ĕ', 'ė',
-                'ε', 'έ', 'ἐ', 'ἑ', 'ἒ', 'ἓ', 'ἔ', 'ἕ', 'ὲ', 'έ', 'е', 'ё', 'э', 'є', 'ə',
+                'ε', 'έ', 'ἐ', 'ἑ', 'ἒ', 'ἓ', 'ἔ', 'ἕ', 'ὲ', 'έ', 'е', 'ё', 'э', 'є', 'ə'
             ],
             'f': ['ф', 'φ', 'ف'],
             'g': ['ĝ', 'ğ', 'ġ', 'ģ', 'г', 'ґ', 'γ', 'ج'],
@@ -132,7 +132,7 @@ $.extend(Craft,
             ' ': [
                 "\xC2\xA0", "\xE2\x80\x80", "\xE2\x80\x81", "\xE2\x80\x82", "\xE2\x80\x83", "\xE2\x80\x84",
                 "\xE2\x80\x85", "\xE2\x80\x86", "\xE2\x80\x87", "\xE2\x80\x88", "\xE2\x80\x89", "\xE2\x80\x8A",
-                "\xE2\x80\xAF", "\xE2\x81\x9F", "\xE3\x80\x80",
+                "\xE2\x80\xAF", "\xE2\x81\x9F", "\xE3\x80\x80"
             ]
         },
 
@@ -146,8 +146,8 @@ $.extend(Craft,
          */
         t: function(category, message, params) {
             if (
-                Craft.translations[category] !== undefined &&
-                Craft.translations[category][message] !== undefined
+                typeof Craft.translations[category] !== 'undefined' &&
+                typeof Craft.translations[category][message] !== 'undefined'
             ) {
                 message = Craft.translations[category][message];
             }
@@ -166,7 +166,7 @@ $.extend(Craft,
         },
 
         formatDate: function(date) {
-            if (typeof date != 'object') {
+            if (typeof date !== 'object') {
                 date = new Date(date);
             }
 
@@ -229,7 +229,7 @@ $.extend(Craft,
             var val = $input.val();
 
             // Does the browser support setSelectionRange()?
-            if ($input[0].setSelectionRange !== undefined) {
+            if (typeof $input[0].setSelectionRange !== 'undefined') {
                 // Select the whole value
                 var length = val.length * 2;
                 $input[0].setSelectionRange(0, length);
@@ -254,14 +254,15 @@ $.extend(Craft,
          * @return string
          * @param path
          * @param params
+         * @param baseUrl
          */
         getUrl: function(path, params, baseUrl) {
-            if (typeof path != 'string') {
+            if (typeof path !== 'string') {
                 path = '';
             }
 
             // Return path if it appears to be an absolute URL.
-            if (path.search('://') != -1 || path.substr(0, 2) == '//') {
+            if (path.search('://') !== -1 || path.substr(0, 2) === '//') {
                 return path;
             }
 
@@ -280,7 +281,7 @@ $.extend(Craft,
 
                     var value = params[name];
 
-                    if (name == '#') {
+                    if (name === '#') {
                         anchor = value;
                     }
                     else if (value !== null && value !== '') {
@@ -300,7 +301,7 @@ $.extend(Craft,
 
             // Were there already any query string params in the path?
             var qpos = path.indexOf('?');
-            if (qpos != -1) {
+            if (qpos !== -1) {
                 params = path.substr(qpos + 1) + (params ? '&' + params : '');
                 path = path.substr(0, qpos);
             }
@@ -325,8 +326,8 @@ $.extend(Craft,
             }
 
             // Does the base URL already have a query string?
-            var qpos = url.indexOf('?');
-            if (qpos != '-1') {
+            qpos = url.indexOf('?');
+            if (qpos !== -1) {
                 params = url.substr(qpos + 1) + (params ? '&' + params : '');
                 url = url.substr(0, qpos);
             }
@@ -334,7 +335,7 @@ $.extend(Craft,
             if (!Craft.omitScriptNameInUrls && path) {
                 if (Craft.usePathInfo) {
                     // Make sure that the script name is in the URL
-                    if (url.search(Craft.scriptName) == -1) {
+                    if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
                     }
                 }
@@ -342,11 +343,11 @@ $.extend(Craft,
                     // Move the path into the query string params
 
                     // Is the p= param already set?
-                    if (params && params.substr(0, 2) == 'p=') {
+                    if (params && params.substr(0, 2) === 'p=') {
                         var basePath,
                             endPath = params.indexOf('&');
 
-                        if (endPath != -1) {
+                        if (endPath !== -1) {
                             basePath = params.substring(2, endPath);
                             params = params.substr(endPath + 1);
                         }
@@ -456,7 +457,7 @@ $.extend(Craft,
          */
         postActionRequest: function(action, data, callback, options) {
             // Make 'data' optional
-            if (typeof data == 'function') {
+            if (typeof data === 'function') {
                 options = callback;
                 callback = data;
                 data = {};
@@ -475,14 +476,14 @@ $.extend(Craft,
                 headers: headers,
                 data: data,
                 success: callback,
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function(jqXHR, textStatus) {
                     if (callback) {
                         callback(null, textStatus, jqXHR);
                     }
                 },
                 complete: function(jqXHR, textStatus) {
-                    if (textStatus != 'success') {
-                        if (Craft.cp !== undefined) {
+                    if (textStatus !== 'success') {
+                        if (typeof Craft.cp !== 'undefined') {
                             Craft.cp.displayError();
                         }
                         else {
@@ -493,7 +494,7 @@ $.extend(Craft,
             }, options));
 
             // Call the 'send' callback
-            if (options && typeof options.send == 'function') {
+            if (options && typeof options.send === 'function') {
                 options.send(jqXHR);
             }
 
@@ -508,7 +509,7 @@ $.extend(Craft,
          */
         queueActionRequest: function(action, data, callback, options) {
             // Make 'data' optional
-            if (typeof data == 'function') {
+            if (typeof data === 'function') {
                 options = callback;
                 callback = data;
                 data = undefined;
@@ -527,7 +528,7 @@ $.extend(Craft,
             var args = Craft._ajaxQueue.shift();
 
             Craft.postActionRequest(args[0], args[1], function(data, textStatus, jqXHR) {
-                if (args[2] && typeof args[2] == 'function') {
+                if (args[2] && typeof args[2] === 'function') {
                     args[2](data, textStatus, jqXHR);
                 }
 
@@ -547,7 +548,7 @@ $.extend(Craft,
          * @return array
          */
         stringToArray: function(str) {
-            if (typeof str != 'string') {
+            if (typeof str !== 'string') {
                 return str;
             }
 
@@ -566,6 +567,7 @@ $.extend(Craft,
          */
         expandPostArray: function(arr) {
             var expanded = {};
+            var i;
 
             for (var key in arr) {
                 if (!arr.hasOwnProperty(key)) {
@@ -581,7 +583,7 @@ $.extend(Craft,
                     keys = m[2].match(/\[[^\[\]]*\]/g);
 
                     // Chop off the brackets
-                    for (var i = 0; i < keys.length; i++) {
+                    for (i = 0; i < keys.length; i++) {
                         keys[i] = keys[i].substring(1, keys[i].length - 1);
                     }
                 }
@@ -593,9 +595,9 @@ $.extend(Craft,
 
                 var parentElem = expanded;
 
-                for (var i = 0; i < keys.length; i++) {
+                for (i = 0; i < keys.length; i++) {
                     if (i < keys.length - 1) {
-                        if (typeof parentElem[keys[i]] != 'object') {
+                        if (typeof parentElem[keys[i]] !== 'object') {
                             // Figure out what this will be by looking at the next key
                             if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                                 parentElem[keys[i]] = [];
@@ -627,29 +629,29 @@ $.extend(Craft,
          *
          * @param obj1
          * @param obj2
-         * @param preserveObjectKeys Whether object keys should be sorted before being compared. Default is true.
+         * @param sortObjectKeys Whether object keys should be sorted before being compared. Default is true.
          * @return boolean
          */
         compare: function(obj1, obj2, sortObjectKeys) {
             // Compare the types
-            if (typeof obj1 != typeof obj2) {
+            if (typeof obj1 !== typeof obj2) {
                 return false;
             }
 
-            if (typeof obj1 == 'object') {
+            if (typeof obj1 === 'object') {
                 // Compare the lengths
-                if (obj1.length != obj2.length) {
+                if (obj1.length !== obj2.length) {
                     return false;
                 }
 
                 // Is one of them an array but the other is not?
-                if ((obj1 instanceof Array) != (obj2 instanceof Array)) {
+                if ((obj1 instanceof Array) !== (obj2 instanceof Array)) {
                     return false;
                 }
 
                 // If they're actual objects (not arrays), compare the keys
                 if (!(obj1 instanceof Array)) {
-                    if (sortObjectKeys === undefined || sortObjectKeys == true) {
+                    if (typeof sortObjectKeys === 'undefined' || sortObjectKeys === true) {
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
@@ -733,7 +735,7 @@ $.extend(Craft,
             if (!str) {
                 return str;
             }
-            if (chars === undefined) {
+            if (typeof chars === 'undefined') {
                 chars = ' \t\n\r\0\x0B';
             }
             var re = new RegExp('^[' + Craft.escapeChars(chars) + ']+');
@@ -751,7 +753,7 @@ $.extend(Craft,
             if (!str) {
                 return str;
             }
-            if (chars === undefined) {
+            if (typeof chars === 'undefined') {
                 chars = ' \t\n\r\0\x0B';
             }
             var re = new RegExp('[' + Craft.escapeChars(chars) + ']+$');
@@ -784,7 +786,7 @@ $.extend(Craft,
             for (var i = 0; i < arr.length; i++) {
                 var include;
 
-                if (typeof callback == 'function') {
+                if (typeof callback === 'function') {
                     include = callback(arr[i], i);
                 }
                 else {
@@ -807,7 +809,7 @@ $.extend(Craft,
          * @return boolean
          */
         inArray: function(elem, arr) {
-            return ($.inArray(elem, arr) != -1);
+            return ($.inArray(elem, arr) !== -1);
         },
 
         /**
@@ -819,7 +821,7 @@ $.extend(Craft,
          */
         removeFromArray: function(elem, arr) {
             var index = $.inArray(elem, arr);
-            if (index != -1) {
+            if (index !== -1) {
                 arr.splice(index, 1);
                 return true;
             }
@@ -831,7 +833,7 @@ $.extend(Craft,
         /**
          * Returns the last element in an array.
          *
-         * @param {object}
+         * @param {object} arr
          * @return mixed
          */
         getLast: function(arr) {
@@ -866,7 +868,7 @@ $.extend(Craft,
          * Converts a number of seconds into a human-facing time duration.
          */
         secondsToHumanTimeDuration: function(seconds, showSeconds) {
-            if (showSeconds === undefined) {
+            if (typeof showSeconds === 'undefined') {
                 showSeconds = true;
             }
 
@@ -898,23 +900,23 @@ $.extend(Craft,
             var timeComponents = [];
 
             if (weeks) {
-                timeComponents.push(weeks + ' ' + (weeks == 1 ? Craft.t('app', 'week') : Craft.t('app', 'weeks')));
+                timeComponents.push(weeks + ' ' + (weeks === 1 ? Craft.t('app', 'week') : Craft.t('app', 'weeks')));
             }
 
             if (days) {
-                timeComponents.push(days + ' ' + (days == 1 ? Craft.t('app', 'day') : Craft.t('app', 'days')));
+                timeComponents.push(days + ' ' + (days === 1 ? Craft.t('app', 'day') : Craft.t('app', 'days')));
             }
 
             if (hours) {
-                timeComponents.push(hours + ' ' + (hours == 1 ? Craft.t('app', 'hour') : Craft.t('app', 'hours')));
+                timeComponents.push(hours + ' ' + (hours === 1 ? Craft.t('app', 'hour') : Craft.t('app', 'hours')));
             }
 
             if (minutes || (!showSeconds && !weeks && !days && !hours)) {
-                timeComponents.push(minutes + ' ' + (minutes == 1 ? Craft.t('app', 'minute') : Craft.t('app', 'minutes')));
+                timeComponents.push(minutes + ' ' + (minutes === 1 ? Craft.t('app', 'minute') : Craft.t('app', 'minutes')));
             }
 
             if (seconds || (showSeconds && !weeks && !days && !hours && !minutes)) {
-                timeComponents.push(seconds + ' ' + (seconds == 1 ? Craft.t('app', 'second') : Craft.t('app', 'seconds')));
+                timeComponents.push(seconds + ' ' + (seconds === 1 ? Craft.t('app', 'second') : Craft.t('app', 'seconds')));
             }
 
             return timeComponents.join(', ');
@@ -940,7 +942,7 @@ $.extend(Craft,
                     for (var property in Craft.asciiCharMap) {
                         if (Craft.asciiCharMap.hasOwnProperty(property)) {
                             for (var searchCounter = 0; searchCounter < Craft.asciiCharMap[property].length; searchCounter++) {
-                                if (Craft.asciiCharMap[property][searchCounter] == char) {
+                                if (Craft.asciiCharMap[property][searchCounter] === char) {
                                     asciiStr += property;
                                 }
                             }
@@ -966,7 +968,7 @@ $.extend(Craft,
                     $elem.focus();
                 })
                 .on('keydown' + namespace + ' blur' + namespace, function(event) {
-                    if (event.keyCode != Garnish.SHIFT_KEY && event.keyCode != Garnish.CTRL_KEY && event.keyCode != Garnish.CMD_KEY) {
+                    if (event.keyCode !== Garnish.SHIFT_KEY && event.keyCode !== Garnish.CTRL_KEY && event.keyCode !== Garnish.CMD_KEY) {
                         $elem.removeClass('no-outline');
                     }
                 });
@@ -1067,7 +1069,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementIndexClass: function(elementType, func) {
-            if (this._elementIndexClasses[elementType] !== undefined) {
+            if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 throw 'An element index class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1081,7 +1083,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementSelectorModalClass: function(elementType, func) {
-            if (this._elementSelectorModalClasses[elementType] !== undefined) {
+            if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 throw 'An element selector modal class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1095,7 +1097,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementEditorClass: function(elementType, func) {
-            if (this._elementEditorClasses[elementType] !== undefined) {
+            if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 throw 'An element editor class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1113,7 +1115,7 @@ $.extend(Craft,
         createElementIndex: function(elementType, $container, settings) {
             var func;
 
-            if (this._elementIndexClasses[elementType] !== undefined) {
+            if (typeof this._elementIndexClasses[elementType] !== 'undefined') {
                 func = this._elementIndexClasses[elementType];
             }
             else {
@@ -1132,7 +1134,7 @@ $.extend(Craft,
         createElementSelectorModal: function(elementType, settings) {
             var func;
 
-            if (this._elementSelectorModalClasses[elementType] !== undefined) {
+            if (typeof this._elementSelectorModalClasses[elementType] !== 'undefined') {
                 func = this._elementSelectorModalClasses[elementType];
             }
             else {
@@ -1152,7 +1154,7 @@ $.extend(Craft,
         createElementEditor: function(elementType, element, settings) {
             var func;
 
-            if (this._elementEditorClasses[elementType] !== undefined) {
+            if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
             }
             else {
@@ -1171,7 +1173,7 @@ $.extend(Craft,
         getLocalStorage: function(key, defaultValue) {
             key = 'Craft-' + Craft.systemUid + '.' + key;
 
-            if (typeof localStorage !== 'undefined' && localStorage[key] !== undefined) {
+            if (typeof localStorage !== 'undefined' && localStorage[key] !== 'undefined') {
                 return JSON.parse(localStorage[key]);
             }
             else {
@@ -1233,7 +1235,7 @@ $.extend(Craft,
         setElementSize: function(element, size) {
             var $element = $(element);
 
-            if (size != 'small' && size != 'large') {
+            if (size !== 'small' && size !== 'large') {
                 size = 'small';
             }
 
@@ -1241,7 +1243,7 @@ $.extend(Craft,
                 return;
             }
 
-            var otherSize = (size == 'small' ? 'large' : 'small');
+            var otherSize = (size === 'small' ? 'large' : 'small');
 
             $element
                 .addClass(size)
@@ -1249,7 +1251,7 @@ $.extend(Craft,
 
             if ($element.hasClass('hasthumb')) {
                 var $oldImg = $element.find('> .elementthumb > img'),
-                    imgSize = (size == 'small' ? '30' : '100'),
+                    imgSize = (size === 'small' ? '30' : '100'),
                     $newImg = $('<img/>', {
                         sizes: imgSize + 'px',
                         srcset: $oldImg.attr('srcset') || $oldImg.attr('data-pfsrcset')
@@ -1272,7 +1274,7 @@ $.extend(Craft,
 $.extend($.fn,
     {
         animateLeft: function(pos, duration, easing, complete) {
-            if (Craft.orientation == 'ltr') {
+            if (Craft.orientation === 'ltr') {
                 return this.velocity({left: pos}, duration, easing, complete);
             }
             else {
@@ -1281,7 +1283,7 @@ $.extend($.fn,
         },
 
         animateRight: function(pos, duration, easing, complete) {
-            if (Craft.orientation == 'ltr') {
+            if (Craft.orientation === 'ltr') {
                 return this.velocity({right: pos}, duration, easing, complete);
             }
             else {
@@ -1392,8 +1394,8 @@ $.extend($.fn,
 
         lightswitch: function(settings, settingName, settingValue) {
             // param mapping
-            if (settings == 'settings') {
-                if (typeof settingName == 'string') {
+            if (settings === 'settings') {
+                if (typeof settingName === 'string') {
                     settings = {};
                     settings[settingName] = settingValue;
                 }

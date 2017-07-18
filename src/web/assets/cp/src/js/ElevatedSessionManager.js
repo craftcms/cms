@@ -29,7 +29,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             Craft.postActionRequest('users/get-elevated-session-timeout', $.proxy(function(response, textStatus) {
                 this.fetchingTimeout = false;
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     // Is there still enough time left or has it been disabled?
                     if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout) {
                         this.callback();
@@ -64,7 +64,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     }, this),
                     onFadeOut: $.proxy(function() {
                         this.$passwordInput.val('');
-                    }, this),
+                    }, this)
                 });
 
                 new Craft.PasswordInput(this.$passwordInput, {
@@ -117,7 +117,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             Craft.postActionRequest('users/start-elevated-session', data, $.proxy(function(response, textStatus) {
                 this.$passwordSpinner.addClass('hidden');
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     if (response.success) {
                         this.passwordModal.hide();
                         this.callback();
@@ -136,7 +136,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         },
 
         showPasswordError: function(error) {
-            if (error === null || error === undefined) {
+            if (error === null || typeof error === 'undefined') {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 
@@ -146,10 +146,10 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
         clearLoginError: function() {
             this.showPasswordError('');
-        },
+        }
     },
     {
-        minSafeElevatedSessionTimeout: 5,
+        minSafeElevatedSessionTimeout: 5
     });
 
 // Instantiate it

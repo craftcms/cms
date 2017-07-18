@@ -69,7 +69,7 @@ Craft.CP = Garnish.Base.extend(
 
         init: function() {
             // Is this session going to expire?
-            if (Craft.remainingSessionTime != 0) {
+            if (Craft.remainingSessionTime !== 0) {
                 this.authManager = new Craft.AuthManager();
             }
 
@@ -78,7 +78,7 @@ Craft.CP = Garnish.Base.extend(
             this.$alerts = $('#alerts');
             this.$globalSidebar = $('#global-sidebar');
             this.$pageHeader = $('#page-header');
-            this.$containerTopbar = $('#container').find('.topbar');
+            this.$containerTopbar = this.$container.find('.topbar');
             this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
             this.$systemNameLink = this.$globalSidebarTopbar.children('a.system-name');
             this.$systemName = this.$systemNameLink.children('h2');
@@ -103,9 +103,11 @@ Craft.CP = Garnish.Base.extend(
             this.totalNavItems = $navItems.length;
             this.visibleNavItems = this.totalNavItems;
 
-            for (var i = 0; i < this.totalNavItems; i++) {
-                var $li = $($navItems[i]),
-                    width = $li.width();
+            var i, $li, width;
+
+            for (i = 0; i < this.totalNavItems; i++) {
+                $li = $($navItems[i]);
+                width = $li.width();
 
                 this.navItems.push($li);
                 this.totalNavWidth += width;
@@ -119,9 +121,9 @@ Craft.CP = Garnish.Base.extend(
             this.totalSubnavItems = $subnavItems.length;
             this.visibleSubnavItems = this.totalSubnavItems;
 
-            for (var i = 0; i < this.totalSubnavItems; i++) {
-                var $li = $($subnavItems[i]),
-                    width = $li.width();
+            for (i = 0; i < this.totalSubnavItems; i++) {
+                $li = $($subnavItems[i]);
+                width = $li.width();
 
                 this.subnavItems.push($li);
                 this.totalSubnavWidth += width;
@@ -159,7 +161,7 @@ Craft.CP = Garnish.Base.extend(
             }
 
             // Does this page have a primary form?
-            if (this.$container.prop('nodeName') == 'FORM') {
+            if (this.$container.prop('nodeName') === 'FORM') {
                 this.$primaryForm = this.$container;
             }
             else {
@@ -169,7 +171,7 @@ Craft.CP = Garnish.Base.extend(
             // Does the primary form support the save shortcut?
             if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
                 this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                    if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY) {
+                    if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode === Garnish.S_KEY) {
                         ev.preventDefault();
                         this.submitPrimaryForm();
                     }
@@ -203,7 +205,7 @@ Craft.CP = Garnish.Base.extend(
                         for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
                             if (
                                 Craft.forceConfirmUnload ||
-                                this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
+                                this.initialFormValues[i] !== $(this.$confirmUnloadForms[i]).serialize()
                             ) {
                                 var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
 
@@ -409,7 +411,7 @@ Craft.CP = Garnish.Base.extend(
 
                 if (this.updateResponsiveTables._containerWidth > 0) {
                     // Is this the first time we've checked this table?
-                    if (this.updateResponsiveTables._$table.data('lastContainerWidth') === undefined) {
+                    if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === 'undefined') {
                         this.updateResponsiveTables._check = true;
                     }
                     else {
@@ -532,7 +534,7 @@ Craft.CP = Garnish.Base.extend(
         displayNotification: function(type, message) {
             var notificationDuration = Craft.CP.notificationDuration;
 
-            if (type == 'error') {
+            if (type === 'error') {
                 notificationDuration *= 2;
             }
 
@@ -613,7 +615,7 @@ Craft.CP = Garnish.Base.extend(
 
                     if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?'))) {
                         Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus) {
-                            if (textStatus == 'success') {
+                            if (textStatus === 'success') {
                                 if (response.success) {
                                     $transferDomainLink.parent().remove();
                                     this.displayNotice(Craft.t('app', 'License transferred.'));
@@ -642,7 +644,7 @@ Craft.CP = Garnish.Base.extend(
                     };
 
                     Craft.queueActionRequest('app/shun-cp-alert', data, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             if (response.success) {
                                 $link.parent().remove();
                             }
@@ -676,7 +678,7 @@ Craft.CP = Garnish.Base.extend(
             }
 
             // Callback function?
-            if (typeof callback == 'function') {
+            if (typeof callback === 'function') {
                 if (!Garnish.isArray(this.checkForUpdatesCallbacks)) {
                     this.checkForUpdatesCallbacks = [];
                 }
@@ -713,7 +715,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         updateUtilitiesBadge: function() {
-            var $utilitiesLink = $('#nav-utilities > a:not(.sel)');
+            var $utilitiesLink = $('#nav-utilities').find('> a:not(.sel)');
 
             // Ignore if there is no (non-selected) Utilities nav item
             if (!$utilitiesLink.length) {
@@ -738,7 +740,7 @@ Craft.CP = Garnish.Base.extend(
         runPendingTasks: function() {
             if (Craft.runTasksAutomatically) {
                 Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         this.trackTaskProgress(false);
                     }
                 }, this));
@@ -778,7 +780,7 @@ Craft.CP = Garnish.Base.extend(
 
         _trackTaskProgressInternal: function() {
             Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     this.trackTaskProgressTimeout = null;
                     this.setTaskInfo(response.tasks, true);
 
@@ -837,12 +839,12 @@ Craft.CP = Garnish.Base.extend(
                 if (this.areTasksStalled) {
                     this.taskProgressIcon.showFailMode(Craft.t('app', 'Stalled task'));
                 }
-                else if (taskInfo.status == 'running' || taskInfo.status == 'pending') {
+                else if (taskInfo.status === 'running' || taskInfo.status === 'pending') {
                     this.taskProgressIcon.hideFailMode();
                     this.taskProgressIcon.setDescription(taskInfo.description);
                     this.taskProgressIcon.setProgress(taskInfo.progress, animate);
                 }
-                else if (taskInfo.status == 'error') {
+                else if (taskInfo.status === 'error') {
                     this.taskProgressIcon.showFailMode(Craft.t('app', 'Failed task'));
                 }
             }
@@ -1132,13 +1134,18 @@ var TaskProgressHUD = Garnish.HUD.extend(
             // First remove any tasks that have completed
             var newTaskIds = [];
 
+            var i;
+
             if (Craft.cp.taskInfo) {
-                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                for (i = 0; i < Craft.cp.taskInfo.length; i++) {
                     newTaskIds.push(Craft.cp.taskInfo[i].id);
                 }
             }
 
             for (var id in this.tasksById) {
+                if (!this.tasksById.hasOwnProperty(id)) {
+                    continue;
+                }
                 if (!Craft.inArray(id, newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);
@@ -1148,7 +1155,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
             // Now display the tasks that are still around
             if (Craft.cp.taskInfo && Craft.cp.taskInfo.length) {
-                for (var i = 0; i < Craft.cp.taskInfo.length; i++) {
+                for (i = 0; i < Craft.cp.taskInfo.length; i++) {
                     var info = Craft.cp.taskInfo[i];
 
                     if (this.tasksById[info.id]) {
@@ -1217,7 +1224,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 
             if (this.level != 0) {
                 this.$container.css('padding-' + Craft.left, 24 + (this.level * 24));
-                $('<div class="indent" data-icon="' + (Craft.orientation == 'ltr' ? 'rarr' : 'larr') + '"/>').appendTo(this.$descriptionContainer);
+                $('<div class="indent" data-icon="' + (Craft.orientation === 'ltr' ? 'rarr' : 'larr') + '"/>').appendTo(this.$descriptionContainer);
             }
 
             this.updateStatus(info);
@@ -1262,7 +1269,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 }
             }
 
-            if (this.status == 'running') {
+            if (this.status === 'running') {
                 this._progressBar.setProgressPercentage(info.progress * 100);
             }
         },
@@ -1286,7 +1293,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
             switch ($(option).data('action')) {
                 case 'rerun': {
                     Craft.postActionRequest('tasks/rerun-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             Craft.cp.trackTaskProgress(false);
                         }
                     }, this));
@@ -1294,7 +1301,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
                 }
                 case 'cancel': {
                     Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             Craft.cp.trackTaskProgress(false);
                         }
                     }, this));

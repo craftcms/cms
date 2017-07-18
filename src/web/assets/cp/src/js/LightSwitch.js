@@ -42,7 +42,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
             this.$outerContainer.attr({
                 'role': 'checkbox',
-                'aria-checked': (this.on ? 'true' : 'false'),
+                'aria-checked': (this.on ? 'true' : 'false')
             });
 
             this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
@@ -121,7 +121,7 @@ Craft.LightSwitch = Garnish.Base.extend(
                     break;
                 }
                 case Garnish.RIGHT_KEY: {
-                    if (Craft.orientation == 'ltr') {
+                    if (Craft.orientation === 'ltr') {
                         this.turnOn();
                     }
                     else {
@@ -132,7 +132,7 @@ Craft.LightSwitch = Garnish.Base.extend(
                     break;
                 }
                 case Garnish.LEFT_KEY: {
-                    if (Craft.orientation == 'ltr') {
+                    if (Craft.orientation === 'ltr') {
                         this.turnOff();
                     }
                     else {
@@ -157,7 +157,7 @@ Craft.LightSwitch = Garnish.Base.extend(
         _onDrag: function() {
             var margin;
 
-            if (Craft.orientation == 'ltr') {
+            if (Craft.orientation === 'ltr') {
                 margin = this.dragStartMargin + this.dragger.mouseDistX;
             }
             else {

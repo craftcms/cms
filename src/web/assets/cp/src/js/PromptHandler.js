@@ -18,10 +18,6 @@ Craft.PromptHandler = Garnish.Base.extend({
     _promptBatchReturnData: [],
     _promptBatchNum: 0,
 
-    init: function() {
-
-    },
-
     resetPrompts: function() {
         this._prompts = [];
         this._promptBatchCallback = $.noop;
@@ -83,7 +79,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         }
         else {
             // All done! Call the callback
-            if (typeof this._promptBatchCallback == 'function') {
+            if (typeof this._promptBatchCallback === 'function') {
                 this._promptBatchCallback(this._promptBatchReturnData);
             }
         }
@@ -100,11 +96,11 @@ Craft.PromptHandler = Garnish.Base.extend({
     _showPrompt: function(message, choices, callback, itemsToGo) {
         this._promptCallback = callback;
 
-        if (this.modal == null) {
+        if (this.modal === null) {
             this.modal = new Garnish.Modal({closeOtherModals: false});
         }
 
-        if (this.$modalContainerDiv == null) {
+        if (this.$modalContainerDiv === null) {
             this.$modalContainerDiv = $('<div class="modal fitted prompt-modal"></div>').addClass().appendTo(Garnish.$bod);
         }
 
@@ -131,7 +127,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="' + choices[i].value + '"/> ' + choices[i].title + '</label></div>').appendTo(this.$promptChoices),
                 $radioButton = $radioButtonHtml.find('input');
 
-            this.addListener($radioButton, 'click', function(ev) {
+            this.addListener($radioButton, 'click', function() {
                 $submitBtn.removeClass('disabled');
             });
         }
@@ -143,7 +139,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             this._selectPromptChoice(choice, applyToRemaining);
         });
 
-        this.addListener($cancelButton, 'activate', function(ev) {
+        this.addListener($cancelButton, 'activate', function() {
             var choice = 'cancel',
                 applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 

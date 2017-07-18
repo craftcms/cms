@@ -98,7 +98,7 @@
                 this.completedActions++;
 
                 // Add any new batches to the queue?
-                if (textStatus == 'success' && response && response.batches) {
+                if (textStatus === 'success' && response && response.batches) {
                     for (var i = 0; i < response.batches.length; i++) {
                         if (response.batches[i].length) {
                             this.totalActions += response.batches[i].length;

@@ -17,7 +17,7 @@
                 Craft.postActionRequest('dashboard/get-feed-items', data, $.proxy(function(response, textStatus) {
                     this.$widget.removeClass('loading');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         var $tds = this.$widget.find('td');
 
                         for (var i = 0; i < response.items.length; i++) {

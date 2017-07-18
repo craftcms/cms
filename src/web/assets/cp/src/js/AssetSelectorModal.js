@@ -88,7 +88,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
         selectImagesWithTransform: function(transform) {
             // First we must get any missing transform URLs
-            if (Craft.AssetSelectorModal.transformUrls[transform] === undefined) {
+            if (typeof Craft.AssetSelectorModal.transformUrls[transform] === 'undefined') {
                 Craft.AssetSelectorModal.transformUrls[transform] = {};
             }
 
@@ -99,7 +99,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
                 var $item = $($selectedElements[i]),
                     elementId = Craft.getElementInfo($item).id;
 
-                if (Craft.AssetSelectorModal.transformUrls[transform][elementId] === undefined) {
+                if (typeof Craft.AssetSelectorModal.transformUrls[transform][elementId] === 'undefined') {
                     imageIdsWithMissingUrls.push(elementId);
                 }
             }
@@ -131,7 +131,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
             Craft.postActionRequest('assets/generate-transform', data, $.proxy(function(response, textStatus) {
                 Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     if (response.url) {
                         Craft.AssetSelectorModal.transformUrls[transform][elementId] = response.url;
                     }
@@ -155,7 +155,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
                     var elementId = info[i].id;
 
                     if (
-                        Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== undefined &&
+                        typeof Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== 'undefined' &&
                         Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== false
                     ) {
                         info[i].url = Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId];

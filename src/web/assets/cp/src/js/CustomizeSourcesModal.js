@@ -61,7 +61,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
             Craft.postActionRequest('element-index-settings/get-customize-sources-modal-data', data, $.proxy(function(response, textStatus) {
                 this.$loadingSpinner.remove();
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     this.$saveBtn.removeClass('disabled');
                     this.buildModal(response);
                 }
@@ -95,20 +95,21 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 this.sources.push(source);
             }
 
-            if (!this.selectedSource && this.sources[0] !== undefined) {
+            if (!this.selectedSource && typeof this.sources[0] !== 'undefined') {
                 this.sources[0].select();
             }
         },
 
         addSource: function(sourceData) {
-            var $item = $('<div class="customize-sources-item"/>').appendTo(this.$sourcesContainer),
-                $itemLabel = $('<div class="label"/>').appendTo($item),
-                $itemInput = $('<input type="hidden"/>').appendTo($item),
-                $moveHandle = $('<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a>').appendTo($item),
-                source;
+            var $item = $('<div class="customize-sources-item"/>').appendTo(this.$sourcesContainer);
+            var $itemLabel = $('<div class="label"/>').appendTo($item);
+            var $itemInput = $('<input type="hidden"/>').appendTo($item);
+            $('<a class="move icon" title="' + Craft.t('app', 'Reorder') + '" role="button"></a>').appendTo($item);
+
+            var source;
 
             // Is this a heading?
-            if (sourceData.heading !== undefined) {
+            if (typeof sourceData.heading !== 'undefined') {
                 $item.addClass('heading');
                 $itemInput.attr('name', 'sourceOrder[][heading]');
                 source = new Craft.CustomizeSourcesModal.Heading(this, $item, $itemLabel, $itemInput, sourceData);
@@ -120,7 +121,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 source.updateItemLabel(sourceData.label);
 
                 // Select this by default?
-                if (sourceData.key == this.elementIndex.sourceKey) {
+                if (sourceData.key === this.elementIndex.sourceKey) {
                     source.select();
                 }
             }
@@ -156,11 +157,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
             Craft.postActionRequest('element-index-settings/save-customize-sources-modal-settings', data, $.proxy(function(response, textStatus) {
                 this.$saveSpinner.addClass('hidden');
 
-                if (textStatus == 'success' && response.success) {
+                if (textStatus === 'success' && response.success) {
                     // Have any changes been made to the source list?
                     if (this.updateSourcesOnSave) {
                         if (this.$elementIndexSourcesContainer.length) {
-                            var $lastSource,
+                            var $lastSource = null,
                                 $pendingHeading;
 
                             for (var i = 0; i < this.sourceSort.$items.length; i++) {
@@ -206,7 +207,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.hide();
                 }
                 else {
-                    var error = (textStatus == 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
+                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
                     Craft.cp.displayError(error);
                 }
             }, this));
@@ -259,7 +260,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
         },
 
         isSelected: function() {
-            return (this.modal.selectedSource == this);
+            return (this.modal.selectedSource === this);
         },
 
         select: function() {
@@ -324,21 +325,23 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
 
                 $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes);
 
+                var i, attribute, key, label;
+
                 // Add the selected columns, in the selected order
-                for (var i = 1; i < this.sourceData.tableAttributes.length; i++) {
-                    var attribute = this.sourceData.tableAttributes[i],
-                        key = attribute[0],
-                        label = attribute[1];
+                for (i = 1; i < this.sourceData.tableAttributes.length; i++) {
+                    attribute = this.sourceData.tableAttributes[i];
+                    key = attribute[0];
+                    label = attribute[1];
 
                     $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
                     selectedAttributes.push(key);
                 }
 
                 // Add the rest
-                for (var i = 0; i < this.modal.availableTableAttributes.length; i++) {
-                    var attribute = this.modal.availableTableAttributes[i],
-                        key = attribute[0],
-                        label = attribute[1];
+                for (i = 0; i < this.modal.availableTableAttributes.length; i++) {
+                    attribute = this.modal.availableTableAttributes[i];
+                    key = attribute[0];
+                    label = attribute[1];
 
                     if (!Craft.inArray(key, selectedAttributes)) {
                         $columnCheckboxes.append(this.createTableColumnOption(key, label, false, false));

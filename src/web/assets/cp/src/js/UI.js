@@ -12,7 +12,7 @@ Craft.ui =
                 value: config.value,
                 maxlength: config.maxlength,
                 autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (config.autocomplete === undefined || !config.autocomplete ? 'off' : null),
+                autocomplete: (typeof config.autocomplete === 'undefined' || !config.autocomplete ? 'off' : null),
                 disabled: this.getDisabledValue(config.disabled),
                 readonly: config.readonly,
                 title: config.title,
@@ -25,7 +25,7 @@ Craft.ui =
             if (config.placeholder) {
                 $input.addClass('nicetext');
             }
-            if (config.type == 'password') {
+            if (config.type === 'password') {
                 $input.addClass('password');
             }
             if (config.disabled) {
@@ -38,14 +38,14 @@ Craft.ui =
             if (config.showCharsLeft && config.maxlength) {
                 $input
                     .attr('data-show-chars-left')
-                    .css('padding-' + (Craft.orientation == 'ltr' ? 'right' : 'left'), (7.2 * config.maxlength.toString().length + 14) + 'px');
+                    .css('padding-' + (Craft.orientation === 'ltr' ? 'right' : 'left'), (7.2 * config.maxlength.toString().length + 14) + 'px');
             }
 
             if (config.placeholder || config.showCharsLeft) {
                 new Garnish.NiceText($input);
             }
 
-            if (config.type == 'password') {
+            if (config.type === 'password') {
                 return $('<div class="passwordwrapper"/>').append($input);
             }
             else {
@@ -107,7 +107,7 @@ Craft.ui =
                 'data-target-prefix': config.targetPrefix
             }).appendTo($container);
 
-            var $optgroup;
+            var $optgroup = null;
 
             for (var key in config.options) {
                 if (!config.options.hasOwnProperty(key)) {
@@ -117,14 +117,14 @@ Craft.ui =
                 var option = config.options[key];
 
                 // Starting a new <optgroup>?
-                if (option.optgroup !== undefined) {
+                if (typeof option.optgroup !== 'undefined') {
                     $optgroup = $('<optgroup/>', {
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (option.label !== undefined ? option.label : option),
-                        optionValue = (option.value !== undefined ? option.value : key),
-                        optionDisabled = (option.disabled !== undefined ? option.disabled : false);
+                    var optionLabel = (typeof option.label !== 'undefined' ? option.label : option),
+                        optionValue = (typeof option.value !== 'undefined' ? option.value : key),
+                        optionDisabled = (typeof option.disabled !== 'undefined' ? option.disabled : false);
 
                     $('<option/>', {
                         'value': optionValue,
@@ -152,7 +152,7 @@ Craft.ui =
 
             var $input = $('<input/>', {
                 type: 'checkbox',
-                value: (config.value !== undefined ? config.value : '1'),
+                value: (typeof config.value !== 'undefined' ? config.value : '1'),
                 id: id,
                 'class': 'checkbox',
                 name: config.name,
@@ -178,7 +178,7 @@ Craft.ui =
             });
 
             // Should we include a hidden input first?
-            if (config.name && (config.name.length < 3 || config.name.substr(-2) != '[]')) {
+            if (config.name && (config.name.length < 3 || config.name.substr(-2) !== '[]')) {
                 return $([
                     $('<input/>', {
                         type: 'hidden',
@@ -330,7 +330,7 @@ Craft.ui =
         },
 
         createField: function(input, config) {
-            var label = (config.label && config.label != '__blank__' ? config.label : null),
+            var label = (config.label && config.label !== '__blank__' ? config.label : null),
                 siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
             var $field = $('<div/>', {

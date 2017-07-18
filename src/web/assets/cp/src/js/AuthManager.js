@@ -51,12 +51,12 @@ Craft.AuthManager = Garnish.Base.extend(
                 type: 'GET',
                 dataType: 'json',
                 complete: $.proxy(function(jqXHR, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         this.updateRemainingSessionTime(jqXHR.responseJSON.timeout);
 
                         this.submitLoginIfLoggedOut = false;
 
-                        if (jqXHR.responseJSON.csrfTokenValue !== undefined && Craft.csrfTokenValue !== undefined) {
+                        if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                             Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
                         }
                     }
@@ -74,7 +74,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.remainingSessionTime = parseInt(remainingSessionTime);
 
             // Are we within the warning window?
-            if (this.remainingSessionTime != -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessiotTime) {
+            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessiotTime) {
                 // Is there still time to renew the session?
                 if (this.remainingSessionTime) {
                     if (!this.showingLogoutWarningModal) {
@@ -111,7 +111,7 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.hideLoginModal();
 
                 // Will be be within the minSafeSessiotTime before the next update?
-                if (this.remainingSessionTime != -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessiotTime + Craft.AuthManager.checkInterval)) {
+                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessiotTime + Craft.AuthManager.checkInterval)) {
                     this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessiotTime + 1);
                 }
                 else {
@@ -194,7 +194,7 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.updateLogoutWarningMessage();
             }
 
-            if (this.remainingSessionTime == 0) {
+            if (this.remainingSessionTime === 0) {
                 clearInterval(this.decrementLogoutWarningInterval);
             }
         },
@@ -341,7 +341,7 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.$passwordSpinner.removeClass('hidden');
                 this.clearLoginError();
 
-                if (Craft.csrfTokenValue !== undefined) {
+                if (typeof Craft.csrfTokenValue !== 'undefined') {
                     // Check the auth status one last time before sending this off,
                     // in case the user has already logged back in from another window/tab
                     this.submitLoginIfLoggedOut = true;
@@ -362,7 +362,7 @@ Craft.AuthManager = Garnish.Base.extend(
             Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
                 this.$passwordSpinner.addClass('hidden');
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     if (response.success) {
                         this.hideLoginModal();
                         this.checkRemainingSessionTime();
@@ -384,7 +384,7 @@ Craft.AuthManager = Garnish.Base.extend(
         },
 
         showLoginError: function(error) {
-            if (error === null || error === undefined) {
+            if (error === null || typeof error === 'undefined') {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 
