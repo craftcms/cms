@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Security
+- Fixed a bug where admins could download arbitrary zip files from the server.
+
 ## 2.6.2987 - 2017-07-14
 
 ### Changed
