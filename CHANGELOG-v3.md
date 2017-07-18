@@ -4,7 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Changed
-- During a database backup, Craft will now default to excluding data from cache, session and asset index tables.
+- During a database backup, Craft will now default to excluding data from `assetindexdata`, `assettransformindex`, `cache`, `sessions`, `templatecaches`, `templatecachecriteria`, and `templatecacheelements` tables.
 
 ### Fixed
 - Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
