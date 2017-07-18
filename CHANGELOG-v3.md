@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
+- Fixed a Twig error that would occur when saving a Matrix field if there were any validation errors.
 
 ## 3.0.0-beta.22 - 2017-07-14
 
