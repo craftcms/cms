@@ -11,6 +11,7 @@ use craft\db\Query;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
+use yii\db\Expression;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -121,71 +122,75 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        if ($className === ContentBehavior::class || $className === ElementQueryBehavior::class) {
-            $storedFieldVersion = static::$app->getInfo()->fieldVersion;
-            $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
+        if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
+            return;
+        }
 
-            $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
-            $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
+        $storedFieldVersion = static::$app->getInfo()->fieldVersion;
+        $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
 
-            $isContentBehaviorFileValid = self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion);
-            $isElementQueryBehaviorFileValid = self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion);
+        $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
+        $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
 
-            if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
-                return;
+        $isContentBehaviorFileValid = self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion);
+        $isElementQueryBehaviorFileValid = self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion);
+
+        if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
+            return;
+        }
+
+        if (Craft::$app->getIsInstalled()) {
+            // Properties are case-sensitive, so get all the binary-unique field handles
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $column = new Expression('binary [[handle]] as [[handle]]');
+            } else {
+                $column = 'handle';
             }
 
+            $fieldHandles = (new Query())
+                ->distinct(true)
+                ->from(['{{%fields}}'])
+                ->select([$column])
+                ->column();
+        } else {
+            $fieldHandles = [];
+        }
+
+        if (!$isContentBehaviorFileValid) {
             $properties = [];
-            $methods = [];
 
-            if (Craft::$app->getIsInstalled()) {
-                // Get the field handles
-                $fieldHandles = (new Query())
-                    ->select(['handle'])
-                    ->distinct(true)
-                    ->from(['{{%fields}}'])
-                    ->column();
-
-                foreach ($fieldHandles as $handle) {
-                    $properties[] = <<<EOD
+            foreach ($fieldHandles as $handle) {
+                $properties[] = <<<EOD
     /**
      * @var mixed Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
+            }
 
-                    $methods[] = <<<EOD
-    /**
-     * Sets the [[{$handle}]] property.
-     * @param mixed \$value The property value
-     * @return \\yii\\base\\Component The behavior’s owner component
-     */
-    public function {$handle}(\$value)
-    {
-        \$this->{$handle} = \$value;
-        return \$this->owner;
-    }
+            self::_writeFieldAttributesFile(
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
+                ['{VERSION}', '/* PROPERTIES */'],
+                [$storedFieldVersion, implode("\n\n", $properties)],
+                $contentBehaviorFile
+            );
+        }
+
+        if (!$isElementQueryBehaviorFileValid) {
+            $methods = [];
+
+            foreach ($fieldHandles as $handle) {
+                $methods[] = <<<EOD
+ * @method void {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
-                }
             }
 
-            if (!$isContentBehaviorFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
-                    ['{VERSION}', '/* PROPERTIES */'],
-                    [$storedFieldVersion, implode("\n\n", $properties)],
-                    $contentBehaviorFile
-                );
-            }
-
-            if (!$isElementQueryBehaviorFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
-                    ['{VERSION}', '/* METHODS */'],
-                    [$storedFieldVersion, implode("\n\n", $methods)],
-                    $elementQueryBehaviorFile
-                );
-            }
+            self::_writeFieldAttributesFile(
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
+                ['{VERSION}', '{METHOD_DOCS}'],
+                [$storedFieldVersion, implode("\n", $methods)],
+                $elementQueryBehaviorFile
+            );
         }
     }
 
