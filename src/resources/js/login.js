@@ -20,7 +20,7 @@ var LoginForm = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$form = $('#login-form'),
+		this.$form = $('#login-form');
 		this.$loginNameInput = $('#loginName');
 		this.$loginFields = $('#login-fields');
 		this.$passwordPaneItem = this.$loginFields.children();
