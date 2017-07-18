@@ -495,6 +495,11 @@ class EntriesController extends BaseEntriesController
             return null;
         }
 
+        // Should we save a new version?
+        if ($entry->getSection()->enableVersioning) {
+            Craft::$app->getEntryRevisions()->saveVersion($entry);
+        }
+
         if ($request->getAcceptsJson()) {
             $return = [];
 
