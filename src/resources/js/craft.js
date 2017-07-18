@@ -1,4 +1,4 @@
-/*! Craft  - 2017-06-30 */
+/*! Craft  - 2017-07-18 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -16815,7 +16815,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 	init: function(settings)
 	{
-		this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod),
+		this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod);
 
 		this.base(this.$container, $.extend({
 			resizable: true
