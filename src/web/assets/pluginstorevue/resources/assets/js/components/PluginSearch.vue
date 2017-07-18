@@ -26,7 +26,7 @@
         data () {
             return {
                 searchQuery: '',
-                showSpinner: 1,
+                showSpinner: false,
             }
         },
         computed: {
