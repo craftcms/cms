@@ -3,23 +3,10 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
-### Fixed
-- Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
-
-## 3.0.0-beta.22 - 2017-07-14
-
-### Added
-- Added support for asset reference tags that explicitly target an image transform (e.g. `{asset:123:transform:thumbnail}`).
-- Added `craft\elements\Asset::copyWithTransform()`.
-- Added the `beforeUpdateSlugAndUri` and `afterUpdateSlugAndUri` events to `craft\services\Elements::updateElementSlugAndUri()`. ([#1828](https://github.com/craftcms/cms/issues/1828))
-
 ### Changed
-- HTMLPurifier no longer removes the following HTML5 elements by default: `<address>`, `<hgroup>`, `<figure>`, `<figcaption>`, `<s>`, `<var>`, `<sub>`, `<sup>`, `<mark>`, `<wbr>`, `<ins>`, `<del>`.
-- HTMLPurifier no longer sets missing `alt` attributes to the image filename by default.
 - `craft\db\elements\ElementQuery::one()` and `nth()` now consistently return `false` rather than `null` when no matching element is found.
 - Editable table fields in the Control Panel can now specify unique `select` column options on a per-cell basis, by setting the cell’s value to an object with `options` and `value` keys.
 - Header cells within editable table fields in the Control Panel can now specify their `<th>` class names.
-- `craft\helpers\Localization::normalizeNumber()` now has an optional `$localeId` argument.
 - `craft\services\Dashboard::deleteWidget()` now triggers the `beforeDeleteWidget` event and calls `beforeDelete()` on the widget at the top of the function.
 - `craft\services\Dashboard::saveWidget()` now triggers the `beforeSaveWidget` event and calls `beforeSave()` on the widget at the top of the function.
 - `craft\services\Elements::deleteElement()` now triggers the `beforeDeleteElement` event and calls `beforeDelete()` on the element at the top of the function.
@@ -30,17 +17,12 @@ Craft CMS 3.0 Working Changelog
 - `craft\services\Elements::saveTasks()` now triggers the `beforeSaveTask` event and calls `beforeSave()` on the task at the top of the function.
 - `craft\services\Elements::deleteVolumes()` now triggers the `beforeDeleteVolume` event and calls `beforeDelete()` on the volume at the top of the function.
 - `craft\services\Elements::saveVolumes()` now triggers the `beforeSaveVolume` event and calls `beforeSave()` on the volume at the top of the function.
-- Craft no longer logs caught `craft\db\QueryAbortedException` exceptions. ([#1827](https://github.com/craftcms/cms/issues/1827))
-- Renamed `craft\services\User::updateUserLoginInfo()` to `handleValidLogin()`.
+- During a database backup, Craft will now default to excluding data from cache, session and asset index tables.
 
 ### Fixed
 - Fixed an issue where non-admins were not able to download assets using the element action. ([#1829](https://github.com/craftcms/cms/issues/1829))
 - Fixed a bug where Assets fields were only enforcing their “Restrict allowed file types?” settings when uploading brand new files.
 - Fixed a bug where elements’ custom fields were not getting validated on save if the `fieldLayoutId` had not been set beforehand.
-- Fixed a bug where transformed images within Rich Text fields would break if the transform handle was identical to a custom field handle. ([#1804](https://github.com/craftcms/cms/issues/1804))
-- Fixed a bug where some SVG file dimensions could not be detected.
-- Fixed a bug where some field type data could become corrupted in various ways when propagating field values to different sites. ([#1833](https://github.com/craftcms/cms/issues/1833))
-- Fixed a bug where the settings for new fields being created within an existing Matrix field would not show the Translation Method setting when they should. ([#1834](https://github.com/craftcms/cms/issues/1834))
 
 ## 3.0.0-beta.21 - 2017-07-07
 
