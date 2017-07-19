@@ -4,7 +4,8 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where picturefill was not applied to Assets loaded with AJAX
+- Fixed a bug where picturefill was not applied to Assets loaded with AJAX.
+- Fixed alignment bug with the add tag field.
 
 ### Security
 - Fixed a bug where admins could download arbitrary zip files from the server.

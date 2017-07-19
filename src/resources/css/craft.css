@@ -1356,6 +1356,10 @@ body.rtl .tagselect .add .text { padding-left: 30px; }
 body.ltr .tagselect .add .spinner { right: 5px; }
 body.rtl .tagselect .add .spinner { left: 5px; }
 
+body.ltr .tagselect.elementselect .element, body.rtl .tagselect.elementselect .element { float: none !important; display: inline-block; }
+
+.tagselect .elements { display: inline; }
+
 body.ltr .tagmenu ul li a { padding-left: 26px; }
 body.rtl .tagmenu ul li a { padding-right: 26px; }
 

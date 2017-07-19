@@ -1264,6 +1264,9 @@ body #redactor-modal-overlay {
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }
+body.ltr .tagselect.elementselect .element,
+body.rtl .tagselect.elementselect .element { float: none !important; display: inline-block; }
+.tagselect .elements { display: inline; }
 
 .tagmenu ul li a { @include padding-left(26px); }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
