@@ -3992,7 +3992,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         resetElements: function() {
-            this.$elements = $();
+            if (this.$elements !== null) {
+                this.removeElements(this.$elements);
+            } else {
+                this.$elements = $();
+            }
+
             this.addElements(this.getElements());
         },
 
