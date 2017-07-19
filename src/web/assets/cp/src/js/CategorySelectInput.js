@@ -57,18 +57,21 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
                     this.$elementsContainer = $newElementsContainer;
                     this.resetElements();
 
+                    var filteredElements = [];
+
                     for (var i = 0; i < elements.length; i++) {
                         var element = elements[i],
                             $element = this.getElementById(element.id);
 
                         if ($element) {
                             this.animateElementIntoPlace(element.$element, $element);
+                            filteredElements.push(element);
                         }
                     }
 
                     this.updateDisabledElementsInModal();
                     this.modal.hide();
-                    this.onSelectElements();
+                    this.onSelectElements(filteredElements);
                 }
             }, this));
         },
