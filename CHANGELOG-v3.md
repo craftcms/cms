@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that could occur if two Matrix blocks (either in the same Matrix field or across multiple Matrix fields) had sub-fields with identical handles, but different casings.
 - Fixed a bug where listeners to the `selectElements` JavaScript event for Categories fields weren’t getting passed the list of new categories.
 - Fixed a bug where previously-selected categories could become unselectable within a Categories field after they had been replaced. ([#1846](https://github.com/craftcms/cms/issues/1846))
+- Fixed a bug where Craft would send an activation email when an admin registered a new user even if the “Send an activation email now?” checkbox was unchecked.
 
 ## 3.0.0-beta.22 - 2017-07-14
 
