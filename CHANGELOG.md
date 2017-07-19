@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where picturefill was not applied to Assets loaded with AJAX.
 - Fixed alignment bug with the add tag field.
+- Fixed a PHP error that could occur when logging a deprecation warning in `DepreactorService`.
 
 ### Security
 - Fixed a bug where admins could download arbitrary zip files from the server.

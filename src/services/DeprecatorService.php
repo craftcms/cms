@@ -209,7 +209,7 @@ class DeprecatorService extends BaseApplicationComponent
 			);
 
 			// Is this a template?
-			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && strpos($trace['file'], 'compiled_templates') !== false)
+			if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && (isset($trace['file']) && strpos($trace['file'], 'compiled_templates')) !== false)
 			{
 				$template = $trace['object'];
 
