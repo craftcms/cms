@@ -1682,7 +1682,9 @@ class UsersController extends Controller
                 $groupIds = $request->getBodyParam('groups');
 
                 if ($groupIds !== null) {
-                    $groupIds = (array)$groupIds;
+                    if ($groupIds === '') {
+                        $groupIds = [];
+                    }
 
                     // See if there are any new groups in here
                     $oldGroupIds = [];
