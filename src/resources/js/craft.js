@@ -1,4 +1,4 @@
-/*! Craft  - 2017-07-18 */
+/*! Craft  - 2017-07-19 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -3585,6 +3585,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				this.appendElements($newElements);
 				Craft.appendHeadHtml(response.headHtml);
 				Craft.appendFootHtml(response.footHtml);
+				picturefill();
 
 				if (this.elementSelect)
 				{
