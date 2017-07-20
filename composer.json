@@ -32,18 +32,7 @@
     "yiisoft/yii2": "~2.0.12.0",
     "yiisoft/yii2-debug": "2.0.8",
     "yiisoft/yii2-swiftmailer": "~2.0.6",
-    "zendframework/zend-feed": "~2.8.0",
-    "bower-asset/d3": "~4.8.0",
-    "bower-asset/d3-format": "~1.2.0",
-    "bower-asset/d3-time-format": "~2.0.3",
-    "bower-asset/element-resize-detector": "~1.1.11",
-    "bower-asset/fabric": "~1.7.6",
-    "bower-asset/garnishjs": "~0.1.17",
-    "bower-asset/jquery.payment": "~3.0.0",
-    "bower-asset/picturefill": "~3.0.2",
-    "bower-asset/selectize": "~0.12.4",
-    "bower-asset/timepicker": "~1.11.11",
-    "bower-asset/velocity": "~1.5.0"
+    "zendframework/zend-feed": "~2.8.0"
   },
   "require-dev": {
     "codeception/codeception": "~2.3.3",

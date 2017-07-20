@@ -19,7 +19,7 @@ class VelocityAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/velocity';
+        $this->sourcePath = '@lib/velocity';
 
         $this->js = [
             'velocity'.$this->dotJs(),

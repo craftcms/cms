@@ -19,7 +19,7 @@ class TimepickerAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/timepicker';
+        $this->sourcePath = '@lib/timepicker';
 
         $this->js = [
             'jquery.timepicker'.$this->dotJs(),

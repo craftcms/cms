@@ -19,7 +19,7 @@ class JqueryPaymentAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/jquery.payment/lib';
+        $this->sourcePath = '@lib/jquery.payment';
 
         $this->js = [
             'jquery.payment'.$this->dotJs(),

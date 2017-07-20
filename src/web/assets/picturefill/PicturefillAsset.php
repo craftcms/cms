@@ -19,7 +19,7 @@ class PicturefillAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = '@bower/picturefill/dist';
+        $this->sourcePath = '@lib/picturefill';
 
         $this->js = [
             'picturefill'.$this->dotJs(),

@@ -31,7 +31,7 @@
             baseSiteUrl:           "{{ siteUrl()|e('js') }}",
             actionUrl:             "{{ actionUrl()|e('js') }}",
             resourceUrl:           "{{ resourceUrl()|e('js') }}",
-            jqueryPaymentUrl:      "{{ (view.getAssetManager().getPublishedUrl('@bower/jquery.payment/lib', true)~'/jquery.payment.min.js')|e('js') }}",
+            jqueryPaymentUrl:      "{{ (view.getAssetManager().getPublishedUrl('@lib/jquery.payment', true)~'/jquery.payment.min.js')|e('js') }}",
             scriptName:            "{{ craft.app.request.getScriptFilename()|e('js') }}",
             omitScriptNameInUrls:  {{ craft.app.config.general.omitScriptNameInUrls ? 'true' : 'false' }},
             usePathInfo:           {{ craft.app.config.general.usePathInfo ? 'true' : 'false' }},
