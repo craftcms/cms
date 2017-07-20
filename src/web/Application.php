@@ -274,6 +274,14 @@ class Application extends \yii\web\Application
         if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
+
+        // Override where Yii should find its asset deps
+        $libPath = Craft::getAlias('@lib');
+        Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
+        Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
+        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/punycode', $libPath.'/punycode');
+        Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
     }
 
     // Private Methods
