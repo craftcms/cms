@@ -7,7 +7,7 @@
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
                 <p class="right">
-                    <router-link to="/staff-picks/">See all</router-link>
+                    <router-link to="/staff-picks/">{{ "See all" | t('app') }}</router-link>
                 </p>
 
                 <h2>Staff Picks</h2>

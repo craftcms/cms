@@ -6,12 +6,14 @@ import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 import App from './App';
 import CartButton from './components/CartButton';
 import { currency } from './filters/currency';
+import { t } from './filters/t';
 import router from './router';
 import store from './store'
 
 Vue.use(VueResource);
 Vue.use(VueLodash, lodash);
 Vue.filter('currency', currency)
+Vue.filter('t', t)
 
 const app = new Vue({
     el: '#container',
