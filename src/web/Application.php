@@ -256,21 +256,18 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
-     *
-     * @todo Remove this whenever Yii is updated with support for asset-packagist.org.
      */
     public function setVendorPath($path)
     {
         parent::setVendorPath($path);
 
         // Override the @bower and @npm aliases if using asset-packagist.org
+        // todo: remove this whenever Yii is updated with support for asset-packagist.org
         $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
         $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
-
         if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
-
         if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
