@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value and added as a `video` Asset kind.
+
 ### Fixed
 - Fixed a bug where picturefill was not applied to Assets loaded with AJAX.
 - Fixed alignment bug with the add tag field.
