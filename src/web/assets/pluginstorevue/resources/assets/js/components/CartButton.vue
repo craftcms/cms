@@ -1,6 +1,6 @@
 <template>
     <div>
-        <a @click="openModal()">Cart ({{ totalQuantity }})</a>
+        <a @click="openModal()">{{ "Cart" |t('app') }} ({{ totalQuantity }})</a>
 
         <modal :show.sync="showModal" :on-close="closeModal">
             <div slot="body">

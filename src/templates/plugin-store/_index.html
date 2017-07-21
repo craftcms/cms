@@ -1,19 +1,45 @@
 {% extends "_layouts/cp" %}
 
-{% set title = 'Plugin Store' %}
+{% set title = 'Plugin Store'|t('app') %}
+
+{% do view.registerTranslations('app', [
+	"Staff Picks",
+	"Search plugins",
+	"See all",
+	"Cart",
+	"Categories",
+	"Try",
+	"Version",
+	"Description",
+	"Screenshots",
+	"Last update",
+	"Active installs",
+	"Compatibility",
+	"Buy {price}",
+	"Items in your cart",
+	"Add to cart",
+	"Active Trials",
+	"Plugin Name",
+	"Price",
+	"Buy later",
+	"Subtotal",
+	"Pro Rate Discount",
+	"Total",
+	"Process My Order",
+]) %}
 
 {% block topBar %}
 	<nav id="crumbs" v-if="showCrumbs">
 		<ul>
 			<li>
-				<router-link to="/">Plugin Store</router-link>
+				<router-link to="/">{{ 'Plugin Store'|t('app') }}</router-link>
 			</li>
 		</ul>
 	</nav>
 {% endblock %}
 
 {% block pageTitle %}
-	<h1 v-text="pageTitle">Plugin Store</h1>
+	<h1 v-text="pageTitle">{{ "Plugin Store"|t('app') }}</h1>
 {% endblock %}
 
 {% set extraPageHeaderHtml %}

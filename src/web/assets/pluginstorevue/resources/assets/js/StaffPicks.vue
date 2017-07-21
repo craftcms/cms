@@ -25,7 +25,7 @@
         created () {
             this.$root.showCrumbs = true;
 
-            this.$root.pageTitle = 'Staff Picks';
+            this.$root.pageTitle = this.$root.$options.filters.t('Staff Picks', 'app');
         },
     }
 </script>

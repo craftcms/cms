@@ -3,7 +3,7 @@
         <div class="toolbar">
             <div class="flex">
                 <div class="flex-grow">
-                    <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" placeholder="Search plugins" v-model="searchQuery">
+                    <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
                 </div>
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
             </div>
