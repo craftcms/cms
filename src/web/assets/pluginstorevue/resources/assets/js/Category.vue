@@ -22,10 +22,6 @@
             }
         },
         computed: {
-            ...mapGetters({
-                categories: 'allCategories',
-                categoryPlugins: 'categoryPlugins',
-            }),
             category() {
                 let category = this.$store.getters.getCategoryById(this.categoryId);
 
@@ -34,6 +30,9 @@
                 }
 
                 return category;
+            },
+            categoryPlugins() {
+                return this.$store.getters.getPluginsByCategory(this.categoryId);
             }
         },
 
@@ -41,8 +40,6 @@
             this.$root.showCrumbs = true;
 
             this.categoryId = this.$route.params.id;
-
-            this.$store.dispatch('getCategoryPlugins', this.categoryId);
         },
     }
 </script>

@@ -53,7 +53,14 @@
                         <li><span>{{ "Last update"|t('app') }}</span> <strong>—</strong></li>
                         <li><span>{{ "Active installs"|t('app') }}</span> <strong>XXX,XXX</strong></li>
                         <li><span>{{ "Compatibility"|t('app') }}</span> <strong>Craft X</strong></li>
-                        <li><span>{{ "Categories"|t('app') }}</span> <strong>—</strong></li>
+                        <li>
+                            <span>{{ "Categories"|t('app') }}</span>
+                            <strong>
+                                <template v-for="category in categories">
+                                    {{ category.title }}
+                                </template>
+                            </strong>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -83,13 +90,16 @@
                     return marked(this.plugin.description, { sanitize: true });
                 }
             },
-
             developerUrl() {
                 return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId);
             },
-
             installUrl() {
                 return Craft.getCpUrl('plugin-store/install');
+            },
+            categories() {
+                return this.$store.getters.allCategories.filter(c => {
+                    return this.plugin.categories.find(pc => pc == c.id);
+                });
             }
         },
         methods: {

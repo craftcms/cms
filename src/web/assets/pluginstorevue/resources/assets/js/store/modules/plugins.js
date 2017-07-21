@@ -18,6 +18,13 @@ const getters = {
             return state.all.find(p => p.id == id)
         };
     },
+    getPluginsByCategory(state) {
+        return function(categoryId) {
+            return state.all.filter(p => {
+                return p.categories.find(c =>  c == categoryId);
+            })
+        }
+    }
 }
 
 // actions
