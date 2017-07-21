@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\MacroableTrait;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -21,6 +22,11 @@ use craft\helpers\ElementHelper;
  */
 class Categories extends BaseRelationField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

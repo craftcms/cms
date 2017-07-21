@@ -13,6 +13,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\MacroableTrait;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -34,6 +35,11 @@ use craft\web\assets\matrixsettings\MatrixSettingsAsset;
  */
 class Matrix extends Field implements EagerLoadingFieldInterface
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

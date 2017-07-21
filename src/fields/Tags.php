@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\MacroableTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Tag;
 use craft\models\TagGroup;
@@ -22,6 +23,11 @@ use craft\models\TagGroup;
  */
 class Tags extends BaseRelationField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

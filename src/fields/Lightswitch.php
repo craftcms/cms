@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MacroableTrait;
 use craft\base\PreviewableFieldInterface;
 use yii\db\Schema;
 
@@ -21,6 +22,11 @@ use yii\db\Schema;
  */
 class Lightswitch extends Field implements PreviewableFieldInterface
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 
