@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MacroableTrait;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Html;
 use yii\db\Schema;
@@ -22,6 +23,11 @@ use yii\db\Schema;
  */
 class Color extends Field implements PreviewableFieldInterface
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

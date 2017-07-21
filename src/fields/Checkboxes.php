@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\MacroableTrait;
 
 /**
  * Checkboxes represents a Checkboxes field.
@@ -18,6 +19,11 @@ use craft\base\ElementInterface;
  */
 class Checkboxes extends BaseOptionsField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

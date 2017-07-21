@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\MacroableTrait;
 use craft\elements\Entry;
 
 /**
@@ -18,6 +19,11 @@ use craft\elements\Entry;
  */
 class Entries extends BaseRelationField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

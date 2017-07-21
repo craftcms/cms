@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\MacroableTrait;
 
 /**
  * RadioButtons represents a Radio Buttons field.
@@ -18,6 +19,11 @@ use craft\base\ElementInterface;
  */
 class RadioButtons extends BaseOptionsField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

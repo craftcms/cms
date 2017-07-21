@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MacroableTrait;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;
 use craft\helpers\Localization;
@@ -23,6 +24,11 @@ use craft\i18n\Locale;
  */
 class Number extends Field implements PreviewableFieldInterface
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 

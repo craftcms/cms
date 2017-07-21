@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\MacroableTrait;
 use craft\base\Volume;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -37,6 +38,11 @@ use yii\db\Schema;
  */
 class RichText extends Field
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Constants
     // =========================================================================
 

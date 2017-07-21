@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\MacroableTrait;
 use craft\base\ElementInterface;
 
 /**
@@ -18,6 +19,11 @@ use craft\base\ElementInterface;
  */
 class MultiSelect extends BaseOptionsField
 {
+    // Traits
+    // =========================================================================
+
+    use MacroableTrait;
+
     // Static
     // =========================================================================
 
