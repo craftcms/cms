@@ -22,7 +22,7 @@ class TimepickerAsset extends AssetBundle
         $this->sourcePath = '@lib/timepicker';
 
         $this->js = [
-            'jquery.timepicker'.$this->dotJs(),
+            'jquery.timepicker.js',
         ];
 
         parent::init();

@@ -22,7 +22,7 @@ class PicturefillAsset extends AssetBundle
         $this->sourcePath = '@lib/picturefill';
 
         $this->js = [
-            'picturefill'.$this->dotJs(),
+            'picturefill.js',
         ];
 
         parent::init();

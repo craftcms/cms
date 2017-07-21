@@ -22,7 +22,7 @@ class FabricAsset extends AssetBundle
         $this->sourcePath = '@lib/fabric';
 
         $this->js = [
-            'fabric'.$this->dotJs(),
+            'fabric.js',
         ];
 
         parent::init();

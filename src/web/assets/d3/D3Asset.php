@@ -26,7 +26,7 @@ class D3Asset extends AssetBundle
         $this->sourcePath = '@lib/d3';
 
         $this->js = [
-            'd3'.$this->dotJs(),
+            'd3.js',
         ];
 
         parent::init();
@@ -76,8 +76,8 @@ class D3Asset extends AssetBundle
 
         // Retrieve locale files
         $libPath = Craft::getAlias('@lib');
-        $formatLocalePath = $libPath."/d3-format/locale/{$d3Language}.json";
-        $timeFormatLocalePath = $libPath."/d3-time-format/locale/{$d3Language}.json";
+        $formatLocalePath = $libPath."/d3-format/{$d3Language}.json";
+        $timeFormatLocalePath = $libPath."/d3-time-format/{$d3Language}.json";
 
         // Add locale definition JS variables
         $js = 'window.d3FormatLocaleDefinition = '.file_get_contents($formatLocalePath).';';

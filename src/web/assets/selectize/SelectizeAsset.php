@@ -26,7 +26,7 @@ class SelectizeAsset extends AssetBundle
         ];
 
         $this->js = [
-            'selectize-standalone'.$this->dotJs(),
+            'selectize.js',
         ];
 
         parent::init();

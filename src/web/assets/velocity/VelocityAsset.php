@@ -22,7 +22,7 @@ class VelocityAsset extends AssetBundle
         $this->sourcePath = '@lib/velocity';
 
         $this->js = [
-            'velocity'.$this->dotJs(),
+            'velocity.js',
         ];
 
         parent::init();

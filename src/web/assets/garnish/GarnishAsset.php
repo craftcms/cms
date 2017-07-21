@@ -33,7 +33,7 @@ class GarnishAsset extends AssetBundle
         ];
 
         $this->js = [
-            'garnish'.$this->dotJs(),
+            'garnish.js',
         ];
 
         parent::init();
