@@ -34,6 +34,7 @@
                         </router-link>
                     </li>
                 </ul>
+                <p><router-link to="/tests">Tests</router-link></p>
             </div>
         </div>
     </div>

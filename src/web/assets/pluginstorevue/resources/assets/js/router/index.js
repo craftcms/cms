@@ -5,6 +5,7 @@ import Category from '../Category'
 import Craft from '../Craft'
 import Developer from '../Developer'
 import StaffPicks from '../StaffPicks'
+import Tests from '../Tests'
 
 Vue.use(Router)
 
@@ -34,6 +35,11 @@ export default new Router({
             path: '/staff-picks',
             name: 'StaffPicks',
             component: StaffPicks,
+        },
+        {
+            path: '/tests',
+            name: 'Tests',
+            component: Tests,
         },
     ]
 })
