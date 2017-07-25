@@ -18,7 +18,7 @@
             <div class="buttons">
 
                 <div v-if="plugin.price != '0.00'">
-                    <a v-if="isInTrial(plugin)" class="btn disabled">{{ "Try"|t('app') }}</a>
+                    <a v-if="isInTrial(plugin)" class="btn disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="tryPlugin(plugin)" class="btn">{{ "Try"|t('app') }}</a>
 
                     <a v-if="isInCart(plugin)" @click="buyPlugin(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
