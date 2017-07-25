@@ -987,7 +987,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return count($cachedResult);
         }
 
-        return parent::count($q, $db);
+        return parent::count($q, $db) ?: 0;
     }
 
     /**

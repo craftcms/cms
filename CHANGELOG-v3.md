@@ -24,6 +24,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft would send an activation email when an admin registered a new user even if the “Send an activation email now?” checkbox was unchecked.
 - Fixed a SQL error that would occur when saving a user if no user groups were checked. ([#1849](https://github.com/craftcms/cms/issues/1849))
 - Fixed a bug where the background tasks HUD would show duplicate tasks when closed and reopened repeatedly without reloading the page. ([#1850](https://github.com/craftcms/cms/issues/1850))
+- Fixed a bug where required relational fields weren’t getting validation errors if they were left blank. ([#1851](https://github.com/craftcms/cms/issues/1851))
 
 ## 3.0.0-beta.22 - 2017-07-14
 
