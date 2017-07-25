@@ -71,6 +71,11 @@ class TemplatesController extends Controller
             throw new NotFoundHttpException('Template not found');
         }
 
+        // Merge any additional route params
+        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        unset($routeParams['template'], $routeParams['template']);
+        $variables = array_merge($variables, $routeParams);
+
         return $this->renderTemplate($template, $variables);
     }
 
