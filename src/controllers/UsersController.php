@@ -1016,7 +1016,9 @@ class UsersController extends Controller
             }
 
             if ($request->getAcceptsJson()) {
-                return $this->asJson(['errors' => $user->errors]);
+                return $this->asJson([
+                    'errors' => $user->getErrors(),
+                ]);
             }
 
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
