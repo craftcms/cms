@@ -129,13 +129,13 @@ class UsersController extends Controller
             $duration = $generalConfig->userSessionDuration;
         }
 
-        // Log them in
-        if (Craft::$app->getUser()->login($user, $duration)) {
-            return $this->_handleSuccessfulLogin(true);
+        // Try logging them in
+        if (!Craft::$app->getUser()->login($user, $duration)) {
+            // Unknown error
+            return $this->_handleLoginFailure(null, $user);
         }
 
-        // Unknown error
-        return $this->_handleLoginFailure(null, $user);
+        return $this->_handleSuccessfulLogin(true);
     }
 
     /**
