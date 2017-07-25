@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2017-07-19 */
+/*!   - 2017-07-25 */
 (function($){
 
 /** global: Craft */
@@ -9200,6 +9200,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
                 if (!this.tasksById.hasOwnProperty(id)) {
                     continue;
                 }
+                id = parseInt(id);
                 if (!Craft.inArray(id, newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);

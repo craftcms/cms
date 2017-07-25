@@ -1146,6 +1146,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
                 if (!this.tasksById.hasOwnProperty(id)) {
                     continue;
                 }
+                id = parseInt(id);
                 if (!Craft.inArray(id, newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);

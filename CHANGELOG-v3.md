@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where previously-selected categories could become unselectable within a Categories field after they had been replaced. ([#1846](https://github.com/craftcms/cms/issues/1846))
 - Fixed a bug where Craft would send an activation email when an admin registered a new user even if the “Send an activation email now?” checkbox was unchecked.
 - Fixed a SQL error that would occur when saving a user if no user groups were checked. ([#1849](https://github.com/craftcms/cms/issues/1849))
+- Fixed a bug where the background tasks HUD would show duplicate tasks when closed and reopened repeatedly without reloading the page. ([#1850](https://github.com/craftcms/cms/issues/1850))
 
 ## 3.0.0-beta.22 - 2017-07-14
 
