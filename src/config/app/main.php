@@ -201,7 +201,7 @@ return [
                 case 'apc':
                     $config = [
                         'class' => yii\caching\ApcCache::class,
-                        'useApcu' => $configService->getApc()->useApcu,
+                        'useApcu' => true,
                     ];
                     break;
                 case 'db':
