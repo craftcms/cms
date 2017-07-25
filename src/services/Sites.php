@@ -128,60 +128,8 @@ class Sites extends Component
             Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The CRAFT_LOCALE constant has been deprecated. Use CRAFT_SITE instead, which can be set to a site ID or handle.');
         }
 
-        // Fetch all the sites
         $this->_loadAllSites();
-
-        try {
-            // Set $this->currentSite to an actual Site model if it's not already
-            if (!($this->currentSite instanceof Site)) {
-                if ($this->currentSite !== null) {
-                    if (is_numeric($this->currentSite)) {
-                        $site = $this->getSiteById($this->currentSite);
-                    } else {
-                        $site = $this->getSiteByHandle($this->currentSite);
-                    }
-
-                    if (!$site) {
-                        throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
-                    }
-
-                    $this->currentSite = $site;
-                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                    // Default to the primary site
-                    $this->currentSite = $this->getPrimarySite();
-                } else {
-                    $this->currentSite = null;
-                }
-            }
-
-            // Is the config overriding the site URL?
-            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
-
-            if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
-                $siteUrl = CRAFT_SITE_URL;
-            }
-
-            if (is_string($siteUrl)) {
-                $this->getPrimarySite()->overrideBaseUrl($siteUrl);
-            } else if (is_array($siteUrl)) {
-                foreach ($siteUrl as $handle => $url) {
-                    $site = $this->getSiteByHandle($handle);
-                    if ($site) {
-                        $site->overrideBaseUrl($url);
-                    } else {
-                        Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            // Fail silently if Craft isn't installed or is in the middle of updating
-            if (!Craft::$app->getIsInstalled() || Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                $this->currentSite = null;
-            } else {
-                throw $e;
-            }
-        }
+        $this->_setCurrentSite();
     }
 
     // Sites
@@ -803,41 +751,108 @@ class Sites extends Component
      */
     private function _loadAllSites()
     {
-        if (!$this->_fetchedAllSites) {
-            $this->_sitesById = [];
-            $this->_sitesByHandle = [];
+        if ($this->_fetchedAllSites) {
+            return;
+        }
 
-            try {
-                $results = $this->_createSiteQuery()->all();
+        $this->_sitesById = [];
+        $this->_sitesByHandle = [];
 
-                // Check for results because during installation, then transaction
-                // hasn't been committed yet.
-                if (!empty($results)) {
-                    foreach ($results as $i => $result) {
-                        $site = new Site($result);
-                        $this->_sitesById[$site->id] = $site;
-                        $this->_sitesByHandle[$site->handle] = $site;
+        if (!Craft::$app->getIsInstalled()) {
+            return;
+        }
 
-                        if ($i == 0) {
-                            $this->_primarySite = $site;
-                        }
+        try {
+            $results = $this->_createSiteQuery()->all();
+
+            // Check for results because during installation, then transaction
+            // hasn't been committed yet.
+            if (!empty($results)) {
+                foreach ($results as $i => $result) {
+                    $site = new Site($result);
+                    $this->_sitesById[$site->id] = $site;
+                    $this->_sitesByHandle[$site->handle] = $site;
+
+                    if ($i == 0) {
+                        $this->_primarySite = $site;
+                    }
+                }
+
+                $this->_fetchedAllSites = true;
+            }
+        } catch (\yii\db\Exception $e) {
+            // todo: remove this after the next breakpoint
+            // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
+            if (isset($e->errorInfo[0]) && ($e->errorInfo[0] === '42S02' || $e->errorInfo[0] === '42P01')) {
+                return;
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Sets the current site.
+     *
+     * @return void
+     * @throws \Throwable if reasons
+     */
+    private function _setCurrentSite()
+    {
+        // Skip if Craft isn't installed yet
+        if (!Craft::$app->getIsInstalled()) {
+            $this->currentSite = null;
+            return;
+        }
+
+        try {
+            // Set $this->currentSite to an actual Site model if it's not already
+            if (!($this->currentSite instanceof Site)) {
+                if ($this->currentSite !== null) {
+                    if (is_numeric($this->currentSite)) {
+                        $site = $this->getSiteById($this->currentSite);
+                    } else {
+                        $site = $this->getSiteByHandle($this->currentSite);
                     }
 
-                    $this->_fetchedAllSites = true;
-                }
-            } catch (\yii\db\Exception $e) {
-                // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] === '42S02' || $e->errorInfo[0] === '42P01')) {
-                    return;
-                }
+                    if (!$site) {
+                        throw new InvalidConfigException('Invalid currentSite config setting value: '.$this->currentSite);
+                    }
 
-                throw $e;
-            } catch (DbConnectException $e) {
-                // We couldn't connect to the database and Craft isn't installed yet, so swallow this exception, too.
-                if (!Craft::$app->getIsInstalled()) {
-                    return;
+                    $this->currentSite = $site;
+                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                    // Default to the primary site
+                    $this->currentSite = $this->getPrimarySite();
+                } else {
+                    $this->currentSite = null;
                 }
+            }
 
+            // Is the config overriding the site URL?
+            $siteUrl = Craft::$app->getConfig()->getGeneral()->siteUrl;
+
+            if ($siteUrl === null && defined('CRAFT_SITE_URL')) {
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the "siteUrl" config setting in config/general.php instead.');
+                $siteUrl = CRAFT_SITE_URL;
+            }
+
+            if (is_string($siteUrl)) {
+                $this->getPrimarySite()->overrideBaseUrl($siteUrl);
+            } else if (is_array($siteUrl)) {
+                foreach ($siteUrl as $handle => $url) {
+                    $site = $this->getSiteByHandle($handle);
+                    if ($site) {
+                        $site->overrideBaseUrl($url);
+                    } else {
+                        Craft::warning('Ignored this invalid site handle when applying the siteUrl config setting: '.$handle, __METHOD__);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fail silently if Craft is in the middle of updating
+            if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                $this->currentSite = null;
+            } else {
                 throw $e;
             }
         }
