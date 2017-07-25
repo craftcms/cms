@@ -28,6 +28,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where required relational fields weren’t getting validation errors if they were left blank. ([#1851](https://github.com/craftcms/cms/issues/1851))
 - Fixed a SQL error that could occur when using the `{% cache %}` tag on sites with a large number of custom fields. ([#1862](https://github.com/craftcms/cms/issues/1862))
 - Fixed a bug where variables set with `craft\web\UrlManager::setRouteParams()` weren’t available to the resulting template, unless nestled inside a `variables` key. ([#1857](https://github.com/craftcms/cms/issues/1857))
+- Fixed a Twig error that could occur if a `null` value was passed to the `|t` filter. ([#1864](https://github.com/craftcms/cms/issues/1864))
 
 ## 3.0.0-beta.22 - 2017-07-14
 
