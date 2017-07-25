@@ -23,7 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the background tasks HUD would show duplicate tasks when closed and reopened repeatedly without reloading the page. ([#1850](https://github.com/craftcms/cms/issues/1850))
 
 ### Removed
-- - Removed `craft\config\ApcConfig`.
+- Removed `craft\config\ApcConfig`.
 
 ## 3.0.0-beta.22 - 2017-07-14
 
