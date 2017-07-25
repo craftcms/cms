@@ -46,7 +46,7 @@ class Composer extends Component
         }
 
         // Preload Composer classes in case Composer needs to self-update
-        //$this->preloadComposerClasses();
+        $this->preloadComposerClasses();
 
         // Get composer.json
         $jsonPath = $this->jsonPath();
