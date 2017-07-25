@@ -12,6 +12,9 @@ Craft CMS 3.0 Working Changelog
 - Updated XRegExp to 3.2.0.
 - The APC cache class will now only use the APCu library. ([#1867](https://github.com/craftcms/cms/issues/1867))
 
+### Removed
+- Removed `craft\config\ApcConfig`.
+
 ### Fixed
 - Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
 - Fixed a Twig error that would occur when saving a Matrix field if there were any validation errors.
@@ -21,9 +24,6 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft would send an activation email when an admin registered a new user even if the “Send an activation email now?” checkbox was unchecked.
 - Fixed a SQL error that would occur when saving a user if no user groups were checked. ([#1849](https://github.com/craftcms/cms/issues/1849))
 - Fixed a bug where the background tasks HUD would show duplicate tasks when closed and reopened repeatedly without reloading the page. ([#1850](https://github.com/craftcms/cms/issues/1850))
-
-### Removed
-- Removed `craft\config\ApcConfig`.
 
 ## 3.0.0-beta.22 - 2017-07-14
 
