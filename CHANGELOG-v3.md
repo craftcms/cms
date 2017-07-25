@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - Updated selectize.js to 0.12.4.
 - Updated XRegExp to 3.2.0.
 - The APC cache class will now only use the APCu library. ([#1867](https://github.com/craftcms/cms/issues/1867))
+- The `users/save-user` action’s JSON response now has an `errors` key with all the validation errors, if any. ([#1860](https://github.com/craftcms/cms/pull/1860))
 
 ### Removed
 - Removed `craft\config\ApcConfig`.
