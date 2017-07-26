@@ -132,8 +132,8 @@ class Craft extends Yii
         $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
         $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
 
-        $isContentBehaviorFileValid = self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion);
-        $isElementQueryBehaviorFileValid = self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion);
+        $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
+        $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
 
         if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
             return;
@@ -228,31 +228,30 @@ EOD;
     }
 
     /**
-     * Determines if a field attribute file is valid.
+     * Loads a field attribute file, if it’s valid.
      *
      * @param string $path
      * @param string $storedFieldVersion
      *
      * @return bool
      */
-    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion): bool
+    private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
     {
-        if (file_exists($path)) {
-            // Make sure it's up-to-date
-            $f = fopen($path, 'rb');
-            $line = fgets($f);
-            fclose($f);
-
-            if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
-                if ($matches[1] === $storedFieldVersion) {
-                    include $path;
-
-                    return true;
-                }
-            }
+        if (!file_exists($path)) {
+            return false;
         }
 
-        return false;
+        // Make sure it's up-to-date
+        $f = fopen($path, 'rb');
+        $line = fgets($f);
+        fclose($f);
+
+        if (strpos($line, "// v{$storedFieldVersion}") === false) {
+            return false;
+        }
+
+        include $path;
+        return true;
     }
 
     /**
