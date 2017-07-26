@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value and added as a `video` Asset kind.
+- Images within field instructions are now given a max-width of 100%. ([#1868](https://github.com/craftcms/cms/issues/1868))
 
 ### Fixed
 - Fixed a bug where picturefill was not applied to Assets loaded with AJAX.

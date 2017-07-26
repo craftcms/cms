@@ -1340,7 +1340,13 @@ textarea.text.fullwidth { display: block; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions,
-.checkboxfield.has-instructions .instructions { margin-top: 2px; color: $mediumtextcolor; }
+.checkboxfield.has-instructions .instructions {
+	margin-top: 2px;
+	color: $mediumtextcolor;
+	img {
+		max-width: 100%;
+	}
+}
 .field > .warning { margin: 2px 0 0; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 .field > .input:after { @include clearafter; }

@@ -1434,6 +1434,7 @@ body.ltr .field > .heading > label > .locale { margin-left: 7px; }
 body.rtl .field > .heading > label > .locale { margin-right: 7px; }
 
 .field > .heading > .instructions, .checkboxfield.has-instructions .instructions { margin-top: 2px; color: #8f98a3; }
+.field > .heading > .instructions img, .checkboxfield.has-instructions .instructions img { max-width: 100%; }
 
 .field > .warning { margin: 2px 0 0; }
 
