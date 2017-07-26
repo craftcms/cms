@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\ContentBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -836,15 +837,15 @@ class Fields extends Component
 
             $field->afterSave($isNewField);
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
@@ -916,15 +917,15 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
