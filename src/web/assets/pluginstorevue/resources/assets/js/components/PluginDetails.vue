@@ -113,6 +113,7 @@
             },
             tryPlugin(plugin) {
                 this.$store.dispatch('addToActiveTrials', plugin);
+                this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
                 this.$emit('tryPlugin');
             },
         },

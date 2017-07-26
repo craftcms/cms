@@ -1,5 +1,5 @@
 <template>
-    <div class="plugin-content" @click="$emit('click')">
+    <div v-if="plugin" class="plugin-content" @click="$emit('click')">
         <div class="plugin-icon">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="32" />
             <div class="default-icon" v-else></div>
