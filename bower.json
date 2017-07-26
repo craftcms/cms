@@ -1,6 +1,0 @@
-{
-  "private": true,
-  "devDependencies": {
-    "jt.timepicker": "timepicker#^1.11.11"
-  }
-}

@@ -6,7 +6,6 @@
 // - jquery-ui
 // - qunit
 // - redactor
-// - timepicker (uses Bower - https://github.com/jonthornton/jquery-timepicker/issues/629)
 
 var es = require('event-stream');
 var gulp = require('gulp');
@@ -30,7 +29,7 @@ var jsDeps = [
     { srcGlob: 'node_modules/picturefill/dist/picturefill.js', dest: libPath+'picturefill' },
     { srcGlob: 'node_modules/punycode/punycode.js', dest: libPath+'punycode' },
     { srcGlob: 'node_modules/selectize/dist/js/standalone/selectize.js', dest: libPath+'selectize' },
-    { srcGlob: 'bower_components/jt.timepicker/jquery.timepicker.js', dest: libPath+'timepicker' },
+    { srcGlob: 'node_modules/timepicker/jquery.timepicker.js', dest: libPath+'timepicker' },
     { srcGlob: 'node_modules/velocity-animate/velocity.js', dest: libPath+'velocity' },
     { srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: libPath+'xregexp' },
     { srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: libPath+'yii2-pjax' }
