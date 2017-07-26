@@ -11,7 +11,7 @@
         <h2>Modal</h2>
         <p><a @click="showModal = true">Open Garnish Modal</a></p>
 
-        <garnish-modal :showModal="showModal" @hide="showModal = false"></garnish-modal>
+        <garnish-modal :showModal.sync="showModal"></garnish-modal>
     </div>
 
 </template>

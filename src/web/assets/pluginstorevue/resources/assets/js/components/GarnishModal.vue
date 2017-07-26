@@ -25,7 +25,7 @@
                 autoShow: true,
                 resizable: true,
                 onHide() {
-                    $this.$emit('hide');
+                    $this.$emit('update:showModal', false);
                 }
             });
         },
