@@ -157,9 +157,14 @@ class Craft extends Yii
         }
 
         if (!$isContentBehaviorFileValid) {
+            $handles = [];
             $properties = [];
 
             foreach ($fieldHandles as $handle) {
+                $handles[] = <<<EOD
+        '{$handle}' => true,
+EOD;
+
                 $properties[] = <<<EOD
     /**
      * @var mixed Value for field with the handle “{$handle}”.
@@ -170,8 +175,8 @@ EOD;
 
             self::_writeFieldAttributesFile(
                 static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
-                ['{VERSION}', '/* PROPERTIES */'],
-                [$storedFieldVersion, implode("\n\n", $properties)],
+                ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
+                [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
                 $contentBehaviorFile
             );
         }

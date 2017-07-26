@@ -24,11 +24,10 @@ class ElementQueryBehavior extends ContentBehavior
      */
     public function __call($name, $params)
     {
-        if (property_exists($this, $name) && count($params) === 1) {
+        if (isset(self::$fieldHandles[$name]) && count($params) === 1) {
             $this->$name = $params[0];
             return null;
         }
-
         return parent::__call($name, $params);
     }
 
@@ -37,6 +36,9 @@ class ElementQueryBehavior extends ContentBehavior
      */
     public function hasMethod($name)
     {
-        return property_exists($this, $name);
+        if (isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::hasMethod($name);
     }
 }
