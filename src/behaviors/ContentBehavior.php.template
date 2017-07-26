@@ -16,8 +16,8 @@ use yii\base\Behavior;
  */
 class ContentBehavior extends Behavior
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
 /* PROPERTIES */
 }
