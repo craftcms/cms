@@ -15,6 +15,7 @@ use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
+use craft\helpers\Path;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -422,7 +423,7 @@ class UtilitiesController extends Controller
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
         $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
 
-        if (!is_file($filePath)) {
+        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
             throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
                 'filename' => $filename
             ]));
