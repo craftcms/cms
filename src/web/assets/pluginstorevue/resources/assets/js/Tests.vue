@@ -1,5 +1,7 @@
 <template>
     <div>
+
+        <router-link to="/">Back to index</router-link>
         <h2>Translations</h2>
         <p>{{ somePrice|currency }} per year for updates</p>
         <p>{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(somePrice) }) }}</p>
@@ -7,26 +9,26 @@
         <p v-html="craftTranslation"></p>
 
         <h2>Modal</h2>
-        <p><a @click="openCraftModal">Open Craft Modal</a></p>
+        <p><a @click="showModal = true">Open Garnish Modal</a></p>
 
-        <div class="hidden">
-            <div ref="modalcontent" class="modal">
-                <div class="body">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores, consequuntur culpa distinctio ducimus excepturi illo ipsa iste itaque laudantium mollitia odit perferendis placeat quo ullam veritatis? Architecto est ipsam itaque?
-                </div>
-            </div>
-        </div>
+        <garnish-modal :showModal="showModal" @hide="showModal = false"></garnish-modal>
     </div>
 
 </template>
 
 <script>
+    import GarnishModal from './components/GarnishModal.vue'
+
     export default {
         name: 'tests',
+        components: {
+            GarnishModal,
+        },
         data() {
             return {
                 somePrice: '99.00',
                 modal: null,
+                showModal: false,
             }
         },
         computed: {
@@ -34,17 +36,5 @@
                 return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'});
             }
         },
-        methods: {
-            openCraftModal() {
-                if(!this.modal) {
-                    this.modal = new Garnish.Modal(this.$refs.modalcontent, {
-                        autoShow: true,
-                        resizable: true,
-                    });
-                } else {
-                    this.modal.show();
-                }
-            }
-        }
     }
 </script>
