@@ -15,7 +15,7 @@
     (fieldClass is defined and fieldClass ? fieldClass : null)
 ]|filter|join(' ') -%}
 
-<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}>
+<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}{% if handle is defined %} data-type="{{ handle }}"{% endif %}>
     {% if label or instructions %}
         <div class="heading">
             {% if label %}
