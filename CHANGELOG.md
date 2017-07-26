@@ -11,6 +11,7 @@ Craft CMS Changelog
 - Fixed a bug where picturefill was not applied to Assets loaded with AJAX.
 - Fixed alignment bug with the add tag field.
 - Fixed a PHP error that could occur when logging a deprecation warning in `DepreactorService`.
+- Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals. ([#1795](https://github.com/craftcms/cms/issues/1795))
 
 ### Security
 - Fixed a bug where admins could download arbitrary zip files from the server.
