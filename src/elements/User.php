@@ -31,6 +31,7 @@ use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
@@ -722,7 +723,12 @@ class User extends Element implements IdentityInterface
                 break;
             case self::STATUS_ACTIVE:
                 // Validate the password
-                if (!Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
+                try {
+                    $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+                } catch (InvalidParamException $e) {
+                    $valid = false;
+                }
+                if (!$valid) {
                     Craft::$app->getUsers()->handleInvalidLogin($this);
                     // Was that one bad password too many?
                     if ($this->locked) {
