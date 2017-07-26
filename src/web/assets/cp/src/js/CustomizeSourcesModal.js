@@ -121,7 +121,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 source.updateItemLabel(sourceData.label);
 
                 // Select this by default?
-                if (sourceData.key === this.elementIndex.sourceKey) {
+                if ((this.elementIndex.sourceKey+'/').substr(0, sourceData.key.length+1) === sourceData.key+'/') {
                     source.select();
                 }
             }
