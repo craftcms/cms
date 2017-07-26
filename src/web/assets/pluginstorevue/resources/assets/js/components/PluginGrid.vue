@@ -7,11 +7,11 @@
             </div>
         </div>
 
-        <modal :show.sync="showModal" :on-close="closeModal">
+        <garnish-modal :showModal.sync="showModal">
             <div slot="body">
                 <plugin-details :plugin="selectedPlugin" @buyPlugin="onBuy" @tryPlugin="onBuy"></plugin-details>
             </div>
-        </modal>
+        </garnish-modal>
     </div>
 
 </template>
@@ -21,7 +21,7 @@
 
     import PluginCard from './PluginCard';
     import PluginDetails from './PluginDetails';
-    import Modal from './Modal.vue'
+    import GarnishModal from './GarnishModal.vue'
 
     export default {
         name: 'pluginGrid',
@@ -29,7 +29,7 @@
         components: {
             PluginCard,
             PluginDetails,
-            Modal,
+            GarnishModal,
         },
         data () {
             return {

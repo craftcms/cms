@@ -2,7 +2,7 @@
     <div class="hidden">
         <div ref="garnishmodalcontent" class="modal">
             <div class="body">
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Asperiores, consequuntur culpa distinctio ducimus excepturi illo ipsa iste itaque laudantium mollitia odit perferendis placeat quo ullam veritatis? Architecto est ipsam itaque?
+                <slot name="body"></slot>
             </div>
         </div>
     </div>
@@ -22,7 +22,7 @@
             let $this = this;
 
             this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
-                autoShow: true,
+                autoShow: false,
                 resizable: true,
                 onHide() {
                     $this.$emit('update:showModal', false);
@@ -40,3 +40,10 @@
         }
     }
 </script>
+
+<style scoped>
+    .modal {
+        width: 900px;
+        height: 600px;
+    }
+</style>
