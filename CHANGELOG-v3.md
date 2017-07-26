@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - Updated XRegExp to 3.2.0.
 - The APC cache class will now only use the APCu library. ([#1867](https://github.com/craftcms/cms/issues/1867))
 - The `users/save-user` action’s JSON response now has an `errors` key with all the validation errors, if any. ([#1860](https://github.com/craftcms/cms/pull/1860))
+- Fixed a bug where parse errors in files that got loaded when Craft was determining the current user would not get reported, and redirect the browser to the login page. ([#1858](https://github.com/craftcms/cms/issues/1858))
 
 ### Removed
 - Removed `craft\config\ApcConfig`.
