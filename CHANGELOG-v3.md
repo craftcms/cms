@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a Twig error that could occur if a `null` value was passed to the `|t` filter. ([#1864](https://github.com/craftcms/cms/issues/1864))
 - Fixed a PHP error that would occur if a content migration created a new field or renamed an existing field’s handle, and then attempted to reference that field in the same request. ([#1865](https://github.com/craftcms/cms/issues/1865))
 - Fixed a bug where the Customize Sources Modal would always select the first asset volume’s source by default if a subfolder had been selected when opening the modal. ([#1871](https://github.com/craftcms/cms/issues/1871))
+- Fixed a bug where uploaded Assets would have their width and height set to `null` on upload  when using multisite. ([#1872](https://github.com/craftcms/cms/issues/1872))
 
 ## 3.0.0-beta.22 - 2017-07-14
 
