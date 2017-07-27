@@ -25,7 +25,7 @@
             this.$store.dispatch('getAllPlugins').then(() => {
                 this.loading = false
             })
-            // this.$store.dispatch('getAllCategories')
+            this.$store.dispatch('getAllCategories')
             this.$store.dispatch('getStaffPicks')
             this.$store.dispatch('getCartState')
         }
