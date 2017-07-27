@@ -64,5 +64,6 @@ const app = new Vue({
         this.$store.dispatch('getAllPlugins')
         this.$store.dispatch('getAllCategories')
         this.$store.dispatch('getStaffPicks')
+        this.$store.dispatch('getCartState')
     }
 });

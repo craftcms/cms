@@ -1,3 +1,4 @@
+import api from '../../api'
 import * as types from '../mutation-types'
 
 // initial state
@@ -23,7 +24,16 @@ const getters = {
 
 // actions
 const actions = {
-
+    saveCartState({ commit, state }) {
+        api.saveCartState(() => {
+            commit(types.SAVE_CART_STATE);
+        }, state)
+    },
+    getCartState({ commit }) {
+        api.getCartState(cartState => {
+            commit(types.RECEIVE_CART_STATE, { cartState });
+        })
+    }
 }
 
 // mutations
@@ -60,6 +70,16 @@ const mutations = {
 
         state.activeTrials.splice(index, 1);
     },
+    [types.SAVE_CART_STATE] (state) {
+
+    },
+    [types.RECEIVE_CART_STATE] (state, { cartState }) {
+        if(cartState) {
+            state.activeTrials = cartState.activeTrials;
+            state.items = cartState.items;
+            state.checkoutStatus = cartState.checkoutStatus;
+        }
+    }
 }
 
 export default {
