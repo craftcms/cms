@@ -30,7 +30,10 @@
                             <div class="light">{{ "{price} per year for updates"|t('app', { price: $root.$options.filters.currency(plugin.updatePrice) }) }}</div>
                         </td>
                         <td class="thin">
-                            <a class="btn" @click="removeFromCart(plugin)">{{ "Buy later"|t('app') }}</a>
+                            <a class="btn" @click="removeFromCart(plugin)">
+                                <template v-if="isInTrial(plugin)">{{ "Buy later"|t('app') }}</template>
+                                <template v-else>{{ "Remove"|t('app') }}</template>
+                            </a>
                         </td>
                     </template>
                 </tr>
@@ -116,6 +119,7 @@
 
         computed: {
             ...mapGetters({
+                isInTrial: 'isInTrial',
                 cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
             }),
