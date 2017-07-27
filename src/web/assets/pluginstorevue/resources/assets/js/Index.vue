@@ -40,6 +40,7 @@
                     </li>
                 </ul>
                 <p><router-link to="/tests">Tests</router-link></p>
+                <p><a @click="clearStorage()">Clear Storage</a></p>
             </div>
         </div>
     </div>
@@ -60,6 +61,13 @@
         data () {
             return {
                 showingSearchResults: false,
+            }
+        },
+
+        methods: {
+            clearStorage() {
+                localStorage.removeItem('cartState');
+                location.reload();
             }
         },
 
