@@ -10,7 +10,6 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\MacroableTrait;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -30,11 +29,6 @@ use craft\web\UploadedFile;
  */
 class Assets extends BaseRelationField
 {
-    // Traits
-    // =========================================================================
-
-    use MacroableTrait;
-
     // Static
     // =========================================================================
 

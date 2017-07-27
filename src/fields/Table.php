@@ -10,7 +10,6 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\MacroableTrait;
 use craft\helpers\Json;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use yii\db\Schema;
@@ -23,11 +22,6 @@ use yii\db\Schema;
  */
 class Table extends Field
 {
-    // Traits
-    // =========================================================================
-
-    use MacroableTrait;
-
     // Static
     // =========================================================================
 
