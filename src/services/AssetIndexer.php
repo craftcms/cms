@@ -14,6 +14,7 @@ use craft\errors\AssetLogicException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
@@ -484,56 +485,59 @@ class AssetIndexer extends Component
 
         // All sorts of fun stuff for images.
         if ($asset->kind === 'image') {
-            $targetPath = $asset->getImageTransformSourcePath();
-            $dimensions = [];
+            $dimensions = null;
+            $tempPath = null;
 
-            $volume = $folder->getVolume();
+            // For local images it's easy - the image is right there, nothing to cache and the Asset id means nothing.
+            if ($volume instanceof LocalVolumeInterface) {
+                $transformSourcePath = $asset->getImageTransformSourcePath();
+                $dimensions = Image::imageSize($transformSourcePath);
+            } else {
+                // If we don't have to cache, then we don't really care if the Asset id is there.
+                if (!$cacheImages) {
+                    try {
+                        // Get the stream
+                        $stream = $asset->getStream();
 
-            if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
-                if (!$volume instanceof LocalVolumeInterface) {
-                    $indexed = false;
-
-                    if (!$cacheImages) {
-                        // Try smart dimension guessing first.
-                        try {
-                            // Get the stream
-                            $stream = $asset->getStream();
-
-                            // And, well, try to read as little data as we can.
-                            if (is_resource($stream)) {
-                                $dimensions = Image::imageSizeByStream($stream);
-                                fclose($stream);
-                                $indexed = is_array($dimensions);
-                            }
-                        } catch (AssetException $e) {
-                            Craft::info($e->getMessage());
+                        // And, well, try to read as little data as we can.
+                        if (is_resource($stream)) {
+                            $dimensions = Image::imageSizeByStream($stream);
+                            fclose($stream);
                         }
-                    }
-
-                    // No banana.
-                    if (!$indexed) {
-                        $volume->saveFileLocally($indexEntryModel->uri, $targetPath);
-                        // Store the local source for now and set it up for deleting, if needed
-                        $assetTransforms = Craft::$app->getAssetTransforms();
-                        $assetTransforms->storeLocalSource($targetPath);
-                        $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                    } catch (AssetException $e) {
+                        Craft::info($e->getMessage());
                     }
                 }
 
-                if (empty($dimensions)) {
-                    clearstatcache();
-                    $dimensions = Image::imageSize($targetPath);
+                // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
+                if (!is_array($dimensions)) {
+                    $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
+                    $volume->saveFileLocally($indexEntryModel->uri, $tempPath);
+                    $dimensions = Image::imageSize($tempPath);
                 }
 
-                list ($w, $h) = $dimensions;
-                $asset->setWidth($w);
-                $asset->setHeight($h);
             }
+
+            list ($w, $h) = $dimensions;
+            $asset->setWidth($w);
+            $asset->setHeight($h);
+            $asset->dateModified = $timeModified;
+
+            Craft::$app->getElements()->saveElement($asset);
+
+            // Now we definitely have an Asset id, so let's cover one last base.
+            if (!$volume instanceof LocalVolumeInterface && $cacheImages && $tempPath) {
+                $targetPath = $asset->getImageTransformSourcePath();
+                $assetTransforms = Craft::$app->getAssetTransforms();
+                $assetTransforms->storeLocalSource($tempPath, $targetPath);
+                $assetTransforms->queueSourceForDeletingIfNecessary($targetPath);
+                FileHelper::removeFile($tempPath);
+            }
+        } else {
+            // For images, the Asset has been saved already to ensure an ID was in place.
+            $asset->dateModified = $timeModified;
+            Craft::$app->getElements()->saveElement($asset);
         }
-
-        $asset->dateModified = $timeModified;
-
-        Craft::$app->getElements()->saveElement($asset);
 
         return $asset;
     }

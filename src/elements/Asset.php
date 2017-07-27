@@ -1028,33 +1028,37 @@ class Asset extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Relocate the file?
-        if ($this->newLocation !== null || $this->tempFilePath !== null) {
-            $this->_relocateFile();
-        }
-
-        // Get the asset record
-        if (!$isNew) {
-            $record = AssetRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid asset ID: '.$this->id);
+        // If this is just an element being propagated, there's absolutely no need for re-saving this.
+        if (!$this->propagating) {
+            // Relocate the file?
+            if ($this->newLocation !== null || $this->tempFilePath !== null) {
+                $this->_relocateFile();
             }
-        } else {
-            $record = new AssetRecord();
-            $record->id = $this->id;
-        }
 
-        $record->filename = $this->filename;
-        $record->volumeId = $this->volumeId;
-        $record->folderId = $this->folderId;
-        $record->kind = $this->kind;
-        $record->size = $this->size;
-        $record->focalPoint = $this->focalPoint;
-        $record->width = $this->_width;
-        $record->height = $this->_height;
-        $record->dateModified = $this->dateModified;
-        $record->save(false);
+            // Get the asset record
+            if (!$isNew) {
+                $record = AssetRecord::findOne($this->id);
+
+                if (!$record) {
+                    throw new Exception('Invalid asset ID: '.$this->id);
+                }
+            } else {
+                $record = new AssetRecord();
+                $record->id = $this->id;
+            }
+
+
+            $record->filename = $this->filename;
+            $record->volumeId = $this->volumeId;
+            $record->folderId = $this->folderId;
+            $record->kind = $this->kind;
+            $record->size = $this->size;
+            $record->focalPoint = $this->focalPoint;
+            $record->width = $this->_width;
+            $record->height = $this->_height;
+            $record->dateModified = $this->dateModified;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }

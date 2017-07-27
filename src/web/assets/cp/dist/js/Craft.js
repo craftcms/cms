@@ -1,4 +1,4 @@
-/*!   - 2017-07-26 */
+/*!   - 2017-07-27 */
 (function($){
 
 /** global: Craft */
@@ -13652,6 +13652,7 @@ Craft.ProgressBar = Garnish.Base.extend(
  */
 Craft.PromptHandler = Garnish.Base.extend({
 
+    modal: null,
     $modalContainerDiv: null,
     $prompt: null,
     $promptApplyToRemainingContainer: null,
