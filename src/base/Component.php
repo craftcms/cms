@@ -23,7 +23,7 @@ abstract class Component extends Model implements ComponentInterface
      *
      * This is a good place to register custom behaviors on the component
      */
-    const EVENT_AFTER_INIT = 'afterInit';
+    const EVENT_INIT = 'init';
     
     // Static
     // =========================================================================
@@ -47,6 +47,6 @@ abstract class Component extends Model implements ComponentInterface
     {
         parent::init();
 
-        $this->trigger(self::EVENT_AFTER_INIT, new \yii\base\Event);
+        $this->trigger(self::EVENT_INIT, new \yii\base\Event);
     }
 }
