@@ -16,7 +16,7 @@ Vue.filter('currency', currency)
 Vue.filter('t', t)
 
 const app = new Vue({
-    el: '#container',
+    el: '#main',
     router,
     store,
     components: { App, CartButton },
