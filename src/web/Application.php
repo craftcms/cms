@@ -51,7 +51,7 @@ class Application extends \yii\web\Application
     /**
      * @event \yii\base\Event The event that is triggered after the application has been initialized
      */
-    const EVENT_AFTER_INIT = 'afterInit';
+    const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
