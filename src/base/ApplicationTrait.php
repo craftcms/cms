@@ -188,7 +188,11 @@ trait ApplicationTrait
                 // Is it set to "auto"?
                 if ($language === 'auto') {
                     // If the user is logged in *and* has a primary language set, use that
-                    $user = $this->getUser()->getIdentity();
+                    try {
+                        $user = $this->getUser()->getIdentity();
+                    } catch (\Exception $e) {
+                        $user = null;
+                    }
 
                     if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
                         return $preferredLanguage;
