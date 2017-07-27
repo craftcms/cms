@@ -15,6 +15,16 @@ namespace craft\base;
  */
 abstract class Component extends Model implements ComponentInterface
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event ComponentEvent The event that is triggered after the component's init cycle
+     *
+     * This is a good place to register custom behaviors on the component
+     */
+    const EVENT_AFTER_INIT = 'afterInit';
+    
     // Static
     // =========================================================================
 
@@ -28,5 +38,15 @@ abstract class Component extends Model implements ComponentInterface
         $classNameParts = explode('\\', static::class);
 
         return array_pop($classNameParts);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        $this->trigger(self::EVENT_AFTER_INIT, new \yii\base\Event);
     }
 }

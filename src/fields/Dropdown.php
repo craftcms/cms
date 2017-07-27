@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\MacroableTrait;
 
 /**
  * Dropdown represents a Dropdown field.
@@ -19,11 +18,6 @@ use craft\base\MacroableTrait;
  */
 class Dropdown extends BaseOptionsField
 {
-    // Traits
-    // =========================================================================
-
-    use MacroableTrait;
-
     // Static
     // =========================================================================
 

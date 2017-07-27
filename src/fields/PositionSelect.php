@@ -10,7 +10,6 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\MacroableTrait;
 use craft\web\assets\positionselect\PositionSelectAsset;
 use yii\db\Schema;
 
@@ -22,11 +21,6 @@ use yii\db\Schema;
  */
 class PositionSelect extends Field
 {
-    // Traits
-    // =========================================================================
-
-    use MacroableTrait;
-
     // Static
     // =========================================================================
 
