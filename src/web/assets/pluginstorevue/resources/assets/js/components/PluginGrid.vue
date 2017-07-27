@@ -9,7 +9,7 @@
 
         <garnish-modal :showModal.sync="showModal">
             <div slot="body">
-                <plugin-details :plugin="selectedPlugin" @buyPlugin="onBuy" @tryPlugin="onBuy"></plugin-details>
+                <plugin-details :plugin="selectedPlugin" @buyPlugin="onBuy" @tryPlugin="onBuy" @viewDeveloper="onViewDeveloper"></plugin-details>
             </div>
         </garnish-modal>
     </div>
@@ -50,6 +50,9 @@
                this.closeModal();
             },
             onTry() {
+               this.closeModal();
+            },
+            onViewDeveloper() {
                this.closeModal();
             }
         },

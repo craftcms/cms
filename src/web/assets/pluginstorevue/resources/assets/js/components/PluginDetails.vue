@@ -11,7 +11,7 @@
                 <p>{{ plugin.shortDescription }}</p>
 
                 <p>
-                    <router-link :to="'/developer/' + plugin.developerId">{{ plugin.developerName }}</router-link>
+                    <a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a>
                 </p>
             </div>
 
@@ -116,6 +116,13 @@
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
                 this.$emit('tryPlugin');
             },
+            viewDeveloper(plugin) {
+                this.$emit('viewDeveloper');
+
+                setTimeout(function() {
+                    this.$router.push({ path: '/developer/'+plugin.developerId})
+                }.bind(this), 1);
+            }
         },
     }
 </script>
