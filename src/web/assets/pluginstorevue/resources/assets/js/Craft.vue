@@ -75,7 +75,7 @@
         created () {
             this.$root.showCrumbs = true;
 
-            this.$root.pageTitle = 'Craft';
+            this.$root.pageTitle = 'Upgrade Craft CMS';
         },
     }
 </script>
