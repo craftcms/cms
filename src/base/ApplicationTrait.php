@@ -1169,7 +1169,9 @@ trait ApplicationTrait
         $this->_setLanguage();
 
         // Fire an 'afterInit' event
-        $this->trigger(WebApplication::EVENT_AFTER_INIT);
+        if ($this->hasEventHandlers(WebApplication::EVENT_AFTER_INIT)) {
+            $this->trigger(WebApplication::EVENT_AFTER_INIT);
+        }
     }
 
     /**

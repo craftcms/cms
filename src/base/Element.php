@@ -1761,7 +1761,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE);
+        }
     }
 
     /**
