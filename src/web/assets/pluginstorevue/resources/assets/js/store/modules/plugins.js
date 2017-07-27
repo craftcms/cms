@@ -20,7 +20,6 @@ const getters = {
     },
     getPluginsByIds(state) {
         return function(ids) {
-            console.log('ids');
             return state.all.filter(p => {
                 return ids.find(id => id == p.id)
             })
@@ -38,8 +37,11 @@ const getters = {
 // actions
 const actions = {
     getAllPlugins ({ commit }) {
-        api.getPlugins(plugins => {
-            commit(types.RECEIVE_PRODUCTS, { plugins })
+        return new Promise((resolve, reject) => {
+            api.getPlugins(plugins => {
+                commit(types.RECEIVE_PRODUCTS, { plugins });
+                resolve(plugins);
+            })
         })
     },
     getStaffPicks ({ commit }) {

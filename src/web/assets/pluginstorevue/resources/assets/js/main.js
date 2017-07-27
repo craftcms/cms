@@ -59,12 +59,4 @@ const app = new Vue({
             this.displayNotification('error', message);
         }
     },
-
-    created() {
-        this.$store.dispatch('getPluginStoreData')
-        this.$store.dispatch('getAllPlugins')
-        this.$store.dispatch('getAllCategories')
-        this.$store.dispatch('getStaffPicks')
-        this.$store.dispatch('getCartState')
-    }
 });
