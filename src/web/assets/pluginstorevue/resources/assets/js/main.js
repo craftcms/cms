@@ -23,7 +23,7 @@ const app = new Vue({
     data() {
       return {
           showCrumbs: false,
-          pageTitle: null,
+          pageTitle: 'Plugin Store',
       }
     },
 
