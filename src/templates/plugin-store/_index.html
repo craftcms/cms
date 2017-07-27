@@ -1,5 +1,9 @@
 {% extends "_layouts/cp" %}
 
+{% set crumbs = [
+	{ label: "Plugin Store"|t('app'), url: url('plugin-store') }
+] %}
+
 {% set title = 'Plugin Store'|t('app') %}
 
 {% do view.registerTranslations('app', [
@@ -27,14 +31,6 @@
 	"Total",
 	"Process My Order",
 ]) %}
-
-{% block topBar %}
-	<nav id="crumbs" v-if="showCrumbs"></nav>
-{% endblock %}
-
-{% block pageTitle %}
-	<h1 v-text="pageTitle">{{ "Plugin Store"|t('app') }}</h1>
-{% endblock %}
 
 {% set extraPageHeaderHtml %}
 	<cart-button ref="cartButton"></cart-button>

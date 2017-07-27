@@ -23,6 +23,7 @@ const app = new Vue({
     data() {
       return {
           $crumbs: null,
+          $pageTitle: null,
           showCrumbs: false,
           pageTitle: 'Plugin Store',
       }
@@ -44,25 +45,33 @@ const app = new Vue({
             } else {
                 this.$crumbs.addClass('hidden');
             }
+        },
+        pageTitle(pageTitle) {
+            this.$pageTitle.html(pageTitle);
         }
     },
 
     created() {
+        // Crumbs
+
         this.$crumbs = $('#crumbs');
 
         if(!this.showCrumbs) {
             this.$crumbs.addClass('hidden')
         }
 
-        let $li = $('<li></li>').appendTo(this.$crumbs);
-
-        let $a = $('<a>Plugin Store</a>').appendTo($li);
-
+        let $a = $('a', this.$crumbs);
         let $this = this;
 
         $a.on('click', (e) => {
             e.preventDefault();
             $this.$router.push({ path: '/'})
         });
+
+
+        // Page title
+        
+        this.$pageTitle = $('#page-title h1')
+        this.$pageTitle.html(this.pageTitle)
     }
 });
