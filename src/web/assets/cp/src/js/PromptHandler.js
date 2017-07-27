@@ -5,6 +5,7 @@
  */
 Craft.PromptHandler = Garnish.Base.extend({
 
+    modal: null,
     $modalContainerDiv: null,
     $prompt: null,
     $promptApplyToRemainingContainer: null,

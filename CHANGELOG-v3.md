@@ -35,6 +35,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Customize Sources Modal would always select the first asset volume’s source by default if a subfolder had been selected when opening the modal. ([#1871](https://github.com/craftcms/cms/issues/1871))
 - Fixed a bug where uploaded Assets would have their width and height set to `null` on upload  when using multisite. ([#1872](https://github.com/craftcms/cms/issues/1872))
 - Fixed a bug where cached versions of cloud images would not be saved when indexing for files that weren't already indexed.
+- Fixed a JavaScript error that prevented dialog prompts in Assets manager from being displayed correctly.
 
 ## 3.0.0-beta.22 - 2017-07-14
 
