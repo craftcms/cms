@@ -15,6 +15,7 @@ Craft CMS Changelog
 
 ### Security
 - Fixed a bug where admins could download arbitrary zip files from the server.
+- Fixed a bug where a full server path would be disclosed if you were able to upload a file with a name greater than 255 characters.
 
 ## 2.6.2987 - 2017-07-14
 

@@ -166,7 +166,7 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 		$fileName = AssetsHelper::cleanAssetName($file['name']);
 
 		// Save the file to a temp location and pass this on to the source type implementation
-		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName));
+		$filePath = AssetsHelper::getTempFilePath(IOHelper::getExtension($fileName), true);
 		move_uploaded_file($file['tmp_name'], $filePath);
 
 		$response = $this->insertFileByPath($filePath, $folder, $fileName);
