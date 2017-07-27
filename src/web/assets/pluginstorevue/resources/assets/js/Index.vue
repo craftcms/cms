@@ -6,10 +6,10 @@
 
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
-                <div v-for="indexBlock in indexBlocks">
+                <template v-for="indexBlock in indexBlocks">
                     <h2>{{ indexBlock.blockTitle }}</h2>
                     <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
-                </div>
+                </template>
 
                 <p class="right">
                     <router-link to="/staff-picks/">{{ "See all" | t('app') }}</router-link>
