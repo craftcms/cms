@@ -22,41 +22,47 @@ const app = new Vue({
     components: { App, CartButton },
     data() {
       return {
+          $crumbs: null,
           showCrumbs: false,
           pageTitle: 'Plugin Store',
       }
     },
 
     methods: {
-        displayNotification(type, message) {
-            var $notificationContainer = $('#notifications');
-            var notificationDuration = Craft.CP.notificationDuration;
-
-            if (type == 'error') {
-                notificationDuration *= 2;
-            }
-
-            var $notification = $('<div class="notification ' + type + '">' + message + '</div>')
-                .appendTo($notificationContainer);
-
-            var fadedMargin = -($notification.outerWidth() / 2) + 'px';
-
-            $notification
-                .hide()
-                .css({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin})
-                .velocity({opacity: 1, 'margin-left': '2px', 'margin-right': '2px'}, {display: 'inline-block', duration: 'fast'})
-                .delay(notificationDuration)
-                .velocity({opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin}, {
-                    complete: function() {
-                        $notification.remove();
-                    }
-                });
-        },
         displayNotice(message) {
-            this.displayNotification('notice', message);
+            this.displayNotice(message);
         },
         displayError(message) {
-            this.displayNotification('error', message);
+            this.displayError(message);
         }
     },
+
+    watch: {
+        showCrumbs(showCrumbs) {
+            if(showCrumbs) {
+                this.$crumbs.removeClass('hidden');
+            } else {
+                this.$crumbs.addClass('hidden');
+            }
+        }
+    },
+
+    created() {
+        this.$crumbs = $('#crumbs');
+
+        if(!this.showCrumbs) {
+            this.$crumbs.addClass('hidden')
+        }
+
+        let $li = $('<li></li>').appendTo(this.$crumbs);
+
+        let $a = $('<a>Plugin Store</a>').appendTo($li);
+
+        let $this = this;
+
+        $a.on('click', (e) => {
+            e.preventDefault();
+            $this.$router.push({ path: '/'})
+        });
+    }
 });
