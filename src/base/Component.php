@@ -7,8 +7,6 @@
 
 namespace craft\base;
 
-use yii\base\Event;
-
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
@@ -21,7 +19,7 @@ abstract class Component extends Model implements ComponentInterface
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered after the component's init cycle
+     * @event \yii\base\Event The event that is triggered after the component's init cycle
      *
      * This is a good place to register custom behaviors on the component
      */
@@ -49,6 +47,8 @@ abstract class Component extends Model implements ComponentInterface
     {
         parent::init();
 
-        $this->trigger(self::EVENT_INIT, new Event());
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
     }
 }
