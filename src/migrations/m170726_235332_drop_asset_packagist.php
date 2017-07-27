@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use Composer\Json\JsonFile;
-use Composer\Json\JsonManipulator;
 use Craft;
 use craft\db\Migration;
 
