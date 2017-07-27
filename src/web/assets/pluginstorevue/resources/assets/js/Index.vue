@@ -10,7 +10,7 @@
                     <h2>{{ indexBlock.blockTitle }}</h2>
                     <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
                 </div>
-                
+
                 <p class="right">
                     <router-link to="/staff-picks/">{{ "See all" | t('app') }}</router-link>
                 </p>
@@ -32,7 +32,7 @@
                             Craft
                         </router-link>
                     </li>
-                    <li v-for="category in allCategories">
+                    <li v-for="category in pluginStoreGetAllCategories">
                         <router-link :to="'/categories/'+category.id">
                             <img :src="category.iconUrl" />
                             {{ category.title }}
@@ -68,7 +68,7 @@
                 pluginStoreData: 'pluginStoreData',
                 staffPicks: 'staffPicks',
                 activeTrialPlugins: 'activeTrialPlugins',
-                allCategories: 'allCategories',
+                pluginStoreGetAllCategories: 'pluginStoreGetAllCategories',
                 getPluginsByIds: 'getPluginsByIds',
             }),
             indexBlocks() {

@@ -9,6 +9,9 @@ const state = {
 // getters
 const getters = {
     pluginStoreData: state => state.data,
+    pluginStoreGetAllCategories(state) {
+        return state.data.categories;
+    }
 }
 
 // actions
