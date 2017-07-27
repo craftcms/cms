@@ -70,7 +70,7 @@ const app = new Vue({
 
 
         // Page title
-        
+
         this.$pageTitle = $('#page-title h1')
         this.$pageTitle.html(this.pageTitle)
     }
