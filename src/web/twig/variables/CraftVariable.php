@@ -58,14 +58,23 @@ class CraftVariable extends ServiceLocator
     // =========================================================================
 
     /**
+     * @event \yii\base\Event The event that is triggered after the component's init cycle
+     *
+     * This is a good place to register custom behaviors on the component.
+     */
+    const EVENT_INIT = 'init';
+
+    /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
      * @see   __construct()
+     * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see   behaviors()
+     * @deprecated since 3.0.0-beta.23
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
@@ -129,11 +138,15 @@ class CraftVariable extends ServiceLocator
                 ]);
         }
 
+        // todo: remove all this before 3.0 GA
         // Let plugins add their own components
         $event = new DefineComponentsEvent([
             'components' => $components,
         ]);
-        $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPONENTS)) {
+            Craft::$app->getDeprecator()->log('CraftVariable::defineComponents', 'The `defineComponents` event on CraftVariable has been deprecated. Use the `init` event to register custom components instead.');
+            $this->trigger(self::EVENT_DEFINE_COMPONENTS, $event);
+        }
         $components = $event->components;
 
         $config['components'] = $components;
@@ -149,6 +162,10 @@ class CraftVariable extends ServiceLocator
         parent::init();
 
         $this->app = Craft::$app;
+
+        if ($this->hasEventHandlers(self::EVENT_INIT)) {
+            $this->trigger(self::EVENT_INIT);
+        }
     }
 
     /**
@@ -171,9 +188,13 @@ class CraftVariable extends ServiceLocator
      */
     public function behaviors()
     {
+        // todo: remove all this before 3.0 GA
         // Give plugins a chance to add new properties/methods on here
         $event = new DefineBehaviorsEvent();
-        $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_BEHAVIORS)) {
+            Craft::$app->getDeprecator()->log('CraftVariable::defineBehaviors', 'The `defineBehaviors` event on CraftVariable has been deprecated. Use the `init` event to register custom behaviors instead.');
+            $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+        }
         return $event->behaviors;
     }
 

@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added the `init` event to `craft\base\Component`, giving plugins a chance to attach custom Behaviors to various Craft components. ([#1856](https://github.com/craftcms/cms/pull/1856))
+- Added the `init` event to `craft\web\twig\variables\CraftVariable`, giving plugins a chance to attach custom Behaviors and Components to the global `craft` template variable (replacing the now-deprecated `defineBehaviors` and `defineComponents` events). ([#1856](https://github.com/craftcms/cms/pull/1856))
 
 ### Changed
 - Renamed the `afterInit` event on `craft\base\ApplicationTrait` to `init`. ([#1856](https://github.com/craftcms/cms/pull/1856))
@@ -18,6 +19,9 @@ Craft CMS 3.0 Working Changelog
 - The `users/save-user` action’s JSON response now has an `errors` key with all the validation errors, if any. ([#1860](https://github.com/craftcms/cms/pull/1860))
 - Fixed a bug where parse errors in files that got loaded when Craft was determining the current user would not get reported, and redirect the browser to the login page. ([#1858](https://github.com/craftcms/cms/issues/1858))
 - Fixed a bug where an `InvalidParamException` was thrown if a front-end login form was submitted without a password. ([#1857](https://github.com/craftcms/cms/issues/1857))
+
+### Deprecated
+- Deprecated the `defineBehaviors` and `defineComponents` variables on `craft\web\twig\variables\CraftVariable`. Use the new `init` event instead. ([#1856](https://github.com/craftcms/cms/pull/1856))
 
 ### Removed
 - Removed `craft\config\ApcConfig`.
