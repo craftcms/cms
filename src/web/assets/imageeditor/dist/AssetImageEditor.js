@@ -296,8 +296,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.$spinnerCanvas.css({
                     left: ((this.$spinnerCanvas.parent().width()/2)-(this.$spinnerCanvas.width()/2))+'px',
                     top: ((this.$spinnerCanvas.parent().height()/2)-(this.$spinnerCanvas.height()/2))+'px'
-                })
-
+                });
             }
 
             // If image is already loaded, make sure it looks pretty.
