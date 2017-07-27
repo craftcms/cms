@@ -27,4 +27,3 @@ export const removeFromActiveTrials = ({ dispatch, commit }, plugin) => {
     })
     dispatch('saveCartState');
 }
-

@@ -6,6 +6,11 @@
 
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
+                <div v-for="indexBlock in indexBlocks">
+                    <h2>{{ indexBlock.blockTitle }}</h2>
+                    <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
+                </div>
+                
                 <p class="right">
                     <router-link to="/staff-picks/">{{ "See all" | t('app') }}</router-link>
                 </p>
@@ -58,11 +63,18 @@
             }
         },
 
-        computed: mapGetters({
-            staffPicks: 'staffPicks',
-            activeTrialPlugins: 'activeTrialPlugins',
-            allCategories: 'allCategories',
-        }),
+        computed: {
+            ...mapGetters({
+                pluginStoreData: 'pluginStoreData',
+                staffPicks: 'staffPicks',
+                activeTrialPlugins: 'activeTrialPlugins',
+                allCategories: 'allCategories',
+                getPluginsByIds: 'getPluginsByIds',
+            }),
+            indexBlocks() {
+                return this.pluginStoreData.indexBlocks;
+            }
+        },
 
         created: function() {
             this.$root.pageTitle = 'Plugin Store';

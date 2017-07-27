@@ -56,5 +56,12 @@ export default {
 
             return cb(developer);
         });
+    },
+    getPluginStoreData(cb) {
+        Vue.http.get('https://craftid.dev/api/plugin-store').then(function(data) {
+            let pluginStoreData = data.body;
+
+            return cb(pluginStoreData);
+        });
     }
 }
