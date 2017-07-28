@@ -2142,7 +2142,7 @@ body.rtl #nav li a .icon { margin-left: 10px; }
 
 #nav li:not(.has-subnav) a.sel .icon { opacity: 1; }
 
-#nav li a .label { flex-grow: 1; -ms-flex: 1; }
+#nav li a .label { flex-grow: 1; -ms-flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 #nav li a .badge { display: block; border-radius: 50px; padding: 0 6px; font-size: 11px; line-height: 16px; color: #fff; background: rgba(255, 255, 255, 0.5); color: #333f4d; }
 
