@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2988  2017-07-28
 
 ### Changed
 - Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
