@@ -499,7 +499,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if ($value->id !== null) {
             $targetIds = $value->id ?: [];
         } else {
-            $targetIds = $value->ids();
+            $targetIds = $value
+                ->status(null)
+                ->enabledForSite(false)
+                ->ids();
         }
 
         /** @var int|int[]|false|null $targetIds */
