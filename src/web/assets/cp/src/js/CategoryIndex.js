@@ -26,11 +26,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific category group in the URL?
-            if (this.settings.context == 'index' && typeof defaultGroupHandle !== 'undefined') {
+            if (this.settings.context === 'index' && typeof defaultGroupHandle !== 'undefined') {
                 for (var i = 0; i < this.$sources.length; i++) {
                     var $source = $(this.$sources[i]);
 
-                    if ($source.data('handle') == defaultGroupHandle) {
+                    if ($source.data('handle') === defaultGroupHandle) {
                         return $source.data('key');
                     }
                 }
@@ -42,6 +42,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
         onSelectSource: function() {
             // Get the handle of the selected source
             var selectedSourceHandle = this.$source.data('handle');
+
+            var i, href, label;
 
             // Update the New Category button
             // ---------------------------------------------------------------------
@@ -56,8 +58,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 var selectedGroup;
 
                 if (selectedSourceHandle) {
-                    for (var i = 0; i < this.editableGroups.length; i++) {
-                        if (this.editableGroups[i].handle == selectedSourceHandle) {
+                    for (i = 0; i < this.editableGroups.length; i++) {
+                        if (this.editableGroups[i].handle === selectedSourceHandle) {
                             selectedGroup = this.editableGroups[i];
                             break;
                         }
@@ -70,11 +72,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 // If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
                 // Otherwise only show a menu button
                 if (selectedGroup) {
-                    var href = this._getGroupTriggerHref(selectedGroup),
-                        label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
+                    href = this._getGroupTriggerHref(selectedGroup);
+                    label = (this.settings.context === 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
                     this.$newCategoryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newCategoryBtnGroup);
 
-                    if (this.settings.context != 'index') {
+                    if (this.settings.context !== 'index') {
                         this.addListener(this.$newCategoryBtn, 'click', function(ev) {
                             this._openCreateCategoryModal(ev.currentTarget.getAttribute('data-id'));
                         });
@@ -91,22 +93,22 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                 if ($menuBtn) {
                     var menuHtml = '<div class="menu"><ul>';
 
-                    for (var i = 0; i < this.editableGroups.length; i++) {
+                    for (i = 0; i < this.editableGroups.length; i++) {
                         var group = this.editableGroups[i];
 
-                        if (this.settings.context == 'index' || group != selectedGroup) {
-                            var href = this._getGroupTriggerHref(group),
-                                label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
+                        if (this.settings.context === 'index' || group !== selectedGroup) {
+                            href = this._getGroupTriggerHref(group);
+                            label = (this.settings.context === 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
                             menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
                     menuHtml += '</ul></div>';
 
-                    var $menu = $(menuHtml).appendTo(this.$newCategoryBtnGroup),
-                        menuBtn = new Garnish.MenuBtn($menuBtn);
+                    $(menuHtml).appendTo(this.$newCategoryBtnGroup);
+                    var menuBtn = new Garnish.MenuBtn($menuBtn);
 
-                    if (this.settings.context != 'index') {
+                    if (this.settings.context !== 'index') {
                         menuBtn.on('optionSelect', $.proxy(function(ev) {
                             this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
                         }, this));
@@ -119,7 +121,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Categories index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history !== 'undefined') {
+            if (this.settings.context === 'index' && typeof history !== 'undefined') {
                 var uri = 'categories';
 
                 if (selectedSourceHandle) {
@@ -133,7 +135,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
         },
 
         _getGroupTriggerHref: function(group) {
-            if (this.settings.context == 'index') {
+            if (this.settings.context === 'index') {
                 return 'href="' + Craft.getUrl('categories/' + group.handle + '/new') + '"';
             }
             else {
@@ -184,7 +186,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                     // Make sure the right group is selected
                     var groupSourceKey = 'group:' + groupId;
 
-                    if (this.sourceKey != groupSourceKey) {
+                    if (this.sourceKey !== groupSourceKey) {
                         this.selectSourceByKey(groupSourceKey);
                     }
 

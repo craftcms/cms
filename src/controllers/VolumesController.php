@@ -94,7 +94,7 @@ class VolumesController extends Controller
             }
         }
 
-        /** @var Volume[] $allVolumeTypes */
+        /** @var string[] $allVolumeTypes */
         $allVolumeTypes = $volumes->getAllVolumeTypes();
 
         // Make sure the selected volume class is in there

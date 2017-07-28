@@ -205,12 +205,15 @@ class TemplateCaches extends Component
             $elementQuery = $event->sender;
             $query = $elementQuery->query;
             $subQuery = $elementQuery->subQuery;
+            $customFields = $elementQuery->customFields;
             $elementQuery->query = null;
             $elementQuery->subQuery = null;
+            $elementQuery->customFields = null;
             // We need to base64-encode the string so db\Connection::quoteSql() doesn't tweak any of the table/columns names
             $serialized = base64_encode(serialize($elementQuery));
             $elementQuery->query = $query;
             $elementQuery->subQuery = $subQuery;
+            $elementQuery->customFields = $customFields;
             $hash = md5($serialized);
 
             foreach ($this->_cachedQueries as &$queries) {

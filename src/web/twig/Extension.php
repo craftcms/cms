@@ -202,7 +202,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Translates the given message.
      *
-     * @param string      $message  The message to be translated.
+     * @param mixed       $message  The message to be translated.
      * @param string|null $category the message category.
      * @param array|null  $params   The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
@@ -210,7 +210,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter(string $message, $category = null, $params = null, $language = null): string
+    public function translateFilter($message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -229,7 +229,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         try {
-            return Craft::t($category, $message, $params, $language);
+            return Craft::t($category, (string)$message, $params, $language);
         } catch (InvalidConfigException $e) {
             return $message;
         }

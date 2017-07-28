@@ -146,7 +146,9 @@ class Plugins extends Component
         $this->_loadingPlugins = true;
 
         // Fire a 'beforeLoadPlugins' event
-        $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_LOAD_PLUGINS)) {
+            $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
+        }
 
         // Find all of the installed plugins
         // todo: remove try/catch after next breakpoint
@@ -201,7 +203,9 @@ class Plugins extends Component
         $this->_pluginsLoaded = true;
 
         // Fire an 'afterLoadPlugins' event
-        $this->trigger(self::EVENT_AFTER_LOAD_PLUGINS);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_LOAD_PLUGINS)) {
+            $this->trigger(self::EVENT_AFTER_LOAD_PLUGINS);
+        }
     }
 
     /**

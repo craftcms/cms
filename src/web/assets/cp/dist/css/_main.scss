@@ -1373,6 +1373,9 @@ body #redactor-modal-overlay {
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }
+body.ltr .tagselect.elementselect .element,
+body.rtl .tagselect.elementselect .element { float: none !important; display: inline-block; }
+.tagselect .elements { display: inline; }
 
 .tagmenu ul li a { @include padding-left(26px); }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
@@ -1447,7 +1450,13 @@ textarea.text.fullwidth { display: block; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .site { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions,
-.checkboxfield.has-instructions .instructions { margin-top: 2px; color: $mediumtextcolor; }
+.checkboxfield.has-instructions .instructions {
+    margin-top: 2px;
+    color: $mediumtextcolor;
+    img {
+        max-width: 100%;
+    }
+}
 .field > .warning { margin: 2px 0 0; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 .field > .input:after { @include clearafter; }

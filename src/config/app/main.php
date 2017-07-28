@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0.0-beta.22',
-    'schemaVersion' => '3.0.51',
+    'version' => '3.0.0-beta.23',
+    'schemaVersion' => '3.0.53',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__, 2), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -201,7 +201,7 @@ return [
                 case 'apc':
                     $config = [
                         'class' => yii\caching\ApcCache::class,
-                        'useApcu' => $configService->getApc()->useApcu,
+                        'useApcu' => true,
                     ];
                     break;
                 case 'db':

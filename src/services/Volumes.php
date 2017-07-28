@@ -342,7 +342,6 @@ class Volumes extends Component
 
         if ($runValidation && !$volume->validate()) {
             Craft::info('Volume not saved due to validation error.', __METHOD__);
-
             return false;
         }
 

@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\ContentBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -262,12 +263,6 @@ class Fields extends Component
      */
     public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Field group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveFieldLayout' event
@@ -276,6 +271,11 @@ class Fields extends Component
                 'group' => $group,
                 'isNew' => $isNewGroup,
             ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Field group not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         $groupRecord = $this->_getGroupRecord($group);
@@ -741,7 +741,6 @@ class Fields extends Component
 
         if ($runValidation && !$field->validate()) {
             Craft::info('Field not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
@@ -838,15 +837,18 @@ class Fields extends Component
 
             $field->afterSave($isNewField);
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Tell the current ContentBehavior class about the field
+        ContentBehavior::$fieldHandles[$field->handle] = true;
+
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
 
         // Fire an 'afterSaveField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
@@ -918,15 +920,15 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
 
         // Fire an 'afterDeleteField' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
@@ -1145,12 +1147,6 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if ($runValidation && !$layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewLayout = !$layout->id;
 
         // Make sure the tabs/fields are memoized on the layout
@@ -1164,6 +1160,11 @@ class Fields extends Component
                 'layout' => $layout,
                 'isNew' => $isNewLayout,
             ]));
+        }
+
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if (!$isNewLayout) {

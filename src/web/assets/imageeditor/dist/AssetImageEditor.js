@@ -142,7 +142,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
             this.$croppingCanvas.width(this.editorWidth);
             this.$croppingCanvas.height(this.editorHeight);
-            
+
             this.canvas.enableRetinaScaling = true;
             this.renderImage = function() {
                 Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
@@ -296,8 +296,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.$spinnerCanvas.css({
                     left: ((this.$spinnerCanvas.parent().width()/2)-(this.$spinnerCanvas.width()/2))+'px',
                     top: ((this.$spinnerCanvas.parent().height()/2)-(this.$spinnerCanvas.height()/2))+'px'
-                })
-
+                });
             }
 
             // If image is already loaded, make sure it looks pretty.
@@ -832,7 +831,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         this.animationInProgress = false;
                         if (this.focalPoint) {
                             this._adjustFocalPointByAngle(degrees);
-                            this.straighten(this.straighteningInput)
+                            this.straighten(this.straighteningInput);
                             this.canvas.add(this.focalPoint);
                         } else {
                             this._resetFocalPointPosition();
@@ -2249,10 +2248,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param [offsetY]
          */
         _getRectangleVertices: function(rectangle, offsetX, offsetY) {
-            if (typeof offsetX === typeof undefined) {
+            if (typeof offsetX === 'undefined') {
                 offsetX = 0;
             }
-            if (typeof offsetY === typeof undefined) {
+            if (typeof offsetY === 'undefined') {
                 offsetY = 0;
             }
 

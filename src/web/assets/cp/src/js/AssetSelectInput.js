@@ -14,7 +14,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         originalExtension: '',
 
         init: function() {
-            if (arguments.length > 0 && typeof arguments[0] == "object") {
+            if (arguments.length > 0 && typeof arguments[0] === 'object') {
                 arguments[0].editorSettings = {
                     onShowHud: $.proxy(this.resetOriginalFilename, this),
                     onCreateForm: $.proxy(this._renameHelper, this),
@@ -50,12 +50,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
+            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            if (this.settings.criteria.kind !== undefined) {
+            if (typeof this.settings.criteria.kind !== 'undefined') {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -103,7 +103,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         /**
          * On upload start.
          */
-        _onUploadStart: function(event) {
+        _onUploadStart: function() {
             this.progressBar.$progressBar.css({
                 top: Math.round(this.$container.outerHeight() / 2) - 6
             });
@@ -181,7 +181,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 var input = e.currentTarget,
                     filename = this._parseFilename(input.value);
 
-                if (this.originalFilename == "" && this.originalExtension == "") {
+                if (this.originalFilename === '' && this.originalExtension === '') {
                     this.originalFilename = filename.baseFileName;
                     this.originalExtension = filename.extension;
                 }
@@ -189,7 +189,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 var startPos = 0,
                     endPos = filename.baseFileName.length;
 
-                if (input.selectionStart !== undefined) {
+                if (typeof input.selectionStart !== 'undefined') {
                     input.selectionStart = startPos;
                     input.selectionEnd = endPos;
                 } else if (document.selection && document.selection.createRange) {
@@ -214,11 +214,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             var $filenameField = $('.renameHelper', this.elementEditor.hud.$hud.data('elementEditor').$form);
             var filename = this._parseFilename($filenameField.val());
 
-            if (filename.extension != this.originalExtension) {
+            if (filename.extension !== this.originalExtension) {
                 // Blank extension
-                if (filename.extension == "") {
+                if (filename.extension === '') {
                     // If filename changed as well, assume removal of extension a mistake
-                    if (this.originalFilename != filename.baseFileName) {
+                    if (this.originalFilename !== filename.baseFileName) {
                         $filenameField.val(filename.baseFileName + '.' + this.originalExtension);
                         return true;
                     } else {

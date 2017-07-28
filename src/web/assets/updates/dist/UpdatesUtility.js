@@ -63,7 +63,7 @@
                                 headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
                             }
 
-                            $('#page-title h1').text(headingText);
+                            $('#page-title').find('h1').text(headingText);
 
                             if (this.showUpdateAllBtn && this.updates.length > 1) {
                                 var $updateAllBtn = $('<div/>', {'class': 'btn submit', text: Craft.t('app', 'Update all')})

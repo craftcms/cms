@@ -803,17 +803,15 @@ abstract class Element extends Component implements ElementInterface
         $names = parent::attributes();
 
         // Include custom field handles
-        $class = new \ReflectionClass(ContentBehavior::class);
-
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            $name = $property->getName();
-
-            if ($name !== 'owner' && !in_array($name, $names, true)) {
-                $names[] = $name;
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                $names[] = $field->handle;
             }
         }
 
-        return $names;
+        // In case there are any field handles that had the same name as an existing property
+        return array_unique($names);
     }
 
     /**
@@ -1761,7 +1759,9 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {
+            $this->trigger(self::EVENT_AFTER_DELETE);
+        }
     }
 
     /**

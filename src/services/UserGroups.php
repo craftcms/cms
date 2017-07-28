@@ -152,12 +152,6 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('User group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
@@ -166,6 +160,11 @@ class UserGroups extends Component
                 'userGroup' => $group,
                 'isNew' => $isNewGroup,
             ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('User group not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         $groupRecord = $this->_getGroupRecordById($group->id);

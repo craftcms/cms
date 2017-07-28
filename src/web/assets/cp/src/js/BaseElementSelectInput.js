@@ -28,7 +28,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     args = ['id', 'name', 'elementType', 'sources', 'criteria', 'sourceElementId', 'limit', 'modalStorageKey', 'fieldId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (arguments[i] !== undefined) {
+                    if (typeof arguments[i] !== 'undefined') {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {
@@ -132,7 +132,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         getElementSortAxis: function() {
-            return (this.settings.viewMode == 'list' ? 'y' : null);
+            return (this.settings.viewMode === 'list' ? 'y' : null);
         },
 
         canAddMoreElements: function() {
@@ -179,7 +179,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         resetElements: function() {
-            this.$elements = $();
+            if (this.$elements !== null) {
+                this.removeElements(this.$elements);
+            } else {
+                this.$elements = $();
+            }
+
             this.addElements(this.getElements());
         },
 
@@ -264,7 +269,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             };
             animateCss['margin-' + Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-' + Craft.right)));
 
-            if (this.settings.viewMode == 'list' || this.$elements.length == 0) {
+            if (this.settings.viewMode === 'list' || this.$elements.length === 0) {
                 animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
             }
 
@@ -353,7 +358,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             var $element = elementInfo.$element.clone();
 
             // Make a couple tweaks
-            Craft.setElementSize($element, (this.settings.viewMode == 'large' ? 'large' : 'small'));
+            Craft.setElementSize($element, (this.settings.viewMode === 'large' ? 'large' : 'small'));
             $element.addClass('removable');
             $element.prepend('<input type="hidden" name="' + this.settings.name + '[]" value="' + elementInfo.id + '">' +
                 '<a class="delete icon" title="' + Craft.t('app', 'Remove') + '"></a>');

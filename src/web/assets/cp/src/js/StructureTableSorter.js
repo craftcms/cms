@@ -109,7 +109,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 var data = this._getAjaxBaseData(this.$targetItem);
 
                 Craft.postActionRequest('structures/get-element-level-delta', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         this._loadingDraggeeLevelDelta = false;
 
                         if (this.dragging) {
@@ -301,7 +301,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 }
 
                 Craft.postActionRequest('structures/move-element', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
                         this.onPositionChange();
 
@@ -427,7 +427,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
             this._updateIndent._mouseDist = this.realMouseX - this.mousedownX;
 
             // Flip that if this is RTL
-            if (Craft.orientation == 'rtl') {
+            if (Craft.orientation === 'rtl') {
                 this._updateIndent._mouseDist *= -1;
             }
 

@@ -204,7 +204,6 @@ class Dashboard extends Component
 
         if ($runValidation && !$widget->validate()) {
             Craft::info('Widget not saved due to validation error.', __METHOD__);
-
             return false;
         }
 

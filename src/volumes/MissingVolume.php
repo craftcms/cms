@@ -12,7 +12,7 @@ use craft\base\MissingComponentTrait;
 use craft\base\Volume;
 
 /**
- * InvalidSource represents a volume with an invalid class.
+ * MissingVolume represents a volume with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

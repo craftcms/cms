@@ -278,12 +278,6 @@ class Categories extends Component
      */
     public function saveGroup(CategoryGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Category group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewCategoryGroup = !$group->id;
 
         // Fire a 'beforeSaveGroup' event
@@ -292,6 +286,11 @@ class Categories extends Component
                 'categoryGroup' => $group,
                 'isNew' => $isNewCategoryGroup,
             ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Category group not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if (!$isNewCategoryGroup) {

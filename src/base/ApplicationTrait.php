@@ -187,16 +187,15 @@ trait ApplicationTrait
 
                 // Is it set to "auto"?
                 if ($language === 'auto') {
-                    // Place this within a try/catch in case userSession is being fussy.
+                    // If the user is logged in *and* has a primary language set, use that
                     try {
-                        // If the user is logged in *and* has a primary language set, use that
                         $user = $this->getUser()->getIdentity();
+                    } catch (\Exception $e) {
+                        $user = null;
+                    }
 
-                        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
-                            return $preferredLanguage;
-                        }
-                    } catch (\Throwable $e) {
-                        Craft::warning('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
+                    if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
+                        return $preferredLanguage;
                     }
 
                     // Is there a default CP language?
@@ -1174,7 +1173,9 @@ trait ApplicationTrait
         $this->_setLanguage();
 
         // Fire an 'afterInit' event
-        $this->trigger(WebApplication::EVENT_AFTER_INIT);
+        if ($this->hasEventHandlers(WebApplication::EVENT_INIT)) {
+            $this->trigger(WebApplication::EVENT_INIT);
+        }
     }
 
     /**

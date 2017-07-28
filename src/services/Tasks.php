@@ -169,7 +169,6 @@ class Tasks extends Component
 
         if ($runValidation && !$task->validate()) {
             Craft::info('Task not saved due to validation error.', __METHOD__);
-
             return false;
         }
 

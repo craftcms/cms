@@ -26,15 +26,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific section in the URL?
-            if (this.settings.context == 'index' && typeof defaultSectionHandle !== 'undefined') {
-                if (defaultSectionHandle == 'singles') {
+            if (this.settings.context === 'index' && typeof defaultSectionHandle !== 'undefined') {
+                if (defaultSectionHandle === 'singles') {
                     return 'singles';
                 }
                 else {
                     for (var i = 0; i < this.$sources.length; i++) {
                         var $source = $(this.$sources[i]);
 
-                        if ($source.data('handle') == defaultSectionHandle) {
+                        if ($source.data('handle') === defaultSectionHandle) {
                             return $source.data('key');
                         }
                     }
@@ -48,7 +48,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             var handle;
 
             // Get the handle of the selected source
-            if (this.$source.data('key') == 'singles') {
+            if (this.$source.data('key') === 'singles') {
                 handle = 'singles';
             }
             else {
@@ -57,6 +57,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
             // Update the New Entry button
             // ---------------------------------------------------------------------
+
+            var i, href, label;
 
             if (this.publishableSections.length) {
                 // Remove the old button, if there is one
@@ -68,8 +70,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 var selectedSection;
 
                 if (handle) {
-                    for (var i = 0; i < this.publishableSections.length; i++) {
-                        if (this.publishableSections[i].handle == handle) {
+                    for (i = 0; i < this.publishableSections.length; i++) {
+                        if (this.publishableSections[i].handle === handle) {
                             selectedSection = this.publishableSections[i];
                             break;
                         }
@@ -82,11 +84,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
                 // Otherwise only show a menu button
                 if (selectedSection) {
-                    var href = this._getSectionTriggerHref(selectedSection),
-                        label = (this.settings.context == 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
+                    href = this._getSectionTriggerHref(selectedSection);
+                    label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
                     this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
-                    if (this.settings.context != 'index') {
+                    if (this.settings.context !== 'index') {
                         this.addListener(this.$newEntryBtn, 'click', function(ev) {
                             this._openCreateEntryModal(ev.currentTarget.getAttribute('data-id'));
                         });
@@ -103,22 +105,22 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 if ($menuBtn) {
                     var menuHtml = '<div class="menu"><ul>';
 
-                    for (var i = 0; i < this.publishableSections.length; i++) {
+                    for (i = 0; i < this.publishableSections.length; i++) {
                         var section = this.publishableSections[i];
 
-                        if (this.settings.context == 'index' || section != selectedSection) {
-                            var href = this._getSectionTriggerHref(section),
-                                label = (this.settings.context == 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
+                        if (this.settings.context === 'index' || section !== selectedSection) {
+                            href = this._getSectionTriggerHref(section);
+                            label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
                             menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
                     menuHtml += '</ul></div>';
 
-                    var $menu = $(menuHtml).appendTo(this.$newEntryBtnGroup),
-                        menuBtn = new Garnish.MenuBtn($menuBtn);
+                    $(menuHtml).appendTo(this.$newEntryBtnGroup);
+                    var menuBtn = new Garnish.MenuBtn($menuBtn);
 
-                    if (this.settings.context != 'index') {
+                    if (this.settings.context !== 'index') {
                         menuBtn.on('optionSelect', $.proxy(function(ev) {
                             this._openCreateEntryModal(ev.option.getAttribute('data-id'));
                         }, this));
@@ -131,7 +133,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Entries index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history !== 'undefined') {
+            if (this.settings.context === 'index' && typeof history !== 'undefined') {
                 var uri = 'entries';
 
                 if (handle) {
@@ -145,7 +147,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         },
 
         _getSectionTriggerHref: function(section) {
-            if (this.settings.context == 'index') {
+            if (this.settings.context === 'index') {
                 return 'href="' + Craft.getUrl('entries/' + section.handle + '/new') + '"';
             }
             else {
@@ -197,7 +199,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                     // Make sure the right section is selected
                     var sectionSourceKey = 'section:' + sectionId;
 
-                    if (this.sourceKey != sectionSourceKey) {
+                    if (this.sourceKey !== sectionSourceKey) {
                         this.selectSourceByKey(sectionSourceKey);
                     }
 

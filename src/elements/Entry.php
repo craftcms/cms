@@ -941,11 +941,6 @@ EOD;
         }
 
         parent::afterSave($isNew);
-
-        // Save a new version
-        if ($section->enableVersioning) {
-            Craft::$app->getEntryRevisions()->saveVersion($this);
-        }
     }
 
     /**

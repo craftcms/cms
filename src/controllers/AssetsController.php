@@ -23,6 +23,7 @@ use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -104,8 +105,8 @@ class AssetsController extends Controller
             $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
-            $asset = new Asset();
 
+            $asset = new Asset();
             $asset->tempFilePath = $tempPath;
             $asset->filename = $filename;
             $asset->newFolderId = $folder->id;
@@ -826,7 +827,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
-        if (empty($asset->volumeId)) {
+        if (!$asset->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -848,7 +849,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
-        if (empty($folder->volumeId)) {
+        if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -886,7 +887,13 @@ class AssetsController extends Controller
         }
 
         // Move the uploaded file to the temp folder
-        if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
+        try {
+            $tempPath = $uploadedFile->saveAsTempFile();
+        } catch (ErrorException $e) {
+            throw new UploadFailedException(0);
+        }
+
+        if ($tempPath === false) {
             throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
         }
 

@@ -190,12 +190,6 @@ class AssetTransforms extends Component
      */
     public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool
     {
-        if ($runValidation && !$transform->validate()) {
-            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTransform = !$transform->id;
 
         // Fire a 'beforeSaveAssetTransform' event
@@ -204,6 +198,11 @@ class AssetTransforms extends Component
                 'assetTransform' => $transform,
                 'isNew' => $isNewTransform,
             ]));
+        }
+
+        if ($runValidation && !$transform->validate()) {
+            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         if ($isNewTransform) {

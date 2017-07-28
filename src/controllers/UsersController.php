@@ -129,13 +129,13 @@ class UsersController extends Controller
             $duration = $generalConfig->userSessionDuration;
         }
 
-        // Log them in
-        if (Craft::$app->getUser()->login($user, $duration)) {
-            return $this->_handleSuccessfulLogin(true);
+        // Try logging them in
+        if (!Craft::$app->getUser()->login($user, $duration)) {
+            // Unknown error
+            return $this->_handleLoginFailure(null, $user);
         }
 
-        // Unknown error
-        return $this->_handleLoginFailure(null, $user);
+        return $this->_handleSuccessfulLogin(true);
     }
 
     /**
@@ -918,7 +918,7 @@ class UsersController extends Controller
 
             if ($newEmail) {
                 // Does that email need to be verified?
-                if ($requireEmailVerification && (true || !$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
+                if ($requireEmailVerification && (!$currentUser || !$currentUser->admin || $request->getBodyParam('sendVerificationEmail'))) {
                     // Save it as an unverified email for now
                     $user->unverifiedEmail = $newEmail;
                     $verifyNewEmail = true;
@@ -1016,7 +1016,9 @@ class UsersController extends Controller
             }
 
             if ($request->getAcceptsJson()) {
-                return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
+                return $this->asJson([
+                    'errors' => $user->getErrors(),
+                ]);
             }
 
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
@@ -1682,7 +1684,9 @@ class UsersController extends Controller
                 $groupIds = $request->getBodyParam('groups');
 
                 if ($groupIds !== null) {
-                    $groupIds = (array)$groupIds;
+                    if ($groupIds === '') {
+                        $groupIds = [];
+                    }
 
                     // See if there are any new groups in here
                     $oldGroupIds = [];

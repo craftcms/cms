@@ -520,6 +520,7 @@ class Assets
                         'mpeg',
                         'mpg',
                         'm1s',
+                        'm2t',
                         'mp2v',
                         'm2v',
                         'm2s',

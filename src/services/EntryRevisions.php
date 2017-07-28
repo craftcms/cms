@@ -183,12 +183,6 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft, bool $runValidation = true): bool
     {
-        if ($runValidation && !$draft->validate()) {
-            Craft::info('Draft not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewDraft = !$draft->draftId;
 
         if (!$draft->name && $draft->id) {
@@ -208,6 +202,11 @@ class EntryRevisions extends Component
                 'draft' => $draft,
                 'isNew' => $isNewDraft,
             ]));
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not saved due to validation error.', __METHOD__);
+            return false;
         }
 
         $draftRecord = $this->_getDraftRecord($draft);
@@ -247,16 +246,9 @@ class EntryRevisions extends Component
             $draft->title = $draft->getSection()->name;
         }
 
-        if ($runValidation && !$draft->validate()) {
-            Craft::info('Draft not published due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         // Set the version notes
         if (!$draft->revisionNotes) {
-            $draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.',
-                ['name' => $draft->name]);
+            $draft->revisionNotes = Craft::t('app', 'Published draft “{name}”.', ['name' => $draft->name]);
         }
 
         // Fire a 'beforePublishDraft' event
@@ -264,6 +256,11 @@ class EntryRevisions extends Component
             $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not published due to validation error.', __METHOD__);
+            return false;
         }
 
         // Save the entry without re-running validation on it
@@ -424,21 +421,19 @@ class EntryRevisions extends Component
             $version->title = $version->getSection()->name;
         }
 
-        if ($runValidation && !$version->validate()) {
-            Craft::info('Entry not reverted due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         // Set the version notes
-        $version->revisionNotes = Craft::t('app', 'Reverted version {num}.',
-            ['num' => $version->num]);
+        $version->revisionNotes = Craft::t('app', 'Reverted version {num}.', ['num' => $version->num]);
 
         // Fire a 'beforeRevertEntryToVersion' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION)) {
             $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
                 'version' => $version,
             ]));
+        }
+
+        if ($runValidation && !$version->validate()) {
+            Craft::info('Entry not reverted due to validation error.', __METHOD__);
+            return false;
         }
 
         // Revert the entry without re-running validation on it

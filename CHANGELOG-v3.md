@@ -1,6 +1,52 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.23 - 2017-07-28
+
+### Added
+- Added the `init` event to `craft\base\Component`, giving plugins a chance to attach custom Behaviors to various Craft components. ([#1856](https://github.com/craftcms/cms/pull/1856))
+- Added the `init` event to `craft\web\twig\variables\CraftVariable`, giving plugins a chance to attach custom Behaviors and Components to the global `craft` template variable (replacing the now-deprecated `defineBehaviors` and `defineComponents` events). ([#1856](https://github.com/craftcms/cms/pull/1856))
+
+### Changed
+- Renamed the `afterInit` event on `craft\base\ApplicationTrait` to `init`. ([#1856](https://github.com/craftcms/cms/pull/1856))
+- During a database backup, Craft will now default to excluding data from `assetindexdata`, `assettransformindex`, `cache`, `sessions`, `templatecaches`, `templatecachecriteria`, and `templatecacheelements` tables.
+- Craft no longer saves new entry versions every time an entry is saved, regardless of how/why it’s being saved. Now they are only created when saving via the `entries/save-entry` action.
+- Craft is no longer reliant on asset-packagist.org or `fxp/composer-asset-plugin` for installing front-end dependencies.
+- Updated D3 to 4.10.0.
+- Updated selectize.js to 0.12.4.
+- Updated XRegExp to 3.2.0.
+- The APC cache class will now only use the APCu library. ([#1867](https://github.com/craftcms/cms/issues/1867))
+- The `users/save-user` action’s JSON response now has an `errors` key with all the validation errors, if any. ([#1860](https://github.com/craftcms/cms/pull/1860))
+- Fixed a bug where parse errors in files that got loaded when Craft was determining the current user would not get reported, and redirect the browser to the login page. ([#1858](https://github.com/craftcms/cms/issues/1858))
+- Fixed a bug where an `InvalidParamException` was thrown if a front-end login form was submitted without a password. ([#1857](https://github.com/craftcms/cms/issues/1857))
+- Background tasks’ labels in the Control Panel sidebar now get truncated rather than taking up multiple lines.
+
+### Deprecated
+- Deprecated the `defineBehaviors` and `defineComponents` variables on `craft\web\twig\variables\CraftVariable`. Use the new `init` event instead. ([#1856](https://github.com/craftcms/cms/pull/1856))
+
+### Removed
+- Removed `craft\config\ApcConfig`.
+
+### Fixed
+- Fixed a JavaScript error that would occur when choosing a user whom another (soon-to-be-deleted) user’s content should be transfered to. ([#1837](https://github.com/craftcms/cms/issues/1837))
+- Fixed a Twig error that would occur when saving a Matrix field if there were any validation errors.
+- Fixed a PHP error that could occur if two Matrix blocks (either in the same Matrix field or across multiple Matrix fields) had sub-fields with identical handles, but different casings.
+- Fixed a bug where listeners to the `selectElements` JavaScript event for Categories fields weren’t getting passed the list of new categories.
+- Fixed a bug where previously-selected categories could become unselectable within a Categories field after they had been replaced. ([#1846](https://github.com/craftcms/cms/issues/1846))
+- Fixed a bug where Craft would send an activation email when an admin registered a new user even if the “Send an activation email now?” checkbox was unchecked.
+- Fixed a SQL error that would occur when saving a user if no user groups were checked. ([#1849](https://github.com/craftcms/cms/issues/1849))
+- Fixed a bug where the background tasks HUD would show duplicate tasks when closed and reopened repeatedly without reloading the page. ([#1850](https://github.com/craftcms/cms/issues/1850))
+- Fixed a bug where required relational fields weren’t getting validation errors if they were left blank. ([#1851](https://github.com/craftcms/cms/issues/1851))
+- Fixed a SQL error that could occur when using the `{% cache %}` tag on sites with a large number of custom fields. ([#1862](https://github.com/craftcms/cms/issues/1862))
+- Fixed a bug where variables set with `craft\web\UrlManager::setRouteParams()` weren’t available to the resulting template, unless nestled inside a `variables` key. ([#1857](https://github.com/craftcms/cms/issues/1857))
+- Fixed a Twig error that could occur if a `null` value was passed to the `|t` filter. ([#1864](https://github.com/craftcms/cms/issues/1864))
+- Fixed a PHP error that would occur if a content migration created a new field or renamed an existing field’s handle, and then attempted to reference that field in the same request. ([#1865](https://github.com/craftcms/cms/issues/1865))
+- Fixed a bug where the Customize Sources Modal would always select the first asset volume’s source by default if a subfolder had been selected when opening the modal. ([#1871](https://github.com/craftcms/cms/issues/1871))
+- Fixed a bug where uploaded Assets would have their width and height set to `null` on upload  when using multisite. ([#1872](https://github.com/craftcms/cms/issues/1872))
+- Fixed a bug where cached versions of cloud images would not be saved when indexing for files that weren't already indexed.
+- Fixed a JavaScript error that prevented dialog prompts in Assets manager from being displayed correctly.
+- Fixed a bug on multi-site installs where relational fields wouldn’t save related elements that were disabled (either globally for a specific site site). ([#1854](https://github.com/craftcms/cms/issues/1854))
+
 ## 3.0.0-beta.22 - 2017-07-14
 
 ### Added
@@ -742,7 +788,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` now supports passing in full column type definitions, including attributes like `NOT NULL`, etc.
 - `craft\helpers\Db::getTextualColumnStorageCapacity()` will now return the max length for`string` and `char` column type definitions.
 - `craft\helpers\ElementHelper::findSource()` now adds a `keyPath` key to the returned source definition array if the source was nested.
-- `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
+- `craft\helpers\ElementHelper::setUniqueUri()` now behaves consistently whether or not the element’s URI format has a `{slug}` token – it will always throw a OperationAbortedException if it can’t find a unique URI.
 - `craft\i18n\Formatter::asText` will now format DateTime objects to text.
 - `craft\mail\Mailer::send()` now returns `false` if the message couldn’t be sent, rather than throwing a `SendEmailException`.
 - Updated the Yii Debug extension to 2.0.8.

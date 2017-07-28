@@ -22,12 +22,12 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
             handle = handle.replace(/^[^a-z]+/, '');
 
             // Get the "words"
-            var words = Craft.filterArray(handle.split(/[^a-z0-9]+/)),
-                handle = '';
+            var words = Craft.filterArray(handle.split(/[^a-z0-9]+/));
+            handle = '';
 
             // Make it camelCase
             for (var i = 0; i < words.length; i++) {
-                if (i == 0) {
+                if (i === 0) {
                     handle += words[i];
                 }
                 else {

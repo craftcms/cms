@@ -46,7 +46,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                     {
                         multi: this.settings.multiSelect,
                         vertical: this.isVerticalList(),
-                        handle: (this.settings.context == 'index' ? '.checkbox, .element:first' : null),
+                        handle: (this.settings.context === 'index' ? '.checkbox, .element:first' : null),
                         filter: ':not(a):not(.toggle)',
                         checkboxMode: this.settings.checkboxMode,
                         onSelectionChange: $.proxy(this, 'onSelectionChange')
@@ -66,11 +66,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }
 
             // Enable inline element editing if this is an index page
-            if (this.settings.context == 'index') {
+            if (this.settings.context === 'index') {
                 this._handleElementEditing = $.proxy(function(ev) {
                     var $target = $(ev.target);
 
-                    if ($target.prop('nodeName') == 'A') {
+                    if ($target.prop('nodeName') === 'A') {
                         // Let the link do its thing
                         return;
                     }
@@ -105,7 +105,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
             // Set up lazy-loading
             if (this.settings.batchSize) {
-                if (this.settings.context == 'index') {
+                if (this.settings.context === 'index') {
                     this.$scroller = Garnish.$win;
                 }
                 else {
@@ -236,18 +236,20 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }
 
             // Check if the user has reached the bottom of the scroll area
-            if (this.$scroller[0] == Garnish.$win[0]) {
+            var containerHeight;
+
+            if (this.$scroller[0] === Garnish.$win[0]) {
                 var winHeight = Garnish.$win.innerHeight(),
                     winScrollTop = Garnish.$win.scrollTop(),
-                    containerOffset = this.$container.offset().top,
-                    containerHeight = this.$container.height();
+                    containerOffset = this.$container.offset().top;
+                containerHeight = this.$container.height();
 
                 return (winHeight + winScrollTop >= containerOffset + containerHeight);
             }
             else {
                 var containerScrollHeight = this.$scroller.prop('scrollHeight'),
-                    containerScrollTop = this.$scroller.scrollTop(),
-                    containerHeight = this.$scroller.outerHeight();
+                    containerScrollTop = this.$scroller.scrollTop();
+                containerHeight = this.$scroller.outerHeight();
 
                 return (containerScrollHeight - containerScrollTop <= containerHeight + 15);
             }
@@ -271,12 +273,13 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                 this.loadingMore = false;
                 this.$loadingMoreSpinner.addClass('hidden');
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     var $newElements = $(response.html);
 
                     this.appendElements($newElements);
                     Craft.appendHeadHtml(response.headHtml);
                     Craft.appendFootHtml(response.footHtml);
+                    picturefill();
 
                     if (this.elementSelect) {
                         this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -360,5 +363,5 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             checkboxMode: false,
             onAppendElements: $.noop,
             onSelectionChange: $.noop
-        },
+        }
     });

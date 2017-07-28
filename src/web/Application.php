@@ -51,7 +51,7 @@ class Application extends \yii\web\Application
     /**
      * @event \yii\base\Event The event that is triggered after the application has been initialized
      */
-    const EVENT_AFTER_INIT = 'afterInit';
+    const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
@@ -256,24 +256,29 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
-     *
-     * @todo Remove this whenever Yii is updated with support for asset-packagist.org.
      */
     public function setVendorPath($path)
     {
         parent::setVendorPath($path);
 
         // Override the @bower and @npm aliases if using asset-packagist.org
+        // todo: remove this whenever Yii is updated with support for asset-packagist.org
         $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
         $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
-
         if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
-
         if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
+
+        // Override where Yii should find its asset deps
+        $libPath = Craft::getAlias('@lib');
+        Craft::setAlias('@bower/bootstrap/dist', $libPath.'/bootstrap');
+        Craft::setAlias('@bower/jquery/dist', $libPath.'/jquery');
+        Craft::setAlias('@bower/jquery.inputmask/dist', $libPath.'/jquery.inputmask');
+        Craft::setAlias('@bower/punycode', $libPath.'/punycode');
+        Craft::setAlias('@bower/yii2-pjax', $libPath.'/yii2-pjax');
     }
 
     // Private Methods
