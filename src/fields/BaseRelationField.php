@@ -491,8 +491,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @inheritdoc
      */
     public function afterElementSave(ElementInterface $element, bool $isNew)
-        /** @var ElementQuery $value */
     {
+        /** @var ElementQuery $value */
         $value = $element->getFieldValue($this->handle);
 
         // $id will be set if we're saving new relations
