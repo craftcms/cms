@@ -1,4 +1,4 @@
-/*! Craft  - 2017-06-30 */
+/*! Craft  - 2017-07-19 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -3585,6 +3585,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				this.appendElements($newElements);
 				Craft.appendHeadHtml(response.headHtml);
 				Craft.appendFootHtml(response.footHtml);
+				picturefill();
 
 				if (this.elementSelect)
 				{
@@ -16815,7 +16816,7 @@ Craft.UpgradeModal = Garnish.Modal.extend(
 
 	init: function(settings)
 	{
-		this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod),
+		this.$container = $('<div id="upgrademodal" class="modal loading"/>').appendTo(Garnish.$bod);
 
 		this.base(this.$container, $.extend({
 			resizable: true

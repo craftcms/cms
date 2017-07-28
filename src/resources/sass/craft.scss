@@ -1232,13 +1232,13 @@ body #redactor-modal-overlay {
 .menu,
 .ui-datepicker,
 .ui-timepicker-list,
-#main .redactor-dropdown { @include menu-styles; }
+.input .redactor-dropdown { @include menu-styles; }
 
 .ui-datepicker,
 .ui-timepicker-list { padding: 0; }
 
 .menu ul li a,
-#main .redactor-dropdown a { @include menu-option-styles; }
+.input .redactor-dropdown a { @include menu-option-styles; }
 
 .menu { display: none; position: absolute; }
 .menu ul li a { display: block !important; font-size: 12px; }
@@ -1246,8 +1246,8 @@ body #redactor-modal-overlay {
 .menu ul li a:not(.sel):not(.disabled):hover .light,
 .menu:not(:hover) ul li a:not(.disabled).hover,
 .menu:not(:hover) ul li a:not(.sel):not(.disabled).hover .light,
-#main .redactor-dropdown a:hover { @include menu-option-active-styles; }
-#main .redactor-dropdown a:hover span { color: $textcolor !important; }
+.input .redactor-dropdown a:hover { @include menu-option-active-styles; }
+.input .redactor-dropdown a:hover span { color: $textcolor !important; }
 .menu ul li a.sel { cursor: default; }
 .menu ul li a .shortcut { @include floatright; @include margin-left(14px); color: $mediumtextcolor; }
 .menu hr { margin: 5px -14px; }
@@ -1264,6 +1264,9 @@ body #redactor-modal-overlay {
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }
+body.ltr .tagselect.elementselect .element,
+body.rtl .tagselect.elementselect .element { float: none !important; display: inline-block; }
+.tagselect .elements { display: inline; }
 
 .tagmenu ul li a { @include padding-left(26px); }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
@@ -1288,7 +1291,7 @@ body #redactor-modal-overlay {
 }
 
 .text:not(.selectize-text),
-#main .redactor-box:not(.redactor-box-fullscreen),
+.input .redactor-box:not(.redactor-box-fullscreen),
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input { @include text-input-styles; }
@@ -1297,7 +1300,7 @@ body #redactor-modal-overlay {
 .text:focus,
 .border-box:focus,
 .border-box.focus,
-#main .redactor-box.focus:not(.redactor-box-fullscreen),
+.input .redactor-box.focus:not(.redactor-box-fullscreen),
 .selectize-text > .selectize-control > .selectize-input.focus { @include text-input-focussed-styles; }
 
 input.text,
@@ -1337,7 +1340,13 @@ textarea.text.fullwidth { display: block; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions,
-.checkboxfield.has-instructions .instructions { margin-top: 2px; color: $mediumtextcolor; }
+.checkboxfield.has-instructions .instructions {
+	margin-top: 2px;
+	color: $mediumtextcolor;
+	img {
+		max-width: 100%;
+	}
+}
 .field > .warning { margin: 2px 0 0; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 .field > .input:after { @include clearafter; }
@@ -1454,30 +1463,30 @@ input:-ms-input-placeholder { @include placeholder-styles; }
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
 /* redactor */
-#main .redactor-box,
-#main .redactor-toolbar,
-#main .redactor-box textarea { z-index: auto !important; }
-#main .redactor-box { margin-bottom: 0; }
-#main .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
-#main .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
-#main .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
-#main .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
-#main .redactor-toolbar li a { color: $textcolor; }
-#main .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
-#main .redactor-toolbar li a:active,
-#main .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
-#main .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
-#main .redactor-dropdown { z-index: 100; }
-#main .redactor-dropdown li { border-bottom: none; background: none; }
-#main .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
-#main .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
+.input .redactor-box,
+.input .redactor-toolbar,
+.input .redactor-box textarea { z-index: auto !important; }
+.input .redactor-box { margin-bottom: 0; }
+.input .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
+.input .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
+.input .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
+.input .redactor-toolbar.toolbar-fixed-box + span + .redactor-layer { padding-top: 48px; }
+.input .redactor-toolbar li a { color: $textcolor; }
+.input .redactor-toolbar li a:hover { background-color: $lightselcolor; color: $textcolor; }
+.input .redactor-toolbar li a:active,
+.input .redactor-toolbar li a.redactor-act { background-color: $darkselcolor; color: #fff; }
+.input .redactor-toolbar li:first-child a { border-top-left-radius: 2px; }
+.input .redactor-dropdown { z-index: 100; }
+.input .redactor-dropdown li { border-bottom: none; background: none; }
+.input .redactor-box:not(.redactor-box-fullscreen) .redactor-layer { background: none; border: none; border-top: 1px solid $hairlineColor; }
+.input .redactor-box textarea { display: block; border-radius: 0 0 3px 3px; }
 body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
 body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
-#main .redactor-link-tooltip { z-index: 101; }
-#main .redactor-toolbar { z-index: 102; }
-#main .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
-#main .redactor-layer ul { list-style: disc; }
-#main .redactor-layer ol { @include padding-left(0 !important); }
+.input .redactor-link-tooltip { z-index: 101; }
+.input .redactor-toolbar { z-index: 102; }
+.input .redactor-layer { border: none; border-top: 1px solid $hairlineColor; }
+.input .redactor-layer ul { list-style: disc; }
+.input .redactor-layer ol { @include padding-left(0 !important); }
 
 /**
  * Selects

@@ -26,14 +26,24 @@ class AssetsHelper
 	 *
 	 * @param string $extension extension to use. "tmp" by default.
 	 *
+	 * @param bool   $suppressErrors
+	 *
 	 * @return mixed
+	 * @throws Exception
 	 */
-	public static function getTempFilePath($extension = 'tmp')
+	public static function getTempFilePath($extension = 'tmp', $suppressErrors = false)
 	{
 		$extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
 		$fileName = uniqid('assets', true).'.'.$extension;
 
-		return IOHelper::createFile(craft()->path->getTempPath().$fileName)->getRealPath();
+		$filePath = IOHelper::createFile(craft()->path->getTempPath().$fileName, $suppressErrors);
+
+		if (!$filePath)
+		{
+			throw new Exception('There was a problem generating a temporary file path.');
+		}
+
+		return $filePath->getRealPath();
 	}
 
 	/**

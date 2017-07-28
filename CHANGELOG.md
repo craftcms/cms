@@ -1,7 +1,22 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2988  2017-07-28
+
+### Changed
+- Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
+- `.m2t` files are now treated as videos.
+- Images within field instructions are now given a max-width of 100%. ([#1868](https://github.com/craftcms/cms/issues/1868))
+
+### Fixed
+- Fixed a PHP error that could occur when logging a deprecation error in `DepreactorService`.
+- Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals. ([#1795](https://github.com/craftcms/cms/issues/1795))
+- Fixed a bug where picturefill was not applied to thumbnails within lazy-loaded elements on element index pages.
+- Fixed a visual alignment bug on Tags fields.
+
+### Security
+- Fixed a bug where admins could download arbitrary zip files from the server.
+- Fixed a bug where a full server path would be disclosed if you were able to upload a file with a filename larger than 255 characters.
 
 ## 2.6.2987 - 2017-07-14
 
