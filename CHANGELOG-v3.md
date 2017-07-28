@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Fixed
+- Fixed a migration error that could occur if `composer.json` didn’t have any custom `repositories` defined.
+
 ## 3.0.0-beta.23 - 2017-07-28
 
 ### Added

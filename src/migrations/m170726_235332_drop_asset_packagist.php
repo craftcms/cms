@@ -27,6 +27,10 @@ class m170726_235332_drop_asset_packagist extends Migration
         $json = new JsonFile($jsonPath);
         $config = $json->read();
 
+        if (!isset($config['repositories'])) {
+            return true;
+        }
+
         // Remove the asset-packagist repo, if it's in there
         foreach ($config['repositories'] as $key => $repo) {
             if (isset($repo['url']) && strpos($repo['url'], '//asset-packagist.org') !== false) {
