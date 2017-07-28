@@ -827,7 +827,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
-        if (empty($asset->volumeId)) {
+        if (!$asset->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -849,7 +849,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
-        if (empty($folder->volumeId)) {
+        if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
