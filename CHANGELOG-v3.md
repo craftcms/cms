@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.23 - 2017-07-28
 
 ### Added
 - Added the `init` event to `craft\base\Component`, giving plugins a chance to attach custom Behaviors to various Craft components. ([#1856](https://github.com/craftcms/cms/pull/1856))
