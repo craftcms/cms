@@ -803,7 +803,7 @@ abstract class Element extends Component implements ElementInterface
         $names = parent::attributes();
 
         // Include custom field handles
-        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+        if (static::hasContent() && ($fieldLayout = $this->getFieldLayout()) !== null) {
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 $names[] = $field->handle;
