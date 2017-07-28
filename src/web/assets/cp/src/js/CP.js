@@ -1138,7 +1138,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
             if (Craft.cp.taskInfo) {
                 for (i = 0; i < Craft.cp.taskInfo.length; i++) {
-                    newTaskIds.push(Craft.cp.taskInfo[i].id);
+                    newTaskIds.push(parseInt(Craft.cp.taskInfo[i].id));
                 }
             }
 
@@ -1146,8 +1146,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
                 if (!this.tasksById.hasOwnProperty(id)) {
                     continue;
                 }
-                id = parseInt(id);
-                if (!Craft.inArray(id, newTaskIds)) {
+                if (!Craft.inArray(parseInt(id), newTaskIds)) {
                     this.tasksById[id].complete();
                     this.completedTasks.push(this.tasksById[id]);
                     delete this.tasksById[id];
