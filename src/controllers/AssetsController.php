@@ -23,6 +23,7 @@ use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -886,7 +887,13 @@ class AssetsController extends Controller
         }
 
         // Move the uploaded file to the temp folder
-        if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
+        try {
+            $tempPath = $uploadedFile->saveAsTempFile();
+        } catch (ErrorException $e) {
+            throw new UploadFailedException(0);
+        }
+
+        if ($tempPath === false) {
             throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
         }
 
