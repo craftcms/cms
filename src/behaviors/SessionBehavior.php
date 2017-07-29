@@ -7,6 +7,8 @@
 
 namespace craft\behaviors;
 
+use craft\web\Session;
+use craft\web\View;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;
@@ -15,6 +17,8 @@ use yii\web\AssetBundle;
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
  *
  * An instance of the HttpSession service is globally accessible in Craft via [[Application::httpSession `Craft::$app->getSession()`]].
+ *
+ * @property Session $owner
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -62,7 +66,7 @@ class SessionBehavior extends Behavior
      */
     public function setNotice(string $message)
     {
-        $this->setFlash('notice', $message);
+        $this->owner->setFlash('notice', $message);
     }
 
     /**
@@ -79,7 +83,7 @@ class SessionBehavior extends Behavior
      */
     public function setError(string $message)
     {
-        $this->setFlash('error', $message);
+        $this->owner->setFlash('error', $message);
     }
 
     /**
@@ -103,7 +107,7 @@ class SessionBehavior extends Behavior
 
         $assetBundles = $this->getAssetBundleFlashes(false);
         $assetBundles[$name] = $position;
-        $this->setFlash($this->assetBundleFlashKey, $assetBundles);
+        $this->owner->setFlash($this->assetBundleFlashKey, $assetBundles);
     }
 
     /**
@@ -116,7 +120,7 @@ class SessionBehavior extends Behavior
      */
     public function getAssetBundleFlashes(bool $delete = false): array
     {
-        return $this->getFlash($this->assetBundleFlashKey, [], $delete);
+        return $this->owner->getFlash($this->assetBundleFlashKey, [], $delete);
     }
 
     /**
@@ -138,7 +142,7 @@ class SessionBehavior extends Behavior
     {
         $scripts = $this->getJsFlashes();
         $scripts[] = [$js, $position, $key];
-        $this->setFlash($this->jsFlashKey, $scripts);
+        $this->owner->setFlash($this->jsFlashKey, $scripts);
     }
 
     /**
@@ -151,7 +155,7 @@ class SessionBehavior extends Behavior
      */
     public function getJsFlashes(bool $delete = true): array
     {
-        return $this->getFlash($this->jsFlashKey, [], $delete);
+        return $this->owner->getFlash($this->jsFlashKey, [], $delete);
     }
 
     // Session-Based Authorization
@@ -166,11 +170,11 @@ class SessionBehavior extends Behavior
      */
     public function authorize(string $action)
     {
-        $access = $this->get($this->authAccessParam, []);
+        $access = $this->owner->get($this->authAccessParam, []);
 
         if (!in_array($action, $access, true)) {
             $access[] = $action;
-            $this->set($this->authAccessParam, $access);
+            $this->owner->set($this->authAccessParam, $access);
         }
     }
 
@@ -183,12 +187,12 @@ class SessionBehavior extends Behavior
      */
     public function deauthorize(string $action)
     {
-        $access = $this->get($this->authAccessParam, []);
+        $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
-            $this->set($this->authAccessParam, $access);
+            $this->owner->set($this->authAccessParam, $access);
         }
     }
 
@@ -201,7 +205,7 @@ class SessionBehavior extends Behavior
      */
     public function checkAuthorization(string $action): bool
     {
-        $access = $this->get($this->authAccessParam, []);
+        $access = $this->owner->get($this->authAccessParam, []);
 
         return in_array($action, $access, true);
     }
