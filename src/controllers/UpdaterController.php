@@ -541,13 +541,13 @@ class UpdaterController extends Controller
      * Sends an "error" state response for a Composer error
      *
      * @param string     $error The status message to show
-     * @param \Exception $e     The exception that was thrown
+     * @param \Throwable $e     The exception that was thrown
      * @param BufferIO   $io    The IO object that Composer was instantiated with
      * @param array      $state
      *
      * @return Response
      */
-    private function _composerError(string $error, \Exception $e, BufferIO $io, array $state = []): Response
+    private function _composerError(string $error, \Throwable $e, BufferIO $io, array $state = []): Response
     {
         $state['error'] = $error;
         $state['errorDetails'] = $this->_composerErrorDetails($e, $io);
@@ -567,12 +567,12 @@ class UpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Exception $e  The exception that was thrown
+     * @param \Throwable $e  The exception that was thrown
      * @param BufferIO   $io The IO object that Composer was instantiated with
      *
      * @return string
      */
-    private function _composerErrorDetails(\Exception $e, BufferIO $io): string
+    private function _composerErrorDetails(\Throwable $e, BufferIO $io): string
     {
         return Craft::t('app', 'Error:').' '.$e->getMessage()."\n\n".
             Craft::t('app', 'Output:').' '.strip_tags($io->getOutput());
