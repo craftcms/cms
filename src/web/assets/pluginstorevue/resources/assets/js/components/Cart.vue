@@ -64,7 +64,7 @@
         </div>
 
         <div v-else>
-            <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continueShopping')">{{ "Continue shopping"|t('app') }}</a></p>
+            <p>{{ "Your cart is empty."|t('app') }} <a @click="$emit('continue-shopping')">{{ "Continue shopping"|t('app') }}</a></p>
         </div>
 
 
