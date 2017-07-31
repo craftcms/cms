@@ -109,20 +109,15 @@
             buyPlugin(plugin) {
                 this.$store.dispatch('addToCart', plugin);
                 this.$root.openGlobalModal('cart');
-                this.$emit('buyPlugin');
             },
             tryPlugin(plugin) {
                 this.$store.dispatch('addToActiveTrials', plugin);
                 this.$root.closeGlobalModal();
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
-                this.$emit('tryPlugin');
             },
             viewDeveloper(plugin) {
-                this.$emit('viewDeveloper');
-
-                setTimeout(function() {
-                    this.$router.push({ path: '/developer/'+plugin.developerId})
-                }.bind(this), 1);
+                this.$root.closeGlobalModal();
+                this.$router.push({ path: '/developer/'+plugin.developerId})
             }
         },
     }
