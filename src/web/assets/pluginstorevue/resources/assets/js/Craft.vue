@@ -67,14 +67,12 @@
            ]),
             buy(plugin) {
                 this.$store.dispatch('addToCart', plugin);
-
-                this.$root.$refs.cartButton.openModal();
+                this.$root.openGlobalModal('cart');
             },
         },
 
         created () {
             this.$root.showCrumbs = true;
-
             this.$root.pageTitle = 'Upgrade Craft CMS';
         },
     }

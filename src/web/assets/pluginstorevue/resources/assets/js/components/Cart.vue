@@ -134,7 +134,9 @@
             },
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
-                    return !this.cartPlugins.find(cartP => p.id == cartP.id)
+                    if(p) {
+                        return !this.cartPlugins.find(cartP => p.id == cartP.id)
+                    }
                 })
             },
         },

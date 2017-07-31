@@ -3,15 +3,9 @@
     <div>
         <div class="row plugin-grid" v-if="plugins && plugins.length > 0">
             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 plugin" v-for="plugin in plugins">
-                <plugin-card :plugin="plugin" @click="openModal(plugin)"></plugin-card>
+                <plugin-card :plugin="plugin" @click="showPlugin(plugin)"></plugin-card>
             </div>
         </div>
-
-        <garnish-modal :showModal.sync="showModal">
-            <div slot="body">
-                <plugin-details :plugin="selectedPlugin" @buyPlugin="onBuy" @tryPlugin="onBuy" @viewDeveloper="onViewDeveloper"></plugin-details>
-            </div>
-        </garnish-modal>
     </div>
 
 </template>
@@ -21,7 +15,6 @@
 
     import PluginCard from './PluginCard';
     import PluginDetails from './PluginDetails';
-    import GarnishModal from './GarnishModal.vue'
 
     export default {
         name: 'pluginGrid',
@@ -29,32 +22,15 @@
         components: {
             PluginCard,
             PluginDetails,
-            GarnishModal,
         },
         data () {
             return {
-                showModal: false,
-                selectedPlugin: null,
             }
         },
         methods: {
-            openModal: function(plugin) {
-                this.selectedPlugin = plugin;
-                this.showModal = true;
+            showPlugin: function(plugin) {
+                this.$root.showPlugin(plugin);
             },
-            closeModal: function() {
-                this.selectedPlugin = null;
-                this.showModal = false;
-            },
-            onBuy() {
-               this.closeModal();
-            },
-            onTry() {
-               this.closeModal();
-            },
-            onViewDeveloper() {
-               this.closeModal();
-            }
         },
     }
 </script>

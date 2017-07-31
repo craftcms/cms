@@ -6,13 +6,20 @@
         <template v-else>
             <router-view></router-view>
         </template>
+
     </div>
 </template>
 
 
 <script>
+    import Cart from './components/Cart';
+
     export default {
         name: 'app',
+
+        components: {
+            Cart,
+        },
 
         data() {
             return {
@@ -28,6 +35,15 @@
             this.$store.dispatch('getAllCategories')
             this.$store.dispatch('getStaffPicks')
             this.$store.dispatch('getCartState')
-        }
+        },
     }
 </script>
+
+<style scoped>
+    .cart-button {
+        position: relative;
+        float: right;
+        top: -10px;
+        z-index: 1000;
+    }
+</style>

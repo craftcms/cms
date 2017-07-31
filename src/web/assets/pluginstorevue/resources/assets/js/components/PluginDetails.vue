@@ -108,11 +108,12 @@
             ]),
             buyPlugin(plugin) {
                 this.$store.dispatch('addToCart', plugin);
+                this.$root.openGlobalModal('cart');
                 this.$emit('buyPlugin');
-                this.$root.$refs.cartButton.openModal();
             },
             tryPlugin(plugin) {
                 this.$store.dispatch('addToActiveTrials', plugin);
+                this.$root.closeGlobalModal();
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
                 this.$emit('tryPlugin');
             },
