@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a migration error that could occur if `composer.json` didn’t have any custom `repositories` defined.
 - Fixed a bug where clicking “Go to Updates” from the Updates widget would take you to a 404, if the available update info wasn’t already cached before loading the Dashboard. ([#1882](https://github.com/craftcms/cms/issues/1882))
 - Fixed a SQL error that could occur when querying for users using the `lastLoginDate` param. ([#1886](https://github.com/craftcms/cms/issues/1886))
+- Fixed a bug where custom field methods on element queries weren’t returning a reference to the element query object. ([#1887](https://github.com/craftcms/cms/issues/1887))
 
 ## 3.0.0-beta.23 - 2017-07-28
 

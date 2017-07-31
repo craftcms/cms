@@ -26,7 +26,7 @@ class ElementQueryBehavior extends ContentBehavior
     {
         if (isset(self::$fieldHandles[$name]) && count($params) === 1) {
             $this->$name = $params[0];
-            return null;
+            return $this;
         }
         return parent::__call($name, $params);
     }

@@ -7,9 +7,9 @@ use craft\db\Migration;
 use craft\helpers\FileHelper;
 
 /**
- * m170726_150217_delete_compiled_behaviors migration.
+ * m170731_185314_delete_compiled_behaviors migration.
  */
-class m170726_150217_delete_compiled_behaviors extends Migration
+class m170731_185314_delete_compiled_behaviors extends Migration
 {
     /**
      * @inheritdoc
@@ -34,7 +34,7 @@ class m170726_150217_delete_compiled_behaviors extends Migration
      */
     public function safeDown()
     {
-        echo "m170726_150217_delete_compiled_behaviors cannot be reverted.\n";
+        echo "m170731_185314_delete_compiled_behaviors cannot be reverted.\n";
         return false;
     }
 }
