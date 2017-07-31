@@ -117,6 +117,7 @@
             },
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
+                this.$root.pageTitle = plugin.developerName;
                 this.$router.push({ path: '/developer/'+plugin.developerId})
             }
         },

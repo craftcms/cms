@@ -31,6 +31,7 @@ const app = new Vue({
           modal: null,
           plugin: null,
           modalStep: null,
+          loading: true,
       }
     },
 
@@ -59,7 +60,7 @@ const app = new Vue({
         },
         closeGlobalModal() {
             this.modal.hide();
-        }
+        },
     },
 
     watch: {
@@ -100,6 +101,17 @@ const app = new Vue({
 
         this.$pageTitle = $('#page-title h1')
         this.$pageTitle.html(this.pageTitle)
+
+
+        // Dispatch
+
+        this.$store.dispatch('getPluginStoreData')
+        this.$store.dispatch('getAllPlugins').then(() => {
+            this.loading = false
+        })
+        this.$store.dispatch('getAllCategories')
+        this.$store.dispatch('getStaffPicks')
+        this.$store.dispatch('getCartState')
     },
 
     mounted() {

@@ -35,8 +35,11 @@
             
             let developerId = this.$route.params.id;
 
+            this.$root.loading = true;
+
             this.$store.dispatch('getDeveloper', developerId).then((developer) => {
                 this.$root.pageTitle = developer.developerName;
+                this.$root.loading = false;
             });
         },
     }

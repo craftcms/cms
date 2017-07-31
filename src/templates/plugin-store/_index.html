@@ -37,7 +37,13 @@
 {% endset %}
 
 {% set content %}
-	<app></app>
+	<div :class="{hidden: !loading}">
+		Loading…
+	</div>
+
+	<div :class="{ hidden: loading }">
+		<router-view></router-view>
+	</div>
 
 	<div class="hidden">
 		<div ref="globalmodal" class="modal">
