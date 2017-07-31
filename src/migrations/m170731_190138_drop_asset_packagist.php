@@ -7,9 +7,9 @@ use Craft;
 use craft\db\Migration;
 
 /**
- * m170726_235332_drop_asset_packagist migration.
+ * m170731_190138_drop_asset_packagist migration.
  */
-class m170726_235332_drop_asset_packagist extends Migration
+class m170731_190138_drop_asset_packagist extends Migration
 {
     /**
      * @inheritdoc
@@ -52,7 +52,7 @@ class m170726_235332_drop_asset_packagist extends Migration
      */
     public function safeDown()
     {
-        echo "m170726_235332_drop_asset_packagist cannot be reverted.\n";
+        echo "m170731_190138_drop_asset_packagist cannot be reverted.\n";
         return false;
     }
 }
