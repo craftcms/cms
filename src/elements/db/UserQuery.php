@@ -76,7 +76,7 @@ class UserQuery extends ElementQuery
     public $lastName;
 
     /**
-     * @var mixed The date that the resulting entries must have last logged in.
+     * @var mixed The date that the resulting users must have last logged in.
      */
     public $lastLoginDate;
 
@@ -339,7 +339,7 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->lastLoginDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate));
+            $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
         return parent::beforePrepare();
