@@ -69,8 +69,8 @@ class GetHelpWidget extends BaseWidget
 
 		$envInfoJs = JsonHelper::encode(array(
 			'Craft version' => craft()->getVersion().' ('.craft()->getEditionName().')',
-			'PHP version' => phpversion(),
-			'Database driver & version' => 'MySQL '.craft()->db->getServerVersion(),
+			'PHP version' => str_replace('~', '\~', phpversion()),
+			'Database driver & version' => 'MySQL '.str_replace('~', '\~', craft()->db->getServerVersion()),
 			'Plugins & versions' => $plugins,
 		));
 
