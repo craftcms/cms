@@ -6,6 +6,7 @@ import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 import App from './App';
 import Cart from './components/Cart';
 import PluginDetails from './components/PluginDetails';
+import Payment from './components/Payment';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
 import router from './router';
@@ -21,7 +22,7 @@ const app = new Vue({
     el: '#main',
     router,
     store,
-    components: { App, Cart, PluginDetails },
+    components: { App, Cart, PluginDetails, Payment },
     data() {
       return {
           $crumbs: null,

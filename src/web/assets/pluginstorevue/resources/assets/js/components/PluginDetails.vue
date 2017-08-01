@@ -1,5 +1,5 @@
 <template>
-    <div v-if="plugin">
+    <div v-if="plugin" class="body">
         <div class="plugin-details-header">
             <div class="plugin-icon-large">
                 <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
@@ -117,7 +117,7 @@
             },
             viewDeveloper(plugin) {
                 this.$root.closeGlobalModal();
-                this.$root.pageTitle = plugin.developerName;
+                this.$root.pageTitle = developer.developerName;
                 this.$router.push({ path: '/developer/'+plugin.developerId})
             }
         },

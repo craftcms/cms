@@ -47,10 +47,9 @@
 
 	<div class="hidden">
 		<div ref="globalmodal" class="modal">
-			<div class="body">
-				<plugin-details v-if="modalStep === 'plugin-details'" :plugin="plugin"></plugin-details>
-				<cart v-else-if="modalStep === 'cart'" @continue-shopping="closeGlobalModal()"></cart>
-			</div>
+			<plugin-details v-if="modalStep === 'plugin-details'" :plugin="plugin"></plugin-details>
+			<cart v-else-if="modalStep === 'cart'" @continue-shopping="closeGlobalModal()"></cart>
+			<payment v-else-if="modalStep === 'payment'"></payment>
 		</div>
 	</div>
 
