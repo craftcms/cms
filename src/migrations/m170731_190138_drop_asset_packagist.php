@@ -5,6 +5,7 @@ namespace craft\migrations;
 use Composer\Json\JsonFile;
 use Craft;
 use craft\db\Migration;
+use yii\base\Exception;
 
 /**
  * m170731_190138_drop_asset_packagist migration.
@@ -17,8 +18,9 @@ class m170731_190138_drop_asset_packagist extends Migration
     public function safeUp()
     {
         // See if we can find composer.json
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
-        if (!file_exists($jsonPath)) {
+        try {
+            $jsonPath = Craft::$app->getComposer()->getJsonPath();
+        } catch (Exception $e) {
             Craft::warning('Could not remove the asset-packagist.org repo from composer.json because composer.json could not be found.', __METHOD__);
             return true;
         }

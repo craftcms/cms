@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
+- Added `craft\services\Composer::getJsonPath()`.
 
 ### Fixed
 - Fixed a migration error that could occur if `composer.json` didn’t have any custom `repositories` defined.

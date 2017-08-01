@@ -31,6 +31,21 @@ class Composer extends Component
     // =========================================================================
 
     /**
+     * Returns the path to composer.json.
+     *
+     * @return string
+     * @throws Exception if composer.json can't be located
+     */
+    public function getJsonPath(): string
+    {
+        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
+        if (!file_exists($jsonPath)) {
+            throw new Exception('Could not locate your composer.json file.');
+        }
+        return $jsonPath;
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array            $requirements Package name/version pairs
@@ -49,7 +64,7 @@ class Composer extends Component
         $this->preloadComposerClasses();
 
         // Get composer.json
-        $jsonPath = $this->jsonPath();
+        $jsonPath = $this->getJsonPath();
         $backup = file_get_contents($jsonPath);
 
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
@@ -101,7 +116,7 @@ class Composer extends Component
         }
 
         // Get composer.json
-        $jsonPath = $this->jsonPath();
+        $jsonPath = $this->getJsonPath();
         $backup = file_get_contents($jsonPath);
 
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
@@ -165,7 +180,7 @@ class Composer extends Component
             $io = new NullIO();
         }
 
-        $jsonPath = $this->jsonPath();
+        $jsonPath = $this->getJsonPath();
 
         // Set the working directory to the composer.json dir, in case there are any relative repo paths
         $wd = getcwd();
@@ -197,21 +212,6 @@ class Composer extends Component
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * Returns the path to composer.json.
-     *
-     * @return string
-     * @throws Exception if composer.json can't be located
-     */
-    protected function jsonPath(): string
-    {
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
-        if (!file_exists($jsonPath)) {
-            throw new Exception('Could not locate your composer.json file.');
-        }
-        return $jsonPath;
-    }
 
     /**
      * Updates the composer.json file with new requirements
