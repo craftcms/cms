@@ -109,7 +109,6 @@ const app = new Vue({
         this.$store.dispatch('getAllPlugins').then(() => {
             this.loading = false
         })
-        this.$store.dispatch('getStaffPicks')
         this.$store.dispatch('getCartState')
     },
 

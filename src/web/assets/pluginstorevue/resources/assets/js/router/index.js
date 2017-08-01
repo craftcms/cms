@@ -4,7 +4,6 @@ import Index from '../Index'
 import Category from '../Category'
 import Craft from '../Craft'
 import Developer from '../Developer'
-import StaffPicks from '../StaffPicks'
 import Tests from '../Tests'
 
 Vue.use(Router)
@@ -30,11 +29,6 @@ export default new Router({
             path: '/developer/:id',
             name: 'Developer',
             component: Developer,
-        },
-        {
-            path: '/staff-picks',
-            name: 'StaffPicks',
-            component: StaffPicks,
         },
         {
             path: '/tests',

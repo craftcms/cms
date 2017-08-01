@@ -29,13 +29,6 @@ export default {
             return cb(plugins);
         });
     },
-    getStaffPicks (cb) {
-        Vue.http.get('https://craftid.dev/api/plugins/staff-picks').then(function(data) {
-            let plugins = data.body.plugins;
-
-            return cb(plugins);
-        });
-    },
     getCategories (cb) {
         Vue.http.get('https://craftid.dev/api/categories').then(function(data) {
             let categories = data.body.data;

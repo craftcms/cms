@@ -9,15 +9,6 @@
                     <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
                 </template>
 
-                <!--
-                <p class="right">
-                    <router-link to="/staff-picks/">{{ "See all" | t('app') }}</router-link>
-                </p>
-
-                <h2>{{ "Staff Picks"|t('app') }}</h2>
-                <plugin-grid :plugins="staffPicks.slice(0,9)"></plugin-grid>
-                -->
-
                 <template v-if="activeTrialPlugins.length > 0">
                     <h2>{{ "Active Trials"|t('app') }}</h2>
                     <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
@@ -75,7 +66,6 @@
             ...mapGetters({
                 allPlugins: 'allPlugins',
                 pluginStoreData: 'pluginStoreData',
-                staffPicks: 'staffPicks',
                 activeTrialPlugins: 'activeTrialPlugins',
                 pluginStoreGetAllCategories: 'pluginStoreGetAllCategories',
                 getAllCategories: 'getAllCategories',
