@@ -2,8 +2,9 @@
     <div>
         <div class="toolbar">
             <div class="flex">
-                <div class="flex-grow">
+                <div class="flex-grow texticon search icon clearable">
                     <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
+                    <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
                 </div>
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
             </div>
