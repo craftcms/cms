@@ -58,7 +58,7 @@
                         </tr>
                         <tr>
                             <th><strong>{{ "Total"|t('app') }}</strong></th>
-                            <td><strong>{{ total|currency }}</strong></td>
+                            <td><strong>{{ cartTotal()|currency }}</strong></td>
                         </tr>
                     </table>
 
@@ -127,16 +127,8 @@
                 isInTrial: 'isInTrial',
                 cartPlugins: 'cartPlugins',
                 activeTrialPlugins: 'activeTrialPlugins',
+                cartTotal: 'cartTotal',
             }),
-            total () {
-                return this.cartPlugins.reduce((total, p) => {
-                    if(p) {
-                        return total + parseFloat(p.price)
-                    }
-
-                    return total;
-                }, 0)
-            },
             pendingActiveTrials() {
                 return this.activeTrialPlugins.filter(p => {
                     if(p) {

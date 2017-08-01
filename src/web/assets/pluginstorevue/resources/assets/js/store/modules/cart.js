@@ -19,6 +19,17 @@ const getters = {
         return function(plugin) {
             return state.items.find(p => p.id == plugin.id)
         }
+    },
+    cartTotal(state, rootState) {
+        return function() {
+            return rootState.cartPlugins.reduce((total, p) => {
+                if(p) {
+                    return total + parseFloat(p.price)
+                }
+
+                return total;
+            }, 0)
+        }
     }
 }
 
