@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the PHP and DB versions the Craft Support widget passed to GitHub would not escape tildes (`~`), potentially having Markdown confuse them for strikethrough markup delimiters.
+
 ## 2.6.2988  2017-07-28
 
 ### Changed
