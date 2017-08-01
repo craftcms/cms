@@ -947,6 +947,18 @@ class Asset extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'width';
+        $attributes[] = 'height';
+
+        return $attributes;
+    }
+
+    /**
      * Returns a copy of the asset with the given transform applied to it.
      *
      * @param AssetTransform|string|array|null $transform
