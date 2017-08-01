@@ -8,28 +8,28 @@ const state = {
 
 // getters
 const getters = {
-    allCategories: state => state._allCategories,
-    getCategoryById(state) {
+    getAllCategories(state, rootState) {
+        return function() {
+            return rootState.pluginStoreGetAllCategories;
+        }
+    },
+    getCategoryById(state, rootState) {
         return function(id) {
-            return state._allCategories.find(c => c.id == id)
+            if(rootState.pluginStoreGetAllCategories) {
+                return rootState.pluginStoreGetAllCategories.find(c => c.id == id)
+            }
         };
     }
 }
 
 // actions
 const actions = {
-    getAllCategories ({ commit }) {
-        api.getCategories(categories => {
-            commit(types.RECEIVE_CATEGORIES, { categories })
-        })
-    }
+
 }
 
 // mutations
 const mutations = {
-    [types.RECEIVE_CATEGORIES] (state, { categories }) {
-        state._allCategories = categories
-    },
+
 }
 
 export default {

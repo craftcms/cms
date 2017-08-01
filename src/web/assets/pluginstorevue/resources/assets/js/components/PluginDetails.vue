@@ -97,7 +97,7 @@
                 return Craft.getCpUrl('plugin-store/install');
             },
             categories() {
-                return this.$store.getters.allCategories.filter(c => {
+                return this.$store.getters.getAllCategories().filter(c => {
                     return this.plugin.categories.find(pc => pc == c.id);
                 });
             }

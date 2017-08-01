@@ -34,7 +34,7 @@
                             Upgrade Craft CMS
                         </router-link>
                     </li>
-                    <li v-for="category in pluginStoreGetAllCategories">
+                    <li v-for="category in getAllCategories()">
                         <router-link :to="'/categories/'+category.id">
                             <img :src="category.iconUrl" />
                             {{ category.title }}
@@ -79,6 +79,7 @@
                 staffPicks: 'staffPicks',
                 activeTrialPlugins: 'activeTrialPlugins',
                 pluginStoreGetAllCategories: 'pluginStoreGetAllCategories',
+                getAllCategories: 'getAllCategories',
                 getPluginsByIds: 'getPluginsByIds',
             }),
             indexBlocks() {
