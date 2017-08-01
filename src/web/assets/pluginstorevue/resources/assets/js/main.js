@@ -123,9 +123,10 @@ const app = new Vue({
         });
 
 
-        // Cart Button
-
         let $this = this;
+
+
+        // Cart Button
 
         this.$cartButton = $('#cart-button')
 
@@ -133,5 +134,16 @@ const app = new Vue({
             e.preventDefault();
             $this.openGlobalModal('cart');
         });
+        
+
+        // Payment button
+
+        let $paymentButton = $('#payment-button');
+
+        $paymentButton.on('click', (e) => {
+            e.preventDefault();
+            $this.openGlobalModal('payment');
+        });
+
     },
 });
