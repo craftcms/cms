@@ -1,8 +1,6 @@
 <template>
     <div>
-        <router-view></router-view>
-
-        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false"></plugin-search>
+        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="allPlugins"></plugin-search>
 
         <div v-if="!showingSearchResults" class="row">
             <div class="col-xs-12 col-sm-8">
@@ -75,6 +73,7 @@
 
         computed: {
             ...mapGetters({
+                allPlugins: 'allPlugins',
                 pluginStoreData: 'pluginStoreData',
                 staffPicks: 'staffPicks',
                 activeTrialPlugins: 'activeTrialPlugins',

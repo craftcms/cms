@@ -1,23 +1,29 @@
 <template>
-    <div v-if="category">
-        <plugin-grid :plugins="categoryPlugins"></plugin-grid>
+
+    <div>
+        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="categoryPlugins"></plugin-search>
+
+        <div v-if="!showingSearchResults && category">
+            <plugin-grid :plugins="categoryPlugins"></plugin-grid>
+        </div>
     </div>
 
 </template>
 
 <script>
     import PluginGrid from './components/PluginGrid';
+    import PluginSearch from './components/PluginSearch';
     import { mapGetters } from 'vuex'
 
     export default {
         name: 'category',
-
         components: {
             PluginGrid,
+            PluginSearch,
         },
-
         data () {
             return {
+                showingSearchResults: false,
                 categoryId: null,
             }
         },

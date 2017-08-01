@@ -7,29 +7,34 @@
         </ul>
 
         <hr>
+        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="developer.plugins"></plugin-search>
 
-        <plugin-grid :plugins="developer.plugins"></plugin-grid>
+        <plugin-grid v-if="!showingSearchResults" :plugins="developer.plugins"></plugin-grid>
     </div>
 
 </template>
 
 <script>
     import PluginGrid from './components/PluginGrid';
+    import PluginSearch from './components/PluginSearch';
     import { mapGetters } from 'vuex'
 
     export default {
         name: 'developer',
-
         components: {
             PluginGrid,
+            PluginSearch,
         },
-
+        data () {
+            return {
+                showingSearchResults: false,
+            }
+        },
         computed: {
             ...mapGetters({
                 developer: 'developer'
             }),
         },
-
         created () {
             this.$root.showCrumbs = true;
             

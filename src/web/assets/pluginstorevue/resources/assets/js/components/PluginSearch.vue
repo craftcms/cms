@@ -16,13 +16,13 @@
 
 <script>
     import PluginGrid from './PluginGrid';
-    import { mapGetters } from 'vuex'
 
     export default {
         name: 'pluginSearch',
         components: {
             PluginGrid,
         },
+        props: ['plugins'],
         data () {
             return {
                 searchQuery: '',
@@ -30,9 +30,6 @@
             }
         },
         computed: {
-            ...mapGetters({
-                allPlugins: 'allPlugins',
-            }),
             pluginsToRender() {
                 let self = this;
 
@@ -45,7 +42,7 @@
 
                 this.$emit('showResults');
 
-                return this._.filter(this.allPlugins, function(o) {
+                return this._.filter(this.plugins, function(o) {
                     if(o.name && self._.includes(o.name.toLowerCase(), searchQuery.toLowerCase())) {
                         return true;
                     }
