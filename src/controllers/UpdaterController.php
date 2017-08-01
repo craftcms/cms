@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\base\Exception as YiiException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -33,6 +34,7 @@ class UpdaterController extends Controller
     // Constants
     // =========================================================================
 
+    const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_BACKUP = 'backup';
     const ACTION_INSTALL = 'install';
     const ACTION_OPTIMIZE = 'optimize';
@@ -123,33 +125,21 @@ class UpdaterController extends Controller
             'Send for help',
         ]);
 
-        // Is there anything to install/update?
-        if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
-            $state = $this->_finishedState([
-                'status' => Craft::t('app', 'Nothing to update.')
-            ]);
-        } else if (Craft::$app->getIsInMaintenanceMode()) {
-            // Bail if Craft is already in maintenance mode
-            $state = [
-                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
-            ];
-        } else {
-            // Enable maintenance mode
-            Craft::$app->enableMaintenanceMode();
-
-            if (!empty($this->_data['install'])) {
-                $nextAction = self::ACTION_INSTALL;
-            } else {
-                $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-                $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
-            }
-            $state = $this->_actionState($nextAction);
-            $state['data'] = $this->_getHashedData();
-        }
-
+        $state = $this->_initialState();
+        $state['data'] = $this->_getHashedData();
         $this->getView()->registerJs('Craft.updater = (new Craft.Updater()).setState('.Json::encode($state).');');
 
         return $this->renderTemplate('_special/updates/go');
+    }
+
+    /**
+     * Rechecks for composer.json, if it couldn't be found in the initial state.
+     *
+     * @return Response
+     */
+    public function actionRecheckComposer(): Response
+    {
+        return $this->_send($this->_initialState());
     }
 
     /**
@@ -478,6 +468,56 @@ class UpdaterController extends Controller
     }
 
     /**
+     * Returns the initial state for the updater JS.
+     *
+     * @return array
+     */
+    private function _initialState(): array
+    {
+        // Is there anything to install/update?
+        if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
+            return $this->_finishedState([
+                'status' => Craft::t('app', 'Nothing to update.')
+            ]);
+        }
+
+        // Is Craft already in Maintenance Mode?
+        if (Craft::$app->getIsInMaintenanceMode()) {
+            // Bail if Craft is already in maintenance mode
+            return [
+                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
+            ];
+        }
+
+        // If there's anything to install, make sure we can find composer.json first
+        if (!empty($this->_data['install'])) {
+            try {
+                Craft::$app->getComposer()->getJsonPath();
+            } catch (Exception $e) {
+                return [
+                    'error' => Craft::t('app', 'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
+                    'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
+                    'options' => [
+                        $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                    ]
+                ];
+            }
+        }
+
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
+
+        if (!empty($this->_data['install'])) {
+            $nextAction = self::ACTION_INSTALL;
+        } else {
+            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+        }
+
+        return $this->_actionState($nextAction);
+    }
+
+    /**
      * Sends a state response.
      *
      * @param array $state
@@ -591,6 +631,9 @@ class UpdaterController extends Controller
         $state['nextAction'] = $nextAction;
 
         switch ($nextAction) {
+            case self::ACTION_RECHECK_COMPOSER:
+                $state['status'] = Craft::t('app', 'Checking…');
+                break;
             case self::ACTION_BACKUP:
                 $state['status'] = Craft::t('app', 'Backing-up database…');
                 break;
