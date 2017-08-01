@@ -4,9 +4,7 @@ import lodash from 'lodash'
 import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 
 import App from './App';
-import Cart from './components/Cart';
-import PluginDetails from './components/PluginDetails';
-import Payment from './components/Payment';
+import GlobalModal from './components/GlobalModal';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
 import router from './router';
@@ -22,17 +20,17 @@ const app = new Vue({
     el: '#main',
     router,
     store,
-    components: { App, Cart, PluginDetails, Payment },
+    components: { App, GlobalModal },
     data() {
       return {
           $crumbs: null,
           $pageTitle: null,
           showCrumbs: false,
           pageTitle: 'Plugin Store',
-          modal: null,
           plugin: null,
           modalStep: null,
           loading: true,
+          showModal: false,
       }
     },
 
@@ -55,12 +53,14 @@ const app = new Vue({
         openGlobalModal(modalStep) {
             this.modalStep = modalStep;
 
-            if(!this.modal.visible) {
+            this.showModal = true;
+            /*if(!this.modal.visible) {
                 this.modal.show();
-            }
+            }*/
         },
         closeGlobalModal() {
-            this.modal.hide();
+            this.showModal = false;
+            // this.modal.hide();
         },
     },
 
@@ -114,14 +114,6 @@ const app = new Vue({
     },
 
     mounted() {
-        this.modal = new Garnish.Modal(this.$refs.globalmodal, {
-            autoShow: false,
-            resizable: true,
-            onHide() {
-                // $this.$emit('update:showModal', false);
-            }
-        });
-
 
         let $this = this;
 
