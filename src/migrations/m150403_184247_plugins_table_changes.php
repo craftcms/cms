@@ -39,7 +39,7 @@ class m150403_184247_plugins_table_changes extends Migration
             }
         }
 
-        $this->createIndex(null, '{{%plugins}}', 'handle', true);
+        $this->createIndex(null, '{{%plugins}}', ['handle'], true);
     }
 
     /**
