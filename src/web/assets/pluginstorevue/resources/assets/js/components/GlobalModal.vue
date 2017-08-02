@@ -1,34 +1,34 @@
 <template>
     <div class="hidden">
         <div ref="globalmodal" class="globalmodal modal">
-
-            <template v-if="modalStep === 'plugin-details'">
-                <div class="body">
-                    <plugin-details :plugin="plugin"></plugin-details>
-                </div>
-            </template>
-
-            <template v-else-if="modalStep === 'cart'">
-                <header class="header">
-                    <h1>Cart</h1>
-                </header>
-                <div class="body">
-                    <cart @continue-shopping="$root.closeGlobalModal()"></cart>
-                </div>
-            </template>
-
-            <template v-else-if="modalStep === 'payment'">
-                <header class="header">
-                    <div class="btn-left"><a @click="backToCart()">&lt; Cart</a></div>
-                    <h1>Payment</h1>
-                </header>
-                <div class="body">
-                    <div class="content">
-                        <payment></payment>
+            <div class="globalmodalcontent">
+                <template v-if="modalStep === 'plugin-details'">
+                    <div class="body">
+                        <plugin-details :plugin="plugin"></plugin-details>
                     </div>
-                </div>
-            </template>
+                </template>
 
+                <template v-else-if="modalStep === 'cart'">
+                    <header class="header">
+                        <h1>Cart</h1>
+                    </header>
+                    <div class="body">
+                        <cart @continue-shopping="$root.closeGlobalModal()"></cart>
+                    </div>
+                </template>
+
+                <template v-else-if="modalStep === 'payment'">
+                    <header class="header">
+                        <div class="btn-left"><a @click="backToCart()">&lt; Cart</a></div>
+                        <h1>Payment</h1>
+                    </header>
+                    <div class="body">
+                        <div class="content">
+                            <payment></payment>
+                        </div>
+                    </div>
+                </template>
+            </div>
         </div>
     </div>
 </template>
@@ -81,26 +81,26 @@
 
 
 <style>
-    .globalmodal > div {
+    .globalmodal .globalmodalcontent {
         position: relative;
         height: calc(100% - 72px);
     }
 
-    .globalmodal > div header .btn-left {
+    .globalmodal .globalmodalcontent header .btn-left {
         position: absolute;
         top: 28px;
         left: 24px;
     }
 
-    .globalmodal > div header h1 {
+    .globalmodal .globalmodalcontent header h1 {
         text-align: center;
     }
 
-    .globalmodal .body {
+    .globalmodal .globalmodalcontent .body {
         position: relative;
         height: 100%;
     }
-    .globalmodal .content {
+    .globalmodal .globalmodalcontent .body .content {
         margin: -24px;
         padding: 24px;
         overflow: auto;

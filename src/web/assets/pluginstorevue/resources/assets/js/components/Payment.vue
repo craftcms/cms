@@ -27,8 +27,6 @@
             </div>
 
             <p>Your payment is safe and secure with Stripe.</p>
-        </div>
-
     </div>
 
 </template>
