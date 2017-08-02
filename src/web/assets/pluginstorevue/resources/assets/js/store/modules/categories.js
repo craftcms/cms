@@ -1,12 +1,10 @@
 import api from '../../api'
 import * as types from '../mutation-types'
 
-// initial state
 const state = {
     _allCategories: [],
 }
 
-// getters
 const getters = {
     getAllCategories(state, rootState) {
         return function() {
@@ -22,12 +20,10 @@ const getters = {
     }
 }
 
-// actions
 const actions = {
 
 }
 
-// mutations
 const mutations = {
 
 }

@@ -1,12 +1,10 @@
 import api from '../../api'
 import * as types from '../mutation-types'
 
-// initial state
 const state = {
     data: {},
 }
 
-// getters
 const getters = {
     pluginStoreData: state => state.data,
     pluginStoreGetAllCategories(state) {
@@ -14,7 +12,6 @@ const getters = {
     }
 }
 
-// actions
 const actions = {
     getPluginStoreData ({ commit }) {
         api.getPluginStoreData(data => {
@@ -23,8 +20,6 @@ const actions = {
     }
 }
 
-
-// mutations
 const mutations = {
     [types.RECEIVE_PLUGIN_STORE_DATA] (state, { data }) {
         state.data = data

@@ -1,13 +1,11 @@
 import api from '../../api'
 import * as types from '../mutation-types'
 
-// initial state
 const state = {
     all: [],
     activeTrials: [],
 }
 
-// getters
 const getters = {
     allPlugins: state => state.all,
     activeTrials: state => state.activeTrials,
@@ -32,7 +30,6 @@ const getters = {
     }
 }
 
-// actions
 const actions = {
     getAllPlugins ({ commit }) {
         return new Promise((resolve, reject) => {
@@ -44,7 +41,6 @@ const actions = {
     },
 }
 
-// mutations
 const mutations = {
     [types.RECEIVE_PRODUCTS] (state, { plugins }) {
         state.all = plugins
