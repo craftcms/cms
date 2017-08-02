@@ -9,7 +9,6 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\events\MailFailureEvent;
 use craft\helpers\Template;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -25,14 +24,6 @@ use yii\mail\MessageInterface;
  */
 class Mailer extends \yii\swiftmailer\Mailer
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event MailFailureEvent The event that is triggered when there is an error sending an email.
-     */
-    const EVENT_SEND_MAIL_FAILURE = 'sendMailFailure';
-
     // Properties
     // =========================================================================
 
@@ -167,25 +158,6 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setBcc(null);
         }
 
-        try {
-            $isSuccessful = parent::send($message);
-            $error = null;
-        } catch (\Throwable $e) {
-            $isSuccessful = false;
-            $error = $e->getMessage();
-        }
-
-        // Either an exception was thrown or parent::send() returned false.
-        if ($isSuccessful === false && $this->hasEventHandlers(self::EVENT_SEND_MAIL_FAILURE)) {
-            // Fire a 'sendMailFailure' event
-            $this->trigger(self::EVENT_SEND_MAIL_FAILURE, new MailFailureEvent([
-                'user' => $message->getTo(),
-                'email' => $message,
-                'variables' => $message->variables,
-                'error' => $error,
-            ]));
-        }
-
-        return $isSuccessful;
+        return parent::send($message);
     }
 }

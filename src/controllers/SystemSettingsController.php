@@ -272,7 +272,14 @@ class SystemSettingsController extends Controller
                 ->composeFromKey('test_email', ['settings' => $settingsList])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
-            if ($message->send()) {
+            try {
+                $emailSent = $message->send();
+            } catch (\Throwable $e) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $emailSent = false;
+            }
+
+            if ($emailSent) {
                 Craft::$app->getSession()->setNotice(Craft::t('app', 'Email sent successfully! Check your inbox.'));
             } else {
                 Craft::$app->getSession()->setError(Craft::t('app', 'There was an error testing your email settings.'));
