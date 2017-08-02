@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Util\Platform;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -489,8 +490,9 @@ class UpdaterController extends Controller
             ];
         }
 
-        // If there's anything to install, make sure we can find composer.json first
+        // If there's anything to install, make sure we're set up to use Composer
         if (!empty($this->_data['install'])) {
+            // Make sure we can find composer.json
             try {
                 Craft::$app->getComposer()->getJsonPath();
             } catch (Exception $e) {
@@ -501,6 +503,19 @@ class UpdaterController extends Controller
                         $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
                     ]
                 ];
+            }
+
+            // Make sure COMPOSER_HOME/APPDATA/HOME is defined
+            if (!getenv('COMPOSER_HOME')) {
+                $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
+                if (!getenv($alt)) {
+                    return [
+                        'error' => Craft::t('app', 'The {alt} or COMPOSER_HOME environment variable must be set for Composer to run correctly.', ['alt' => $alt]),
+                        'options' => [
+                            $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                        ]
+                    ];
+                }
             }
         }
 
