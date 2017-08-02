@@ -56,6 +56,11 @@
                 return this.$root.modalStep;
             }
         },
+        methods: {
+            backToCart() {
+                this.$root.openGlobalModal('cart');
+            }
+        },
         watch: {
             show(show) {
                 if(show) {

@@ -40,11 +40,6 @@
         components: {
             TextField
         },
-        methods: {
-            backToCart() {
-                this.$root.openGlobalModal('cart');
-            }
-        },
         computed: {
             ...mapGetters({
                 cartTotal: 'cartTotal',
