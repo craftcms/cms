@@ -1,9 +1,6 @@
 <template>
     <div>
-        <header class="header">
-            <h1>Cart</h1>
-        </header>
-        <div class="body">
+
             <h2>{{ "Items in your cart"|t('app') }}</h2>
 
             <div v-if="cartPlugins.length > 0">

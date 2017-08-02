@@ -1,69 +1,67 @@
 <template>
     <div v-if="plugin">
-        <div class="body">
-            <div class="plugin-details-header">
-                <div class="plugin-icon-large">
-                    <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
-                </div>
-
-                <div class="description">
-                    <h2>{{ plugin.name }}</h2>
-
-                    <p>{{ plugin.shortDescription }}</p>
-
-                    <p>
-                        <a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a>
-                    </p>
-                </div>
-
-                <div class="buttons">
-
-                    <div v-if="plugin.price != '0.00'">
-                        <a v-if="isInTrial(plugin)" class="btn disabled">{{ "Installed"|t('app') }}</a>
-                        <a v-else @click="tryPlugin(plugin)" class="btn">{{ "Try"|t('app') }}</a>
-
-                        <a v-if="isInCart(plugin)" @click="buyPlugin(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
-                        <a v-else @click="buyPlugin(plugin)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(plugin.price) }) }}</a>
-                    </div>
-                    <div v-else>
-                        <a :href="installUrl" class="btn submit">{{ "Install"|t('app') }}</a>
-                    </div>
-
-                </div>
+        <div class="plugin-details-header">
+            <div class="plugin-icon-large">
+                <img v-if="plugin.iconUrl" :src="plugin.iconUrl" height="60" />
             </div>
 
-            <hr>
+            <div class="description">
+                <h2>{{ plugin.name }}</h2>
 
-            <div class="plugin-details-body">
-                <div class="plugin-description">
-                    <h2>{{ "Description"|t('app') }}</h2>
-                    <div v-html="description"></div>
+                <p>{{ plugin.shortDescription }}</p>
 
-                    <h2>{{ "Screenshots"|t('app') }}</h2>
+                <p>
+                    <a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a>
+                </p>
+            </div>
 
-                    <div v-for="screenshot in plugin.screenshots">
-                        <img :src="screenshot" height="150" />
-                    </div>
+            <div class="buttons">
 
+                <div v-if="plugin.price != '0.00'">
+                    <a v-if="isInTrial(plugin)" class="btn disabled">{{ "Installed"|t('app') }}</a>
+                    <a v-else @click="tryPlugin(plugin)" class="btn">{{ "Try"|t('app') }}</a>
+
+                    <a v-if="isInCart(plugin)" @click="buyPlugin(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
+                    <a v-else @click="buyPlugin(plugin)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(plugin.price) }) }}</a>
+                </div>
+                <div v-else>
+                    <a :href="installUrl" class="btn submit">{{ "Install"|t('app') }}</a>
                 </div>
 
-                <div class="plugin-sidebar">
-                    <div class="plugin-meta">
-                        <ul>
-                            <li><span>{{ "Version"|t('app') }}</span> <strong>X.X.X</strong></li>
-                            <li><span>{{ "Last update"|t('app') }}</span> <strong>—</strong></li>
-                            <li><span>{{ "Active installs"|t('app') }}</span> <strong>XXX,XXX</strong></li>
-                            <li><span>{{ "Compatibility"|t('app') }}</span> <strong>Craft X</strong></li>
-                            <li>
-                                <span>{{ "Categories"|t('app') }}</span>
-                                <strong>
-                                    <template v-for="category in categories">
-                                        {{ category.title }}
-                                    </template>
-                                </strong>
-                            </li>
-                        </ul>
-                    </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="plugin-details-body">
+            <div class="plugin-description">
+                <h2>{{ "Description"|t('app') }}</h2>
+                <div v-html="description"></div>
+
+                <h2>{{ "Screenshots"|t('app') }}</h2>
+
+                <div v-for="screenshot in plugin.screenshots">
+                    <img :src="screenshot" height="150" />
+                </div>
+
+            </div>
+
+            <div class="plugin-sidebar">
+                <div class="plugin-meta">
+                    <ul>
+                        <li><span>{{ "Version"|t('app') }}</span> <strong>X.X.X</strong></li>
+                        <li><span>{{ "Last update"|t('app') }}</span> <strong>—</strong></li>
+                        <li><span>{{ "Active installs"|t('app') }}</span> <strong>XXX,XXX</strong></li>
+                        <li><span>{{ "Compatibility"|t('app') }}</span> <strong>Craft X</strong></li>
+                        <li>
+                            <span>{{ "Categories"|t('app') }}</span>
+                            <strong>
+                                <template v-for="category in categories">
+                                    {{ category.title }}
+                                </template>
+                            </strong>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>

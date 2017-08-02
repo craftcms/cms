@@ -1,9 +1,34 @@
 <template>
     <div class="hidden">
         <div ref="globalmodal" class="globalmodal modal">
-            <plugin-details v-if="modalStep === 'plugin-details'" :plugin="plugin"></plugin-details>
-            <cart v-else-if="modalStep === 'cart'" @continue-shopping="$root.closeGlobalModal()"></cart>
-            <payment v-else-if="modalStep === 'payment'"></payment>
+
+            <template v-if="modalStep === 'plugin-details'">
+                <div class="body">
+                    <plugin-details :plugin="plugin"></plugin-details>
+                </div>
+            </template>
+
+            <template v-else-if="modalStep === 'cart'">
+                <header class="header">
+                    <h1>Cart</h1>
+                </header>
+                <div class="body">
+                    <cart @continue-shopping="$root.closeGlobalModal()"></cart>
+                </div>
+            </template>
+
+            <template v-else-if="modalStep === 'payment'">
+                <header class="header">
+                    <div class="btn-left"><a @click="backToCart()">&lt; Cart</a></div>
+                    <h1>Payment</h1>
+                </header>
+                <div class="body">
+                    <div class="content">
+                        <payment></payment>
+                    </div>
+                </div>
+            </template>
+
         </div>
     </div>
 </template>
@@ -55,13 +80,10 @@
 </script>
 
 
-<style scoped>
+<style>
     .globalmodal > div {
         position: relative;
         height: calc(100% - 72px);
-    }
-    .globalmodal > div header {
-        /*display: flex;*/
     }
 
     .globalmodal > div header .btn-left {
@@ -74,11 +96,11 @@
         text-align: center;
     }
 
-    .body {
+    .globalmodal .body {
         position: relative;
         height: 100%;
     }
-    .content {
+    .globalmodal .content {
         margin: -24px;
         padding: 24px;
         overflow: auto;
