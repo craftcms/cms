@@ -29,20 +29,6 @@ export default {
             return cb(plugins);
         });
     },
-    getCategories (cb) {
-        Vue.http.get('https://craftid.dev/api/categories').then(function(data) {
-            let categories = data.body.data;
-
-            return cb(categories);
-        });
-    },
-    getCategoryPlugins(cb, categoryId) {
-        Vue.http.get('https://craftid.dev/api/categories/'+categoryId).then(function(data) {
-            let plugins = data.body.plugins;
-
-            return cb(plugins);
-        });
-    },
     getDeveloper(cb, developerId) {
         Vue.http.get('https://craftid.dev/api/developer/'+developerId).then(function(data) {
             let developer = data.body;
