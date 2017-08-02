@@ -10,6 +10,7 @@ namespace craft\mail;
 use Craft;
 use craft\elements\User;
 use craft\events\MailFailureEvent;
+use craft\helpers\Template;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MessageInterface;
@@ -103,49 +104,46 @@ class Mailer extends \yii\swiftmailer\Mailer
             $textBodyTemplate = $systemMessage->body;
 
             $view = Craft::$app->getView();
-            $oldTemplateMode = $view->getTemplateMode();
-
-            // Is there a custom HTML template set?
-            if (Craft::$app->getEdition() >= Craft::Client && $this->template !== null) {
-                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-                $parentTemplate = $this->template;
-            }
-
-            if (empty($parentTemplate)) {
-                // Default to the _special/email.html template
-                $view->setTemplateMode($view::TEMPLATE_MODE_CP);
-                $parentTemplate = '_special/email';
-            }
-
-            $htmlBodyTemplate = "{% extends '{$parentTemplate}' %}\n".
-                "{% set body %}\n".
-                Markdown::process($textBodyTemplate).
-                "{% endset %}\n";
+            $templateMode = $view->getTemplateMode();
+            $language = Craft::$app->language;
 
             $variables = $message->variables ?: [];
             $variables['emailKey'] = $message->key;
-
-            // Do we need to temporarily swap the app language?
-            $language = Craft::$app->language;
 
             if ($message->language !== null) {
                 Craft::$app->language = $message->language;
             }
 
-            $message->setSubject(Craft::$app->getView()->renderString($subjectTemplate, $variables));
-            $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
-
-            // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
+            // Don't let Twig use the HTML escaping strategy on the subject or plain text portion body of the email.
             /** @var \Twig_Extension_Escaper $ext */
-            $ext = Craft::$app->getView()->getTwig()->getExtension(\Twig_Extension_Escaper::class);
+            $ext = $view->getTwig()->getExtension(\Twig_Extension_Escaper::class);
             $ext->setDefaultStrategy(false);
-            $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
+            $subject = $view->renderString($subjectTemplate, $variables);
+            $textBody = $view->renderString($textBodyTemplate, $variables);
             $ext->setDefaultStrategy('html');
 
-            Craft::$app->language = $language;
+            // Is there a custom HTML template set?
+            if (Craft::$app->getEdition() >= Craft::Client && $this->template) {
+                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+                $template = $this->template;
+            } else {
+                // Default to the _special/email.html template
+                $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+                $template = '_special/email';
+            }
 
-            // Return to the original template mode
-            $view->setTemplateMode($oldTemplateMode);
+            $htmlBody = $view->renderTemplate($template, array_merge($variables, [
+                'body' => Template::raw(Markdown::process($textBody)),
+            ]));
+
+            $message
+                ->setSubject($subject)
+                ->setHtmlBody($htmlBody)
+                ->setTextBody($textBody);
+
+            // Set things back to normal
+            Craft::$app->language = $language;
+            $view->setTemplateMode($templateMode);
         }
 
         // Set the default sender if there isn't one already

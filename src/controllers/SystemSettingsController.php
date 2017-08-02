@@ -247,15 +247,15 @@ class SystemSettingsController extends Controller
             $mailer = MailerHelper::createMailer($settings);
 
             // Compose the settings list as HTML
-            $includedSettings = [];
+            $settingsList = '';
 
             foreach (['fromEmail', 'fromName', 'template'] as $name) {
                 if (!empty($settings->$name)) {
-                    $includedSettings[] = '<strong>'.$settings->getAttributeLabel($name).':</strong> '.$settings->$name;
+                    $settingsList .= '- **'.$settings->getAttributeLabel($name).':** '.$settings->$name."\n";
                 }
             }
 
-            $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adapter::displayName();
+            $settingsList .= '- **'.Craft::t('app', 'Transport Type').':** '.$adapter::displayName()."\n";
 
             $security = Craft::$app->getSecurity();
 
@@ -263,15 +263,13 @@ class SystemSettingsController extends Controller
                 if (!empty($adapter->$name)) {
                     $label = $adapter->getAttributeLabel($name);
                     $value = $security->redactIfSensitive($name, $adapter->$name);
-                    $includedSettings[] = '<strong>'.$label.':</strong> '.$value;
+                    $settingsList .= "- **{$label}:** {$value}\n";
                 }
             }
 
-            $settingsHtml = implode('<br/>', $includedSettings);
-
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => Template::raw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => $settingsList])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
