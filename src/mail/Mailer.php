@@ -99,8 +99,8 @@ class Mailer extends \yii\swiftmailer\Mailer
     {
         if ($message instanceof Message && $message->key !== null) {
             $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
-            $subjectTemplate = $systemMessage->subject;
-            $textBodyTemplate = $systemMessage->body;
+            $subjectTemplate = Craft::$app->getView()->renderString($systemMessage->subject, $message->variables);
+            $textBodyTemplate = Craft::$app->getView()->renderString($systemMessage->body, $message->variables);
 
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
@@ -132,7 +132,7 @@ class Mailer extends \yii\swiftmailer\Mailer
                 Craft::$app->language = $message->language;
             }
 
-            $message->setSubject(Craft::$app->getView()->renderString($subjectTemplate, $variables));
+            $message->setSubject($subjectTemplate);
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
 
             // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
