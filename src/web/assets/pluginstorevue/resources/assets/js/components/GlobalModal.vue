@@ -1,6 +1,6 @@
 <template>
     <div class="hidden">
-        <div ref="globalmodal" class="modal">
+        <div ref="globalmodal" class="globalmodal modal">
             <plugin-details v-if="modalStep === 'plugin-details'" :plugin="plugin"></plugin-details>
             <cart v-else-if="modalStep === 'cart'" @continue-shopping="closeGlobalModal()"></cart>
             <payment v-else-if="modalStep === 'payment'"></payment>
@@ -53,3 +53,35 @@
         }
     }
 </script>
+
+
+<style scoped>
+    .globalmodal > div {
+        position: relative;
+        height: calc(100% - 72px);
+    }
+    .globalmodal > div header {
+        /*display: flex;*/
+    }
+
+    .globalmodal > div header .btn-left {
+        position: absolute;
+        top: 28px;
+        left: 24px;
+    }
+
+    .globalmodal > div header h1 {
+        text-align: center;
+    }
+
+    .body {
+        position: relative;
+        height: 100%;
+    }
+    .content {
+        margin: -24px;
+        padding: 24px;
+        overflow: auto;
+        height: 100%;
+    }
+</style>

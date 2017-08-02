@@ -161,8 +161,4 @@
     .cart-review { padding: 24px; border: 1px solid #eee; margin-top: 24px; text-align: right; }
     .cart-review table th, .cart-review table td { text-align: right; padding: 3px 0; font-size: 1.2em; }
     .cart-review table td { width: 100px; }
-
-    header h1 {
-        text-align: center;
-    }
 </style>

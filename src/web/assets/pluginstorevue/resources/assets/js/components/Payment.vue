@@ -1,6 +1,6 @@
 <template>
 
-    <div class="modalcontainer">
+    <div>
         <header class="header">
             <div class="btn-left"><a @click="backToCart()">&lt; Cart</a></div>
             <h1>Payment</h1>
@@ -61,34 +61,3 @@
         }
     }
 </script>
-
-<style scoped>
-    .modalcontainer {
-        position: relative;
-        height: calc(100% - 72px);
-    }
-    .modalcontainer header {
-        /*display: flex;*/
-    }
-
-    .modalcontainer header .btn-left {
-        position: absolute;
-        top: 28px;
-        left: 24px;
-    }
-
-    .modalcontainer header h1 {
-        text-align: center;
-    }
-
-    .body {
-        position: relative;
-        height: 100%;
-    }
-    .content {
-        margin: -24px;
-        padding: 24px;
-        overflow: auto;
-        height: 100%;
-    }
-</style>
