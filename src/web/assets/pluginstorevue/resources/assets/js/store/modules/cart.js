@@ -1,14 +1,12 @@
 import api from '../../api'
 import * as types from '../mutation-types'
 
-// initial state
 const state = {
     activeTrials: [],
     items: [],
     checkoutStatus: null
 }
 
-// getters
 const getters = {
     isInTrial(state) {
         return function(plugin) {
@@ -33,13 +31,41 @@ const getters = {
     }
 }
 
-// actions
 const actions = {
+    addToCart({dispatch, commit}, plugin) {
+        commit(types.ADD_TO_CART, {
+            id: plugin.id
+        })
+        dispatch('saveCartState');
+    },
+
+    removeFromCart({dispatch, commit}, plugin) {
+        commit(types.REMOVE_FROM_CART, {
+            id: plugin.id
+        })
+        dispatch('saveCartState');
+    },
+
+    addToActiveTrials({dispatch, commit}, plugin) {
+        commit(types.ADD_TO_ACTIVE_TRIALS, {
+            id: plugin.id
+        })
+        dispatch('saveCartState');
+    },
+
+    removeFromActiveTrials({dispatch, commit}, plugin) {
+        commit(types.REMOVE_FROM_ACTIVE_TRIALS, {
+            id: plugin.id
+        })
+        dispatch('saveCartState');
+    },
+
     saveCartState({ commit, state }) {
         api.saveCartState(() => {
             commit(types.SAVE_CART_STATE);
         }, state)
     },
+
     getCartState({ commit }) {
         api.getCartState(cartState => {
             commit(types.RECEIVE_CART_STATE, { cartState });
@@ -47,7 +73,6 @@ const actions = {
     }
 }
 
-// mutations
 const mutations = {
     [types.ADD_TO_CART] (state, { id }) {
         const record = state.items.find(p => p.id === id)
