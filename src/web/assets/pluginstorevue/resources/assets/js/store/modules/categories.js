@@ -1,9 +1,4 @@
-import api from '../../api'
-import * as types from '../mutation-types'
-
-const state = {
-    _allCategories: [],
-}
+const state = {}
 
 const getters = {
     getAllCategories(state, rootState) {
@@ -20,13 +15,9 @@ const getters = {
     }
 }
 
-const actions = {
+const actions = {}
 
-}
-
-const mutations = {
-
-}
+const mutations = {}
 
 export default {
     state,

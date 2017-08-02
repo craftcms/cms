@@ -2,11 +2,11 @@ import api from '../../api'
 import * as types from '../mutation-types'
 
 const state = {
-    _developer: [],
+    developer: [],
 }
 
 const getters = {
-    developer: state => state._developer,
+    developer: state => state.developer,
 }
 
 const actions = {
@@ -25,7 +25,7 @@ const actions = {
 
 const mutations = {
     [types.RECEIVE_DEVELOPER] (state, { developer }) {
-        state._developer = developer
+        state.developer = developer
     },
 }
 

@@ -10,7 +10,6 @@ import pluginstore from './modules/pluginstore'
 
 Vue.use(Vuex);
 
-
 export default new Vuex.Store({
     actions,
     getters,
