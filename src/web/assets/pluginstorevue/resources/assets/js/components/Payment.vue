@@ -50,15 +50,11 @@
                                     <p><label><input type="radio" value="newCard" v-model="paymentMode"> Or use a different credit card</label></p>
 
                                     <template v-if="paymentMode == 'newCard'">
-                                            <text-field label="Card Number" id="new-card-number" v-model="card.number"></text-field>
-                                            <text-field label="Card Expiry" id="new-card-expiry" placeholder="MM/YY"  v-model="card.expiry"></text-field>
-                                            <text-field label="Card CVC" id="new-card-cvc" placeholder="XXX"  v-model="card.cvc"></text-field>
+                                            <credit-card v-model="card"></credit-card>
                                     </template>
                             </template>
                             <template v-else>
-                                    <text-field label="Card Number" id="card-number" v-model="card.number"></text-field>
-                                    <text-field label="Card Expiry" id="card-expiry" placeholder="MM/YY"  v-model="card.expiry"></text-field>
-                                    <text-field label="Card CVC" id="card-cvc" placeholder="XXX"  v-model="card.cvc"></text-field>
+                                <credit-card v-model="card"></credit-card>
                             </template>
                     </template>
                     <template v-else>
@@ -120,12 +116,14 @@
 
 <script>
     import TextField from './TextField';
+    import CreditCard from './CreditCard';
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
         name: 'payment',
         components: {
-            TextField
+            TextField,
+            CreditCard,
         },
         computed: {
             ...mapGetters({
@@ -134,7 +132,7 @@
         },
         data() {
             return {
-                identityMode: 'craftid',
+                identityMode: 'guest',
                 paymentMode: 'existingCard',
                 showIdentity: false,
                 showPaymentMethod: false,
