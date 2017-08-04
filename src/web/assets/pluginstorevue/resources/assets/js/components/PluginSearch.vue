@@ -68,13 +68,3 @@
         },
     }
 </script>
-
-<style>
-
-    /* #container hack required for modal overlays */
-
-    #container {
-        position: static !important;
-    }
-
-</style>

@@ -169,14 +169,3 @@
         }
     }
 </script>
-
-<style scoped>
-        .block {
-                position: relative;
-        }
-        .block .block-toggle {
-                position: absolute;
-                top: 0;
-                right: 0;
-        }
-</style> 

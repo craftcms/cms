@@ -36,3 +36,135 @@
   overflow: hidden;
 }
 
+
+/* Index Page */
+
+ul.categories li:first-child a {
+  border-top: 1px solid #eee;
+}
+ul.categories li a {
+  display: block;
+  position: relative;
+  padding: 10px;
+  padding-left: 31px;
+  border-bottom: 1px solid #eee;
+}
+ul.categories li a:hover {
+  background-color: #fafafa;
+  text-decoration: none;
+}
+ul.categories li a img {
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 24px;
+}
+
+
+/* Cart */
+
+.cart-review { padding: 24px; border: 1px solid #eee; margin-top: 24px; text-align: right; }
+.cart-review table th, .cart-review table td { text-align: right; padding: 3px 0; font-size: 1.2em; }
+.cart-review table td { width: 100px; }
+
+
+/* GlobalModal */
+
+.globalmodal .globalmodalcontent {
+  position: relative;
+  height: calc(100% - 72px);
+}
+
+.globalmodal .globalmodalcontent header .btn-left {
+  position: absolute;
+  top: 28px;
+  left: 24px;
+}
+
+.globalmodal .globalmodalcontent header h1 {
+  text-align: center;
+}
+
+.globalmodal .globalmodalcontent .body {
+  position: relative;
+  height: 100%;
+}
+.globalmodal .globalmodalcontent .body .content {
+  margin: -24px;
+  padding: 24px;
+  overflow: auto;
+  height: 100%;
+}
+
+
+/* Payment */
+
+.block {
+  position: relative;
+}
+.block .block-toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+
+/* PluginCard */
+
+.plugin-content {
+  display: flex;
+}
+
+.plugin-content:hover {
+  cursor: pointer;
+}
+
+.plugin-content .plugin-icon {
+  margin-right: 14px;
+}
+
+.plugin-icon, .plugin-icon img { width: 32px; height: 32px; border-radius: 4px; }
+.plugin-icon-large, .plugin-icon-large img { width: 72px; height: 72px; border-radius: 6px; }
+
+.plugin-icon .default-icon {
+  display: inline-block;
+  background: #eee;
+  overflow: hidden;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+}
+
+
+/* PluginDetails */
+
+.plugin-details-header {
+  display: flex;
+}
+.plugin-details-header .plugin-icon-large {
+  margin-right: 14px;
+}
+
+.plugin-details-header { display: flex; }
+.plugin-details-header .description { flex-grow:1; margin-left: 14px; }
+.plugin-details-header .description h2 { margin-bottom: 10px; }
+.plugin-details-header .description p { margin: 0.4em 0; }
+.plugin-details-header .buttons { margin-top:0; }
+
+.plugin-details-body { display: flex;  height: 500px; overflow: auto; }
+.plugin-details-body .plugin-description { flex-grow: 1; }
+.plugin-details-body .plugin-sidebar { width: 300px; flex-shrink:0; margin-left: 24px; }
+.plugin-details-body .plugin-sidebar .plugin-meta { border: 1px solid #eee; border-radius: 4px; padding: 24px; }
+.plugin-details-body .plugin-sidebar .plugin-meta ul li { display: flex; border-bottom: 1px solid #eee; padding: 7px 0; }
+.plugin-details-body .plugin-sidebar .plugin-meta ul li:last-child { border-bottom:0; }
+.plugin-details-body .plugin-sidebar .plugin-meta ul li span,
+.plugin-details-body .plugin-sidebar .plugin-meta ul li strong { flex-grow:1; }
+.plugin-details-body .plugin-sidebar .plugin-meta ul li strong { text-align: right; }
+
+
+/* PluginSearch */
+
+#container {
+  position: static !important; /* #container hack required for modal overlays */
+}
+

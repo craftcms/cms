@@ -45,20 +45,3 @@
         },
     }
 </script>
-
-<style>
-
-/*    .plugin-grid {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        margin: 0 -7px;
-    }
-
-    .plugin {
-        box-sizing: border-box;
-        flex: 0 0 auto;
-        width: 33.33%;
-    }*/
-
-</style>

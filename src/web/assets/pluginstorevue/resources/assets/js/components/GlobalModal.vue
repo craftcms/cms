@@ -83,32 +83,3 @@
         }
     }
 </script>
-
-
-<style>
-    .globalmodal .globalmodalcontent {
-        position: relative;
-        height: calc(100% - 72px);
-    }
-
-    .globalmodal .globalmodalcontent header .btn-left {
-        position: absolute;
-        top: 28px;
-        left: 24px;
-    }
-
-    .globalmodal .globalmodalcontent header h1 {
-        text-align: center;
-    }
-
-    .globalmodal .globalmodalcontent .body {
-        position: relative;
-        height: 100%;
-    }
-    .globalmodal .globalmodalcontent .body .content {
-        margin: -24px;
-        padding: 24px;
-        overflow: auto;
-        height: 100%;
-    }
-</style>

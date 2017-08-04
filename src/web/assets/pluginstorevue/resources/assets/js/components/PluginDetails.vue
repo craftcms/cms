@@ -125,28 +125,5 @@
 </script>
 
 <style scoped>
-    .plugin-details-header {
-        display: flex;
-    }
-    .plugin-details-header .plugin-icon-large {
-        margin-right: 14px;
-    }
-
-
-    .plugin-details-header { display: flex; }
-    .plugin-details-header .description { flex-grow:1; margin-left: 14px; }
-    .plugin-details-header .description h2 { margin-bottom: 10px; }
-    .plugin-details-header .description p { margin: 0.4em 0; }
-    .plugin-details-header .buttons { margin-top:0; }
-
-    .plugin-details-body { display: flex;  height: 500px; overflow: auto; }
-    .plugin-details-body .plugin-description { flex-grow: 1; }
-    .plugin-details-body .plugin-sidebar { width: 300px; flex-shrink:0; margin-left: 24px; }
-    .plugin-details-body .plugin-sidebar .plugin-meta { border: 1px solid #eee; border-radius: 4px; padding: 24px; }
-    .plugin-details-body .plugin-sidebar .plugin-meta ul li { display: flex; border-bottom: 1px solid #eee; padding: 7px 0; }
-    .plugin-details-body .plugin-sidebar .plugin-meta ul li:last-child { border-bottom:0; }
-    .plugin-details-body .plugin-sidebar .plugin-meta ul li span,
-    .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { flex-grow:1; }
-    .plugin-details-body .plugin-sidebar .plugin-meta ul li strong { text-align: right; }
 
 </style>

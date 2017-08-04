@@ -85,26 +85,3 @@
         }
     }
 </script>
-
-<style scoped>
-    ul.categories li:first-child a {
-        border-top: 1px solid #eee;
-    }
-    ul.categories li a {
-        display: block;
-        position: relative;
-        padding: 10px;
-        padding-left: 31px;
-        border-bottom: 1px solid #eee;
-    }
-    ul.categories li a:hover {
-        background-color: #fafafa;
-        text-decoration: none;
-    }
-    ul.categories li a img {
-        position: absolute;
-        top: 7px;
-        left: 0;
-        width: 24px;
-    }
-</style>

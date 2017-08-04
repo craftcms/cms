@@ -22,31 +22,3 @@
         props: ['plugin'],
     }
 </script>
-
-<style scoped>
-
-    .plugin-content {
-        display: flex;
-    }
-
-    .plugin-content:hover {
-        cursor: pointer;
-    }
-
-    .plugin-content .plugin-icon {
-        margin-right: 14px;
-    }
-
-    .plugin-icon, .plugin-icon img { width: 32px; height: 32px; border-radius: 4px; }
-    .plugin-icon-large, .plugin-icon-large img { width: 72px; height: 72px; border-radius: 6px; }
-
-    .plugin-icon .default-icon {
-        display: inline-block;
-        background: #eee;
-        overflow: hidden;
-        width: 32px;
-        height: 32px;
-        border-radius: 4px;
-    }
-
-</style>
