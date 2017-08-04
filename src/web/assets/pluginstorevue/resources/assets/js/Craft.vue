@@ -43,9 +43,6 @@
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
-
-        name: 'craft',
-
         computed: {
             ...mapGetters({
                 isInTrial: 'isInTrial',

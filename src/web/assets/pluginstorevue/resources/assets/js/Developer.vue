@@ -20,21 +20,23 @@
     import { mapGetters } from 'vuex'
 
     export default {
-        name: 'developer',
         components: {
             PluginGrid,
             PluginSearch,
         },
+
         data () {
             return {
                 showingSearchResults: false,
             }
         },
+
         computed: {
             ...mapGetters({
                 developer: 'developer'
             }),
         },
+
         created () {
             this.$root.showCrumbs = true;
             

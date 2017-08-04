@@ -1,7 +1,3 @@
-/**
- * Mocking client-server processing
- */
-
 import Vue from 'vue';
 import Resource from 'vue-resource';
 
@@ -13,6 +9,7 @@ export default {
 
         return cb();
     },
+
     getCartState(cb) {
         let cartState = localStorage.getItem('cartState');
 
@@ -22,6 +19,7 @@ export default {
 
         return cb(cartState);
     },
+
     getPlugins (cb) {
         Vue.http.get('https://craftid.dev/api/plugins').then(function(data) {
             let plugins = data.body.data;
@@ -29,6 +27,7 @@ export default {
             return cb(plugins);
         });
     },
+
     getDeveloper(cb, developerId) {
         Vue.http.get('https://craftid.dev/api/developer/'+developerId).then(function(data) {
             let developer = data.body;
@@ -36,6 +35,7 @@ export default {
             return cb(developer);
         });
     },
+
     getPluginStoreData(cb) {
         Vue.http.get('https://craftid.dev/api/plugin-store').then(function(data) {
             let pluginStoreData = data.body;

@@ -17,16 +17,18 @@
     import PluginDetails from './PluginDetails';
 
     export default {
-        name: 'pluginGrid',
         props: ['plugins', 'columns'],
+
         components: {
             PluginCard,
             PluginDetails,
         },
+
         data () {
             return {
             }
         },
+
         computed: {
             cssClass() {
                 let cssClass = 'cssgrid-plugins';
@@ -38,6 +40,7 @@
                 return cssClass;
             }
         },
+
         methods: {
             showPlugin: function(plugin) {
                 this.$root.showPlugin(plugin);

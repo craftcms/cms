@@ -16,17 +16,18 @@
     import { mapGetters } from 'vuex'
 
     export default {
-        name: 'category',
         components: {
             PluginGrid,
             PluginSearch,
         },
+
         data () {
             return {
                 showingSearchResults: false,
                 categoryId: null,
             }
         },
+
         computed: {
             category() {
                 let category = this.$store.getters.getCategoryById(this.categoryId);

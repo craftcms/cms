@@ -8,9 +8,10 @@
 
 <script>
     import TextFieldtype from './fieldtypes/TextFieldtype';
+
     export default {
-        name: 'creditCard',
         props: ['value'],
+
         components: {
             TextFieldtype,
         },

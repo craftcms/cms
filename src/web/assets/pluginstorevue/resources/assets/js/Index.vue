@@ -44,11 +44,11 @@
     import PluginSearch from './components/PluginSearch';
 
     export default {
-        name: 'index',
         components: {
             PluginGrid,
             PluginSearch,
         },
+
         data () {
             return {
                 showingSearchResults: false,

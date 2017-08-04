@@ -19,17 +19,19 @@
     import PluginGrid from './PluginGrid';
 
     export default {
-        name: 'pluginSearch',
         components: {
             PluginGrid,
         },
+
         props: ['plugins'],
+
         data () {
             return {
                 searchQuery: '',
                 showSpinner: false,
             }
         },
+
         computed: {
             pluginsToRender() {
                 let self = this;

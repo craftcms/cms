@@ -18,7 +18,6 @@
 
 <script>
     export default {
-        name: 'pluginCard',
         props: ['plugin'],
     }
 </script>

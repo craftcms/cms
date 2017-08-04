@@ -75,8 +75,8 @@
     var marked = require('marked');
 
     export default {
-        name: 'pluginDetails',
         props: ['plugin'],
+
         computed: {
             ...mapGetters({
                 plugins: 'allPlugins',
@@ -102,6 +102,7 @@
                 });
             }
         },
+
         methods: {
             ...mapActions([
                'addToCart'

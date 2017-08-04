@@ -39,28 +39,32 @@
     import Payment from './Payment';
 
     export default {
-        name: 'globalModal',
         props: ['plugin', 'show'],
+
         components: {
             PluginDetails,
             Cart,
             Payment
         },
+
         data() {
             return {
                 modal: null,
             };
         },
+
         computed: {
             modalStep() {
                 return this.$root.modalStep;
             }
         },
+
         methods: {
             backToCart() {
                 this.$root.openGlobalModal('cart');
             }
         },
+
         watch: {
             show(show) {
                 if(show) {
@@ -70,6 +74,7 @@
                 }
             }
         },
+
         mounted() {
             let $this = this;
 

@@ -115,8 +115,6 @@
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
-        name: 'cart',
-
         computed: {
             ...mapGetters({
                 isInTrial: 'isInTrial',

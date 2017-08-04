@@ -24,27 +24,30 @@
 
 <script>
     export default {
-        name: 'tests',
         data() {
             return {
                 somePrice: '99.00',
                 modal: null,
             }
         },
+
         computed: {
             craftTranslation() {
                 return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'});
             },
         },
+
         created() {
             this.$root.showCrumbs = true;
         },
+
         mounted() {
             this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
                 autoShow: false,
                 resizable: true
             });
         },
+
         methods: {
             openModal() {
                 this.modal.show();

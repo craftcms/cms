@@ -19,7 +19,11 @@ const app = new Vue({
     el: '#main',
     router,
     store,
-    components: { GlobalModal },
+
+    components: {
+        GlobalModal
+    },
+
     data() {
       return {
           $crumbs: null,
@@ -38,6 +42,7 @@ const app = new Vue({
             cartPlugins: 'cartPlugins',
         }),
     },
+
     methods: {
         displayNotice(message) {
             Craft.cp.displayNotice(message);

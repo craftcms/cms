@@ -120,16 +120,17 @@
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
-        name: 'payment',
         components: {
             TextFieldtype,
             CreditCard,
         },
+
         computed: {
             ...mapGetters({
                 cartTotal: 'cartTotal',
             }),
         },
+
         data() {
             return {
                 identityMode: 'guest',
