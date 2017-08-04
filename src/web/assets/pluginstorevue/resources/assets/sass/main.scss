@@ -39,26 +39,10 @@
 
 /* Index Page */
 
-ul.categories li:first-child a {
-  border-top: 1px solid #eee;
-}
-ul.categories li a {
-  display: block;
-  position: relative;
-  padding: 10px;
-  padding-left: 31px;
-  border-bottom: 1px solid #eee;
-}
-ul.categories li a:hover {
-  background-color: #fafafa;
-  text-decoration: none;
-}
-ul.categories li a img {
-  position: absolute;
-  top: 7px;
-  left: 0;
-  width: 24px;
-}
+ul.categories li:first-child a { border-top: 1px solid #eee;  }
+ul.categories li a { display: block; position: relative; padding: 10px; padding-left: 31px; border-bottom: 1px solid #eee;  }
+ul.categories li a:hover { background-color: #fafafa; text-decoration: none;  }
+ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 
 
 /* Cart */
@@ -70,80 +54,34 @@ ul.categories li a img {
 
 /* GlobalModal */
 
-.globalmodal .globalmodalcontent {
-  position: relative;
-  height: calc(100% - 72px);
-}
-
-.globalmodal .globalmodalcontent header .btn-left {
-  position: absolute;
-  top: 28px;
-  left: 24px;
-}
-
-.globalmodal .globalmodalcontent header h1 {
-  text-align: center;
-}
-
-.globalmodal .globalmodalcontent .body {
-  position: relative;
-  height: 100%;
-}
-.globalmodal .globalmodalcontent .body .content {
-  margin: -24px;
-  padding: 24px;
-  overflow: auto;
-  height: 100%;
-}
+.globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }
+.globalmodal .globalmodalcontent header .btn-left { position: absolute; top: 28px; left: 24px; }
+.globalmodal .globalmodalcontent header h1 { text-align: center; }
+.globalmodal .globalmodalcontent .body { position: relative; height: 100%; }
+.globalmodal .globalmodalcontent .body .content { margin: -24px; padding: 24px; overflow: auto; height: 100%; }
 
 
 /* Payment */
 
-.block {
-  position: relative;
-}
-.block .block-toggle {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
+.block { position: relative; }
+.block .block-toggle { position: absolute; top: 0; right: 0; }
 
 
 /* PluginCard */
 
-.plugin-content {
-  display: flex;
-}
-
-.plugin-content:hover {
-  cursor: pointer;
-}
-
-.plugin-content .plugin-icon {
-  margin-right: 14px;
-}
+.plugin-content { display: flex; }
+.plugin-content:hover { cursor: pointer; }
+.plugin-content .plugin-icon { margin-right: 14px; }
 
 .plugin-icon, .plugin-icon img { width: 32px; height: 32px; border-radius: 4px; }
 .plugin-icon-large, .plugin-icon-large img { width: 72px; height: 72px; border-radius: 6px; }
-
-.plugin-icon .default-icon {
-  display: inline-block;
-  background: #eee;
-  overflow: hidden;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-}
+.plugin-icon .default-icon { display: inline-block; background: #eee; overflow: hidden; width: 32px; height: 32px; border-radius: 4px; }
 
 
 /* PluginDetails */
 
-.plugin-details-header {
-  display: flex;
-}
-.plugin-details-header .plugin-icon-large {
-  margin-right: 14px;
-}
+.plugin-details-header { display: flex; }
+.plugin-details-header .plugin-icon-large { margin-right: 14px; }
 
 .plugin-details-header { display: flex; }
 .plugin-details-header .description { flex-grow:1; margin-left: 14px; }
