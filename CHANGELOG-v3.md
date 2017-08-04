@@ -15,6 +15,9 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 - Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
 
+### Deprecated
+- Looping through element queries directly is now deprecated. Use the `all()` function to fetch the query results before looping over them. ([#1902](https://github.com/craftcms/cms/issues/1902))
+
 ### Removed
 - Removed `craft\events\MailFailureEvent`.
 - Removed `craft\mail\Mailer::EVENT_SEND_MAIL_FAILURE`.

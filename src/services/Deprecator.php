@@ -245,6 +245,9 @@ class Deprecator extends Component
         } else if ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
+        } else if (isset($traces[1]['class'], $traces[1]['function']) && $traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') {
+            // special case for deprecated looping through element queries
+            $templateTrace = 1;
         }
 
         if (isset($templateTrace)) {
