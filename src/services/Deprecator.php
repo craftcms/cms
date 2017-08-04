@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -237,18 +238,18 @@ class Deprecator extends Component
         // Should we be treating this as as template deprecation log?
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
-            $templateAttributeCall = 3;
+            $templateTrace = 3;
         } else if ($this->_isTemplateAttributeCall($traces, 4)) {
             // came through Template::attribute()
-            $templateAttributeCall = 4;
+            $templateTrace = 4;
         } else if ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
-            $templateAttributeCall = 2;
+            $templateTrace = 2;
         }
 
-        if (isset($templateAttributeCall)) {
-            $template = $traces[$templateAttributeCall + 1]['object'] ?? null;
-            $templateCodeLine = $traces[$templateAttributeCall]['line'] ?? null;
+        if (isset($templateTrace)) {
+            $templateCodeLine = $traces[$templateTrace]['line'] ?? null;
+            $template = $traces[$templateTrace + 1]['object'] ?? null;
 
             if ($template instanceof \Twig_Template) {
                 $templateName = $template->getTemplateName();
