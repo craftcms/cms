@@ -13,6 +13,7 @@ Craft CMS 3.0 Working Changelog
 - `craft\mail\Mailer::send()` now processes Twig code in the email message before parsing it as Markdown, if the message was composed via `craft\mail\Mailer::composeFromKey()`. ([#1895](https://github.com/craftcms/cms/pull/1895))
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
+- Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
 
 ### Removed
 - Removed `craft\events\MailFailureEvent`.
