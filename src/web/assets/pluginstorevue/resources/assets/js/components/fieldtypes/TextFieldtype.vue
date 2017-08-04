@@ -4,7 +4,7 @@
             <label :id="id+'-label'" :for="id">{{ label }}</label>
         </div>
         <div class="input ltr">
-            <input class="text fullwidth" type="text" :id="id" :name="id" :placeholder="placeholder" autocomplete="off" :value="value" @input="$emit('input', $event.target.value)">
+            <input class="text fullwidth" type="text" :id="id" :placeholder="placeholder" autocomplete="off" :value="value" @input="$emit('input', $event.target.value)">
         </div>
     </div>
 </template>
