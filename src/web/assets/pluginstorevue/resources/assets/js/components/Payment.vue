@@ -16,8 +16,8 @@
                                     <p><a href="#" class="btn submit">Connect to your Craft ID</a></p>
                             </template>
                             <template v-else-if="identityMode == 'guest'">
-                                    <text-field label="Full Name" id="fullName" placeholder="John Smith" v-model="guestIdentity.fullName"></text-field>
-                                    <text-field label="Email" id="email" placeholder="john@example.com" v-model="guestIdentity.email"></text-field>
+                                    <text-fieldtype label="Full Name" id="fullName" placeholder="John Smith" v-model="guestIdentity.fullName"></text-fieldtype>
+                                    <text-fieldtype label="Email" id="email" placeholder="john@example.com" v-model="guestIdentity.email"></text-fieldtype>
                             </template>
                     </template>
                     <template v-else>
@@ -82,14 +82,14 @@
                     <a class="block-toggle" v-else @click="showBilling=false">Done</a>
 
                     <template v-if="showBilling">
-                            <text-field label="Business Name" id="business-name" v-model="billing.businessName"></text-field>
-                            <text-field label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-field>
-                            <text-field label="Address Line 1" id="address-line-1" v-model="billing.addressLine1"></text-field>
-                            <text-field label="Address Line 2" id="address-line-2" v-model="billing.addressLine2"></text-field>
-                            <text-field label="Country" id="country" v-model="billing.country"></text-field>
-                            <text-field label="State" id="state" v-model="billing.state"></text-field>
-                            <text-field label="City" id="city" v-model="billing.city"></text-field>
-                            <text-field label="Zip Code" id="zip-code" v-model="billing.zipCode"></text-field>
+                            <text-fieldtype label="Business Name" id="business-name" v-model="billing.businessName"></text-fieldtype>
+                            <text-fieldtype label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-fieldtype>
+                            <text-fieldtype label="Address Line 1" id="address-line-1" v-model="billing.addressLine1"></text-fieldtype>
+                            <text-fieldtype label="Address Line 2" id="address-line-2" v-model="billing.addressLine2"></text-fieldtype>
+                            <text-fieldtype label="Country" id="country" v-model="billing.country"></text-fieldtype>
+                            <text-fieldtype label="State" id="state" v-model="billing.state"></text-fieldtype>
+                            <text-fieldtype label="City" id="city" v-model="billing.city"></text-fieldtype>
+                            <text-fieldtype label="Zip Code" id="zip-code" v-model="billing.zipCode"></text-fieldtype>
                     </template>
                     <template v-else>
                             <ul>
@@ -115,14 +115,14 @@
 </template>
 
 <script>
-    import TextField from './fields/TextField';
+    import TextFieldtype from './fieldtypes/TextFieldtype';
     import CreditCard from './CreditCard';
     import { mapGetters, mapActions } from 'vuex'
 
     export default {
         name: 'payment',
         components: {
-            TextField,
+            TextFieldtype,
             CreditCard,
         },
         computed: {
