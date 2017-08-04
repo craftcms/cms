@@ -4,7 +4,7 @@
         <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="categoryPlugins"></plugin-search>
 
         <div v-if="!showingSearchResults && category">
-            <plugin-grid :plugins="categoryPlugins"></plugin-grid>
+            <plugin-grid :columns="4" :plugins="categoryPlugins"></plugin-grid>
         </div>
     </div>
 

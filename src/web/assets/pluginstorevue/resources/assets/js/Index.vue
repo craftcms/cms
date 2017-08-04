@@ -2,8 +2,8 @@
     <div>
         <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="allPlugins"></plugin-search>
 
-        <div v-if="!showingSearchResults" class="row">
-            <div class="col-xs-12 col-sm-8">
+        <div v-if="!showingSearchResults" class="cssgrid-wrapper has-sidebar">
+            <div class="cssgrid-main">
                 <template v-for="indexBlock in indexBlocks">
                     <h2>{{ indexBlock.blockTitle }}</h2>
                     <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
@@ -14,7 +14,7 @@
                     <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
                 </template>
             </div>
-            <div class="col-xs-12 col-sm-4">
+            <div class="cssgrid-sidebar">
                 <h2>{{ "Categories"|t('app') }}</h2>
                 <ul class="categories">
                     <li>

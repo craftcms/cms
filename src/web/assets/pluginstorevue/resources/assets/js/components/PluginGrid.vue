@@ -1,8 +1,8 @@
 <template>
 
     <div>
-        <div class="row plugin-grid" v-if="plugins && plugins.length > 0">
-            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 plugin" v-for="plugin in plugins">
+        <div :class="cssClass" v-if="plugins && plugins.length > 0">
+            <div class="cssgrid-box" v-for="plugin in plugins">
                 <plugin-card :plugin="plugin" @click="showPlugin(plugin)"></plugin-card>
             </div>
         </div>
@@ -18,13 +18,24 @@
 
     export default {
         name: 'pluginGrid',
-        props: ['plugins'],
+        props: ['plugins', 'columns'],
         components: {
             PluginCard,
             PluginDetails,
         },
         data () {
             return {
+            }
+        },
+        computed: {
+            cssClass() {
+                let cssClass = 'cssgrid-plugins';
+
+                if(this.columns) {
+                    cssClass += ' cssgrid-plugins-'+this.columns;
+                }
+
+                return cssClass;
             }
         },
         methods: {

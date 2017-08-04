@@ -26,11 +26,6 @@
 <style scoped>
 
     .plugin-content {
-        border: 1px solid #E3E5E8;
-        border-radius: 4px;
-        padding: 24px;
-        margin: 7px;
-        height: 100px;
         display: flex;
     }
 

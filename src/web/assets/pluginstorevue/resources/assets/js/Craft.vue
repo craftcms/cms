@@ -1,13 +1,13 @@
 <template>
     <div v-if="craftClient && craftPro">
 
-        <div class="row">
-            <div class="col-xs-12 col-sm-4">
+        <div class="cssgrid-plugins">
+            <div class="box">
                 <h2>Personal</h2>
                 <p class="light">For sites built by and for the developer.</p>
                 <p>Free</p>
             </div>
-            <div class="col-xs-12 col-sm-4">
+            <div class="box">
                 <h2>Client</h2>
                 <p class="light">For sites built for clients with only one content manager.</p>
                 <p>{{ craftClient.price|currency }}</p>
@@ -20,7 +20,7 @@
                     <a v-else @click="addToActiveTrials(craftClient)" class="btn">Try for free</a>
                 </div>
             </div>
-            <div class="col-xs-12 col-sm-4">
+            <div class="box">
                 <h2>Pro</h2>
                 <p class="light">For everything else.</p>
                 <p>{{ craftPro.price|currency }}</p>
