@@ -31,7 +31,9 @@
                     </li>
                 </ul>
                 <p><router-link to="/tests">Tests</router-link></p>
+                <p><router-link to="/installed-plugins">Installed Plugins</router-link></p>
                 <p><a @click="clearStorage()">Clear Storage</a></p>
+
             </div>
         </div>
     </div>
@@ -70,6 +72,7 @@
                 pluginStoreGetAllCategories: 'pluginStoreGetAllCategories',
                 getAllCategories: 'getAllCategories',
                 getPluginsByIds: 'getPluginsByIds',
+                installedPlugins: 'installedPlugins',
             }),
             indexBlocks() {
                 return this.pluginStoreData.indexBlocks;

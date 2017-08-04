@@ -7,6 +7,7 @@ import plugins from './modules/plugins'
 import categories from './modules/categories'
 import developers from './modules/developers'
 import pluginstore from './modules/pluginstore'
+import craft from './modules/craft'
 
 Vue.use(Vuex);
 
@@ -19,5 +20,6 @@ export default new Vuex.Store({
         categories,
         developers,
         pluginstore,
+        craft,
     },
 })

@@ -4,6 +4,7 @@ import Index from '../Index'
 import Category from '../Category'
 import Craft from '../Craft'
 import Developer from '../Developer'
+import InstalledPlugins from '../InstalledPlugins'
 import Tests from '../Tests'
 
 Vue.use(Router)
@@ -29,6 +30,11 @@ export default new Router({
             path: '/developer/:id',
             name: 'Developer',
             component: Developer,
+        },
+        {
+            path: '/installed-plugins',
+            name: 'InstalledPlugins',
+            component: InstalledPlugins,
         },
         {
             path: '/tests',
