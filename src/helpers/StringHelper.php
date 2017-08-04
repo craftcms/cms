@@ -674,7 +674,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function removeRight(string $str, string $substring): string
     {
-        return (string)Stringy::create($str)->removeLeft($substring);
+        return (string)Stringy::create($str)->removeRight($substring);
     }
 
     /**
