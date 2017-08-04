@@ -432,13 +432,7 @@ class UserSessionService extends \CWebUser
 
 			if (!craft()->request->isAjaxRequest())
 			{
-				$url = craft()->request->getPath();
-
-				if (($queryString = craft()->request->getQueryStringWithoutPath()))
-				{
-					$url .= '?'.$queryString;
-				}
-
+				$url = UrlHelper::getUrl(craft()->request->getPath(), craft()->request->getQueryStringWithoutPath());
 				$this->setReturnUrl($url);
 				$url = UrlHelper::getUrl(craft()->config->getLoginPath());
 				craft()->request->redirect($url);
