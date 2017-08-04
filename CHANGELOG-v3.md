@@ -27,6 +27,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that could occur if a TypeError or other non-Exception error occurred when running the updater, masking the original error.
 - Fixed a bug where `craft\web\Request::getQueryStringWithoutPath()` was including route params in addition to query string params. ([#1891](https://github.com/craftcms/cms/issues/1891))
 - Fixed a PHP error that occurred if a volume with overridden config settings in `config/volumes.php` was missing its type. ([#1899](https://github.com/craftcms/cms/issues/1899))
+- Fixed a bug where `craft\helpers\StringHelper::removeRight()` was actually removing the substring if it existed as a prefix, rather than a suffix. ([#1900](https://github.com/craftcms/cms/pull/1900))
 
 ## 3.0.0-beta.23 - 2017-07-28
 
