@@ -115,7 +115,7 @@
 </template>
 
 <script>
-    import TextField from './TextField';
+    import TextField from './fields/TextField';
     import CreditCard from './CreditCard';
     import { mapGetters, mapActions } from 'vuex'
 

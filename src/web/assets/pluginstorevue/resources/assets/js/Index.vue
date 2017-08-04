@@ -39,9 +39,9 @@
 
 
 <script>
+    import { mapGetters } from 'vuex'
     import PluginGrid from './components/PluginGrid';
     import PluginSearch from './components/PluginSearch';
-    import { mapGetters } from 'vuex'
 
     export default {
         name: 'index',

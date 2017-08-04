@@ -7,7 +7,7 @@
 </template>
 
 <script>
-    import TextField from './TextField';
+    import TextField from './fields/TextField';
     export default {
         name: 'creditCard',
         props: ['value'],
