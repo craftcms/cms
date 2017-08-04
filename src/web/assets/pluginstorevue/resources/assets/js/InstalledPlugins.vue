@@ -22,10 +22,7 @@
 
         created: function() {
             this.$root.pageTitle = 'Installed Plugins';
-        },
-
-        mounted: function() {
             this.$root.showCrumbs = true;
-        }
+        },
     }
 </script>
