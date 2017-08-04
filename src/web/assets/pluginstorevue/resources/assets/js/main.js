@@ -3,7 +3,6 @@ import VueResource from 'vue-resource';
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash/dist/vue-lodash.min'
 
-import App from './App';
 import GlobalModal from './components/GlobalModal';
 import { currency } from './filters/currency';
 import { t } from './filters/t';
@@ -20,7 +19,7 @@ const app = new Vue({
     el: '#main',
     router,
     store,
-    components: { App, GlobalModal },
+    components: { GlobalModal },
     data() {
       return {
           $crumbs: null,
