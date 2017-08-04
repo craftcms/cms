@@ -12,6 +12,7 @@ Craft CMS 3.0 Working Changelog
 - The updater now ensures that the `COMPOSER_HOME`, `HOME` (\*nix), or `APPDATA` (Windows) environment variable is set before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1890](https://github.com/craftcms/cms/issues/1890#issuecomment-319715460)) 
 - `craft\mail\Mailer::send()` now processes Twig code in the email message before parsing it as Markdown, if the message was composed via `craft\mail\Mailer::composeFromKey()`. ([#1895](https://github.com/craftcms/cms/pull/1895))
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
+- Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 
 ### Removed
 - Removed `craft\events\MailFailureEvent`.
@@ -25,6 +26,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where custom field methods on element queries weren’t returning a reference to the element query object. ([#1887](https://github.com/craftcms/cms/issues/1887))
 - Fixed a PHP error that could occur if a TypeError or other non-Exception error occurred when running the updater, masking the original error.
 - Fixed a bug where `craft\web\Request::getQueryStringWithoutPath()` was including route params in addition to query string params. ([#1891](https://github.com/craftcms/cms/issues/1891))
+- Fixed a PHP error that occurred if a volume with overridden config settings in `config/volumes.php` was missing its type. ([#1899](https://github.com/craftcms/cms/issues/1899))
 
 ## 3.0.0-beta.23 - 2017-07-28
 
