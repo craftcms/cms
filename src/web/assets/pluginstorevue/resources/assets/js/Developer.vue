@@ -9,7 +9,7 @@
         <hr>
         <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="developer.plugins"></plugin-search>
 
-        <plugin-grid v-if="!showingSearchResults" :plugins="developer.plugins"></plugin-grid>
+        <plugin-grid v-if="!showingSearchResults" :plugins="developer.plugins" :columns="4"></plugin-grid>
     </div>
 
 </template>
