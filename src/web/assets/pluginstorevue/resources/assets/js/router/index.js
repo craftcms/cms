@@ -4,6 +4,7 @@ import Index from '../Index'
 import Category from '../Category'
 import Craft from '../Craft'
 import Developer from '../Developer'
+import Page from '../Page'
 import InstalledPlugins from '../InstalledPlugins'
 import Tests from '../Tests'
 
@@ -30,6 +31,11 @@ export default new Router({
             path: '/developer/:id',
             name: 'Developer',
             component: Developer,
+        },
+        {
+            path: '/pages/:id',
+            name: 'Page',
+            component: Page,
         },
         {
             path: '/installed-plugins',

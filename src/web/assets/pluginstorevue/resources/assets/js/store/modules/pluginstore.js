@@ -9,7 +9,14 @@ const getters = {
     pluginStoreData: state => state.data,
     pluginStoreGetAllCategories(state) {
         return state.data.categories;
-    }
+    },
+    getIndexPluginGroup(state) {
+        return function(id) {
+            if(state.data.indexPluginGroups) {
+                return state.data.indexPluginGroups.find(g => g.id == id)
+            }
+        };
+    },
 }
 
 const actions = {
