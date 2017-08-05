@@ -83,7 +83,16 @@ ul.categories li a img {
   width: 100px;
 }
 
+/* CreditCard */
+.credit-card {
+  margin: 24px 0;
+}
+
 /* GlobalModal */
+.globalmodal {
+  max-width: 900px;
+}
+
 .globalmodal .globalmodalcontent {
   position: relative;
   height: calc(100% - 72px);
