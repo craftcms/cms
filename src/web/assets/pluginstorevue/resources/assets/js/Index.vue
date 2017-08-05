@@ -12,11 +12,6 @@
                     </template>
                 </template>
 
-                <template v-for="indexBlock in indexBlocks">
-                    <h2>{{ indexBlock.blockTitle }}</h2>
-                    <plugin-grid :plugins="getPluginsByIds(indexBlock.plugins)"></plugin-grid>
-                </template>
-
                 <template v-if="activeTrialPlugins.length > 0">
                     <h2>{{ "Active Trials"|t('app') }}</h2>
                     <plugin-grid :plugins="activeTrialPlugins"></plugin-grid>
@@ -82,9 +77,6 @@
                 getPluginsByIds: 'getPluginsByIds',
                 installedPlugins: 'installedPlugins',
             }),
-            indexBlocks() {
-                return this.pluginStoreData.indexBlocks;
-            }
         },
 
         created: function() {
