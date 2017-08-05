@@ -1,5 +1,5 @@
 <template>
-    <div class="field first" id="name-field">
+    <div class="field first">
         <div class="heading">
             <label :id="id+'-label'" :for="id">{{ label }}</label>
         </div>
