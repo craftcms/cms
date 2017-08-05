@@ -54,6 +54,7 @@ ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 
 /* GlobalModal */
 
+.globalmodal { max-width: 900px; }
 .globalmodal .globalmodalcontent { position: relative; height: calc(100% - 72px); }
 .globalmodal .globalmodalcontent header .btn-left { position: absolute; top: 28px; left: 24px; }
 .globalmodal .globalmodalcontent header h1 { text-align: center; }
