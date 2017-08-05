@@ -1,7 +1,7 @@
 <template>
 
-	<div v-if="indexPluginGroup">
-		<plugin-grid :columns="4" :plugins="getPluginsByIds(indexPluginGroup.plugins)"></plugin-grid>
+	<div v-if="featuredPlugin">
+		<plugin-grid :columns="4" :plugins="getPluginsByIds(featuredPlugin.plugins)"></plugin-grid>
 	</div>
 
 </template>
@@ -16,18 +16,18 @@
 		},
         computed: {
             ...mapGetters({
-                getIndexPluginGroup: 'getIndexPluginGroup',
+                getFeaturedPlugin: 'getFeaturedPlugin',
                 getPluginsByIds: 'getPluginsByIds',
             }),
 
-			indexPluginGroup() {
-                let indexPluginGroup = this.getIndexPluginGroup(this.$route.params.id);
+			featuredPlugin() {
+                let featuredPlugin = this.getFeaturedPlugin(this.$route.params.id);
 
-                if(indexPluginGroup) {
-                    this.$root.pageTitle = indexPluginGroup.title;
+                if(featuredPlugin) {
+                    this.$root.pageTitle = featuredPlugin.title;
                 }
 
-                return indexPluginGroup;
+                return featuredPlugin;
 			}
         },
 

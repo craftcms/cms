@@ -10,10 +10,10 @@ const getters = {
     pluginStoreGetAllCategories(state) {
         return state.data.categories;
     },
-    getIndexPluginGroup(state) {
+    getFeaturedPlugin(state) {
         return function(id) {
-            if(state.data.indexPluginGroups) {
-                return state.data.indexPluginGroups.find(g => g.id == id)
+            if(state.data.featuredPlugins) {
+                return state.data.featuredPlugins.find(g => g.id == id)
             }
         };
     },

@@ -4,11 +4,11 @@
 
         <div v-if="!showingSearchResults" class="cssgrid-wrapper has-sidebar">
             <div class="cssgrid-main">
-                <template v-if="pluginStoreData.indexPluginGroups">
-                    <template v-for="indexPluginGroup in pluginStoreData.indexPluginGroups">
-                        <router-link class="right" :to="'/pages/'+indexPluginGroup.id">See all</router-link>
-                        <h2>{{ indexPluginGroup.title }}</h2>
-                        <plugin-grid :plugins="getPluginsByIds(indexPluginGroup.plugins.slice(0, 3))"></plugin-grid>
+                <template v-if="pluginStoreData.featuredPlugins">
+                    <template v-for="featuredPlugin in pluginStoreData.featuredPlugins">
+                        <router-link class="right" :to="'/pages/'+featuredPlugin.id">See all</router-link>
+                        <h2>{{ featuredPlugin.title }}</h2>
+                        <plugin-grid :plugins="getPluginsByIds(featuredPlugin.plugins.slice(0, 3))"></plugin-grid>
                     </template>
                 </template>
 
@@ -77,6 +77,9 @@
                 getPluginsByIds: 'getPluginsByIds',
                 installedPlugins: 'installedPlugins',
             }),
+            indexBlocks() {
+                return this.pluginStoreData.indexBlocks;
+            }
         },
 
         created: function() {
