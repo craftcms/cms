@@ -384,11 +384,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            /** @var MatrixBlockQuery $value */
-            $value
+            $value = $value
                 ->limit(null)
                 ->status(null)
-                ->enabledForSite(false);
+                ->enabledForSite(false)
+                ->all();
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',

@@ -636,14 +636,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         if ($value instanceof ElementQueryInterface) {
-            $value
+            $value = $value
                 ->status(null)
-                ->enabledForSite(false);
+                ->enabledForSite(false)
+                ->all();
         } else if (!is_array($value)) {
-            /** @var Element $class */
-            $class = static::elementType();
-            $value = $class::find()
-                ->id(false);
+            $value = [];
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
