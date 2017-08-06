@@ -84,7 +84,8 @@ class Deprecator extends Component
             'traces' => $this->_cleanTraces($traces)
         ]);
 
-        Craft::$app->getDb()->createCommand()
+        $db = Craft::$app->getDb();
+        $db->createCommand()
             ->upsert(
                 self::$_tableName,
                 [
@@ -99,6 +100,8 @@ class Deprecator extends Component
                     'traces' => Json::encode($log->traces),
                 ])
             ->execute();
+
+        $log->id = $db->getLastInsertID();
 
         return true;
     }

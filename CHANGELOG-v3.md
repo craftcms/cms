@@ -33,6 +33,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred if a volume with overridden config settings in `config/volumes.php` was missing its type. ([#1899](https://github.com/craftcms/cms/issues/1899))
 - Fixed a bug where `craft\helpers\StringHelper::removeRight()` was actually removing the substring if it existed as a prefix, rather than a suffix. ([#1900](https://github.com/craftcms/cms/pull/1900))
 - Fixed a PHP error that occurred if `config/routes.php` specified any site-specific routes that didn’t target the currently-requested site.
+- Fixed lots of bugs with the Deprecated panel in the Debug Toolbar.
 
 ## 3.0.0-beta.23 - 2017-07-28
 
