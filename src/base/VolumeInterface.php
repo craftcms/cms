@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\errors\AssetException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 
@@ -59,9 +60,9 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array    $config Additional config options to pass to the adapter
      *
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
-     * @return bool Whether the operation was successful
+     * @throws VolumeException if something else goes wrong
      */
-    public function createFileByStream(string $path, $stream, array $config): bool;
+    public function createFileByStream(string $path, $stream, array $config);
 
     /**
      * Updates a file.
@@ -70,16 +71,17 @@ interface VolumeInterface extends SavableComponentInterface
      * @param resource $stream The new contents of the file as a stream
      * @param array    $config Additional config options to pass to the adapter
      *
-     * @return bool Whether the operation was successful
+     * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
+     * @throws VolumeException if something else goes wrong
      */
-    public function updateFileByStream(string $path, $stream, array $config): bool;
+    public function updateFileByStream(string $path, $stream, array $config);
 
     /**
      * Returns whether a file exists.
      *
      * @param string $path The path of the file, relative to the source’s root
      *
-     * @return bool Whether the file exists
+     * @return bool
      */
     public function fileExists(string $path): bool;
 
@@ -88,9 +90,9 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      *
-     * @return bool Whether the operation was successful
+     * @throws VolumeException if something goes wrong
      */
-    public function deleteFile(string $path): bool;
+    public function deleteFile(string $path);
 
     /**
      * Renames a file.
@@ -100,9 +102,9 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @throws VolumeObjectExistsException if a file with such a name exists already
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
-     * @return bool Whether the operation was successful
+     * @throws VolumeException if something else goes wrong
      */
-    public function renameFile(string $path, string $newPath): bool;
+    public function renameFile(string $path, string $newPath);
 
     /**
      * Copies a file.
@@ -110,9 +112,11 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path    The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
      *
-     * @return bool Whether the operation was successful
+     * @throws VolumeObjectExistsException if a file with such a name exists already
+     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
+     * @throws VolumeException if something else goes wrong
      */
-    public function copyFile(string $path, string $newPath): bool;
+    public function copyFile(string $path, string $newPath);
 
     /**
      * Save a file from the source's uriPath to a local target path.
@@ -150,18 +154,18 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the directory, relative to the source’s root
      *
      * @throws VolumeObjectExistsException if a directory with such name already exists
-     * @return bool Whether the operation was successful
+     * @throws VolumeException if something else goes wrong
      */
-    public function createDir(string $path): bool;
+    public function createDir(string $path);
 
     /**
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
      *
-     * @return bool Whether the operation was successful
+     * @throws VolumeException if something goes wrong
      */
-    public function deleteDir(string $path): bool;
+    public function deleteDir(string $path);
 
     /**
      * Renames a directory.
@@ -169,9 +173,9 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path    The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
      *
-     * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
-     * @return bool Whether the operation was successful
+     * @throws VolumeObjectExistsException if a directory with such name already exists
+     * @throws VolumeException if something else goes wrong
      */
-    public function renameDir(string $path, string $newName): bool;
+    public function renameDir(string $path, string $newName);
 }
