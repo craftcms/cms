@@ -18,7 +18,7 @@ var uglify = require('gulp-uglify');
 var libPath = 'lib/';
 
 var jsDeps = [
-    //{ srcGlob: 'node_modules/bootstrap/dist/js/bootstrap.js', dest: dest+'bootstrap/js' },
+    { srcGlob: 'node_modules/bootstrap/dist/js/bootstrap.js', dest: libPath+'bootstrap/js' },
     { srcGlob: 'node_modules/d3/build/d3.js', dest: libPath+'d3' },
     { srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: libPath+'element-resize-detector' },
     { srcGlob: 'node_modules/fabric/dist/fabric.js', dest: libPath+'fabric' },
