@@ -365,23 +365,23 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        /** @var ElementQuery $value */
-        if (count($value)) {
-            $html = '<div class="elementselect"><div class="elements">';
+        $value = $value->all();
 
-            foreach ($value as $relatedElement) {
-                $html .= Craft::$app->getView()->renderTemplate('_elements/element',
-                    [
-                        'element' => $relatedElement
-                    ]);
-            }
-
-            $html .= '</div></div>';
-
-            return $html;
+        if (empty($value)) {
+            return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
         }
 
-        return '<p class="light">'.Craft::t('app', 'Nothing selected.').'</p>';
+        $html = '<div class="elementselect"><div class="elements">';
+
+        foreach ($value as $relatedElement) {
+            $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
+                'element' => $relatedElement
+            ]);
+        }
+
+        $html .= '</div></div>';
+
+        return $html;
     }
 
     /**

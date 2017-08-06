@@ -35,7 +35,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred if `config/routes.php` specified any site-specific routes that didn’t target the currently-requested site.
 - Fixed lots of bugs with the Deprecated panel in the Debug Toolbar.
 - Fixed a 404 error for `bootstrap.js` that occurred when the Debug Toolbar was opened.
-- Fixed a couple deprecation errors caused by relational and Matrix field inputs.
+- Fixed some deprecation errors caused by relational and Matrix field inputs.
 
 ## 3.0.0-beta.23 - 2017-07-28
 
