@@ -11,11 +11,11 @@
                     {% if loop.first %}
                         <strong>Deprecation error:</strong> {{ log.message }}
                     {% else %}
-                        <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
+                        <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
                     {% endif %}
 
                     {% if trace.file %}
-                        <br><span class="light">Called from <span class="code">{{ trace.file|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</span></span>
+                        <br><span class="light">Called from <span class="code">{{ trace.file|e|replace('/', '/<wbr>')|raw }}:{{ trace.line }}</span></span>
                     {% endif %}
                 </td>
             </tr>
