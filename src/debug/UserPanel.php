@@ -25,12 +25,11 @@ class UserPanel extends \yii\debug\panels\UserPanel
     public function save()
     {
         // Nearly identical to parent::save, except we redact any sensitive info from the panel.
-
         $user = Craft::$app->getUser();
         $data = $user->getIdentity();
 
         if ($data === null) {
-            return;
+            return null;
         }
 
         $authManager = Craft::$app->getAuthManager();
@@ -46,7 +45,6 @@ class UserPanel extends \yii\debug\panels\UserPanel
 
             $permissionsProvider = new ArrayDataProvider([
                 'allModels' => $authManager->getPermissionsByUser($user->id),
-
             ]);
         }
 
