@@ -4,6 +4,7 @@
             <li><strong>{{ developer.fullName }}</strong></li>
             <li>{{ developer.username }}</li>
             <li>{{ developer.email }}</li>
+            <li>{{ developer.location }}</li>
         </ul>
 
         <hr>
