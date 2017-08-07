@@ -32,11 +32,7 @@
 }
 
 .cssgrid-box {
-  border: 1px solid #E3E5E8;
   background-color: #fff;
-  border-radius: 5px;
-  padding: 20px;
-  height: 100px;
   overflow: hidden;
 }
 
@@ -132,16 +128,21 @@ ul.categories li a img {
 }
 
 /* PluginCard */
-.plugin-content {
+.plugin-card {
   display: -webkit-box;
   display: flex;
+  padding: 20px;
+  border: 1px solid #E3E5E8;
+  border-radius: 5px;
+  height: 100px;
 }
 
-.plugin-content:hover {
+.plugin-card:hover {
   cursor: pointer;
+  background: #fafafa;
 }
 
-.plugin-content .plugin-icon {
+.plugin-card .plugin-icon {
   margin-right: 14px;
 }
 

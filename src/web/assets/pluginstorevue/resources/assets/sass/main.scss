@@ -28,11 +28,7 @@
 }
 
 .cssgrid-box {
-  border: 1px solid #E3E5E8;
   background-color: #fff;
-  border-radius: 5px;
-  padding: 20px;
-  height:100px;
   overflow: hidden;
 }
 
@@ -75,9 +71,9 @@ ul.categories li a img { position: absolute; top: 7px; left: 0; width: 24px;  }
 
 /* PluginCard */
 
-.plugin-content { display: flex; }
-.plugin-content:hover { cursor: pointer; }
-.plugin-content .plugin-icon { margin-right: 14px; }
+.plugin-card { display: flex; padding: 20px; border: 1px solid #E3E5E8; border-radius: 5px; height:100px; }
+.plugin-card:hover { cursor: pointer; background: #fafafa; }
+.plugin-card .plugin-icon { margin-right: 14px; }
 
 .plugin-icon, .plugin-icon img { width: 32px; height: 32px; border-radius: 4px; }
 .plugin-icon-large, .plugin-icon-large img { width: 72px; height: 72px; border-radius: 6px; }
