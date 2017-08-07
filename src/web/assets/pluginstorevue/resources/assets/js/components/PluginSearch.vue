@@ -6,11 +6,23 @@
                     <input class="text fullwidth" id="searchQuery" name="searchQuery" type="text" :placeholder="'Search plugins'|t('app')" v-model="searchQuery">
                     <div class="clear" :class="{ hidden: searchQuery.length == 0 }" @click="searchQuery = ''" title="Clear"></div>
                 </div>
+
+                <template v-if="sort">
+                    <div class="select">
+                        <select :value="sort" @change="$emit('update:sort', $event.target.value)">
+                            <option value="name:asc">Name: Ascending</option>
+                            <option value="name:desc">Name: Descending</option>
+                            <option value="price:asc">Price: Low to High</option>
+                            <option value="price:desc">Price: High to Low</option>
+                        </select>
+                    </div>
+                </template>
+
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
             </div>
         </div>
 
-        <plugin-grid :plugins="pluginsToRender"></plugin-grid>
+        <plugin-grid :plugins="pluginsToRender" :columns="4"></plugin-grid>
 
     </div>
 </template>
@@ -23,7 +35,7 @@
             PluginGrid,
         },
 
-        props: ['plugins'],
+        props: ['plugins', 'sort'],
 
         data () {
             return {

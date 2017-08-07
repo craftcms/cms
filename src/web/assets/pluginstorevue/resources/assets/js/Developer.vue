@@ -2,32 +2,23 @@
     <div>
         <ul>
             <li>{{ developer.location }}</li>
-            <li>{{ developer.plugins.length }} plugins</li>
+            <!--<li>{{ developer.plugins.length }} plugins</li>-->
         </ul>
 
         <hr>
-        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="developer.plugins"></plugin-search>
 
-        <plugin-grid v-if="!showingSearchResults" :plugins="developer.plugins" :columns="4"></plugin-grid>
+        <plugin-index :plugins="developer.plugins"></plugin-index>
     </div>
 
 </template>
 
 <script>
-    import PluginGrid from './components/PluginGrid';
-    import PluginSearch from './components/PluginSearch';
+    import PluginIndex from './components/PluginIndex';
     import { mapGetters } from 'vuex'
 
     export default {
         components: {
-            PluginGrid,
-            PluginSearch,
-        },
-
-        data () {
-            return {
-                showingSearchResults: false,
-            }
+            PluginIndex,
         },
 
         computed: {
