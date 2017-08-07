@@ -1,10 +1,8 @@
 <template>
     <div>
         <ul>
-            <li><strong>{{ developer.fullName }}</strong></li>
-            <li>{{ developer.username }}</li>
-            <li>{{ developer.email }}</li>
             <li>{{ developer.location }}</li>
+            <li>{{ developer.plugins.length }} plugins</li>
         </ul>
 
         <hr>
