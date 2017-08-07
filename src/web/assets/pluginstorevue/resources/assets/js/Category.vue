@@ -1,36 +1,34 @@
 <template>
 
-    <div>
-        <plugin-search @showResults="showingSearchResults = true" @hideResults="showingSearchResults = false" :plugins="categoryPlugins"></plugin-search>
-
-        <div v-if="!showingSearchResults && category">
-            <plugin-grid :columns="4" :plugins="categoryPlugins"></plugin-grid>
-        </div>
+    <div v-if="category">
+        <plugin-index :plugins="plugins"></plugin-index>
     </div>
 
 </template>
 
 <script>
-    import PluginGrid from './components/PluginGrid';
-    import PluginSearch from './components/PluginSearch';
+    import PluginIndex from './components/PluginIndex';
     import { mapGetters } from 'vuex'
 
     export default {
         components: {
-            PluginGrid,
-            PluginSearch,
+            PluginIndex,
         },
 
         data () {
             return {
-                showingSearchResults: false,
                 categoryId: null,
             }
         },
 
         computed: {
+            ...mapGetters({
+                getCategoryById: 'getCategoryById',
+                getPluginsByCategory: 'getPluginsByCategory',
+            }),
+
             category() {
-                let category = this.$store.getters.getCategoryById(this.categoryId);
+                let category = this.getCategoryById(this.categoryId);
 
                 if(category) {
                     this.$root.pageTitle = category.title;
@@ -38,8 +36,9 @@
 
                 return category;
             },
-            categoryPlugins() {
-                return this.$store.getters.getPluginsByCategory(this.categoryId);
+
+            plugins() {
+                return this.getPluginsByCategory(this.categoryId);
             }
         },
 

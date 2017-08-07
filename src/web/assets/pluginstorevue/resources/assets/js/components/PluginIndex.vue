@@ -30,12 +30,11 @@
 
         computed: {
             pluginsToRender() {
-
                 if(!this.plugins) {
                     return [];
                 }
 
-                let plugins = this.plugins;
+                let plugins = this._.clone(this.plugins);
 
                 let sortOptions = this.sort.split(':');
                 let sortKey = sortOptions[0];
