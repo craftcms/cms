@@ -7,6 +7,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\FlysystemVolume`, which replaces `craft\base\Volume` as the new base class for Flysystem-based volumes.
 - Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
 - Added `craft\services\Composer::getJsonPath()`.
+- Added `craft\services\Volumes::getVolumeByHandle()`.
 
 ### Changed
 - The updater now ensures it can find `composer.json` before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1883](https://github.com/craftcms/cms/issues/1883))

@@ -92,6 +92,11 @@ class Volumes extends Component
     private $_volumesById;
 
     /**
+     * @var
+     */
+    private $_volumesByHandle;
+
+    /**
      * @var bool
      */
     private $_fetchedAllVolumes = false;
@@ -121,6 +126,7 @@ class Volumes extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $volumeTypes
         ]);
+
         $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
         return $event->types;
@@ -311,6 +317,34 @@ class Volumes extends Component
         }
 
         return $this->_volumesById[$volumeId] = $this->createVolume($result);
+    }
+
+    /**
+     * Returns a volumn by its handle.
+     *
+     * @param string $handle
+     *
+     * @return VolumeInterface|null
+     */
+    public function getVolumeByHandle(string $handle)
+    {
+        if ($this->_volumesByHandle !== null && array_key_exists($handle, $this->_volumesByHandle)) {
+            return $this->_volumesByHandle[$handle];
+        }
+
+        if ($this->_fetchedAllVolumes) {
+            return null;
+        }
+
+        $result = $this->_createVolumeQuery()
+            ->where(['handle' => $handle])
+            ->one();
+
+        if (!$result) {
+            return $this->_volumesByHandle[$handle] = null;
+        }
+
+        return $this->_volumesByHandle[$handle] = $this->createVolume($result);
     }
 
     /**
