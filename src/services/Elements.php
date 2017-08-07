@@ -318,13 +318,11 @@ class Elements extends Component
      * - Setting a unique URI on the element, if it’s supposed to have one.
      * - Saving the element’s row(s) in the `elements_sites` and `content` tables
      * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
-     * - Calling the field types’ [[Field::onAfterElementSave() onAfterElementSave()]] methods
-     * - Cleaing any template caches that the element was involved in
+     * - Cleaning any template caches that the element was involved in
      *
-     * This method should be called by a service’s “saveX()” method, _after_ it is done validating any attributes on
-     * the element that are of particular concern to its element type. For example, if the element were an entry,
-     * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
-     * ensure that they point to valid section and entry type IDs.
+     * The function will fire `beforeElementSave` and `afterElementSave` events, and will call `beforeSave()`
+     *  and `afterSave()` methods on the passed-in element, giving the element opportunities to hook into the
+     * save process.
      *
      * Example usage - creating a new entry:
      *
@@ -332,6 +330,7 @@ class Elements extends Component
      * $entry = new Entry();
      * $entry->sectionId = 10;
      * $entry->typeId = 1;
+     * $entry->fieldLayoutId = $entry->getType()->fieldLayoutId;
      * $entry->authorId = 5;
      * $entry->enabled = true;
      * $entry->title = "Hello World!";
