@@ -12,6 +12,12 @@
 				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 				<template v-if="identityMode == 'craftid'">
+					<form method="post" id="connect">
+						{{ csrfInput() }}
+						<input type="hidden" name="action" value="plugin-store/connect">
+						<a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
+					</form>
+
 					<p><a class="btn submit" @click="showIdentity=false">Connect to your Craft ID</a></p>
 				</template>
 				<template v-else-if="identityMode == 'guest'">

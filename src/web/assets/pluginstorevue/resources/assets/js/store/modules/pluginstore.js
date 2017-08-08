@@ -21,8 +21,11 @@ const getters = {
 
 const actions = {
     getPluginStoreData ({ commit }) {
-        api.getPluginStoreData(data => {
-            commit(types.RECEIVE_PLUGIN_STORE_DATA, { data })
+        return new Promise((resolve, reject) => {
+            api.getPluginStoreData(data => {
+                commit(types.RECEIVE_PLUGIN_STORE_DATA, { data })
+                resolve(data);
+            })
         })
     }
 }

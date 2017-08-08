@@ -2,29 +2,45 @@ import api from '../../api'
 import * as types from '../mutation-types'
 
 const state = {
-    installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
+    craftData: {},
+    // installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
 }
 
 const getters = {
     installedPlugins: (state, rootState) => {
         return rootState.allPlugins.filter(p => {
-            return state.installedPlugins.find(pluginId => pluginId == p.id);
+            return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
         })
     },
 }
 
+const actions = {
+    getCraftData ({ commit }) {
+        return new Promise((resolve, reject) => {
+            api.getCraftData(data => {
+                commit(types.RECEIVE_CRAFT_DATA, { data })
+                resolve(data);
+            })
+        })
+    }
+}
+
 const mutations = {
     installPlugin(state, { plugin }) {
-        const record = state.installedPlugins.find(pluginId => pluginId === plugin.id)
+        const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id)
 
         if (!record) {
-            state.installedPlugins.push(plugin.id)
+            state.craftData.installedPlugins.push(plugin.id)
         }
+    },
+    [types.RECEIVE_CRAFT_DATA] (state, { data }) {
+        state.craftData = data
     },
 }
 
 export default {
     state,
     getters,
-    mutations
+    actions,
+    mutations,
 }

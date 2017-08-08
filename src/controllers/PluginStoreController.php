@@ -443,4 +443,13 @@ class PluginStoreController extends Controller
             return $this->asErrorJson($e->getMessage());
         }
     }
+
+    public function actionCraftData()
+    {
+        $data = [
+            'installedPlugins' => [163, 6, 218]
+        ];
+
+        return $this->asJson($data);
+    }
 }

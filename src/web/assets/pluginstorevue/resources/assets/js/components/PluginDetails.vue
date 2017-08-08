@@ -18,14 +18,15 @@
             <div class="buttons">
 
                 <div v-if="plugin.price != '0.00'">
-                    <a v-if="isInTrial(plugin)" class="btn disabled">{{ "Installed"|t('app') }}</a>
+                    <a v-if="isInTrial(plugin) || isInstalled(plugin)" class="btn disabled">{{ "Installed"|t('app') }}</a>
                     <a v-else @click="tryPlugin(plugin)" class="btn">{{ "Try"|t('app') }}</a>
 
                     <a v-if="isInCart(plugin)" @click="buyPlugin(plugin)" class="btn submit disabled">{{ "Added to cart"|t('app') }}</a>
                     <a v-else @click="buyPlugin(plugin)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(plugin.price) }) }}</a>
                 </div>
                 <div v-else>
-                    <a @click="installPlugin(plugin)" class="btn submit">{{ "Install"|t('app') }}</a>
+                    <a v-if="isInstalled(plugin)" class="btn submit disabled">{{ "Installed"|t('app') }}</a>
+                    <a v-else @click="installPlugin(plugin)" class="btn submit">{{ "Install"|t('app') }}</a>
                 </div>
 
             </div>
@@ -84,6 +85,7 @@
                 activeTrialPlugins: 'activeTrialPlugins',
                 isInTrial: 'isInTrial',
                 isInCart: 'isInCart',
+                isInstalled: 'isInstalled',
             }),
             description() {
                 if(this.plugin.description && this.plugin.description.length > 0) {

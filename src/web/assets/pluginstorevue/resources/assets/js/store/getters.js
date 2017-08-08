@@ -1,12 +1,20 @@
 export const cartPlugins = state => {
     return state.cart.items.map(({ id }) => {
-        return state.plugins.all.find(p => p.id === id)
+        if(state.pluginstore.data.plugins) {
+            return state.pluginstore.data.plugins.find(p => p.id === id)
+        }
     })
 }
 
 export const activeTrialPlugins = state => {
-    let plugins = state.craft.installedPlugins.map( id  => {
-        return state.plugins.all.find(p => p.id === id)
+    if(!state.craft.craftData.installedPlugins) {
+        return [];
+    }
+
+    let plugins = state.craft.craftData.installedPlugins.map( id  => {
+        if(state.pluginstore.data.plugins) {
+            return state.pluginstore.data.plugins.find(p => p.id == id)
+        }
     })
 
     return plugins.filter(p => {

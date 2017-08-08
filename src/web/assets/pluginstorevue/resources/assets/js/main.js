@@ -108,12 +108,14 @@ const app = new Vue({
         this.$pageTitle.html(this.pageTitle)
 
 
-        // Dispatch
+        // Dispatch actions
 
-        this.$store.dispatch('getPluginStoreData')
-        this.$store.dispatch('getAllPlugins').then(() => {
+        this.$store.dispatch('getCraftData');
+
+        this.$store.dispatch('getPluginStoreData').then(() => {
             this.loading = false
-        })
+        });
+
         this.$store.dispatch('getCartState')
     },
 
