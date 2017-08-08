@@ -8,18 +8,21 @@ import categories from './modules/categories'
 import developers from './modules/developers'
 import pluginstore from './modules/pluginstore'
 import craft from './modules/craft'
+import vuexplugins from './vuexplugins'
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
     actions,
     getters,
+
+    plugins: [vuexplugins],
     modules: {
         cart,
         plugins,
         categories,
         developers,
         pluginstore,
-        craft,
+        craft
     },
 })

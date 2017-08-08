@@ -25,7 +25,7 @@
                     <a v-else @click="buyPlugin(plugin)" class="btn submit">{{ "Buy {price}"|t('app', { price: $root.$options.filters.currency(plugin.price) }) }}</a>
                 </div>
                 <div v-else>
-                    <a :href="installUrl" class="btn submit">{{ "Install"|t('app') }}</a>
+                    <a @click="installPlugin(plugin)" class="btn submit">{{ "Install"|t('app') }}</a>
                 </div>
 
             </div>
@@ -112,7 +112,12 @@
                 this.$root.openGlobalModal('cart');
             },
             tryPlugin(plugin) {
-                this.$store.dispatch('addToActiveTrials', plugin);
+                this.$store.commit('installPlugin', { plugin });
+                this.$root.closeGlobalModal();
+                this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
+            },
+            installPlugin(plugin) {
+                this.$store.commit('installPlugin', { plugin })
                 this.$root.closeGlobalModal();
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
             },

@@ -5,7 +5,13 @@ export const cartPlugins = state => {
 }
 
 export const activeTrialPlugins = state => {
-    return state.cart.activeTrials.map(({ id }) => {
+    let plugins = state.craft.installedPlugins.map( id  => {
         return state.plugins.all.find(p => p.id === id)
     })
+
+    return plugins.filter(p => {
+        if(p) {
+            return p.price > 0;
+        }
+    });
 }

@@ -2,7 +2,7 @@ import api from '../../api'
 import * as types from '../mutation-types'
 
 const state = {
-    installedPlugins: [6, 143]
+    installedPlugins: JSON.parse(window.localStorage.getItem('craft.installedPlugins') || '[]')
 }
 
 const getters = {
@@ -13,17 +13,18 @@ const getters = {
     },
 }
 
-const actions = {
-
-}
-
 const mutations = {
+    installPlugin(state, { plugin }) {
+        const record = state.installedPlugins.find(pluginId => pluginId === plugin.id)
 
+        if (!record) {
+            state.installedPlugins.push(plugin.id)
+        }
+    },
 }
 
 export default {
     state,
     getters,
-    actions,
     mutations
 }

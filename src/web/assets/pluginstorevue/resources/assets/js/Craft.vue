@@ -17,7 +17,7 @@
                     <a v-else  @click="buy(craftClient)" class="btn submit">Buy now</a>
 
                     <a v-if="isInTrial(craftClient)" class="btn disabled">Try for free</a>
-                    <a v-else @click="addToActiveTrials(craftClient)" class="btn">Try for free</a>
+                    <a v-else @click="installPlugin(craftClient)" class="btn">Try for free</a>
                 </div>
             </div>
             <div class="box">
@@ -30,7 +30,7 @@
                     <a v-else  @click="buy(craftPro)" class="btn submit">Buy now</a>
 
                     <a v-if="isInTrial(craftPro)" class="btn disabled">Try for free</a>
-                    <a v-else @click="addToActiveTrials(craftPro)" class="btn">Try for free</a>
+                    <a v-else @click="installPlugin(craftPro)" class="btn">Try for free</a>
                 </div>
             </div>
         </div>
@@ -60,7 +60,7 @@
             ...mapActions([
                'addToCart',
                'removeFromCart',
-               'addToActiveTrials',
+               'installPlugin',
            ]),
             buy(plugin) {
                 this.$store.dispatch('addToCart', plugin);

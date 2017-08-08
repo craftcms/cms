@@ -3,12 +3,10 @@ import * as types from '../mutation-types'
 
 const state = {
     all: [],
-    activeTrials: [],
 }
 
 const getters = {
     allPlugins: state => state.all,
-    activeTrials: state => state.activeTrials,
     getPluginById(state) {
         return function(id) {
             return state.all.find(p => p.id == id)

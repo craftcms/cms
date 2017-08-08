@@ -2,15 +2,14 @@ import api from '../../api'
 import * as types from '../mutation-types'
 
 const state = {
-    activeTrials: [],
     items: [],
     checkoutStatus: null
 }
 
 const getters = {
-    isInTrial(state) {
+    isInTrial(state, rootState) {
         return function(plugin) {
-            return state.activeTrials.find(p => p.id == plugin.id)
+            return rootState.activeTrialPlugins.find(p => p.id == plugin.id)
         }
     },
     isInCart(state) {
@@ -45,21 +44,6 @@ const actions = {
         })
         dispatch('saveCartState');
     },
-
-    addToActiveTrials({dispatch, commit}, plugin) {
-        commit(types.ADD_TO_ACTIVE_TRIALS, {
-            id: plugin.id
-        })
-        dispatch('saveCartState');
-    },
-
-    removeFromActiveTrials({dispatch, commit}, plugin) {
-        commit(types.REMOVE_FROM_ACTIVE_TRIALS, {
-            id: plugin.id
-        })
-        dispatch('saveCartState');
-    },
-
     saveCartState({ commit, state }) {
         api.saveCartState(() => {
             commit(types.SAVE_CART_STATE);
@@ -90,28 +74,11 @@ const mutations = {
 
         state.items.splice(index, 1);
     },
-    [types.ADD_TO_ACTIVE_TRIALS] (state, { id }) {
-        const record = state.activeTrials.find(p => p.id === id)
-
-        if (!record) {
-            state.activeTrials.push({
-                id,
-            })
-        }
-    },
-    [types.REMOVE_FROM_ACTIVE_TRIALS] (state, { id }) {
-        const record = state.activeTrials.find(p => p.id === id)
-
-        const index = state.activeTrials.indexOf(record);
-
-        state.activeTrials.splice(index, 1);
-    },
     [types.SAVE_CART_STATE] (state) {
 
     },
     [types.RECEIVE_CART_STATE] (state, { cartState }) {
         if(cartState) {
-            state.activeTrials = cartState.activeTrials;
             state.items = cartState.items;
             state.checkoutStatus = cartState.checkoutStatus;
         }
