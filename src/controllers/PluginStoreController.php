@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\assets\pluginstorevue\PluginStoreVueAsset;
-use craft\web\assets\pluginstorevuerouting\PluginStoreVueRoutingAsset;
 use craft\web\Controller;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -249,13 +248,6 @@ class PluginStoreController extends Controller
         Craft::$app->getUrlManager()->setRouteParams([
             'results' => $results
         ]);
-    }
-
-    public function actionVueRouting()
-    {
-        Craft::$app->getView()->registerAssetBundle(PluginStoreVueRoutingAsset::class);
-
-        return $this->renderTemplate('plugin-store/vue-routing/_index');
     }
 
     public function actionApiPlugin()
