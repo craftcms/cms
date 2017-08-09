@@ -454,6 +454,8 @@ class PluginStoreController extends Controller
             ];
         }
 
+        $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
+
         return $this->asJson($data);
     }
 
@@ -461,9 +463,21 @@ class PluginStoreController extends Controller
     {
         $this->requirePostRequest();
 
-        $craftData = Craft::$app->getRequest()->getParam('craftData');
-        Craft::$app->getSession()->set('pluginStore.craftData', $craftData);
+        $postData = Craft::$app->getRequest()->getParam('craftData');
+
+        $sessionData = [
+            'installedPlugins' => $postData['installedPlugins']
+        ];
+
+        Craft::$app->getSession()->set('pluginStore.craftData', $sessionData);
 
         return $this->asJson([]);
+    }
+
+    public function actionClearCraftData()
+    {
+        Craft::$app->getSession()->remove('pluginStore.craftData');
+
+        return $this->asJson(true);
     }
 }

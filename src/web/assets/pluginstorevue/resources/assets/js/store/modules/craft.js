@@ -12,6 +12,9 @@ const getters = {
             return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
         })
     },
+    craftIdAccount: state => {
+        return state.craftData.craftId
+    },
 }
 
 const actions = {
@@ -34,6 +37,15 @@ const actions = {
             commit(types.SAVE_CRAFT_DATA);
         }, state.craftData)
     },
+
+    clearCraftData ({ commit }) {
+        return new Promise((resolve, reject) => {
+            api.clearCraftData(data => {
+                commit(types.CLEAR_CRAFT_DATA, { data })
+                resolve(data);
+            })
+        })
+    },
 }
 
 const mutations = {
@@ -48,6 +60,9 @@ const mutations = {
         state.craftData = data
     },
     [types.SAVE_CRAFT_DATA] (state) {
+
+    },
+    [types.CLEAR_CRAFT_DATA] (state) {
 
     },
 }

@@ -44,7 +44,7 @@
 
 
 <script>
-    import { mapGetters } from 'vuex'
+    import { mapGetters, mapActions } from 'vuex'
     import PluginGrid from './components/PluginGrid';
     import PluginSearch from './components/PluginSearch';
 
@@ -61,10 +61,15 @@
         },
 
         methods: {
+            ...mapActions([
+                'clearCraftData'
+            ]),
             clearStorage() {
-                localStorage.removeItem('cartState');
-                location.reload();
-            }
+                this.clearCraftData().then(() =>  {
+                    localStorage.removeItem('cartState');
+                    location.reload();
+                });
+            },
         },
 
         computed: {

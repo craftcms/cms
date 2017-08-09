@@ -9,18 +9,29 @@
 
 			<template v-if="showIdentity">
 				<p><label><input type="radio" value="craftid" v-model="identityMode" /> Use your Craft ID</label></p>
-				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 				<template v-if="identityMode == 'craftid'">
-					<form method="post" id="connect">
-						{{ csrfInput() }}
-						<input type="hidden" name="action" value="plugin-store/connect">
-						<a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
-					</form>
+					<template v-if="craftIdAccount">
+						<p>{{ craftIdAccount.email }}</p>
+						<p><a class="btn submit" @click="showIdentity=false">Continue</a></p>
+					</template>
 
-					<p><a class="btn submit" @click="showIdentity=false">Connect to your Craft ID</a></p>
+					<template v-else>
+						<p><a class="btn submit" :href="connectCraftIdUrl">Connect to your Craft ID</a></p>
+					</template>
+
+					<!--					<form method="post" id="connect">
+											{{ csrfInput }}
+											<input type="hidden" name="action" value="plugin-store/connect">
+											<a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
+										</form>-->
+
+
 				</template>
-				<template v-else-if="identityMode == 'guest'">
+
+				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
+
+				<template v-if="identityMode == 'guest'">
 					<text-fieldtype label="Full Name" id="fullName" placeholder="John Smith" v-model="guestIdentity.fullName"></text-fieldtype>
 					<text-fieldtype label="Email" id="email" placeholder="john@example.com" v-model="guestIdentity.email"></text-fieldtype>
 
@@ -140,6 +151,7 @@
         computed: {
             ...mapGetters({
                 cartTotal: 'cartTotal',
+                craftIdAccount: 'craftIdAccount',
             }),
 			readyToPay() {
                 if(!this.showIdentity && !this.showPaymentMethod && !this.showBilling) {
@@ -147,6 +159,12 @@
 				}
 
 				return false;
+			},
+			csrfInput() {
+                return '';
+			},
+            connectCraftIdUrl() {
+                return Craft.getActionUrl('plugin-store/connect');
 			}
         },
 
