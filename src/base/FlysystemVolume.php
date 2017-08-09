@@ -6,7 +6,7 @@
  * @since      3.0
  */
 
-namespace craft\flysystem;
+namespace craft\base;
 
 use Craft;
 use craft\base\Volume;
