@@ -446,10 +446,24 @@ class PluginStoreController extends Controller
 
     public function actionCraftData()
     {
-        $data = [
-            'installedPlugins' => [163, 6, 218]
-        ];
+        $data = Craft::$app->getSession()->get('pluginStore.craftData');
+
+        if(!$data) {
+            $data = [
+                'installedPlugins' => []
+            ];
+        }
 
         return $this->asJson($data);
+    }
+
+    public function actionSaveCraftData()
+    {
+        $this->requirePostRequest();
+
+        $craftData = Craft::$app->getRequest()->getParam('craftData');
+        Craft::$app->getSession()->set('pluginStore.craftData', $craftData);
+
+        return $this->asJson([]);
     }
 }

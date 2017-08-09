@@ -15,6 +15,11 @@ const getters = {
 }
 
 const actions = {
+    installPlugin({ dispatch, commit }, plugin) {
+        commit(types.INSTALL_PLUGIN, plugin)
+        dispatch('saveCraftData');
+    },
+
     getCraftData ({ commit }) {
         return new Promise((resolve, reject) => {
             api.getCraftData(data => {
@@ -22,11 +27,17 @@ const actions = {
                 resolve(data);
             })
         })
-    }
+    },
+
+    saveCraftData({ commit, state }) {
+        api.saveCraftData(() => {
+            commit(types.SAVE_CRAFT_DATA);
+        }, state.craftData)
+    },
 }
 
 const mutations = {
-    installPlugin(state, { plugin }) {
+    [types.INSTALL_PLUGIN] (state, { plugin }) {
         const record = state.craftData.installedPlugins.find(pluginId => pluginId === plugin.id)
 
         if (!record) {
@@ -35,6 +46,9 @@ const mutations = {
     },
     [types.RECEIVE_CRAFT_DATA] (state, { data }) {
         state.craftData = data
+    },
+    [types.SAVE_CRAFT_DATA] (state) {
+
     },
 }
 

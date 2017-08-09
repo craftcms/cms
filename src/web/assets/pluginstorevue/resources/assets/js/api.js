@@ -42,5 +42,13 @@ export default {
 
             return cb(craftData);
         });
+    },
+
+    saveCraftData(cb, craftData) {
+        Vue.http.post(Craft.getActionUrl('plugin-store/save-craft-data'), { craftData: craftData }, {emulateJSON: true}).then(function(data) {
+            let craftData = data.body;
+
+            return cb(craftData);
+        });
     }
 }

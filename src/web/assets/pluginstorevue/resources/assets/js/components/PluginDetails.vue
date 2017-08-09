@@ -114,12 +114,12 @@
                 this.$root.openGlobalModal('cart');
             },
             tryPlugin(plugin) {
-                this.$store.commit('installPlugin', { plugin });
+                this.$store.dispatch('installPlugin', { plugin });
                 this.$root.closeGlobalModal();
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed in trial mode.'));
             },
             installPlugin(plugin) {
-                this.$store.commit('installPlugin', { plugin })
+                this.$store.dispatch('installPlugin', { plugin })
                 this.$root.closeGlobalModal();
                 this.$root.displayNotice(Craft.t('app', 'Plugin installed.'));
             },
