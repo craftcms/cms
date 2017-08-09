@@ -31,7 +31,7 @@ class PluginStore extends Component
     // =========================================================================
 
     /**
-     * Returns the Control Panel nav items.
+     * Returns the Craft ID account.
      *
      * @return array|null
      */
