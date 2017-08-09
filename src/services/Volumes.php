@@ -284,6 +284,7 @@ class Volumes extends Component
             /** @var Volume $volume */
             $volume = $this->createVolume($result);
             $this->_volumesById[$volume->id] = $volume;
+            $this->_volumesByHandle[$volume->handle] = $volume;
         }
 
         $this->_fetchedAllVolumes = true;
