@@ -7,12 +7,12 @@
  */
 
 return [
-    'driver' => getenv('DB_DRIVER'),
-    'server' => getenv('DB_SERVER'),
-    'user' => getenv('DB_USER'),
-    'password' => getenv('DB_PASSWORD'),
-    'database' => getenv('DB_DATABASE'),
-    'schema' => getenv('DB_SCHEMA'),
-    'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-    'port' => getenv('DB_PORT')
+    'driver' => getenv('CRAFT_DB_DRIVER'),
+    'server' => getenv('CRAFT_DB_SERVER'),
+    'user' => getenv('CRAFT_DB_USER'),
+    'password' => getenv('CRAFT_DB_PASSWORD'),
+    'database' => getenv('CRAFT_DB_DATABASE'),
+    'schema' => getenv('CRAFT_DB_SCHEMA'),
+    'tablePrefix' => getenv('CRAFT_DB_TABLE_PREFIX'),
+    'port' => getenv('CRAFT_DB_PORT')
 ];
