@@ -35,26 +35,14 @@ class Cp extends Component
     // Public Methods
     // =========================================================================
 
+    /**
+     * Returns the Control Panel nav items.
+     *
+     * @return array|null
+     */
     public function craftIdAccount()
     {
-
-        $craftIdToken = Craft::$app->getPluginStore()->getToken();
-
-        if($craftIdToken && $craftIdToken->hasExpired()) {
-            $craftIdToken = null;
-        }
-
-        $client = Craft::$app->getPluginStore()->getClient();
-
-        if($craftIdToken)
-        {
-            $craftIdAccountResponse = $client->request('GET', 'account');
-            $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-            if(!isset($craftIdAccount['error'])) {
-                return $craftIdAccount;
-            }
-        }
+        return Craft::$app->getPluginStore()->getCraftIdAccount();
     }
 
     /**
