@@ -820,11 +820,9 @@ class Sites extends Component
                     }
 
                     $this->currentSite = $site;
-                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                } else {
                     // Default to the primary site
                     $this->currentSite = $this->getPrimarySite();
-                } else {
-                    $this->currentSite = null;
                 }
             }
 
