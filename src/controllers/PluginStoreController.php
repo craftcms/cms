@@ -49,6 +49,10 @@ class PluginStoreController extends Controller
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
         $openModal = Craft::$app->getSession()->get('pluginStore.openModal');
 
+        if($openModal) {
+            Craft::$app->getSession()->remove('pluginStore.openModal');
+        }
+
         return $this->renderTemplate('plugin-store/_index', [
             'openModal' => $openModal,
         ]);
@@ -323,7 +327,7 @@ class PluginStoreController extends Controller
      *
      * @return Response
      */
-    public function actionConnect()
+    public function actionConnect($redirect = null)
     {
         $provider = new CraftId([
             'clientId'     => '1234567890',
@@ -331,6 +335,10 @@ class PluginStoreController extends Controller
         ]);
 
         $referrer = Craft::$app->getRequest()->getReferrer();
+
+        if($redirect) {
+            $referrer = $redirect;
+        }
 
         Craft::$app->getSession()->set('pluginStoreConnectReferrer', $referrer);
 
@@ -390,11 +398,16 @@ class PluginStoreController extends Controller
             'referrer' => $referrer
         ];
 
-        Craft::$app->getSession()->set('pluginStore.openModal', true);
-
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback('.Json::encode($options).');');
 
         return $this->renderTemplate('plugin-store/_special/oauth/callback');
+    }
+
+    public function actionModalCallback()
+    {
+        Craft::$app->getSession()->set('pluginStore.openModal', true);
+
+        return $this->redirect('plugin-store');
     }
 
     /**
