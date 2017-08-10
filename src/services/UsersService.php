@@ -662,6 +662,7 @@ class UsersService extends BaseApplicationComponent
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 		$currentTime = DateTimeHelper::currentUTCDateTime();
+		$locked = false;
 
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
 		$userRecord->lastLoginAttemptIPAddress = craft()->request->getUserHostAddress();
@@ -682,6 +683,7 @@ class UsersService extends BaseApplicationComponent
 					$userRecord->invalidLoginCount = null;
 					$userRecord->invalidLoginWindowStart = null;
 					$userRecord->lockoutDate = $user->lockoutDate = $currentTime;
+					$locked = true;
 				}
 			}
 			else
@@ -695,7 +697,17 @@ class UsersService extends BaseApplicationComponent
 			$user->invalidLoginCount = $userRecord->invalidLoginCount;
 		}
 
-		return $userRecord->save();
+		$saveSuccess = $userRecord->save();
+
+		if ($locked)
+		{
+			// Fire an 'onLockUser' event
+			$this->onLockUser(new Event($this, array(
+				'user' => $user
+			)));
+		}
+
+		return $saveSuccess;
 	}
 
 	/**
@@ -1376,6 +1388,18 @@ class UsersService extends BaseApplicationComponent
 	public function onUnlockUser(Event $event)
 	{
 		$this->raiseEvent('onUnlockUser', $event);
+	}
+
+	/**
+	 * Fires an 'onLockUser' event.
+	 *
+	 * @param Event $event
+	 *
+	 * @return null
+	 */
+	public function onLockUser(Event $event)
+	{
+		$this->raiseEvent('onLockUser', $event);
 	}
 
 	/**
