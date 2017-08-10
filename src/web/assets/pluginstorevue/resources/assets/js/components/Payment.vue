@@ -22,14 +22,6 @@
 					<template v-else>
 						<p><a class="btn submit" :href="connectCraftIdUrl">Connect to your Craft ID</a></p>
 					</template>
-
-					<!--					<form method="post" id="connect">
-											{{ csrfInput }}
-											<input type="hidden" name="action" value="plugin-store/connect">
-											<a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
-										</form>-->
-
-
 				</template>
 
 				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
@@ -67,7 +59,7 @@
 
 			<template v-if="showPaymentMethod">
 				<template v-if="identityMode == 'craftid'">
-					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card {{ craftIdIdentity.creditCard.number }}</label></p>
+					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.cardNumber }}</span></label></p>
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
@@ -81,17 +73,16 @@
 				<a class="btn submit" @click="showPaymentMethod=false">Continue</a>
 			</template>
 			<template v-else>
-				<ul>
-					<template v-if="identityMode == 'craftid' && paymentMode == 'existingCard'">
-						<li>{{ craftIdIdentity.creditCard.number }}</li>
-						<li>{{ craftIdIdentity.creditCard.expiry }}</li>
-						<li>{{ craftIdIdentity.creditCard.cvc }}</li>
-					</template>
-					<template v-else>
-						<li>{{ creditCard.number }}</li>
-						<li>{{ creditCard.expiry }}</li>
-						<li>{{ creditCard.cvc }}</li>
-					</template>
+				<ul v-if="identityMode == 'craftid' && paymentMode == 'existingCard' && craftIdAccount">
+					<li>{{ craftIdAccount.cardNumber }}</li>
+					<li>{{ craftIdAccount.cardExpiry }}</li>
+					<li>{{ craftIdAccount.cardCvc }}</li>
+				</ul>
+
+				<ul v-else>
+					<li>{{ creditCard.number }}</li>
+					<li>{{ creditCard.expiry }}</li>
+					<li>{{ creditCard.cvc }}</li>
 				</ul>
 			</template>
 		</div>
@@ -167,7 +158,7 @@
                 return '';
 			},
             connectCraftIdUrl() {
-                return Craft.getActionUrl('plugin-store/connect');
+                return Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
 			}
         },
 
@@ -178,23 +169,9 @@
                 showIdentity: true,
                 showPaymentMethod: false,
                 showBilling: false,
-                craftIdIdentity: {
-                    fullName: "Brandon Kelly",
-                    email: "brandon@pixelandtonic.com",
-					creditCard: {
-                        number: 'YYYY EXIS TING YYYY',
-                        expiry: '01/20',
-                        cvc: '123',
-                    },
-                },
                 guestIdentity: {
                     fullName: "",
                     email: "",
-                },
-                existingCard: {
-                    number: 'XXXX EXIS TING XXXX',
-                    expiry: '01/20',
-                    cvc: '123',
                 },
                 creditCard: {
                     number: 'XXXX XXXX XXXX XXXX',
