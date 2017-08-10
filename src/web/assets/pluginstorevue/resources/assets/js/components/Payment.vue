@@ -12,7 +12,10 @@
 
 				<template v-if="identityMode == 'craftid'">
 					<template v-if="craftIdAccount">
-						<p>{{ craftIdAccount.email }}</p>
+						<ul>
+							<li>{{ craftIdAccount.name }}</li>
+							<li>{{ craftIdAccount.email }}</li>
+						</ul>
 						<p><a class="btn submit" @click="showIdentity=false">Continue</a></p>
 					</template>
 
@@ -40,9 +43,9 @@
 			</template>
 			<template v-else>
 				<div v-if="identityMode == 'craftid'">
-					<ul>
-						<li>{{ craftIdIdentity.fullName }} <em>(Craft ID)</em></li>
-						<li>{{ craftIdIdentity.email }}</li>
+					<ul v-if="craftIdAccount">
+						<li>{{ craftIdAccount.name }} <em>(Craft ID)</em></li>
+						<li>{{ craftIdAccount.email }}</li>
 					</ul>
 				</div>
 				<div v-if="identityMode == 'guest'">
@@ -172,7 +175,7 @@
             return {
                 identityMode: 'craftid',
                 paymentMode: 'existingCard',
-                showIdentity: false,
+                showIdentity: true,
                 showPaymentMethod: false,
                 showBilling: false,
                 craftIdIdentity: {

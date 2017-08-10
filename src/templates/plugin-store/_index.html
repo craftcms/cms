@@ -38,6 +38,7 @@
 {% endset %}
 
 {% set content %}
+
 	<div :class="{hidden: !loading}">
 		Loading…
 	</div>
@@ -46,6 +47,8 @@
 		<router-view></router-view>
 	</div>
 
-	<global-modal :show.sync="showModal" :plugin="plugin"></global-modal>
+
+
+	<global-modal :show.sync="showModal" :plugin="plugin" :open-modal="{{ openModal|json_encode }}"></global-modal>
 
 {% endset %}

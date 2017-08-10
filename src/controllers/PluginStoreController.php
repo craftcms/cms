@@ -59,9 +59,11 @@ class PluginStoreController extends Controller
     public function actionIndex()
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
+        $openModal = Craft::$app->getSession()->get('pluginStore.openModal');
 
         return $this->renderTemplate('plugin-store/_index', [
-            'categories' => $this->categories
+            'categories' => $this->categories,
+            'openModal' => $openModal,
         ]);
     }
 
@@ -400,6 +402,8 @@ class PluginStoreController extends Controller
         $options = [
             'referrer' => $referrer
         ];
+
+        Craft::$app->getSession()->set('pluginStore.openModal', true);
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback('.Json::encode($options).');');
 
