@@ -9,6 +9,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where the PHP and DB versions the Craft Support widget passed to GitHub would not escape tildes (`~`), potentially having Markdown confuse them for strikethrough markup delimiters.
 - Fixed a bug where it was possible for users to be redirected to a 404 in the Control Panel after logging in. ([#1901](https://github.com/craftcms/cms/issues/1901))
+- Fixed a bug where users would get one extra try to login added to whatever the [maxInvalidLogins](https://craftcms.com/docs/config-settings#maxInvalidLogins) config setting was set to.
 
 ## 2.6.2988  2017-07-28
 
