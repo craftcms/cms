@@ -25,7 +25,7 @@ use yii\web\Response;
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
- * UpdaterController various update tasks in coordination with the Craft.Updater JS class.
+ * UpdaterController handles various update tasks in coordination with the Craft.Updater JS class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
