@@ -27,8 +27,8 @@
 				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 				<template v-if="identityMode == 'guest'">
-					<text-fieldtype id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName"></text-fieldtype>
-					<text-fieldtype id="email" placeholder="Email" v-model="guestIdentity.email"></text-fieldtype>
+					<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName"></text-field>
+					<text-field id="email" placeholder="Email" v-model="guestIdentity.email"></text-field>
 
 					<a class="btn submit" @click="showIdentity=false">Continue</a>
 				</template>
@@ -97,14 +97,14 @@
 			<a class="block-toggle" v-else @click="showBilling=false">Done</a>
 
 			<template v-if="showBilling">
-				<text-fieldtype label="Business Name" id="business-name" v-model="billing.businessName"></text-fieldtype>
-				<text-fieldtype label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-fieldtype>
-				<text-fieldtype label="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1"></text-fieldtype>
-				<text-fieldtype label="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2"></text-fieldtype>
-				<text-fieldtype label="Country" id="country" v-model="billing.businessCountry"></text-fieldtype>
-				<text-fieldtype label="State" id="state" v-model="billing.businessState"></text-fieldtype>
-				<text-fieldtype label="City" id="businessCity" v-model="billing.businessCity"></text-fieldtype>
-				<text-fieldtype label="Zip Code" id="zip-code" v-model="billing.businessZipCode"></text-fieldtype>
+				<text-field label="Business Name" id="business-name" v-model="billing.businessName"></text-field>
+				<text-field label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-field>
+				<text-field label="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1"></text-field>
+				<text-field label="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2"></text-field>
+				<text-field label="Country" id="country" v-model="billing.businessCountry"></text-field>
+				<text-field label="State" id="state" v-model="billing.businessState"></text-field>
+				<text-field label="City" id="businessCity" v-model="billing.businessCity"></text-field>
+				<text-field label="Zip Code" id="zip-code" v-model="billing.businessZipCode"></text-field>
 
 				<a class="btn submit" @click="showBilling=false">Continue</a>
 			</template>
@@ -132,13 +132,13 @@
 </template>
 
 <script>
-    import TextFieldtype from './fieldtypes/TextFieldtype';
+    import TextField from './fields/TextField';
     import CreditCard from './CreditCard';
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         components: {
-            TextFieldtype,
+            TextField,
             CreditCard,
         },
 

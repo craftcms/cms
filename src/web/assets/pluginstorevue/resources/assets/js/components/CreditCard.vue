@@ -3,7 +3,7 @@
 
         <div class="multitext">
             <div class="multitextrow">
-                <text-fieldtype id="card-number" placeholder="Card Number" v-model="value.number"></text-fieldtype>
+                <text-field id="card-number" placeholder="Card Number" v-model="value.number"></text-field>
             </div>
             <div class="multitextrow">
                 <text-input id="card-expiry" placeholder="MM/YY" v-model="value.expiry"></text-input>
@@ -14,14 +14,14 @@
 </template>
 
 <script>
-    import TextFieldtype from './fieldtypes/TextFieldtype';
+    import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
 
     export default {
         props: ['value'],
 
         components: {
-            TextFieldtype,
+            TextField,
             TextInput,
         },
     }
