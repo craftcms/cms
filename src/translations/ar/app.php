@@ -340,7 +340,6 @@ return [
     'Expired' => 'منتهي',
     'Expiry Date' => 'تاريخ الانتهاء',
     'Failed' => 'فشل',
-    'Failed task' => 'مهمة فاشلة',
     'Feed' => 'تغذية إخبارية',
     'Field Layout' => 'مخطط الحقل',
     'Field saved.' => 'تم حفظ الحقل.',

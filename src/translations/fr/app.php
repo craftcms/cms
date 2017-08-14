@@ -290,7 +290,6 @@ return [
     'Expired' => 'A expiré',
     'Expiry Date' => 'Date d’expiration',
     'Failed' => 'Échec',
-    'Failed task' => 'Échec de la tâche',
     'Feed' => 'Diffusion',
     'Field Layout' => 'Disposition des champs',
     'Field Settings' => 'Paramètres de champ',

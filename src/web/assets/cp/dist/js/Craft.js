@@ -1,4 +1,4 @@
-/*!   - 2017-07-28 */
+/*!   - 2017-08-14 */
 (function($){
 
 /** global: Craft */
@@ -8109,11 +8109,12 @@ Craft.CP = Garnish.Base.extend(
         fixedHeader: false,
         fixedNotifications: false,
 
-        taskInfo: null,
-        workingTaskInfo: null,
-        areTasksStalled: false,
-        trackTaskProgressTimeout: null,
-        taskProgressIcon: null,
+        enableQueue: true,
+        jobInfo: null,
+        displayedJobInfo: null,
+        displayedJobInfoUnchanged: 1,
+        trackJobProgressTimeout: null,
+        jobProgressIcon: null,
 
         $edition: null,
         upgradeModal: null,
@@ -8792,122 +8793,131 @@ Craft.CP = Garnish.Base.extend(
             }, this));
         },
 
-        runPendingTasks: function() {
-            if (Craft.runTasksAutomatically) {
-                Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus) {
+        runQueue: function() {
+            if (!this.enableQueue) {
+                return;
+            }
+
+            if (Craft.runQueueAutomatically) {
+                Craft.queueActionRequest('queue/run', $.proxy(function(response, textStatus) {
                     if (textStatus === 'success') {
-                        this.trackTaskProgress(false);
+                        this.trackJobProgress(false);
                     }
                 }, this));
             }
             else {
-                this.trackTaskProgress(false);
+                this.trackJobProgress(false);
             }
         },
 
-        trackTaskProgress: function(delay) {
-            // Ignore if we're already tracking tasks
-            if (this.trackTaskProgressTimeout) {
+        trackJobProgress: function(delay) {
+            // Ignore if we're already tracking jobs, or the queue is disabled
+            if (this.trackJobProgressTimeout || !this.enableQueue) {
                 return;
             }
 
             if (delay === true) {
-                // Determine the delay based on the age of the working task
-                if (this.workingTaskInfo) {
-                    delay = this.workingTaskInfo.age * 1000;
-
-                    // Keep it between .5 and 60 seconds
-                    delay = Math.min(60000, Math.max(500, delay));
-                }
-                else {
-                    // No working task. Try again in a minute.
-                    delay = 60000;
-                }
-            }
-
-            if (!delay) {
-                this._trackTaskProgressInternal();
-            }
-            else {
-                this.trackTaskProgressTimeout = setTimeout($.proxy(this, '_trackTaskProgressInternal'), delay);
+                // Determine the delay based on how long the displayed job info has remained unchanged
+                var timeout = Math.min(60000, this.displayedJobInfoUnchanged * 500);
+                this.trackJobProgressTimeout = setTimeout($.proxy(this, '_trackJobProgressInternal'), timeout);
+            } else {
+                this._trackJobProgressInternal();
             }
         },
 
-        _trackTaskProgressInternal: function() {
-            Craft.queueActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus) {
+        _trackJobProgressInternal: function() {
+            Craft.queueActionRequest('queue/get-job-info', $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    this.trackTaskProgressTimeout = null;
-                    this.setTaskInfo(response.tasks, true);
+                    this.trackJobProgressTimeout = null;
+                    this.setJobInfo(response, true);
 
-                    if (this.workingTaskInfo) {
+                    if (this.jobInfo.length) {
                         // Check again after a delay
-                        this.trackTaskProgress(true);
+                        this.trackJobProgress(true);
                     }
                 }
             }, this));
         },
 
-        setTaskInfo: function(taskInfo, animateIcon) {
-            this.taskInfo = taskInfo;
+        setJobInfo: function(jobInfo, animateIcon) {
+            if (!this.enableQueue) {
+                return;
+            }
 
-            // Update the "running" and "working" task info
-            this.workingTaskInfo = this.getWorkingTaskInfo();
-            this.areTasksStalled = (this.workingTaskInfo && this.workingTaskInfo.status === 'running' && this.workingTaskInfo.age >= Craft.CP.minStalledTaskAge);
-            this.updateTaskIcon(this.getRunningTaskInfo(), animateIcon);
+            this.jobInfo = jobInfo;
 
-            // Fire a setTaskInfo event
-            this.trigger('setTaskInfo');
+            // Update the displayed job info
+            var oldInfo = this.displayedJobInfo;
+            this.displayedJobInfo = this.getDisplayedJobInfo();
+
+            // Same old same old?
+            if (
+                oldInfo &&
+                this.displayedJobInfo &&
+                oldInfo.id === this.displayedJobInfo.id &&
+                oldInfo.progress === this.displayedJobInfo.progress &&
+                oldInfo.status === this.displayedJobInfo.status
+            ) {
+                this.displayedJobInfoUnchanged++;
+            } else {
+                // Reset the counter
+                this.displayedJobInfoUnchanged = 1;
+            }
+
+            this.updateJobIcon(animateIcon);
+
+            // Fire a setJobInfo event
+            this.trigger('setJobInfo');
         },
 
         /**
-         * Returns the first "running" task
+         * Returns info for the job that should be displayed in the CP sidebar
          */
-        getRunningTaskInfo: function() {
-            var statuses = ['running', 'error', 'pending'];
+        getDisplayedJobInfo: function() {
+            if (!this.enableQueue) {
+                return null;
+            }
+
+            // Set the status preference order
+            var statuses = [
+                Craft.CP.JOB_STATUS_RESERVED,
+                Craft.CP.JOB_STATUS_FAILED,
+                Craft.CP.JOB_STATUS_WAITING
+            ];
 
             for (var i = 0; i < statuses.length; i++) {
-                for (var j = 0; j < this.taskInfo.length; j++) {
-                    if (this.taskInfo[j].level == 0 && this.taskInfo[j].status === statuses[i]) {
-                        return this.taskInfo[j];
+                for (var j = 0; j < this.jobInfo.length; j++) {
+                    if (this.jobInfo[j].status === statuses[i]) {
+                        return this.jobInfo[j];
                     }
                 }
             }
         },
 
-        /**
-         * Returns the currently "working" task/subtask
-         */
-        getWorkingTaskInfo: function() {
-            for (var i = this.taskInfo.length - 1; i >= 0; i--) {
-                if (this.taskInfo[i].status === 'running') {
-                    return this.taskInfo[i];
-                }
+        updateJobIcon: function(animate) {
+            if (!this.enableQueue) {
+                return;
             }
-        },
 
-        updateTaskIcon: function(taskInfo, animate) {
-            if (taskInfo) {
-                if (!this.taskProgressIcon) {
-                    this.taskProgressIcon = new TaskProgressIcon();
+            if (this.displayedJobInfo) {
+                if (!this.jobProgressIcon) {
+                    this.jobProgressIcon = new JobProgressIcon();
                 }
 
-                if (this.areTasksStalled) {
-                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Stalled task'));
+                if (this.displayedJobInfo.status === Craft.CP.JOB_STATUS_RESERVED || this.displayedJobInfo.status === Craft.CP.JOB_STATUS_WAITING) {
+                    this.jobProgressIcon.hideFailMode();
+                    this.jobProgressIcon.setDescription(this.displayedJobInfo.description);
+                    this.jobProgressIcon.setProgress(this.displayedJobInfo.progress, animate);
                 }
-                else if (taskInfo.status === 'running' || taskInfo.status === 'pending') {
-                    this.taskProgressIcon.hideFailMode();
-                    this.taskProgressIcon.setDescription(taskInfo.description);
-                    this.taskProgressIcon.setProgress(taskInfo.progress, animate);
-                }
-                else if (taskInfo.status === 'error') {
-                    this.taskProgressIcon.showFailMode(Craft.t('app', 'Failed task'));
+                else if (this.displayedJobInfo.status === Craft.CP.JOB_STATUS_FAILED) {
+                    this.jobProgressIcon.showFailMode(Craft.t('app', 'Failed'));
                 }
             }
             else {
-                if (this.taskProgressIcon) {
-                    this.taskProgressIcon.hideFailMode();
-                    this.taskProgressIcon.complete();
-                    delete this.taskProgressIcon;
+                if (this.jobProgressIcon) {
+                    this.jobProgressIcon.hideFailMode();
+                    this.jobProgressIcon.complete();
+                    delete this.jobProgressIcon;
                 }
             }
         },
@@ -8929,20 +8939,19 @@ Craft.CP = Garnish.Base.extend(
         baseSubnavWidth: 30,
         notificationDuration: 2000,
 
-        minStalledTaskAge: 300, // 5 minutes
-
-        normalizeTaskStatus: function(status) {
-            return (status === 'running' && Craft.cp.areTasksStalled) ? 'stalled' : status;
-        }
+        JOB_STATUS_WAITING: 1,
+        JOB_STATUS_RESERVED: 2,
+        JOB_STATUS_DONE: 3,
+        JOB_STATUS_FAILED: 4
     });
 
 Craft.cp = new Craft.CP();
 
 
 /**
- * Task progress icon class
+ * Job progress icon class
  */
-var TaskProgressIcon = Garnish.Base.extend(
+var JobProgressIcon = Garnish.Base.extend(
     {
         $li: null,
         $a: null,
@@ -8977,7 +8986,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
         init: function() {
             this.$li = $('<li/>').appendTo(Craft.cp.$nav);
-            this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+            this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
             this.$label = $('<span class="label"></span>').appendTo(this.$a);
 
@@ -9017,14 +9026,14 @@ var TaskProgressIcon = Garnish.Base.extend(
         setProgress: function(progress, animate) {
             if (this._canvasSupported) {
                 if (animate) {
-                    this._animateArc(0, progress);
+                    this._animateArc(0, progress/100);
                 }
                 else {
-                    this._setArc(0, progress);
+                    this._setArc(0, progress/100);
                 }
             }
             else {
-                this._progressBar.setProgressPercentage(progress * 100);
+                this._progressBar.setProgressPercentage(progress);
             }
         },
 
@@ -9089,7 +9098,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
         toggleHud: function() {
             if (!this.hud) {
-                this.hud = new TaskProgressHUD();
+                this.hud = new QueueHUD();
             }
             else {
                 this.hud.toggle();
@@ -9097,7 +9106,7 @@ var TaskProgressIcon = Garnish.Base.extend(
         },
 
         _createCanvas: function(id, color) {
-            var $canvas = $('<canvas id="taskicon-' + id + '" width="' + this._canvasSize + '" height="' + this._canvasSize + '"/>').appendTo(this.$canvasContainer),
+            var $canvas = $('<canvas id="job-icon-' + id + '" width="' + this._canvasSize + '" height="' + this._canvasSize + '"/>').appendTo(this.$canvasContainer),
                 ctx = $canvas[0].getContext('2d');
 
             ctx.strokeStyle = color;
@@ -9148,82 +9157,82 @@ var TaskProgressIcon = Garnish.Base.extend(
         }
     });
 
-var TaskProgressHUD = Garnish.HUD.extend(
+var QueueHUD = Garnish.HUD.extend(
     {
-        tasksById: null,
-        completedTasks: null,
+        jobsById: null,
+        completedJobs: null,
         updateViewProxy: null,
 
         init: function() {
-            this.tasksById = {};
-            this.completedTasks = [];
+            this.jobsById = {};
+            this.completedJobs = [];
             this.updateViewProxy = $.proxy(this, 'updateView');
 
-            this.base(Craft.cp.taskProgressIcon.$a);
+            this.base(Craft.cp.jobProgressIcon.$a);
 
-            this.$main.attr('id', 'tasks-hud');
+            this.$main.attr('id', 'queue-hud');
         },
 
         onShow: function() {
-            Craft.cp.on('setTaskInfo', this.updateViewProxy);
+            Craft.cp.on('setJobInfo', this.updateViewProxy);
             this.updateView();
             this.base();
         },
 
         onHide: function() {
-            Craft.cp.off('setTaskInfo', this.updateViewProxy);
+            Craft.cp.off('setJobInfo', this.updateViewProxy);
 
-            // Clear out any completed tasks
-            if (this.completedTasks.length) {
-                for (var i = 0; i < this.completedTasks.length; i++) {
-                    this.completedTasks[i].destroy();
+            // Clear out any completed jobs
+            if (this.completedJobs.length) {
+                for (var i = 0; i < this.completedJobs.length; i++) {
+                    this.completedJobs[i].destroy();
                 }
 
-                this.completedTasks = [];
+                this.completedJobs = [];
             }
 
             this.base();
         },
 
         updateView: function() {
-            // First remove any tasks that have completed
-            var newTaskIds = [];
+            // First remove any jobs that have completed
+            var newJobIds = [];
 
             var i;
 
-            if (Craft.cp.taskInfo) {
-                for (i = 0; i < Craft.cp.taskInfo.length; i++) {
-                    newTaskIds.push(parseInt(Craft.cp.taskInfo[i].id));
+            if (Craft.cp.jobInfo) {
+                for (i = 0; i < Craft.cp.jobInfo.length; i++) {
+                    newJobIds.push(parseInt(Craft.cp.jobInfo[i].id));
                 }
             }
 
-            for (var id in this.tasksById) {
-                if (!this.tasksById.hasOwnProperty(id)) {
+            for (var id in this.jobsById) {
+                if (!this.jobsById.hasOwnProperty(id)) {
                     continue;
                 }
-                if (!Craft.inArray(parseInt(id), newTaskIds)) {
-                    this.tasksById[id].complete();
-                    this.completedTasks.push(this.tasksById[id]);
-                    delete this.tasksById[id];
+                if (!Craft.inArray(parseInt(id), newJobIds)) {
+                    this.jobsById[id].complete();
+                    this.completedJobs.push(this.jobsById[id]);
+                    delete this.jobsById[id];
                 }
             }
 
-            // Now display the tasks that are still around
-            if (Craft.cp.taskInfo && Craft.cp.taskInfo.length) {
-                for (i = 0; i < Craft.cp.taskInfo.length; i++) {
-                    var info = Craft.cp.taskInfo[i];
+            // Now display the jobs that are still around
+            if (Craft.cp.jobInfo && Craft.cp.jobInfo.length) {
+                for (i = 0; i < Craft.cp.jobInfo.length; i++) {
+                    var info = Craft.cp.jobInfo[i];
 
-                    if (this.tasksById[info.id]) {
-                        this.tasksById[info.id].updateStatus(info);
+                    if (this.jobsById[info.id]) {
+                        this.jobsById[info.id].updateStatus(info);
                     }
                     else {
-                        this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
+                        this.jobsById[info.id] = new QueueHUD.Job(this, info);
 
-                        // Place it before the next already known task
+                        // Place it before the next already known job
                         var placed = false;
-                        for (var j = i + 1; j < Craft.cp.taskInfo.length; j++) {
-                            if (this.tasksById[Craft.cp.taskInfo[j].id]) {
-                                this.tasksById[info.id].$container.insertBefore(this.tasksById[Craft.cp.taskInfo[j].id].$container);
+                        for (var j = i + 1; j < Craft.cp.jobInfo.length; j++) {
+                            if (this.jobsById[Craft.cp.jobInfo[j].id]) {
+                                this.jobsById[info.id].$container.insertBefore(this.jobsById[Craft.cp.jobInfo[j].id].$container);
                                 placed = true;
                                 break;
                             }
@@ -9233,10 +9242,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
                             // Place it before the resize <object> if there is one
                             var $object = this.$main.children('object');
                             if ($object.length) {
-                                this.tasksById[info.id].$container.insertBefore($object);
+                                this.jobsById[info.id].$container.insertBefore($object);
                             }
                             else {
-                                this.tasksById[info.id].$container.appendTo(this.$main);
+                                this.jobsById[info.id].$container.appendTo(this.$main);
                             }
                         }
                     }
@@ -9248,11 +9257,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
         }
     });
 
-TaskProgressHUD.Task = Garnish.Base.extend(
+QueueHUD.Job = Garnish.Base.extend(
     {
         hud: null,
         id: null,
-        level: null,
         description: null,
 
         status: null,
@@ -9268,96 +9276,82 @@ TaskProgressHUD.Task = Garnish.Base.extend(
             this.hud = hud;
 
             this.id = info.id;
-            this.level = info.level;
             this.description = info.description;
 
-            this.$container = $('<div class="task"/>');
-            this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
-            this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
+            this.$container = $('<div class="job"/>');
+            this.$statusContainer = $('<div class="job-status"/>').appendTo(this.$container);
+            this.$descriptionContainer = $('<div class="job-description"/>').appendTo(this.$container).text(info.description);
 
-            this.$container.data('task', this);
-
-            if (this.level != 0) {
-                this.$container.css('padding-' + Craft.left, 24 + (this.level * 24));
-                $('<div class="indent" data-icon="' + (Craft.orientation === 'ltr' ? 'rarr' : 'larr') + '"/>').appendTo(this.$descriptionContainer);
-            }
+            this.$container.data('job', this);
 
             this.updateStatus(info);
         },
 
         updateStatus: function(info) {
-            if (this.status !== (this.status = Craft.CP.normalizeTaskStatus(info.status))) {
+            if (this.status !== (this.status = info.status)) {
                 this.$statusContainer.empty();
 
                 switch (this.status) {
-                    case 'pending': {
+                    case Craft.CP.JOB_STATUS_WAITING: {
                         this.$statusContainer.text(Craft.t('app', 'Pending'));
                         break;
                     }
-                    case 'running': {
+                    case Craft.CP.JOB_STATUS_RESERVED: {
                         this._progressBar = new Craft.ProgressBar(this.$statusContainer);
                         this._progressBar.showProgressBar();
                         break;
                     }
-                    case 'stalled':
-                    case 'error': {
-                        $('<span class="error">' + (this.status === 'stalled' ? Craft.t('app', 'Stalled') : Craft.t('app', 'Failed')) + '</span>').appendTo(this.$statusContainer);
+                    case Craft.CP.JOB_STATUS_FAILED: {
+                        $('<span/>', {
+                            'class': 'error',
+                            text: Craft.t('app', 'Failed'),
+                            title: info.error
+                        }).appendTo(this.$statusContainer);
 
-                        if (this.level == 0) {
-                            var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
-                            $(
-                                '<div class="menu">' +
-                                '<ul>' +
-                                '<li><a data-action="rerun">' + Craft.t('app', 'Try again') + '</a></li>' +
-                                '<li><a data-action="cancel">' + Craft.t('app', 'Cancel') + '</a></li>' +
-                                '</ul>' +
-                                '</div>'
-                            ).appendTo(this.$statusContainer);
+                        var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
+                        $(
+                            '<div class="menu">' +
+                            '<ul>' +
+                            '<li><a data-action="retry">' + Craft.t('app', 'Try again') + '</a></li>' +
+                            '<li><a data-action="release">' + Craft.t('app', 'Cancel') + '</a></li>' +
+                            '</ul>' +
+                            '</div>'
+                        ).appendTo(this.$statusContainer);
 
-                            new Garnish.MenuBtn($actionBtn, {
-                                onOptionSelect: $.proxy(this, 'performErrorAction')
-                            });
-                        }
+                        new Garnish.MenuBtn($actionBtn, {
+                            onOptionSelect: $.proxy(this, 'performErrorAction')
+                        });
 
                         break;
                     }
                 }
             }
 
-            if (this.status === 'running') {
-                this._progressBar.setProgressPercentage(info.progress * 100);
+            if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
+                this._progressBar.setProgressPercentage(info.progress);
             }
         },
 
         performErrorAction: function(option) {
-            // Whatever happens, let's remove any following subtasks
-            var $nextTaskContainers = this.$container.nextAll();
-
-            for (var i = 0; i < $nextTaskContainers.length; i++) {
-                var nextTask = $($nextTaskContainers[i]).data('task');
-
-                if (nextTask && nextTask.level != 0) {
-                    nextTask.destroy();
-                }
-                else {
-                    break;
-                }
-            }
-
             // What option did they choose?
             switch ($(option).data('action')) {
-                case 'rerun': {
-                    Craft.postActionRequest('tasks/rerun-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
+                case 'retry': {
+                    // Update the icon
+                    Craft.cp.displayedJobInfo.status = Craft.CP.JOB_STATUS_WAITING;
+                    Craft.cp.displayedJobInfo.progress = 0;
+                    Craft.cp.updateJobIcon(false);
+
+                    Craft.postActionRequest('queue/retry', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackTaskProgress(false);
+                            Craft.cp.trackJobProgress(false);
                         }
                     }, this));
                     break;
                 }
-                case 'cancel': {
-                    Craft.postActionRequest('tasks/delete-task', {taskId: this.id}, $.proxy(function(response, textStatus) {
+                case 'release': {
+                    Craft.postActionRequest('queue/release', {id: this.id}, $.proxy(function(response, textStatus) {
                         if (textStatus === 'success') {
-                            Craft.cp.trackTaskProgress(false);
+                            Craft.cp.trackJobProgress(false);
                         }
                     }, this));
                 }
@@ -9370,8 +9364,8 @@ TaskProgressHUD.Task = Garnish.Base.extend(
         },
 
         destroy: function() {
-            if (this.hud.tasksById[this.id]) {
-                delete this.hud.tasksById[this.id];
+            if (this.hud.jobsById[this.id]) {
+                delete this.hud.jobsById[this.id];
             }
 
             this.$container.remove();

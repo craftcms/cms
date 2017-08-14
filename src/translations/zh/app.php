@@ -339,7 +339,6 @@ return [
     'Expired' => '已过期',
     'Expiry Date' => '到期日',
     'Failed' => '失败',
-    'Failed task' => '任务失败',
     'Feed' => 'RSS订阅',
     'Field Layout' => '字段布局',
     'Field saved.' => '字段已保存。',

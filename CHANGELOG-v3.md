@@ -4,12 +4,29 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Craft’s tasks implementation has been replaced with a queue, based on the [Yii 2 Queue Extension](https://github.com/yiisoft/yii2-queue). ([#1910](https://github.com/craftcms/cms/issues/1910))
+- The “Failed” message in the queue HUD in the Control Panel now shows the full error message as alt text. ([#855](https://github.com/craftcms/cms/issues/855))
+- Added the `instance of()` Twig test.
 - Added `craft\base\FlysystemVolume`, which replaces `craft\base\Volume` as the new base class for Flysystem-based volumes.
 - Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
+- Added `craft\controllers\QueueController`.
+- Added `craft\queue\BaseJob`, a base class for queue jobs that adds support for descriptions and progress.
+- Added `craft\queue\Command`, which provides `queue/run`, `queue/listen`, and `queue/info` console commands.
+- Added `craft\queue\InfoAction`.
+- Added `craft\queue\JobInterface`, an interface for queue jobs that want to support descriptions and progress.
+- Added `craft\queue\jobs\DeleteStaleTemplateCaches`, replacing `craft\tasks\DeleteStaleTemplateCaches`.
+- Added `craft\queue\FindAndReplace`, replacing `craft\tasks\FindAndReplace`.
+- Added `craft\queue\GeneratePendingTransforms`, replacing `craft\tasks\GeneratePendingTransforms`.
+- Added `craft\queue\LocalizeRelations`, replacing `craft\tasks\LocalizeRelations`.
+- Added `craft\queue\UpdateElementSlugsAndUris`, replacing `craft\tasks\UpdateElementSlugsAndUris`.
+- Added `craft\queue\Queue`, a built-in queue driver.
+- Added `craft\queue\QueueInterface`, an interface for queue drivers that want to support the queue UI in the Control Panel.
 - Added `craft\services\Composer::getJsonPath()`.
 - Added `craft\services\Volumes::getVolumeByHandle()`.
 
 ### Changed
+- Renamed the `runTasksAutomatically` config setting to `runQueueAutomatically`.
+- Logs that occur during `queue` requests now get saved in `storage/logs/queue.log`.
 - The updater now ensures it can find `composer.json` before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1883](https://github.com/craftcms/cms/issues/1883))
 - The updater now ensures that the `COMPOSER_HOME`, `HOME` (\*nix), or `APPDATA` (Windows) environment variable is set before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1890](https://github.com/craftcms/cms/issues/1890#issuecomment-319715460)) 
 - `craft\mail\Mailer::send()` now processes Twig code in the email message before parsing it as Markdown, if the message was composed via `craft\mail\Mailer::composeFromKey()`. ([#1895](https://github.com/craftcms/cms/pull/1895))
@@ -23,9 +40,19 @@ Craft CMS 3.0 Working Changelog
 - Looping through element queries directly is now deprecated. Use the `all()` function to fetch the query results before looping over them. ([#1902](https://github.com/craftcms/cms/issues/1902))
 
 ### Removed
+- Removed `craft\base\Task`.
+- Removed `craft\base\TaskInterface`.
+- Removed `craft\base\TaskTrait`.
+- Removed `craft\controllers\TasksController`.
+- Removed `craft\db\TaskQuery`.
 - Removed `craft\events\MailFailureEvent`.
+- Removed `craft\events\TaskEvent`.
 - Removed `craft\mail\Mailer::EVENT_SEND_MAIL_FAILURE`.
+- Removed `craft\records\Task`.
+- Removed `craft\services\Tasks`.
+- Removed `craft\tasks\ResaveAllElements`.
 - Removed `craft\web\Request::getQueryParamsWithoutPath()`.
+- Removed `craft\web\twig\variables\Tasks`, which provided the deprecated `craft.tasks` template variable.
 
 ### Fixed
 - Fixed a migration error that could occur if `composer.json` didn’t have any custom `repositories` defined.

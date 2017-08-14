@@ -39,7 +39,6 @@ use yii\di\ServiceLocator;
  * @property Routes          $routes
  * @property Sections        $sections
  * @property SystemSettings  $systemSettings
- * @property Tasks           $tasks
  * @property UserSession     $session
  * @property I18n            $i18n
  * @property Io              $io
@@ -114,7 +113,6 @@ class CraftVariable extends ServiceLocator
             'request' => Request::class,
             'sections' => Sections::class,
             'systemSettings' => SystemSettings::class,
-            'tasks' => Tasks::class,
             'session' => UserSession::class,
         ];
 

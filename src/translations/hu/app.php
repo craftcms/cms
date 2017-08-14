@@ -340,7 +340,6 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'Expired' => 'Lejárt',
     'Expiry Date' => 'Lejárati idő',
     'Failed' => 'Sikertelen',
-    'Failed task' => 'Sikertelen folyamat',
     'Feed' => 'Feed',
     'Field Layout' => 'Mező elrendezése',
     'Field saved.' => 'Mező elmentve.',

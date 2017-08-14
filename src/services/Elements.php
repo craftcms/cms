@@ -32,11 +32,11 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\FindAndReplace;
+use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
-use craft\tasks\FindAndReplace;
-use craft\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -613,22 +613,21 @@ class Elements extends Component
      * @param ElementInterface $element           The element to update.
      * @param bool             $updateOtherSites  Whether the element’s other sites should also be updated.
      * @param bool             $updateDescendants Whether the element’s descendants should also be updated.
-     * @param bool             $asTask            Whether the element’s slug and URI should be updated via a background task.
+     * @param bool             $queue             Whether the element’s slug and URI should be updated via a job in the queue.
      *
      * @return void
      */
-    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $asTask = false)
+    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
         /** @var Element $element */
-        if ($asTask) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => UpdateElementSlugsAndUris::class,
+        if ($queue) {
+            Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
                 'elementType' => get_class($element),
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
-            ]);
+            ]));
 
             return;
         }
@@ -707,11 +706,11 @@ class Elements extends Component
      *
      * @param ElementInterface $element          The element whose descendants should be updated.
      * @param bool             $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param bool             $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param bool             $queue            Whether the descendants’ slugs and URIs should be updated via a job in the queue.
      *
      * @return void
      */
-    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $asTask = false)
+    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
         /** @var Element $element */
         /** @var ElementQuery $query */
@@ -722,18 +721,17 @@ class Elements extends Component
             ->enabledForSite(false)
             ->siteId($element->siteId);
 
-        if ($asTask) {
+        if ($queue) {
             $childIds = $query->ids();
 
             if (!empty($childIds)) {
-                Craft::$app->getTasks()->queueTask([
-                    'type' => UpdateElementSlugsAndUris::class,
+                Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
                     'elementId' => $childIds,
                     'elementType' => get_class($element),
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
-                ]);
+                ]));
             }
         } else {
             $children = $query->all();
@@ -832,20 +830,19 @@ class Elements extends Component
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "{{$refHandle}:";
+                $queue = Craft::$app->getQueue();
 
-                Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::class,
+                $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.':',
                     'replace' => $refTagPrefix.$prevailingElementId.':',
-                ]);
+                ]));
 
-                Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::class,
+                $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.'}',
                     'replace' => $refTagPrefix.$prevailingElementId.'}',
-                ]);
+                ]));
             }
 
             // Fire an 'afterMergeElements' event

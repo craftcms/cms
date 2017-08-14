@@ -22,11 +22,13 @@ use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
 use craft\models\Info;
+use craft\queue\QueueInterface;
 use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
 use yii\mutex\FileMutex;
+use yii\queue\db\Queue;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
@@ -69,6 +71,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
  * @property \craft\services\Path            $path               The path service
  * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property Queue|QueueInterface            $queue              The job queue
  * @property \craft\services\Relations       $relations          The relations service
  * @property \craft\services\Resources       $resources          The resources service
  * @property \craft\services\Routes          $routes             The routes service
@@ -80,7 +83,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\SystemMessages  $systemMessages     The system email messages service
  * @property \craft\services\SystemSettings  $systemSettings     The system settings service
  * @property \craft\services\Tags            $tags               The tags service
- * @property \craft\services\Tasks           $tasks              The tasks service
  * @property \craft\services\TemplateCaches  $templateCaches     The template caches service
  * @property \craft\services\Tokens          $tokens             The tokens service
  * @property \craft\services\Updates         $updates            The updates service
@@ -952,6 +954,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the queue service.
+     *
+     * @return Queue|QueueInterface The queue service
+     */
+    public function getQueue()
+    {
+        /** @var WebApplication|ConsoleApplication $this */
+        return $this->get('queue');
+    }
+
+    /**
      * Returns the relations service.
      *
      * @return \craft\services\Relations The relations service
@@ -1048,17 +1061,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('tags');
-    }
-
-    /**
-     * Returns the tasks service.
-     *
-     * @return \craft\services\Tasks The tasks service
-     */
-    public function getTasks()
-    {
-        /** @var WebApplication|ConsoleApplication $this */
-        return $this->get('tasks');
     }
 
     /**
