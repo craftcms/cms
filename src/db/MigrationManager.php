@@ -336,6 +336,10 @@ class MigrationManager extends Component
      */
     public function getMigrationHistory(int $limit = 0): array
     {
+        if (Craft::$app->getIsInstalled() == false) {
+            return [];
+        }
+
         $query = $this->_createMigrationQuery();
         if ($limit !== 0) {
             $query->limit($limit);
