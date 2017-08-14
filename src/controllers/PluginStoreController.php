@@ -450,6 +450,8 @@ class PluginStoreController extends Controller
 
     public function actionCraftData()
     {
+        $this->requireAcceptsJson();
+
         $data = Craft::$app->getSession()->get('pluginStore.craftData');
 
         if(!$data) {
@@ -459,6 +461,15 @@ class PluginStoreController extends Controller
         }
 
         $data['craftId'] = Craft::$app->getPluginStore()->getCraftIdAccount();
+
+        $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
+
+        if($etResponse) {
+            $upgradeInfo = $etResponse->data;
+
+            $data['countries'] = $upgradeInfo->countries;
+            $data['states'] = $upgradeInfo->states;
+        }
 
         return $this->asJson($data);
     }

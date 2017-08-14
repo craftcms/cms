@@ -120,8 +120,12 @@
 								<text-input placeholder="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2" />
 							</div>
 							<div class="multitextrow">
-								<text-input placeholder="Country" id="country" v-model="billing.businessCountry" />
-								<text-input placeholder="State" id="state" v-model="billing.businessState" />
+								<div class="text">
+									<select-input v-model="billing.businessCountry" :options="countryOptions" />
+								</div>
+								<div class="text">
+									<select-input v-model="billing.businessState" :options="stateOptions" />
+								</div>
 							</div>
 							<div class="multitextrow">
 								<text-input placeholder="City" id="businessCity" v-model="billing.businessCity" />
@@ -159,6 +163,7 @@
 <script>
     import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
+    import SelectInput from './inputs/SelectInput';
     import CreditCard from './CreditCard';
     import {mapGetters, mapActions} from 'vuex'
 
@@ -167,12 +172,15 @@
             TextField,
             TextInput,
             CreditCard,
+            SelectInput,
         },
 
         computed: {
             ...mapGetters({
                 cartTotal: 'cartTotal',
                 craftIdAccount: 'craftIdAccount',
+                countries: 'countries',
+                states: 'states',
             }),
 			readyToPay() {
                 if(!this.showIdentity && !this.showPaymentMethod && !this.showBilling) {
@@ -192,6 +200,30 @@
                     return this.craftIdAccount;
 				}
                 return this.guestBilling;
+			},
+			countryOptions() {
+                let options = [];
+
+                this.countries.forEach(country => {
+                    options.push({
+						label: country.name,
+						value: country.iso,
+					});
+				})
+
+				return options;
+			},
+			stateOptions() {
+                let options = [];
+
+                this.states.forEach(state => {
+                    options.push({
+						label: state.name,
+						value: state.abbr,
+					});
+				})
+
+				return options;
 			}
         },
 

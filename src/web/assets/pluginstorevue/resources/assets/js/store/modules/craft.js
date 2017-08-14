@@ -15,6 +15,12 @@ const getters = {
     craftIdAccount: state => {
         return state.craftData.craftId
     },
+    countries: state => {
+        return state.craftData.countries;
+    },
+    states: state => {
+        return state.craftData.states;
+    }
 }
 
 const actions = {
