@@ -27,8 +27,8 @@
 				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 				<template v-if="identityMode == 'guest'">
-					<text-fieldtype label="Full Name" id="fullName" placeholder="John Smith" v-model="guestIdentity.fullName"></text-fieldtype>
-					<text-fieldtype label="Email" id="email" placeholder="john@example.com" v-model="guestIdentity.email"></text-fieldtype>
+					<text-fieldtype id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName"></text-fieldtype>
+					<text-fieldtype id="email" placeholder="Email" v-model="guestIdentity.email"></text-fieldtype>
 
 					<a class="btn submit" @click="showIdentity=false">Continue</a>
 				</template>
@@ -99,12 +99,12 @@
 			<template v-if="showBilling">
 				<text-fieldtype label="Business Name" id="business-name" v-model="billing.businessName"></text-fieldtype>
 				<text-fieldtype label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-fieldtype>
-				<text-fieldtype label="Address Line 1" id="address-line-1" v-model="billing.addressLine1"></text-fieldtype>
-				<text-fieldtype label="Address Line 2" id="address-line-2" v-model="billing.addressLine2"></text-fieldtype>
-				<text-fieldtype label="Country" id="country" v-model="billing.country"></text-fieldtype>
-				<text-fieldtype label="State" id="state" v-model="billing.state"></text-fieldtype>
-				<text-fieldtype label="City" id="city" v-model="billing.city"></text-fieldtype>
-				<text-fieldtype label="Zip Code" id="zip-code" v-model="billing.zipCode"></text-fieldtype>
+				<text-fieldtype label="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1"></text-fieldtype>
+				<text-fieldtype label="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2"></text-fieldtype>
+				<text-fieldtype label="Country" id="country" v-model="billing.businessCountry"></text-fieldtype>
+				<text-fieldtype label="State" id="state" v-model="billing.businessState"></text-fieldtype>
+				<text-fieldtype label="City" id="businessCity" v-model="billing.businessCity"></text-fieldtype>
+				<text-fieldtype label="Zip Code" id="zip-code" v-model="billing.businessZipCode"></text-fieldtype>
 
 				<a class="btn submit" @click="showBilling=false">Continue</a>
 			</template>
@@ -112,10 +112,10 @@
 				<ul>
 					<li>{{ billing.businessName }}</li>
 					<li>{{ billing.businessTaxId }}</li>
-					<li>{{ billing.addressLine1 }}</li>
-					<li>{{ billing.addressLine2 }}</li>
-					<li><span v-if="billing.city">{{ billing.city }}, </span>{{ billing.state }} {{ billing.zipCode }}</li>
-					<li>{{ billing.country }}</li>
+					<li>{{ billing.businessAddressLine1 }}</li>
+					<li>{{ billing.businessAddressLine2 }}</li>
+					<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
+					<li>{{ billing.businessCountry }}</li>
 				</ul>
 			</template>
 		</div>
@@ -159,12 +159,18 @@
 			},
             connectCraftIdUrl() {
                 return Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
+			},
+			billing() {
+                if(this.identityMode == 'craftid' && this.craftIdAccount) {
+                    return this.craftIdAccount;
+				}
+                return this.guestBilling;
 			}
         },
 
         data() {
             return {
-                identityMode: 'craftid',
+                identityMode: 'guest',
                 paymentMode: 'existingCard',
                 showIdentity: true,
                 showPaymentMethod: false,
@@ -174,19 +180,19 @@
                     email: "",
                 },
                 creditCard: {
-                    number: 'XXXX XXXX XXXX XXXX',
-                    expiry: '01/20',
-                    cvc: '123',
+                    number: '',
+                    expiry: '',
+                    cvc: '',
                 },
-                billing: {
-                    businessName: 'Pixel & Tonic',
-                    businessTaxId: '123456789',
-                    addressLine1: 'address line 1',
-                    addressLine2: 'address line 2',
-                    country: 'USA',
-                    state: 'OR',
-                    city: 'Bend',
-                    zipCode: '97700',
+                guestBilling: {
+                    businessName: '',
+                    businessTaxId: '',
+                    businessAddressLine1: '',
+                    businessAddressLine2: '',
+                    businessCountry: '',
+                    businessState: '',
+                    businessCity: '',
+                    businessZipCode: '',
                 }
             }
         }
