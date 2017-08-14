@@ -33,7 +33,6 @@
     "Enter the name of the folder",
     "Enter your password to continue.",
     "Enter your password to log back in.",
-    "Failed task",
     "Failed",
     "Handle",
     "Heading",
@@ -100,12 +99,18 @@
 ]) %}
 
 
+{# The CP only supports queue components that implement QueueInterface #}
+{% set queue = craft.app.queue %}
 {% js %}
-    Craft.cp.setTaskInfo({{ craft.app.tasks.getTaskInfo()|json_encode|raw }}, false);
-    {% if craft.app.tasks.getIsTaskRunning() %}
-        Craft.cp.trackTaskProgress(true);
-    {% elseif craft.app.tasks.areTasksPending() %}
-        Craft.cp.runPendingTasks();
+    {% if queue is instance of("craft\\queue\\QueueInterface") %}
+        Craft.cp.setJobInfo({{ queue.getJobInfo(100)|json_encode|raw }}, false);
+        {% if queue.getHasReservedJobs() %}
+            Craft.cp.trackJobProgress(true);
+        {% elseif queue.getHasWaitingJobs() %}
+            Craft.cp.runQueue();
+        {% endif %}
+    {% else %}
+        Craft.cp.showQueue = false;
     {% endif %}
 {% endjs %}
 

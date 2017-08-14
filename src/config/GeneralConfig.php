@@ -557,15 +557,14 @@ class GeneralConfig extends Object
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
-     * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
      *
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
      *
-     * If disabled, an alternate task running trigger *must* be set up separately.
+     * If disabled, an alternate queue runner *must* be set up separately.
      */
-    public $runTasksAutomatically = true;
+    public $runQueueAutomatically = true;
     /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
      *

@@ -16,7 +16,7 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
-use craft\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -445,11 +445,10 @@ class UtilitiesController extends Controller
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => FindAndReplaceTask::class,
+            Craft::$app->getQueue()->push(new FindAndReplace([
                 'find' => $params['find'],
-                'replace' => $params['replace']
-            ]);
+                'replace' => $params['replace'],
+            ]));
         }
 
         return $this->asJson([

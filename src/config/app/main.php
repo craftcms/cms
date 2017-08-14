@@ -71,6 +71,9 @@ return [
         'plugins' => [
             'class' => craft\services\Plugins::class,
         ],
+        'queue' => [
+            'class' => craft\queue\Queue::class,
+        ],
         'relations' => [
             'class' => craft\services\Relations::class,
         ],
@@ -94,9 +97,6 @@ return [
         ],
         'tags' => [
             'class' => craft\services\Tags::class,
-        ],
-        'tasks' => [
-            'class' => craft\services\Tasks::class,
         ],
         'templateCaches' => [
             'class' => craft\services\TemplateCaches::class,
