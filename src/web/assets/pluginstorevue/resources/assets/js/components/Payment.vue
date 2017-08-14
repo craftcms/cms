@@ -97,14 +97,39 @@
 			<a class="block-toggle" v-else @click="showBilling=false">Done</a>
 
 			<template v-if="showBilling">
-				<text-field label="Business Name" id="business-name" v-model="billing.businessName"></text-field>
-				<text-field label="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId"></text-field>
-				<text-field label="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1"></text-field>
-				<text-field label="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2"></text-field>
-				<text-field label="Country" id="country" v-model="billing.businessCountry"></text-field>
-				<text-field label="State" id="state" v-model="billing.businessState"></text-field>
-				<text-field label="City" id="businessCity" v-model="billing.businessCity"></text-field>
-				<text-field label="Zip Code" id="zip-code" v-model="billing.businessZipCode"></text-field>
+				<div class="field">
+					<div class="input">
+						<div class="multitext">
+							<div class="multitextrow">
+								<text-input placeholder="Business Name" id="business-name" v-model="billing.businessName" />
+							</div>
+							<div class="multitextrow">
+								<text-input placeholder="Business Tax ID" id="business-tax-id" v-model="billing.businessTaxId" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="field">
+					<div class="input">
+						<div class="multitext">
+							<div class="multitextrow">
+								<text-input placeholder="Address Line 1" id="address-line-1" v-model="billing.businessAddressLine1" />
+							</div>
+							<div class="multitextrow">
+								<text-input placeholder="Address Line 2" id="address-line-2" v-model="billing.businessAddressLine2" />
+							</div>
+							<div class="multitextrow">
+								<text-input placeholder="Country" id="country" v-model="billing.businessCountry" />
+								<text-input placeholder="State" id="state" v-model="billing.businessState" />
+							</div>
+							<div class="multitextrow">
+								<text-input placeholder="City" id="businessCity" v-model="billing.businessCity" />
+								<text-input placeholder="Zip Code" id="zip-code" v-model="billing.businessZipCode" />
+							</div>
+						</div>
+					</div>
+				</div>
 
 				<a class="btn submit" @click="showBilling=false">Continue</a>
 			</template>
@@ -133,12 +158,14 @@
 
 <script>
     import TextField from './fields/TextField';
+    import TextInput from './inputs/TextInput';
     import CreditCard from './CreditCard';
     import {mapGetters, mapActions} from 'vuex'
 
     export default {
         components: {
             TextField,
+            TextInput,
             CreditCard,
         },
 
