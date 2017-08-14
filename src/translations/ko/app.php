@@ -340,7 +340,6 @@ return [
     'Expired' => '만료됨',
     'Expiry Date' => '만료 날짜',
     'Failed' => '실패',
-    'Failed task' => '실패한 작업',
     'Feed' => '피드',
     'Field Layout' => '필드 레이아웃',
     'Field saved.' => '필드가 저장되었습니다.',

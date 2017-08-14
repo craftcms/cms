@@ -288,7 +288,6 @@ return [
     'Expired' => 'Expired',
     'Expiry Date' => 'Expiry Date',
     'Failed' => 'Failed',
-    'Failed task' => 'Failed task',
     'Feed' => 'Feed',
     'Field Layout' => 'Field Layout',
     'Field Settings' => 'Field Settings',

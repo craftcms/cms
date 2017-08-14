@@ -340,7 +340,6 @@ return [
     'Expired' => 'פג תוקף',
     'Expiry Date' => 'תאריך תפוגה',
     'Failed' => 'נכשל',
-    'Failed task' => 'המשימה נכשלה',
     'Feed' => 'פיד',
     'Field Layout' => 'שדה התבנית',
     'Field saved.' => 'השדה נשמר',
