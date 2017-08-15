@@ -489,7 +489,7 @@ class Users extends Component
                 $userRecord->invalidLoginCount++;
 
                 // Was that one bad password too many?
-                if ($userRecord->invalidLoginCount > $maxInvalidLogins) {
+                if ($userRecord->invalidLoginCount >= $maxInvalidLogins) {
                     $userRecord->locked = true;
                     $userRecord->invalidLoginCount = null;
                     $userRecord->invalidLoginWindowStart = null;
