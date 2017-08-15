@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.24 - 2017-08-15
 
 ### Added
 - Craft’s tasks implementation has been replaced with a queue, based on the [Yii 2 Queue Extension](https://github.com/yiisoft/yii2-queue). ([#1910](https://github.com/craftcms/cms/issues/1910))
