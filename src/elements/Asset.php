@@ -717,7 +717,8 @@ class Asset extends Element
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
-        return FileHelper::getMimeTypeByExtension($this->filename);
+        $mimeType = FileHelper::getMimeTypeByExtension($this->filename);
+        return ($mimeType) ? $mimeType: "application/octet-stream";
     }
 
     /**
