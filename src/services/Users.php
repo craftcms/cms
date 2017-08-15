@@ -67,6 +67,11 @@ class Users extends Component
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
 
     /**
+     * @event UserEvent The event that is triggered after a user is locked.
+     */
+    const EVENT_AFTER_LOCK_USER = 'afterLockUser';
+
+    /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
      * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
@@ -507,6 +512,13 @@ class Users extends Component
 
         // Update the User model too
         $user->lastInvalidLoginDate = $now;
+
+        if ($user->locked && $this->hasEventHandlers(self::EVENT_AFTER_LOCK_USER)) {
+            // Fire an 'afterLockUser' event
+            $this->trigger(self::EVENT_AFTER_LOCK_USER, new UserEvent([
+                'user' => $user,
+            ]));
+        }
     }
 
     /**
