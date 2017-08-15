@@ -135,6 +135,8 @@
 					</div>
 				</div>
 
+				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
+
 				<a class="btn submit" @click="showBilling=false">Continue</a>
 			</template>
 			<template v-else>
@@ -145,6 +147,7 @@
 					<li>{{ billing.businessAddressLine2 }}</li>
 					<li><span v-if="billing.businessCity">{{ billing.businessCity }}, </span>{{ billing.businessState }} {{ billing.businessZipCode }}</li>
 					<li>{{ billing.businessCountry }}</li>
+					<li>{{ billing.businessNotes }}</li>
 				</ul>
 			</template>
 		</div>
@@ -161,6 +164,7 @@
 </template>
 
 <script>
+    import TextareaField from './fields/TextareaField';
     import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
     import SelectInput from './inputs/SelectInput';
@@ -169,6 +173,7 @@
 
     export default {
         components: {
+            TextareaField,
             TextField,
             TextInput,
             CreditCard,
@@ -252,6 +257,7 @@
                     businessState: '',
                     businessCity: '',
                     businessZipCode: '',
+                    businessNotes: '',
                 }
             }
         }
