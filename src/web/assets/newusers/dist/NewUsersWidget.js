@@ -47,11 +47,11 @@
                 var requestData = {
                     startDate: Craft.NewUsersWidget.getDateValue(this.startDate),
                     endDate: Craft.NewUsersWidget.getDateValue(this.endDate),
-                    userGroupId: this.settings.userGroupId,
+                    userGroupId: this.settings.userGroupId
                 };
 
                 Craft.postActionRequest('charts/get-new-users-data', requestData, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success' && typeof(response.error) == 'undefined') {
+                    if (textStatus === 'success' && typeof(response.error) === 'undefined') {
                         this.$chartContainer.removeClass('hidden');
 
                         // Create chart
@@ -76,7 +76,7 @@
                         var chartSettings = {
                             orientation: response.orientation,
                             dataScale: response.scale,
-                            formats: response.formats,
+                            formats: response.formats
                         };
 
                         this.chart.draw(chartDataTable, chartSettings);
@@ -88,7 +88,7 @@
                         // Error
                         var msg = Craft.t('An unknown error occurred.');
 
-                        if (typeof(response) != 'undefined' && response && typeof(response.error) != 'undefined') {
+                        if (typeof(response) !== 'undefined' && response && typeof(response.error) !== 'undefined') {
                             msg = response.error;
                         }
 

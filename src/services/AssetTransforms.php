@@ -190,19 +190,20 @@ class AssetTransforms extends Component
      */
     public function saveTransform(AssetTransform $transform, bool $runValidation = true): bool
     {
-        if ($runValidation && !$transform->validate()) {
-            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewTransform = !$transform->id;
 
         // Fire a 'beforeSaveAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $isNewTransform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $isNewTransform,
+            ]));
+        }
+
+        if ($runValidation && !$transform->validate()) {
+            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if ($isNewTransform) {
             $transformRecord = new AssetTransformRecord();
@@ -242,10 +243,12 @@ class AssetTransforms extends Component
         }
 
         // Fire an 'afterSaveAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform,
-            'isNew' => $transform,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform,
+                'isNew' => $transform,
+            ]));
+        }
 
         return true;
     }
@@ -262,9 +265,11 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete(
@@ -273,9 +278,11 @@ class AssetTransforms extends Component
             ->execute();
 
         // Fire an 'afterDeleteAssetTransform' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
-            'assetTransform' => $transform
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+                'assetTransform' => $transform
+            ]));
+        }
 
         return true;
     }
@@ -325,21 +332,7 @@ class AssetTransforms extends Component
         }
 
         // Query for the indexes
-        $results = (new Query())
-            ->select([
-                'id',
-                'assetId',
-                'filename',
-                'format',
-                'location',
-                'volumeId',
-                'fileExists',
-                'inProgress',
-                'dateIndexed',
-                'dateCreated',
-                'dateUpdated',
-            ])
-            ->from(['{{%assettransformindex}}'])
+        $results = $this->_createTransformIndexQuery()
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
@@ -633,8 +626,8 @@ class AssetTransforms extends Component
      *
      * @param AssetTransform|string|array|null $transform
      *
-     * @throws AssetTransformException if the transform cannot be found by the handle
      * @return AssetTransform|null
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function normalizeTransform($transform)
     {
@@ -929,7 +922,7 @@ class AssetTransforms extends Component
     /**
      * Deletes an image local source if required by config.
      *
-     * @param $imageSource
+     * @param string $imageSource
      *
      * @return void
      */

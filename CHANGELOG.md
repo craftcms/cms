@@ -3,6 +3,103 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where the PHP and DB versions the Craft Support widget passed to GitHub would not escape tildes (`~`), potentially having Markdown confuse them for strikethrough markup delimiters.
+- Fixed a bug where it was possible for users to be redirected to a 404 in the Control Panel after logging in. ([#1901](https://github.com/craftcms/cms/issues/1901))
+
+## 2.6.2988  2017-07-28
+
+### Changed
+- Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
+- `.m2t` files are now treated as videos.
+- Images within field instructions are now given a max-width of 100%. ([#1868](https://github.com/craftcms/cms/issues/1868))
+
+### Fixed
+- Fixed a PHP error that could occur when logging a deprecation error in `DepreactorService`.
+- Fixed a bug where Redactor was losing its custom styling in Live Preview and Element Editor modals. ([#1795](https://github.com/craftcms/cms/issues/1795))
+- Fixed a bug where picturefill was not applied to thumbnails within lazy-loaded elements on element index pages.
+- Fixed a visual alignment bug on Tags fields.
+
+### Security
+- Fixed a bug where admins could download arbitrary zip files from the server.
+- Fixed a bug where a full server path would be disclosed if you were able to upload a file with a filename larger than 255 characters.
+
+## 2.6.2987 - 2017-07-14
+
+### Changed
+- Added `.jp2` and `.jpx` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
+- Plugin settings now get set once all plugin classes have been loaded.
+
+### Fixed
+- Fixed a PHP error that would occur when a Rich Text field’s settings referenced an asset source that no longer existed.
+- Fixed a PHP error that could occur when using HTML Purifier in a Rich Text field.
+
+### Security
+- Fixed an XSS bug in the Control Panel.
+
+## 2.6.2986 - 2017-06-30
+
+### Changed
+- Improved the styling of locale menus on Edit Entry and Edit Categories pages. ([#1803](https://github.com/craftcms/cms/issues/1803))
+- The Control Panel `font-family` declaration now checks for `"Helvetica Neue"` in addition to `HelveticaNeue`. ([#1805](https://github.com/craftcms/cms/issues/1805))
+
+### Fixed
+- Fixed a bug where emails that had inner-word underscores would get converted to `<em>` tags if a HTML body was not provided in the email. ([#1800](https://github.com/craftcms/cms/issues/1800))
+- Fixed a bug where the author of a draft could not delete their own draft if they did not have the “Publish Live Changes” permission.
+- Fixed a Twig error that could occur when editing a locked user account.
+- Fixed a bug where element source labels could get double-encoded.
+
+## 2.6.2985 - 2017-06-27
+
+### Changed
+- `DateTime::createFromString()` now supports dates formatted with `DateTime::ISO8601`, which is incorrectly missing the colon between the hours and minutes in the timezone offset declaration (e.g. `+0000` instead of `+00:00`).
+
+### Fixed
+- Fixed a bug where users would get an “Invalid Verification Code” error when clicking on the link in a verification email.
+
+## 2.6.2984 - 2017-06-26
+
+### Added
+- Added the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting, which determines whether SVG files should be sanitized on uploads (`true` by default).
+
+### Changed
+- The `assets.onReplaceFile` event is now fired whenever a file is replaced, not only if it happens using the `Replace file` Asset action.
+- Updated HTML Purifier to 4.9.3.
+- Updated Redactor II to 2.7.
+
+### Fixed
+- Fixed a bug where changing a user account’s email address to one that is already taken would silently fail.
+- Fixed a bug where a validation error would occur when saving two routes with the same URL Pattern in different locales.
+- Fixed a JavaScript error that would occur after sending in a support request from the Craft Support widget.
+- Fixed a bug where Rackspace Asset Sources would corrupt files with trailing whitespaces when downloading them.
+- Fixed a SQL error that would occur when saving a Dropdown or Radio Buttons field if the default option’s value contained quotation marks.
+- Fixed a bug where asset upload prompts would not always reset between uploads.
+
+### Security
+- Fixed several XSS vulnerabilities in the Control Panel.
+
+## 2.6.2983 - 2017-06-09
+
+### Changed
+- Date pickers’ “Previous” and “Next” buttons are now represented as arrows. ([#1538](https://github.com/craftcms/cms/issues/1538))
+- Updated Yii to 1.1.19.
+
+### Fixed
+- Fixed a bug where doctype and XML declarations were getting stripped out of SVG files on upload. ([#1767](https://github.com/craftcms/cms/issues/1767))
+
+## 2.6.2982 - 2017-06-07 [CRITICAL]
+
+### Changed
+- Updated Redactor II to 2.6.
+- Updated Imagine to 0.7.1.
+- Craft now requires the [PHP DOM extension](http://www.php.net/manual/en/book.dom.php) when uploading SVG files.
+
+### Security
+- Fixed a potential user enumeration attack vector when authenticating a user.
+- Craft will now sanitize uploaded SVG files to prevent a potential XSS attack vector.
+
+## 2.6.2981 - 2017-05-31
+
 ### Changed
 - Improved the readability of field instructions.
 - Updated jQuery Timepicker to 1.11.11.
@@ -11,7 +108,9 @@ Craft CMS Changelog
 - Fixed a bug where clicking Enter/Return on a time field with a manually-entered time would change the value to the closest rounded time value. ([#1720](https://github.com/craftcms/cms/issues/1720))
 - Fixed a bug where resaving Elements task would fail in some cases.
 - Fixed a bug where entries’ titles weren’t getting updated automatically after saving a Section, for Entry Types with dynamic titles. ([#1728](https://github.com/craftcms/cms/issues/1728))
-- Fixed a bug where a plugin’s control panel nav item was not having it’s `subnav` rendered within the control panel navigation. 
+- Fixed a bug where the Get Help widget would check for the existence of the log file path when trying to zip up site templates, if that option was selected.
+- Fixed a bug where the Edit Entry page wouldn’t show the current revision notes for the current entry if it was displaying any validation errors. ([#1747](https://github.com/craftcms/cms/issues/1747))
+- Fixed a bug where the revision dropdown on the Edit Entry page would attribute the current version to the entry author, if version history wasn’t known for the entry. ([#1746](https://github.com/craftcms/cms/issues/1746))
 
 ## 2.6.2980 - 2017-05-13
 
@@ -49,7 +148,7 @@ Craft CMS Changelog
 ## 2.6.2976 - 2017-04-27
 
 ### Changed
-- The `_layouts/cp.html` Control Panel now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
+- The `_layouts/cp.html` Control Panel template now defines the `#container` element attributes within a `containerAttributes` block, so they can be overridden or added to from sub-templates. ([#1665](https://github.com/craftcms/cms/issues/1665))
 
 ### Fixed
 - Fixed a bug where `HttpRequestService::getSegments()` and `getActionSegments()` could return an array that started at a non-0 number allowing for a bypass of the XSS vulnerability fix in 2.6.2974.

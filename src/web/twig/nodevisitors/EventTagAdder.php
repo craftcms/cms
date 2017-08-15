@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodevisitors;
 
+use Craft;
+
 /**
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()` event tags to templates as they’re being compiled.
  *
@@ -31,6 +33,11 @@ class EventTagAdder extends BaseEventTagVisitor
      */
     public function enterNode(\Twig_Node $node, \Twig_Environment $env)
     {
+        // Ignore if we're not rendering a page template
+        if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
+            return $node;
+        }
+
         // If this is a text node and we're still adding event tags, process it
         if ($node instanceof \Twig_Node_Text && !static::foundAllEventTags()) {
             $node = $this->_processTextNode($node, $env);

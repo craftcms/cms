@@ -22,8 +22,8 @@ use yii\db\Connection;
  * @property string|string[]|CategoryGroup $group The handle(s) of the category group(s) that resulting categories must belong to.
  *
  * @method Category[]|array all($db = null)
- * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, Connection $db = null)
+ * @method Category|array|false one($db = null)
+ * @method Category|array|false nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -210,12 +210,12 @@ class CategoryQuery extends ElementQuery
 
             if (!empty($parts)) {
                 if (count($parts) == 1) {
-                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
+                    $condition[] = Db::parseParam('elements_sites.slug', $parts[0]);
                 } else {
                     $condition[] = [
                         'and',
                         Db::parseParam('categorygroups.handle', $parts[0]),
-                        Db::parseParam('elements_i18n.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1])
                     ];
                     $joinCategoryGroups = true;
                 }

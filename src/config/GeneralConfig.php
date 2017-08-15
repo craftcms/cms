@@ -76,7 +76,7 @@ class GeneralConfig extends Object
      *
      * @see extraAllowedFileExtensions
      */
-    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jpeg', 'jpg', 'js', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
+    public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
     /**
      * @var bool If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
      * they are treated as the same tag. Note that this
@@ -91,8 +91,8 @@ class GeneralConfig extends Object
      */
     public $autoLoginAfterAccountActivation = false;
     /**
-     * @var bool Whether Craft should run the backup logic when updating. This applies to
-     * both auto and manual updates.
+     * @var bool Whether Craft should create a database backup before running new migrations.
+     * @see backupCommand
      */
     public $backupOnUpdate = true;
     /**
@@ -139,7 +139,7 @@ class GeneralConfig extends Object
      */
     public $cacheElementQueries = true;
     /**
-     * @var int The default length of time Craft will store data, RSS feed, and template caches.
+     * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
      *
@@ -157,7 +157,7 @@ class GeneralConfig extends Object
      */
     public $convertFilenamesToAscii = false;
     /**
-     * @var int The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
+     * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
      * failed login attempts.
      *
      * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
@@ -236,7 +236,7 @@ class GeneralConfig extends Object
      */
     public $defaultTemplateExtensions = ['html', 'twig'];
     /**
-     * @var int The default amount of time tokens can be used before expiring.
+     * @var mixed The default amount of time tokens can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -278,7 +278,7 @@ class GeneralConfig extends Object
      */
     public $enableCsrfCookie = true;
     /**
-     * @var int The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * Set to `0` to disable elevated session support.
      *
@@ -330,7 +330,7 @@ class GeneralConfig extends Object
      */
     public $indexTemplateFilenames = ['index'];
     /**
-     * @var int The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
+     * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -387,7 +387,9 @@ class GeneralConfig extends Object
      */
     public $maxSlugIncrement = 100;
     /**
-     * @var int The maximum upload file size allowed in bytes.
+     * @var int|string The maximum upload file size allowed.
+     *
+     * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
      */
     public $maxUploadFileSize = 16777216;
     /**
@@ -483,7 +485,7 @@ class GeneralConfig extends Object
      */
     public $preventUserEnumeration = false;
     /**
-     * @var int The amount of time to wait before Craft purges pending users from the system that have not activated.
+     * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Note that any content assigned to a pending user will be deleted as well when the given time interval passes.
      *
@@ -493,7 +495,7 @@ class GeneralConfig extends Object
      */
     public $purgePendingUsersDuration = 0;
     /**
-     * @var int The amount of time Craft will remember a username and pre-populate it on the CP login page.
+     * @var mixed The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
      * Set to `0` to disable this feature altogether.
      *
@@ -501,7 +503,7 @@ class GeneralConfig extends Object
      */
     public $rememberUsernameDuration = 31536000;
     /**
-     * @var int The amount of time a user stays logged if “Remember Me” is checked on the login page.
+     * @var mixed The amount of time a user stays logged if “Remember Me” is checked on the login page.
      *
      * Set to `0` to disable the “Remember Me” feature altogether.
      *
@@ -551,23 +553,24 @@ class GeneralConfig extends Object
      */
     public $restoreCommand;
     /**
-     * @var bool Whether Craft should attempt to restore the backup in the event that there was an error.
-     */
-    public $restoreOnUpdateFailure = true;
-    /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      */
     public $rotateImagesOnUploadByExifData = true;
     /**
-     * @var bool Whether Craft should run pending background tasks automatically over HTTP requests, or leave it up to something
-     * like a Cron job to call index.php/actions/tasks/runPendingTasks at a regular interval.
+     * @var bool Whether Craft should run pending queue jobs automatically over HTTP requests.
      *
      * This setting should be disabled for servers running Win32, or with Apache’s mod_deflate/mod_gzip installed,
      * where PHP’s [flush()](http://php.net/manual/en/function.flush.php) method won’t work.
      *
-     * If disabled, an alternate task running trigger *must* be set up separately.
+     * If disabled, an alternate queue runner *must* be set up separately.
      */
-    public $runTasksAutomatically = true;
+    public $runQueueAutomatically = true;
+    /**
+     * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious looking content.
+     *
+     * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
+     */
+    public $sanitizeSvgUploads = true;
     /**
      * @var bool Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
      */
@@ -665,7 +668,7 @@ class GeneralConfig extends Object
      */
     public $useSslOnTokenizedUrls = 'auto';
     /**
-     * @var int The amount of time a user stays logged in.
+     * @var mixed The amount of time a user stays logged in.
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined
      * amount of time.
@@ -698,7 +701,7 @@ class GeneralConfig extends Object
      */
     public $validationKey;
     /**
-     * @var int The amount of time a user verification code can be used before expiring.
+     * @var mixed The amount of time a user verification code can be used before expiring.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      */
@@ -787,6 +790,9 @@ class GeneralConfig extends Object
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
+
+        // Normalize size settings
+        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
     }
 
     /**
@@ -902,5 +908,15 @@ class GeneralConfig extends Object
     public function getSetPasswordSuccessPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+    }
+
+    /**
+     * Returns whether the DB should be backed up before running new migrations.
+     *
+     * @return bool
+     */
+    public function getBackupOnUpdate(): bool
+    {
+        return ($this->backupOnUpdate && $this->backupCommand !== false);
     }
 }

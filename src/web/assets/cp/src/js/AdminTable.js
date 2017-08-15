@@ -78,7 +78,7 @@ Craft.AdminTable = Garnish.Base.extend(
             };
 
             Craft.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     if (response.success) {
                         this.onReorderItems(ids);
                         Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
@@ -115,7 +115,7 @@ Craft.AdminTable = Garnish.Base.extend(
             };
 
             Craft.postActionRequest(this.settings.deleteAction, data, $.proxy(function(response, textStatus) {
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     this.handleDeleteItemResponse(response, $row);
                 }
             }, this));
@@ -135,10 +135,10 @@ Craft.AdminTable = Garnish.Base.extend(
                 this.updateUI();
                 this.onDeleteItem(id);
 
-                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: name}));
+                Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name: Craft.escapeHtml(name)}));
             }
             else {
-                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: name}));
+                Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name: Craft.escapeHtml(name)}));
             }
         },
 
@@ -160,7 +160,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
         updateUI: function() {
             // Show the "No Whatever Exists" message if there aren't any
-            if (this.totalItems == 0) {
+            if (this.totalItems === 0) {
                 this.$table.hide();
                 this.$noItems.removeClass('hidden');
             }
@@ -173,7 +173,7 @@ Craft.AdminTable = Garnish.Base.extend(
             if (this.settings.sortable) {
                 var $moveButtons = this.$table.find('.move');
 
-                if (this.totalItems == 1) {
+                if (this.totalItems === 1) {
                     $moveButtons.addClass('disabled');
                 }
                 else {

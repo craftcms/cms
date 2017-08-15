@@ -33,8 +33,8 @@ use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
+use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\InvalidParamException;
@@ -74,6 +74,11 @@ class Assets extends Component
      * @var
      */
     private $_foldersById;
+
+    /**
+     * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
+     */
+    private $_queuedGeneratePendingTransformsJob = false;
 
     // Public Methods
     // =========================================================================
@@ -136,13 +141,14 @@ class Assets extends Component
             Image::cleanImageByPath($pathOnServer);
         }
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'replaceWith' => $pathOnServer,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+        // Fire a 'beforeReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'replaceWith' => $pathOnServer,
+                'filename' => $filename
+            ]));
+        }
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
@@ -151,12 +157,13 @@ class Assets extends Component
 
         Craft::$app->getElements()->saveElement($asset);
 
-        $event = new ReplaceAssetEvent([
-            'asset' => $asset,
-            'filename' => $filename
-        ]);
-
-        $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
+        // Fire an 'afterReplaceFile' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_REPLACE_ASSET)) {
+            $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'filename' => $filename
+            ]));
+        }
     }
 
     /**
@@ -399,15 +406,7 @@ class Assets extends Component
             $criteria = new FolderCriteria($criteria);
         }
 
-        $query = (new Query())
-            ->select([
-                'id',
-                'parentId',
-                'volumeId',
-                'name',
-                'path',
-            ])
-            ->from(['{{%volumefolders}}']);
+        $query = $this->_createFolderQuery();
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -446,15 +445,7 @@ class Assets extends Component
     public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
-        $query = (new Query())
-            ->select([
-                'id',
-                'parentId',
-                'volumeId',
-                'name',
-                'path',
-            ])
-            ->from(['{{%volumefolders}}'])
+        $query = $this->_createFolderQuery()
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path.'%', false],
@@ -556,7 +547,6 @@ class Assets extends Component
             'transform' => $transform,
             'asset' => $asset,
         ]);
-
         $this->trigger(self::EVENT_GET_ASSET_URL, $event);
 
         // If a plugin set the url, we'll just use that.
@@ -589,11 +579,10 @@ class Assets extends Component
                     return UrlHelper::resourceUrl('404');
                 }
             } else {
-                // Queue up a new Generate Pending Transforms task, if there isn't one already
-                $tasks = Craft::$app->getTasks();
-
-                if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
-                    $tasks->createTask(GeneratePendingTransforms::class);
+                // Queue up a new Generate Pending Transforms job
+                if (!$this->_queuedGeneratePendingTransformsJob) {
+                    Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+                    $this->_queuedGeneratePendingTransformsJob = true;
                 }
 
                 // Return the temporary transform URL

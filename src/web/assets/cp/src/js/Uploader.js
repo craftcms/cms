@@ -28,7 +28,7 @@ Craft.Uploader = Garnish.Base.extend(
             delete settings.events;
 
             if (settings.allowedKinds && settings.allowedKinds.length) {
-                if (typeof settings.allowedKinds == "string") {
+                if (typeof settings.allowedKinds === 'string') {
                     settings.allowedKinds = [settings.allowedKinds];
                 }
 
@@ -57,7 +57,7 @@ Craft.Uploader = Garnish.Base.extend(
          */
         setParams: function(paramObject) {
             // If CSRF protection isn't enabled, these won't be defined.
-            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
+            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                 // Add the CSRF token
                 paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
@@ -104,7 +104,7 @@ Craft.Uploader = Garnish.Base.extend(
 
                     var matches = file.name.match(/\.([a-z0-4_]+)$/i);
                     var fileExtension = matches[1];
-                    if ($.inArray(fileExtension.toLowerCase(), this._extensionList) == -1) {
+                    if ($.inArray(fileExtension.toLowerCase(), this._extensionList) === -1) {
                         pass = false;
                         this._rejectedFiles.type.push('“' + file.name + '”');
                     }
@@ -116,7 +116,7 @@ Craft.Uploader = Garnish.Base.extend(
                 }
 
                 // If the validation has passed for this file up to now, check if we're not hitting any limits
-                if (pass && typeof this.settings.canAddMoreFiles == "function" && !this.settings.canAddMoreFiles(this._validFileCounter)) {
+                if (pass && typeof this.settings.canAddMoreFiles === 'function' && !this.settings.canAddMoreFiles(this._validFileCounter)) {
                     this._rejectedFiles.limit.push('“' + file.name + '”');
                     pass = false;
                 }
@@ -126,7 +126,7 @@ Craft.Uploader = Garnish.Base.extend(
                     data.submit();
                 }
 
-                if (++this._totalFileCounter == data.originalFiles.length) {
+                if (++this._totalFileCounter === data.originalFiles.length) {
                     this._totalFileCounter = 0;
                     this._validFileCounter = 0;
                     this.processErrorMessages();
@@ -141,10 +141,10 @@ Craft.Uploader = Garnish.Base.extend(
          * Process error messages.
          */
         processErrorMessages: function() {
-            if (this._rejectedFiles.type.length) {
-                var str;
+            var str;
 
-                if (this._rejectedFiles.type.length == 1) {
+            if (this._rejectedFiles.type.length) {
+                if (this._rejectedFiles.type.length === 1) {
                     str = "The file {files} could not be uploaded. The allowed file kinds are: {kinds}.";
                 }
                 else {
@@ -157,9 +157,7 @@ Craft.Uploader = Garnish.Base.extend(
             }
 
             if (this._rejectedFiles.size.length) {
-                var str;
-
-                if (this._rejectedFiles.size.length == 1) {
+                if (this._rejectedFiles.size.length === 1) {
                     str = "The file {files} could not be uploaded, because it exceeds the maximum upload size of {size}.";
                 }
                 else {
@@ -172,9 +170,7 @@ Craft.Uploader = Garnish.Base.extend(
             }
 
             if (this._rejectedFiles.limit.length) {
-                var str;
-
-                if (this._rejectedFiles.limit.length == 1) {
+                if (this._rejectedFiles.limit.length === 1) {
                     str = "The file {files} could not be uploaded, because the field limit has been reached.";
                 }
                 else {
@@ -187,7 +183,7 @@ Craft.Uploader = Garnish.Base.extend(
             }
         },
 
-        humanFileSize: function(bytes, si) {
+        humanFileSize: function(bytes) {
             var threshold = 1024;
 
             if (bytes < threshold) {
@@ -214,7 +210,7 @@ Craft.Uploader = Garnish.Base.extend(
             for (var i = 0; i < this.allowedKinds.length; i++) {
                 var allowedKind = this.allowedKinds[i];
 
-                if (Craft.fileKinds[allowedKind] !== undefined) {
+                if (typeof Craft.fileKinds[allowedKind] !== 'undefined') {
                     for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++) {
                         var ext = Craft.fileKinds[allowedKind].extensions[j];
                         this._extensionList.push(ext);

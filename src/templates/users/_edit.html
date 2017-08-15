@@ -76,7 +76,7 @@
                             name: 'email',
                             value: account.email,
                             required: true,
-                            errors: account.getErrors('email')
+                            errors: account.getErrors('email')|merge(account.getErrors('unverifiedEmail'))
                         }) }}
 
                         {% if requireEmailVerification and currentUser.admin %}
@@ -96,7 +96,7 @@
                             name: 'email',
                             value: account.email,
                             required: true,
-                            errors: account.getErrors('email')
+                            errors: account.getErrors('email')|merge(account.getErrors('unverifiedEmail'))
                         }) }}
 
                         {% if account.getIsCurrent() %}
@@ -294,16 +294,10 @@
                             </div>
                         </div>
 
-                        {% if account.status == 'locked' and craft.app.config.general.cooldownDuration %}
-                            <div class="data">
-                                <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
-                                <p class="value">{{ account.remainingCooldownTime.humanDuration }}</p>
-                            </div>
-                        {% endif %}
-
+                    {% if account.status == 'locked' and craft.app.config.general.cooldownDuration and account.remainingCooldownTime %}
                         <div class="data">
-                            <h5 class="heading">{{ "Registration Date"|t('app') }}</h5>
-                            <p class="value">{{ account.dateCreated|datetime('short') }}</p>
+                            <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
+                            <p class="value">{{ account.remainingCooldownTime|duration }}</p>
                         </div>
 
                         {% if account.status != 'pending' %}

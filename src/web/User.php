@@ -358,7 +358,7 @@ class User extends \yii\web\User
         $session->remove($this->elevatedSessionTimeoutParam);
 
         // Update the user record
-        Craft::$app->getUsers()->updateUserLoginInfo($identity);
+        Craft::$app->getUsers()->handleValidLogin($identity);
 
         parent::afterLogin($identity, $cookieBased, $duration);
     }

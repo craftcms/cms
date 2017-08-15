@@ -20,7 +20,7 @@
         containerSelector: '.cp-image-icon',
 
         onAfterRefreshImage: function(response) {
-            if (response.html !== undefined) {
+            if (typeof response.html !== 'undefined') {
                 $('#site-icon').find('> img').attr('src', ($('.cp-image-icon .cp-current-image').data('url')));
             }
 

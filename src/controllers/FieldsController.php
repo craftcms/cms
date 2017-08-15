@@ -12,7 +12,6 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
@@ -71,11 +70,11 @@ class FieldsController extends Controller
                 'success' => true,
                 'group' => $group->getAttributes(),
             ]);
-        } else {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
-            ]);
         }
+
+        return $this->asJson([
+            'errors' => $group->getErrors(),
+        ]);
     }
 
     /**
@@ -143,60 +142,37 @@ class FieldsController extends Controller
             $field = $fieldsService->createField(PlainText::class);
         }
 
-        // Field types
+        // Supported translation methods
         // ---------------------------------------------------------------------
 
-        /** @var string[]|FieldInterface[] $allFieldTypes */
-
-        if (!$field->id) {
-            // Can be anything
-            $allFieldTypes = $fieldsService->getAllFieldTypes();
-        } else if ($field::hasContentColumn()) {
-            // Can only be field types with compatible column types
-            $allFieldTypes = $fieldsService->getAllFieldTypes();
-            $fieldColumnType = $field->getContentColumnType();
-
-            foreach ($allFieldTypes as $i => $class) {
-                if ($class === get_class($field)) {
-                    continue;
-                }
-
-                if (!$class::hasContentColumn()) {
-                    $compatible = false;
-                } else {
-                    /** @var FieldInterface $tempField */
-                    $tempField = new $class();
-                    $compatible = Db::areColumnTypesCompatible($fieldColumnType, $tempField->getContentColumnType());
-                }
-
-                if (!$compatible) {
-                    unset($allFieldTypes[$i]);
-                }
-            }
-
-            // Reset keys
-            $allFieldTypes = array_values($allFieldTypes);
-        } else {
-            // No column so no compatible field types
-            $allFieldTypes = [get_class($field)];
-        }
-
-        // Make sure the selected field class is in there
-        if (!in_array(get_class($field), $allFieldTypes, true)) {
-            $allFieldTypes[] = get_class($field);
-        }
-
-        $fieldTypeOptions = [];
         $supportedTranslationMethods = [];
+        /** @var string[]|FieldInterface[] $allFieldTypes */
+        $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
+            if ($class === get_class($field) || $class::isSelectable()) {
+                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
+            }
+        }
+
+        // Allowed field types
+        // ---------------------------------------------------------------------
+
+        if (!$field->id) {
+            $allowedFieldTypes = $allFieldTypes;
+        } else {
+            $allowedFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
+        }
+
+        /** @var string[]|FieldInterface[] $allowedFieldTypes */
+        $fieldTypeOptions = [];
+
+        foreach ($allowedFieldTypes as $class) {
             if ($class === get_class($field) || $class::isSelectable()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
-
-                $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
 
@@ -257,7 +233,7 @@ class FieldsController extends Controller
             'field' => $field,
             'fieldTypeOptions' => $fieldTypeOptions,
             'supportedTranslationMethods' => $supportedTranslationMethods,
-            'allFieldTypes' => $allFieldTypes,
+            'allowedFieldTypes' => $allowedFieldTypes,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,

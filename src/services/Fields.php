@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\behaviors\ContentBehavior;
 use craft\db\Query;
 use craft\errors\FieldGroupNotFoundException;
 use craft\errors\FieldNotFoundException;
@@ -38,6 +39,7 @@ use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Users as UsersField;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -261,19 +263,20 @@ class Fields extends Component
      */
     public function saveGroup(FieldGroup $group, bool $runValidation = true): bool
     {
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Field group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
+
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Field group not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $groupRecord = $this->_getGroupRecord($group);
         $groupRecord->name = $group->name;
@@ -285,10 +288,12 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveFieldLayout' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group,
-            'isNew' => $isNewGroup,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group,
+                'isNew' => $isNewGroup,
+            ]));
+        }
 
         return true;
     }
@@ -331,9 +336,11 @@ class Fields extends Component
         }
 
         // Fire a 'beforeDeleteFieldGroup' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group
+            ]));
+        }
 
         // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
         // content columns
@@ -352,9 +359,11 @@ class Fields extends Component
         unset($this->_groupsById[$group->id]);
 
         // Fire an 'afterDeleteFieldGroup' event
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
+                'group' => $group
+            ]));
+        }
 
         return true;
     }
@@ -401,7 +410,7 @@ class Fields extends Component
     /**
      * Returns all field types that have a column in the content table.
      *
-     * @return FieldInterface[] The field type classes
+     * @return string[] The field type classes
      */
     public function getFieldTypesWithContent(): array
     {
@@ -415,6 +424,52 @@ class Fields extends Component
         }
 
         return $fieldTypes;
+    }
+
+    /**
+     * Returns all field types whose column types are considered compatible with a given field.
+     *
+     * @param FieldInterface $field          The current field to base compatible fields on
+     * @param bool           $includeCurrent Whether $field's class should be included
+     *
+     * @return string[] The compatible field type classes
+     */
+    public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
+    {
+        if (!$field::hasContentColumn()) {
+            return $includeCurrent ? [get_class($field)] : [];
+        }
+
+        $types = [];
+        $fieldColumnType = $field->getContentColumnType();
+
+        foreach ($this->getAllFieldTypes() as $class) {
+            if ($class === get_class($field)) {
+                if ($includeCurrent) {
+                    $types[] = $class;
+                }
+                continue;
+            }
+
+            if (!$class::hasContentColumn()) {
+                continue;
+            }
+
+            /** @var FieldInterface $tempField */
+            $tempField = new $class();
+            if (!Db::areColumnTypesCompatible($fieldColumnType, $tempField->getContentColumnType())) {
+                continue;
+            }
+
+            $types[] = $class;
+        }
+
+        // Make sure the current field class is in there if it's supposed to be
+        if ($includeCurrent && !in_array(get_class($field), $types, true)) {
+            $types[] = get_class($field);
+        }
+
+        return $types;
     }
 
     /**
@@ -665,38 +720,32 @@ class Fields extends Component
      * @param bool           $runValidation Whether the field should be validated
      *
      * @return bool Whether the field was saved successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
         /** @var Field $field */
-        // Set the field context if it's not set
-        if (!$field->context) {
-            $field->context = Craft::$app->getContent()->fieldContext;
+        $isNewField = $field->getIsNew();
+
+        // Fire a 'beforeSaveField' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
+                'field' => $field,
+                'isNew' => $isNewField,
+            ]));
+        }
+
+        if (!$field->beforeSave($isNewField)) {
+            return false;
         }
 
         if ($runValidation && !$field->validate()) {
             Craft::info('Field not saved due to validation error.', __METHOD__);
-
             return false;
         }
 
-        $isNewField = $field->getIsNew();
-
-        // Fire a 'beforeSaveField' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
-            'field' => $field,
-            'isNew' => $isNewField,
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$field->beforeSave($isNewField)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $fieldRecord = $this->_getFieldRecord($field);
 
             // Create/alter the content table column
@@ -788,21 +837,26 @@ class Fields extends Component
 
             $field->afterSave($isNewField);
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
+        // Tell the current ContentBehavior class about the field
+        ContentBehavior::$fieldHandles[$field->handle] = true;
+
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
+
         // Fire an 'afterSaveField' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
-            'field' => $field,
-            'isNew' => $isNewField,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
+                'field' => $field,
+                'isNew' => $isNewField,
+            ]));
+        }
 
         return true;
     }
@@ -831,24 +885,24 @@ class Fields extends Component
      * @param FieldInterface $field The field
      *
      * @return bool Whether the field was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteField(FieldInterface $field): bool
     {
         /** @var Field $field */
         // Fire a 'beforeDeleteField' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
-            'field' => $field,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
+
+        if (!$field->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$field->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // De we need to delete the content column?
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
@@ -866,20 +920,22 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            // Update the field version at the end of the request
-            $this->updateFieldVersionAfterRequest();
-
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
+        // Update the field version at the end of the request
+        $this->updateFieldVersionAfterRequest();
+
         // Fire an 'afterDeleteField' event
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
-            'field' => $field,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
+                'field' => $field,
+            ]));
+        }
 
         return true;
     }
@@ -1091,19 +1147,25 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if ($runValidation && !$layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewLayout = !$layout->id;
 
+        // Make sure the tabs/fields are memoized on the layout
+        foreach ($layout->getTabs() as $tab) {
+            $tab->getFields();
+        }
+
         // Fire a 'beforeSaveFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout,
-            'isNew' => $isNewLayout,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout,
+                'isNew' => $isNewLayout,
+            ]));
+        }
+
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         if (!$isNewLayout) {
             // Delete the old tabs/fields
@@ -1153,10 +1215,12 @@ class Fields extends Component
         }
 
         // Fire an 'afterSaveFieldLayout' event
-        $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout,
-            'isNew' => $isNewLayout,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout,
+                'isNew' => $isNewLayout,
+            ]));
+        }
 
         return true;
     }
@@ -1195,17 +1259,21 @@ class Fields extends Component
     public function deleteLayout(FieldLayout $layout): bool
     {
         // Fire a 'beforeDeleteFieldLayout' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout
+            ]));
+        }
 
         Craft::$app->getDb()->createCommand()
             ->delete('{{%fieldlayouts}}', ['id' => $layout->id])
             ->execute();
 
-        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+                'layout' => $layout
+            ]));
+        }
 
         return true;
     }

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
@@ -29,17 +28,7 @@ class Path extends Component
     /**
      * @var
      */
-    private $_appPath;
-
-    /**
-     * @var
-     */
     private $_configPath;
-
-    /**
-     * @var
-     */
-    private $_pluginsPath;
 
     /**
      * @var
@@ -60,28 +49,6 @@ class Path extends Component
     // =========================================================================
 
     /**
-     * Returns the path to the `app/` directory, for manual Craft installs.
-     *
-     * @return string
-     * @throws Exception if Craft was installed via Composer
-     */
-    public function getAppPath(): string
-    {
-        if ($this->_appPath !== null) {
-            return $this->_appPath;
-        }
-
-        // app/ is only a thing for manual installs
-        if (App::isComposerInstall()) {
-            throw new Exception('There is no app/ directory when Craft is installed via Composer.');
-        }
-
-        $basePath = Craft::$app->getBasePath();
-
-        return $this->_appPath = dirname($basePath, 3);
-    }
-
-    /**
      * Returns the path to the `config/` directory.
      *
      * @return string
@@ -100,27 +67,6 @@ class Path extends Component
         }
 
         return $this->_configPath = FileHelper::normalizePath($configPath);
-    }
-
-    /**
-     * Returns the path to the `plugins/` directory.
-     *
-     * @return string
-     * @throws Exception
-     */
-    public function getPluginsPath(): string
-    {
-        if ($this->_pluginsPath !== null) {
-            return $this->_pluginsPath;
-        }
-
-        $pluginsPath = Craft::getAlias('@plugins');
-
-        if ($pluginsPath === false) {
-            throw new Exception('There was a problem getting the plugins path.');
-        }
-
-        return $this->_pluginsPath = FileHelper::normalizePath($pluginsPath);
     }
 
     /**
@@ -410,6 +356,19 @@ class Path extends Component
         }
 
         return FileHelper::normalizePath($siteTemplatesPath);
+    }
+
+    /**
+     * Returns the path to the `storage/runtime/compiled_classes/` directory.
+     *
+     * @return string
+     */
+    public function getCompiledClassesPath(): string
+    {
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+        FileHelper::createDirectory($path);
+
+        return $path;
     }
 
     /**

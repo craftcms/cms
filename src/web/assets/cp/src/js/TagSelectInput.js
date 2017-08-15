@@ -27,7 +27,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                     args = ['id', 'name', 'tagGroupId', 'sourceElementId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (arguments[i] !== undefined) {
+                    if (typeof arguments[i] !== 'undefined') {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {
@@ -52,7 +52,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             }, this));
 
             this.addListener(this.$addTagInput, 'keypress', function(ev) {
-                if (ev.keyCode == Garnish.RETURN_KEY) {
+                if (ev.keyCode === Garnish.RETURN_KEY) {
                     ev.preventDefault();
 
                     if (this.searchMenu) {
@@ -121,17 +121,19 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 Craft.postActionRequest('tags/search-for-tags', data, $.proxy(function(response, textStatus) {
                     this.$spinner.addClass('hidden');
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
                             $ul = $('<ul/>').appendTo($menu);
 
+                        var $li;
+
                         for (var i = 0; i < response.tags.length; i++) {
-                            var $li = $('<li/>').appendTo($ul);
+                            $li = $('<li/>').appendTo($ul);
                             $('<a data-icon="tag"/>').appendTo($li).text(response.tags[i].title).data('id', response.tags[i].id);
                         }
 
                         if (!response.exactMatch) {
-                            var $li = $('<li/>').appendTo($ul);
+                            $li = $('<li/>').appendTo($ul);
                             $('<a data-icon="plus"/>').appendTo($li).text(data.search);
                         }
 
@@ -214,7 +216,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 };
 
                 Craft.postActionRequest('tags/create-tag', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success' && response.success) {
+                    if (textStatus === 'success' && response.success) {
                         $element.attr('data-id', response.id);
                         $input.val(response.id);
 
@@ -223,7 +225,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                     else {
                         this.removeElement($element);
 
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
                             Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
                         }

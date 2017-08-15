@@ -27,8 +27,8 @@ use yii\db\Connection;
  * @property string|string[]|MatrixBlockType $type      The handle(s) of the block type(s) that resulting Matrix blocks must have
  *
  * @method MatrixBlock[]|array all($db = null)
- * @method MatrixBlock|array|null one($db = null)
- * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
+ * @method MatrixBlock|array|false one($db = null)
+ * @method MatrixBlock|array|false nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -291,7 +291,12 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId));
         }
 
-        if ($this->typeId) {
+        if ($this->typeId !== null) {
+            // If typeId is an empty array, it's because type() was called but no valid type handles were passed in
+            if (empty($this->typeId)) {
+                return false;
+            }
+
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
         }
 

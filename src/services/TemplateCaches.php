@@ -16,10 +16,11 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\tasks\DeleteStaleTemplateCaches;
+use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
+use yii\web\Response;
 
 /**
  * Class TemplateCaches service.
@@ -103,6 +104,11 @@ class TemplateCaches extends Component
      * @var bool|null
      */
     private $_deletedCachesByElementType;
+
+    /**
+     * @var int[]|null Index of element IDs to clear caches for in the Delete Stale Template Caches job
+     */
+    private $_deleteCachesIndex;
 
     // Public Methods
     // =========================================================================
@@ -205,12 +211,15 @@ class TemplateCaches extends Component
             $elementQuery = $event->sender;
             $query = $elementQuery->query;
             $subQuery = $elementQuery->subQuery;
+            $customFields = $elementQuery->customFields;
             $elementQuery->query = null;
             $elementQuery->subQuery = null;
+            $elementQuery->customFields = null;
             // We need to base64-encode the string so db\Connection::quoteSql() doesn't tweak any of the table/columns names
             $serialized = base64_encode(serialize($elementQuery));
             $elementQuery->query = $query;
             $elementQuery->subQuery = $subQuery;
+            $elementQuery->customFields = $customFields;
             $hash = md5($serialized);
 
             foreach ($this->_cachedQueries as &$queries) {
@@ -256,7 +265,7 @@ class TemplateCaches extends Component
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
      *
-     * @throws \Exception
+     * @throws \Throwable
      * @return void
      */
     public function endTemplateCache(string $key, bool $global, string $duration = null, $expiration, string $body)
@@ -360,7 +369,7 @@ class TemplateCaches extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -458,8 +467,8 @@ class TemplateCaches extends Component
     /**
      * Deletes caches that include an a given element ID(s).
      *
-     * @param int|array $elementId             The ID of the element(s) whose caches should be cleared.
-     * @param bool      $deleteQueryCaches     Whether a DeleteStaleTemplateCaches task should be created, deleting any
+     * @param int|int[] $elementId             The ID of the element(s) whose caches should be cleared.
+     * @param bool      $deleteQueryCaches     Whether a DeleteStaleTemplateCaches job should be added to the queue, deleting any
      *                                         query caches that may now involve this element, but hadn't previously.
      *                                         (Defaults to `true`.)
      *
@@ -475,32 +484,18 @@ class TemplateCaches extends Component
             return false;
         }
 
+        // Check the query caches too?
         if ($deleteQueryCaches && Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
-            // If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
-            /** @var DeleteStaleTemplateCaches $task */
-            $task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::class);
-
-            if ($task) {
-                if (!is_array($task->elementId)) {
-                    $task->elementId = (array)$task->elementId;
+            if ($this->_deleteCachesIndex === null) {
+                Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
+                $this->_deleteCachesIndex = [];
+            }
+            if (is_array($elementId)) {
+                foreach ($elementId as $id) {
+                    $this->_deleteCachesIndex[$id] = true;
                 }
-
-                if (is_array($elementId)) {
-                    $task->elementId = array_merge($task->elementId, $elementId);
-                } else {
-                    $task->elementId[] = $elementId;
-                }
-
-                // Make sure there aren't any duplicate element IDs
-                $task->elementId = array_unique($task->elementId);
-
-                // Save the task
-                Craft::$app->getTasks()->saveTask($task, false);
             } else {
-                Craft::$app->getTasks()->queueTask([
-                    'type' => DeleteStaleTemplateCaches::class,
-                    'elementId' => $elementId
-                ]);
+                $this->_deleteCachesIndex[$elementId] = true;
             }
         }
 
@@ -516,6 +511,17 @@ class TemplateCaches extends Component
         }
 
         return $this->deleteCacheById($cacheIds);
+    }
+
+    /**
+     * Queues up a Delete Stale Template Caches job
+     */
+    public function handleResponse()
+    {
+        Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
+            'elementId' => array_keys($this->_deleteCachesIndex),
+        ]));
+        $this->_deleteCachesIndex = null;
     }
 
     /**

@@ -22,6 +22,7 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\AssetTransformException;
 use craft\errors\FileException;
 use craft\events\AssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -47,7 +48,9 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property bool $hasThumb Whether the file has a thumbnail
+ * @property bool           $hasThumb Whether the file has a thumbnail
+ * @property int|float|null $height   the image height
+ * @property int|float|null $width    the image width
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -363,16 +366,6 @@ class Asset extends Element
     public $kind;
 
     /**
-     * @var int|null Width
-     */
-    public $width;
-
-    /**
-     * @var int|null Height
-     */
-    public $height;
-
-    /**
      * @var int|null Size
      */
     public $size;
@@ -434,7 +427,17 @@ class Asset extends Element
     public $keepFileOnDelete = false;
 
     /**
-     * @var
+     * @var int|float|null Width
+     */
+    private $_width;
+
+    /**
+     * @var int|float|null Height
+     */
+    private $_height;
+
+    /**
+     * @var AssetTransform|null
      */
     private $_transform;
 
@@ -463,7 +466,7 @@ class Asset extends Element
             }
 
             return parent::__toString();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -482,7 +485,11 @@ class Asset extends Element
      */
     public function __isset($name): bool
     {
-        return parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name);
+        return (
+            parent::__isset($name) ||
+            strncmp($name, 'transform:', 10) === 0 ||
+            Craft::$app->getAssetTransforms()->getTransformByHandle($name)
+        );
     }
 
     /**
@@ -501,25 +508,16 @@ class Asset extends Element
      */
     public function __get($name)
     {
+        if (strncmp($name, 'transform:', 10) === 0) {
+            return $this->copyWithTransform(substr($name, 10));
+        }
+
         try {
             return parent::__get($name);
         } catch (UnknownPropertyException $e) {
             // Is $name a transform handle?
-            $transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name);
-
-            if ($transform) {
-                // Duplicate this model and set it to that transform
-                $model = new Asset();
-
-                // Can't just use attributes() here because we'll get thrown into an infinite loop.
-                foreach ($this->attributes() as $attributeName) {
-                    $model->$attributeName = $this->$attributeName;
-                }
-
-                $model->setFieldValues($this->getFieldValues());
-                $model->setTransform($transform);
-
-                return $model;
+            if (($transform = Craft::$app->getAssetTransforms()->getTransformByHandle($name)) !== null) {
+                return $this->copyWithTransform($transform);
             }
 
             throw $e;
@@ -640,6 +638,7 @@ class Asset extends Element
      * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return Asset
+     * @throws AssetTransformException if $transform is an invalid transform handle
      */
     public function setTransform($transform): Asset
     {
@@ -722,42 +721,48 @@ class Asset extends Element
     }
 
     /**
-     * Get image height.
+     * Returns the image height.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return bool|float|mixed
+     * @return int|float|null
      */
 
     public function getHeight($transform = null)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
-            $transform = null;
-        }
-
         return $this->_getDimension('height', $transform);
     }
 
     /**
-     * Get image width.
+     * Sets the image height.
      *
-     * @param string|null $transform The optional transform handle for which to get thumbnail.
-     *
-     * @return bool|float|mixed
+     * @param int|float|null $height the image height
      */
-    public function getWidth(string $transform = null)
+    public function setHeight($height)
     {
-        if ($transform !== null && !Image::canManipulateAsImage(
-                $this->getExtension()
-            )
-        ) {
-            $transform = null;
-        }
+        $this->_height = $height;
+    }
 
+    /**
+     * Returns the image width.
+     *
+     * @param AssetTransform|string|array|null $transform The optional transform handle for which to get thumbnail.
+     *
+     * @return int|float|null
+     */
+    public function getWidth($transform = null)
+    {
         return $this->_getDimension('width', $transform);
+    }
+
+    /**
+     * Sets the image width.
+     *
+     * @param int|float|null $width the image width
+     */
+    public function setWidth($width)
+    {
+        $this->_width = $width;
     }
 
     /**
@@ -941,183 +946,131 @@ class Asset extends Element
         return $html;
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'width';
+        $attributes[] = 'height';
+
+        return $attributes;
+    }
+
+    /**
+     * Returns a copy of the asset with the given transform applied to it.
+     *
+     * @param AssetTransform|string|array|null $transform
+     *
+     * @return Asset
+     * @throws AssetTransformException if $transform is an invalid transform handle
+     */
+    public function copyWithTransform($transform): Asset
+    {
+        // Duplicate this model and set it to that transform
+        $model = new Asset();
+
+        // Can't just use attributes() here because we'll get thrown into an infinite loop.
+        foreach ($this->attributes() as $attributeName) {
+            $model->$attributeName = $this->$attributeName;
+        }
+
+        $model->setFieldValues($this->getFieldValues());
+        $model->setTransform($transform);
+
+        return $model;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
-     * @return bool
-     */
-    public function beforeValidate()
-    {
-        if (empty($this->newLocation) && (!empty($this->newFolderId) || !empty($this->newFilename))) {
-            $folderId = $this->newFolderId ?: $this->folderId;
-            $filename = $this->newFilename ?: $this->filename;
-            $this->newLocation = "{folder:{$folderId}}{$filename}";
-        }
-
-        if ($this->newLocation || $this->tempFilePath) {
-            $event = new AssetEvent(['asset' => $this, 'isNew' => !$this->id]);
-            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, $event);
-        }
-
-        // Set the kind based on filename, if not set already
-        if (empty($this->kind) && !empty($this->filename)) {
-            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
-        }
-
-        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
-            // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
-        }
-
-        return parent::beforeValidate();
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
      */
     public function beforeSave(bool $isNew): bool
     {
-        $assetsService = Craft::$app->getAssets();
+        // newFolderId/newFilename => newLocation.
+        if ($this->newFolderId !== null || $this->newFilename !== null) {
+            $folderId = $this->newFolderId ?: $this->folderId;
+            $filename = $this->newFilename ?: $this->filename;
+            $this->newLocation = "{folder:{$folderId}}{$filename}";
+            $this->newFolderId = $this->newFilename = null;
+        }
 
-        // See if we need to perform any file operations
-        if ($this->newLocation) {
-            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
-            $hasNewFolder = $folderId != $this->folderId;
-            $hasNewFilename = $filename != $this->filename;
+        // Get the (new?) folder ID
+        if ($this->newLocation !== null) {
+            list($folderId) = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
-            $filename = $this->filename;
-            $hasNewFolder = $hasNewFilename = false;
         }
 
-        // Set the field layout early.
-        $folder = $assetsService->getFolderById($folderId);
+        // Fire a 'beforeHandleFile' event if we're going to be doing any file operations in afterSave()
+        if (
+            ($this->newLocation !== null || $this->tempFilePath !== null) &&
+            $this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_FILE)
+        ) {
+            $this->trigger(self::EVENT_BEFORE_HANDLE_FILE, new AssetEvent([
+                'asset' => $this,
+                'isNew' => !$this->id
+            ]));
+        }
 
+        // Set the kind based on filename, if not set already
+        if ($this->kind === null && $this->filename !== null) {
+            $this->kind = AssetsHelper::getFileKindByExtension($this->filename);
+        }
+
+        // Give it a default title based on the file name, if it doesn't have a title yet
+        if (!$this->id && (!$this->title || $this->title === Craft::t('app', 'New Element'))) {
+            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
+        }
+
+        // Set the field layout
         /** @var Volume $volume */
-        $volume = $folder->getVolume();
+        $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
         $this->fieldLayoutId = $volume->fieldLayoutId;
 
-        if (!parent::beforeSave($isNew)) {
-            return false;
-        }
-
-        $tempPath = null;
-
-        // Yes/no?
-        if ($hasNewFolder || $hasNewFilename || $this->tempFilePath) {
-
-            $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
-            $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
-
-            $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
-            $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
-
-            $oldPath = $this->folderId ? $this->getUri() : null;
-            $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
-
-            // Is this just a simple move/rename within the same volume?
-            if (!$this->tempFilePath && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
-                $oldVolume->renameFile($oldPath, $newPath);
-            } else {
-                // Get the temp path
-                if ($this->tempFilePath) {
-                    $tempPath = $this->tempFilePath;
-                } else {
-                    $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
-                    $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
-                    $oldVolume->saveFileLocally($oldPath, $tempPath);
-                }
-
-                // Try to open a file stream
-                if (($stream = fopen($tempPath, 'rb')) === false) {
-                    FileHelper::removeFile($tempPath);
-                    throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
-                }
-
-                // Delete the old path first.
-                if ($this->folderId) {
-                    // Delete the old file
-                    $oldVolume->deleteFile($oldPath);
-                }
-
-                // Upload the file to the new location
-                $newVolume->createFileByStream($newPath, $stream, []);
-
-                // Rackspace will disconnect the stream automatically
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            }
-
-            if ($this->folderId) {
-                // Nuke the transforms
-                Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
-            }
-
-            // Update file properties
-            $this->volumeId = $newFolder->volumeId;
-            $this->folderId = $folderId;
-            $this->folderPath = $newFolder->path;
-            $this->filename = $filename;
-
-            // If there was a new file involved, update file data.
-            if ($tempPath) {
-                $this->kind = AssetsHelper::getFileKindByExtension($filename);
-
-                if ($this->kind === 'image') {
-                    list ($this->width, $this->height) = Image::imageSize($tempPath);
-                } else {
-                    $this->width = null;
-                    $this->height = null;
-                }
-
-                $this->size = filesize($tempPath);
-                $this->dateModified = new DateTime('@'.filemtime($tempPath));
-
-                // Delete the temp file
-                FileHelper::removeFile($tempPath);
-            }
-
-            $this->newFolderId = null;
-            $this->newFilename = null;
-            $this->newLocation = null;
-            $this->tempFilePath = null;
-        }
-
-        return true;
+        return parent::beforeSave($isNew);
     }
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws Exception if the asset isn't new but doesn't have a row in the `assets` table for some reason
      */
     public function afterSave(bool $isNew)
     {
-        // Get the asset record
-        if (!$isNew) {
-            $record = AssetRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid asset ID: '.$this->id);
+        // If this is just an element being propagated, there's absolutely no need for re-saving this.
+        if (!$this->propagating) {
+            // Relocate the file?
+            if ($this->newLocation !== null || $this->tempFilePath !== null) {
+                $this->_relocateFile();
             }
-        } else {
-            $record = new AssetRecord();
-            $record->id = $this->id;
-        }
 
-        $record->filename = $this->filename;
-        $record->volumeId = $this->volumeId;
-        $record->folderId = $this->folderId;
-        $record->kind = $this->kind;
-        $record->size = $this->size;
-        $record->focalPoint = $this->focalPoint;
-        $record->width = $this->width;
-        $record->height = $this->height;
-        $record->dateModified = $this->dateModified;
-        $record->save(false);
+            // Get the asset record
+            if (!$isNew) {
+                $record = AssetRecord::findOne($this->id);
+
+                if (!$record) {
+                    throw new Exception('Invalid asset ID: '.$this->id);
+                }
+            } else {
+                $record = new AssetRecord();
+                $record->id = $this->id;
+            }
+
+
+            $record->filename = $this->filename;
+            $record->volumeId = $this->volumeId;
+            $record->folderId = $this->folderId;
+            $record->kind = $this->kind;
+            $record->size = $this->size;
+            $record->focalPoint = $this->focalPoint;
+            $record->width = $this->_width;
+            $record->height = $this->_height;
+            $record->dateModified = $this->dateModified;
+            $record->save(false);
+        }
 
         parent::afterSave($isNew);
     }
@@ -1165,7 +1118,7 @@ class Asset extends Element
      * @param string                           $dimension 'height' or 'width'
      * @param AssetTransform|string|array|null $transform
      *
-     * @return null|float|mixed
+     * @return int|float|null
      */
     private function _getDimension(string $dimension, $transform)
     {
@@ -1173,12 +1126,14 @@ class Asset extends Element
             return null;
         }
 
-        if ($transform === null && $this->_transform !== null) {
-            $transform = $this->_transform;
+        $transform = $transform ?? $this->_transform;
+
+        if ($transform !== null && !Image::canManipulateAsImage($this->getExtension())) {
+            $transform = null;
         }
 
-        if (!$transform) {
-            return $this->$dimension;
+        if ($transform === null) {
+            return $this->{'_'.$dimension};
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
@@ -1190,18 +1145,116 @@ class Asset extends Element
 
         if (!$transform->width || !$transform->height) {
             // Fill in the blank
-            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->width, $this->height);
+            $dimensionArray = Image::calculateMissingDimension($dimensions['width'], $dimensions['height'], $this->_width, $this->_height);
             $dimensions['width'] = (int)$dimensionArray[0];
             $dimensions['height'] = (int)$dimensionArray[1];
         }
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
-            $factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
-            $dimensions['width'] = (int)round($this->width / $factor);
-            $dimensions['height'] = (int)round($this->height / $factor);
+            $factor = max($this->_width / $dimensions['width'], $this->_height / $dimensions['height']);
+            $dimensions['width'] = (int)round($this->_width / $factor);
+            $dimensions['height'] = (int)round($this->_height / $factor);
         }
 
         return $dimensions[$dimension];
+    }
+
+    /**
+     * Relocates the file after the element has been saved.
+     *
+     * @return void
+     * @throws FileException if the file is being moved but cannot be read
+     */
+    private function _relocateFile()
+    {
+        $assetsService = Craft::$app->getAssets();
+
+        // Get the (new?) folder ID & filename
+        if ($this->newLocation !== null) {
+            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+        } else {
+            $folderId = $this->folderId;
+            $filename = $this->filename;
+        }
+
+        $hasNewFolder = $folderId != $this->folderId;
+
+        $tempPath = null;
+
+        $oldFolder = $this->folderId ? $assetsService->getFolderById($this->folderId) : null;
+        $oldVolume = $oldFolder ? $oldFolder->getVolume() : null;
+
+        $newFolder = $hasNewFolder ? $assetsService->getFolderById($folderId) : $oldFolder;
+        $newVolume = $hasNewFolder ? $newFolder->getVolume() : $oldVolume;
+
+        $oldPath = $this->folderId ? $this->getUri() : null;
+        $newPath = ($newFolder->path ? rtrim($newFolder->path, '/').'/' : '').$filename;
+
+        // Is this just a simple move/rename within the same volume?
+        if ($this->tempFilePath === null && $oldFolder !== null && $oldFolder->volumeId == $newFolder->volumeId) {
+            $oldVolume->renameFile($oldPath, $newPath);
+        } else {
+            // Get the temp path
+            if ($this->tempFilePath !== null) {
+                $tempPath = $this->tempFilePath;
+            } else {
+                $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true).'.'.pathinfo($filename, PATHINFO_EXTENSION);
+                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+                $oldVolume->saveFileLocally($oldPath, $tempPath);
+            }
+
+            // Try to open a file stream
+            if (($stream = fopen($tempPath, 'rb')) === false) {
+                FileHelper::removeFile($tempPath);
+                throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
+            }
+
+            if ($this->folderId) {
+                // Delete the old file
+                $oldVolume->deleteFile($oldPath);
+            }
+
+            // Upload the file to the new location
+            $newVolume->createFileByStream($newPath, $stream, []);
+
+            // Rackspace will disconnect the stream automatically
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
+
+        if ($this->folderId) {
+            // Nuke the transforms
+            Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+        }
+
+        // Update file properties
+        $this->volumeId = $newFolder->volumeId;
+        $this->folderId = $folderId;
+        $this->folderPath = $newFolder->path;
+        $this->filename = $filename;
+
+        // If there was a new file involved, update file data.
+        if ($tempPath) {
+            $this->kind = AssetsHelper::getFileKindByExtension($filename);
+
+            if ($this->kind === 'image') {
+                list ($this->_width, $this->_height) = Image::imageSize($tempPath);
+            } else {
+                $this->_width = null;
+                $this->_height = null;
+            }
+
+            $this->size = filesize($tempPath);
+            $this->dateModified = new DateTime('@'.filemtime($tempPath));
+
+            // Delete the temp file
+            FileHelper::removeFile($tempPath);
+        }
+
+        // Clear out the temp location properties
+        $this->newLocation = null;
+        $this->tempFilePath = null;
     }
 }

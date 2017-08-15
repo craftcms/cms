@@ -129,6 +129,22 @@ class Schema extends \yii\db\pgsql\Schema
      */
     public function getDefaultBackupCommand()
     {
+        $defaultTableIgnoreList = [
+            '{{%assetindexdata}}',
+            '{{%assettransformindex}}',
+            '{{%cache}}',
+            '{{%sessions}}',
+            '{{%templatecaches}}',
+            '{{%templatecachecriteria}}',
+            '{{%templatecacheelements}}',
+        ];
+
+        $dbSchema = Craft::$app->getDb()->getSchema();
+
+        foreach ($defaultTableIgnoreList as $key => $ignoreTable) {
+            $defaultTableIgnoreList[$key] = " --exclude-table-data '{schema}.".$dbSchema->getRawTableName($ignoreTable)."'";
+        }
+
         return 'pg_dump'.
             ' --dbname={database}'.
             ' --host={server}'.
@@ -138,7 +154,8 @@ class Schema extends \yii\db\pgsql\Schema
             ' --if-exists'.
             ' --clean'.
             ' --file={file}'.
-            ' --schema={schema}';
+            ' --schema={schema}'.
+            implode('', $defaultTableIgnoreList);
     }
 
     /**

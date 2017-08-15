@@ -652,29 +652,15 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the request’s query string params, without the path parameter.
-     *
-     * @return string[] The query string, without the path parameter
-     */
-    public function getQueryParamsWithoutPath(): array
-    {
-        $queryParams = $this->getQueryParams();
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-
-        unset($queryParams[$pathParam]);
-
-        return $queryParams;
-    }
-
-    /**
      * Returns the request’s query string, without the path parameter.
      *
      * @return string The query string.
      */
     public function getQueryStringWithoutPath(): string
     {
-        $queryParams = $this->getQueryParamsWithoutPath();
-
+        parse_str($this->getQueryString(), $queryParams);
+        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
+        unset($queryParams[$pathParam]);
         return http_build_query($queryParams);
     }
 
@@ -784,11 +770,7 @@ class Request extends \yii\web\Request
                 $token = $this->generateCsrfToken();
             }
 
-            // the mask doesn't need to be very random
-            $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
-            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, self::CSRF_MASK_LENGTH);
-            // The + sign may be decoded as blank space later, which will fail the validation
-            $this->_craftCsrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
+            $this->_craftCsrfToken = Craft::$app->getSecurity()->maskToken($token);
         }
 
         return $this->_craftCsrfToken;
@@ -955,10 +937,12 @@ class Request extends \yii\web\Request
                     $loginPath = 'login';
                     $logoutPath = 'logout';
                     $setPasswordPath = 'setpassword';
+                    $updatePath = 'update';
                 } else {
                     $loginPath = trim($generalConfig->getLoginPath(), '/');
                     $logoutPath = trim($generalConfig->getLogoutPath(), '/');
                     $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
+                    $updatePath = null;
                 }
 
                 if (
@@ -968,6 +952,7 @@ class Request extends \yii\web\Request
                         $loginPath,
                         $logoutPath,
                         $setPasswordPath,
+                        $updatePath
                     ], true))
                 ) {
                     $this->_isActionRequest = true;
@@ -978,12 +963,18 @@ class Request extends \yii\web\Request
                     } else if (!empty($actionParam)) {
                         $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
                     } else {
-                        if ($this->_path == $loginPath) {
-                            $this->_actionSegments = ['users', 'login'];
-                        } else if ($this->_path == $logoutPath) {
-                            $this->_actionSegments = ['users', 'logout'];
-                        } else {
-                            $this->_actionSegments = ['users', 'set-password'];
+                        switch ($this->_path) {
+                            case $loginPath:
+                                $this->_actionSegments = ['users', 'login'];
+                                break;
+                            case $logoutPath:
+                                $this->_actionSegments = ['users', 'logout'];
+                                break;
+                            case $setPasswordPath:
+                                $this->_actionSegments = ['users', 'set-password'];
+                                break;
+                            case $updatePath:
+                                $this->_actionSegments = ['updater', 'index'];
                         }
                     }
                 }
@@ -1072,28 +1063,5 @@ class Request extends \yii\web\Request
     {
         return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
             filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
-    }
-
-    /**
-     * Returns the XOR result of two strings.
-     * If the two strings are of different lengths, the shorter one will be padded to the length of the longer one.
-     *
-     * @param string $token1
-     * @param string $token2
-     *
-     * @return string the XOR result
-     */
-    private function _xorTokens(string $token1, string $token2): string
-    {
-        $n1 = StringHelper::byteLength($token1);
-        $n2 = StringHelper::byteLength($token2);
-
-        if ($n1 > $n2) {
-            $token2 = str_pad($token2, $n1, $token2);
-        } elseif ($n1 < $n2) {
-            $token1 = str_pad($token1, $n2, $n1 === 0 ? ' ' : $token1);
-        }
-
-        return $token1 ^ $token2;
     }
 }

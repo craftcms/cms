@@ -101,7 +101,7 @@ body.rtl [data-icon-after=structure]:after { content: attr(structurertl); }
 
 /* headings */
 @mixin h6-styles { margin: 14px 0 3px; font-size: 10px; line-height: 1.2; color: $lighttextcolor; text-transform: uppercase; font-weight: bold; }
-h1 { margin-bottom: 24px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
+h1 { margin-bottom: 24px; font-family: "Helvetica Neue-Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, sans-serif; font-size: 24px; line-height: 1; color: $submitcolor; }
 h2 { margin: 14px 0; font-size: 15px; font-weight: bold; line-height: 1.2; }
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 h4 { margin: 14px 0; font-weight: bold; line-height: 1.2; color: $mediumtextcolor; }
@@ -184,12 +184,23 @@ strong, b, i em { font-weight: bold; }
 .readable li + li { margin-top: 0.25em; }
 .readable blockquote { margin: 16px 0; }
 .readable blockquote:not(.note) { padding: 0 16px; color: $mediumtextcolor; @include border-left(4px solid $hairlineColor); }
-.readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; @include padding-left(56px); border: 1px solid; color: $mediumtextcolor; }
-.readable blockquote.note:not(.tip) { border-color: $errorcolor; }
+.readable blockquote.note { position: relative; border-radius: 4px; padding: 1em; @include padding-left(56px); border: 1px solid; }
+.readable blockquote.note:not(.tip):not(.warning) { border-color: $errorcolor; }
 .readable blockquote.note.tip { border-color: $linkcolor; }
+.readable blockquote.note.warning { border-color: $warningcolor; }
 .readable blockquote.note:before { @include icon; position: absolute; top: 12px; @include left(16px); font-size: 30px; width: 24px; }
-.readable blockquote.note:not(.tip):before { content: 'alert'; color: $errorcolor; }
-.readable blockquote.note.tip:before { content: 'lightbulb'; color: $linkcolor; }
+.readable blockquote.note:not(.tip):not(.warning) {
+    color: #bf503f;
+    &:before { content: 'alert'; color: $errorcolor; }
+}
+.readable blockquote.note.tip {
+    color: $mediumtextcolor;
+    &:before { content: 'lightbulb'; color: $linkcolor; }
+}
+.readable blockquote.note.warning {
+    color: #cf783a;
+    &:before { content: 'alert'; color: $warningcolor; }
+}
 
 /* text styles */
 .leftalign { @include alignleft; }
@@ -630,7 +641,7 @@ table thead th.ordered.loading { background-image: url(../images/spinner_tablehe
 table thead th.orderable:hover { background-color: #f9f9f9; }
 
 th.thin,
-td.thin { width: 0.01% !important; vertical-align: middle; }
+td.thin { width: 0.01% !important; }
 
 /* data */
 table.data th:not(:first-child),
@@ -1089,6 +1100,7 @@ ul.tree,
 
 .pane { @include pane; position: relative; margin: 14px 0; padding: 24px; border-radius: $paneBorderRadius; word-wrap: break-word; @include box-sizing(border-box); }
 .pane.lightpane { background-color: #f4f5f6; }
+.pane .pane { @include box-shadow(none); background: $lightBgColor; }
 
 /* meta panes */
 .meta { padding: 0; overflow: visible; }
@@ -1361,6 +1373,9 @@ body #redactor-modal-overlay {
 .tagselect .add { position: relative; z-index: 1; display: inline-block; width: 12em; }
 .tagselect .add .text { @include padding-right(30px); }
 .tagselect .add .spinner { position: absolute; top: 0; @include right(5px); }
+body.ltr .tagselect.elementselect .element,
+body.rtl .tagselect.elementselect .element { float: none !important; display: inline-block; }
+.tagselect .elements { display: inline; }
 
 .tagmenu ul li a { @include padding-left(26px); }
 .tagmenu ul li a:before { @include floatleft; @include margin(3px, 0, 0, -18px); }
@@ -1435,7 +1450,13 @@ textarea.text.fullwidth { display: block; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
 .field > .heading > label > .site { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions,
-.checkboxfield.has-instructions .instructions { margin-top: 2px; color: $mediumtextcolor; }
+.checkboxfield.has-instructions .instructions {
+    margin-top: 2px;
+    color: $mediumtextcolor;
+    img {
+        max-width: 100%;
+    }
+}
 .field > .warning { margin: 2px 0 0; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }
 .field > .input:after { @include clearafter; }
@@ -1653,6 +1674,18 @@ body .selectize-dropdown .active { @include menu-option-active-styles; }
 .ui-datepicker-header { padding: 8px 8px 4px; }
 .ui-datepicker-prev { @include floatleft; }
 .ui-datepicker-next { @include floatright; }
+.ui-datepicker-prev span,
+.ui-datepicker-next span { display: none; }
+.ui-datepicker-prev:after,
+.ui-datepicker-next:after { @include icon; width: 20px; margin-top: -2px; line-height: 20px !important; text-align: center; }
+.ui-datepicker-prev:after {
+    body.ltr & { content: 'leftangle'; }
+    body.rtl & { content: 'rightangle'; }
+}
+.ui-datepicker-next:after {
+    body.ltr & { content: 'rightangle'; }
+    body.rtl & { content: 'leftangle'; }
+}
 .ui-datepicker-title { text-align: center; }
 .ui-datepicker-calendar th,
 .ui-datepicker-calendar td { padding: 2px; }

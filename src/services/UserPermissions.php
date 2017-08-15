@@ -87,7 +87,7 @@ class UserPermissions extends Component
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             /** @var Plugin $plugin */
             if ($plugin->hasCpSection) {
-                $general['accessCp']['nested']['accessPlugin-'.$plugin->handle] = [
+                $general['accessCp']['nested']['accessPlugin-'.$plugin->id] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
@@ -211,9 +211,7 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
-            $groupPermissions = (new Query())
-                ->select(['p.name'])
-                ->from(['{{%userpermissions}} p'])
+            $groupPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
@@ -233,9 +231,7 @@ class UserPermissions extends Component
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
-        return (new Query())
-            ->select(['p.name'])
-            ->from(['{{%userpermissions}} p'])
+        return $this->_createUserPermissionsQuery()
             ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
             ->innerJoin('{{%usergroups_users}} g_u', '[[g_u.groupId]] = [[p_g.groupId]]')
             ->where(['g_u.userId' => $userId])
@@ -314,9 +310,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-            $userPermissions = (new Query())
-                ->select(['p.name'])
-                ->from(['{{%userpermissions}} p'])
+            $userPermissions = $this->_createUserPermissionsQuery()
                 ->innerJoin('{{%userpermissions_users}} p_u', '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])
                 ->column();
@@ -553,7 +547,7 @@ class UserPermissions extends Component
      *
      * @return array
      */
-    private function _getUtilityPermissions()
+    private function _getUtilityPermissions(): array
     {
         $permissions = [];
 
@@ -649,5 +643,15 @@ class UserPermissions extends Component
         }
 
         return $permissionRecord;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createUserPermissionsQuery(): Query
+    {
+        return (new Query())
+            ->select(['p.name'])
+            ->from(['{{%userpermissions}} p']);
     }
 }

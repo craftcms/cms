@@ -9,12 +9,10 @@ namespace craft\db;
 
 use Craft;
 use craft\config\DbConfig;
-use craft\db\mysql\QueryBuilder;
 use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
@@ -25,10 +23,10 @@ use yii\db\Exception as DbException;
 /**
  * @inheritdoc
  *
- * @property QueryBuilder              $queryBuilder The query builder for the current DB connection.
- * @property mysql\Schema|pgsql\Schema $schema       The schema information for the database opened by this connection.
+ * @property mysql\QueryBuilder|pgsql\QueryBuilder $queryBuilder The query builder for the current DB connection.
+ * @property mysql\Schema|pgsql\Schema             $schema       The schema information for the database opened by this connection.
  *
- * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method mysql\QueryBuilder|pgsql\QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
  * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
@@ -88,7 +86,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      *
      * @throws DbConnectException if there are any issues
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function open()
     {
@@ -115,7 +113,7 @@ class Connection extends \yii\db\Connection
 
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         }
@@ -133,7 +131,7 @@ class Connection extends \yii\db\Connection
     public function backup(): string
     {
         // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->version;
+        $currentVersion = 'v'.Craft::$app->getVersion();
         $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
         $filename = ($systemName ? $systemName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
         $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
@@ -172,9 +170,11 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($backupCommand, $file);
 
         // Fire a 'beforeCreateBackup' event
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-            'file' => $file
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
+                'file' => $file
+            ]));
+        }
 
         $success = $command->execute();
 
@@ -186,9 +186,11 @@ class Connection extends \yii\db\Connection
         }
 
         // Fire an 'afterCreateBackup' event
-        $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-            'file' => $file
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_BACKUP)) {
+            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
+                'file' => $file
+            ]));
+        }
     }
 
     /**
@@ -218,9 +220,11 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($restoreCommand, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
-        $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
-            'file' => $filePath
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+                'file' => $filePath
+            ]));
+        }
 
         $success = $command->execute();
 
@@ -232,9 +236,11 @@ class Connection extends \yii\db\Connection
         }
 
         // Fire an 'afterRestoreBackup' event
-        $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
-            'file' => $filePath
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_RESTORE_BACKUP)) {
+            $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
+                'file' => $filePath
+            ]));
+        }
     }
 
     /**
@@ -463,7 +469,7 @@ class Connection extends \yii\db\Connection
                 ->select(['siteName'])
                 ->from(['{{%info}}'])
                 ->column()[0];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return Craft::$app->getInfo()->name ?: Craft::$app->getSites()->getPrimarySite()->name;
         }
     }

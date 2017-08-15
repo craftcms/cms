@@ -173,8 +173,8 @@ class Template
      * Adds (deprecated) support for the old Craft\DateTime methods.
      *
      * @param \DateTime $object
-     * @param string $item
-     * @param string $type
+     * @param string    $item
+     * @param string    $type
      *
      * @return string|false
      */

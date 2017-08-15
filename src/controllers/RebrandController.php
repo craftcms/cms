@@ -63,7 +63,7 @@ class RebrandController extends Controller
                 $filename = Assets::prepareAssetName($file->name, true, true);
 
                 if (!Image::canManipulateAsImage($file->getExtension())) {
-                    throw new BadRequestHttpException('The uploaded file is not an image');
+                    throw new BadRequestHttpException(Craft::t('app', 'The uploaded file is not an image'));
                 }
 
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';

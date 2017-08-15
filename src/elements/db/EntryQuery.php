@@ -29,8 +29,8 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $authorGroup The handle(s) of the user group(s) that resulting entries’ authors must belong to.
  *
  * @method Entry[]|array all($db = null)
- * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, Connection $db = null)
+ * @method Entry|array|false one($db = null)
+ * @method Entry|array|false nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -392,7 +392,7 @@ class EntryQuery extends ElementQuery
         $this->_applySectionIdParam();
         $this->_applyRefParam();
 
-        if (!$this->orderBy && !$this->structureId && !$this->fixedOrder) {
+        if ($this->orderBy !== null && empty($this->orderBy) && !$this->structureId && !$this->fixedOrder) {
             $this->orderBy = 'postDate desc';
         }
 
@@ -412,7 +412,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
+                        'elements_sites.enabled' => '1'
                     ],
                     ['<=', 'entries.postDate', $currentTimeDb],
                     [
@@ -426,7 +426,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1',
+                        'elements_sites.enabled' => '1',
                     ],
                     ['>', 'entries.postDate', $currentTimeDb]
                 ];
@@ -435,7 +435,7 @@ class EntryQuery extends ElementQuery
                     'and',
                     [
                         'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
+                        'elements_sites.enabled' => '1'
                     ],
                     ['not', ['entries.expiryDate' => null]],
                     ['<=', 'entries.expiryDate', $currentTimeDb]
@@ -523,12 +523,12 @@ class EntryQuery extends ElementQuery
 
             if (!empty($parts)) {
                 if (count($parts) == 1) {
-                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
+                    $condition[] = Db::parseParam('elements_sites.slug', $parts[0]);
                 } else {
                     $condition[] = [
                         'and',
                         Db::parseParam('sections.handle', $parts[0]),
-                        Db::parseParam('elements_i18n.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1])
                     ];
                     $joinSections = true;
                 }

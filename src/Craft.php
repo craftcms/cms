@@ -6,13 +6,12 @@
  */
 
 use craft\behaviors\ContentBehavior;
-use craft\behaviors\ContentTrait;
 use craft\behaviors\ElementQueryBehavior;
-use craft\behaviors\ElementQueryTrait;
 use craft\db\Query;
 use craft\helpers\FileHelper;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
+use yii\db\Expression;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -123,108 +122,80 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        if (
-            $className === ContentBehavior::class ||
-            $className === ContentTrait::class ||
-            $className === ElementQueryBehavior::class ||
-            $className === ElementQueryTrait::class
-        ) {
-            $storedFieldVersion = static::$app->getInfo()->fieldVersion;
-            $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
+        if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
+            return;
+        }
 
-            $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
-            $contentTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentTrait.php';
-            $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
-            $elementQueryTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryTrait.php';
+        $storedFieldVersion = static::$app->getInfo()->fieldVersion;
+        $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
 
-            $isContentBehaviorFileValid = self::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion);
-            $isContentTraitFileValid = self::_isFieldAttributesFileValid($contentTraitFile, $storedFieldVersion);
-            $isElementQueryBehaviorFileValid = self::_isFieldAttributesFileValid($elementQueryBehaviorFile, $storedFieldVersion);
-            $isElementQueryTraitFileValid = self::_isFieldAttributesFileValid($elementQueryTraitFile, $storedFieldVersion);
+        $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
+        $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
 
-            if (
-                $isContentBehaviorFileValid &&
-                $isContentTraitFileValid &&
-                $isElementQueryBehaviorFileValid &&
-                $isElementQueryTraitFileValid
-            ) {
-                return;
+        $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
+        $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
+
+        if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
+            return;
+        }
+
+        if (Craft::$app->getIsInstalled()) {
+            // Properties are case-sensitive, so get all the binary-unique field handles
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $column = new Expression('binary [[handle]] as [[handle]]');
+            } else {
+                $column = 'handle';
             }
 
+            $fieldHandles = (new Query())
+                ->distinct(true)
+                ->from(['{{%fields}}'])
+                ->select([$column])
+                ->column();
+        } else {
+            $fieldHandles = [];
+        }
+
+        if (!$isContentBehaviorFileValid) {
+            $handles = [];
             $properties = [];
-            $methods = [];
-            $propertyDocs = [];
-            $methodDocs = [];
 
-            if (Craft::$app->getIsInstalled()) {
-                // Get the field handles
-                $fieldHandles = (new Query())
-                    ->select(['handle'])
-                    ->distinct(true)
-                    ->from(['{{%fields}}'])
-                    ->column();
+            foreach ($fieldHandles as $handle) {
+                $handles[] = <<<EOD
+        '{$handle}' => true,
+EOD;
 
-                foreach ($fieldHandles as $handle) {
-                    $properties[] = <<<EOD
+                $properties[] = <<<EOD
     /**
      * @var mixed Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
+            }
 
-                    $methods[] = <<<EOD
-    /**
-     * Sets the [[{$handle}]] property.
-     * @param mixed \$value The property value
-     * @return \\yii\\base\\Component The behavior’s owner component
-     */
-    public function {$handle}(\$value)
-    {
-        \$this->{$handle} = \$value;
-        return \$this->owner;
-    }
+            self::_writeFieldAttributesFile(
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
+                ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
+                [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
+                $contentBehaviorFile
+            );
+        }
+
+        if (!$isElementQueryBehaviorFileValid) {
+            $methods = [];
+
+            foreach ($fieldHandles as $handle) {
+                $methods[] = <<<EOD
+ * @method void {$handle}(mixed \$value) Sets the [[{$handle}]] property
 EOD;
-
-                    $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
-                    $methodDocs[] = " * @method \$this {$handle}(\$value) Sets the [[{$handle}]] property.";
-                }
             }
 
-            if (!$isContentBehaviorFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
-                    ['{VERSION}', '/* PROPERTIES */'],
-                    [$storedFieldVersion, implode("\n\n", $properties)],
-                    $contentBehaviorFile
-                );
-            }
-
-            if (!$isContentTraitFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentTrait.php.template',
-                    ['{VERSION}', '{PROPERTIES}'],
-                    [$storedFieldVersion, implode("\n", $propertyDocs)],
-                    $contentTraitFile
-                );
-            }
-
-            if (!$isElementQueryBehaviorFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
-                    ['{VERSION}', '/* METHODS */'],
-                    [$storedFieldVersion, implode("\n\n", $methods)],
-                    $elementQueryBehaviorFile
-                );
-            }
-
-            if (!$isElementQueryTraitFileValid) {
-                self::_writeFieldAttributesFile(
-                    static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryTrait.php.template',
-                    ['{VERSION}', '{METHODS}'],
-                    [$storedFieldVersion, implode("\n", $methodDocs)],
-                    $elementQueryTraitFile
-                );
-            }
+            self::_writeFieldAttributesFile(
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
+                ['{VERSION}', '{METHOD_DOCS}'],
+                [$storedFieldVersion, implode("\n", $methods)],
+                $elementQueryBehaviorFile
+            );
         }
     }
 
@@ -240,7 +211,7 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/'.Craft::$app->getVersion().' '.\GuzzleHttp\default_user_agent()
             ],
         ];
 
@@ -257,31 +228,30 @@ EOD;
     }
 
     /**
-     * Determines if a field attribute file is valid.
+     * Loads a field attribute file, if it’s valid.
      *
      * @param string $path
      * @param string $storedFieldVersion
      *
      * @return bool
      */
-    private static function _isFieldAttributesFileValid(string $path, string $storedFieldVersion): bool
+    private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
     {
-        if (file_exists($path)) {
-            // Make sure it's up-to-date
-            $f = fopen($path, 'rb');
-            $line = fgets($f);
-            fclose($f);
-
-            if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
-                if ($matches[1] === $storedFieldVersion) {
-                    include $path;
-
-                    return true;
-                }
-            }
+        if (!file_exists($path)) {
+            return false;
         }
 
-        return false;
+        // Make sure it's up-to-date
+        $f = fopen($path, 'rb');
+        $line = fgets($f);
+        fclose($f);
+
+        if (strpos($line, "// v{$storedFieldVersion}") === false) {
+            return false;
+        }
+
+        include $path;
+        return true;
     }
 
     /**

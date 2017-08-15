@@ -23,6 +23,7 @@ use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -104,8 +105,8 @@ class AssetsController extends Controller
             $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
-            $asset = new Asset();
 
+            $asset = new Asset();
             $asset->tempFilePath = $tempPath;
             $asset->filename = $filename;
             $asset->newFolderId = $folder->id;
@@ -118,7 +119,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n") . implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', "Failed to save the Asset:\n").implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -137,7 +138,7 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id
             ]);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }
@@ -219,7 +220,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -355,13 +356,13 @@ class AssetsController extends Controller
         }
 
         // Check if it's possible to delete objects and create folders in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFolders', $folder);
-        $this->_requirePermissionByFolder('createFolders', $folder);
+        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
+        $this->_requirePermissionByFolder('createFoldersInVolume', $folder);
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId,
                 $newName);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -403,7 +404,7 @@ class AssetsController extends Controller
         $filename = $request->getBodyParam('filename', $asset->filename);
 
         // Check if it's possible to delete objects in source Volume and save Assets in target Volume.
-        $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+        $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
         $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
         if ($request->getBodyParam('force')) {
@@ -470,12 +471,9 @@ class AssetsController extends Controller
 
         // Check if it's possible to delete objects in source Volume, create folders
         // in target Volume and save Assets in target Volume.
-        $this->_requirePermissionByFolder('deleteFilesAndFolders',
-            $folderToMove);
-        $this->_requirePermissionByFolder('createFoldersInVolume',
-            $destinationFolder);
-        $this->_requirePermissionByFolder('saveAssetInVolume',
-            $destinationFolder);
+        $this->_requirePermissionByFolder('deleteFilesAndFoldersInVolume', $folderToMove);
+        $this->_requirePermissionByFolder('createFoldersInVolume', $destinationFolder);
+        $this->_requirePermissionByFolder('saveAssetInVolume', $destinationFolder);
 
         $targetVolume = $destinationFolder->getVolume();
 
@@ -610,7 +608,7 @@ class AssetsController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
-     * @throws \Exception if something went wrong saving the Asset.
+     * @throws \Throwable if something went wrong saving the Asset.
      */
     public function actionSaveImage(): Response
     {
@@ -648,7 +646,7 @@ class AssetsController extends Controller
 
             // If replacing, check for permissions to replace existing Asset files.
             if ($replace) {
-                $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+                $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
             }
 
             // Verify parameter adequacy
@@ -745,7 +743,7 @@ class AssetsController extends Controller
 
                 Craft::$app->getElements()->saveElement($newAsset);
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -772,7 +770,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset('viewAssetSource', $asset);
+        $this->_requirePermissionByAsset('viewVolume', $asset);
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
         App::maxPowerCaptain();
@@ -829,7 +827,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByAsset(string $permissionName, Asset $asset)
     {
-        if (empty($asset->volumeId)) {
+        if (!$asset->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -851,7 +849,7 @@ class AssetsController extends Controller
      */
     private function _requirePermissionByFolder(string $permissionName, VolumeFolder $folder)
     {
-        if (empty($folder->volumeId)) {
+        if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getCurrentUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -889,7 +887,13 @@ class AssetsController extends Controller
         }
 
         // Move the uploaded file to the temp folder
-        if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
+        try {
+            $tempPath = $uploadedFile->saveAsTempFile();
+        } catch (ErrorException $e) {
+            throw new UploadFailedException(0);
+        }
+
+        if ($tempPath === false) {
             throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
         }
 
