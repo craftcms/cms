@@ -261,7 +261,7 @@ trait ApplicationTrait
             return false;
         }
 
-        return $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
+        return $this->_isInstalled = (bool)($this->getDb()->tableExists('{{%info}}', false));
     }
 
     /**

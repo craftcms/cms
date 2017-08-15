@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Plugin;
 use craft\db\MigrationManager;
 use craft\helpers\FileHelper;
+use craft\migrations\Install;
+use craft\models\Site;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\helpers\Console;
@@ -59,6 +61,36 @@ class MigrateController extends BaseMigrateController
     public $plugin;
 
     /**
+     * @var string|null The default email address for the first user to create during install
+     */
+    public $email;
+
+    /**
+     * @var string|null The default username for the first user to create during install
+     */
+    public $username;
+
+    /**
+     * @var string|null The default password for the first user to create during install
+     */
+    public $password;
+
+    /**
+     * @var string|null The default site name for the first site to create during install
+     */
+    public $siteName;
+
+    /**
+     * @var string|null The default site url for the first site to create during install
+     */
+    public $siteUrl;
+
+    /**
+     * @var string|null The default langcode for the first site to create during install
+     */
+    public $siteLangcode;
+
+    /**
      * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
@@ -86,6 +118,15 @@ class MigrateController extends BaseMigrateController
         // Global options
         $options[] = 'type';
         $options[] = 'plugin';
+
+        if ($actionID == 'install') {
+            $options[] = 'email';
+            $options[] = 'username';
+            $options[] = 'password';
+            $options[] = 'siteName';
+            $options[] = 'siteUrl';
+            $options[] = 'siteLangcode';
+        }
 
         return $options;
     }
@@ -174,6 +215,53 @@ class MigrateController extends BaseMigrateController
 
             FileHelper::writeToFile($file, $content);
             $this->stdout("New migration created successfully.\n", Console::FG_GREEN);
+        }
+    }
+
+    public function actionInstall()
+    {
+        // Run the install migration
+        $migrator = Craft::$app->getMigrator();
+
+        $email = $this->email ?: $this->prompt('Email', ['required' => true]);
+        $username = $this->username ?: $this->prompt('Username', ['required' => true]);
+        
+        if ($this->password) {
+            $password = $this->password;
+        }
+        else {
+            echo 'Password ';
+            $password = \Seld\CliPrompt\CliPrompt::hiddenPrompt();
+        }
+        
+        $siteName = $this->siteName ?: $this->prompt('Site Name', ['required' => true]);
+        $siteUrl = $this->siteUrl ?: $this->prompt('Site Url', ['required' => true]);
+        $siteLangcode = $this->siteLangcode ?: $this->prompt('Site Langcode', ['required' => true]);
+
+        $site = new Site([
+            'name' => $siteName,
+            'handle' => 'default',
+            'hasUrls' => true,
+            'baseUrl' => $siteUrl,
+            'language' => $siteLangcode,
+        ]);
+
+        $migration = new Install([
+            'username' => $username,
+            'password' => $password,
+            'email' => $email,
+            'site' => $site,
+        ]);
+
+        if ($migrator->migrateUp($migration) !== false) {
+            $this->stdout("{$siteName} was successfully installed.\n", Console::FG_GREEN);
+
+            // Mark all existing migrations as applied
+            foreach ($migrator->getNewMigrations() as $name) {
+                $migrator->addMigrationHistory($name);
+            }
+        } else {
+            $this->stderr("There was a problem installing {$siteName}.\n", Console::FG_GREEN);
         }
     }
 
