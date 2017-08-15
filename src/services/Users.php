@@ -15,12 +15,9 @@ use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\UserActivateEvent;
+use craft\events\UserEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserGroupsAssignEvent;
-use craft\events\UserSuspendEvent;
-use craft\events\UserUnlockEvent;
-use craft\events\UserUnsuspendEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -48,19 +45,19 @@ class Users extends Component
     // =========================================================================
 
     /**
-     * @event UserTokenEvent The event that is triggered before a user's email is verified.
+     * @event UserEvent The event that is triggered before a user's email is verified.
      */
     const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
-     * @event UserTokenEvent The event that is triggered after a user's email is verified.
+     * @event UserEvent The event that is triggered after a user's email is verified.
      */
     const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
     /**
-     * @event UserActivateEvent The event that is triggered before a user is activated.
+     * @event UserEvent The event that is triggered before a user is activated.
      *
-     * You may set [[UserActivateEvent::isValid]] to `false` to prevent the user from getting activated.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
@@ -70,38 +67,38 @@ class Users extends Component
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
 
     /**
-     * @event UserUnlockEvent The event that is triggered before a user is unlocked.
+     * @event UserEvent The event that is triggered before a user is unlocked.
      *
-     * You may set [[UserUnlockEvent::isValid]] to `false` to prevent the user from getting unlocked.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
     /**
-     * @event UserUnlockEvent The event that is triggered after a user is unlocked.
+     * @event UserEvent The event that is triggered after a user is unlocked.
      */
     const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
 
     /**
-     * @event UserSuspendEvent The event that is triggered before a user is suspended.
+     * @event UserEvent The event that is triggered before a user is suspended.
      *
-     * You may set [[UserSuspendEvent::isValid]] to `false` to prevent the user from getting suspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
     /**
-     * @event UserSuspendEvent The event that is triggered after a user is suspended.
+     * @event UserEvent The event that is triggered after a user is suspended.
      */
     const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
 
     /**
-     * @event UserUnsuspendEvent The event that is triggered before a user is unsuspended.
+     * @event UserEvent The event that is triggered before a user is unsuspended.
      *
-     * You may set [[UserUnsuspendEvent::isValid]] to `false` to prevent the user from getting unsuspended.
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
     /**
-     * @event UserUnsuspendEvent The event that is triggered after a user is unsuspended.
+     * @event UserEvent The event that is triggered after a user is unsuspended.
      */
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
@@ -523,7 +520,7 @@ class Users extends Component
     public function activateUser(User $user): bool
     {
         // Fire a 'beforeActivateUser' event
-        $event = new UserActivateEvent([
+        $event = new UserEvent([
             'user' => $user,
         ]);
         $this->trigger(self::EVENT_BEFORE_ACTIVATE_USER, $event);
@@ -553,7 +550,7 @@ class Users extends Component
 
         // Fire an 'afterActivateUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
-            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserActivateEvent([
+            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -609,7 +606,7 @@ class Users extends Component
     public function unlockUser(User $user): bool
     {
         // Fire a 'beforeUnlockUser' event
-        $event = new UserUnlockEvent([
+        $event = new UserEvent([
             'user' => $user,
         ]);
         $this->trigger(self::EVENT_BEFORE_UNLOCK_USER, $event);
@@ -640,7 +637,7 @@ class Users extends Component
 
         // Fire an 'afterUnlockUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UNLOCK_USER)) {
-            $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserUnlockEvent([
+            $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -659,7 +656,7 @@ class Users extends Component
     public function suspendUser(User $user): bool
     {
         // Fire a 'beforeSuspendUser' event
-        $event = new UserSuspendEvent([
+        $event = new UserEvent([
             'user' => $user,
         ]);
         $this->trigger(self::EVENT_BEFORE_SUSPEND_USER, $event);
@@ -683,7 +680,7 @@ class Users extends Component
 
         // Fire an 'afterSuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {
-            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserSuspendEvent([
+            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserEvent([
                 'user' => $user
             ]));
         }
@@ -702,7 +699,7 @@ class Users extends Component
     public function unsuspendUser(User $user): bool
     {
         // Fire a 'beforeUnsuspendUser' event
-        $event = new UserUnsuspendEvent([
+        $event = new UserEvent([
             'user' => $user,
         ]);
         $this->trigger(self::EVENT_BEFORE_UNSUSPEND_USER, $event);
@@ -730,7 +727,7 @@ class Users extends Component
 
         // Fire an 'afterUnsuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UNSUSPEND_USER)) {
-            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserUnsuspendEvent([
+            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
                 'user' => $user
             ]));
         }

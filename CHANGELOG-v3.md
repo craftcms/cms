@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\base\FlysystemVolume`, which replaces `craft\base\Volume` as the new base class for Flysystem-based volumes.
 - Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
 - Added `craft\controllers\QueueController`.
+- Added `craft\events\UserEvent`.
 - Added `craft\queue\BaseJob`, a base class for queue jobs that adds support for descriptions and progress.
 - Added `craft\queue\Command`, which provides `queue/run`, `queue/listen`, and `queue/info` console commands.
 - Added `craft\queue\InfoAction`.
@@ -50,6 +51,11 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\db\TaskQuery`.
 - Removed `craft\events\MailFailureEvent`.
 - Removed `craft\events\TaskEvent`.
+- Removed `craft\events\UserActivateEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserSuspendEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserTokenEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnlockEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnsuspendEvent`. Use `craft\events\UserEvent` instead.
 - Removed `craft\mail\Mailer::EVENT_SEND_MAIL_FAILURE`.
 - Removed `craft\records\Task`.
 - Removed `craft\services\Tasks`.

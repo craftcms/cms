@@ -10,12 +10,12 @@ namespace craft\events;
 use craft\elements\User;
 
 /**
- * User activate event class.
+ * User event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserActivateEvent extends CancelableEvent
+class UserEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

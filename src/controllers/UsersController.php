@@ -13,7 +13,6 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
-use craft\events\UserTokenEvent;
 use craft\helpers\Assets;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -1780,7 +1779,7 @@ class UsersController extends Controller
         if ($userToProcess) {
             // Fire a 'beforeVerifyUser' event
             Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
-                new UserTokenEvent([
+                new UserEvent([
                     'user' => $userToProcess
                 ]));
 
@@ -1793,7 +1792,7 @@ class UsersController extends Controller
 
         // Fire an 'afterVerifyUser' event
         Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL,
-            new UserTokenEvent([
+            new UserEvent([
                 'user' => $userToProcess
             ]));
 
