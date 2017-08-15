@@ -72,6 +72,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed some deprecation errors caused by relational and Matrix field inputs.
 - Fixed a bug where a plugin would get a PHP error if it tried to get the current site in the middle of a Craft update.
 - Fixed a bug where the Migrations utility would display an error message even if the migrations were applied successfully. ([#1911](https://github.com/craftcms/cms/issues/1911))
+- Fixed a PHP error that occurred if calling `getMimeType()` on an asset with an extension with an unknown MIME type. ([#1919](https://github.com/craftcms/cms/pull/1919))
 
 ## 3.0.0-beta.23 - 2017-07-28
 
