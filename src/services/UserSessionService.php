@@ -432,13 +432,7 @@ class UserSessionService extends \CWebUser
 
 			if (!craft()->request->isAjaxRequest())
 			{
-				$url = craft()->request->getPath();
-
-				if (($queryString = craft()->request->getQueryStringWithoutPath()))
-				{
-					$url .= '?'.$queryString;
-				}
-
+				$url = UrlHelper::getUrl(craft()->request->getPath(), craft()->request->getQueryStringWithoutPath());
 				$this->setReturnUrl($url);
 				$url = UrlHelper::getUrl(craft()->config->getLoginPath());
 				craft()->request->redirect($url);
@@ -516,7 +510,7 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Logs a user in for solely by their user ID.
+	 * Logs a user in by their user ID.
 	 *
 	 * This method doesn’t have any sort of credential verification, so use it at your own peril.
 	 *
