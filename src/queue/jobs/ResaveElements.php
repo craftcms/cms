@@ -44,7 +44,7 @@ class ResaveElements extends BaseJob
      */
     public function execute($queue)
     {
-        $class = $this->elementTydddhpe;
+        $class = $this->elementType;
 
         // Let's save ourselves some trouble and just clear all the caches for this element class
         Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
