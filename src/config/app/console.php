@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'bootstrap' => [
+        'queue',
+    ],
     'components' => [
         'request' => craft\console\Request::class,
         'user' => craft\console\User::class,

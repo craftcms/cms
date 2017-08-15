@@ -61,7 +61,7 @@
                     this.$body.html(
                         '<p class="centeralign">' +
                         updateText +
-                        ' <a class="go nowrap" href="' + Craft.getUrl('updates') + '">' + Craft.t('app', 'Go to Updates') + '</a>' +
+                        ' <a class="go nowrap" href="' + Craft.getUrl('utilities/updates') + '">' + Craft.t('app', 'Go to Updates') + '</a>' +
                         '</p>'
                     );
                 }

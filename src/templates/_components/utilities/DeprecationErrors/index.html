@@ -24,7 +24,7 @@
                 <tr data-id="{{ log.id }}">
                     <td>{{ log.message|raw }}</td>
                     <td class="code">
-                        {{- log.file|replace('/', '/<wbr>')|raw }}
+                        {{- log.file|e|replace('/', '/<wbr>')|raw }}
                         {%- if log.line -%}
                             :{{ log.line }}
                         {%- endif -%}

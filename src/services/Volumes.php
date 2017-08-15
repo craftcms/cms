@@ -92,6 +92,11 @@ class Volumes extends Component
     private $_volumesById;
 
     /**
+     * @var
+     */
+    private $_volumesByHandle;
+
+    /**
      * @var bool
      */
     private $_fetchedAllVolumes = false;
@@ -121,6 +126,7 @@ class Volumes extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $volumeTypes
         ]);
+
         $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
         return $event->types;
@@ -278,6 +284,7 @@ class Volumes extends Component
             /** @var Volume $volume */
             $volume = $this->createVolume($result);
             $this->_volumesById[$volume->id] = $volume;
+            $this->_volumesByHandle[$volume->handle] = $volume;
         }
 
         $this->_fetchedAllVolumes = true;
@@ -311,6 +318,34 @@ class Volumes extends Component
         }
 
         return $this->_volumesById[$volumeId] = $this->createVolume($result);
+    }
+
+    /**
+     * Returns a volumn by its handle.
+     *
+     * @param string $handle
+     *
+     * @return VolumeInterface|null
+     */
+    public function getVolumeByHandle(string $handle)
+    {
+        if ($this->_volumesByHandle !== null && array_key_exists($handle, $this->_volumesByHandle)) {
+            return $this->_volumesByHandle[$handle];
+        }
+
+        if ($this->_fetchedAllVolumes) {
+            return null;
+        }
+
+        $result = $this->_createVolumeQuery()
+            ->where(['handle' => $handle])
+            ->one();
+
+        if (!$result) {
+            return $this->_volumesByHandle[$handle] = null;
+        }
+
+        return $this->_volumesByHandle[$handle] = $this->createVolume($result);
     }
 
     /**
@@ -489,15 +524,20 @@ class Volumes extends Component
 
         // Are they overriding any settings?
         if (!empty($config['handle']) && ($override = $this->getVolumeOverrides($config['handle'])) !== null) {
-            // Apply the settings early so the overrides don't get overridden
-            ComponentHelper::applySettings($config);
-            $config = array_merge($config, $override);
+            // Save a reference to the original config in case the volume type is missing
+            $originalConfig = $config;
+
+            // Merge in the DB settings first, then the config file overrides
+            $config = array_merge(ComponentHelper::mergeSettings($config), $override);
         }
 
         try {
             /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
+            // Revert to the original config if it was overridden
+            $config = $originalConfig ?? $config;
+
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);

@@ -72,19 +72,21 @@ class Routes extends Component
         }
 
         // Check for any site-specific routes
-        $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        $sitesService = Craft::$app->getSites();
+        foreach ($sitesService->getAllSites() as $site) {
+            if (
+                isset($routes[$site->handle]) &&
+                is_array($routes[$site->handle]) &&
+                !isset($routes[$site->handle]['route']) &&
+                !isset($routes[$site->handle]['template'])
+            ) {
+                $siteRoutes = ArrayHelper::remove($routes, $site->handle);
 
-        if (
-            isset($routes[$siteHandle]) &&
-            is_array($routes[$siteHandle]) &&
-            !isset($routes[$siteHandle]['route']) &&
-            !isset($routes[$siteHandle]['template'])
-        ) {
-            $localizedRoutes = $routes[$siteHandle];
-            unset($routes[$siteHandle]);
-
-            // Merge them so that the localized routes come first
-            $routes = array_merge($localizedRoutes, $routes);
+                if ($site->handle === $sitesService->currentSite->handle) {
+                    // Merge them so that the localized routes come first
+                    $routes = array_merge($siteRoutes, $routes);
+                }
+            }
         }
 
         return $routes;

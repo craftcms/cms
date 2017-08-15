@@ -5,11 +5,12 @@ namespace craft\migrations;
 use Composer\Json\JsonFile;
 use Craft;
 use craft\db\Migration;
+use yii\base\Exception;
 
 /**
- * m170726_235332_drop_asset_packagist migration.
+ * m170731_190138_drop_asset_packagist migration.
  */
-class m170726_235332_drop_asset_packagist extends Migration
+class m170731_190138_drop_asset_packagist extends Migration
 {
     /**
      * @inheritdoc
@@ -17,8 +18,9 @@ class m170726_235332_drop_asset_packagist extends Migration
     public function safeUp()
     {
         // See if we can find composer.json
-        $jsonPath = defined('CRAFT_COMPOSER_PATH') ? CRAFT_COMPOSER_PATH : CRAFT_BASE_PATH.'/composer.json';
-        if (!file_exists($jsonPath)) {
+        try {
+            $jsonPath = Craft::$app->getComposer()->getJsonPath();
+        } catch (Exception $e) {
             Craft::warning('Could not remove the asset-packagist.org repo from composer.json because composer.json could not be found.', __METHOD__);
             return true;
         }
@@ -26,6 +28,10 @@ class m170726_235332_drop_asset_packagist extends Migration
         // Get the Composer config
         $json = new JsonFile($jsonPath);
         $config = $json->read();
+
+        if (!isset($config['repositories'])) {
+            return true;
+        }
 
         // Remove the asset-packagist repo, if it's in there
         foreach ($config['repositories'] as $key => $repo) {
@@ -48,7 +54,7 @@ class m170726_235332_drop_asset_packagist extends Migration
      */
     public function safeDown()
     {
-        echo "m170726_235332_drop_asset_packagist cannot be reverted.\n";
+        echo "m170731_190138_drop_asset_packagist cannot be reverted.\n";
         return false;
     }
 }

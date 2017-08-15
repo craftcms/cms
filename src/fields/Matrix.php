@@ -384,11 +384,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            /** @var MatrixBlockQuery $value */
-            $value
+            $value = $value
                 ->limit(null)
                 ->status(null)
-                ->enabledForSite(false);
+                ->enabledForSite(false)
+                ->all();
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
@@ -489,20 +489,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            $id = StringHelper::randomString();
+        $value = $value->all();
 
-            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
-                [
-                    'id' => $id,
-                    'name' => $id,
-                    'blockTypes' => $this->getBlockTypes(),
-                    'blocks' => $value,
-                    'static' => true
-                ]);
-        } else {
+        if (empty($value)) {
             return '<p class="light">'.Craft::t('app', 'No blocks.').'</p>';
         }
+
+        $id = StringHelper::randomString();
+
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
+            'id' => $id,
+            'name' => $id,
+            'blockTypes' => $this->getBlockTypes(),
+            'blocks' => $value,
+            'static' => true
+        ]);
     }
 
     /**

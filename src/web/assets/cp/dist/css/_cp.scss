@@ -69,15 +69,15 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar .topbar .settings { @include padding-right(0); }
 #global-sidebar .topbar .settingsmenu { @include padding-left(0); }
 
-#global-sidebar #taskicon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
-#global-sidebar #taskicon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
-#global-sidebar #taskicon > span.icon > canvas#taskicon-hover { opacity: 0; @include transition(opacity linear 100ms); }
-#global-sidebar #taskicon:hover .icon > span.icon > canvas#taskicon-hover { opacity: 1; }
+#global-sidebar #job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
+#global-sidebar #job-icon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
+#global-sidebar #job-icon > span.icon > canvas#job-icon-hover { opacity: 0; @include transition(opacity linear 100ms); }
+#global-sidebar #job-icon:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 
-#global-sidebar #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#global-sidebar #taskicon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
-#global-sidebar #taskicon:hover .progressbar { border-color: #fff; }
-#global-sidebar #taskicon:hover .progressbar-inner { background: #fff; }
+#global-sidebar #job-icon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar #job-icon .progressbar-inner { background: hsl($hue, 5%, 85%); @include transition(color linear 100ms); }
+#global-sidebar #job-icon:hover .progressbar { border-color: #fff; }
+#global-sidebar #job-icon:hover .progressbar-inner { background: #fff; }
 
 #global-sidebar .bottombar #account-info { height: 60px; @include display-flex; @include align-items(center); position: relative; @include padding(0, 17px, 0, 7px); }
 #global-sidebar .bottombar #account-info:after { display: none; }
@@ -130,15 +130,15 @@ body.mobile #container {
     #container { @include padding-left(220px); }
 }
 
-#tasks-hud { padding: 0; overflow: auto; }
-#tasks-hud .task { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
-#tasks-hud .task:after { @include clearafter; }
-#tasks-hud .task + .task { border-top: 1px solid $hairlineColor; }
-#tasks-hud .task .task-description { position: relative; }
-#tasks-hud .task .task-description .indent { position: absolute; top: -1px; @include left(-24px); @include margin-left(0); }
-#tasks-hud .task .task-status { @include floatright; @include margin-right(-114px); width: 100px; color: $lighttextcolor; text-align: center; }
-#tasks-hud .task .task-status .progressbar { position: static; margin-top: 4px; width: auto; }
-#tasks-hud .task .task-status .menubtn { @include margin-right(-22px); }
+#queue-hud { padding: 0; overflow: auto; }
+#queue-hud .job { @include padding(14px, 138px, 14px, 24px); overflow: hidden; }
+#queue-hud .job:after { @include clearafter; }
+#queue-hud .job + .job { border-top: 1px solid $hairlineColor; }
+#queue-hud .job .job-description { position: relative; }
+#queue-hud .job .job-description .indent { position: absolute; top: -1px; @include left(-24px); @include margin-left(0); }
+#queue-hud .job .job-status { @include floatright; @include margin-right(-114px); width: 100px; color: $lighttextcolor; text-align: center; }
+#queue-hud .job .job-status .progressbar { position: static; margin-top: 4px; width: auto; }
+#queue-hud .job .job-status .menubtn { @include margin-right(-22px); }
 
 #settingsmenu ul li a { @include padding-left(46px); }
 #settingsmenu ul li a img { width: 16px; height: 16px; position: absolute; margin-left: -23px; margin-top: 1px; }

@@ -713,14 +713,12 @@ class MigrationHelper
         $db = $migration ? $migration->db : Craft::$app->getDb();
         $rawTableName = $db->getSchema()->getRawTableName($tableName);
         $foreignKeyName = $db->getForeignKeyName($rawTableName, $columns);
-        $columnsStr = implode(',', $columns);
-        $refColumnsStr = implode(',', $refColumns);
 
         if ($migration !== null) {
-            $migration->addForeignKey($foreignKeyName, $rawTableName, $columnsStr, $refTable, $refColumnsStr, $onDelete, $onUpdate);
+            $migration->addForeignKey($foreignKeyName, $rawTableName, $columns, $refTable, $refColumns, $onDelete, $onUpdate);
         } else {
             $db->createCommand()
-                ->addForeignKey($foreignKeyName, $rawTableName, $columnsStr, $refTable, $refColumnsStr, $onDelete, $onUpdate)
+                ->addForeignKey($foreignKeyName, $rawTableName, $columns, $refTable, $refColumns, $onDelete, $onUpdate)
                 ->execute();
         }
     }

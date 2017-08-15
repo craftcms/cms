@@ -20,10 +20,10 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Structure;
+use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\tasks\ResaveElements;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -541,8 +541,7 @@ class Sections extends Component
                 $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
 
                 if (!empty($siteIds)) {
-                    Craft::$app->getTasks()->queueTask([
-                        'type' => ResaveElements::class,
+                    Craft::$app->getQueue()->push(new ResaveElements([
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
                         'elementType' => Entry::class,
                         'criteria' => [
@@ -552,7 +551,7 @@ class Sections extends Component
                             'enabledForSite' => false,
                             'limit' => null,
                         ]
-                    ]);
+                    ]));
                 }
             }
 
@@ -871,8 +870,7 @@ class Sections extends Component
             $section = $entryType->getSection();
             $siteIds = array_keys($section->getSiteSettings());
 
-            Craft::$app->getTasks()->queueTask([
-                'type' => ResaveElements::class,
+            Craft::$app->getQueue()->push(new ResaveElements([
                 'description' => Craft::t('app', 'Resaving {type} entries', ['type' => $entryType->name]),
                 'elementType' => Entry::class,
                 'criteria' => [
@@ -882,7 +880,7 @@ class Sections extends Component
                     'status' => null,
                     'enabledForSite' => false,
                 ]
-            ]);
+            ]));
         }
 
         return true;

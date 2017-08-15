@@ -395,6 +395,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getIterator(): ArrayIterator
     {
+        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
         return new ArrayIterator($this->all());
     }
 

@@ -10,12 +10,12 @@ namespace craft\web\twig\nodes;
 use craft\helpers\Template;
 
 /**
- * GetAttr is an alternative to Twig_Node_Expression_GetAttr, which sends attribute calls to [[Template::attribute()]] rather than twig_get_attribute().
+ * GetAttrNode is an alternative to Twig_Node_Expression_GetAttr, which sends attribute calls to [[Template::attribute()]] rather than twig_get_attribute().
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GetAttr extends \Twig_Node_Expression
+class GetAttrNode extends \Twig_Node_Expression
 {
     // Public Methods
     // =========================================================================

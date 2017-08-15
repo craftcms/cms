@@ -340,7 +340,6 @@ Om du inte förväntade dig det här e-postmeddelandet kan du bara ignorera det.
     'Expired' => 'Har löpt ut',
     'Expiry Date' => 'Sista giltighetsdatum',
     'Failed' => 'Misslyckades',
-    'Failed task' => 'Misslyckad uppgift',
     'Feed' => 'Feed',
     'Field Layout' => 'Fältlayout',
     'Field saved.' => 'Fält sparat.',

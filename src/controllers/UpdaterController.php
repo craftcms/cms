@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Composer\IO\BufferIO;
+use Composer\Util\Platform;
 use Craft;
 use craft\base\Plugin;
 use craft\errors\MigrateException;
@@ -16,6 +17,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use yii\base\Exception as YiiException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -23,7 +25,7 @@ use yii\web\Response;
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
- * UpdaterController various update tasks in coordination with the Craft.Updater JS class.
+ * UpdaterController handles various update tasks in coordination with the Craft.Updater JS class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -33,6 +35,7 @@ class UpdaterController extends Controller
     // Constants
     // =========================================================================
 
+    const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_BACKUP = 'backup';
     const ACTION_INSTALL = 'install';
     const ACTION_OPTIMIZE = 'optimize';
@@ -123,33 +126,21 @@ class UpdaterController extends Controller
             'Send for help',
         ]);
 
-        // Is there anything to install/update?
-        if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
-            $state = $this->_finishedState([
-                'status' => Craft::t('app', 'Nothing to update.')
-            ]);
-        } else if (Craft::$app->getIsInMaintenanceMode()) {
-            // Bail if Craft is already in maintenance mode
-            $state = [
-                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
-            ];
-        } else {
-            // Enable maintenance mode
-            Craft::$app->enableMaintenanceMode();
-
-            if (!empty($this->_data['install'])) {
-                $nextAction = self::ACTION_INSTALL;
-            } else {
-                $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-                $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
-            }
-            $state = $this->_actionState($nextAction);
-            $state['data'] = $this->_getHashedData();
-        }
-
+        $state = $this->_initialState();
+        $state['data'] = $this->_getHashedData();
         $this->getView()->registerJs('Craft.updater = (new Craft.Updater()).setState('.Json::encode($state).');');
 
         return $this->renderTemplate('_special/updates/go');
+    }
+
+    /**
+     * Rechecks for composer.json, if it couldn't be found in the initial state.
+     *
+     * @return Response
+     */
+    public function actionRecheckComposer(): Response
+    {
+        return $this->_send($this->_initialState());
     }
 
     /**
@@ -478,6 +469,70 @@ class UpdaterController extends Controller
     }
 
     /**
+     * Returns the initial state for the updater JS.
+     *
+     * @return array
+     */
+    private function _initialState(): array
+    {
+        // Is there anything to install/update?
+        if (empty($this->_data['install']) && empty($this->_data['migrate'])) {
+            return $this->_finishedState([
+                'status' => Craft::t('app', 'Nothing to update.')
+            ]);
+        }
+
+        // Is Craft already in Maintenance Mode?
+        if (Craft::$app->getIsInMaintenanceMode()) {
+            // Bail if Craft is already in maintenance mode
+            return [
+                'error' => Craft::t('app', 'It looks like someone is currently performing a system update.'),
+            ];
+        }
+
+        // If there's anything to install, make sure we're set up to use Composer
+        if (!empty($this->_data['install'])) {
+            // Make sure we can find composer.json
+            try {
+                Craft::$app->getComposer()->getJsonPath();
+            } catch (Exception $e) {
+                return [
+                    'error' => Craft::t('app', 'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
+                    'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
+                    'options' => [
+                        $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                    ]
+                ];
+            }
+
+            // Make sure COMPOSER_HOME/APPDATA/HOME is defined
+            if (!getenv('COMPOSER_HOME')) {
+                $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
+                if (!getenv($alt)) {
+                    return [
+                        'error' => Craft::t('app', 'The {alt} or COMPOSER_HOME environment variable must be set for Composer to run correctly.', ['alt' => $alt]),
+                        'options' => [
+                            $this->_actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                        ]
+                    ];
+                }
+            }
+        }
+
+        // Enable maintenance mode
+        Craft::$app->enableMaintenanceMode();
+
+        if (!empty($this->_data['install'])) {
+            $nextAction = self::ACTION_INSTALL;
+        } else {
+            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
+        }
+
+        return $this->_actionState($nextAction);
+    }
+
+    /**
      * Sends a state response.
      *
      * @param array $state
@@ -541,13 +596,13 @@ class UpdaterController extends Controller
      * Sends an "error" state response for a Composer error
      *
      * @param string     $error The status message to show
-     * @param \Exception $e     The exception that was thrown
+     * @param \Throwable $e     The exception that was thrown
      * @param BufferIO   $io    The IO object that Composer was instantiated with
      * @param array      $state
      *
      * @return Response
      */
-    private function _composerError(string $error, \Exception $e, BufferIO $io, array $state = []): Response
+    private function _composerError(string $error, \Throwable $e, BufferIO $io, array $state = []): Response
     {
         $state['error'] = $error;
         $state['errorDetails'] = $this->_composerErrorDetails($e, $io);
@@ -567,12 +622,12 @@ class UpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Exception $e  The exception that was thrown
+     * @param \Throwable $e  The exception that was thrown
      * @param BufferIO   $io The IO object that Composer was instantiated with
      *
      * @return string
      */
-    private function _composerErrorDetails(\Exception $e, BufferIO $io): string
+    private function _composerErrorDetails(\Throwable $e, BufferIO $io): string
     {
         return Craft::t('app', 'Error:').' '.$e->getMessage()."\n\n".
             Craft::t('app', 'Output:').' '.strip_tags($io->getOutput());
@@ -591,6 +646,9 @@ class UpdaterController extends Controller
         $state['nextAction'] = $nextAction;
 
         switch ($nextAction) {
+            case self::ACTION_RECHECK_COMPOSER:
+                $state['status'] = Craft::t('app', 'Checking…');
+                break;
             case self::ACTION_BACKUP:
                 $state['status'] = Craft::t('app', 'Backing-up database…');
                 break;

@@ -17,8 +17,8 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\helpers\App;
 use craft\models\Site;
+use craft\queue\jobs\ResaveElements;
 use craft\records\Site as SiteRecord;
-use craft\tasks\ResaveAllElements;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -414,12 +414,20 @@ class Sites extends Component
             }
 
             // Re-save all of the localizable elements
-            if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::class)) {
-                Craft::$app->getTasks()->queueTask([
-                    'type' => ResaveAllElements::class,
-                    'siteId' => $this->getPrimarySite()->id,
-                    'localizableOnly' => true,
-                ]);
+            $queue = Craft::$app->getQueue();
+            $siteId = $this->getPrimarySite()->id;
+            foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+                /** @var Element|string $elementType */
+                if ($elementType::isLocalized()) {
+                    $queue->push(new ResaveElements([
+                        'elementType' => $elementType,
+                        'criteria' => [
+                            'siteId' => $siteId,
+                            'status' => null,
+                            'enabledForSite' => false
+                        ]
+                    ]));
+                }
             }
         }
 
@@ -820,11 +828,9 @@ class Sites extends Component
                     }
 
                     $this->currentSite = $site;
-                } else if (!Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                } else {
                     // Default to the primary site
                     $this->currentSite = $this->getPrimarySite();
-                } else {
-                    $this->currentSite = null;
                 }
             }
 

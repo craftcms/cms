@@ -711,9 +711,11 @@ class Asset extends Element
     }
 
     /**
-     * @return string
+     * Returns the file’s MIME type, if it can be determined.
+     *
+     * @return string|null
      */
-    public function getMimeType(): string
+    public function getMimeType()
     {
         // todo: maybe we should be passing this off to volume types
         // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
@@ -944,6 +946,18 @@ class Asset extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'width';
+        $attributes[] = 'height';
+
+        return $attributes;
     }
 
     /**

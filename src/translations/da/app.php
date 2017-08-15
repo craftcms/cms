@@ -340,7 +340,6 @@ Tak fordu du oprette en konto med {{siteName}}! Aktiver din konto ved at klikke 
     'Expired' => 'Udløbet',
     'Expiry Date' => 'Udløbsdato',
     'Failed' => 'Mislykkedes',
-    'Failed task' => 'Mislykkedes med opgaven',
     'Feed' => 'Feed',
     'Field Layout' => 'Feltets Layout',
     'Field saved.' => 'Felt gemt.',

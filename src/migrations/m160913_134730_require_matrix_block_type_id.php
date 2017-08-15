@@ -31,7 +31,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
         // Make typeId required
         MigrationHelper::dropForeignKeyIfExists('{{%matrixblocks}}', ['typeId'], $this);
         $this->alterColumn('{{%matrixblocks}}', 'typeId', $this->integer()->notNull());
-        $this->addForeignKey(null, '{{%matrixblocks}}', 'typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey(null, '{{%matrixblocks}}', ['typeId'], '{{%matrixblocktypes}}', ['id'], 'CASCADE', null);
     }
 
     /**

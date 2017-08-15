@@ -13,7 +13,6 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
-use craft\events\UserTokenEvent;
 use craft\helpers\Assets;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -287,8 +286,16 @@ class UsersController extends Controller
             }
         }
 
-        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-            $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
+        if (!empty($user)) {
+            try {
+                $emailSent = Craft::$app->getUsers()->sendPasswordResetEmail($user);
+            } catch (\Throwable $e) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $emailSent = false;
+            }
+            if (!$emailSent) {
+                $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
+            }
         }
 
         // If there haven't been any errors, or there were, and it's not one logged in user editing another
@@ -1081,15 +1088,20 @@ class UsersController extends Controller
             $originalEmail = $user->email;
             $user->email = $user->unverifiedEmail;
 
-            if ($isNewUser) {
-                // Send the activation email
-                $success = Craft::$app->getUsers()->sendActivationEmail($user);
-            } else {
-                // Send the standard verification email
-                $success = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+            try {
+                if ($isNewUser) {
+                    // Send the activation email
+                    $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+                } else {
+                    // Send the standard verification email
+                    $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+                }
+            } catch (\Throwable $e) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $emailSent = false;
             }
 
-            if (!$success) {
+            if (!$emailSent) {
                 Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
             }
 
@@ -1239,7 +1251,12 @@ class UsersController extends Controller
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
 
-        $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        try {
+            $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+        } catch (\Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            $emailSent = false;
+        }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => $emailSent]);
@@ -1762,7 +1779,7 @@ class UsersController extends Controller
         if ($userToProcess) {
             // Fire a 'beforeVerifyUser' event
             Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
-                new UserTokenEvent([
+                new UserEvent([
                     'user' => $userToProcess
                 ]));
 
@@ -1775,7 +1792,7 @@ class UsersController extends Controller
 
         // Fire an 'afterVerifyUser' event
         Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL,
-            new UserTokenEvent([
+            new UserEvent([
                 'user' => $userToProcess
             ]));
 

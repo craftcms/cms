@@ -193,6 +193,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
+            new \Twig_SimpleTest('instance of', function($obj, $class) {
+                return $obj instanceof $class;
+            }),
             new \Twig_SimpleTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),

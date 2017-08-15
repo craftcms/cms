@@ -88,8 +88,8 @@ class CraftSupport extends Widget
 
         $envInfoJs = Json::encode([
             'Craft version' => Craft::$app->getVersion().' ('.Craft::$app->getEditionName().')',
-            'PHP version' => PHP_VERSION,
-            'Database driver & version' => $driver.' '.$db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION),
+            'PHP version' => str_replace('~', '\~', PHP_VERSION),
+            'Database driver & version' => $driver.' '.str_replace('~', '\~', $db->getMasterPdo()->getAttribute(PDO::ATTR_SERVER_VERSION)),
             'Plugins & versions' => $plugins,
         ]);
 

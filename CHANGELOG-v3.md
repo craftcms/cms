@@ -1,6 +1,85 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## 3.0.0-beta.24 - 2017-08-15
+
+### Added
+- Craft’s tasks implementation has been replaced with a queue, based on the [Yii 2 Queue Extension](https://github.com/yiisoft/yii2-queue). ([#1910](https://github.com/craftcms/cms/issues/1910))
+- The “Failed” message in the queue HUD in the Control Panel now shows the full error message as alt text. ([#855](https://github.com/craftcms/cms/issues/855))
+- It’s now possible to install Craft from the command line, using the new `install` command. ([#1917](https://github.com/craftcms/cms/pull/1917))
+- Added the `instance of()` Twig test.
+- Added `craft\base\FlysystemVolume`, which replaces `craft\base\Volume` as the new base class for Flysystem-based volumes.
+- Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
+- Added `craft\controllers\QueueController`.
+- Added `craft\events\UserEvent`.
+- Added `craft\queue\BaseJob`, a base class for queue jobs that adds support for descriptions and progress.
+- Added `craft\queue\Command`, which provides `queue/run`, `queue/listen`, and `queue/info` console commands.
+- Added `craft\queue\InfoAction`.
+- Added `craft\queue\JobInterface`, an interface for queue jobs that want to support descriptions and progress.
+- Added `craft\queue\jobs\DeleteStaleTemplateCaches`, replacing `craft\tasks\DeleteStaleTemplateCaches`.
+- Added `craft\queue\FindAndReplace`, replacing `craft\tasks\FindAndReplace`.
+- Added `craft\queue\GeneratePendingTransforms`, replacing `craft\tasks\GeneratePendingTransforms`.
+- Added `craft\queue\LocalizeRelations`, replacing `craft\tasks\LocalizeRelations`.
+- Added `craft\queue\UpdateElementSlugsAndUris`, replacing `craft\tasks\UpdateElementSlugsAndUris`.
+- Added `craft\queue\Queue`, a built-in queue driver.
+- Added `craft\queue\QueueInterface`, an interface for queue drivers that want to support the queue UI in the Control Panel.
+- Added `craft\services\Composer::getJsonPath()`.
+- Added `craft\services\Volumes::getVolumeByHandle()`.
+
+### Changed
+- Renamed the `runTasksAutomatically` config setting to `runQueueAutomatically`.
+- Logs that occur during `queue` requests now get saved in `storage/logs/queue.log`.
+- The updater now ensures it can find `composer.json` before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1883](https://github.com/craftcms/cms/issues/1883))
+- The updater now ensures that the `COMPOSER_HOME`, `HOME` (\*nix), or `APPDATA` (Windows) environment variable is set before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1890](https://github.com/craftcms/cms/issues/1890#issuecomment-319715460)) 
+- `craft\mail\Mailer::send()` now processes Twig code in the email message before parsing it as Markdown, if the message was composed via `craft\mail\Mailer::composeFromKey()`. ([#1895](https://github.com/craftcms/cms/pull/1895))
+- `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
+- Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
+- Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
+- `craft\base\Volume` is now only focussed on things that every volume would need, regardless of whether it will use Flysystem under the hood.
+- `craft\base\VolumeInterface::createFileByStream()`, `updateFileByStream()`, `deleteFile()`, `renameFile()`, `copyFile()`, `createDir()`, `deleteDir()`, and `renameDir()` no longer require their implementation methods to return a boolean value.
+- `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
+
+### Deprecated
+- Looping through element queries directly is now deprecated. Use the `all()` function to fetch the query results before looping over them. ([#1902](https://github.com/craftcms/cms/issues/1902))
+
+### Removed
+- Removed `craft\base\Task`.
+- Removed `craft\base\TaskInterface`.
+- Removed `craft\base\TaskTrait`.
+- Removed `craft\controllers\TasksController`.
+- Removed `craft\controllers\VolumesController::actionLoadVolumeTypeData()`.
+- Removed `craft\db\TaskQuery`.
+- Removed `craft\events\MailFailureEvent`.
+- Removed `craft\events\TaskEvent`.
+- Removed `craft\events\UserActivateEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserSuspendEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserTokenEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnlockEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnsuspendEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\mail\Mailer::EVENT_SEND_MAIL_FAILURE`.
+- Removed `craft\records\Task`.
+- Removed `craft\services\Tasks`.
+- Removed `craft\tasks\ResaveAllElements`.
+- Removed `craft\web\Request::getQueryParamsWithoutPath()`.
+- Removed `craft\web\twig\variables\Tasks`, which provided the deprecated `craft.tasks` template variable.
+
+### Fixed
+- Fixed a migration error that could occur if `composer.json` didn’t have any custom `repositories` defined.
+- Fixed a bug where clicking “Go to Updates” from the Updates widget would take you to a 404, if the available update info wasn’t already cached before loading the Dashboard. ([#1882](https://github.com/craftcms/cms/issues/1882))
+- Fixed a SQL error that could occur when querying for users using the `lastLoginDate` param. ([#1886](https://github.com/craftcms/cms/issues/1886))
+- Fixed a bug where custom field methods on element queries weren’t returning a reference to the element query object. ([#1887](https://github.com/craftcms/cms/issues/1887))
+- Fixed a PHP error that could occur if a TypeError or other non-Exception error occurred when running the updater, masking the original error.
+- Fixed a bug where `craft\web\Request::getQueryStringWithoutPath()` was including route params in addition to query string params. ([#1891](https://github.com/craftcms/cms/issues/1891))
+- Fixed a PHP error that occurred if a volume with overridden config settings in `config/volumes.php` was missing its type. ([#1899](https://github.com/craftcms/cms/issues/1899))
+- Fixed a bug where `craft\helpers\StringHelper::removeRight()` was actually removing the substring if it existed as a prefix, rather than a suffix. ([#1900](https://github.com/craftcms/cms/pull/1900))
+- Fixed a PHP error that occurred if `config/routes.php` specified any site-specific routes that didn’t target the currently-requested site.
+- Fixed lots of bugs with the Deprecated panel in the Debug Toolbar.
+- Fixed a 404 error for `bootstrap.js` that occurred when the Debug Toolbar was opened.
+- Fixed some deprecation errors caused by relational and Matrix field inputs.
+- Fixed a bug where a plugin would get a PHP error if it tried to get the current site in the middle of a Craft update.
+- Fixed a bug where the Migrations utility would display an error message even if the migrations were applied successfully. ([#1911](https://github.com/craftcms/cms/issues/1911))
+- Fixed a PHP error that occurred if calling `getMimeType()` on an asset with an extension with an unknown MIME type. ([#1919](https://github.com/craftcms/cms/pull/1919))
+
 ## 3.0.0-beta.23 - 2017-07-28
 
 ### Added

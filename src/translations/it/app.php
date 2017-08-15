@@ -340,7 +340,6 @@ return [
     'Expired' => 'Scaduto',
     'Expiry Date' => 'Data di scadenza',
     'Failed' => 'Non riuscito',
-    'Failed task' => 'Compito non riuscito',
     'Feed' => 'Feed',
     'Field Layout' => 'Struttura del campo',
     'Field saved.' => 'Campo salvato.',
