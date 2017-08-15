@@ -68,6 +68,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a 404 error for `bootstrap.js` that occurred when the Debug Toolbar was opened.
 - Fixed some deprecation errors caused by relational and Matrix field inputs.
 - Fixed a bug where a plugin would get a PHP error if it tried to get the current site in the middle of a Craft update.
+- Fixed a bug where the Migrations utility would display an error message even if the migrations were applied successfully. ([#1911](https://github.com/craftcms/cms/issues/1911))
 
 ## 3.0.0-beta.23 - 2017-07-28
 
