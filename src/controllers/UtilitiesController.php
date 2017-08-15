@@ -14,9 +14,10 @@ use craft\base\Field;
 use craft\base\UtilityInterface;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
-use craft\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -445,11 +446,10 @@ class UtilitiesController extends Controller
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => FindAndReplaceTask::class,
+            Craft::$app->getQueue()->push(new FindAndReplace([
                 'find' => $params['find'],
-                'replace' => $params['replace']
-            ]);
+                'replace' => $params['replace'],
+            ]));
         }
 
         return $this->asJson([
@@ -548,9 +548,10 @@ class UtilitiesController extends Controller
 
         $migrator = Craft::$app->getContentMigrator();
 
-        if ($migrator->up(0)) {
+        try {
+            $migrator->up();
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
-        } else {
+        } catch (MigrationException $e) {
             Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 

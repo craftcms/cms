@@ -65,14 +65,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if (isset($logDispatcher->targets[0]) && $logDispatcher->targets[0] instanceof FileTarget) {
                 /** @var FileTarget $logTarget */
                 $logTarget = $logDispatcher->targets[0];
-
-                $logPath404 = Craft::getAlias('@storage/logs/web-404s.log');
-
-                if ($logPath404 === false) {
-                    throw new Exception('Could not find the 404 log file path.');
-                }
-
-                $logTarget->logFile = $logPath404;
+                $logTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
             }
         }
 

@@ -243,41 +243,4 @@ class VolumesController extends Controller
 
         return $this->asJson(['success' => true]);
     }
-
-    /**
-     * Load Assets VolumeType data.
-     *
-     * This is used to, for example, load Amazon S3 bucket list or Rackspace Cloud Storage Containers.
-     *
-     * @return Response
-     */
-    public function actionLoadVolumeTypeData(): Response
-    {
-        $this->requirePostRequest();
-        $this->requireAcceptsJson();
-
-        $request = Craft::$app->getRequest();
-        $volumeType = $request->getRequiredBodyParam('volumeType');
-        $dataType = $request->getRequiredBodyParam('dataType');
-        $params = $request->getBodyParam('params');
-
-        $volumeType = 'craft\volumes\\'.$volumeType;
-
-        if (!class_exists($volumeType)) {
-            return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));
-        }
-
-        try {
-            $result = call_user_func_array(
-                [
-                    $volumeType,
-                    'load'.ucfirst($dataType)
-                ],
-                $params);
-
-            return $this->asJson($result);
-        } catch (\Throwable $exception) {
-            return $this->asErrorJson($exception->getMessage());
-        }
-    }
 }

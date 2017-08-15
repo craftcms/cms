@@ -341,7 +341,6 @@ return [
     'Expired' => '期限切れ',
     'Expiry Date' => '有効期限の日付',
     'Failed' => '失敗しました',
-    'Failed task' => 'タスクに失敗しました',
     'Feed' => 'フィード',
     'Field Layout' => 'フィールドの配置',
     'Field saved.' => 'フィールドを保存しました。',

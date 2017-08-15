@@ -449,6 +449,22 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable('{{%queue}}', [
+            'id' => $this->primaryKey(),
+            'job' => $this->binary()->notNull(),
+            'description' => $this->text(),
+            'timePushed' => $this->integer()->notNull(),
+            'ttr' => $this->integer()->notNull(),
+            'delay' => $this->integer()->defaultValue(0)->notNull(),
+            'priority' => $this->integer()->unsigned()->notNull()->defaultValue(1024),
+            'dateReserved' => $this->dateTime(),
+            'timeUpdated' => $this->integer(),
+            'progress' => $this->smallInteger()->notNull()->defaultValue(0),
+            'attempt' => $this->integer(),
+            'fail' => $this->boolean()->defaultValue(false),
+            'dateFailed' => $this->dateTime(),
+            'error' => $this->text(),
+        ]);
         $this->createTable('{{%relations}}', [
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),
@@ -566,22 +582,6 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
             'PRIMARY KEY(id)',
-        ]);
-        $this->createTable('{{%tasks}}', [
-            'id' => $this->primaryKey(),
-            'root' => $this->integer()->unsigned(),
-            'lft' => $this->integer()->notNull()->unsigned(),
-            'rgt' => $this->integer()->notNull()->unsigned(),
-            'level' => $this->smallInteger()->notNull()->unsigned(),
-            'currentStep' => $this->integer()->unsigned(),
-            'totalSteps' => $this->integer()->unsigned(),
-            'status' => $this->enum('status', ['pending', 'error', 'running']),
-            'type' => $this->string()->notNull(),
-            'description' => $this->string(),
-            'settings' => $this->mediumText()->notNull(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
         ]);
         $this->createTable('{{%templatecacheelements}}', [
             'cacheId' => $this->integer()->notNull(),
@@ -805,6 +805,8 @@ class Install extends Migration
         $this->createIndex(null, '{{%migrations}}', ['type', 'pluginId'], false);
         $this->createIndex(null, '{{%oauth_tokens}}', ['provider', 'userId'], false);
         $this->createIndex(null, '{{%plugins}}', ['handle'], true);
+        $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'timePushed']);
+        $this->createIndex(null, '{{%queue}}', ['fail', 'timeUpdated', 'delay']);
         $this->createIndex(null, '{{%relations}}', ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], true);
         $this->createIndex(null, '{{%relations}}', ['sourceId'], false);
         $this->createIndex(null, '{{%relations}}', ['targetId'], false);
@@ -833,10 +835,6 @@ class Install extends Migration
         $this->createIndex(null, '{{%taggroups}}', ['name'], true);
         $this->createIndex(null, '{{%taggroups}}', ['handle'], true);
         $this->createIndex(null, '{{%tags}}', ['groupId'], false);
-        $this->createIndex(null, '{{%tasks}}', ['root'], false);
-        $this->createIndex(null, '{{%tasks}}', ['lft'], false);
-        $this->createIndex(null, '{{%tasks}}', ['rgt'], false);
-        $this->createIndex(null, '{{%tasks}}', ['level'], false);
         $this->createIndex(null, '{{%templatecacheelements}}', ['cacheId'], false);
         $this->createIndex(null, '{{%templatecacheelements}}', ['elementId'], false);
         $this->createIndex(null, '{{%templatecachequeries}}', ['cacheId'], false);

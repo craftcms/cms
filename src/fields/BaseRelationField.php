@@ -18,7 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
-use craft\tasks\LocalizeRelations;
+use craft\queue\jobs\LocalizeRelations;
 use craft\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
@@ -478,10 +478,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function afterSave(bool $isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::class,
+            Craft::$app->getQueue()->push(new LocalizeRelations([
                 'fieldId' => $this->id,
-            ]);
+            ]));
         }
 
         parent::afterSave($isNew);

@@ -33,8 +33,8 @@ use craft\helpers\UrlHelper;
 use craft\models\AssetTransform;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
+use craft\queue\jobs\GeneratePendingTransforms;
 use craft\records\VolumeFolder as VolumeFolderRecord;
-use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\InvalidParamException;
@@ -74,6 +74,11 @@ class Assets extends Component
      * @var
      */
     private $_foldersById;
+
+    /**
+     * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
+     */
+    private $_queuedGeneratePendingTransformsJob = false;
 
     // Public Methods
     // =========================================================================
@@ -574,11 +579,10 @@ class Assets extends Component
                     return UrlHelper::resourceUrl('404');
                 }
             } else {
-                // Queue up a new Generate Pending Transforms task, if there isn't one already
-                $tasks = Craft::$app->getTasks();
-
-                if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
-                    $tasks->createTask(GeneratePendingTransforms::class);
+                // Queue up a new Generate Pending Transforms job
+                if (!$this->_queuedGeneratePendingTransformsJob) {
+                    Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+                    $this->_queuedGeneratePendingTransformsJob = true;
                 }
 
                 // Return the temporary transform URL

@@ -2019,21 +2019,21 @@ body.rtl #global-sidebar .topbar .settings { padding-left: 0; }
 body.ltr #global-sidebar .topbar .settingsmenu { padding-left: 0; }
 body.rtl #global-sidebar .topbar .settingsmenu { padding-right: 0; }
 
-#global-sidebar #taskicon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
+#global-sidebar #job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
 
-#global-sidebar #taskicon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
+#global-sidebar #job-icon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
 
-#global-sidebar #taskicon > span.icon > canvas#taskicon-hover { opacity: 0; -webkit-transition: opacity linear 100ms; -moz-transition: opacity linear 100ms; -ms-transition: opacity linear 100ms; transition: opacity linear 100ms; }
+#global-sidebar #job-icon > span.icon > canvas#job-icon-hover { opacity: 0; -webkit-transition: opacity linear 100ms; -moz-transition: opacity linear 100ms; -ms-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 
-#global-sidebar #taskicon:hover .icon > span.icon > canvas#taskicon-hover { opacity: 1; }
+#global-sidebar #job-icon:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 
-#global-sidebar #taskicon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: #d7d9db; -webkit-transition: color linear 100ms; -moz-transition: color linear 100ms; -ms-transition: color linear 100ms; transition: color linear 100ms; }
+#global-sidebar #job-icon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: #d7d9db; -webkit-transition: color linear 100ms; -moz-transition: color linear 100ms; -ms-transition: color linear 100ms; transition: color linear 100ms; }
 
-#global-sidebar #taskicon .progressbar-inner { background: #d7d9db; -webkit-transition: color linear 100ms; -moz-transition: color linear 100ms; -ms-transition: color linear 100ms; transition: color linear 100ms; }
+#global-sidebar #job-icon .progressbar-inner { background: #d7d9db; -webkit-transition: color linear 100ms; -moz-transition: color linear 100ms; -ms-transition: color linear 100ms; transition: color linear 100ms; }
 
-#global-sidebar #taskicon:hover .progressbar { border-color: #fff; }
+#global-sidebar #job-icon:hover .progressbar { border-color: #fff; }
 
-#global-sidebar #taskicon:hover .progressbar-inner { background: #fff; }
+#global-sidebar #job-icon:hover .progressbar-inner { background: #fff; }
 
 #global-sidebar .bottombar #account-info { height: 60px; display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: center; align-items: center; position: relative; }
 body.ltr #global-sidebar .bottombar #account-info { padding: 0 17px 0 7px; }
@@ -2078,34 +2078,34 @@ body.mobile #container { overflow-y: scroll; /* has to be scroll, not auto */ -w
   body.rtl:not(.showing-nav) #global-sidebar { -webkit-transform: translate(220px, 0); -moz-transform: translate(220px, 0); -ms-transform: translate(220px, 0); -o-transform: translate(220px, 0); transform: translate(220px, 0); } }
 @media print { body.ltr #container { padding-left: 220px; }
   body.rtl #container { padding-right: 220px; } }
-#tasks-hud { padding: 0; overflow: auto; }
+#queue-hud { padding: 0; overflow: auto; }
 
-#tasks-hud .task { overflow: hidden; }
-body.ltr #tasks-hud .task { padding: 14px 138px 14px 24px; }
-body.rtl #tasks-hud .task { padding: 14px 24px 14px 138px; }
+#queue-hud .job { overflow: hidden; }
+body.ltr #queue-hud .job { padding: 14px 138px 14px 24px; }
+body.rtl #queue-hud .job { padding: 14px 24px 14px 138px; }
 
-#tasks-hud .task:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+#queue-hud .job:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
-#tasks-hud .task + .task { border-top: 1px solid #e3e5e8; }
+#queue-hud .job + .job { border-top: 1px solid #e3e5e8; }
 
-#tasks-hud .task .task-description { position: relative; }
+#queue-hud .job .job-description { position: relative; }
 
-#tasks-hud .task .task-description .indent { position: absolute; top: -1px; }
-body.ltr #tasks-hud .task .task-description .indent { left: -24px; }
-body.rtl #tasks-hud .task .task-description .indent { right: -24px; }
-body.ltr #tasks-hud .task .task-description .indent { margin-left: 0; }
-body.rtl #tasks-hud .task .task-description .indent { margin-right: 0; }
+#queue-hud .job .job-description .indent { position: absolute; top: -1px; }
+body.ltr #queue-hud .job .job-description .indent { left: -24px; }
+body.rtl #queue-hud .job .job-description .indent { right: -24px; }
+body.ltr #queue-hud .job .job-description .indent { margin-left: 0; }
+body.rtl #queue-hud .job .job-description .indent { margin-right: 0; }
 
-#tasks-hud .task .task-status { width: 100px; color: #b9bfc6; text-align: center; }
-body.ltr #tasks-hud .task .task-status { float: right; }
-body.rtl #tasks-hud .task .task-status { float: left; }
-body.ltr #tasks-hud .task .task-status { margin-right: -114px; }
-body.rtl #tasks-hud .task .task-status { margin-left: -114px; }
+#queue-hud .job .job-status { width: 100px; color: #b9bfc6; text-align: center; }
+body.ltr #queue-hud .job .job-status { float: right; }
+body.rtl #queue-hud .job .job-status { float: left; }
+body.ltr #queue-hud .job .job-status { margin-right: -114px; }
+body.rtl #queue-hud .job .job-status { margin-left: -114px; }
 
-#tasks-hud .task .task-status .progressbar { position: static; margin-top: 4px; width: auto; }
+#queue-hud .job .job-status .progressbar { position: static; margin-top: 4px; width: auto; }
 
-body.ltr #tasks-hud .task .task-status .menubtn { margin-right: -22px; }
-body.rtl #tasks-hud .task .task-status .menubtn { margin-left: -22px; }
+body.ltr #queue-hud .job .job-status .menubtn { margin-right: -22px; }
+body.rtl #queue-hud .job .job-status .menubtn { margin-left: -22px; }
 
 body.ltr #settingsmenu ul li a { padding-left: 46px; }
 body.rtl #settingsmenu ul li a { padding-right: 46px; }

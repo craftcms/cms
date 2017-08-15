@@ -5,23 +5,23 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\tasks;
+namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Task;
 use craft\elements\db\ElementQuery;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
+use craft\queue\BaseJob;
+use yii\base\Exception;
 
 /**
- * ResaveElements represents a Resave Elements background task.
+ * ResaveElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ResaveElements extends Task
+class ResaveElements extends BaseJob
 {
     // Properties
     // =========================================================================
@@ -36,23 +36,13 @@ class ResaveElements extends Task
      */
     public $criteria;
 
-    /**
-     * @var int|null
-     */
-    private $_siteId;
-
-    /**
-     * @var int[]|null
-     */
-    private $_elementIds;
-
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function getTotalSteps(): int
+    public function execute($queue)
     {
         $class = $this->elementType;
 
@@ -70,46 +60,17 @@ class ResaveElements extends Task
             ->limit(null)
             ->orderBy(null);
 
-        $this->_siteId = $query->siteId;
-        $this->_elementIds = $query->ids();
+        $totalElements = $query->count();
+        $currentElement = 0;
 
-        return count($this->_elementIds);
-    }
+        foreach ($query->each() as $element) {
+            $this->setProgress($queue, $currentElement++ / $totalElements);
 
-    /**
-     * @inheritdoc
-     */
-    public function runStep(int $step)
-    {
-        try {
             /** @var Element $element */
-            $elementId = $this->_elementIds[$step];
-            $element = Craft::$app->getElements()->getElementById($elementId, $this->elementType, $this->_siteId);
-
-            if (!$element) {
-                return true;
-            }
-
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
-
             if (!Craft::$app->getElements()->saveElement($element)) {
-                $errorMessage = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
-
-                foreach ($element->getErrors() as $attribute => $errors) {
-                    foreach ($errors as $error) {
-                        $errorMessage .= "\n - {$error}";
-                    }
-                }
-
-                return $errorMessage;
+                throw new Exception('Couldn’t save element '.$element->id.' ('.get_class($element).') due to validation errors.');
             }
-
-            return true;
-        } catch (\Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            $class = $this->elementType;
-
-            return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }
     }
 
