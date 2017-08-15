@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2989  2017-08-15
 
 ### Added
 - Added the [onLockUser](https://craftcms.com/docs/plugins/events-reference#users-onLockUser) event, which fires when a user account is locked.
