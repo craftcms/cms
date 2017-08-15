@@ -11,7 +11,7 @@ Craft CMS Changelog
 - Fixed a bug where it was possible for users to be redirected to a 404 in the Control Panel after logging in. ([#1901](https://github.com/craftcms/cms/issues/1901))
 - Fixed a bug where users would get one extra login attempt than the [maxInvalidLogins](https://craftcms.com/docs/config-settings#maxInvalidLogins) config setting was set to.
 
-## 2.6.2988  2017-07-28
+## 2.6.2988 - 2017-07-28
 
 ### Changed
 - Added `.m2t` to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
