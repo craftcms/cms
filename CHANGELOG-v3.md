@@ -45,6 +45,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\TaskInterface`.
 - Removed `craft\base\TaskTrait`.
 - Removed `craft\controllers\TasksController`.
+- Removed `craft\controllers\VolumesController::actionLoadVolumeTypeData()`.
 - Removed `craft\db\TaskQuery`.
 - Removed `craft\events\MailFailureEvent`.
 - Removed `craft\events\TaskEvent`.
