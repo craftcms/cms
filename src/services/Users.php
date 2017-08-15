@@ -483,6 +483,7 @@ class Users extends Component
 
         // Was that one too many?
         $maxInvalidLogins = Craft::$app->getConfig()->getGeneral()->maxInvalidLogins;
+        $alreadyLocked = $user->locked;
 
         if ($maxInvalidLogins) {
             if ($this->_isUserInsideInvalidLoginWindow($userRecord)) {
@@ -513,7 +514,7 @@ class Users extends Component
         // Update the User model too
         $user->lastInvalidLoginDate = $now;
 
-        if ($user->locked && $this->hasEventHandlers(self::EVENT_AFTER_LOCK_USER)) {
+        if (!$alreadyLocked && $user->locked && $this->hasEventHandlers(self::EVENT_AFTER_LOCK_USER)) {
             // Fire an 'afterLockUser' event
             $this->trigger(self::EVENT_AFTER_LOCK_USER, new UserEvent([
                 'user' => $user,
