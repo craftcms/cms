@@ -64,6 +64,7 @@
 
 					<template v-if="paymentMode == 'newCard'">
 						<credit-card v-model="creditCard"></credit-card>
+						<checkbox-field id="saveCreditCard" label="Save as my new credit card" />
 					</template>
 				</template>
 				<template v-else>
@@ -135,6 +136,8 @@
 					</div>
 				</div>
 
+				<checkbox-field id="saveBillingInfos" label="Save as my new billing informations" />
+
 				<textarea-field placeholder="Notes" id="businessNotes" v-model="billing.businessNotes"></textarea-field>
 
 				<a class="btn submit" @click="showBilling=false">Continue</a>
@@ -164,6 +167,7 @@
 </template>
 
 <script>
+    import CheckboxField from './fields/CheckboxField';
     import TextareaField from './fields/TextareaField';
     import TextField from './fields/TextField';
     import TextInput from './inputs/TextInput';
@@ -173,6 +177,7 @@
 
     export default {
         components: {
+            CheckboxField,
             TextareaField,
             TextField,
             TextInput,
