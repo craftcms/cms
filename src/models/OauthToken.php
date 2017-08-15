@@ -11,12 +11,12 @@ use craft\base\Model;
 use DateTime;
 
 /**
- * Class PluginStoreToken model.
+ * Class OauthToken model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PluginStoreToken extends Model
+class OauthToken extends Model
 {
     // Properties
     // =========================================================================
@@ -30,6 +30,11 @@ class PluginStoreToken extends Model
      * @var int|null
      */
     public $userId;
+
+    /**
+     * @var string
+     */
+    public $provider;
 
     /**
      * @var string|null

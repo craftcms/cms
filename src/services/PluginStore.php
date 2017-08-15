@@ -13,9 +13,9 @@ use yii\base\Component;
 use GuzzleHttp\Client;
 use DateTime;
 use DateInterval;
-use craft\models\PluginStoreToken;
+use craft\models\OauthToken;
 use craft\errors\TokenNotFoundException;
-use craft\records\PluginStoreToken as PluginStoreTokenRecord;
+use craft\records\OauthToken as OauthTokenRecord;
 
 /**
  * Class PluginStore service.
@@ -97,8 +97,9 @@ class PluginStore extends Component
             $saveToSession = false;
         }
 
-        $token = new PluginStoreToken;
+        $token = new OauthToken;
         $token->userId = Craft::$app->getUser()->getIdentity()->id;
+        $token->provider = 'craftid';
         $token->accessToken = $tokenArray['access_token'];
         $token->tokenType = $tokenArray['token_type'];
         $token->expiresIn = $tokenArray['expires_in'];
@@ -175,7 +176,7 @@ class PluginStore extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%plugin_store_tokens}}', ['userId' => $userId])
+            ->delete('{{%oauth_tokens}}', ['userId' => $userId])
             ->execute();
 
         return true;
@@ -186,14 +187,14 @@ class PluginStore extends Component
      *
      * @param $userId
      *
-     * @return PluginStoreToken
+     * @return OauthToken
      */
     public function getTokenByUserId($userId)
     {
-        $record = PluginStoreTokenRecord::findOne(['userId' => $userId]);
+        $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 
         if ($record) {
-            return new PluginStoreToken($record->getAttributes());
+            return new OauthToken($record->getAttributes());
         }
     }
 
@@ -205,17 +206,17 @@ class PluginStore extends Component
      *
      * @param int $id
      *
-     * @return PluginStoreTokenRecord
+     * @return OauthTokenRecord
      */
-    private function _getPluginStoreTokenRecordById($id = null)
+    private function _getOauthTokenRecordById($id = null)
     {
         if ($id) {
-            $record = PluginStoreTokenRecord::findOne($id);
+            $record = OauthTokenRecord::findOne($id);
             if (!$record) {
                 throw new TokenNotFoundException("No token exists with the ID '{$id}'");
             }
         } else {
-            $record = new PluginStoreTokenRecord();
+            $record = new OauthTokenRecord();
         }
 
         return $record;
@@ -225,18 +226,19 @@ class PluginStore extends Component
     /**
      * Save token to DB.
      *
-     * @param PluginStoreToken $token
+     * @param OauthToken $token
      *
      * @return bool
      */
-    private function _saveToken(PluginStoreToken $token)
+    private function _saveToken(OauthToken $token)
     {
         // is new ?
         $isNewToken = !$token->id;
 
         // populate record
-        $record = $this->_getPluginStoreTokenRecordById($token->id);
+        $record = $this->_getOauthTokenRecordById($token->id);
         $record->userId = $token->userId;
+        $record->provider = $token->provider;
         $record->accessToken = $token->accessToken;
         $record->tokenType = $token->tokenType;
         $record->expiresIn = $token->expiresIn;

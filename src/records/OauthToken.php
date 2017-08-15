@@ -11,7 +11,7 @@ use craft\db\ActiveRecord;
 use DateTime;
 
 /**
- * Class PluginStoreToken record.
+ * Class OauthToken record.
  *
  * @property int      $id
  * @property int      $userId
@@ -27,7 +27,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PluginStoreToken extends ActiveRecord
+class OauthToken extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -39,6 +39,6 @@ class PluginStoreToken extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%plugin_store_tokens}}';
+        return '{{%oauth_tokens}}';
     }
 }
