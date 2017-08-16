@@ -67,7 +67,6 @@ window.pluginStoreApp = new Vue({
             // this.modal.hide();
         },
         updateCraftId(craftId) {
-            console.log('update craft data', craftId);
             this.$store.dispatch('updateCraftId', { craftId });
         }
     },

@@ -236,8 +236,6 @@
 
 		methods: {
             connectCraftId() {
-                console.log('connect craft id');
-
                 let width = 800;
                 let height = 600;
 

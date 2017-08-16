@@ -85,9 +85,5 @@
                 });
             },
         },
-
-        created() {
-            console.log('this.sort', this.sort);
-        }
     }
 </script>
