@@ -15,7 +15,7 @@ Vue.use(VueLodash, lodash);
 Vue.filter('currency', currency)
 Vue.filter('t', t)
 
-const app = new Vue({
+window.pluginStoreApp = new Vue({
     el: '#main',
     router,
     store,
@@ -66,6 +66,10 @@ const app = new Vue({
             this.showModal = false;
             // this.modal.hide();
         },
+        updateCraftId(craftId) {
+            console.log('update craft data', craftId);
+            this.$store.dispatch('updateCraftId', { craftId });
+        }
     },
 
     watch: {

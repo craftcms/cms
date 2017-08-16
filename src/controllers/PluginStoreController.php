@@ -47,15 +47,8 @@ class PluginStoreController extends Controller
     public function actionIndex()
     {
         Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
-        $openModal = Craft::$app->getSession()->get('pluginStore.openModal');
 
-        if($openModal) {
-            Craft::$app->getSession()->remove('pluginStore.openModal');
-        }
-
-        return $this->renderTemplate('plugin-store/_index', [
-            'openModal' => $openModal,
-        ]);
+        return $this->renderTemplate('plugin-store/_index');
     }
 
     /**
@@ -405,9 +398,9 @@ class PluginStoreController extends Controller
 
     public function actionModalCallback()
     {
-        Craft::$app->getSession()->set('pluginStore.openModal', true);
-
-        return $this->redirect('plugin-store');
+        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
+            'craftIdAccount' => Craft::$app->getPluginStore()->getCraftIdAccount()
+        ]);
     }
 
     /**

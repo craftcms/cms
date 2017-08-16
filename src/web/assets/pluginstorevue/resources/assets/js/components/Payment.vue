@@ -20,7 +20,7 @@
 					</template>
 
 					<template v-else>
-						<p><a class="btn submit" :href="connectCraftIdUrl">Connect to your Craft ID</a></p>
+						<p><a class="btn submit" @click="connectCraftId">Connect to your Craft ID</a></p>
 					</template>
 				</template>
 
@@ -202,9 +202,6 @@
 			csrfInput() {
                 return '';
 			},
-            connectCraftIdUrl() {
-                return Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
-			},
 			billing() {
                 if(this.identityMode == 'craftid' && this.craftIdAccount) {
                     return this.craftIdAccount;
@@ -237,9 +234,31 @@
 			}
         },
 
+		methods: {
+            connectCraftId() {
+                console.log('connect craft id');
+
+                let width = 800;
+                let height = 600;
+
+                let winWidth = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+                let winHeight = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+                let left = ((winWidth / 2) - (width / 2));
+                let top = ((winHeight / 2) - (height / 2));
+
+                let url = Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
+                let name = 'ConnectWithOauth';
+                let specs = 'location=0,status=0,width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
+
+                window.open(url, name, specs);
+                // return Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
+            },
+		},
+
         data() {
             return {
-                identityMode: 'guest',
+                identityMode: 'craftid',
                 paymentMode: 'existingCard',
                 showIdentity: true,
                 showPaymentMethod: false,

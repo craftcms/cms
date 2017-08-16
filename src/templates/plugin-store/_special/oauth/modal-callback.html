@@ -1,0 +1,8 @@
+{% extends "_layouts/basecp" %}
+
+{% set title = 'Modal Callback' %}
+
+{% js %}
+	window.opener.pluginStoreApp.updateCraftId({{ craftIdAccount|json_encode|raw }});
+	window.close();
+{% endjs %}

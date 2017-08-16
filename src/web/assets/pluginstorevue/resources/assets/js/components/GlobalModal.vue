@@ -39,7 +39,7 @@
     import Payment from './Payment';
 
     export default {
-        props: ['plugin', 'show', 'openModal'],
+        props: ['plugin', 'show'],
 
         components: {
             PluginDetails,
@@ -85,10 +85,6 @@
                     $this.$emit('update:show', false);
                 }
             });
-
-            if(this.openModal) {
-                this.$root.openGlobalModal('payment');
-            }
         }
     }
 </script>

@@ -8,6 +8,10 @@ const state = {
 
 const getters = {
     installedPlugins: (state, rootState) => {
+        if(!rootState.allPlugin) {
+            return [];
+        }
+
         return rootState.allPlugins.filter(p => {
             return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
         })
@@ -36,6 +40,10 @@ const actions = {
                 resolve(data);
             })
         })
+    },
+
+    updateCraftId({ commit }, craftId) {
+        commit(types.UPDATE_CRAFT_ID, craftId);
     },
 
     saveCraftData({ commit, state }) {
@@ -70,6 +78,9 @@ const mutations = {
     },
     [types.CLEAR_CRAFT_DATA] (state) {
 
+    },
+    [types.UPDATE_CRAFT_ID] (state, { craftId }) {
+        state.craftData.craftId = craftId;
     },
 }
 
