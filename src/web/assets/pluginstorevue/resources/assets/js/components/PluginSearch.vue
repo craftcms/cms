@@ -8,14 +8,7 @@
                 </div>
 
                 <template v-if="sort">
-                    <div class="select">
-                        <select :value="sort" @change="$emit('update:sort', $event.target.value)">
-                            <option value="name:asc">Name: Ascending</option>
-                            <option value="name:desc">Name: Descending</option>
-                            <option value="price:asc">Price: Low to High</option>
-                            <option value="price:desc">Price: High to Low</option>
-                        </select>
-                    </div>
+                    <sort-menu-btn :attributes="sortMenuBtn.attributes" :value="sort" @update:value="val => $emit('update:sort', val)" />
                 </template>
 
                 <div class="spinner" v-bind:class="{ invisible: !showSpinner }"></div>
@@ -29,10 +22,12 @@
 
 <script>
     import PluginGrid from './PluginGrid';
+    import SortMenuBtn from './SortMenuBtn';
 
     export default {
         components: {
             PluginGrid,
+            SortMenuBtn,
         },
 
         props: ['plugins', 'sort'],
@@ -41,6 +36,16 @@
             return {
                 searchQuery: '',
                 showSpinner: false,
+
+                selectedAttribute: null,
+                selectedDirection: null,
+
+                sortMenuBtn: {
+                    attributes: {
+                        name: "Name",
+                        price: "Price",
+                    }
+                },
             }
         },
 
@@ -80,5 +85,9 @@
                 });
             },
         },
+
+        created() {
+            console.log('this.sort', this.sort);
+        }
     }
 </script>

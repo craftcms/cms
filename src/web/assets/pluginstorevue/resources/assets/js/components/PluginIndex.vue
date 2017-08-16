@@ -24,7 +24,10 @@
         data () {
             return {
                 showingSearchResults: false,
-                sort: 'name:asc',
+                sort: {
+                    attribute: 'name',
+					direction: 'asc',
+				},
             }
         },
 
@@ -36,27 +39,26 @@
 
                 let plugins = this._.clone(this.plugins);
 
-                let sortOptions = this.sort.split(':');
-                let sortKey = sortOptions[0];
-                let sortOrder = sortOptions[1];
+                let attribute = this.sort.attribute;
+                let direction = this.sort.direction;
 
                 function compareASC(a,b) {
-                    if (a[sortKey] < b[sortKey])
+                    if (a[attribute] < b[attribute])
                         return -1;
-                    if (a[sortKey] > b[sortKey])
+                    if (a[attribute] > b[attribute])
                         return 1;
                     return 0;
                 }
 
                 function compareDESC(a,b) {
-                    if (a[sortKey] > b[sortKey])
+                    if (a[attribute] > b[attribute])
                         return -1;
-                    if (a[sortKey] < b[sortKey])
+                    if (a[attribute] < b[attribute])
                         return 1;
                     return 0;
                 }
 
-                if(sortOrder === 'desc') {
+                if(direction === 'desc') {
                     plugins.sort(compareDESC);
                 } else {
                     plugins.sort(compareASC);
