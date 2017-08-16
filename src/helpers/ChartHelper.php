@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\db\ElementQueryInterface;
 use DateTime;
 use yii\base\Exception;
 
@@ -131,15 +132,40 @@ class ChartHelper
 
         $sqlGroup[] = '[[date]]';
 
+        // Prepare the query
+        $condition = ['and', "{$dateColumnSql} >= :startDate", "{$dateColumnSql} < :endDate"];
+        $params = [
+            ':startDate' => Db::prepareDateForDb($startDate),
+            ':endDate' => Db::prepareDateForDb($endDate),
+        ];
+        $orderBy = ['date' => SORT_ASC];
+
+        // If this is an element query, modify the prepared query directly
+        if ($query instanceof ElementQueryInterface) {
+            $query = $query->prepare(Craft::$app->getDb()->getQueryBuilder());
+            /** @var Query $subQuery */
+            $subQuery = $query->from['subquery'];
+            $subQuery
+                ->addSelect($query->select)
+                ->addSelect([$select])
+                ->andWhere($condition, $params)
+                ->groupBy($sqlGroup)
+                ->orderBy($orderBy);
+            $query
+                ->select(['subquery.value', 'subquery.date'])
+                ->orderBy($orderBy);
+        } else {
+            $query
+                ->addSelect([$select])
+                ->andWhere($condition, $params)
+                ->groupBy($sqlGroup)
+                ->orderBy($orderBy);
+        }
+
+        die($query->getRawSql());
+
         // Execute the query
-        $results = $query
-            ->addSelect([$select])
-            ->andWhere(
-                ['and', "{$dateColumnSql} >= :startDate", "{$dateColumnSql} < :endDate"],
-                [':startDate' => Db::prepareDateForDb($startDate), ':endDate' => Db::prepareDateForDb($endDate)])
-            ->groupBy($sqlGroup)
-            ->orderBy(['date' => SORT_ASC])
-            ->all();
+        $results = $query->all();
 
         // Assemble the data
         $rows = [];
