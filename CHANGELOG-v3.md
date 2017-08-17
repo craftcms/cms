@@ -3,6 +3,13 @@ Craft CMS 3.0 Working Changelog
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\Entry::$revisionCreatorId`.
+- Added `craft\services\EntryRevisions::doesEntryHaveVersions()`.
+
+### Changed
+- Craft now retroactively creates entry versions when saving entries, for entries that didn’t have any version history yet. ([#1926](https://github.com/craftcms/cms/issues/1926))
+
 ### Fixed
 - Fixed an error that occurred when chaining a custom field method and a normal query method (e.g. `all()`) together on an element query. ([#1887](https://github.com/craftcms/cms/issues/1887))
 - Fixed a PHP error that occurred when processing a user verification request.

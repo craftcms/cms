@@ -335,6 +335,25 @@ class EntryRevisions extends Component
     }
 
     /**
+     * Returns whether an entry has any versions stored.
+     *
+     * @param int      $entryId        The entry ID to search for
+     * @param int|null $siteId         The site ID to search for
+     *
+     * @return bool
+     */
+    public function doesEntryHaveVersions(int $entryId, int $siteId = null): bool
+    {
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        }
+
+        return $this->_getRevisionsQuery()
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
+            ->exists();
+    }
+
+    /**
      * Returns versions by an entry ID.
      *
      * @param int      $entryId        The entry ID to search for.
@@ -397,7 +416,7 @@ class EntryRevisions extends Component
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
         $versionRecord->sectionId = $entry->sectionId;
-        $versionRecord->creatorId = Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
+        $versionRecord->creatorId = $entry->revisionCreatorId ?? Craft::$app->getUser()->getIdentity()->id ?? $entry->authorId;
         $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
         $versionRecord->data = $this->_getRevisionData($entry);
