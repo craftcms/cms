@@ -338,14 +338,14 @@ class EntryRevisions extends Component
      * Returns versions by an entry ID.
      *
      * @param int      $entryId        The entry ID to search for.
-     * @param int      $siteId         The site ID to search for.
+     * @param int|null $siteId         The site ID to search for.
      * @param int|null $limit          The limit on the number of versions to retrieve.
      * @param bool     $includeCurrent Whether to include the current "top" version of the entry.
      * @param bool     $withContent    Whether the field content should be included on the versions
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId(int $entryId, int $siteId, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
+    public function getVersionsByEntryId(int $entryId, int $siteId = null, int $limit = null, bool $includeCurrent = false, bool $withContent = false): array
     {
         if (!$siteId) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
