@@ -8,12 +8,15 @@ const state = {
 
 const getters = {
     installedPlugins: (state, rootState) => {
-        if(!rootState.allPlugin) {
+        if(!rootState.allPlugins) {
             return [];
         }
 
         return rootState.allPlugins.filter(p => {
-            return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
+            if(state.craftData.installedPlugins) {
+                return state.craftData.installedPlugins.find(pluginId => pluginId == p.id);
+            }
+            return false;
         })
     },
     craftIdAccount: state => {
