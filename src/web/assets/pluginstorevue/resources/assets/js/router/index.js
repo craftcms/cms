@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Index from '../Index'
 import Category from '../Category'
-import Craft from '../Craft'
+import UpgradeCraft from '../UpgradeCraft'
 import Developer from '../Developer'
 import FeaturedPlugins from '../FeaturedPlugins'
 import InstalledPlugins from '../InstalledPlugins'
@@ -23,9 +23,9 @@ export default new Router({
             component: Category,
         },
         {
-            path: '/craft',
-            name: 'Craft',
-            component: Craft,
+            path: '/upgrade-craft',
+            name: 'UpgradeCraft',
+            component: UpgradeCraft,
         },
         {
             path: '/developer/:id',
