@@ -7,6 +7,9 @@ const state = {
 }
 
 const getters = {
+    craftData: (state) => {
+        return state.craftData;
+    },
     installedPlugins: (state, rootState) => {
         if(!rootState.allPlugins) {
             return [];

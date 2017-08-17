@@ -132,10 +132,10 @@ window.pluginStoreApp = new Vue({
 
         // Dispatch actions
 
-        this.$store.dispatch('getCraftData');
-
-        this.$store.dispatch('getPluginStoreData').then(() => {
-            this.loading = false
+        this.$store.dispatch('getCraftData').then(() => {
+            this.$store.dispatch('getPluginStoreData').then(() => {
+                this.loading = false
+            });
         });
 
         this.$store.dispatch('getCartState')

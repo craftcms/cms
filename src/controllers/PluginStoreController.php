@@ -462,6 +462,37 @@ class PluginStoreController extends Controller
 
             $data['countries'] = $upgradeInfo->countries;
             $data['states'] = $upgradeInfo->states;
+
+            $data['upgradeInfo'] = $upgradeInfo;
+
+
+            // Editions
+
+            $editions = [];
+            $formatter = Craft::$app->getFormatter();
+
+            foreach ($upgradeInfo->editions as $edition => $info) {
+                $editions[$edition]['price'] = $info['price'];
+                $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
+
+                if (isset($info['salePrice']) && $info['salePrice'] < $info['price']) {
+                    $editions[$edition]['salePrice'] = $info['salePrice'];
+                    $editions[$edition]['formattedSalePrice'] = $formatter->asCurrency($info['salePrice'], 'USD', [], [], true);
+                } else {
+                    $editions[$edition]['salePrice'] = null;
+                }
+            }
+
+            $canTestEditions = Craft::$app->getCanTestEditions();
+
+            $data['editions'] = $editions;
+            $data['licensedEdition'] = $etResponse->licensedEdition;
+            $data['canTestEditions'] = $canTestEditions;
+
+            $data['CraftEdition'] = Craft::$app->getEdition();
+            $data['CraftPersonal'] = Craft::Personal;
+            $data['CraftClient'] = Craft::Client;
+            $data['CraftPro'] = Craft::Pro;
         }
 
         return $this->asJson($data);

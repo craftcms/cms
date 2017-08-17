@@ -10,7 +10,11 @@ const getters = {
 
     getPluginById(state, rootState) {
         return id => {
-            return rootState.pluginStoreData.plugins.find(p => p.id == id)
+            if(rootState.pluginStoreData.plugins) {
+                return rootState.pluginStoreData.plugins.find(p => p.id == id)
+            }
+
+            return false;
         };
     },
 
