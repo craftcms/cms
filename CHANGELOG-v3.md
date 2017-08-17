@@ -5,6 +5,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed an error that occurred when chaining a custom field method and a normal query method (e.g. `all()`) together on an element query. ([#1887](https://github.com/craftcms/cms/issues/1887))
+- Fixed a PHP error that occurred when processing a user verification request.
 
 ## 3.0.0-beta.24 - 2017-08-15
 
