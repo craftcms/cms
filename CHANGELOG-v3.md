@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## Unreleased
+## 3.0.0-beta.25 - 2017-08-17
 
 ### Added
 - Added `craft\elements\Entry::$revisionCreatorId`.
