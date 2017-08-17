@@ -53,7 +53,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar a:focus { background: rgba(255,255,255,0.07); }
 
 #global-sidebar .photo-container { vertical-align: middle; width: 32px; height: 32px; }
-#global-sidebar .photo-container img { display: block; width: 32px; height: 32px; border-radius: 100%; }
+#global-sidebar .photo-container > img { display: block; width: 32px; height: 32px; border-radius: 100%; }
 
 #global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden }
 
@@ -84,7 +84,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar a#account-info:focus { outline: none; }
 #global-sidebar #account-info .photo-container { position: relative; }
 #global-sidebar #account-info .photo-container .craftid { position: absolute; bottom: -3px; right: -3px; border: 2px solid $headerBgColor; border-radius: 100%; }
-#global-sidebar #account-info .photo-container .craftid svg { display: block; }
+#global-sidebar #account-info .photo-container .craftid > img { display: block; width: 14px; height: 14px; }
 
 #account-info-preview { @include display-flex; @include flex-direction(row); }
 #account-info-preview:after { @include icon; margin-top: 21px; margin-left: 14px; font-size: 13px; color: $mediumtextcolor;
@@ -92,8 +92,8 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
   body.rtl & { content: 'leftangle'; }
 }
 #account-info-preview .photo-container { @include margin-right(14px); }
-#account-info-preview .photo-container img { border-radius: 100%; }
-#account-info-preview .craftid svg { position: relative; top:3px; }
+#account-info-preview .photo-container > img { border-radius: 100%; }
+#account-info-preview .photo-container .craftid > img { position: relative; top:3px; }
 
 /* container */
 

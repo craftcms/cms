@@ -167,11 +167,9 @@
                 <div id="user-photo-icon" class="photo-container">
                     <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
 
-                    {% if craftIdAccount %}
-                        <div class="craftid">
-                            {% include "_includes/craftidicon.svg" %}
-                        </div>
-                    {% endif %}
+                    <div class="craftid {% if not craftIdAccount %} hidden{% endif %}">
+                        <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
+                    </div>
                 </div>
                 <div id="account-menu-anchor"></div>
             </a>

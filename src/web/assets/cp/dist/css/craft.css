@@ -1993,7 +1993,7 @@ body.focused #global-sidebar { position: absolute; height: 100%; }
 
 #global-sidebar .photo-container { vertical-align: middle; width: 32px; height: 32px; }
 
-#global-sidebar .photo-container img { display: block; width: 32px; height: 32px; border-radius: 100%; }
+#global-sidebar .photo-container > img { display: block; width: 32px; height: 32px; border-radius: 100%; }
 
 #global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden; }
 
@@ -2045,7 +2045,7 @@ body.rtl #global-sidebar .topbar .settingsmenu { padding-right: 0; }
 
 #global-sidebar #account-info .photo-container .craftid { position: absolute; bottom: -3px; right: -3px; border: 2px solid #333f4d; border-radius: 100%; }
 
-#global-sidebar #account-info .photo-container .craftid svg { display: block; }
+#global-sidebar #account-info .photo-container .craftid > img { display: block; width: 14px; height: 14px; }
 
 #account-info-preview { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -webkit-box-orient: horizontal; -ms-flex-direction: row; flex-direction: row; }
 
@@ -2056,9 +2056,9 @@ body.rtl #account-info-preview:after { content: 'leftangle'; }
 body.ltr #account-info-preview .photo-container { margin-right: 14px; }
 body.rtl #account-info-preview .photo-container { margin-left: 14px; }
 
-#account-info-preview .photo-container img { border-radius: 100%; }
+#account-info-preview .photo-container > img { border-radius: 100%; }
 
-#account-info-preview .craftid svg { position: relative; top: 3px; }
+#account-info-preview .photo-container .craftid > img { position: relative; top: 3px; }
 
 /* container */
 #container { overflow: auto; display: block; -webkit-box-orient: vertical; -ms-flex-direction: column; flex-direction: column; position: relative; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
