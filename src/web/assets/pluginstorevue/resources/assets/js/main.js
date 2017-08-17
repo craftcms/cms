@@ -67,6 +67,25 @@ window.pluginStoreApp = new Vue({
             // this.modal.hide();
         },
         updateCraftId(craftId) {
+
+            let $accountInfoMenu = $('#account-info').data('menubtn').menu.$container;
+
+            if(craftId) {
+                $('.craftid-connected').removeClass('hidden');
+                $('.craftid-disconnected').addClass('hidden');
+
+                $('.craftid-connected', $accountInfoMenu).removeClass('hidden');
+                $('.craftid-disconnected', $accountInfoMenu).addClass('hidden');
+
+
+            } else {
+                $('.craftid-connected').addClass('hidden');
+                $('.craftid-disconnected').removeClass('hidden');
+
+                $('.craftid-connected', $accountInfoMenu).addClass('hidden');
+                $('.craftid-disconnected', $accountInfoMenu).removeClass('hidden');
+            }
+
             this.$store.dispatch('updateCraftId', { craftId });
         }
     },

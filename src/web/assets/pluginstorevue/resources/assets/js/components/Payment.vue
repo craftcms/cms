@@ -250,7 +250,6 @@
                 let specs = 'location=0,status=0,width=' + width + ',height=' + height + ',left=' + left + ',top=' + top;
 
                 window.open(url, name, specs);
-                // return Craft.getActionUrl('plugin-store/connect', {redirect: Craft.getActionUrl('plugin-store/modal-callback') });
             },
 		},
 

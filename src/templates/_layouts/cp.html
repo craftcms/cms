@@ -167,7 +167,7 @@
                 <div id="user-photo-icon" class="photo-container">
                     <img width="26" sizes="26px" srcset="{{ currentUser.getThumbUrl(26) }} 26w, {{ currentUser.getThumbUrl(52) }} 52w" alt="{{ currentUser.getName() }}">
 
-                    <div class="craftid {% if not craftIdAccount %} hidden{% endif %}">
+                    <div class="craftid craftid-connected{% if not craftIdAccount %} hidden{% endif %}">
                         <img src="{{ view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true)~'/images/craftid.svg' }}" />
                     </div>
                 </div>
@@ -198,29 +198,28 @@
 
                 <hr>
 
-                <ul>
-					{% if craftIdAccount %}
-                        <li><a href="https://craftid.dev/account" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
-                        <li>
-							{#<a href="#">Disconnect from Craft ID</a>#}
-                            <form method="post" id="disconnect">
-								{{ csrfInput() }}
-                                <input type="hidden" name="action" value="plugin-store/disconnect">
-                                <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
-                            </form>
-                        </li>
+                <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
+                    <li><a href="https://craftid.dev/account" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                    <li>
+						{#<a href="#">Disconnect from Craft ID</a>#}
+                        <form method="post" id="disconnect">
+							{{ csrfInput() }}
+                            <input type="hidden" name="action" value="plugin-store/disconnect">
+                            <a onclick="document.getElementById('disconnect').submit();">{{ "Disconnect your Craft ID"|t('app') }}</a>
+                        </form>
+                    </li>
+                </ul>
 
-					{% else %}
-                        <li>
-							{#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
+                <ul class="craftid-disconnected{% if craftIdAccount %} hidden{% endif %}">
+                    <li>
+						{#<a class="formsubmit" data-action="plugin-store/connect">Connect to Craft ID</a>#}
 
-                            <form method="post" id="connect">
-								{{ csrfInput() }}
-                                <input type="hidden" name="action" value="plugin-store/connect">
-                                <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
-                            </form>
-                        </li>
-					{% endif %}
+                        <form method="post" id="connect">
+							{{ csrfInput() }}
+                            <input type="hidden" name="action" value="plugin-store/connect">
+                            <a onclick="document.getElementById('connect').submit();">{{ "Connect to your Craft ID"|t('app') }}</a>
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>
