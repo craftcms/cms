@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
+
 ## 2.6.2989  2017-08-15
 
 ### Added
