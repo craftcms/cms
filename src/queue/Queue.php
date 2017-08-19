@@ -277,7 +277,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public function getJobInfo(int $limit = null): array
     {
         $results = $this->_createJobQuery()
-            ->select(['id', 'description', 'progress', 'timeUpdated', 'fail', 'error'])
+            ->select(['id', 'description', 'state', 'progress', 'timeUpdated', 'fail', 'error'])
             ->where('[[timePushed]] <= :time - [[delay]]', [':time' => time()])
             ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit)
@@ -290,7 +290,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $result['id'],
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'description' => $result['description'],
+                'description' => $result['state'] ?: $result['description'],
                 'error' => $result['error'],
             ];
         }
