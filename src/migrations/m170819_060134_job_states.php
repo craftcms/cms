@@ -1,14 +1,14 @@
 <?php
 
-namespace craft\contentmigrations;
+namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
 
 /**
- * m170818_221819_job_status migration.
+ * m170819_060134_job_states migration.
  */
-class m170818_221819_job_status extends Migration
+class m170819_060134_job_states extends Migration
 {
     /**
      * @inheritdoc
