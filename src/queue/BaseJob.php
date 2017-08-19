@@ -71,10 +71,10 @@ abstract class BaseJob extends Object implements JobInterface
      * @param \yii\queue\Queue|QueueInterface $queue
      * @param float                           $progress A number between 0 and 1
      */
-    protected function setProgress($queue, float $progress)
+    protected function setProgress($queue, float $progress, string $state)
     {
         if ($progress !== $this->_progress && $queue instanceof QueueInterface) {
-            $queue->setProgress(round(100 * $progress));
+            $queue->setProgress(round(100 * $progress), $state);
         }
     }
 }

@@ -198,13 +198,14 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress)
+    public function setProgress(int $progress, string $state = "")
     {
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%queue}}',
                 [
                     'progress' => $progress,
+                    'state' => $state,
                     'timeUpdated' => time(),
                 ],
                 ['id' => $this->_executingJobId],
