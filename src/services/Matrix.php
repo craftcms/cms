@@ -730,7 +730,7 @@ class Matrix extends Component
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
             foreach ($collapsedBlockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('debugger;'."\n".'Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
             }
         }
 
