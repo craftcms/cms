@@ -418,8 +418,7 @@ EOD;
                 false)
             ->execute();
 
-        $tableSchema = $db->getTableSchema('{{%queue}}');
-        return $db->getLastInsertID($tableSchema->sequenceName);
+        return $db->getLastInsertID('{{%queue}}');
     }
 
     /**

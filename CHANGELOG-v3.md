@@ -14,6 +14,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed an error that occurred when chaining a custom field method and a normal query method (e.g. `all()`) together on an element query. ([#1887](https://github.com/craftcms/cms/issues/1887))
 - Fixed a PHP error that occurred when processing a user verification request.
 - Fixed a bug where newly-created `div.matrixblock` elements weren’t getting a `data-type` attribute like existing blocks had. ([#1925](https://github.com/craftcms/cms/pull/1925))
+- Fixed a bug where you would get a SQL error if you tried to push a job to the queue using PostgreSQL.
 
 ## 3.0.0-beta.24 - 2017-08-15
 
