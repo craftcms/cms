@@ -9,7 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
-use craft\web\assets\pluginstorevue\PluginStoreVueAsset;
+use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -46,7 +46,7 @@ class PluginStoreController extends Controller
      */
     public function actionIndex()
     {
-        Craft::$app->getView()->registerAssetBundle(PluginStoreVueAsset::class);
+        Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index');
     }
