@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Tag;
 use craft\models\TagGroup;
@@ -76,11 +77,17 @@ class Tags extends BaseRelationField
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         /** @var Element|null $element */
-        if (!($value instanceof ElementQueryInterface)) {
-            /** @var Element $class */
-            $class = static::elementType();
-            $value = $class::find()
-                ->id(false);
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle);
+        }
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $value
+                ->status(null)
+                ->enabledForSite(false)
+                ->all();
+        } else if (!is_array($value)) {
+            $value = [];
         }
 
         $tagGroup = $this->_getTagGroup();
