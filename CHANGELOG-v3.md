@@ -16,6 +16,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where newly-created `div.matrixblock` elements weren’t getting a `data-type` attribute like existing blocks had. ([#1925](https://github.com/craftcms/cms/pull/1925))
 - Fixed a bug where you would get a SQL error if you tried to push a job to the queue using PostgreSQL.
 - Fixed a bug that would trigger the browser’s JavaScript debugger if you saved a Matrix field that had collapsed blocks.
+- Fixed a bug where \craft\helpers\ChartHelper::getRunChartDataFromQuery() an SQL query instead of the actual results.
 
 ## 3.0.0-beta.24 - 2017-08-15
 
