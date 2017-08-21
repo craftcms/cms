@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\web\assets\pluginstore\PluginStoreAsset;
+use craft\web\assets\pluginstoreoauth\PluginStoreOauthAsset;
 use craft\web\assets\pluginstorevue\PluginStoreVueAsset;
 use craft\web\Controller;
 use craft\helpers\Json;
@@ -119,7 +119,7 @@ class PluginStoreController extends Controller
     {
         $view = $this->getView();
 
-        $view->registerAssetBundle(PluginStoreAsset::class);
+        $view->registerAssetBundle(PluginStoreOauthAsset::class);
 
         $referrer = Craft::$app->getSession()->get('pluginStoreConnectReferrer');
 
