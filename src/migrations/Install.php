@@ -220,7 +220,7 @@ class Install extends Migration
             'fingerprint' => $this->string()->notNull(),
             'lastOccurrence' => $this->dateTime()->notNull(),
             'file' => $this->string()->notNull(),
-            'line' => $this->smallInteger()->notNull()->unsigned(),
+            'line' => $this->smallInteger()->unsigned(),
             'message' => $this->string(),
             'traces' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
