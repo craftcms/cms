@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a SQL error that could occur when logging deprecation errors if the line number is unknown. ([#1927](https://github.com/craftcms/cms/issues/1927))
 - Fixed a deprecation error that occurred when using a Tags field. ([#1932](https://github.com/craftcms/cms/issues/1932))
+- Fixed a PHP error that occurred if a volume type class was missing. ([#1934](https://github.com/craftcms/cms/issues/1934))
 
 ## 3.0.0-beta.25 - 2017-08-17
 
