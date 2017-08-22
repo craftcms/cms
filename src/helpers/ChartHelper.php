@@ -162,8 +162,6 @@ class ChartHelper
                 ->orderBy($orderBy);
         }
 
-        die($query->getRawSql());
-
         // Execute the query
         $results = $query->all();
 

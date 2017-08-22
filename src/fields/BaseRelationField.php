@@ -334,7 +334,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        /** @var Element $element */
+        /** @var Element|null $element */
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
         }

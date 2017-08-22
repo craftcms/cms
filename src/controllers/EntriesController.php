@@ -479,7 +479,7 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the entry has at least one version if the section has versioning enabled
         $revisionsService = Craft::$app->getEntryRevisions();
-        if ($entry->getSection()->enableVersioning && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
+        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
             $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
             $currentEntry->revisionCreatorId = $entry->authorId;
             $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
