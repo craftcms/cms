@@ -410,7 +410,7 @@ class Sections extends Component
                 }
 
                 // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
-                if ($section->maxLevels === 0 || $section->maxLevels === '0') {
+                if ((int)$section->maxLevels === 0) {
                     $section->maxLevels = null;
                 }
 

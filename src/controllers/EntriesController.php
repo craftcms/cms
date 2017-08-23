@@ -129,7 +129,7 @@ class EntriesController extends BaseEntriesController
 
         if (
             $section->type === Section::TYPE_STRUCTURE &&
-            $section->maxLevels !== 1
+            (int)$section->maxLevels !== 1
         ) {
             $variables['elementType'] = Entry::class;
 
