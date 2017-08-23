@@ -81,7 +81,7 @@ class AssetQuery extends ElementQuery
     public $includeSubfolders = false;
 
     /**
-     * @var array|null The asset transform indexes that should be eager-loaded, if they exist
+     * @var string|array|null The asset transform indexes that should be eager-loaded, if they exist
      */
     public $withTransforms;
 
@@ -283,7 +283,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[withTransforms]] property.
      *
-     * @param array|null $value The transforms to include.
+     * @param string|array|null $value The transforms to include.
      *
      * @return self The query object itself
      */
