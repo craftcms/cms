@@ -1,6 +1,11 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\StringHelper::split()`.
+
 ## 3.0.0-beta.26 - 2017-08-22
 
 ### Fixed
