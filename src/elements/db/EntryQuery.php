@@ -13,6 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
@@ -302,8 +303,14 @@ class EntryQuery extends ElementQuery
             $value = $value->format(DateTime::W3C);
         }
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '<'.$value;
+        if (!$this->postDate) {
+            $this->postDate = '<'.$value;
+        } else {
+            if (!is_array($this->postDate)) {
+                $this->postDate = [$this->postDate];
+            }
+            $this->postDate[] = '<'.$value;;
+        }
 
         return $this;
     }
@@ -321,8 +328,14 @@ class EntryQuery extends ElementQuery
             $value = $value->format(DateTime::W3C);
         }
 
-        $this->postDate = ArrayHelper::toArray($this->postDate);
-        $this->postDate[] = '>='.$value;
+        if (!$this->postDate) {
+            $this->postDate = '>='.$value;
+        } else {
+            if (!is_array($this->postDate)) {
+                $this->postDate = [$this->postDate];
+            }
+            $this->postDate[] = '>='.$value;;
+        }
 
         return $this;
     }
@@ -514,7 +527,11 @@ class EntryQuery extends ElementQuery
             return;
         }
 
-        $refs = ArrayHelper::toArray($this->ref);
+        $refs = $this->ref;
+        if (!is_array($refs)) {
+            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+        }
+
         $joinSections = false;
         $condition = ['or'];
 

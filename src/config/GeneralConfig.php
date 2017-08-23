@@ -7,8 +7,8 @@
 
 namespace craft\config;
 
-use craft\helpers\ArrayHelper;
 use craft\helpers\ConfigHelper;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\base\Object;
 use yii\base\UnknownPropertyException;
@@ -768,10 +768,10 @@ class GeneralConfig extends Object
 
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = ArrayHelper::toArray($this->allowedFileExtensions);
+            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
         }
         if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = ArrayHelper::toArray($this->extraAllowedFileExtensions);
+            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
         }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);

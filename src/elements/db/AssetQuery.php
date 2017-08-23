@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use yii\db\Connection;
 
 /**
@@ -302,10 +302,13 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if ($this->asArray === false && !empty($this->withTransforms)) {
-            $transforms = ArrayHelper::toArray($this->withTransforms);
+        if ($this->asArray === false && $this->withTransforms) {
+            $transforms = $this->withTransforms;
+            if (!is_array($transforms)) {
+                $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
+            }
 
-            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);
+            Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $this->withTransforms);
         }
 
         return $elements;

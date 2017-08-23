@@ -6,6 +6,12 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\helpers\StringHelper::split()`.
 
+### Deprecated
+- Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
+
+### Fixed
+- Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))
+
 ## 3.0.0-beta.26 - 2017-08-22
 
 ### Fixed
