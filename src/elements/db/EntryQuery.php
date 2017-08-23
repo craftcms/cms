@@ -88,7 +88,7 @@ class EntryQuery extends ElementQuery
     {
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = 'live';
+            $config['status'] = ['live'];
         }
 
         parent::__construct($elementType, $config);
