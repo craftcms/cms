@@ -11,6 +11,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Fixed
 - Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))
+- Fixed a bug where the “Parent” field was showing up on Edit Entry pages in Structure sections that were limited to a single level. ([#1940](https://github.com/craftcms/cms/pull/1940))
 
 ## 3.0.0-beta.26 - 2017-08-22
 
