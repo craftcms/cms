@@ -125,7 +125,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|string[]|null The status(es) that the resulting elements must have.
      */
-    public $status = 'enabled';
+    public $status = ['enabled'];
 
     /**
      * @var bool Whether to return only archived elements.
@@ -1474,7 +1474,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        $statuses = ArrayHelper::toArray($this->status);
+        $statuses = $this->status;
+        if (!is_array($statuses)) {
+            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+        }
+
         $condition = ['or'];
 
         foreach ($statuses as $status) {
@@ -1775,7 +1779,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Any other empty value means we should set it
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
-                $ids = ArrayHelper::toArray($this->id);
+                $ids = $this->id;
+                if (!is_array($ids)) {
+                    $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+                }
 
                 if (empty($ids)) {
                     throw new QueryAbortedException;

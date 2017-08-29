@@ -512,6 +512,19 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Splits a string into chunks on a given delimiter.
+     *
+     * @param string $string The string
+     * @param string $delimiter The delimiter to split the string on (defaults to a comma)
+     *
+     * @return string[] The segments of the string
+     */
+    public static function split(string $string, string $delimiter = ','): array
+    {
+        return preg_split('/\s*'.preg_quote($delimiter, '/').'\s*/', $string, -1, PREG_SPLIT_NO_EMPTY);
+    }
+
+    /**
      * Splits a string into an array of the words in the string.
      *
      * @param string $string The string

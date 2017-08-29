@@ -39,8 +39,6 @@ class Component
             $class = $config;
             $config = [];
         } else {
-            $config = ArrayHelper::toArray($config);
-
             if (empty($config['type'])) {
                 throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.Json::encode($config));
             }
