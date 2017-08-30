@@ -518,10 +518,14 @@ class TemplateCaches extends Component
      */
     public function handleResponse()
     {
-        Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
-            'elementId' => array_keys($this->_deleteCachesIndex),
-        ]));
-        $this->_deleteCachesIndex = null;
+        // It's possible this is already null
+        if ($this->_deleteCachesIndex !== null) {
+            Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
+                'elementId' => array_keys($this->_deleteCachesIndex),
+            ]));
+
+            $this->_deleteCachesIndex = null;
+        }
     }
 
     /**
