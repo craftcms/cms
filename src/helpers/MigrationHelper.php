@@ -89,7 +89,7 @@ class MigrationHelper
     {
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
-        if (!is_string($columns)) {
+        if (is_string($columns)) {
             $columns = StringHelper::split($columns);
         }
 
