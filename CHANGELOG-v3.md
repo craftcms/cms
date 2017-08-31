@@ -6,6 +6,9 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\helpers\StringHelper::split()`.
 
+### Changed
+- Plugin translation sources are now configured with `forceTranslations` enabled.
+
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
 
