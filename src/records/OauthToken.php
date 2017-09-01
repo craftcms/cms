@@ -8,26 +8,24 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
-use DateTime;
+use yii\db\ActiveQueryInterface;
 
 /**
- * Class OauthToken record.
+ * Class OAuthToken record.
  *
- * @property int      $id
- * @property int      $userId
- * @property string   $accessToken
- * @property string   $tokenType
- * @property string   $expiresIn
- * @property string   $refreshToken
- * @property DateTime $expiryDate
- * @property DateTime $dateCreated
- * @property DateTime $dateUpdated
- * @property string   $uid
+ * @property int            $id           ID
+ * @property int            $userId       User ID
+ * @property string         $provider     Provider
+ * @property string         $accessToken  Access Token
+ * @property string         $tokenType    Token Type
+ * @property int            $expiresIn    Time left to expire
+ * @property \DateTime      $expiryDate   Expiration Date
+ * @property string         $refreshToken Refresh Token
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OauthToken extends ActiveRecord
+class OAuthToken extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -39,6 +37,16 @@ class OauthToken extends ActiveRecord
      */
     public static function tableName(): string
     {
-        return '{{%oauth_tokens}}';
+        return '{{%oauthtokens}}';
+    }
+
+    /**
+     * Returns the OAuth Tokens’s user.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     */
+    public function getUser(): ActiveQueryInterface
+    {
+        return $this->hasOne(User::class, ['id' => 'userId']);
     }
 }
