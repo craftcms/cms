@@ -129,7 +129,7 @@ class EntriesController extends BaseEntriesController
 
         if (
             $section->type === Section::TYPE_STRUCTURE &&
-            $section->maxLevels !== 1
+            (int)$section->maxLevels !== 1
         ) {
             $variables['elementType'] = Entry::class;
 
@@ -477,6 +477,15 @@ class EntriesController extends BaseEntriesController
             }
         }
 
+        // Make sure the entry has at least one version if the section has versioning enabled
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
+            $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
+            $currentEntry->revisionCreatorId = $entry->authorId;
+            $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
+            $revisionsService->saveVersion($currentEntry);
+        }
+
         // Save the entry (finally!)
         if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
@@ -497,7 +506,7 @@ class EntriesController extends BaseEntriesController
 
         // Should we save a new version?
         if ($entry->getSection()->enableVersioning) {
-            Craft::$app->getEntryRevisions()->saveVersion($entry);
+            $revisionsService->saveVersion($entry);
         }
 
         if ($request->getAcceptsJson()) {

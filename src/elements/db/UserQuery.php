@@ -95,7 +95,7 @@ class UserQuery extends ElementQuery
 
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = User::STATUS_ACTIVE;
+            $config['status'] = [User::STATUS_ACTIVE];
         }
 
         parent::__construct($elementType, $config);

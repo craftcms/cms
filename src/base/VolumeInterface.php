@@ -28,7 +28,7 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Returns the URL to the source, if it’s accessible via HTTP traffic.
      *
-     * @return string|null The root URL, or `false` if there isn’t one
+     * @return string|false The root URL, or `false` if there isn’t one
      */
     public function getRootUrl();
 

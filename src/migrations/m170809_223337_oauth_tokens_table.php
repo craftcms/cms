@@ -15,7 +15,7 @@ class m170809_223337_oauth_tokens_table extends Migration
      */
     public function safeUp()
     {
-        $this->createTable('{{%oauth_tokens}}', [
+        $this->createTable('{{%oauthtokens}}', [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'provider' => $this->string()->notNull(),
@@ -29,8 +29,8 @@ class m170809_223337_oauth_tokens_table extends Migration
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex(null, '{{%oauth_tokens}}', ['provider', 'userId'], false);
-        $this->addForeignKey(null, '{{%oauth_tokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
+        $this->createIndex(null, '{{%oauthtokens}}', ['provider', 'userId'], false);
+        $this->addForeignKey(null, '{{%oauthtokens}}', ['userId'], '{{%users}}', ['id'], 'CASCADE', null);
     }
 
     /**
