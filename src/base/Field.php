@@ -139,6 +139,8 @@ abstract class Field extends SavableComponent implements FieldInterface
         if ($this->translationMethod !== self::TRANSLATION_METHOD_CUSTOM) {
             $this->translationKeyFormat = null;
         }
+
+        $this->type = get_class($this);
     }
 
     /**
