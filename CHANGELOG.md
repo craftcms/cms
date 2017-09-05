@@ -4,7 +4,7 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
-- Added the mimetype for the `woff2` file extension.
+- Added support for the `application/font-woff2` MIME type (`.woff2`).
 
 ### Fixed
 - Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
