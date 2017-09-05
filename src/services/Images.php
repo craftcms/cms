@@ -260,7 +260,7 @@ class Images extends Component
     }
 
     /**
-     * Cleans an image by it's path, clearing embedded potentially malicious embedded code.
+     * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
      *
