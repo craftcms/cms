@@ -48,7 +48,7 @@ class TemplatesController extends Controller
     public function beforeAction($action)
     {
         $actionSegments = Craft::$app->getRequest()->getActionSegments();
-        if (isset($actionSegments[0]) && $actionSegments[0] === 'templates') {
+        if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
         }
 
