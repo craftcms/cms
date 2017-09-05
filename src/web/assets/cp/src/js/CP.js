@@ -840,7 +840,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         updateJobIcon: function(animate) {
-            if (!this.enableQueue) {
+            if (!this.enableQueue || !this.$nav.length) {
                 return;
             }
 

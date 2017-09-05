@@ -1,4 +1,4 @@
-/*!   - 2017-08-14 */
+/*!   - 2017-09-05 */
 (function($){
 
 /** global: Craft */
@@ -8895,7 +8895,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         updateJobIcon: function(animate) {
-            if (!this.enableQueue) {
+            if (!this.enableQueue || !this.$nav.length) {
                 return;
             }
 
