@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Added the mimetype for the `woff2` file extension.
+
 ### Fixed
 - Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
 - Fixed a bug where user photos and site logos/icons were not taking into account the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting.
