@@ -1327,7 +1327,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         responseArray.push(data);
 
                         // If assets were just merged we should get the reference tags updated right away
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
 
                     if (responseArray.length >= parameterArray.length) {

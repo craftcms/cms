@@ -19,6 +19,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where it was not possible to use `:notempty:` with PostgreSQL.
 - Fixed a bug where the `job` column in the `queue` table wasn’t large enough to store some job data. ([#1948](https://github.com/craftcms/cms/issues/1948))
 - Fixed a JS error that occurred on CP templates that extended `_layouts/cp` but overrode the `body` block to remove the sidebar, if there were any running/waiting jobs in the queue. ([#1950](https://github.com/craftcms/cms/issues/1950))
+- Updated some outdated references to `runPendingTasks()` in the CP JavaScript files, which resulted in JS errors. ([#1951](https://github.com/craftcms/cms/issues/1951))
 
 ## 3.0.0-beta.26 - 2017-08-22
 

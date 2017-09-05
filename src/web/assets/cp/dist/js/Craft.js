@@ -2516,7 +2516,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         afterAction: function(action, params) {
 
             // There may be a new background task that needs to be run
-            Craft.cp.runPendingTasks();
+            Craft.cp.runQueue();
 
             this.onAfterAction(action, params);
         },
@@ -6147,7 +6147,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         responseArray.push(data);
 
                         // If assets were just merged we should get the reference tags updated right away
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
 
                     if (responseArray.length >= parameterArray.length) {
@@ -14718,7 +14718,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                         }
 
                         // See if we should run any pending tasks
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
                 }, this));
             }
