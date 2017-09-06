@@ -107,7 +107,7 @@ class Images extends Component
     public function getSupportedImageFormats(): array
     {
         if ($this->getIsImagick()) {
-            return array_map([StringHelper::class, 'toLowerCase'], Imagick::queryFormats());
+            return array_map('strtolower', Imagick::queryFormats());
         }
 
         $output = [];
