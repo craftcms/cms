@@ -14,6 +14,7 @@ Craft CMS Changelog
 - Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel.
 - Fixed a bug where transforms could break sometimes on external asset sources that used path prefix.
 - Fixed a bug where transforms would not be deleted when an Asset was being moved in some cases.
+- Work around a [PHP 7.1+](https://bugs.php.net/bug.php?id=74980) bug that could occur on some Craft installations.
 
 ### Security
 - Fixed an XSS vulnerability.
