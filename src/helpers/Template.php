@@ -91,6 +91,11 @@ class Template
         $query->limit = null;
         $total = $query->count();
         $query->limit = $limit;
+        
+        // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
+        if ($total === 0) {
+            return [new Paginate(), $query->all()];
+        }
 
         // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
         if (!$limit) {
