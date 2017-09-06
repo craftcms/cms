@@ -21,7 +21,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a JS error that occurred on CP templates that extended `_layouts/cp` but overrode the `body` block to remove the sidebar, if there were any running/waiting jobs in the queue. ([#1950](https://github.com/craftcms/cms/issues/1950))
 - Updated some outdated references to `runPendingTasks()` in the CP JavaScript files, which resulted in JS errors. ([#1951](https://github.com/craftcms/cms/issues/1951))
 - Fixed a bug where the “Translation Method” setting was visible for existing Matrix sub-fields even when there was only one available translation method (e.g. Entries fields). ([#1967](https://github.com/craftcms/cms/issues/1967))
-- Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1948](https://github.com/craftcms/cms/issues/1948))
+- Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1874](https://github.com/craftcms/cms/issues/1874))
 
 ## 3.0.0-beta.26 - 2017-08-22
 
