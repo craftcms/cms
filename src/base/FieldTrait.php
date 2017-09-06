@@ -54,6 +54,11 @@ trait FieldTrait
     public $translationKeyFormat;
 
     /**
+     * @var string|null The field’s type
+     */
+    public $type;
+
+    /**
      * @var string|null The field’s previous handle
      */
     public $oldHandle;
