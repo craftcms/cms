@@ -61,7 +61,10 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
-        return in_array(StringHelper::toLowerCase($extension), Craft::$app->getImages()->getSupportedImageFormats(), true);
+        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+        $formats = array_unique(array_merge($formats, ['svg']));
+
+        return in_array(StringHelper::toLowerCase($extension), $formats, true);
     }
 
     /**
