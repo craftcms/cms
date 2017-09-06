@@ -89,8 +89,13 @@ class Template
 
         // Get the total result count, without applying the limit
         $query->limit = null;
-        $total = $query->count();
+        $total = (int)$query->count();
         $query->limit = $limit;
+        
+        // Bail out early if there are no results. Also avoids a divide by zero bug in the calculation of $totalPages
+        if ($total === 0) {
+            return [new Paginate(), $query->all()];
+        }
 
         // If they specified limit as null or 0 (for whatever reason), just assume it's all going to be on one page.
         if (!$limit) {
@@ -124,7 +129,7 @@ class Template
 
         $paginateVariable->first = $offset + 1;
         $paginateVariable->last = $last;
-        $paginateVariable->total = (int)$total;
+        $paginateVariable->total = $total;
         $paginateVariable->currentPage = $currentPage;
         $paginateVariable->totalPages = $totalPages;
 
