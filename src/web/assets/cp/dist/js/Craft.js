@@ -1,4 +1,4 @@
-/*!   - 2017-09-05 */
+/*!   - 2017-09-06 */
 (function($){
 
 /** global: Craft */
@@ -8826,7 +8826,7 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _trackJobProgressInternal: function() {
-            Craft.queueActionRequest('queue/get-job-info', $.proxy(function(response, textStatus) {
+            Craft.queueActionRequest('queue/get-job-info?dontExtendSession=1', $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     this.trackJobProgressTimeout = null;
                     this.setJobInfo(response, true);

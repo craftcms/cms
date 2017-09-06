@@ -442,7 +442,6 @@ class User extends \yii\web\User
         $request = Craft::$app->getRequest();
 
         if (
-            $request->getIsGet() &&
             $request->getIsCpRequest() &&
             $request->getParam('dontExtendSession')
         ) {
