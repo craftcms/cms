@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 
 ### Changed
 - Plugin translation sources are now configured with `forceTranslations` enabled.
+- Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
 
 ### Deprecated
 - Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
