@@ -10,6 +10,7 @@ Craft CMS 3.0 Working Changelog
 - Plugin translation sources are now configured with `forceTranslations` enabled.
 - Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
 - Performance improvement to `craft\services\Images::getSupportImageFormats()` if you have Imagick installed. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Performance improvement to `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
 - Queue info requests in the Control Panel no longer extend the user session.
 
 ### Deprecated
