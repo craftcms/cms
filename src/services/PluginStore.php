@@ -176,7 +176,7 @@ class PluginStore extends Component
         }
 
         Craft::$app->getDb()->createCommand()
-            ->delete('{{%oauth_tokens}}', ['userId' => $userId])
+            ->delete('{{%oauthtokens}}', ['userId' => $userId])
             ->execute();
 
         return true;
