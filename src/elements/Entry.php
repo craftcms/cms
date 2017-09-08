@@ -477,6 +477,11 @@ class Entry extends Element
     public $newParentId;
 
     /**
+     * @var int|null Revision creator ID
+     */
+    public $revisionCreatorId;
+
+    /**
      * @var string|null Revision notes
      */
     public $revisionNotes;

@@ -4,12 +4,68 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added `craft\helpers\StringHelper::split()`.
+
+### Changed
+- Plugin translation sources are now configured with `forceTranslations` enabled.
+- Checkbox and radio groups now have `div.checkbox-group` and `div.radio-group` container elements. ([#1965](https://github.com/craftcms/cms/pull/1965))
+- Performance improvement to `craft\services\Images::getSupportImageFormats()` if you have Imagick installed. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Performance improvement to `craft\helpers\Image::canManipulateAsImage()`. ([#1969](https://github.com/craftcms/cms/pull/1969))
+- Queue info requests in the Control Panel no longer extend the user session.
+
+### Deprecated
+- Splitting a string on commas via `craft\helpers\ArrayHelper::toArray()` is now deprecated. Use `craft\helpers\StringHelper::split()` instead.
+
+### Fixed
+- Fixed a SQL error that could occur when using the `relatedTo` element query param. ([#1939](https://github.com/craftcms/cms/issues/1939))
+- Fixed a bug where the “Parent” field was showing up on Edit Entry pages in Structure sections that were limited to a single level. ([#1940](https://github.com/craftcms/cms/pull/1940))
+- Fixed a bug where the “Delete Stale Template Cache” task would fail when saving an existing Single section.
+- Fixed a bug where it was not possible to use `:notempty:` with PostgreSQL.
+- Fixed a bug where the `job` column in the `queue` table wasn’t large enough to store some job data. ([#1948](https://github.com/craftcms/cms/issues/1948))
+- Fixed a JS error that occurred on CP templates that extended `_layouts/cp` but overrode the `body` block to remove the sidebar, if there were any running/waiting jobs in the queue. ([#1950](https://github.com/craftcms/cms/issues/1950))
+- Updated some outdated references to `runPendingTasks()` in the CP JavaScript files, which resulted in JS errors. ([#1951](https://github.com/craftcms/cms/issues/1951))
+- Fixed a bug where the “Translation Method” setting was visible for existing Matrix sub-fields even when there was only one available translation method (e.g. Entries fields). ([#1967](https://github.com/craftcms/cms/issues/1967))
+- Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1874](https://github.com/craftcms/cms/issues/1874))
+- Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel. ([#1957](https://github.com/craftcms/cms/issues/1957))
+- Fixed a “divide by zero” error when paginating an empty set of elements. ([#1970](https://github.com/craftcms/cms/pull/1970))
+
+## 3.0.0-beta.26 - 2017-08-22
+
+### Fixed
+- Fixed a SQL error that could occur when logging deprecation errors if the line number is unknown. ([#1927](https://github.com/craftcms/cms/issues/1927))
+- Fixed a deprecation error that occurred when using a Tags field. ([#1932](https://github.com/craftcms/cms/issues/1932))
+- Fixed a PHP error that occurred if a volume type class was missing. ([#1934](https://github.com/craftcms/cms/issues/1934))
+- Fixed a PHP error that occurred when saving a new entry in a section with versioning enabled. ([#1935](https://github.com/craftcms/cms/issues/1935))
+
+## 3.0.0-beta.25 - 2017-08-17
+
+### Added
+- Added `craft\elements\Entry::$revisionCreatorId`.
+- Added `craft\services\EntryRevisions::doesEntryHaveVersions()`.
+
+### Changed
+- Craft now retroactively creates entry versions when saving entries, for entries that didn’t have any version history yet. ([#1926](https://github.com/craftcms/cms/issues/1926))
+
+### Fixed
+- Fixed an error that occurred when chaining a custom field method and a normal query method (e.g. `all()`) together on an element query. ([#1887](https://github.com/craftcms/cms/issues/1887))
+- Fixed a PHP error that occurred when processing a user verification request.
+- Fixed a bug where newly-created `div.matrixblock` elements weren’t getting a `data-type` attribute like existing blocks had. ([#1925](https://github.com/craftcms/cms/pull/1925))
+- Fixed a bug where you would get a SQL error if you tried to push a job to the queue using PostgreSQL.
+- Fixed a bug that would trigger the browser’s JavaScript debugger if you saved a Matrix field that had collapsed blocks.
+- Fixed a bug where `craft\helpers\ChartHelper::getRunChartDataFromQuery()` an SQL query instead of the actual results.
+- Fixed a bug where `craft\controllers\BaseElementsController::context()` was expecting a`string ` return, while return could also be `null`.
+
+## 3.0.0-beta.24 - 2017-08-15
+
+### Added
 - Craft’s tasks implementation has been replaced with a queue, based on the [Yii 2 Queue Extension](https://github.com/yiisoft/yii2-queue). ([#1910](https://github.com/craftcms/cms/issues/1910))
 - The “Failed” message in the queue HUD in the Control Panel now shows the full error message as alt text. ([#855](https://github.com/craftcms/cms/issues/855))
+- It’s now possible to install Craft from the command line, using the new `install` command. ([#1917](https://github.com/craftcms/cms/pull/1917))
 - Added the `instance of()` Twig test.
 - Added `craft\base\FlysystemVolume`, which replaces `craft\base\Volume` as the new base class for Flysystem-based volumes.
 - Added `craft\behaviors\SessionBehavior`, making it possible for `config/app.php` to customize the base `session` component while retaining Craft’s custom session methods.
 - Added `craft\controllers\QueueController`.
+- Added `craft\events\UserEvent`.
 - Added `craft\queue\BaseJob`, a base class for queue jobs that adds support for descriptions and progress.
 - Added `craft\queue\Command`, which provides `queue/run`, `queue/listen`, and `queue/info` console commands.
 - Added `craft\queue\InfoAction`.
@@ -27,14 +83,15 @@ Craft CMS 3.0 Working Changelog
 ### Changed
 - Renamed the `runTasksAutomatically` config setting to `runQueueAutomatically`.
 - Logs that occur during `queue` requests now get saved in `storage/logs/queue.log`.
-- The updater now ensures it can find `composer.json` before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1883](https://github.com/craftcms/cms/issues/1883))
-- The updater now ensures that the `COMPOSER_HOME`, `HOME` (\*nix), or `APPDATA` (Windows) environment variable is set before putting the system in Maintenance Mode, reducing the liklihood that Craft will mistakingly think that it’s already mid-update later on. ([#1890](https://github.com/craftcms/cms/issues/1890#issuecomment-319715460)) 
+- The updater now ensures it can find `composer.json` before putting the system in Maintenance Mode, reducing the likelihood that Craft will mistakingly think that it’s already mid-update later on. ([#1883](https://github.com/craftcms/cms/issues/1883))
+- The updater now ensures that the `COMPOSER_HOME`, `HOME` (\*nix), or `APPDATA` (Windows) environment variable is set before putting the system in Maintenance Mode, reducing the likelihood that Craft will mistakingly think that it’s already mid-update later on. ([#1890](https://github.com/craftcms/cms/issues/1890#issuecomment-319715460)) 
 - `craft\mail\Mailer::send()` now processes Twig code in the email message before parsing it as Markdown, if the message was composed via `craft\mail\Mailer::composeFromKey()`. ([#1895](https://github.com/craftcms/cms/pull/1895))
 - `craft\mail\Mailer::send()` no longer catches exceptions thrown by its parent method, or fires a `sendMailFailure` event in the event of a send failure. ([#1896](https://github.com/craftcms/cms/issues/1896))
 - Renamed `craft\helpers\Component::applySettings()` to `mergeSettings()`, and it no longer takes the `$config` argument by reference, instead returning a new array.
 - Renamed `craft\web\twig\nodes\GetAttr` to `GetAttrNode`.
 - `craft\base\Volume` is now only focussed on things that every volume would need, regardless of whether it will use Flysystem under the hood.
 - `craft\base\VolumeInterface::createFileByStream()`, `updateFileByStream()`, `deleteFile()`, `renameFile()`, `copyFile()`, `createDir()`, `deleteDir()`, and `renameDir()` no longer require their implementation methods to return a boolean value.
+- `div.matrixblock` elements in the Control Panel now have a `data-type` attribute set to the Matrix block type’s handle. ([#1915](https://github.com/craftcms/cms/pull/1915))
 
 ### Deprecated
 - Looping through element queries directly is now deprecated. Use the `all()` function to fetch the query results before looping over them. ([#1902](https://github.com/craftcms/cms/issues/1902))
@@ -44,9 +101,15 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\TaskInterface`.
 - Removed `craft\base\TaskTrait`.
 - Removed `craft\controllers\TasksController`.
+- Removed `craft\controllers\VolumesController::actionLoadVolumeTypeData()`.
 - Removed `craft\db\TaskQuery`.
 - Removed `craft\events\MailFailureEvent`.
 - Removed `craft\events\TaskEvent`.
+- Removed `craft\events\UserActivateEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserSuspendEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserTokenEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnlockEvent`. Use `craft\events\UserEvent` instead.
+- Removed `craft\events\UserUnsuspendEvent`. Use `craft\events\UserEvent` instead.
 - Removed `craft\mail\Mailer::EVENT_SEND_MAIL_FAILURE`.
 - Removed `craft\records\Task`.
 - Removed `craft\services\Tasks`.
@@ -68,6 +131,8 @@ Craft CMS 3.0 Working Changelog
 - Fixed a 404 error for `bootstrap.js` that occurred when the Debug Toolbar was opened.
 - Fixed some deprecation errors caused by relational and Matrix field inputs.
 - Fixed a bug where a plugin would get a PHP error if it tried to get the current site in the middle of a Craft update.
+- Fixed a bug where the Migrations utility would display an error message even if the migrations were applied successfully. ([#1911](https://github.com/craftcms/cms/issues/1911))
+- Fixed a PHP error that occurred if calling `getMimeType()` on an asset with an extension with an unknown MIME type. ([#1919](https://github.com/craftcms/cms/pull/1919))
 
 ## 3.0.0-beta.23 - 2017-07-28
 

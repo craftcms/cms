@@ -309,7 +309,7 @@ class Connection extends \yii\db\Connection
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         if (is_string($columns)) {
-            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+            $columns = StringHelper::split($columns);
         }
         $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_pk';
 
@@ -328,7 +328,7 @@ class Connection extends \yii\db\Connection
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         if (is_string($columns)) {
-            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+            $columns = StringHelper::split($columns);
         }
         $name = $this->tablePrefix.$table.'_'.implode('_', $columns).'_fk';
 
@@ -350,7 +350,7 @@ class Connection extends \yii\db\Connection
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         if (is_string($columns)) {
-            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+            $columns = StringHelper::split($columns);
         }
         $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').($foreignKey ? '_fk' : '_idx');
 

@@ -7,6 +7,8 @@
 
 namespace craft\helpers;
 
+use Craft;
+
 /**
  * Class ArrayHelper
  *
@@ -28,6 +30,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         if (is_string($object)) {
+            Craft::$app->getDeprecator()->log('ArrayHelper::toArray(string)', 'Passing a string to ArrayHelper::toArray() has been deprectaed. Use StringHelper::split() instead.');
+
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
 

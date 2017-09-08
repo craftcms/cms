@@ -312,7 +312,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                         }
 
                         // See if we should run any pending tasks
-                        Craft.cp.runPendingTasks();
+                        Craft.cp.runQueue();
                     }
                 }, this));
             }

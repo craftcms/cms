@@ -204,7 +204,7 @@
                 var id = 'new' + this.totalNewBlocks;
 
                 var html =
-                    '<div class="matrixblock" data-id="' + id + '">' +
+                    '<div class="matrixblock" data-id="' + id + '" data-type="' + type + '">' +
                     '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][type]" value="' + type + '"/>' +
                     '<input type="hidden" name="' + this.inputNamePrefix + '[' + id + '][enabled]" value="1"/>' +
                     '<div class="titlebar">' +
