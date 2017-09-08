@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
@@ -64,14 +65,18 @@ class InstallController extends Controller
      */
     public function options($actionID)
     {
-        $options = parent::options($actionID);
-        $options[] = 'email';
-        $options[] = 'username';
-        $options[] = 'password';
-        $options[] = 'siteName';
-        $options[] = 'siteUrl';
-        $options[] = 'language';
-        return $options;
+        if ($actionID == 'index') {
+            $options = parent::options($actionID);
+            $options[] = 'email';
+            $options[] = 'username';
+            $options[] = 'password';
+            $options[] = 'siteName';
+            $options[] = 'siteUrl';
+            $options[] = 'language';
+            return $options;
+        }
+
+        return parent::options($actionID);
     }
 
     /**
@@ -144,6 +149,28 @@ class InstallController extends Controller
             }
         } else {
             $this->stderr("There was a problem installing {$siteName}.\n", Console::FG_RED);
+        }
+    }
+    
+    /**
+     * Installs a plugin
+     */
+    public function actionPlugin($handle)
+    {
+        if (!$handle) {
+            $this->stderr("You must specify a plugin handle to install.\n");
+            return;
+        }
+
+        try {
+            Craft::$app->plugins->installPlugin($handle);
+            $this->stdout("{$handle} sucessfully installed!\r\n");
+        }
+        catch (InvalidPluginException $e) {
+            $this->stderr("Could not find a plugin with the handle: {$handle}\r\n");
+        }
+        catch (Exception $e) {
+            $this->stderr("There was a problem installing {$handle}: ".get_class($e)."\r\n");
         }
     }
 
