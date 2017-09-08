@@ -21,7 +21,7 @@ export default {
     },
 
     getDeveloper(cb, developerId) {
-        Vue.http.get('https://craftid.dev/api/developer/'+developerId).then(function(data) {
+        Vue.http.get(window.craftApiEndpoint+'/developer/'+developerId).then(function(data) {
             let developer = data.body;
 
             return cb(developer);
@@ -29,7 +29,7 @@ export default {
     },
 
     getPluginStoreData(cb) {
-        Vue.http.get('https://craftid.dev/api/plugin-store').then(function(data) {
+        Vue.http.get(window.craftApiEndpoint+'/plugin-store').then(function(data) {
             let pluginStoreData = data.body;
 
             return cb(pluginStoreData);

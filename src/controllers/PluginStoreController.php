@@ -46,6 +46,7 @@ class PluginStoreController extends Controller
      */
     public function actionIndex()
     {
+        Craft::$app->getView()->registerJs('window.craftApiEndpoint = "'.Craft::$app->getPluginStore()->craftApiEndpoint.'";');
         Craft::$app->getView()->registerAssetBundle(PluginStoreAsset::class);
 
         return $this->renderTemplate('plugin-store/_index');
@@ -59,6 +60,8 @@ class PluginStoreController extends Controller
     public function actionConnect($redirect = null)
     {
         $provider = new CraftId([
+            'oauthEndpointUrl' => Craft::$app->getPluginStore()->craftOauthEndpoint,
+            'apiEndpointUrl' => Craft::$app->getPluginStore()->craftApiEndpoint,
             'clientId'     => '1234567890',
             'redirectUri'  => UrlHelper::cpUrl('plugin-store/callback'),
         ]);
@@ -97,7 +100,7 @@ class PluginStoreController extends Controller
         $client = Craft::createGuzzleClient();
 
         try {
-            $client->request('GET', 'https://craftid.dev/oauth/revoke', ['query' => ['accessToken' => $token->accessToken]]);
+            $client->request('GET', Craft::$app->getPluginStore()->craftIdEndpoint.'/oauth/revoke', ['query' => ['accessToken' => $token->accessToken]]);
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from CraftCMS.dev.'));
         } catch(\Exception $e) {
             Craft::error('Couldn’t revoke token.');

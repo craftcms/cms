@@ -199,7 +199,7 @@
                 <hr>
 
                 <ul class="craftid-connected {% if not craftIdAccount %} hidden{% endif %}">
-                    <li><a href="https://craftid.dev/account" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                    <li><a href="{{ craft.cp.craftIdAccountUrl() }}" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
                     <li>
 						{#<a href="#">Disconnect from Craft ID</a>#}
                         <form method="post" id="disconnect">

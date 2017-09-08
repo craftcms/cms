@@ -27,6 +27,24 @@ use craft\records\OauthToken as OauthTokenRecord;
  */
 class PluginStore extends Component
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string Craft ID endpoint
+     */
+    public $craftIdEndpoint = 'https://id.craftcms.com';
+
+    /**
+     * @var string OAuth endpoint
+     */
+    public $craftOauthEndpoint = 'https://api.craftcms.com/oauth';
+
+    /**
+     * @var string API endpoint
+     */
+    public $craftApiEndpoint = 'https://api.craftcms.com/v1';
+
     // Public Methods
     // =========================================================================
 
@@ -37,13 +55,13 @@ class PluginStore extends Component
      */
     public function getCraftIdAccount()
     {
-        $craftIdToken = Craft::$app->getPluginStore()->getToken();
+        $craftIdToken = $this->getToken();
 
         if ($craftIdToken && $craftIdToken->hasExpired()) {
             $craftIdToken = null;
         }
 
-        $client = Craft::$app->getPluginStore()->getClient();
+        $client = $this->getClient();
 
         if ($craftIdToken) {
             $craftIdAccountResponse = $client->request('GET', 'account');
@@ -63,7 +81,7 @@ class PluginStore extends Component
     public function getClient()
     {
         $options = [
-            'base_uri' => 'https://craftid.dev/api/',
+            'base_uri' => $this->craftApiEndpoint.'/',
         ];
 
         $token = $this->getToken();
