@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\records\PluginStoreToken;
 use yii\base\Component;
 use GuzzleHttp\Client;
 use DateTime;
@@ -119,24 +120,60 @@ class PluginStore extends Component
             $saveToSession = false;
         }
 
-        $token = new OauthToken;
-        $token->userId = Craft::$app->getUser()->getIdentity()->id;
-        $token->provider = 'craftid';
-        $token->accessToken = $tokenArray['access_token'];
-        $token->tokenType = $tokenArray['token_type'];
-        $token->expiresIn = $tokenArray['expires_in'];
+        $userId = Craft::$app->getUser()->getIdentity()->id;
+
+        $oauthToken = new OauthToken;
+        $oauthToken->userId = $userId;
+        $oauthToken->provider = 'craftid';
+        $oauthToken->accessToken = $tokenArray['access_token'];
+        $oauthToken->tokenType = $tokenArray['token_type'];
+        $oauthToken->expiresIn = $tokenArray['expires_in'];
 
         $expiryDate = new DateTime();
         $expiryDateInterval = DateTimeHelper::secondsToInterval($tokenArray['expires_in']);
         $expiryDate->add($expiryDateInterval);
-        $token->expiryDate = $expiryDate;
+        $oauthToken->expiryDate = $expiryDate;
 
         if ($saveToSession) {
             // Save token to session
-            Craft::$app->getSession()->set('pluginStore.token', $token);
+            Craft::$app->getSession()->set('pluginStore.token', $oauthToken);
         } else {
             // Save token to database
-            $this->_saveToken($token);
+            // $this->_saveToken($oauthToken);
+
+            $pluginstoreToken = PluginStoreToken::find()
+                ->where(['userId' => $userId])
+                ->one();
+
+            if($pluginstoreToken && $pluginstoreToken->oauthTokenId) {
+                $oauthTokenRecord = OauthTokenRecord::find()
+                    ->where(['id' => $pluginstoreToken->oauthTokenId])
+                    ->one();
+
+                if($oauthTokenRecord) {
+                    $oauthTokenRecord->delete();
+
+                    $pluginstoreToken = false;
+                }
+            }
+
+            if(!$pluginstoreToken) {
+                $pluginstoreToken = new PluginStoreToken();
+                $pluginstoreToken->userId = $userId;
+            }
+
+            $oauthTokenRecord = new OauthTokenRecord();
+            $oauthTokenRecord->userId = $oauthToken->userId;
+            $oauthTokenRecord->provider = $oauthToken->provider;
+            $oauthTokenRecord->accessToken = $oauthToken->accessToken;
+            $oauthTokenRecord->tokenType = $oauthToken->tokenType;
+            $oauthTokenRecord->expiresIn = $oauthToken->expiresIn;
+            $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
+            $oauthTokenRecord->refreshToken = $oauthToken->refreshToken;
+            $oauthTokenRecord->save();
+
+            $pluginstoreToken->oauthTokenId = $oauthTokenRecord->id;
+            $pluginstoreToken->save();
         }
     }
 
@@ -158,10 +195,17 @@ class PluginStore extends Component
         // Or use the token from the database otherwise
 
         if (!$token || ($token && $token->hasExpired())) {
-            $dbToken = $this->getTokenByUserId($userId);
 
-            if ($dbToken) {
-                return $dbToken;
+            $pluginstoreToken = PluginStoreToken::find()
+                ->where(['userId' => $userId])
+                ->one();
+
+            if($pluginstoreToken) {
+                $oauthTokenRecord = $pluginstoreToken->getOauthToken()->one();
+
+                if($oauthTokenRecord) {
+                    return new OauthToken($oauthTokenRecord->getAttributes());
+                }
             }
         }
 
@@ -173,12 +217,25 @@ class PluginStore extends Component
      */
     public function deleteToken()
     {
+        // Delete DB token
+
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        // Delete cache token
-        $this->deleteTokenByUserId($userId);
+        $pluginstoreToken = PluginStoreToken::find()
+            ->where(['userId' => $userId])
+            ->one();
+
+        if($pluginstoreToken) {
+            $oauthToken = $pluginstoreToken->getOauthToken()->one();
+
+            if($oauthToken) {
+                $oauthToken->delete();
+            }
+        }
+
 
         // Delete session token
+
         Craft::$app->getSession()->remove('pluginStore.token');
     }
 
