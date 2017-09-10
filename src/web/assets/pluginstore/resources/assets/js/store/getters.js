@@ -1,5 +1,12 @@
 export const cartPlugins = state => {
-    return state.cart.items.map(({ id }) => {
+
+    let items = state.cart.items.filter(({ id }) => {
+        if(state.pluginstore.data.plugins) {
+            return state.pluginstore.data.plugins.find(p => p.id === id)
+        }
+    })
+
+    return items.map(({ id }) => {
         if(state.pluginstore.data.plugins) {
             return state.pluginstore.data.plugins.find(p => p.id === id)
         }
