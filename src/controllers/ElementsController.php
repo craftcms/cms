@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\errors\InvalidTypeException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
@@ -108,19 +109,16 @@ class ElementsController extends BaseElementsController
     {
         /** @var Element $element */
         $element = $this->_getEditorElement();
+
+        // Figure out where the data will be in POST
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
+
+        // Configure the element
         $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
-        $element->setFieldParamNamespace($namespace.'.fields');
-
-        if (isset($params['fields'])) {
-            $fields = $params['fields'];
-            $element->setFieldValues($fields);
-            unset($params['fields']);
-        }
-
+        ArrayHelper::remove($params, 'fields');
         Craft::configure($element, $params);
 
-        // Either way, at least tell the element where its content comes from
+        // Set the custom field values
         $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
@@ -209,10 +207,10 @@ class ElementsController extends BaseElementsController
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', array('element' => $element));
+        $html = $view->renderTemplate('_elements/element', ['element' => $element]);
         $headHtml = $view->getHeadHtml();
 
-        return $this->asJson(array('html' => $html, 'headHtml' => $headHtml));
+        return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
     }
 
     // Private Methods

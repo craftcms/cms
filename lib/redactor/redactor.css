@@ -248,6 +248,11 @@
     display: table;
     clear: both; }
 
+.redactor-toolbar.redactor-toolbar-overflow {
+  overflow-y: auto;
+  white-space: nowrap;
+  height: 48px; }
+
 .redactor-toolbar li a {
   color: rgba(0, 0, 0, 0.8); }
   .redactor-toolbar li a:hover {
@@ -1117,7 +1122,7 @@
     bottom: -.2rem; }
   .redactor-styles strong:empty, .redactor-styles b:empty, .redactor-styles em:empty, .redactor-styles i:empty, .redactor-styles sup:empty, .redactor-styles sub:empty, .redactor-styles u:empty, .redactor-styles ins:empty {
     display: inline-block;
-    min-width: 1em;
+    min-width: 1px;
     min-height: 1rem; }
   .redactor-styles figcaption {
     margin: 4px 0;

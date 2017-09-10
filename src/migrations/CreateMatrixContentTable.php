@@ -42,9 +42,9 @@ class CreateMatrixContentTable extends Migration
             'uid' => $this->uid(),
         ]);
 
-        $this->createIndex($this->db->getIndexName($this->tableName, 'elementId,siteId'), $this->tableName, 'elementId,siteId', true);
-        $this->addForeignKey($this->db->getForeignKeyName($this->tableName, 'elementId'), $this->tableName, 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName($this->tableName, 'siteId'), $this->tableName, 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->createIndex(null, $this->tableName, ['elementId', 'siteId'], true);
+        $this->addForeignKey(null, $this->tableName, ['elementId'], '{{%elements}}', ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, $this->tableName, ['siteId'], '{{%sites}}', ['id'], 'CASCADE', 'CASCADE');
     }
 
     /**

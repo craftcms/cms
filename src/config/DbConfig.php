@@ -121,7 +121,12 @@ class DbConfig extends Object
         if ($this->url !== null) {
             $url = parse_url($this->url);
             if (isset($url['scheme'])) {
-                $this->driver = $url['scheme'];
+                $scheme = strtolower($url['scheme']);
+                if (in_array($scheme, [self::DRIVER_PGSQL, 'postgres', 'postgresql'], true)) {
+                    $this->driver = self::DRIVER_PGSQL;
+                } else {
+                    $this->driver = self::DRIVER_MYSQL;
+                }
             }
             if (isset($url['user'])) {
                 $this->user = $url['user'];

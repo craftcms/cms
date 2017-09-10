@@ -165,20 +165,12 @@ class Dashboard extends Component
      */
     public function getWidgetById(int $id)
     {
-        $widgetRecord = WidgetRecord::findOne([
-            'id' => $id,
-            'userId' => Craft::$app->getUser()->getIdentity()->id
-        ]);
+        $result = $this->_createWidgetsQuery()
+            ->where(['id' => $id, 'userId' => Craft::$app->getUser()->getIdentity()->id])
+            ->one();
 
-        if ($widgetRecord) {
-            return $this->createWidget($widgetRecord->toArray([
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'colspan',
-                'type',
-                'settings',
-            ]));
+        if ($result) {
+            return $this->createWidget($result);
         }
 
         return null;
@@ -191,33 +183,32 @@ class Dashboard extends Component
      * @param bool            $runValidation Whether the widget should be validated
      *
      * @return bool Whether the widget was saved successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
         /** @var Widget $widget */
-        if ($runValidation && !$widget->validate()) {
-            Craft::info('Widget not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
         $isNewWidget = $widget->getIsNew();
 
         // Fire a 'beforeSaveWidget' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-            'isNew' => $isNewWidget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+                'isNew' => $isNewWidget,
+            ]));
+        }
+
+        if (!$widget->beforeSave($isNewWidget)) {
+            return false;
+        }
+
+        if ($runValidation && !$widget->validate()) {
+            Craft::info('Widget not saved due to validation error.', __METHOD__);
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeSave($isNewWidget)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
             $widgetRecord->type = get_class($widget);
@@ -246,7 +237,7 @@ class Dashboard extends Component
             $widget->afterSave($isNewWidget);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -285,24 +276,24 @@ class Dashboard extends Component
      * @param WidgetInterface $widget The widget to be deleted
      *
      * @return bool Whether the widget was deleted successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
         /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
+
+        if (!$widget->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
             $widgetRecord->enabled = false;
             $widgetRecord->save();
@@ -310,16 +301,18 @@ class Dashboard extends Component
             $widget->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
         // Fire an 'afterDeleteWidget' event
-        $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
-            'widget' => $widget,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_WIDGET)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $widget,
+            ]));
+        }
 
         return true;
     }
@@ -330,7 +323,7 @@ class Dashboard extends Component
      * @param int[] $widgetIds The widget IDs
      *
      * @return bool Whether the widgets were reordered successfully
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function reorderWidgets(array $widgetIds): bool
     {
@@ -344,7 +337,7 @@ class Dashboard extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -456,16 +449,7 @@ class Dashboard extends Component
             throw new Exception('No logged-in user');
         }
 
-        $results = (new Query())
-            ->select([
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'colspan',
-                'type',
-                'settings',
-            ])
-            ->from(['{{%widgets}}'])
+        $results = $this->_createWidgetsQuery()
             ->where(['userId' => $userId, 'enabled' => '1'])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
@@ -476,5 +460,22 @@ class Dashboard extends Component
         }
 
         return $widgets;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createWidgetsQuery(): Query
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ])
+            ->from(['{{%widgets}}']);
     }
 }

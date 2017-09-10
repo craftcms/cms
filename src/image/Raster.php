@@ -162,7 +162,7 @@ class Raster extends Image
 
         try {
             $this->_image = $this->_instance->open($path);
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
         }
 
@@ -227,7 +227,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -337,7 +337,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth, int $targetHeight = null)
+    public function resize(int $targetWidth = null, int $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

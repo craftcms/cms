@@ -22,7 +22,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         init: function(element, settings) {
             // Param mapping
-            if (settings === undefined && $.isPlainObject(element)) {
+            if (typeof settings === 'undefined' && $.isPlainObject(element)) {
                 // (settings)
                 settings = element;
                 element = null;
@@ -85,7 +85,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         showHud: function(response, textStatus) {
             this.onEndLoading();
 
-            if (textStatus == 'success') {
+            if (textStatus === 'success') {
                 var $hudContents = $();
 
                 if (response.sites) {
@@ -167,7 +167,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
                 this.$siteSpinner.addClass('hidden');
 
-                if (textStatus == 'success') {
+                if (textStatus === 'success') {
                     this.updateForm(response);
                 }
                 else {
@@ -218,8 +218,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
-                if (textStatus == 'success') {
-                    if (textStatus == 'success' && response.success) {
+                if (textStatus === 'success') {
+                    if (response.success) {
                         if (this.$element && this.siteId == this.$element.data('site-id')) {
                             // Update the label
                             var $title = this.$element.find('.title'),
@@ -235,7 +235,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                         }
 
                         // Update Live Preview
-                        if (Craft.livePreview !== undefined) {
+                        if (typeof Craft.livePreview !== 'undefined') {
                             Craft.livePreview.updateIframe(true);
                         }
 

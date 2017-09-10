@@ -31,7 +31,9 @@ use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
+use yii\validators\InlineValidator;
 use yii\web\IdentityInterface;
 
 /**
@@ -72,7 +74,6 @@ class User extends Element implements IdentityInterface
     const AUTH_NO_CP_ACCESS = 'no_cp_access';
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
-    const AUTH_USERNAME_INVALID = 'username_invalid';
 
     // Validation scenarios
     // -------------------------------------------------------------------------
@@ -549,7 +550,7 @@ class User extends Element implements IdentityInterface
     {
         try {
             return $this->getName();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -590,6 +591,8 @@ class User extends Element implements IdentityInterface
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class
             ];
+
+            $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
 
         if ($this->id !== null && $this->passwordResetRequired) {
@@ -614,6 +617,28 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Validates the unverifiedEmail value is unique.
+     *
+     * @param string          $attribute
+     * @param array|null      $params
+     * @param InlineValidator $validator
+     */
+    public function validateUnverifiedEmail(string $attribute, $params, InlineValidator $validator)
+    {
+        $query = User::find()
+            ->where(['email' => $this->unverifiedEmail])
+            ->status(null);
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'), $params);
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public function scenarios()
@@ -630,13 +655,8 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        if (Craft::$app->getEdition() === Craft::Pro) {
-            return Craft::$app->getFields()->getLayoutByType(static::class);
-        }
-
-        return null;
+        return Craft::$app->getFields()->getLayoutByType(static::class);
     }
-
 
     /**
      * @inheritdoc
@@ -703,7 +723,12 @@ class User extends Element implements IdentityInterface
                 break;
             case self::STATUS_ACTIVE:
                 // Validate the password
-                if (!Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
+                try {
+                    $valid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
+                } catch (InvalidParamException $e) {
+                    $valid = false;
+                }
+                if (!$valid) {
                     Craft::$app->getUsers()->handleInvalidLogin($this);
                     // Was that one bad password too many?
                     if ($this->locked) {
@@ -1212,6 +1237,17 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
+     */
+    public function beforeSave(bool $isNew): bool
+    {
+        // Make sure the field layout is set correctly
+        $this->fieldLayoutId = Craft::$app->getFields()->getLayoutByType(static::class)->id;
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
      * @throws Exception if reasons
      */
     public function afterSave(bool $isNew)
@@ -1323,7 +1359,7 @@ class User extends Element implements IdentityInterface
                 ->addSelect([
                     'siteId' => (new Query())
                         ->select('i18n.siteId')
-                        ->from('{{%elements_i18n}} i18n')
+                        ->from('{{%elements_sites}} i18n')
                         ->where('[[i18n.elementId]] = [[e.id]]')
                         ->limit(1)
                 ])

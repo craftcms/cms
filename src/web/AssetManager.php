@@ -7,7 +7,6 @@
 
 namespace craft\web;
 
-use Craft;
 use craft\helpers\FileHelper;
 
 /**

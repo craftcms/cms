@@ -39,8 +39,6 @@ class Component
             $class = $config;
             $config = [];
         } else {
-            $config = ArrayHelper::toArray($config);
-
             if (empty($config['type'])) {
                 throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: '.Json::encode($config));
             }
@@ -62,25 +60,29 @@ class Component
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
-        self::applySettings($config);
+        $config = self::mergeSettings($config);
 
         // Instantiate and return
         return new $class($config);
     }
 
     /**
-     * Extracts settings from a given component config, and merges them in.
+     * Extracts settings from a given component config, and returns a new config array wiith the settings merged in.
      *
      * @param array $config
+     *
+     * @return array
      */
-    public static function applySettings(array &$config)
+    public static function mergeSettings(array $config): array
     {
-        if (($settings = ArrayHelper::remove($config, 'settings')) !== null) {
-            if (is_string($settings)) {
-                $settings = Json::decode($settings);
-            }
-
-            $config = array_merge($config, $settings);
+        if (($settings = ArrayHelper::remove($config, 'settings')) === null) {
+            return $config;
         }
+
+        if (is_string($settings)) {
+            $settings = Json::decode($settings);
+        }
+
+        return array_merge($config, $settings);
     }
 }

@@ -32,11 +32,11 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
+use craft\queue\jobs\FindAndReplace;
+use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
-use craft\tasks\FindAndReplace;
-use craft\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -75,8 +75,6 @@ class Elements extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
-     *
-     * You may set [[ElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE_ELEMENT = 'beforeSaveElement';
 
@@ -84,6 +82,16 @@ class Elements extends Component
      * @event ElementEvent The event that is triggered after an element is saved.
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
+
+    /**
+     * @event ElementEvent The event that is triggered before an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_BEFORE_UPDATE_SLUG_AND_URI = 'beforeUpdateSlugAndUri';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element’s slug and URI are updated, usually following a Structure move.
+     */
+    const EVENT_AFTER_UPDATE_SLUG_AND_URI = 'afterUpdateSlugAndUri';
 
     /**
      * @event ElementActionEvent The event that is triggered before an element action is performed.
@@ -171,7 +179,7 @@ class Elements extends Component
         $query->status = null;
         $query->enabledForSite = false;
 
-        return $query->one();
+        return $query->one() ?: null;
     }
 
     /**
@@ -199,15 +207,15 @@ class Elements extends Component
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
             ->from(['{{%elements}} elements'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
+            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
-                'elements_i18n.uri' => $uri,
-                'elements_i18n.siteId' => $siteId
+                'elements_sites.uri' => $uri,
+                'elements_sites.siteId' => $siteId
             ]);
 
         if ($enabledOnly) {
             $query->andWhere([
-                'elements_i18n.enabled' => '1',
+                'elements_sites.enabled' => '1',
                 'elements.enabled' => '1',
                 'elements.archived' => '0',
             ]);
@@ -270,7 +278,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -287,7 +295,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from(['{{%elements_i18n}}'])
+            ->from(['{{%elements_sites}}'])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -308,15 +316,13 @@ class Elements extends Component
      * - Assigning the element’s ID on the element’s content model, if there is one and it’s a new set of content
      * - Updating the search index with new keywords from the element’s content
      * - Setting a unique URI on the element, if it’s supposed to have one.
-     * - Saving the element’s row(s) in the `elements_i18n` and `content` tables
-     * - Deleting any rows in the `elements_i18n` and `content` tables that no longer need to be there
-     * - Calling the field types’ [[Field::onAfterElementSave() onAfterElementSave()]] methods
-     * - Cleaing any template caches that the element was involved in
+     * - Saving the element’s row(s) in the `elements_sites` and `content` tables
+     * - Deleting any rows in the `elements_sites` and `content` tables that no longer need to be there
+     * - Cleaning any template caches that the element was involved in
      *
-     * This method should be called by a service’s “saveX()” method, _after_ it is done validating any attributes on
-     * the element that are of particular concern to its element type. For example, if the element were an entry,
-     * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
-     * ensure that they point to valid section and entry type IDs.
+     * The function will fire `beforeElementSave` and `afterElementSave` events, and will call `beforeSave()`
+     *  and `afterSave()` methods on the passed-in element, giving the element opportunities to hook into the
+     * save process.
      *
      * Example usage - creating a new entry:
      *
@@ -324,6 +330,7 @@ class Elements extends Component
      * $entry = new Entry();
      * $entry->sectionId = 10;
      * $entry->typeId = 1;
+     * $entry->fieldLayoutId = $entry->getType()->fieldLayoutId;
      * $entry->authorId = 5;
      * $entry->enabled = true;
      * $entry->title = "Hello World!";
@@ -346,12 +353,24 @@ class Elements extends Component
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true): bool
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
+
+        // Fire a 'beforeSaveElement' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement
+            ]));
+        }
+
+        if (!$element->beforeSave($isNewElement)) {
+            return false;
+        }
 
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
@@ -381,20 +400,8 @@ class Elements extends Component
             return false;
         }
 
-        // Fire a 'beforeSaveElement' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$element->beforeSave($isNewElement)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // Get the element record
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne($element->id);
@@ -486,7 +493,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 Craft::$app->getDb()->createCommand()
                     ->delete(
-                        '{{%elements_i18n}}',
+                        '{{%elements_sites}}',
                         [
                             'and',
                             ['elementId' => $element->id],
@@ -508,7 +515,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -519,10 +526,12 @@ class Elements extends Component
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
         // Fire an 'afterSaveElement' event
-        $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-            'element' => $element,
-            'isNew' => $isNewElement,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement,
+            ]));
+        }
 
         return true;
     }
@@ -530,11 +539,11 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
-     * @param array $newAttributes any attributes to apply to the duplicate
+     * @param ElementInterface $element       the element to duplicate
+     * @param array            $newAttributes any attributes to apply to the duplicate
      *
      * @return ElementInterface the duplicated element
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
@@ -589,7 +598,7 @@ class Elements extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -604,22 +613,21 @@ class Elements extends Component
      * @param ElementInterface $element           The element to update.
      * @param bool             $updateOtherSites  Whether the element’s other sites should also be updated.
      * @param bool             $updateDescendants Whether the element’s descendants should also be updated.
-     * @param bool             $asTask            Whether the element’s slug and URI should be updated via a background task.
+     * @param bool             $queue             Whether the element’s slug and URI should be updated via a job in the queue.
      *
      * @return void
      */
-    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $asTask = false)
+    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
         /** @var Element $element */
-        if ($asTask) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => UpdateElementSlugsAndUris::class,
+        if ($queue) {
+            Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
                 'elementType' => get_class($element),
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
-            ]);
+            ]));
 
             return;
         }
@@ -628,9 +636,16 @@ class Elements extends Component
             ElementHelper::setUniqueUri($element);
         }
 
+        // Fire a 'beforeUpdateSlugAndUri' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
+
         Craft::$app->getDb()->createCommand()
             ->update(
-                '{{%elements_i18n}}',
+                '{{%elements_sites}}',
                 [
                     'slug' => $element->slug,
                     'uri' => $element->uri
@@ -640,6 +655,13 @@ class Elements extends Component
                     'siteId' => $element->siteId
                 ])
             ->execute();
+
+        // Fire a 'afterUpdateSlugAndUri' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
+            $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
+                'element' => $element
+            ]));
+        }
 
         // Delete any caches involving this element
         Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
@@ -684,11 +706,11 @@ class Elements extends Component
      *
      * @param ElementInterface $element          The element whose descendants should be updated.
      * @param bool             $updateOtherSites Whether the element’s other sites should also be updated.
-     * @param bool             $asTask           Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param bool             $queue            Whether the descendants’ slugs and URIs should be updated via a job in the queue.
      *
      * @return void
      */
-    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $asTask = false)
+    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
         /** @var Element $element */
         /** @var ElementQuery $query */
@@ -699,18 +721,17 @@ class Elements extends Component
             ->enabledForSite(false)
             ->siteId($element->siteId);
 
-        if ($asTask) {
+        if ($queue) {
             $childIds = $query->ids();
 
             if (!empty($childIds)) {
-                Craft::$app->getTasks()->queueTask([
-                    'type' => UpdateElementSlugsAndUris::class,
+                Craft::$app->getQueue()->push(new UpdateElementSlugsAndUris([
                     'elementId' => $childIds,
                     'elementType' => get_class($element),
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
-                ]);
+                ]));
             }
         } else {
             $children = $query->all();
@@ -734,7 +755,7 @@ class Elements extends Component
      * @param int $prevailingElementId The ID of the element that is sticking around.
      *
      * @return bool Whether the elements were merged successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function mergeElementsByIds(int $mergedElementId, int $prevailingElementId): bool
     {
@@ -809,28 +830,28 @@ class Elements extends Component
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
                 $refTagPrefix = "{{$refHandle}:";
+                $queue = Craft::$app->getQueue();
 
-                Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::class,
+                $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.':',
                     'replace' => $refTagPrefix.$prevailingElementId.':',
-                ]);
+                ]));
 
-                Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::class,
+                $queue->push(new FindAndReplace([
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.'}',
                     'replace' => $refTagPrefix.$prevailingElementId.'}',
-                ]);
+                ]));
             }
 
             // Fire an 'afterMergeElements' event
-            $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS,
-                new MergeElementsEvent([
+            if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
+                $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                     'mergedElementId' => $mergedElementId,
                     'prevailingElementId' => $prevailingElementId
                 ]));
+            }
 
             // Now delete the merged element
             $success = $this->deleteElementById($mergedElementId);
@@ -838,7 +859,7 @@ class Elements extends Component
             $transaction->commit();
 
             return $success;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -854,7 +875,7 @@ class Elements extends Component
      *                                  Defaults to the current site.
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElementById(int $elementId, string $elementType = null, int $siteId = null): bool
     {
@@ -871,7 +892,7 @@ class Elements extends Component
             // Get a site this element is enabled in
             $siteId = (int)(new Query())
                 ->select('siteId')
-                ->from('{{%elements_i18n}}')
+                ->from('{{%elements_sites}}')
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
@@ -895,25 +916,25 @@ class Elements extends Component
      * @param ElementInterface $element The element to be deleted
      *
      * @return bool Whether the element was deleted successfully
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteElement(ElementInterface $element): bool
     {
         /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
+
+        if (!$element->beforeDelete()) {
+            return false;
+        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            if (!$element->beforeDelete()) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
             /** @var StructureElementRecord[] $records */
             $records = StructureElementRecord::findAll([
@@ -950,7 +971,7 @@ class Elements extends Component
             $element->afterDelete();
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -958,9 +979,11 @@ class Elements extends Component
 
 
         // Fire an 'afterDeleteElement' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
-            'element' => $element,
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+                'element' => $element,
+            ]));
+        }
 
         return true;
     }
@@ -1056,7 +1079,7 @@ class Elements extends Component
         // First catalog all of the ref tags by element type, ref type ('id' or 'ref'), and ref name,
         // and replace them with placeholder tokens
         $allRefTagTokens = [];
-        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
+        $str = preg_replace_callback('/\{([\w\\\\]+)\:([^\:\}]+)(?:\:([^\}]+))?\}/', function($matches) use (&$allRefTagTokens) {
             // Does it already have a full element type class name?
             if (is_subclass_of($matches[1], ElementInterface::class)) {
                 $elementType = $matches[1];
@@ -1147,11 +1170,7 @@ class Elements extends Component
      */
     public function getPlaceholderElement(int $id, int $siteId)
     {
-        if (isset($this->_placeholderElements[$id][$siteId])) {
-            return $this->_placeholderElements[$id][$siteId];
-        }
-
-        return null;
+        return $this->_placeholderElements[$id][$siteId] ?? null;
     }
 
     /**
@@ -1171,7 +1190,10 @@ class Elements extends Component
         }
 
         // Normalize the paths and find any custom path criterias
-        $with = ArrayHelper::toArray($with);
+        if (is_string($with)) {
+            $with = StringHelper::split($with);
+        }
+
         $paths = [];
         $pathCriterias = [];
 
@@ -1353,6 +1375,7 @@ class Elements extends Component
 
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $siteElement->propagating = true;
 
         if ($this->saveElement($siteElement, true, false) === false) {
             // Log the errors
@@ -1389,12 +1412,13 @@ class Elements extends Component
      * Returns the replacement for a given reference tag.
      *
      * @param ElementInterface|null $element
-     * @param array $matches
+     * @param array                 $matches
      *
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string {
+    private function _getRefTokenReplacement(ElementInterface $element = null, array $matches): string
+    {
         if ($element === null) {
             // Put the ref tag back
             return $matches[0];
@@ -1413,7 +1437,7 @@ class Elements extends Component
             }
 
             return $this->parseRefs((string)$value);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Log it
             Craft::error('An exception was thrown when parsing the ref tag "'.$matches[0]."\":\n".$e->getMessage(), __METHOD__);
 

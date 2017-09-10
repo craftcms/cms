@@ -37,7 +37,6 @@ class Route extends ActiveRecord
     {
         return [
             [['siteId'], SiteIdValidator::class],
-            [['uriPattern'], 'unique'],
             [['uriParts', 'uriPattern', 'template'], 'required'],
         ];
     }

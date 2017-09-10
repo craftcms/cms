@@ -219,16 +219,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'What this block type will be called in the CP.',
         ]);
 
+        $fieldsService = Craft::$app->getFields();
         $fieldTypeOptions = [];
 
-        foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
+        foreach ($fieldsService->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
             /** @var Field|string $class */
             if ($class !== self::class) {
-                $fieldTypeOptions[] = [
+                $fieldTypeOptions['new'] = [
                     'value' => $class,
                     'label' => $class::displayName()
                 ];
+            }
+        }
+
+        if ($this->id) {
+            foreach ($this->getBlockTypes() as $blockType) {
+                foreach ($blockType->getFields() as $field) {
+                    /** @var Field $field */
+                    if ($field->id) {
+                        $fieldTypeOptions[$field->id] = [];
+                        foreach ($fieldsService->getCompatibleFieldTypes($field, true) as $class) {
+                            // No Matrix-Inception, sorry buddy.
+                            /** @var Field|string $class */
+                            if ($class !== self::class) {
+                                $fieldTypeOptions[$field->id][] = [
+                                    'value' => $class,
+                                    'label' => $class::displayName()
+                                ];
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -266,11 +288,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             return $value;
         }
 
-        /** @var Element $element */
+        /** @var Element|null $element */
         $query = MatrixBlock::find();
 
         // Existing element?
-        if ($element->id) {
+        if ($element && $element->id) {
             $query->ownerId($element->id);
         } else {
             $query->id(false);
@@ -278,7 +300,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         $query
             ->fieldId($this->id)
-            ->siteId($element->siteId);
+            ->siteId($element->siteId ?? null);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
@@ -362,11 +384,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value instanceof MatrixBlockQuery) {
-            /** @var MatrixBlockQuery $value */
-            $value
+            $value = $value
                 ->limit(null)
                 ->status(null)
-                ->enabledForSite(false);
+                ->enabledForSite(false)
+                ->all();
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
@@ -467,20 +489,21 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getStaticHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            $id = StringHelper::randomString();
+        $value = $value->all();
 
-            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
-                [
-                    'id' => $id,
-                    'name' => $id,
-                    'blockTypes' => $this->getBlockTypes(),
-                    'blocks' => $value,
-                    'static' => true
-                ]);
-        } else {
+        if (empty($value)) {
             return '<p class="light">'.Craft::t('app', 'No blocks.').'</p>';
         }
+
+        $id = StringHelper::randomString();
+
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
+            'id' => $id,
+            'name' => $id,
+            'blockTypes' => $this->getBlockTypes(),
+            'blocks' => $value,
+            'static' => true
+        ]);
     }
 
     /**

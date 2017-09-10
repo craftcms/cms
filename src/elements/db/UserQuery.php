@@ -21,8 +21,8 @@ use yii\db\Connection;
  * @property string|string[]|UserGroup $group The handle(s) of the tag group(s) that resulting users must belong to.
  *
  * @method User[]|array all($db = null)
- * @method User|array|null one($db = null)
- * @method User|array|null nth(int $n, Connection $db = null)
+ * @method User|array|false one($db = null)
+ * @method User|array|false nth(int $n, Connection $db = null)
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -76,7 +76,7 @@ class UserQuery extends ElementQuery
     public $lastName;
 
     /**
-     * @var mixed The date that the resulting entries must have last logged in.
+     * @var mixed The date that the resulting users must have last logged in.
      */
     public $lastLoginDate;
 
@@ -95,7 +95,7 @@ class UserQuery extends ElementQuery
 
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = User::STATUS_ACTIVE;
+            $config['status'] = [User::STATUS_ACTIVE];
         }
 
         parent::__construct($elementType, $config);
@@ -339,7 +339,7 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->lastLoginDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate));
+            $this->subQuery->andWhere(Db::parseDateParam('users.lastLoginDate', $this->lastLoginDate));
         }
 
         return parent::beforePrepare();

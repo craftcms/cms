@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodevisitors;
 
+use Craft;
+
 /**
  * EventTagFinder looks for `head()`, `beginBody()`, and `endBody()` event tags in templates as they’re being compiled.
  *
@@ -23,6 +25,11 @@ class EventTagFinder extends BaseEventTagVisitor
      */
     public function enterNode(\Twig_Node $node, \Twig_Environment $env)
     {
+        // Ignore if we're not rendering a page template
+        if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
+            return $node;
+        }
+
         // Ignore if this isn't a print/do tag
         if (!$node instanceof \Twig_Node_Print && !$node instanceof \Twig_Node_Do) {
             return $node;

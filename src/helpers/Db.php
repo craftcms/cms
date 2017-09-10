@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use yii\base\Exception;
@@ -459,7 +458,7 @@ class Db
             return '';
         }
 
-        $value = ArrayHelper::toArray($value);
+        $value = self::_toArray($value);
 
         if (!count($value)) {
             return '';
@@ -507,7 +506,7 @@ class Db
                         $condition[] = [
                             'not',
                             [
-                                [$column => null],
+                                $column => null,
                             ]
                         ];
                     }
@@ -555,7 +554,7 @@ class Db
     {
         $normalizedValues = [];
 
-        $value = ArrayHelper::toArray($value);
+        $value = self::_toArray($value);
 
         if (!count($value)) {
             return '';
@@ -614,6 +613,43 @@ class Db
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Converts a given param value to an array.
+     *
+     * @param mixed $value
+     *
+     * @return array
+     */
+    private static function _toArray($value): array
+    {
+        if ($value === null) {
+            return [];
+        }
+
+        if (is_string($value)) {
+            // Split it on the non-escaped commas
+            $value = preg_split('/(?<!\\\),/', $value);
+
+            // Remove any of the backslashes used to escape the commas
+            foreach ($value as $key => $val) {
+                // Remove leading/trailing whitespace
+                $val = trim($val);
+
+                // Remove any backslashes used to escape commas
+                $val = str_replace('\,', ',', $val);
+
+                $value[$key] = $val;
+            }
+
+            // Remove any empty elements and reset the keys
+            $value = array_merge(array_filter($value));
+
+            return $value;
+        }
+
+        return ArrayHelper::toArray($value);
+    }
 
     /**
      * Normalizes “empty” values.

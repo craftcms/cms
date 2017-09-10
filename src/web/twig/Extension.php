@@ -148,6 +148,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
+            new \Twig_SimpleFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('filterByValue', [ArrayHelper::class, 'filterByValue']),
@@ -192,6 +193,9 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
+            new \Twig_SimpleTest('instance of', function($obj, $class) {
+                return $obj instanceof $class;
+            }),
             new \Twig_SimpleTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
@@ -201,7 +205,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Translates the given message.
      *
-     * @param string      $message  The message to be translated.
+     * @param mixed       $message  The message to be translated.
      * @param string|null $category the message category.
      * @param array|null  $params   The parameters that will be used to replace the corresponding placeholders in the message.
      * @param string|null $language The language code (e.g. `en-US`, `en`). If this is null, the current
@@ -209,7 +213,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      *
      * @return string the translated message.
      */
-    public function translateFilter(string $message, $category = null, $params = null, $language = null): string
+    public function translateFilter($message, $category = null, $params = null, $language = null): string
     {
         // The front end site doesn't need to specify the category
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -228,7 +232,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         try {
-            return Craft::t($category, $message, $params, $language);
+            return Craft::t($category, (string)$message, $params, $language);
         } catch (InvalidConfigException $e) {
             return $message;
         }
@@ -739,15 +743,12 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 
-        // Keep the 'blx' variable around for now
-        $globals['craft'] = $globals['blx'] = new CraftVariable();
+        $globals['craft'] = new CraftVariable();
 
-        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
-            // Keep 'user' around so long as it's not hurting anyone.
-            // Technically deprecated, though.
-            $globals['currentUser'] = $globals['user'] = Craft::$app->getUser()->getIdentity();
+        if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
         } else {
-            $globals['currentUser'] = $globals['user'] = null;
+            $globals['currentUser'] = null;
         }
 
         // CP-only variables
@@ -759,7 +760,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         // Only set these things when Craft is installed and not being updated
-        if ($isInstalled && !Craft::$app->getIsUpdating()) {
+        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
             $globals['systemName'] = Craft::$app->getInfo()->name;
             $site = Craft::$app->getSites()->currentSite;
             $globals['currentSite'] = $site;

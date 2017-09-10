@@ -36,8 +36,9 @@ class DeprecatedPanel extends Panel
      */
     public function getSummary()
     {
-        return Craft::$app->getView()->render('@app/views/debug/deprecated/summary',
-            ['panel' => $this]);
+        return Craft::$app->getView()->render('@app/views/debug/deprecated/summary', [
+            'panel' => $this
+        ]);
     }
 
     /**
@@ -62,15 +63,15 @@ class DeprecatedPanel extends Panel
                 throw new NotFoundHttpException('The requested deprecation error log could not be found.');
             }
 
-            return Craft::$app->getView()->render('@app/views/debug/deprecated/traces',
-                [
-                    'panel' => $this,
-                    'log' => $log
-                ]);
-        } else {
-            return Craft::$app->getView()->render('@app/views/debug/deprecated/detail',
-                ['panel' => $this]);
+            return Craft::$app->getView()->render('@app/views/debug/deprecated/traces', [
+                'panel' => $this,
+                'log' => $log
+            ]);
         }
+
+        return Craft::$app->getView()->render('@app/views/debug/deprecated/detail', [
+            'panel' => $this
+        ]);
     }
 
     /**

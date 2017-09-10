@@ -162,9 +162,11 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         // Fire a 'beforeSaveContent' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_CONTENT)) {
+            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
+                'element' => $element
+            ]));
+        }
 
         // Prepare the data to be saved
         $values = [
@@ -204,9 +206,11 @@ class Content extends Component
         }
 
         // Fire an 'afterSaveContent' event
-        $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-            'element' => $element
-        ]));
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
+                'element' => $element
+            ]));
+        }
 
         $this->contentTable = $originalContentTable;
         $this->fieldColumnPrefix = $originalFieldColumnPrefix;

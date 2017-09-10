@@ -10,10 +10,12 @@ namespace craft\services;
 use Craft;
 use craft\base\Image;
 use craft\helpers\App;
+use craft\helpers\ConfigHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
+use enshrined\svgSanitize\Sanitizer;
 use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
@@ -105,7 +107,7 @@ class Images extends Component
     public function getSupportedImageFormats(): array
     {
         if ($this->getIsImagick()) {
-            return array_map(array(StringHelper::class, 'toLowerCase'), Imagick::queryFormats());
+            return array_map('strtolower', Imagick::queryFormats());
         }
 
         $output = [];
@@ -113,14 +115,17 @@ class Images extends Component
             IMG_JPG => ['jpg', 'jpeg'],
             IMG_GIF => ['gif'],
             IMG_PNG => ['png'],
-            IMG_WEBP => ['webp']
         ];
+
+        // IMG_WEBP was added in PHP 7.0.10
+        if (defined('IMG_WEBP')) {
+            $map[IMG_WEBP] = ['webp'];
+        }
 
         foreach ($map as $key => $extensions) {
             if (imagetypes() & $key) {
                 $output = array_merge($output, $extensions);
             }
-
         }
 
         return $output;
@@ -240,7 +245,7 @@ class Images extends Component
         $channels = $imageInfo['channels'] ?? 4;
         $memoryNeeded = round(($imageInfo[0] * $imageInfo[1] * $bits * $channels / 8 + $K64) * $tweakFactor);
 
-        $memoryLimit = App::phpConfigValueInBytes('memory_limit');
+        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
 
         if ($memoryLimit == -1 || memory_get_usage() + $memoryNeeded < $memoryLimit) {
             return true;
@@ -255,16 +260,35 @@ class Images extends Component
     }
 
     /**
-     * Cleans an image by it's path, clearing embedded JS and PHP code.
+     * Cleans an image by its path, clearing embedded potentially malicious embedded code.
      *
      * @param string $filePath
      *
-     * @return bool
+     * @return void
+     * @throws Exception if $filePath is a malformed SVG image
      */
-    public function cleanImage(string $filePath): bool
+    public function cleanImage(string $filePath)
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
+
+        // Special case for SVG files.
+        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
+            if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
+                return;
+            }
+
+            $sanitizer = new Sanitizer();
+            $svgContents = file_get_contents($filePath);
+            $svgContents = $sanitizer->sanitize($svgContents);
+
+            if (!$svgContents) {
+                throw new Exception('There was a problem sanitizing the SVG file contents, likely due to malformed XML.');
+            }
+
+            file_put_contents($filePath, $svgContents);
+            return;
+        }
 
         try {
             if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
@@ -272,16 +296,16 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: '.$e->getMessage(), __METHOD__);
         }
 
         // Image has already been cleaned if it had exif/orientation data
         if ($cleanedByRotation || $cleanedByStripping) {
-            return true;
+            return;
         }
 
-        return $this->loadImage($filePath)->saveAs($filePath, true);
+        $this->loadImage($filePath)->saveAs($filePath, true);
     }
 
     /**

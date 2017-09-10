@@ -270,7 +270,7 @@ class CategoriesController extends Controller
         // Parent Category selector variables
         // ---------------------------------------------------------------------
 
-        if ($variables['group']->maxLevels != 1) {
+        if ((int)$variables['group']->maxLevels !== 1) {
             $variables['elementType'] = Category::class;
 
             // Define the parent options criteria
@@ -432,7 +432,7 @@ class CategoriesController extends Controller
             // Swap $category with the duplicate
             try {
                 $category = Craft::$app->getElements()->duplicateElement($category);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
         }
@@ -617,7 +617,12 @@ class CategoriesController extends Controller
         // Get the site
         // ---------------------------------------------------------------------
 
-        $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        if (Craft::$app->getIsMultiSite()) {
+            // Only use the sites that the user has access to
+            $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
+        } else {
+            $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
+        }
 
         if (!$variables['siteIds']) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');

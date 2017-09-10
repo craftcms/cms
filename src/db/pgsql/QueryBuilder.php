@@ -33,6 +33,19 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     }
 
     /**
+     * Builds a SQL statement for renaming a DB sequence.
+     *
+     * @param string $oldName the sequence to be renamed. The name will be properly quoted by the method.
+     * @param string $newName the new sequence name. The name will be properly quoted by the method.
+     *
+     * @return string the SQL statement for renaming a DB table.
+     */
+    public function renameSequence(string $oldName, string $newName): string
+    {
+        return 'ALTER SEQUENCE '.$this->db->quoteTableName($oldName).' RENAME TO '.$this->db->quoteTableName($newName);
+    }
+
+    /**
      * Builds a SQL statement for inserting some given data into a table, or updating an existing row
      * in the event of a key constraint violation.
      *
@@ -85,11 +98,9 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
             }
         }
 
-        $primaryKeys = (array)$schema->getTableSchema($table)->primaryKey;
-
         $sql = 'INSERT INTO '.$schema->quoteTableName($table).
             ' ('.implode(', ', $names).') VALUES ('.implode(', ', $placeholders).')'.
-            ' ON CONFLICT ("'.implode('", "', $primaryKeys).'") DO UPDATE SET ';
+            ' ON CONFLICT ("'.implode('", "', array_keys($keyColumns)).'") DO UPDATE SET ';
 
         foreach ($updates as $counter => $update) {
             if ($counter > 0) {

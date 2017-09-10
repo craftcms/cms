@@ -32,10 +32,10 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  int $targetWidth
-     * @param  int $targetHeight
-     * @param  int $sourceWidth
-     * @param  int $sourceHeight
+     * @param  int|float|null $targetWidth
+     * @param  int|float|null $targetHeight
+     * @param  int|float      $sourceWidth
+     * @param  int|float      $sourceHeight
      *
      * @return int[] Array of the width and height.
      */
@@ -61,7 +61,10 @@ class Image
      */
     public static function canManipulateAsImage(string $extension): bool
     {
-        return in_array(StringHelper::toLowerCase($extension), Craft::$app->getImages()->getSupportedImageFormats(), true);
+        $formats = Craft::$app->getImages()->getSupportedImageFormats();
+        $formats[] = 'svg';
+
+        return in_array(strtolower($extension), $formats);
     }
 
     /**
@@ -166,11 +169,6 @@ class Image
     public static function cleanImageByPath(string $imagePath)
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
-
-        if ($extension === 'svg') {
-            // No cleanup in the classic sense.
-            return;
-        }
 
         if (static::canManipulateAsImage($extension)) {
             Craft::$app->getImages()->cleanImage($imagePath);
@@ -315,15 +313,15 @@ class Image
             ($matchedWidth = (float)$widthMatch[2]) &&
             ($matchedHeight = (float)$heightMatch[2])
         ) {
-            $width = round(
+            $width = floor(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
             );
-            $height = round(
+            $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
         } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = round($viewboxMatch[3]);
-            $height = round($viewboxMatch[4]);
+            $width = floor($viewboxMatch[3]);
+            $height = floor($viewboxMatch[4]);
         } else {
             $width = null;
             $height = null;

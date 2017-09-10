@@ -129,7 +129,7 @@ class EntriesController extends BaseEntriesController
 
         if (
             $section->type === Section::TYPE_STRUCTURE &&
-            $section->maxLevels !== 1
+            (int)$section->maxLevels !== 1
         ) {
             $variables['elementType'] = Entry::class;
 
@@ -460,7 +460,7 @@ class EntriesController extends BaseEntriesController
         if ($duplicate) {
             try {
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -475,6 +475,15 @@ class EntriesController extends BaseEntriesController
             } else if (!$currentUser->can('publishEntries:'.$entry->sectionId)) {
                 $entry->enabled = false;
             }
+        }
+
+        // Make sure the entry has at least one version if the section has versioning enabled
+        $revisionsService = Craft::$app->getEntryRevisions();
+        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
+            $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
+            $currentEntry->revisionCreatorId = $entry->authorId;
+            $currentEntry->revisionNotes = 'Revision from '.Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
+            $revisionsService->saveVersion($currentEntry);
         }
 
         // Save the entry (finally!)
@@ -493,6 +502,11 @@ class EntriesController extends BaseEntriesController
             ]);
 
             return null;
+        }
+
+        // Should we save a new version?
+        if ($entry->getSection()->enableVersioning) {
+            $revisionsService->saveVersion($entry);
         }
 
         if ($request->getAcceptsJson()) {
@@ -736,14 +750,6 @@ class EntriesController extends BaseEntriesController
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
                     $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $site->id);
-
-                    if ($variables['entry']) {
-                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $site->id, 1, true);
-
-                        if (isset($versions[0])) {
-                            $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
-                        }
-                    }
                 }
 
                 if (!$variables['entry']) {
@@ -773,6 +779,22 @@ class EntriesController extends BaseEntriesController
                         }
                         break;
                     }
+                }
+            }
+        }
+
+        if ($variables['entry']->id) {
+            $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entry']->id, $site->id, 1, true);
+            /** @var EntryVersion $currentVersion */
+            $currentVersion = reset($versions);
+
+            if ($currentVersion !== false) {
+                $variables['currentVersionCreator'] = $currentVersion->getCreator();
+                $variables['currentVersionEditTime'] = $currentVersion->dateUpdated;
+
+                // Are we editing the "current" version?
+                if (get_class($variables['entry']) === Entry::class) {
+                    $variables['entry']->revisionNotes = $currentVersion->revisionNotes;
                 }
             }
         }

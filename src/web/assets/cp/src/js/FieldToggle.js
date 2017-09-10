@@ -27,7 +27,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 
             this.type = this.getType();
 
-            if (this.type == 'select') {
+            if (this.type === 'select') {
                 this.targetPrefix = (this.$toggle.attr('data-target-prefix') || '');
             }
             else {
@@ -37,7 +37,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 
             this.findTargets();
 
-            if (this.type == 'link') {
+            if (this.type === 'link') {
                 this.addListener(this.$toggle, 'click', 'onToggleChange');
             }
             else {
@@ -54,22 +54,22 @@ Craft.FieldToggle = Garnish.Base.extend(
         },
 
         getType: function() {
-            if (this.$toggle.prop('nodeName') == 'INPUT' && this.$toggle.attr('type').toLowerCase() == 'checkbox') {
+            if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type').toLowerCase() === 'checkbox') {
                 return 'checkbox';
             }
-            else if (this.$toggle.prop('nodeName') == 'SELECT') {
+            else if (this.$toggle.prop('nodeName') === 'SELECT') {
                 return 'select';
             }
-            else if (this.$toggle.prop('nodeName') == 'A') {
+            else if (this.$toggle.prop('nodeName') === 'A') {
                 return 'link';
             }
-            else if (this.$toggle.prop('nodeName') == 'DIV' && this.$toggle.hasClass('lightswitch')) {
+            else if (this.$toggle.prop('nodeName') === 'DIV' && this.$toggle.hasClass('lightswitch')) {
                 return 'lightswitch';
             }
         },
 
         findTargets: function() {
-            if (this.type == 'select') {
+            if (this.type === 'select') {
                 this._$target = $(this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal()));
             }
             else {
@@ -84,7 +84,7 @@ Craft.FieldToggle = Garnish.Base.extend(
         },
 
         getToggleVal: function() {
-            if (this.type == 'lightswitch') {
+            if (this.type === 'lightswitch') {
                 return this.$toggle.children('input').val();
             }
             else {
@@ -94,13 +94,13 @@ Craft.FieldToggle = Garnish.Base.extend(
         },
 
         onToggleChange: function() {
-            if (this.type == 'select') {
+            if (this.type === 'select') {
                 this.hideTarget(this._$target);
                 this.findTargets();
                 this.showTarget(this._$target);
             }
             else {
-                if (this.type == 'link') {
+                if (this.type === 'link') {
                     this.onToggleChange._show = this.$toggle.hasClass('collapsed') || !this.$toggle.hasClass('expanded');
                 }
                 else {
@@ -126,8 +126,8 @@ Craft.FieldToggle = Garnish.Base.extend(
 
                 $target.removeClass('hidden');
 
-                if (this.type != 'select') {
-                    if (this.type == 'link') {
+                if (this.type !== 'select') {
+                    if (this.type === 'link') {
                         this.$toggle.removeClass('collapsed');
                         this.$toggle.addClass('expanded');
                     }
@@ -160,11 +160,11 @@ Craft.FieldToggle = Garnish.Base.extend(
 
         hideTarget: function($target) {
             if ($target && $target.length) {
-                if (this.type == 'select') {
+                if (this.type === 'select') {
                     $target.addClass('hidden');
                 }
                 else {
-                    if (this.type == 'link') {
+                    if (this.type === 'link') {
                         this.$toggle.removeClass('expanded');
                         this.$toggle.addClass('collapsed');
                     }

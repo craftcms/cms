@@ -1,4 +1,3 @@
-{% requireEdition CraftPro %}
 {% requireAdmin %}
 
 {% extends "_layouts/cp" %}
@@ -9,10 +8,10 @@
 ] %}
 
 {% set navItems = {
-    groups: { label: "User Groups"|t('app'), url: url('settings/users') },
+    groups: CraftEdition == CraftPro ? { label: "User Groups"|t('app'), url: url('settings/users') },
     fields: { label: "Fields"|t('app'), url: url('settings/users/fields') },
     settings: { label: "Settings"|t('app'), url: url('settings/users/settings') }
-} %}
+}|filter %}
 
 {% set docTitle = navItems[selectedNavItem].label~' - '~title %}
 

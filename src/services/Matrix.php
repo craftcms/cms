@@ -219,7 +219,7 @@ class Matrix extends Component
      *
      * @return bool
      * @throws Exception if an error occurs when saving the block type
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveBlockType(MatrixBlockType $blockType, bool $validate = true): bool
     {
@@ -239,15 +239,11 @@ class Matrix extends Component
 
                 if (!$isNewBlockType) {
                     // Get the old block type fields
-                    $oldBlockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
-                    $oldBlockType = new MatrixBlockType($oldBlockTypeRecord->toArray([
-                        'id',
-                        'fieldId',
-                        'fieldLayoutId',
-                        'name',
-                        'handle',
-                        'sortOrder',
-                    ]));
+                    $result = $this->_createBlockTypeQuery()
+                        ->where(['id' => $blockType->id])
+                        ->one();
+
+                    $oldBlockType = new MatrixBlockType($result);
 
                     $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
                     $contentService->fieldColumnPrefix = 'field_'.$oldBlockType->handle.'_';
@@ -343,7 +339,7 @@ class Matrix extends Component
                 $blockTypeRecord->save(false);
 
                 $transaction->commit();
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $transaction->rollBack();
 
                 throw $e;
@@ -361,7 +357,7 @@ class Matrix extends Component
      * @param MatrixBlockType $blockType The block type.
      *
      * @return bool Whether the block type was deleted successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function deleteBlockType(MatrixBlockType $blockType): bool
     {
@@ -412,7 +408,7 @@ class Matrix extends Component
             $transaction->commit();
 
             return (bool)$affectedRows;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -473,7 +469,7 @@ class Matrix extends Component
      * @param bool        $validate    Whether the settings should be validated before being saved.
      *
      * @return bool Whether the settings saved successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveSettings(MatrixField $matrixField, bool $validate = true): bool
     {
@@ -536,7 +532,7 @@ class Matrix extends Component
                 $this->_blockTypesByFieldId[$matrixField->id] = $matrixField->getBlockTypes();
 
                 return true;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 $transaction->rollBack();
 
                 throw $e;
@@ -552,7 +548,7 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field.
      *
      * @return bool Whether the field was deleted successfully.
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function deleteMatrixField(MatrixField $matrixField): bool
     {
@@ -584,7 +580,7 @@ class Matrix extends Component
             $transaction->commit();
 
             return true;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -645,7 +641,7 @@ class Matrix extends Component
      * @param ElementInterface $owner The element the field is associated with
      *
      * @return bool Whether the field was saved successfully.
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner): bool
     {
@@ -688,11 +684,14 @@ class Matrix extends Component
                 $blockIds = [];
                 $collapsedBlockIds = [];
 
+                // Only propagate the blocks if the owner isn't being propagated
+                $propagate = !$owner->propagating;
+
                 foreach ($blocks as $block) {
                     $block->ownerId = $owner->id;
                     $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
 
-                    Craft::$app->getElements()->saveElement($block, false);
+                    Craft::$app->getElements()->saveElement($block, false, $propagate);
 
                     $blockIds[] = $block->id;
 
@@ -720,7 +719,7 @@ class Matrix extends Component
             }
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -731,7 +730,7 @@ class Matrix extends Component
             Craft::$app->getSession()->addAssetBundleFlash(MatrixAsset::class);
 
             foreach ($collapsedBlockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('debugger;'."\n".'Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
+                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.rememberCollapsedBlockId('.$blockId.');');
             }
         }
 

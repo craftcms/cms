@@ -44,7 +44,7 @@
                 }
 
                 Craft.postActionRequest('routes/update-route-order', data, $.proxy(function(response, textStatus) {
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
                         }
@@ -94,9 +94,11 @@
             },
 
             updateHtmlFromModal: function() {
+                var i;
+
                 if (Craft.isMultiSite) {
                     if (this.siteId) {
-                        for (var i = 0; i < Craft.sites.length; i++) {
+                        for (i = 0; i < Craft.sites.length; i++) {
                             if (Craft.sites[i].id == this.siteId) {
                                 this.$siteLabel.text(Craft.sites[i].name);
                                 break;
@@ -110,7 +112,7 @@
 
                 var uriHtml = '';
 
-                for (var i = 0; i < this.modal.uriInput.elements.length; i++) {
+                for (i = 0; i < this.modal.uriInput.elements.length; i++) {
                     var $elem = this.modal.uriInput.elements[i];
 
                     if (this.modal.uriInput.isText($elem)) {
@@ -174,6 +176,8 @@
 
                 containerHtml += '<div id="uri" class="text uri ltr"></div>';
 
+                var i;
+
                 if (Craft.isMultiSite) {
                     containerHtml +=
                         '</div>' +
@@ -182,7 +186,7 @@
                         '<select class="site">' +
                         '<option value="">' + Craft.t('app', 'Global') + '</option>';
 
-                    for (var i = 0; i < Craft.sites.length; i++) {
+                    for (i = 0; i < Craft.sites.length; i++) {
                         var siteInfo = Craft.sites[i];
                         containerHtml += '<option value="' + siteInfo.id + '">' + siteInfo.name + '</option>';
                     }
@@ -253,7 +257,7 @@
                     // Set the initial uri value
                     var uriNodes = this.route.$uri.prop('childNodes');
 
-                    for (var i = 0; i < uriNodes.length; i++) {
+                    for (i = 0; i < uriNodes.length; i++) {
                         var node = uriNodes[i];
 
                         if (Garnish.isTextNode(node)) {
@@ -379,12 +383,12 @@
                     this.$spinner.hide();
                     this.loading = false;
 
-                    if (textStatus == 'success') {
+                    if (textStatus === 'success') {
                         if (response.success) {
                             // Is this a new route?
                             if (!this.route) {
                                 var routeHtml =
-                                    '<div class="pane route" data-id="' + response.routeId + '"' + (response.siteId ? ' data-site-id="' + response.siteId + '"' : '') + '>' +
+                                    '<div class="route" data-id="' + response.routeId + '"' + (response.siteId ? ' data-site-id="' + response.siteId + '"' : '') + '>' +
                                     '<div class="uri-container">';
 
                                 if (Craft.isMultiSite) {
@@ -407,7 +411,7 @@
                                 Craft.routes.sorter.addItems($route);
 
                                 // Was this the first one?
-                                if (Craft.routes.sorter.$items.length == 1) {
+                                if (Craft.routes.sorter.$items.length === 1) {
                                     $('#noroutes').addClass('hidden');
                                 }
                             }
@@ -437,7 +441,7 @@
             deleteRoute: function() {
                 if (confirm(Craft.t('app', ('Are you sure you want to delete this route?')))) {
                     Craft.postActionRequest('routes/delete-route', {routeId: this.route.id}, function(response, textStatus) {
-                        if (textStatus == 'success') {
+                        if (textStatus === 'success') {
                             Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
                         }
                     });
@@ -447,7 +451,7 @@
                     this.hide();
 
                     // Was this the last one?
-                    if (Craft.routes.sorter.$items.length == 0) {
+                    if (Craft.routes.sorter.$items.length === 0) {
                         $('#noroutes').removeClass('hidden');
                     }
                 }

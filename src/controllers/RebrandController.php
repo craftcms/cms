@@ -63,7 +63,7 @@ class RebrandController extends Controller
                 $filename = Assets::prepareAssetName($file->name, true, true);
 
                 if (!Image::canManipulateAsImage($file->getExtension())) {
-                    throw new BadRequestHttpException('The uploaded file is not an image');
+                    throw new BadRequestHttpException(Craft::t('app', 'The uploaded file is not an image'));
                 }
 
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
@@ -78,7 +78,9 @@ class RebrandController extends Controller
 
                 move_uploaded_file($file->tempName, $fileDestination);
 
-                Craft::$app->getImages()->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
+                $imagesService = Craft::$app->getImages();
+                $imagesService->cleanImage($fileDestination);
+                $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
                 $html = $this->getView()->renderTemplate('settings/general/_images/'.$type);
 
                 return $this->asJson(['html' => $html]);

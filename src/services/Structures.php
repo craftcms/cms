@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
@@ -64,13 +65,17 @@ class Structures extends Component
      */
     public function getStructureById(int $structureId)
     {
-        $structureRecord = StructureRecord::findOne($structureId);
-
-        if ($structureRecord) {
-            return new Structure($structureRecord->toArray([
+        $result = (new Query())
+            ->select([
                 'id',
                 'maxLevels',
-            ]));
+            ])
+            ->from(['{{%structures}}'])
+            ->where(['id' => $structureId])
+            ->one();
+
+        if ($result) {
+            return new Structure($result);
         }
 
         return null;
@@ -354,7 +359,7 @@ class Structures extends Component
      * @param  string           $mode
      *
      * @return bool Whether it was done
-     * @throws \Exception if reasons
+     * @throws \Throwable if reasons
      */
     private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode): bool
     {
@@ -379,7 +384,7 @@ class Structures extends Component
             $mode = 'insert';
         }
 
-        if ($mode === 'update') {
+        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_BEFORE_MOVE_ELEMENT)) {
             // Fire a 'beforeMoveElement' event
             $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
@@ -387,15 +392,13 @@ class Structures extends Component
             ]));
         }
 
+        // Tell the element about it
+        if (!$element->beforeMoveInStructure($structureId)) {
+            return false;
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Tell the element about it
-            if (!$element->beforeMoveInStructure($structureId)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
             if (!$elementRecord->$action($targetElementRecord)) {
                 $transaction->rollBack();
 
@@ -411,13 +414,13 @@ class Structures extends Component
             $element->afterMoveInStructure($structureId);
 
             $transaction->commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
-        if ($mode === 'update') {
+        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event
             $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,

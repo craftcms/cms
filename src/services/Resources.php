@@ -14,7 +14,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use Exception;
 use yii\base\Component;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -118,7 +117,7 @@ class Resources extends Component
                     Craft::$app->getPlugins()->loadPlugins();
                     try {
                         $path = Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $path = $this->_getBrokenImageThumbPath();
                     }
 
@@ -146,7 +145,7 @@ class Resources extends Component
                             throw new NotFoundHttpException(Craft::t('app', 'Image transform not found'));
                         }
                         $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
-                    } catch (Exception $exception) {
+                    } catch (\Throwable $exception) {
                         throw new ServerErrorHttpException($exception->getMessage());
                     }
                     Craft::$app->getResponse()->redirect($url);

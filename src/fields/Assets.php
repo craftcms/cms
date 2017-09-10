@@ -18,7 +18,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 
@@ -94,13 +93,6 @@ class Assets extends BaseRelationField
      * @var array|null The file kinds that the field should be restricted to (only used if [[restrictFiles]] is true)
      */
     public $allowedKinds;
-
-    /**
-     * Uploaded files that failed validation.
-     *
-     * @var UploadedFile[]
-     */
-    private $_failedFiles = [];
 
     // Public Methods
     // =========================================================================
@@ -194,24 +186,35 @@ class Assets extends BaseRelationField
      */
     public function validateFileType(ElementInterface $element)
     {
-        /** @var Element $element */
-        $value = $element->getFieldValue($this->handle);
-
-        // Check if this field restricts files and if files are passed at all.
-        if ($this->restrictFiles && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
-            $allowedExtensions = $this->_getAllowedExtensions();
-
-            foreach ($value as $assetId) {
-                $file = Craft::$app->getAssets()->getAssetById($assetId);
-
-                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                    $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
-                }
-            }
+        // Make sure the field restricts file types
+        if (!$this->restrictFiles) {
+            return;
         }
 
-        foreach ($this->_failedFiles as $file) {
-            $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file]));
+        $filenames = [];
+
+        // Get all the value's assets' filenames
+        /** @var Element $element */
+        $value = $element->getFieldValue($this->handle);
+        foreach ($value as $asset) {
+            /** @var Asset $asset */
+            $filenames[] = $asset->filename;
+        }
+
+        // Get any uploaded filenames
+        $uploadedFiles = $this->_getUploadedFiles($element);
+        foreach ($uploadedFiles as $file) {
+            $filenames[] = $file['filename'];
+        }
+
+        // Now make sure that they all check out
+        $allowedExtensions = $this->_getAllowedExtensions();
+        foreach ($filenames as $filename) {
+            if (!in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
+                $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', [
+                    'filename' => $filename
+                ]));
+            }
         }
     }
 
@@ -244,10 +247,8 @@ class Assets extends BaseRelationField
             }
         }
 
-        return parent::normalizeValue($value,
-            $element);
+        return parent::normalizeValue($value, $element);
     }
-
 
     /**
      * Resolve source path for uploading for this field.
@@ -267,132 +268,56 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, bool $isNew): bool
-    {
-        /** @var Element $element */
-        $incomingFiles = [];
-
-        /** @var AssetQuery $newValue */
-        $query = $element->getFieldValue($this->handle);
-        $value = !empty($query->id) ? $query->id : [];
-
-        // Grab data strings
-        if (isset($value['data']) && is_array($value['data'])) {
-            foreach ($value['data'] as $index => $dataString) {
-                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9]+);base64,(?<data>.+)/i',
-                    $dataString, $matches)) {
-                    $type = $matches['type'];
-                    $data = base64_decode($matches['data']);
-
-                    if (!$data) {
-                        continue;
-                    }
-
-                    if (!empty($value['filenames'][$index])) {
-                        $filename = $value['filenames'][$index];
-                    } else {
-                        $extensions = FileHelper::getExtensionsByMimeType($type);
-
-                        if (empty($extensions)) {
-                            continue;
-                        }
-
-                        $filename = 'Uploaded_file.'.reset($extensions);
-                    }
-
-                    $incomingFiles[] = [
-                        'filename' => $filename,
-                        'data' => $data,
-                        'type' => 'data'
-                    ];
-                }
-            }
-        }
-
-        // Remove these so they don't interfere.
-        if (isset($value['data']) || isset($value['filenames'])) {
-            unset($value['data'], $value['filenames']);
-        }
-
-        // See if we have uploaded file(s).
-        $paramName = $this->requestParamName($element);
-
-        if ($paramName !== null) {
-            $files = UploadedFile::getInstancesByName($paramName);
-
-            foreach ($files as $file) {
-                $incomingFiles[] = [
-                    'filename' => $file->name,
-                    'location' => $file->tempName,
-                    'type' => 'upload'
-                ];
-            }
-        }
-
-        if (!empty($incomingFiles)) {
-            $this->_validateIncomingFiles($incomingFiles);
-        }
-
-        if (!empty($this->_failedFiles)) {
-            return parent::beforeElementSave($element, $isNew);
-        }
-
-        // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
-        if (!empty($incomingFiles)) {
-            $assetIds = [];
-            $targetFolderId = $this->_determineUploadFolderId($element);
-
-            if (!empty($targetFolderId)) {
-                foreach ($incomingFiles as $file) {
-                    $tempPath = AssetsHelper::tempFilePath($file['filename']);
-                    if ($file['type'] === 'upload') {
-                        move_uploaded_file($file['location'], $tempPath);
-                    }
-                    if ($file['type'] === 'data') {
-                        FileHelper::writeToFile($tempPath, $file['data']);
-                    }
-
-                    $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
-                    $asset = new Asset();
-                    $asset->tempFilePath = $tempPath;
-                    $asset->filename = $file['filename'];
-                    $asset->newFolderId = $targetFolderId;
-                    $asset->volumeId = $folder->volumeId;
-                    $asset->setScenario(Asset::SCENARIO_CREATE);
-                    Craft::$app->getElements()->saveElement($asset);
-
-                    $assetIds[] = $asset->id;
-                }
-
-                $assetIds = array_unique(array_merge($value, $assetIds));
-
-                /** @var AssetQuery $newValue */
-                $newValue = $this->normalizeValue($assetIds, $element);
-                $element->setFieldValue($this->handle, $newValue);
-            }
-        }
-
-        return parent::beforeElementSave($element, $isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
-        $value = $element->getFieldValue($this->handle);
+        $targetFolderId = $this->_determineUploadFolderId($element);
 
-        if ($value instanceof AssetQuery) {
-            $value = $value->all();
+        // Were there any uploaded files?
+        $uploadedFiles = $this->_getUploadedFiles($element);
+        if (!empty($uploadedFiles)) {
+            // Convert them to assets
+            $assetIds = [];
+
+            foreach ($uploadedFiles as $file) {
+                $tempPath = AssetsHelper::tempFilePath($file['filename']);
+                if ($file['type'] === 'upload') {
+                    move_uploaded_file($file['location'], $tempPath);
+                }
+                if ($file['type'] === 'data') {
+                    FileHelper::writeToFile($tempPath, $file['data']);
+                }
+
+                $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
+                $asset = new Asset();
+                $asset->tempFilePath = $tempPath;
+                $asset->filename = $file['filename'];
+                $asset->newFolderId = $targetFolderId;
+                $asset->volumeId = $folder->volumeId;
+                $asset->setScenario(Asset::SCENARIO_CREATE);
+                Craft::$app->getElements()->saveElement($asset);
+
+                $assetIds[] = $asset->id;
+            }
+
+            // Override the field value with newly-uploaded assets' IDs
+            $query = $this->normalizeValue($assetIds, $element);
+            $element->setFieldValue($this->handle, $query);
+        } else {
+            // Just get the pre-normalized asset query
+            $query = $element->getFieldValue($this->handle);
         }
 
-        if (is_array($value) && !empty($value)) {
+        // Are there any related assets?
+        /** @var AssetQuery $query */
+        /** @var Asset[] $assets */
+        $assets = $query->all();
+        if (!empty($assets)) {
+            // Figure out which (if any) we need to move into place
             $assetsToMove = [];
-            $targetFolderId = $this->_determineUploadFolderId($element);
 
             if ($this->useSingleFolder) {
                 // Move only those Assets that have had their folder changed.
-                foreach ($value as $asset) {
+                foreach ($assets as $asset) {
                     if ($targetFolderId != $asset->folderId) {
                         $assetsToMove[] = $asset;
                     }
@@ -400,7 +325,7 @@ class Assets extends BaseRelationField
             } else {
                 $assetIds = [];
 
-                foreach ($value as $elementFile) {
+                foreach ($assets as $elementFile) {
                     $assetIds[] = $elementFile->id;
                 }
 
@@ -414,7 +339,6 @@ class Assets extends BaseRelationField
             }
 
             if (!empty($assetsToMove) && !empty($targetFolderId)) {
-
                 $assetService = Craft::$app->getAssets();
                 $folder = $assetService->getFolderById($targetFolderId);
 
@@ -499,6 +423,76 @@ class Assets extends BaseRelationField
     // =========================================================================
 
     /**
+     * Returns any files that were uploaded to the field.
+     *
+     * @param ElementInterface $element
+     *
+     * @return array
+     */
+    private function _getUploadedFiles(ElementInterface $element): array
+    {
+        /** @var Element $element */
+        $uploadedFiles = [];
+
+        /** @var AssetQuery $query */
+        $query = $element->getFieldValue($this->handle);
+        $value = !empty($query->id) ? $query->id : [];
+
+        // Grab data strings
+        if (isset($value['data']) && is_array($value['data'])) {
+            foreach ($value['data'] as $index => $dataString) {
+                if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9]+);base64,(?<data>.+)/i',
+                    $dataString, $matches)) {
+                    $type = $matches['type'];
+                    $data = base64_decode($matches['data']);
+
+                    if (!$data) {
+                        continue;
+                    }
+
+                    if (!empty($value['filenames'][$index])) {
+                        $filename = $value['filenames'][$index];
+                    } else {
+                        $extensions = FileHelper::getExtensionsByMimeType($type);
+
+                        if (empty($extensions)) {
+                            continue;
+                        }
+
+                        $filename = 'Uploaded_file.'.reset($extensions);
+                    }
+
+                    $uploadedFiles[] = [
+                        'filename' => $filename,
+                        'data' => $data,
+                        'type' => 'data'
+                    ];
+                }
+            }
+        }
+
+        // Remove these so they don't interfere.
+        unset($value['data'], $value['filenames']);
+
+        // See if we have uploaded file(s).
+        $paramName = $this->requestParamName($element);
+
+        if ($paramName !== null) {
+            $files = UploadedFile::getInstancesByName($paramName);
+
+            foreach ($files as $file) {
+                $uploadedFiles[] = [
+                    'filename' => $file->name,
+                    'location' => $file->tempName,
+                    'type' => 'upload'
+                ];
+            }
+        }
+
+        return $uploadedFiles;
+    }
+
+    /**
      * Resolve a source path to it's folder ID by the source path and the matched source beginning.
      *
      * @param string                $uploadSource
@@ -531,7 +525,7 @@ class Assets extends BaseRelationField
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
                 $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new InvalidSubpathException($subpath);
             }
 
@@ -631,30 +625,6 @@ class Assets extends BaseRelationField
         }
 
         return $extensions;
-    }
-
-    /**
-     * Validate incoming files against field settings.
-     *
-     * @param array $incomingFiles
-     *
-     * @return void
-     */
-    private function _validateIncomingFiles(array $incomingFiles)
-    {
-        if ($this->restrictFiles && !empty($this->allowedKinds)) {
-            $allowedExtensions = $this->_getAllowedExtensions();
-        }
-
-        foreach ($incomingFiles as $fileInfo) {
-            if (!empty($allowedExtensions)) {
-                $extension = StringHelper::toLowerCase(pathinfo($fileInfo['filename'], PATHINFO_EXTENSION));
-
-                if (!in_array($extension, $allowedExtensions, true)) {
-                    $this->_failedFiles[] = $fileInfo['filename'];
-                }
-            }
-        }
     }
 
     /**
