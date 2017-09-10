@@ -5,7 +5,8 @@
     id: 'host',
     name: 'host',
     value: adapter.host,
-    errors: adapter.getErrors('host')
+    errors: adapter.getErrors('host'),
+    required: true
 }) }}
 
 {{ forms.textField({
@@ -14,7 +15,8 @@
     name: 'port',
     value: adapter.port,
     size: 4,
-    errors: adapter.getErrors('port')
+    errors: adapter.getErrors('port'),
+    required: true
 }) }}
 
 {{ forms.checkboxField({
