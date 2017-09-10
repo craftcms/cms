@@ -55,21 +55,25 @@ class PluginStore extends Component
      */
     public function getCraftIdAccount()
     {
-        $craftIdToken = $this->getToken();
+        try {
+            $craftIdToken = $this->getToken();
 
-        if ($craftIdToken && $craftIdToken->hasExpired()) {
-            $craftIdToken = null;
-        }
-
-        $client = $this->getClient();
-
-        if ($craftIdToken) {
-            $craftIdAccountResponse = $client->request('GET', 'account');
-            $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
-
-            if (!isset($craftIdAccount['error'])) {
-                return $craftIdAccount;
+            if ($craftIdToken && $craftIdToken->hasExpired()) {
+                $craftIdToken = null;
             }
+
+            $client = $this->getClient();
+
+            if ($craftIdToken) {
+                $craftIdAccountResponse = $client->request('GET', 'account');
+                $craftIdAccount = json_decode($craftIdAccountResponse->getBody(), true);
+
+                if (!isset($craftIdAccount['error'])) {
+                    return $craftIdAccount;
+                }
+            }
+        } catch(\GuzzleHttp\Exception\ServerException $e) {
+
         }
     }
 
