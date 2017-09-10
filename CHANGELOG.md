@@ -11,6 +11,7 @@ Craft CMS Changelog
 - Fixed a bug where you could get a PHP error uploading some JPG files on PHP 7.1.
 - Fixed a bug where user photos and site logos/icons were not taking into account the [sanitizeSvgUploads](https://craftcms.com/docs/config-settings#sanitizeSvgUploads) config setting.
 - Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel.
+- Fixed a bug where transforms could break sometimes on external asset sources that used path prefix.
 
 ### Security
 - Fixed an XSS vulnerability.
