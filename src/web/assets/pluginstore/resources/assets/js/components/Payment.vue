@@ -27,10 +27,14 @@
 				<p><label><input type="radio" value="guest" v-model="identityMode" /> Continue as guest</label></p>
 
 				<template v-if="identityMode == 'guest'">
-					<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName"></text-field>
-					<text-field id="email" placeholder="Email" v-model="guestIdentity.email"></text-field>
 
-					<a class="btn submit" @click="activeSection = 'paymentMethod'">Continue</a>
+					<form @submit.prevent="saveGuestIdentity()">
+						<text-field id="fullName" placeholder="Full Name" v-model="guestIdentity.fullName" :errors="guestIdentityErrors.fullName"></text-field>
+						<text-field id="email" placeholder="Email" v-model="guestIdentity.email" :errors="guestIdentityErrors.email"></text-field>
+
+						<input type="submit" class="btn submit" value="Continue" />
+					</form>
+
 				</template>
 			</template>
 			<template v-else>
@@ -231,6 +235,11 @@
                     email: "",
                 },
 
+                guestIdentityErrors: {
+                    fullName: false,
+					email: false,
+				},
+
                 paymentMode: 'existingCard',
 				cardToken: null,
                 guestCardToken: null,
@@ -306,6 +315,33 @@
         },
 
 		methods: {
+            saveGuestIdentity() {
+                if(!this.guestIdentity.fullName) {
+                    this.guestIdentityErrors.fullName = true;
+				} else {
+                    this.guestIdentityErrors.fullName = false;
+				}
+
+                if(!this.guestIdentity.email) {
+                    this.guestIdentityErrors.email = true;
+                } else {
+                    this.guestIdentityErrors.email = false;
+                }
+
+                let validates = true;
+
+                for(let key in this.guestIdentityErrors) {
+                    if(!this.guestIdentityErrors.hasOwnProperty(key)) continue;
+
+                    if(this.guestIdentityErrors[key] === true) {
+                        validates = false;
+					}
+				}
+
+				if(validates) {
+                	this.activeSection = 'paymentMethod';
+                }
+			},
             saveNewCard() {
 				if(!this.cardToken) {
                     this.$refs.newCard.save();
