@@ -4,6 +4,7 @@ Craft CMS 3.0 Working Changelog
 ## Unreleased
 
 ### Added
+- Added the `install/plugin` console command, which makes it possible to install plugins from the command line. ([#1973](https://github.com/craftcms/cms/pull/1973))
 - Added `craft\helpers\StringHelper::split()`.
 - Added `craft\web\View::createTwig()`.
 - Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
