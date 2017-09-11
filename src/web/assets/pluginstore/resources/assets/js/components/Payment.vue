@@ -42,10 +42,15 @@
 					<p v-else class="light">Not connected to Craft ID.</p>
 				</div>
 				<div v-if="identityMode == 'guest'">
-					<ul>
-						<li>{{ guestIdentity.fullName }} <em>(Guest)</em></li>
-						<li>{{ guestIdentity.email }}</li>
-					</ul>
+					<template v-if="guestIdentity.fullName && guestIdentity.email">
+						<ul>
+							<li>{{ guestIdentity.fullName }} <em>(Guest)</em></li>
+							<li>{{ guestIdentity.email }}</li>
+						</ul>
+					</template>
+					<template v-else>
+						<p class="light">Missing informations.</p>
+					</template>
 				</div>
 			</template>
 		</div>
@@ -79,7 +84,9 @@
 					</template>
 				</template>
 				<template v-else>
-					<credit-card v-model="creditCard"></credit-card>
+					<!--<credit-card v-model="creditCard"></credit-card>-->
+					<card-form ref="guestCard" @save="onGuestCardFormSave"></card-form>
+					<a class="btn submit" @click="saveGuestCard();">Continue</a>
 				</template>
 
 				<!--<a class="btn submit" @click="activeSection=null">Continue</a>-->
@@ -107,11 +114,11 @@
 					<p v-else class="light">Not defined.</p>
 				</template>
 
-				<ul v-else>
-					<li>{{ creditCard.number }}</li>
-					<li>{{ creditCard.expiry }}</li>
-					<li>{{ creditCard.cvc }}</li>
-				</ul>
+				<p v-else-if="guestCardToken">
+					{{ guestCardToken.card.brand }}
+					•••• •••• •••• {{ guestCardToken.card.last4 }}
+					— {{ guestCardToken.card.exp_month }}/{{ guestCardToken.card.exp_year }}
+				</p>
 			</template>
 		</div>
 
@@ -226,6 +233,8 @@
 
                 paymentMode: 'existingCard',
 				cardToken: null,
+                guestCardToken: null,
+
                 creditCard: {
                     number: '',
                     expiry: '',
@@ -305,10 +314,23 @@
 				}
 			},
 
+            saveGuestCard() {
+				if(!this.guestCardToken) {
+                    this.$refs.guestCard.save();
+				} else {
+				    this.activeSection = null;
+				}
+			},
+
             onCardFormSave(card, token) {
 				console.log('card, token', card, token)
                 this.activeSection = null;
 				this.cardToken = token;
+			},
+
+            onGuestCardFormSave(card, token) {
+                this.activeSection = null;
+				this.guestCardToken = token;
 			},
 
             sectionValidates(section) {
@@ -317,6 +339,11 @@
 						switch(this.identityMode) {
 							case 'craftid':
 							    if(this.craftIdAccount) {
+							        return true;
+								}
+							    break;
+							case 'guest':
+							    if(this.guestIdentity.fullName && this.guestIdentityLastName) {
 							        return true;
 								}
 							    break;
