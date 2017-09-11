@@ -57,6 +57,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $charLimit;
 
     /**
+     * @var string The HTML5 input type (text, email, tel, url)
+     */
+    public $inputType;
+
+    /**
      * @var string The type of database column the field should have in the content table
      */
     public $columnType = Schema::TYPE_TEXT;
@@ -72,6 +77,7 @@ class PlainText extends Field implements PreviewableFieldInterface
         $rules = parent::rules();
         $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
         $rules[] = [['charLimit'], 'validateCharLimit'];
+        $rules[] = [['inputType'], 'string', 'max' => 50];
 
         return $rules;
     }
