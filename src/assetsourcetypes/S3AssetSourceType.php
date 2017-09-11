@@ -590,7 +590,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
-					$this->deleteSourceFile($from);
+                    @$this->_s3->deleteObject($sourceBucket, $from);
 				}
 			}
 			else

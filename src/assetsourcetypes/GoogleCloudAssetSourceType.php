@@ -561,7 +561,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 					$to   = $this->_getPathPrefix().$targetFolder->path.craft()->assetTransforms->getTransformSubpath($destination, $destinationIndex);
 
 					$this->copySourceFile($from, $to);
-					$this->deleteSourceFile($from);
+                    @$this->_googleCloud->deleteObject($sourceBucket, $from);
 				}
 			}
 			else
