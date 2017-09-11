@@ -59,7 +59,7 @@
 
 			<template v-if="showPaymentMethod">
 				<template v-if="identityMode == 'craftid'">
-					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.cardNumber }}</span></label></p>
+					<p><label><input type="radio" value="existingCard" v-model="paymentMode" /> Use card <span v-if="craftIdAccount">{{ craftIdAccount.card.brand }} •••• •••• •••• {{ craftIdAccount.card.last4 }} — {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}</span></label></p>
 					<p><label><input type="radio" value="newCard" v-model="paymentMode" /> Or use a different credit card</label></p>
 
 					<template v-if="paymentMode == 'newCard'">
