@@ -32,6 +32,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where Craft would get confused whether or not it could manipulate SVG files. ([#1874](https://github.com/craftcms/cms/issues/1874))
 - Fixed a CSRF validation error that would occur when attempting to re-login via the login modal in the Control Panel. ([#1957](https://github.com/craftcms/cms/issues/1957))
 - Fixed a “divide by zero” error when paginating an empty set of elements. ([#1970](https://github.com/craftcms/cms/pull/1970))
+- Fixed a bug where the “Host Name”, “Port”, and “Timeout” SMTP mailer type settings weren’t marked as required. ([#1976](https://github.com/craftcms/cms/issues/1976))
 
 ## 3.0.0-beta.26 - 2017-08-22
 
