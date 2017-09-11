@@ -20,6 +20,7 @@ use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
+use Twig_ExtensionInterface;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle as YiiAssetBundle;
@@ -94,6 +95,11 @@ class View extends \yii\web\View
      * @var
      */
     private $_twigOptions;
+
+    /**
+     * @var Twig_ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
+     */
+    private $_twigExtensions = [];
 
     /**
      * @var
@@ -221,12 +227,35 @@ class View extends \yii\web\View
             $twig->addExtension(new \Twig_Extension_Debug());
         }
 
+        // Add plugin-supplied extensions
+        foreach ($this->_twigExtensions as $extension) {
+            $twig->addExtension($extension);
+        }
+
         // Set our timezone
         /** @var \Twig_Extension_Core $core */
         $core = $twig->getExtension(\Twig_Extension_Core::class);
         $core->setTimezone(Craft::$app->getTimeZone());
 
         return $twig;
+    }
+
+    /**
+     * Registers a new Twig extension, which will be added on existing environments and queued up for future environments.
+     *
+     * @param Twig_ExtensionInterface $extension
+     */
+    public function registerTwigExtension(Twig_ExtensionInterface $extension)
+    {
+        $this->_twigExtensions[] = $extension;
+
+        // Add it to any existing Twig environments
+        if ($this->_cpTwig !== null) {
+            $this->_cpTwig->addExtension($extension);
+        }
+        if ($this->_siteTwig !== null) {
+            $this->_siteTwig->addExtension($extension);
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Added `craft\helpers\StringHelper::split()`.
 - Added `craft\web\View::createTwig()`.
+- Added `craft\web\View::registerTwigExtension()`, which should be used instead of `craft\web\View::getTwig()->addExtension()`.
 
 ### Changed
 - Plugin translation sources are now configured with `forceTranslations` enabled.
