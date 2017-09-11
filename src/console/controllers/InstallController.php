@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\elements\User;
+use craft\errors\InvalidPluginException;
 use craft\migrations\Install;
 use craft\models\Site;
 use Seld\CliPrompt\CliPrompt;
@@ -65,12 +66,16 @@ class InstallController extends Controller
     public function options($actionID)
     {
         $options = parent::options($actionID);
-        $options[] = 'email';
-        $options[] = 'username';
-        $options[] = 'password';
-        $options[] = 'siteName';
-        $options[] = 'siteUrl';
-        $options[] = 'language';
+
+        if ($actionID === 'index') {
+            $options[] = 'email';
+            $options[] = 'username';
+            $options[] = 'password';
+            $options[] = 'siteName';
+            $options[] = 'siteUrl';
+            $options[] = 'language';
+        }
+
         return $options;
     }
 
@@ -144,6 +149,23 @@ class InstallController extends Controller
             }
         } else {
             $this->stderr("There was a problem installing {$siteName}.".PHP_EOL, Console::FG_RED);
+        }
+    }
+    
+    /**
+     * Installs a plugin
+     *
+     * @param string $handle
+     */
+    public function actionPlugin(string $handle)
+    {
+        try {
+            Craft::$app->plugins->installPlugin($handle);
+            $this->stdout($handle.' sucessfully installed!'.PHP_EOL);
+        } catch (InvalidPluginException $e) {
+            $this->stderr('Could not find a plugin with the handle: '.$handle.PHP_EOL);
+        } catch (Exception $e) {
+            $this->stderr("There was a problem installing {$handle}: ".$e->getMessage().PHP_EOL);
         }
     }
 
