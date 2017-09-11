@@ -67,7 +67,7 @@ class InstallController extends Controller
     {
         $options = parent::options($actionID);
 
-        if ($actionID == 'index') {
+        if ($actionID === 'index') {
             $options[] = 'email';
             $options[] = 'username';
             $options[] = 'password';
