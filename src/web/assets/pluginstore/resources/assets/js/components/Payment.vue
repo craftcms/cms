@@ -79,11 +79,11 @@
 				<template v-if="identityMode == 'craftid'">
 					<template v-if="craftIdAccount">
 
-						<ul v-if="paymentMode == 'existingCard'">
-							<li>{{ craftIdAccount.cardNumber }}</li>
-							<li>{{ craftIdAccount.cardExpiry }}</li>
-							<li>{{ craftIdAccount.cardCvc }}</li>
-						</ul>
+						<p v-if="paymentMode == 'existingCard'">
+							{{ craftIdAccount.card.brand }}
+							•••• •••• •••• {{ craftIdAccount.card.last4 }}
+							— {{ craftIdAccount.card.exp_month }}/{{ craftIdAccount.card.exp_year }}
+						</p>
 
 					</template>
 
@@ -290,6 +290,15 @@
 							    break;
 						}
 					    break;
+					case 'paymentMethod':
+					    switch(this.paymentMode) {
+							case 'existingCard':
+								if(this.craftIdAccount.card) {
+								    return true;
+								}
+							    break;
+						}
+					    break;
 				}
 
 				return false;
@@ -301,10 +310,6 @@
 				}
 
 				return false;
-			},
-
-            closeSection(section) {
-                this.activeSection = null;
 			},
 
             connectCraftId() {
